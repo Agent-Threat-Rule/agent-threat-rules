@@ -1,0 +1,2256 @@
+{
+  "generated": "2026-10-03T10:49:22.642Z",
+  "model": "claude-sonnet-5",
+  "minEvidence": 2,
+  "note": "LLM-drafted candidate ATD technique entries, schema-validated but NEVER auto-merged. atd_id is provisional — re-verify it is still the next free id at merge time (concurrent PRs may also claim it). A human must confirm tactic/mappings before pasting into website/public/atd/atd-techniques.json.",
+  "drafted": [
+    {
+      "atd_id": "ATD-T0082",
+      "schema_version": "0.1.0",
+      "title": "Unvalidated tool-call and task parameters causing injection, traversal, or crash",
+      "tactic": "ATD-TA5",
+      "abstraction": "class",
+      "status": "experimental",
+      "severity": "critical",
+      "description": "An agent, MCP server, or pipeline component accepts tool-call arguments, flow/node definitions, file uploads, or other externally-controlled fields without validating type, range, format, or allowed values before using them in command construction, file paths, deserialization, or model inference, letting an attacker smuggle in malicious payloads. Depending on the sink this yields remote code execution, path traversal, authorization/allowlist bypass, or a crash/denial of service, and because the input often originates from a prompt, a tool response, or another agent, the trust boundary is far less obvious than in a traditional web form.",
+      "detection_surface": [
+        "tool_input",
+        "tool_response",
+        "trace"
+      ],
+      "mappings": {
+        "owasp_asi": [
+          "ASI02",
+          "ASI04"
+        ],
+        "mitre_atlas": [],
+        "cwe": [
+          "CWE-20"
+        ]
+      },
+      "references": [
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-37663"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-37665"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-37673"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-37674"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-37677"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-37692"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-41561"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-44832"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-21820"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-24280"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29191"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29192"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29193"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29194"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29195"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29196"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29197"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29198"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29199"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29200"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29201"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29202"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29206"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29207"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29211"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29212"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29213"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-31616"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-35964"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-35966"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-35967"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-35970"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-35972"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-35973"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-35979"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-35982"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-35986"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-36017"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-36027"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-41888"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-41891"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-41896"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-41898"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-41899"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-41901"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-41908"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-41909"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-22886"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-25691"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-25693"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-27604"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-28710"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-35797"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-40272"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-45805"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-49796"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-21949"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-21974"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-21975"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-22476"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-3101"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-3584"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-41115"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-41117"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-41119"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-6915"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-47470"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-49095"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-56151"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-41268"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-31040"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-46341"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-48985"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-17991"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-49042"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-50632"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-50633"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-55973"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-63734"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-86351"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-95843"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-33833"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-41100"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-41614"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-100647"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-100652"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-13341"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-27765"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-29791"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-30304"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-34760"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-54234"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-56340"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-61427"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-91932"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-23268"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-23336"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-47629"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2008-6504"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2010-4335"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2012-0838"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2013-2172"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2014-0162"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2014-1539"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2014-3529"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2015-0250"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2015-1833"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2015-3221"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2015-6497"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2016-4972"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2016-9795"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2018-3749"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2018-7577"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2019-17560"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-13936"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-26270"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-5215"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-21639"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-26251"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-29136"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-1243"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-21144"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-23529"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-2385"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-24093"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-3294"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-36085"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-40145"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-46365"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-22465"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-28113"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-34239"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-34457"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-36049"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-4241"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-42503"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-45193"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-48223"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-49081"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-49082"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-50709"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-51444"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-0793"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-10846"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-11404"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-12401"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-23634"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-27931"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-28103"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-32048"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-38095"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-49361"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-54140"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-31672"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-59532"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-59952"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-66451"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-66786"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-66959"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-21858"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-22444"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-22699"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-22700"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-24043"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-25128"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-27585"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-27891"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-30077"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-31900"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-34178"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-34383"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-34762"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-41044"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-42845"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-47201"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-48107"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-48108"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-48110"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-48704"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-48720"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-48755"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-48769"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-49444"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-53723"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-7803"
+        }
+      ]
+    },
+    {
+      "atd_id": "ATD-T0083",
+      "schema_version": "0.1.0",
+      "title": "Unrestricted XML external entity resolution in document-parsing tools",
+      "tactic": "ATD-TA5",
+      "abstraction": "base",
+      "status": "experimental",
+      "severity": "critical",
+      "description": "An agent tool or dependency that parses XML-based input (uploaded documents, SAML/SBOM/SVG/config payloads, tool responses fetched from the web) leaves DTD processing and external entity resolution enabled, so an attacker-crafted document containing an external entity reference causes the parser to read local files, issue SSRF requests to internal services, or trigger entity-expansion denial of service. Because the agent treats the parsed content as routine tool input/output, the malicious entity executes silently inside the agent's trust and network context, exfiltrating secrets or pivoting to internal infrastructure.",
+      "detection_surface": [
+        "tool_input",
+        "tool_response"
+      ],
+      "mappings": {
+        "owasp_asi": [],
+        "mitre_atlas": [],
+        "cwe": [
+          "CWE-611"
+        ]
+      },
+      "references": [
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-3869"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-3878"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-0198"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-34345"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-38374"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-6961"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-49875"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2012-4399"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2014-0225"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2014-2053"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2014-2054"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2014-3004"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2014-3242"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2014-3530"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2015-5161"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2015-8031"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2015-8549"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2016-5002"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2016-5851"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2016-6798"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2017-12620"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2017-12621"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2017-15280"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2017-15691"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2017-18197"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2017-5662"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2017-7664"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2018-1000054"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2018-11758"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2018-14065"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2019-10327"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2019-15160"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2019-5312"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2019-7722"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-10991"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-13692"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-13940"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-17376"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-2108"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-2284"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-2298"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-2324"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-25750"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-26708"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-26709"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-26710"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-21642"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-21656"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-21657"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-21669"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-23463"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-23792"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-23901"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-3902"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-41042"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-41411"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-43090"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-43142"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-46849"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-47621"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-0219"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-0239"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-0265"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-0272"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-23640"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-24898"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-25312"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-26661"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-28890"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-31471"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-37189"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-39135"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-40705"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-43689"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-23926"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-24187"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-26043"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-27476"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-27480"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-28680"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-34411"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-41034"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-4218"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-45139"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-46035"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-48362"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-49733"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-50380"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-6147"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-6836"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-36827"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-45293"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-45294"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-46455"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-46984"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-46985"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-52596"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-52800"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-52806"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-55887"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-10713"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-27136"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-2905"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-31487"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-4641"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-47778"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-48882"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-4949"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-52888"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-53621"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-54988"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-64518"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-65482"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-66371"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-68280"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-68463"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-22186"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-23795"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-28809"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-40682"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-40882"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-41066"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-41895"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-44618"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-45071"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-46722"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-55471"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-6501"
+        }
+      ]
+    },
+    {
+      "atd_id": "ATD-T0084",
+      "schema_version": "0.1.0",
+      "title": "Downstream command/query execution via unneutralized LLM-generated input",
+      "tactic": "ATD-TA6",
+      "abstraction": "class",
+      "status": "experimental",
+      "severity": "critical",
+      "description": "An agent forwards LLM-generated or externally-sourced content (filenames, translated strings, tool arguments, retrieved documents, generated queries/code) directly into a downstream interpreter — a shell, database/graph query engine, template renderer, or markup processor — without neutralizing special characters or syntax tokens. Because the agent trusts its own generated or retrieved text as safe, an attacker who controls any upstream input (a crafted file, document, RAG chunk, or prompt) can smuggle shell metacharacters, Cypher/SQL fragments, or template directives through the pipeline to achieve command execution, query manipulation, or context/role-boundary forgery in the downstream component.",
+      "detection_surface": [
+        "tool_input",
+        "tool_response",
+        "content"
+      ],
+      "mappings": {
+        "owasp_asi": [
+          "ASI02"
+        ],
+        "mitre_atlas": [],
+        "cwe": [
+          "CWE-74"
+        ]
+      },
+      "references": [
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-38294"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-39659"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-9353"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-55615"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-10223"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-7206"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-5327"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-36188"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-6603"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-61732"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-10222"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-9366"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-10221"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-0284"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-58213"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-18875"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-25750"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-44246"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-5002"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-6599"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2013-4318"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2019-10793"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2019-10794"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2019-10795"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-9495"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-34079"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-21705"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-23616"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-31777"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-43720"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-45801"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-0493"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-22621"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-29510"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-29523"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-29525"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-36470"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-40035"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-45303"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-41122"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-46997"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-34041"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-35515"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-44182"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-44455"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-48813"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-50574"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-53488"
+        }
+      ]
+    },
+    {
+      "atd_id": "ATD-T0085",
+      "schema_version": "0.1.0",
+      "title": "Open redirect via unvalidated redirect/callback URL parameter",
+      "tactic": "ATD-TA1",
+      "abstraction": "base",
+      "status": "experimental",
+      "severity": "high",
+      "description": "An agent-adjacent web component (login flow, OAuth callback, logout route, or MCP registry/client redirect handler) forwards a user- or attacker-supplied URL parameter into an HTTP redirect without validating that it points to an allow-listed origin, letting an attacker craft a trusted-looking link that ultimately redirects the victim (or the agent's browser/tool session) to an attacker-controlled host. This is commonly chained with OAuth/SSO token leakage, credential phishing, or exfiltration of agent session artifacts once the redirect lands on a malicious endpoint.",
+      "detection_surface": [
+        "tool_input",
+        "tool_response",
+        "trace"
+      ],
+      "mappings": {
+        "owasp_asi": [
+          "ASI01"
+        ],
+        "mitre_atlas": [],
+        "cwe": [
+          "CWE-601"
+        ]
+      },
+      "references": [
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-39968"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-10812"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-8021"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-42230"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-44427"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-79786"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2019-25155"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-10959"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-11053"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-12283"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-47500"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-11044"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-21641"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-22259"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-22262"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-51132"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-32970"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-49592"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-50736"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-58067"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-62379"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-67502"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-22032"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-24052"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-24768"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-26003"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-27982"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-28681"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-33296"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-42207"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-42259"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-55185"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-55237"
+        }
+      ]
+    },
+    {
+      "atd_id": "ATD-T0086",
+      "schema_version": "0.1.0",
+      "title": "Unauthenticated cross-origin tool invocation via missing Origin/Host header validation",
+      "tactic": "ATD-TA1",
+      "abstraction": "base",
+      "status": "experimental",
+      "severity": "high",
+      "description": "An MCP server's HTTP/SSE transport accepts requests without validating the Origin or Host header, so a malicious web page rendered in a victim's browser (or an attacker using DNS rebinding against a loopback-bound server) can issue cross-origin requests that the server treats as trusted, invoking arbitrary agent tools and reading their responses without any authentication. Because many MCP servers bind to localhost assuming same-machine trust, this turns an ordinary browser tab into a remote, unauthenticated control channel over the agent's tools and connected systems.",
+      "detection_surface": [
+        "tool_input",
+        "trace"
+      ],
+      "mappings": {
+        "owasp_asi": [],
+        "mitre_atlas": [],
+        "cwe": [
+          "CWE-346"
+        ]
+      },
+      "references": [
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-46701"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-55532"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-102878"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-11624"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-32632"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-35568"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-35577"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-42559"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-54030"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-55637"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-58169"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-59723"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-59950"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-63118"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-81092"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-81095"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-81099"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-81100"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-81102"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-81315"
+        }
+      ]
+    },
+    {
+      "atd_id": "ATD-T0087",
+      "schema_version": "0.1.0",
+      "title": "Path traversal via unsanitized filename parameters in agent tool file operations",
+      "tactic": "ATD-TA5",
+      "abstraction": "base",
+      "status": "experimental",
+      "severity": "critical",
+      "description": "An agent-facing tool, plugin, or MCP server endpoint accepts a filename/path argument for file upload, save/load, delete, or asset-retrieval operations and concatenates it into a filesystem path without canonicalizing or restricting it to an intended base directory, so an attacker embeds '../' sequences, absolute paths, or symlink tricks to read, overwrite, or write files anywhere the process can access. Because these file-handling tools are routinely exposed to LLM-driven or user-supplied tool calls, this yields arbitrary file read/write (and often code execution via written configs, plugins, or packages) without any model-level jailbreak needed.",
+      "detection_surface": [
+        "tool_input",
+        "tool_response"
+      ],
+      "mappings": {
+        "owasp_asi": [],
+        "mitre_atlas": [],
+        "cwe": [
+          "CWE-23"
+        ]
+      },
+      "references": [
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-10513"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-2356"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-31036"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-6483"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-6583"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-8551"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-23360"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-0550"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-15415"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-4330"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-6985"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-55013"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-59341"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-59835"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-29778"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-42085"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-43533"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-50016"
+        }
+      ]
+    },
+    {
+      "atd_id": "ATD-T0088",
+      "schema_version": "0.1.0",
+      "title": "Unrestricted file upload via agent tool enabling remote code execution",
+      "tactic": "ATD-TA5",
+      "abstraction": "base",
+      "status": "experimental",
+      "severity": "critical",
+      "description": "An agent-exposed upload/ingestion capability (chatbot file attach, 'send file to AI', media/document upload, model-artifact import) fails to validate file extension, MIME type, or content against an allowlist, letting an attacker plant a script, webshell, or executable config in a web-servable or auto-loaded location. The agent's own backend or runtime subsequently executes or interprets that file, giving the attacker full remote code execution on the host rather than just a malicious data artifact.",
+      "detection_surface": [
+        "tool_input",
+        "tool_response",
+        "trace"
+      ],
+      "mappings": {
+        "owasp_asi": [
+          "ASI05"
+        ],
+        "mitre_atlas": [],
+        "cwe": [
+          "CWE-434"
+        ]
+      },
+      "references": [
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-44164"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-51409"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-2221"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-8019"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-9920"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-26319"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-43752"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-27817"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-28105"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-32880"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-38529"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-27411"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-52353"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-55743"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-29186"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-33647"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-40488"
+        }
+      ]
+    },
+    {
+      "atd_id": "ATD-T0089",
+      "schema_version": "0.1.0",
+      "title": "Arbitrary code execution via eval injection in tool-call and workflow expression parsing",
+      "tactic": "ATD-TA6",
+      "abstraction": "base",
+      "status": "experimental",
+      "severity": "critical",
+      "description": "Agent frameworks, orchestrators, and workflow/no-code builders often feed attacker-influenced strings — tool-call arguments, custom-component code, workflow expressions, or even the LLM's own generated output — directly into a language-level eval()/exec()-style evaluator without sandboxing or neutralizing control characters. Because the evaluator runs with the hosting process's full privileges, anyone who can shape that input (a user, a malicious MCP server response, or a manipulated model completion) achieves arbitrary code execution, collapsing the boundary between data the agent reasons over and code it actually runs.",
+      "detection_surface": [
+        "tool_input",
+        "tool_response",
+        "trace",
+        "content"
+      ],
+      "mappings": {
+        "owasp_asi": [
+          "ASI02"
+        ],
+        "mitre_atlas": [],
+        "cwe": [
+          "CWE-95"
+        ]
+      },
+      "references": [
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-45846"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-45851"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-35002"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-46946"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-45858"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-69253"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-61539"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-14380"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-42079"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-73601"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-41928"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-40177"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-0769"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-1470"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-44939"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-47103"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-53875"
+        }
+      ]
+    },
+    {
+      "atd_id": "ATD-T0090",
+      "schema_version": "0.1.0",
+      "title": "Prototype pollution in dependency library enabling agent runtime RCE",
+      "tactic": "ATD-TA5",
+      "abstraction": "base",
+      "status": "experimental",
+      "severity": "critical",
+      "description": "An attacker submits crafted keys such as `__proto__`, `constructor.prototype`, or deep dotted paths through tool input, form data, or workflow configuration that a vulnerable merge/clone/template/parsing function in an agent framework or its JS dependency (e.g. a glob matcher, HTTP client, form parser, or templating engine) writes without sanitizing against prototype traversal. Because the mutated `Object.prototype` is shared process-wide, the attacker can later trigger downstream code paths — validation checks, HTTP request construction, template rendering, or workflow node execution — that read the polluted properties as trusted defaults, turning the pollution into an authorization bypass, response/request tampering, or full arbitrary code execution gadget chain.",
+      "detection_surface": [
+        "tool_input",
+        "tool_response",
+        "trace"
+      ],
+      "mappings": {
+        "owasp_asi": [
+          "ASI08"
+        ],
+        "mitre_atlas": [],
+        "cwe": [
+          "CWE-1321"
+        ]
+      },
+      "references": [
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-23771"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-25915"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-23623"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-23624"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-45811"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-25014"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-31475"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-48054"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-55164"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-62381"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-33672"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-33696"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-42033"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-42231"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-42232"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-44789"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-44966"
+        }
+      ]
+    },
+    {
+      "atd_id": "ATD-T0091",
+      "schema_version": "0.1.0",
+      "title": "Path traversal in agent file-handling endpoints leading to arbitrary read/write",
+      "tactic": "ATD-TA5",
+      "abstraction": "base",
+      "status": "experimental",
+      "severity": "critical",
+      "description": "Agent/MCP-adjacent tool and server endpoints (model download, extension install, log viewer, backup/restore, media upload) accept a filename or path parameter and pass it to filesystem APIs without normalizing or constraining it, so attacker-supplied sequences like '../' or absolute/archive-embedded paths escape the intended directory. This lets an unauthenticated or low-privileged caller read sensitive files, overwrite application files, or drop executable payloads (e.g., via tar-slip extraction) that the agent runtime later loads or executes, yielding information disclosure or remote code execution.",
+      "detection_surface": [
+        "tool_input",
+        "tool_response",
+        "trace"
+      ],
+      "mappings": {
+        "owasp_asi": [],
+        "mitre_atlas": [],
+        "cwe": [
+          "CWE-29"
+        ]
+      },
+      "references": [
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-6831"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-6909"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-10648"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-2178"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-2358"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-2914"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-4320"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-6396"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-8859"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-8982"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-6209"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-24217"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-2984"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-5443"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-6139"
+        },
+        {
+          "type": "cve",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-7033"
+        }
+      ]
+    }
+  ],
+  "dropped": []
+}
