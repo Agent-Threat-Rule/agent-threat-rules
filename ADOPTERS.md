@@ -254,6 +254,15 @@ Listed when the integration code has been merged or released.
 
 ---
 
+### prompt-protection
+- **Org**: Independent
+- **Type**: adapter
+- **Integration**: `prompt-protection/atr` compiles ATR rule packs into the library's own scoring engine and emits the spec ScanResult shape, honouring scan-target, agent-source, status and maturity-lane filtering; conditions it cannot express faithfully are skipped with a reason rather than approximated
+- **Evidence**: <https://github.com/mughalhere/prompt-protection/blob/main/docs/ATR.md>
+- **Since**: 2026-09-15
+- **Status**: shipped
+- **Categories**: prompt-injection, tool-poisoning, context-exfiltration, agent-manipulation, privilege-escalation, excessive-autonomy, data-poisoning, model-abuse, skill-compromise
+
 ## Tier 3 — Documentation references & awesome-lists
 
 Adopters who reference ATR in public catalogues, awesome-lists, or
