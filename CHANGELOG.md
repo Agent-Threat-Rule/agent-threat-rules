@@ -4,7 +4,27 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+## [4.1.3] - 2026-10-06
+
+The first release of the 4.1 line to reach npm; 4.1.2 did not either. Its
+publish on 2026-10-01 went through trusted publishing (OIDC), printed
+`+ agent-threat-rules@4.1.2`, and was placed in npm's staging queue instead of
+being published. It never appeared on the registry, and a re-run on 2026-10-05
+was refused with E409 ("Cannot publish over previously staged version"), so the
+number is skipped like 4.1.1. The trusted publisher has since been set to allow
+direct publishing. Rules, engine and spec are unchanged from the `v4.1.2` tag.
+
+### Changed
+
+- **The release workflow fails when the version never reaches the registry.**
+  It now asks npm for the exact version after publishing, waits up to ten
+  minutes, and fails before the GitHub release is created. Before, the check
+  read `latest`, ran after the release, and only warned, which is how both 4.1.1
+  and 4.1.2 went green without being published (#633).
+
 ## [4.1.2] - 2026-10-01
+
+> Not published to npm (see 4.1.3).
 
 The first release of the 4.1 line to reach npm. Until this one,
 `npm install agent-threat-rules` returned 4.0.0. 4.1.2 carries everything
