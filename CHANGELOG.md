@@ -4,6 +4,19 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- **The package is declared dual-use under the npm Dual-Use Content Policy.**
+  npm's publish-time malware scanning, introduced in July 2026, blocked 4.1.1,
+  4.1.2 and 4.1.3: rule files carry attack strings by design, as detection
+  patterns and test samples, and the scanner treats them like malware.
+  `package.json` now carries `"contentPolicy": {"class": "dual-use"}`, and a
+  plain-text `DISCLOSURE` file at the package root says what the attack content
+  is for and what the package does not do. Under that policy, CI may only stage
+  a release; a maintainer approves it with 2FA before it goes live, so
+  `publish.yml` now stages through trusted publishing and waits for the approval
+  before creating the GitHub release.
+
 ## [4.1.3] - 2026-10-06
 
 The first release of the 4.1 line to reach npm; 4.1.2 did not either. Its

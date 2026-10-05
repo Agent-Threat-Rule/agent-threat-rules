@@ -1,0 +1,47 @@
+agent-threat-rules: dual-use disclosure
+
+This package is declared dual-use under the npm Dual-Use Content Policy
+(https://docs.npmjs.com/policies/dual-use/).
+
+What the package is
+
+agent-threat-rules (ATR) is an open detection standard for attacks against AI
+agents: prompt injection, tool and skill poisoning, credential and context
+exfiltration, privilege escalation through agents, and related threats. It
+contains a set of YAML detection rules and a JavaScript engine and CLI that
+evaluate those rules against text.
+
+Why it contains attack strings
+
+A rule has to describe an attack in order to detect it, so the files under
+rules/ contain attack strings on purpose:
+
+- detection patterns (regular expressions and literal fragments) that match
+  prompt-injection text, script and HTML injection payloads, shell commands,
+  credential-exfiltration command lines and similar content;
+- test cases: sample attack inputs that each rule must detect, and benign
+  samples it must not.
+
+These strings are data. The engine compiles the patterns as regular expressions
+and matches them against text supplied by the caller. Rule content is never
+executed, evaluated as code, or passed to a shell.
+
+What the package does not do
+
+- It has no preinstall, install or postinstall scripts.
+- It makes no network requests unless the user configures an endpoint. Optional
+  reporting, Threat Cloud CLI commands and LLM-based judges only contact a URL
+  or endpoint the user supplies; there is no built-in default.
+- Some CLI subcommands start local helper processes (git, find, and the
+  package's own rule validator). None of them run rule content.
+
+Intended use
+
+Defensive: detecting attacks in AI agent inputs, outputs, tool calls, MCP
+traffic and agent skill files, inside agent frameworks, gateways, CI pipelines
+and security audits.
+
+Source and contact
+
+Source: https://github.com/Agent-Threat-Rule/agent-threat-rules (MIT License)
+Security contact: see SECURITY.md in the repository.
