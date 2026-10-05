@@ -165,6 +165,24 @@ jobs:
           echo "Publishing with dist-tag: $TAG"
           npm publish --access public --tag "$TAG"
 
+      # npm can accept a publish and still not serve it. 4.1.1 (2026-09-22) and the
+      # first 4.1.2 run (2026-10-01) both printed "+ agent-threat-rules@<version>"
+      # and "being processed", went green, and never appeared on the registry. The
+      # old check here read `latest` and only warned. Ask for this exact version,
+      # wait while npm processes it, and fail before a GitHub release announces an
+      # install command that does not work.
+      - name: Verify the version is on the registry
+        run: |
+          for _ in $(seq 1 20); do
+            if [ "$(npm view "agent-threat-rules@${VERSION}" version --prefer-online 2>/dev/null)" = "$VERSION" ]; then
+              echo "agent-threat-rules@${VERSION} is on the registry."
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::error::npm accepted the publish, but agent-threat-rules@${VERSION} is not on the registry after 10 minutes. Look for a staged version on npmjs.com, and check that the trusted publisher allows npm publish, not only npm stage publish."
+          exit 1
+
       - name: Count rules for release notes
         id: rules
         run: |
@@ -177,6 +195,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # A re-run of a release whose publish failed reaches this step with the
+          # release already created; leave it rather than fail the run.
+          if gh release view "v${VERSION}" >/dev/null 2>&1; then
+            echo "Release v${VERSION} already exists; leaving it as is."
+            exit 0
+          fi
           PREV_TAG=$(git tag --sort=-creatordate | sed -n '2p' || echo "")
           CHANGELOG=""
           if [ -n "$PREV_TAG" ]; then
@@ -208,15 +232,6 @@ jobs:
 
           Full stats: [data/stats.json](https://raw.githubusercontent.com/Agent-Threat-Rule/agent-threat-rules/main/data/stats.json)
           "
-
-      - name: Verify npm publish
-        run: |
-          sleep 10
-          PUBLISHED=$(npm info agent-threat-rules version 2>/dev/null || echo "unknown")
-          echo "Published version: $PUBLISHED"
-          if [ "$PUBLISHED" != "${{ env.VERSION }}" ]; then
-            echo "WARNING: npm shows $PUBLISHED, expected ${{ env.VERSION }} (may need propagation time)"
-          fi
 
       - name: Sync rules to Threat Cloud
         env:
