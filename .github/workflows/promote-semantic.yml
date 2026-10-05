@@ -1,7 +1,7 @@
 name: Promote Semantic (T2) Rules
 
 # Authors method=semantic (T2) ATR rules from semantic-attack adversarial
-# samples (PromptInject / HackAPrompt / garak clusters) via
+# samples (PromptInject / HackAPrompt clusters; garak is quarantined) via
 # scripts/author-semantic-rules.ts, then opens a needs-human-review PR.
 #
 # WHY THIS LANE EXISTS
@@ -13,13 +13,23 @@ name: Promote Semantic (T2) Rules
 # that DEFINES the attack class with positive and negative cues. The judge carries
 # recall against rewordings; the regex carries graceful no-judge degradation.
 #
-# GATE: a deterministic gate (which the model cannot bypass) requires the narrow
-# fallback to compile, match >=1 of its own true_positives, and produce ZERO
-# matches on data/benign-code + a sample of data/skill-benchmark/benign + its own
-# true_negatives; and requires the judge prompt to carry the untrusted-data guard
-# and the {{input}} placeholder. Drafts that fail are routed to human review and
-# never written. Content-safety garak clusters (dra/lmrc — graphic violence /
-# weapons / drugs) are filtered out as outside ATR's agent-attack scope.
+# GATE: a deterministic gate (scripts/lib/semantic-gate.ts, which the model
+# cannot bypass) measures the narrow fallback the way this PR's own checks will:
+# it must compile under the engine's semantics and be RE2 portable, catch >=3 of
+# its cluster's true_positives (only those hits are declared as true_positives;
+# the misses become judge-only evasion_tests), produce ZERO matches on the gate
+# corpora (MEASUREMENT_CORPORA) and its own true_negatives, and be visible to
+# that corpus (>= VISIBILITY_FLOOR samples contain its literals). The judge
+# prompt must carry the untrusted-data guard and the {{input}} placeholder.
+# Drafts that fail are routed to human review and never written. Content-safety
+# garak clusters (dra/lmrc) are out of scope, and the garak source as a whole is
+# quarantined (mostly non-attack prompts; see scripts/lib/semantic-clusters.ts).
+#
+# BACKSTOP: before anything is pushed, the job runs the PR-side checks that
+# failed rolling PR #632 -- validate.yml's compliance, coverage, crosswalk and
+# rule-safety steps, the RE2 portability gate and the corpus visibility gate --
+# verbatim, on the tree about to be pushed. Any failure fails the job and
+# nothing is pushed.
 #
 # Complements promote-cve.yml (CVE PoC -> regex rules) and crystallize.yml
 # (TC + adversarial -> rules). This is the semantic/T2 intake lane.
@@ -228,6 +238,80 @@ jobs:
       - name: Validate new rules
         run: npm run validate
 
+      # ── Pre-push backstop ──────────────────────────────────────────────────
+      # Rolling PR #632 is what happens when this lane's gate and the PR's
+      # checks drift apart: eight rules passed the gate here, then four checks
+      # failed on the PR. The steps below are those checks, copied verbatim
+      # from validate.yml, re2-portability.yml and corpus-visibility.yml, run on
+      # the tree about to be pushed. A failure here fails the job before the
+      # push step, so nothing reaches the rolling branch. Keep them in sync
+      # with their source workflows.
+      - name: Validate compliance mappings against framework allowlists
+        run: npm run validate:compliance
+
+      - name: Enforce 100% framework coverage (keeps framework-coverage claims honest)
+        run: npm run audit:mappings -- --require-full=references:owasp_llm,references:owasp_agentic,references:mitre_atlas,compliance:eu_ai_act,compliance:nist_ai_rmf,compliance:iso_42001
+
+      - name: ATT&CK crosswalk freshness (doc must match rule metadata)
+        run: python3 scripts/generate-attack-crosswalk.py --check
+
+      - name: AST crosswalk freshness (doc must match rule metadata)
+        run: python3 scripts/generate-ast-crosswalk.py --check
+
+      # The RE2 gate's oracle compiles every pattern with Go's regexp (which IS
+      # RE2); pinned as in re2-portability.yml.
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: false
+
+      - name: Audit rule regexes against RE2
+        run: npx tsx scripts/audit-re2-portability.ts --json --verify-re2 > re2-audit.json
+
+      - name: RE2 portability ratchet
+        run: npx tsx scripts/gate-re2-portability.ts --audit re2-audit.json --require-oracle
+
+      - name: RE2 equivalence artifact is current
+        run: |
+          npx tsx scripts/verify-re2-equivalence.ts \
+            --write-equivalence /tmp/re2-equivalence.fresh.json > /dev/null || true
+          python3 - <<'PY'
+          import json, sys
+          def load(p):
+              with open(p, encoding="utf-8") as fh:
+                  return json.load(fh)
+          def tagging_verdict(d):
+              return {
+                  rule_id: sorted(
+                      [entry.get("location", ""), sorted(entry.get("causes", []))]
+                      for entry in entries
+                  )
+                  for rule_id, entries in d.get("divergentRules", {}).items()
+              }
+          committed, fresh = load("data/re2-equivalence.json"), load("/tmp/re2-equivalence.fresh.json")
+          want, got = tagging_verdict(committed), tagging_verdict(fresh)
+          if want != got:
+              print("data/re2-equivalence.json is stale. Regenerate and commit:")
+              print("  npx tsx scripts/verify-re2-equivalence.ts --write-equivalence data/re2-equivalence.json")
+              for rule_id in sorted(set(want) | set(got)):
+                  if want.get(rule_id) != got.get(rule_id):
+                      print(f"  {rule_id}: committed={want.get(rule_id)} actual={got.get(rule_id)}")
+              sys.exit(1)
+          print(
+              "equivalence artifact current: "
+              f"{fresh.get('re2Equivalent')}/{fresh.get('patternsRewritten')} rewritten patterns "
+              f"verified portable, {len(got)} rule(s) measured divergent under RE2"
+          )
+          PY
+
+      - name: Corpus visibility ratchet
+        run: npx tsx scripts/gate-corpus-visibility.ts --verify-blind
+
+      # check-rules-safety sees the authored files whether they are committed
+      # (a resumed rolling branch) or still untracked (this run's new rules).
+      - name: Rule safety gate (duplicate IDs + cross-rule conflicts + own-TP coverage)
+        run: npx tsx scripts/check-rules-safety.ts --base origin/main
+
       - name: Run tests
         run: npm test
 
@@ -265,7 +349,8 @@ jobs:
 
           Source: PromptInject / HackAPrompt / garak agent-attack clusters (content-safety filtered out).
           Pipeline: author-semantic-rules.ts — narrow regex fallback (anchor + redirect) plus LLM-as-judge prompt.
-          Gate: deterministic 0-FP gate on benign-code + benign-skill corpus; judge prompt carries untrusted guard.
+          Gate: engine-semantics compile, RE2 portable, >=3 own-TP hits, 0 FP and visibility on the gate corpora; judge prompt carries untrusted guard.
+          Backstop: validate:compliance, audit:mappings --require-full, crosswalk --check, RE2 gate, visibility gate, check-rules-safety passed before push.
           Status: experimental / maturity: test — requires human review before promotion."
 
           # The helper is single-quoted, so argv carries the literal text $PUSH_TOKEN and
@@ -300,7 +385,9 @@ jobs:
 
           Why semantic, not regex: pure regex on a reworded prompt injection is the MiroFish failure mode (keys on the describing wording, false-positives on benign paraphrases, bypassed by the next rewording). Each rule here follows the ATR-2026-00573 T2 shape: a narrow regex fallback (anchor plus redirect, low false-positive by design) used only when no judge is configured, and a high-quality LLM-as-judge prompt that defines the attack class with positive and negative cues and returns strict JSON.
 
-          Deterministic gate (the model cannot bypass it): the narrow fallback must compile, must match at least one of its own true_positives, and must produce zero matches on data/benign-code plus a sample of data/skill-benchmark/benign plus its own true_negatives; the judge prompt must carry the untrusted-data guard and the input placeholder. Drafts failing the gate are routed to human review and never written. Content-safety garak families (dra, lmrc) are filtered out as outside ATR's agent-attack scope.
+          Deterministic gate (the model cannot bypass it): the narrow fallback must compile under the engine's semantics, be RE2 portable, catch at least three of its cluster's true_positives (only those are declared as true_positives; the misses are recorded as judge-only evasion tests), produce zero matches on the gate corpora (data/skill-benchmark/benign, data/benign-corpus-extended, data/benign-code) and its own true_negatives, and be visible to that corpus; the judge prompt must carry the untrusted-data guard and the input placeholder. Drafts failing the gate are routed to human review and never written. The garak cluster source is quarantined.
+
+          OWASP references are normalised to bare allowlisted identifiers, and the compliance block (EU AI Act 15/9, NIST AI RMF MP.5.1/MG.3.2, ISO/IEC 42001 8.1/8.3) is an automatic template. Review both before promoting any rule to stable.
 
           Status experimental, maturity test. Do not auto-merge; human review required.
           BODY
