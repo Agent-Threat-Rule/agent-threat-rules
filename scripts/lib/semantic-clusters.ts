@@ -40,6 +40,12 @@ const SEMANTIC_SOURCES = ["hackaprompt-clusters", "promptinject-clusters", "gara
  * default, even under `--source garak`; `--include-quarantined` opts in for a
  * supervised local run. Same filtering shape as isContentSafety: a predicate,
  * and a per-cluster skip with its reason in the run report.
+ *
+ * The quarantine only stops NEW authoring. Rules already on the rolling branch
+ * (PR #632 carries two garak rules) are caught by the resume step in
+ * .github/workflows/promote-semantic.yml, which refuses to resume a branch
+ * holding lane rules from a quarantined source and says to close the PR. That
+ * step matches the garak path by string: keep it in sync with this set.
  */
 const QUARANTINED_SOURCES: ReadonlySet<string> = new Set(["garak-clusters"]);
 export const QUARANTINE_REASON =

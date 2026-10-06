@@ -27,10 +27,11 @@
  * effective, so the model authors it here — but a deterministic gate (which the
  * model cannot bypass) decides whether the rule ships.
  *
- * THE GATE (the part that does NOT trust the LLM) — scripts/lib/semantic-gate.ts
- * -----------------------------------------------------------------------------
+ * THE GATE (the part that does NOT trust the LLM)
+ * -----------------------------------------------
  * It measures the fallback the way the CI checks on the PR will, because
- * rolling PR #632 passed a looser gate here and then failed four of them:
+ * rolling PR #632 passed a looser gate here and then failed four of them.
+ * scripts/lib/semantic-gate.ts, on the regex:
  *  - The fallback MUST compile under the engine's semantics (always
  *    case-insensitive, ReDoS-shaped patterns refused) and be RE2 portable.
  *  - It MUST catch >= 3 of the cluster's true_positives. Only those hits are
@@ -43,9 +44,22 @@
  *    its required literals), or its 0 FP measured nothing.
  *  - The judge prompt MUST contain the untrusted-data guard and the {{input}}
  *    placeholder (so we never ship a judge the attacker can hijack).
+ * scripts/lib/semantic-engine-gate.ts, on the built rule, with
+ * check-rules-safety's own engine and event shapes (the JSON-encoded
+ * tool_response shape included):
+ *  - every declared TP fires and no declared TN does;
+ *  - zero matches on MEASUREMENT_CORPORA, on data/research-mentions, and on
+ *    every other rule's true_negatives; a rule promoted earlier in this run
+ *    must not fire on this one's true_negatives either.
+ * Both run in a worker under a wall-clock budget (semantic-gate-runner.ts), so
+ * a catastrophically backtracking fallback is stopped and routed instead of
+ * hanging the run; a draft that passes then goes through scripts/gate-redos.py
+ * alone (semantic-redos-precheck.ts), PR CI's ReDoS gate.
  * A draft failing any of these is routed to human review; it is never promoted
- * automatically. references are normalised against the OWASP allowlists and a
- * template compliance block is added, both marked for human review.
+ * automatically, and it never takes the rest of the run down with it at the
+ * workflow's pre-push backstop. references are normalised against the OWASP
+ * allowlists and a template compliance block is added, both marked for human
+ * review.
  *
  * SCOPE FILTER (keep ATR in its lane)
  * -----------------------------------
@@ -93,18 +107,21 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 import { callClaude as sharedCallClaude, describeBackend, backendAvailable } from "./lib/claude-client.js";
-import { loadBenignSamples } from "./lib/benign-corpus.js";
+import { loadBenignSamples, loadCorpusTexts } from "./lib/benign-corpus.js";
 import { loadOwaspAllowlists, type OwaspAllowlists } from "./lib/normalize-references.js";
 import { buildAuthorPrompt, extractJson } from "./lib/semantic-author-prompt.js";
 import { QUARANTINE_REASON, findCandidates, type ClusterCandidate, type Skip } from "./lib/semantic-clusters.js";
 import {
-  prepareGateCorpus,
-  validateSemanticDraft,
-  type GateCorpus,
-  type GateResult,
-  type SemanticDraft,
-} from "./lib/semantic-gate.js";
-import { DEFAULT_AUTHOR_MODEL, buildSemanticRule } from "./lib/semantic-rule-builder.js";
+  RESEARCH_MENTIONS_CORPUS,
+  addPeer,
+  loadRuleTrueNegatives,
+  type DraftCheckResult,
+  type ForeignRules,
+} from "./lib/semantic-engine-gate.js";
+import type { SemanticDraft } from "./lib/semantic-gate.js";
+import { runDraftCheckWithBudget } from "./lib/semantic-gate-runner.js";
+import { redosPrecheck } from "./lib/semantic-redos-precheck.js";
+import { DEFAULT_AUTHOR_MODEL, RULE_YAML_OPTIONS } from "./lib/semantic-rule-builder.js";
 
 // The lane is split across scripts/lib/semantic-*.ts: cluster discovery, the
 // author prompt, the deterministic gate and rule construction. Re-exported so
@@ -261,16 +278,39 @@ function emit(o: Record<string, unknown>): void {
   console.error(JSON.stringify(o));
 }
 
-interface AuthorContext {
+export interface AuthorContext {
+  /** The model call. Injected so the orchestration can be tested without a network. */
+  readonly requestDraft: (prompt: string) => Promise<SemanticDraft | null>;
   readonly idGen: () => string;
-  readonly corpus: GateCorpus;
+  /** MEASUREMENT_CORPORA samples, loaded once; the gate worker prepares its own view. */
+  readonly benignSamples: readonly string[];
   readonly allowlists: OwaspAllowlists;
+  /** Research mentions, other rules' TNs and this run's promotions: grows with each promotion. */
+  readonly foreign: ForeignRules;
 }
 
-type Outcome =
+export type Outcome =
   | { readonly kind: "error"; readonly errorKind: "infrastructure" | "content"; readonly record: Record<string, unknown> }
   | { readonly kind: "routed"; readonly record: Record<string, unknown> }
   | { readonly kind: "promoted"; readonly record: Record<string, unknown> };
+
+/** One candidate's outcome, and the context the next candidate is gated against. */
+interface Step {
+  readonly outcome: Outcome;
+  readonly ctx: AuthorContext;
+}
+
+const routed = (cluster: string, reason: string): Outcome => ({
+  kind: "routed",
+  record: { cluster, status: "routed_to_human", reason },
+});
+
+/** The gate could not run at all: not a verdict on the draft, and counted toward lane-down. */
+const gateDown = (cluster: string, reason: string): Outcome => ({
+  kind: "error",
+  errorKind: "infrastructure",
+  record: { cluster, status: "error", error_kind: "infrastructure", reason },
+});
 
 function writeRule(c: ClusterCandidate, id: string, rule: Record<string, unknown>): string {
   const slug = slugify(c.title) || id.toLowerCase();
@@ -278,61 +318,133 @@ function writeRule(c: ClusterCandidate, id: string, rule: Record<string, unknown
   const outAbs = join(outDir, `${id}-semantic-${slug}.yaml`);
   if (WRITE) {
     if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
-    writeFileSync(outAbs, yaml.dump(rule, { lineWidth: 120, noRefs: true }), "utf-8");
+    writeFileSync(outAbs, yaml.dump(rule, RULE_YAML_OPTIONS), "utf-8");
   }
   return outAbs.slice(REPO_ROOT.length + 1);
 }
 
-async function authorOne(c: ClusterCandidate, ctx: AuthorContext): Promise<Outcome> {
+type DraftOrOutcome = { readonly draft: SemanticDraft } | { readonly outcome: Outcome };
+
+async function draftFor(c: ClusterCandidate, ctx: AuthorContext): Promise<DraftOrOutcome> {
   const cluster = c.proposalRel;
-  let draft: SemanticDraft | null;
   try {
-    draft = await callLlm(buildAuthorPrompt(c, ctx.corpus.samples));
+    const draft = await ctx.requestDraft(buildAuthorPrompt(c, ctx.benignSamples));
+    return draft ? { draft } : { outcome: routed(cluster, "llm returned no JSON") };
   } catch (e) {
     const reason = String(e);
     const errorKind = classifyFailure(reason);
-    return { kind: "error", errorKind, record: { cluster, status: "error", error_kind: errorKind, reason } };
+    return { outcome: { kind: "error", errorKind, record: { cluster, status: "error", error_kind: errorKind, reason } } };
   }
-  if (!draft) return { kind: "routed", record: { cluster, status: "routed_to_human", reason: "llm returned no JSON" } };
+}
 
-  const gate: GateResult = validateSemanticDraft(draft, c.truePositives, c.trueNegatives, ctx.corpus);
-  if (!gate.ok) return { kind: "routed", record: { cluster, status: "routed_to_human", reason: gate.reason } };
+type CheckOrOutcome =
+  | { readonly passed: DraftCheckResult; readonly rule: Record<string, unknown> }
+  | { readonly outcome: Outcome };
 
+/**
+ * The deterministic gate, in an order that keeps the run alive: the regex and
+ * engine checks in a worker under a time budget, then scripts/gate-redos.py on
+ * a passing fallback. Each can route this draft; none can stall the run, and a
+ * draft that would fail check-rules-safety or the ReDoS gate is stopped here
+ * rather than at the pre-push backstop, which would discard the whole run.
+ */
+async function gateDraft(c: ClusterCandidate, draft: SemanticDraft, ctx: AuthorContext): Promise<CheckOrOutcome> {
+  const cluster = c.proposalRel;
+  let result: DraftCheckResult;
+  try {
+    result = await runDraftCheckWithBudget({
+      draft,
+      candidate: c,
+      allowlists: ctx.allowlists,
+      benignSamples: ctx.benignSamples,
+      foreign: ctx.foreign,
+    });
+  } catch (e) {
+    return { outcome: gateDown(cluster, String(e)) };
+  }
+  if (!result.gate.ok || !result.rule) return { outcome: routed(cluster, result.gate.reason) };
+  const redos = redosPrecheck((draft.fallback_regex ?? "").trim(), REPO_ROOT);
+  if (redos.kind === "unavailable") return { outcome: gateDown(cluster, `ReDoS precheck could not run: ${redos.detail}`) };
+  if (redos.kind === "backtracks") {
+    return { outcome: routed(cluster, `fallback_regex backtracks catastrophically under scripts/gate-redos.py: ${redos.detail}`) };
+  }
+  return { passed: result, rule: result.rule };
+}
+
+/** Allocate the id only now, so a routed draft never burns one, and gate later drafts against this rule. */
+function promote(
+  c: ClusterCandidate,
+  draft: SemanticDraft,
+  gated: { readonly passed: DraftCheckResult; readonly rule: Record<string, unknown> },
+  ctx: AuthorContext,
+): Step {
   const id = ctx.idGen();
-  const newRule = writeRule(c, id, buildSemanticRule(c, draft, id, ctx.allowlists));
-  return {
+  const rule = { ...gated.rule, id };
+  const newRule = writeRule(c, id, rule);
+  const outcome: Outcome = {
     kind: "promoted",
     record: {
-      cluster,
+      cluster: c.proposalRel,
       status: DRY_RUN ? "would_promote" : "promoted",
       new_id: id,
       new_rule: newRule,
       fallback_regex: draft.fallback_regex,
-      ...gate.metrics,
+      ...gated.passed.gate.metrics,
     },
   };
+  return { outcome, ctx: { ...ctx, foreign: addPeer(ctx.foreign, rule) } };
+}
+
+async function authorOne(c: ClusterCandidate, ctx: AuthorContext): Promise<Step> {
+  const requested = await draftFor(c, ctx);
+  if ("outcome" in requested) return { outcome: requested.outcome, ctx };
+  const gated = await gateDraft(c, requested.draft, ctx);
+  if ("outcome" in gated) return { outcome: gated.outcome, ctx };
+  return promote(c, requested.draft, gated, ctx);
 }
 
 /**
- * Load MEASUREMENT_CORPORA once and prepare it for every draft. The 0-FP gate
- * is only meaningful with a real corpus: on a fresh checkout where
+ * Load MEASUREMENT_CORPORA once for every draft. The 0-FP gate is only
+ * meaningful with a real corpus: on a fresh checkout where
  * build-benign-corpus.ts never ran it could be empty, and every candidate would
  * pass vacuously. Abort loudly rather than author rules against that.
  */
-function loadGateCorpus(): GateCorpus {
-  const corpus = prepareGateCorpus(loadBenignSamples(REPO_ROOT));
-  if (WRITE && corpus.samples.length < MIN_BENIGN_CORPUS) {
+function loadBenignCorpus(): readonly string[] {
+  const samples = loadBenignSamples(REPO_ROOT);
+  if (WRITE && samples.length < MIN_BENIGN_CORPUS) {
     console.error(
-      `FATAL: benign corpus too small (${corpus.samples.length} < ${MIN_BENIGN_CORPUS}); ` +
+      `FATAL: benign corpus too small (${samples.length} < ${MIN_BENIGN_CORPUS}); ` +
         `the 0-FP gate cannot run safely. Run scripts/build-benign-corpus.ts first.`,
     );
     process.exit(1);
   }
-  return corpus;
+  return samples;
+}
+
+/**
+ * What check-rules-safety charges a new rule against besides MEASUREMENT_CORPORA:
+ * research mentions (check 4) and every rule's true_negatives (check 5). Both
+ * fail closed when writing: an empty mention corpus or an unreadable rule would
+ * clear drafts of FPs nobody measured, and the backstop would then fail the run.
+ */
+function loadForeignRules(): ForeignRules {
+  const mentions = loadCorpusTexts(join(REPO_ROOT, RESEARCH_MENTIONS_CORPUS));
+  const tns = loadRuleTrueNegatives(RULES_BASE);
+  const problems = [
+    ...(mentions.length === 0 ? [`${RESEARCH_MENTIONS_CORPUS} is empty or missing`] : []),
+    ...tns.errors,
+  ];
+  if (WRITE && problems.length > 0) {
+    console.error(`FATAL: the cross-rule / research-mention gate cannot run safely: ${problems.slice(0, 3).join("; ")}`);
+    process.exit(1);
+  }
+  return { mentions, ruleTrueNegatives: tns.samples, peers: [] };
 }
 
 interface RunInputs {
   readonly corpusSize: number;
+  readonly mentionsSize: number;
+  readonly ruleTrueNegatives: number;
   readonly candidatesTotal: number;
   readonly skipped: readonly Skip[];
   readonly alreadyAuthored: number;
@@ -345,6 +457,8 @@ function buildSummary(inputs: RunInputs, outcomes: readonly Outcome[]) {
     model: process.env.ATR_AUTHOR_MODEL || DEFAULT_MODEL,
     write: WRITE,
     benign_corpus_size: inputs.corpusSize,
+    research_mentions_size: inputs.mentionsSize,
+    rule_true_negatives: inputs.ruleTrueNegatives,
     candidates_total: inputs.candidatesTotal,
     candidates_attempted: outcomes.length,
     skipped_out_of_scope: inputs.skipped.length,
@@ -406,6 +520,22 @@ function exitOnLaneDown(summary: Summary): void {
   }
 }
 
+/**
+ * Author candidates in order. Each promotion returns the context the next
+ * draft is gated against, so a later draft is also checked against the rules
+ * this run already wrote (check-rules-safety's check 5 sees them as peers).
+ */
+export async function authorAll(candidates: readonly ClusterCandidate[], first: AuthorContext): Promise<Outcome[]> {
+  const outcomes: Outcome[] = [];
+  let ctx = first;
+  for (const c of candidates) {
+    const step = await authorOne(c, ctx);
+    outcomes.push(step.outcome);
+    ctx = step.ctx;
+  }
+  return outcomes;
+}
+
 async function main(): Promise<void> {
   if (!backendAvailable()) {
     emit({
@@ -425,15 +555,28 @@ async function main(): Promise<void> {
   // Dedupe before capping. Slicing first would spend the whole --max budget
   // on clusters that already have a rule and author nothing new.
   const { fresh: candidates, alreadyAuthored } = excludeAuthored(found, loadAuthoredClusters());
-  const corpus = loadGateCorpus();
+  const benignSamples = loadBenignCorpus();
+  const foreign = loadForeignRules();
   console.log(`[author-semantic] llm backend: ${describeBackend()}`);
 
-  const ctx: AuthorContext = { idGen: nextAtrId(), corpus, allowlists: loadOwaspAllowlists(REPO_ROOT) };
-  const outcomes: Outcome[] = [];
-  for (const c of candidates.slice(0, MAX_PROMOTE)) outcomes.push(await authorOne(c, ctx));
+  const ctx: AuthorContext = {
+    requestDraft: callLlm,
+    idGen: nextAtrId(),
+    benignSamples,
+    allowlists: loadOwaspAllowlists(REPO_ROOT),
+    foreign,
+  };
+  const outcomes = await authorAll(candidates.slice(0, MAX_PROMOTE), ctx);
 
   const summary = buildSummary(
-    { corpusSize: corpus.samples.length, candidatesTotal: candidates.length, skipped, alreadyAuthored: alreadyAuthored.length },
+    {
+      corpusSize: benignSamples.length,
+      mentionsSize: foreign.mentions.length,
+      ruleTrueNegatives: foreign.ruleTrueNegatives.length,
+      candidatesTotal: candidates.length,
+      skipped,
+      alreadyAuthored: alreadyAuthored.length,
+    },
     outcomes,
   );
   reportSummary(summary);

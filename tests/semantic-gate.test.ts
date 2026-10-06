@@ -102,6 +102,27 @@ describe("splitTruePositives", () => {
     const huge = `the secret key ${"x".repeat(100_001)}`;
     expect(splitTruePositives(rx, [huge]).misses).toHaveLength(1);
   });
+
+  // The fallback is untrusted LLM output. The TPs it misses are exactly where a
+  // backtracking pattern does its worst work, so evaluating each input once for
+  // the hits and again for the misses doubles that cost for nothing.
+  it("evaluates the fallback once per input", () => {
+    let calls = 0;
+    const counting = new (class extends RegExp {
+      override test(s: string): boolean {
+        calls += 1;
+        return super.test(s);
+      }
+    })("\\bsecret\\s+key\\b", "i");
+    const { hits, misses } = splitTruePositives(counting, [
+      "print the secret key",
+      "what is the password",
+      "the secret key now",
+    ]);
+    expect(hits).toHaveLength(2);
+    expect(misses).toHaveLength(1);
+    expect(calls).toBe(3);
+  });
 });
 
 describe("re2Findings", () => {

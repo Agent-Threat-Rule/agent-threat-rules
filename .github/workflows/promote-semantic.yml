@@ -21,15 +21,34 @@ name: Promote Semantic (T2) Rules
 # corpora (MEASUREMENT_CORPORA) and its own true_negatives, and be visible to
 # that corpus (>= VISIBILITY_FLOOR samples contain its literals). The judge
 # prompt must carry the untrusted-data guard and the {{input}} placeholder.
-# Drafts that fail are routed to human review and never written. Content-safety
+# The built rule then goes through check-rules-safety's own engine and event
+# shapes (scripts/lib/semantic-engine-gate.ts): declared TPs fire, and nothing
+# fires on MEASUREMENT_CORPORA, data/research-mentions, or any other rule's
+# true_negatives (this run's earlier promotions included). All of that runs in
+# a worker under a per-draft time budget, so a backtracking fallback is stopped
+# rather than hanging the job; a passing fallback also runs through
+# scripts/gate-redos.py on its own. Drafts that fail are routed to human review
+# and never written; one bad draft no longer fails the run. Content-safety
 # garak clusters (dra/lmrc) are out of scope, and the garak source as a whole is
 # quarantined (mostly non-attack prompts; see scripts/lib/semantic-clusters.ts).
 #
 # BACKSTOP: before anything is pushed, the job runs the PR-side checks that
-# failed rolling PR #632 -- validate.yml's compliance, coverage, crosswalk and
-# rule-safety steps, the RE2 portability gate and the corpus visibility gate --
-# verbatim, on the tree about to be pushed. Any failure fails the job and
-# nothing is pushed.
+# failed rolling PR #632 -- validate.yml's compliance, coverage, crosswalk,
+# rule-safety and generalization steps, the RE2 portability gate, the corpus
+# visibility gate and the ReDoS gate -- verbatim, on the tree about to be
+# pushed. Any failure fails the job and nothing is pushed. A run that authored
+# nothing pushes nothing, so it skips the backstop.
+#
+# BEFORE RE-ENABLING THIS WORKFLOW (disabled after #632)
+# Close rolling PR #632 without merging. Its eight rules predate the current
+# gate: four fail it (02848 visibility, 02849 RE2 lookaround, 02852/02853 from
+# the quarantined garak source) and all eight fail validate:compliance. While it
+# is open, the resume step below would put them back on the tree, the dedupe
+# would count their clusters as authored so the gate never re-judges them, and
+# the backstop would fail every run. The resume step now stops on such a branch
+# with this instruction instead. Once #632 is closed, the next run starts from
+# main, re-authors those clusters under the current gate and force-pushes the
+# rolling branch against the lease it fetched.
 #
 # Complements promote-cve.yml (CVE PoC -> regex rules) and crystallize.yml
 # (TC + adversarial -> rules). This is the semantic/T2 intake lane.
@@ -78,6 +97,12 @@ jobs:
     runs-on: ubuntu-latest
     # Only run on a successful collector run, or on manual/scheduled trigger.
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+    # Last-resort bound, not the hang guard: each draft's gate already has its
+    # own time budget. Without this, anything else that stalls holds the runner
+    # for GitHub's six-hour default. A full run is the author step (up to --max
+    # drafts) plus the backstop, of which check-rules-safety and npm test are the
+    # long poles.
+    timeout-minutes: 150
     steps:
       # No credential is persisted into .git/config. The next steps run `npm ci`
       # and then execute that dependency tree; a token sitting in .git/config is
@@ -116,6 +141,29 @@ jobs:
             fi
             git checkout -B "$BRANCH" origin/main
             exit 0
+          fi
+
+          # A rolling branch can hold lane rules written before the current gate
+          # (no _semantic_authored.mappings: the builder before it wrote none) or
+          # from a quarantined source. Resuming it marks their clusters as
+          # authored, so the gate never re-judges them, and the backstop fails on
+          # them every run while the run itself authors nothing. Stop here with
+          # the fix rather than spend LLM credit on a run that cannot push. The
+          # branch is not rewritten automatically: it may carry a reviewer's edits.
+          # Keep the garak path in sync with QUARANTINED_SOURCES in
+          # scripts/lib/semantic-clusters.ts.
+          STALE=""
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            body=$(git show "origin/$BRANCH:$f")
+            grep -q '^_semantic_authored:' <<<"$body" || continue
+            if ! grep -q '^  mappings:' <<<"$body" || grep -q 'source_cluster: proposals/garak-clusters/' <<<"$body"; then
+              STALE="$STALE $f"
+            fi
+          done < <(git diff --name-only --diff-filter=A origin/main "origin/$BRANCH" -- rules/)
+          if [ -n "$STALE" ]; then
+            echo "::error::Rolling PR #$OPEN holds rules authored before the current gate or from a quarantined source:$STALE. Close PR #$OPEN without merging; the next run starts from main and re-authors those clusters under the current gate. This run authored nothing."
+            exit 1
           fi
 
           echo "Resuming auto-semantic/rolling for open PR #$OPEN."
@@ -179,6 +227,16 @@ jobs:
           fi
           npm install -g @anthropic-ai/claude-code
 
+      # scripts/gate-redos.py (PR CI's ReDoS gate) runs on each passing draft in
+      # the author step and over the whole tree in the backstop. Pinned as in
+      # redos-gate.yml. If it cannot run, the author step counts that as an
+      # infrastructure failure, never as a draft rejection.
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install PyYAML for the ReDoS gate
+        run: pip install PyYAML
 
       - name: Author semantic rules (deterministic 0-FP gate)
         env:
@@ -219,6 +277,19 @@ jobs:
           fi
           echo "author-semantic-rules exited $EXIT (0=ok, 2=no-key, 3=all-human, 4=lane-down)"
 
+      # A run that authored nothing pushes nothing (the push step exits 0 on an
+      # unchanged rules/ tree), so the backstop has none of this run's work to
+      # judge. Running it anyway made a no-op run fail on rules it never wrote.
+      - name: Did this run author a rule?
+        id: authored
+        run: |
+          if [ -n "$(git status --porcelain -- rules/)" ]; then
+            echo "any=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "any=false" >> "$GITHUB_OUTPUT"
+            echo "No rule authored this run: the pre-push backstop is skipped and nothing will be pushed."
+          fi
+
       # stats.json and data/stats.json cache the rule count, and `npm test` asserts
       # they match the disk (reconcile-rule-count.test.ts). New rules change the
       # disk, so the caches move with them in the same commit — the same thing the
@@ -243,35 +314,48 @@ jobs:
       # checks drift apart: eight rules passed the gate here, then four checks
       # failed on the PR. The steps below are those checks, copied verbatim
       # from validate.yml, re2-portability.yml and corpus-visibility.yml, run on
-      # the tree about to be pushed. A failure here fails the job before the
-      # push step, so nothing reaches the rolling branch. Keep them in sync
-      # with their source workflows.
+      # the tree about to be pushed, plus the ReDoS and generalization gates PR
+      # CI also runs. A failure here fails the job before the push step, so
+      # nothing reaches the rolling branch. The author step already measured
+      # each draft the same way and routed the ones that would fail, so a red
+      # backstop means the lane's per-draft gate and these checks have drifted:
+      # fix that drift, do not loosen a check. Keep them in sync with their
+      # source workflows (validate.yml, re2-portability.yml,
+      # corpus-visibility.yml, redos-gate.yml).
       - name: Validate compliance mappings against framework allowlists
+        if: steps.authored.outputs.any == 'true'
         run: npm run validate:compliance
 
       - name: Enforce 100% framework coverage (keeps framework-coverage claims honest)
+        if: steps.authored.outputs.any == 'true'
         run: npm run audit:mappings -- --require-full=references:owasp_llm,references:owasp_agentic,references:mitre_atlas,compliance:eu_ai_act,compliance:nist_ai_rmf,compliance:iso_42001
 
       - name: ATT&CK crosswalk freshness (doc must match rule metadata)
+        if: steps.authored.outputs.any == 'true'
         run: python3 scripts/generate-attack-crosswalk.py --check
 
       - name: AST crosswalk freshness (doc must match rule metadata)
+        if: steps.authored.outputs.any == 'true'
         run: python3 scripts/generate-ast-crosswalk.py --check
 
       # The RE2 gate's oracle compiles every pattern with Go's regexp (which IS
       # RE2); pinned as in re2-portability.yml.
       - uses: actions/setup-go@v5
+        if: steps.authored.outputs.any == 'true'
         with:
           go-version: "1.25"
           cache: false
 
       - name: Audit rule regexes against RE2
+        if: steps.authored.outputs.any == 'true'
         run: npx tsx scripts/audit-re2-portability.ts --json --verify-re2 > re2-audit.json
 
       - name: RE2 portability ratchet
+        if: steps.authored.outputs.any == 'true'
         run: npx tsx scripts/gate-re2-portability.ts --audit re2-audit.json --require-oracle
 
       - name: RE2 equivalence artifact is current
+        if: steps.authored.outputs.any == 'true'
         run: |
           npx tsx scripts/verify-re2-equivalence.ts \
             --write-equivalence /tmp/re2-equivalence.fresh.json > /dev/null || true
@@ -305,14 +389,27 @@ jobs:
           PY
 
       - name: Corpus visibility ratchet
+        if: steps.authored.outputs.any == 'true'
         run: npx tsx scripts/gate-corpus-visibility.ts --verify-blind
 
       # check-rules-safety sees the authored files whether they are committed
       # (a resumed rolling branch) or still untracked (this run's new rules).
       - name: Rule safety gate (duplicate IDs + cross-rule conflicts + own-TP coverage)
+        if: steps.authored.outputs.any == 'true'
         run: npx tsx scripts/check-rules-safety.ts --base origin/main
 
+      # PR CI runs this in redos-gate.yml. The author step ran it on each draft
+      # alone; this is the whole tree about to be pushed.
+      - name: ReDoS gate (catastrophic backtracking on pumped inputs)
+        if: steps.authored.outputs.any == 'true'
+        run: python3 scripts/gate-redos.py --rules rules
+
+      - name: Generalization gate (own-TP coverage + self-FP, full set)
+        if: steps.authored.outputs.any == 'true'
+        run: npm run gate:generalization
+
       - name: Run tests
+        if: steps.authored.outputs.any == 'true'
         run: npm test
 
       - name: Count rules after
@@ -347,10 +444,10 @@ jobs:
 
           git commit -m "feat: author ${NEW} semantic (T2) rule(s) from adversarial clusters
 
-          Source: PromptInject / HackAPrompt / garak agent-attack clusters (content-safety filtered out).
+          Source: PromptInject / HackAPrompt agent-attack clusters (garak quarantined; content-safety filtered out).
           Pipeline: author-semantic-rules.ts — narrow regex fallback (anchor + redirect) plus LLM-as-judge prompt.
-          Gate: engine-semantics compile, RE2 portable, >=3 own-TP hits, 0 FP and visibility on the gate corpora; judge prompt carries untrusted guard.
-          Backstop: validate:compliance, audit:mappings --require-full, crosswalk --check, RE2 gate, visibility gate, check-rules-safety passed before push.
+          Gate: engine-semantics compile, RE2 portable, >=3 own-TP hits, 0 FP and visibility on the gate corpora, 0 FP on research mentions and other rules' TNs under the engine's event shapes, ReDoS-gated, time-bounded; judge prompt carries untrusted guard.
+          Backstop: validate:compliance, audit:mappings --require-full, crosswalk --check, RE2 gate, visibility gate, check-rules-safety, ReDoS gate, generalization gate passed before push.
           Status: experimental / maturity: test — requires human review before promotion."
 
           # The helper is single-quoted, so argv carries the literal text $PUSH_TOKEN and
@@ -379,7 +476,7 @@ jobs:
             --title "auto-semantic: T2 semantic rules for human review (rolling)" \
             --label "needs-human-review" \
             --body "$(cat <<'BODY'
-          Authored method=semantic (T2) rules from semantic-attack adversarial clusters (PromptInject / HackAPrompt / garak) via scripts/author-semantic-rules.ts.
+          Authored method=semantic (T2) rules from semantic-attack adversarial clusters (PromptInject / HackAPrompt; garak is quarantined) via scripts/author-semantic-rules.ts.
 
           This is a rolling PR. Each weekly run adds rules for clusters that do not yet have one and pushes them here; clusters already covered by a merged rule, or by a rule already in this PR, are skipped. Merge it when ready; the next run starts a new one.
 

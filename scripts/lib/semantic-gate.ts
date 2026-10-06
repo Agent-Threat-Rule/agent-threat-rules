@@ -15,8 +15,16 @@
  *     - it never asked whether the pattern is RE2 portable, or whether the
  *       benign corpus contains the literals the pattern needs at all.
  *   Each helper below closes one of those gaps with the same code or the same
- *   arithmetic the CI gate uses, so "passed here" and "passes in CI" mean the
- *   same thing.
+ *   arithmetic the CI gate uses.
+ *
+ * WHAT THIS FILE DOES NOT MEASURE
+ *   It tests the fallback against raw text only. check-rules-safety pushes every
+ *   sample through the engine on four event shapes (src/corpus-event.ts); on the
+ *   JSON-encoded tool_response shape an llm_io rule reads the encoded content,
+ *   where a newline is "\" + "n". It also charges a new rule against the
+ *   research-mention corpus and every other rule's true_negatives. Passing here
+ *   is necessary, not sufficient: scripts/lib/semantic-engine-gate.ts runs that
+ *   measurement on the built rule, with check-rules-safety's own code.
  */
 import { foldConfusables, isReDoSSafe, needsUnicodeFlag, normalizeUnicode } from "../../src/engine.js";
 import { scanPattern, type Finding } from "../audit-re2-portability.js";
@@ -111,6 +119,9 @@ export function fallbackMatches(rx: RegExp, text: string): boolean {
  * Partition cluster TPs into those the fallback catches (declared as
  * test_cases.true_positives) and those only the judge can catch. Inputs are
  * trimmed and de-duplicated first, because the rule stores trimmed inputs.
+ *
+ * Each input is evaluated exactly once. The fallback is untrusted LLM output,
+ * and the TPs it misses are where a backtracking pattern does its worst work.
  */
 export function splitTruePositives(
   rx: RegExp,
@@ -119,8 +130,11 @@ export function splitTruePositives(
   const inputs = [...new Set(truePositives.map((t) => (typeof t === "string" ? t.trim() : "")))].filter(
     (t) => t.length > 0,
   );
-  const fires = (t: string): boolean => t.length <= ENGINE_MAX_EVAL_LENGTH && fallbackMatches(rx, t);
-  return { hits: inputs.filter(fires), misses: inputs.filter((t) => !fires(t)) };
+  const verdicts = inputs.map((t) => ({ t, hit: t.length <= ENGINE_MAX_EVAL_LENGTH && fallbackMatches(rx, t) }));
+  return {
+    hits: verdicts.filter((v) => v.hit).map((v) => v.t),
+    misses: verdicts.filter((v) => !v.hit).map((v) => v.t),
+  };
 }
 
 /** RE2 incompatibilities, from the same scanner the RE2 portability gate runs. */

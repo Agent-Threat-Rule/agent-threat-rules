@@ -24,6 +24,13 @@ const DEFAULT_REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..",
 /** Model used when ATR_AUTHOR_MODEL is unset; recorded in _semantic_authored. */
 export const DEFAULT_AUTHOR_MODEL = "claude-haiku-4-5-20251001";
 
+/**
+ * How an authored rule is written to disk. The engine-level gate measures the
+ * rule after a dump/load round trip with these same options, so what it judged
+ * is what the file holds.
+ */
+export const RULE_YAML_OPTIONS = Object.freeze({ lineWidth: 120, noRefs: true });
+
 // Caps on what one rule declares. Hits beyond the cap add size, not evidence.
 const MAX_RULE_TPS = 8;
 const MAX_JUDGE_ONLY_TESTS = 8;
