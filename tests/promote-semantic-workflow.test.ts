@@ -36,6 +36,7 @@ interface Step {
   name?: string;
   run?: string;
   env?: Record<string, string>;
+  if?: string;
 }
 
 function workflowSteps(): Step[] {
@@ -82,6 +83,7 @@ interface Pr {
   number: number;
   state: "OPEN" | "CLOSED" | "MERGED";
   isCrossRepository: boolean;
+  labels?: Array<{ name: string }>;
 }
 
 interface Fixture {
@@ -122,8 +124,16 @@ function put(dir: string, rel: string, text: string): void {
   writeFileSync(join(dir, rel), text);
 }
 
+// A lane rule as the current builder writes it: a non-quarantined source and
+// a mappings note under _semantic_authored. The resume step refuses a rolling
+// PR holding anything else (see staleLaneRule and its test).
 function laneRule(n: number): string {
-  return `id: ATR-2026-0${9000 + n}\n_semantic_authored:\n  source_cluster: proposals/garak-clusters/C${n}.proposal.yaml\n`;
+  return `id: ATR-2026-0${9000 + n}\n_semantic_authored:\n  source_cluster: proposals/promptinject-clusters/C${n}.proposal.yaml\n  mappings: auto-generated template\n`;
+}
+
+/** A lane rule from before the current gate: no mappings note. */
+function staleLaneRule(n: number, source = "promptinject"): string {
+  return `id: ATR-2026-0${9000 + n}\n_semantic_authored:\n  source_cluster: proposals/${source}-clusters/C${n}.proposal.yaml\n`;
 }
 
 /** Rewrite the four derived files from the rule count, like reconcile + the crosswalk generators. */
@@ -256,6 +266,41 @@ describe.skipIf(!HAS_JQ)("promote-semantic.yml rolling-branch steps", () => {
       expect(exported(fx)).toMatchObject({ ROLLING_OLD_SHA: fx.rollingSha, ROLLING_RESUMED: "1" });
     });
 
+    // PR #632 is this case: rules from the builder before the current gate (no
+    // mappings note) and from garak. Resuming would mark their clusters
+    // authored, the backstop would fail on them every run, and nothing new
+    // would ever be pushed. The step stops and says to close the PR instead.
+    function addToRolling(fx: Fixture, rel: string, text: string): void {
+      const tmp = join(fx.root, "stale-clone");
+      git(fx.root, "clone", "-q", "-b", BRANCH, fx.origin, tmp);
+      git(tmp, "config", "user.name", "fixture");
+      git(tmp, "config", "user.email", "fixture@example.invalid");
+      put(tmp, rel, text);
+      git(tmp, "add", "-A");
+      git(tmp, "commit", "-q", "-m", "lane: stale rule");
+      git(tmp, "push", "-q", "origin", BRANCH);
+    }
+
+    it("refuses to resume a rolling PR holding a rule from before the current gate", () => {
+      const rel = "rules/prompt-injection/ATR-2026-09003-lane.yaml";
+      addToRolling(fx, rel, staleLaneRule(3));
+      setPrs(fx, [{ number: 632, state: "OPEN", isCrossRepository: false }]);
+      const r = runStep(fx, "Resume the rolling branch");
+      expect(r.status, r.out).toBe(1);
+      expect(r.out).toContain(rel);
+      expect(r.out).toContain("Close PR #632 without merging");
+      expect(exported(fx).ROLLING_RESUMED).toBeUndefined();
+    });
+
+    it("refuses to resume a rolling PR holding a rule from a quarantined source", () => {
+      const rel = "rules/prompt-injection/ATR-2026-09004-lane.yaml";
+      addToRolling(fx, rel, laneRule(4).replace("promptinject-clusters", "garak-clusters"));
+      setPrs(fx, [{ number: 632, state: "OPEN", isCrossRepository: false }]);
+      const r = runStep(fx, "Resume the rolling branch");
+      expect(r.status, r.out).toBe(1);
+      expect(r.out).toContain(rel);
+    });
+
     it("does not take a fork's PR from a same-named branch for the rolling PR", () => {
       // #632 was closed without merging; a fork then opened #603 from its own
       // auto-semantic/rolling. The rejected branch must not be resumed.
@@ -303,6 +348,28 @@ describe.skipIf(!HAS_JQ)("promote-semantic.yml rolling-branch steps", () => {
         "refs/semantic-history/632",
       ]);
       expect(git(fx.work, "rev-parse", "refs/semantic-history/500")).toBe(earlier);
+    });
+
+    // #632 was closed for how it was built (before the current gate), not for what
+    // it detects. Without a way out its clusters were rejected for good, the four
+    // that pass the current gate included.
+    it("leaves out a PR closed unmerged with the semantic-reauthor label, and only that", () => {
+      const REAUTHOR = [{ name: "semantic-reauthor" }];
+      for (const n of [632, 500, 410, 700]) git(fx.origin, "update-ref", `refs/pull/${n}/head`, fx.mainSha);
+      setPrs(fx, [
+        { number: 632, state: "CLOSED", isCrossRepository: false, labels: REAUTHOR },
+        { number: 500, state: "CLOSED", isCrossRepository: false, labels: [{ name: "needs-human-review" }] },
+        { number: 410, state: "MERGED", isCrossRepository: false, labels: REAUTHOR },
+        { number: 700, state: "OPEN", isCrossRepository: false, labels: REAUTHOR },
+      ]);
+      const r = runStep(fx, "Fetch the history of every rolling PR");
+      expect(r.status, r.out).toBe(0);
+      const refs = git(fx.work, "for-each-ref", "--format=%(refname)", "refs/semantic-history/").split("\n");
+      expect(refs.sort()).toEqual([
+        "refs/semantic-history/410",
+        "refs/semantic-history/500",
+        "refs/semantic-history/700",
+      ]);
     });
 
     it("fails when the PR list cannot be read, rather than proceeding with no history", () => {
@@ -404,5 +471,17 @@ describe("promote-semantic.yml wiring of the authored-cluster record", () => {
 
   it("runs a script that exists", () => {
     expect(existsSync(resolve(REPO_ROOT, "scripts/semantic-authored-history.ts"))).toBe(true);
+  });
+
+  // check-rules-safety counts a resumed branch's earlier rules against the per-PR
+  // cap and as check-5 peers; the author script only sees them through --base.
+  it("tells the author script the PR's base, so it counts the rules the PR already adds", () => {
+    expect(runBlock("Author semantic rules (deterministic 0-FP gate)")).toContain("--base origin/main");
+  });
+
+  it("runs the tests before pushing a resumed branch that authored nothing", () => {
+    const tests = workflowSteps().find((st) => st.name === "Run tests");
+    expect(tests?.if).toContain("env.ROLLING_RESUMED == '1'");
+    expect(tests?.if).toContain("steps.authored.outputs.any == 'true'");
   });
 });
