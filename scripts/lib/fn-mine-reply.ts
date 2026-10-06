@@ -72,10 +72,17 @@ export function stripTrailingCommas(json: string): string {
   return out;
 }
 
-function isCandidate(c: unknown): c is MineCandidate {
-  if (!c || typeof c !== 'object') return false;
+// rationale only feeds the authoring prompt's description, so a candidate
+// without one is still usable; the other three name, place and gate the rule.
+const REQUIRED_FIELDS = ['cluster', 'regex', 'category'] as const;
+
+/** The entry as a candidate, or undefined when the gate or the author could not use it. */
+function asCandidate(c: unknown): MineCandidate | undefined {
+  if (!c || typeof c !== 'object') return undefined;
   const o = c as Record<string, unknown>;
-  return ['cluster', 'regex', 'category', 'rationale'].every((k) => typeof o[k] === 'string');
+  if (!REQUIRED_FIELDS.every((k) => typeof o[k] === 'string')) return undefined;
+  const rationale = typeof o.rationale === 'string' ? o.rationale : '';
+  return { cluster: o.cluster as string, regex: o.regex as string, category: o.category as string, rationale };
 }
 
 export interface ParsedReply {
@@ -86,9 +93,12 @@ export interface ParsedReply {
 
 /**
  * Parse a mining reply. Throws when the reply is not a JSON object with a
- * `candidates` array (absent counts as empty, the prompt's "nothing here").
- * Entries of the wrong shape are dropped and counted rather than handed to the
- * gate, which would throw on a non-string regex.
+ * `candidates` array (absent counts as empty, the prompt's "nothing here"), and
+ * when it lists candidates but none of them is usable: a renamed field (regex
+ * written as pattern) would otherwise drop every entry, and the run would
+ * report a green null result having mined nothing. Some entries of the wrong
+ * shape are dropped and counted rather than handed to the gate, which would
+ * throw on a non-string regex.
  */
 export function parseMineReply(raw: string): ParsedReply {
   const json = extractBalancedJson(raw);
@@ -100,7 +110,10 @@ export function parseMineReply(raw: string): ParsedReply {
   }
   const list = (parsed as { candidates?: unknown }).candidates ?? [];
   if (!Array.isArray(list)) throw new Error('"candidates" is not an array');
-  const candidates = list.filter(isCandidate);
+  const candidates = list.map(asCandidate).filter((c): c is MineCandidate => c !== undefined);
+  if (list.length > 0 && candidates.length === 0) {
+    throw new Error(`none of the ${list.length} candidate(s) has string ${REQUIRED_FIELDS.join(', ')}`);
+  }
   return { candidates, malformed: list.length - candidates.length };
 }
 

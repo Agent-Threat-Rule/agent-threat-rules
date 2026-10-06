@@ -70,6 +70,22 @@ describe('parseMineReply', () => {
     expect(parseMineReply(raw)).toEqual({ candidates: [CANDIDATE], malformed: 3 });
   });
 
+  // A renamed field drops every entry. Read as "nothing minable", the run would
+  // go green having mined nothing; it is an unreadable reply instead.
+  it('throws when it lists candidates and none is usable', () => {
+    const { regex, ...rest } = CANDIDATE;
+    const raw = JSON.stringify({ candidates: [{ ...rest, pattern: regex }, { ...rest, pattern: regex }] });
+    expect(() => parseMineReply(raw)).toThrow(/none of the 2 candidate\(s\) has string cluster, regex, category/);
+  });
+
+  it('keeps a candidate without a rationale, which only feeds the description', () => {
+    const { rationale: _r, ...rest } = CANDIDATE;
+    expect(parseMineReply(JSON.stringify({ candidates: [rest] }))).toEqual({
+      candidates: [{ ...rest, rationale: '' }],
+      malformed: 0,
+    });
+  });
+
   it('throws on a reply broken some other way, or with candidates that is not a list', () => {
     expect(() => parseMineReply('{"candidates": [ {"cluster": unquoted} ]}')).toThrow();
     expect(() => parseMineReply('no json here')).toThrow(/opening brace/);
