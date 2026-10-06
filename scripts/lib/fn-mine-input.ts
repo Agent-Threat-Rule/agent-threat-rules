@@ -292,6 +292,21 @@ export function describeNullResultByCorpus(perCorpus: readonly CorpusStageCounts
 }
 
 /**
+ * A null result says the corpora are mined out only when every corpus was
+ * mined. A corpus whose regeneration fails is skipped so the others still get
+ * mined; HackAPrompt's dataset is gated, so an expired HF_TOKEN does exactly
+ * that. When the rest then yield nothing, the run printed NULL RESULT and went
+ * green, the same as a week with nothing left to mine. Throw instead.
+ */
+export function assertNullResultComplete(skippedCorpora: readonly string[]): void {
+  if (skippedCorpora.length === 0) return;
+  throw new Error(
+    `no rule survived, and ${skippedCorpora.join(', ')} failed to regenerate and was not mined: ` +
+      'this is not a null result (the regeneration warning above says why)',
+  );
+}
+
+/**
  * How many rules this run may author. scripts/check-rules-safety.ts fails a PR
  * holding more than its per-PR limit of new rule files, without naming a file,
  * and the miner then drops the whole batch. The rolling PR's waiting rules count

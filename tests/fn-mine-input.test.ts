@@ -24,6 +24,7 @@ import {
   successfulHackapromptMisses,
   describeNullResult,
   describeNullResultByCorpus,
+  assertNullResultComplete,
   authoringRoom,
   liveMisses,
 } from "../scripts/lib/fn-mine-input.js";
@@ -246,6 +247,20 @@ describe("describeNullResultByCorpus", () => {
 
   it("says nothing per corpus when no corpus ran", () => {
     expect(describeNullResultByCorpus([])).toMatch(/no false negatives/);
+  });
+});
+
+// HackAPrompt's dataset is gated: with an expired HF_TOKEN its regeneration
+// fails, the miner skips it and mines PINT alone. PINT is mined out, so the run
+// printed NULL RESULT and went green, indistinguishable from an exhausted week.
+describe("assertNullResultComplete", () => {
+  it("accepts a null result when every corpus was mined", () => {
+    expect(() => assertNullResultComplete([])).not.toThrow();
+  });
+
+  it("fails a null result when a corpus was skipped, and names it", () => {
+    expect(() => assertNullResultComplete(["hackaprompt"])).toThrow(/hackaprompt failed to regenerate/);
+    expect(() => assertNullResultComplete(["hackaprompt", "pint"])).toThrow(/hackaprompt, pint/);
   });
 });
 

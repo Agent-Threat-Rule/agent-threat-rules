@@ -41,7 +41,13 @@ import { parseArgs } from 'node:util';
 import Anthropic from '@anthropic-ai/sdk';
 import { needsUnicodeFlag } from '../src/engine.js';
 import { callClaude as sharedCallClaude, describeBackend, backendAvailable } from './lib/claude-client.js';
-import { coverageOf, describeNullResultByCorpus, authoringRoom, type CorpusStageCounts } from './lib/fn-mine-input.js';
+import {
+  coverageOf,
+  describeNullResultByCorpus,
+  assertNullResultComplete,
+  authoringRoom,
+  type CorpusStageCounts,
+} from './lib/fn-mine-input.js';
 import {
   MINED_CORPORA,
   channelNote,
@@ -435,9 +441,14 @@ function writeNullReport(note: string): void {
  * external dependency (HackAPrompt's upstream dataset requiring auth, say) must
  * not stop the others. Every corpus unavailable fails the run.
  */
-function prepareCorpora(): readonly MinedCorpusSpec[] {
+/**
+ * The corpora this run can mine, and the ones it could not: a skipped corpus
+ * makes a null result partial (assertNullResultComplete), not exhausted.
+ */
+function prepareCorpora(): { readonly available: readonly MinedCorpusSpec[]; readonly skipped: readonly string[] } {
   console.log('[fn-mine] regenerating FN reports against the current rule set...');
   const available: MinedCorpusSpec[] = [];
+  const skipped: string[] = [];
   for (const spec of MINED_CORPORA) {
     try {
       if (spec.kind === 'vendored') {
@@ -451,14 +462,15 @@ function prepareCorpora(): readonly MinedCorpusSpec[] {
       }
       available.push(spec);
     } catch (e) {
-      console.log(`[fn-mine] WARNING: ${spec.name} corpus is unavailable — skipping this corpus for this run.`);
+      skipped.push(spec.name);
+      console.log(`::warning::[fn-mine] ${spec.name} corpus is unavailable — skipping this corpus for this run.`);
       console.log(`[fn-mine]   ${e instanceof Error ? e.message : String(e)}`);
     }
   }
   if (available.length === 0) {
     throw new Error('Every corpus failed to regenerate — nothing to mine. See warnings above for per-corpus failure reasons.');
   }
-  return available;
+  return { available, skipped };
 }
 
 interface MineSettings {
@@ -614,7 +626,7 @@ async function main(): Promise<void> {
     }
   }
 
-  const availableCorpora = prepareCorpora();
+  const { available: availableCorpora, skipped: skippedCorpora } = prepareCorpora();
   const benignTexts = loadBenignTexts();
   console.log(`[fn-mine] benign gate corpus: ${benignTexts.length} records`);
   const gateCorpus = prepareGateCorpus(loadBenignSamples(REPO_ROOT));
@@ -647,6 +659,8 @@ async function main(): Promise<void> {
   console.log(`[fn-mine] total survivors: ${allSurvivors.length}. Authoring top ${picked.length}${deferred > 0 ? ` (deferring ${deferred} to next run)` : ''}.`);
 
   if (picked.length === 0) {
+    // A skipped corpus makes this a partial run, not an exhausted one.
+    assertNullResultComplete(skippedCorpora);
     const note = describeNullResultByCorpus(perCorpus);
     console.log(`[fn-mine] ${note} Not an error.`);
     writeNullReport(note);

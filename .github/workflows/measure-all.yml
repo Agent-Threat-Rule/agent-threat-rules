@@ -2,7 +2,7 @@ name: Measure All Benchmarks
 
 # Re-runs every benchmark whose corpus is available in this repo (or
 # pullable from upstream) and writes a fresh Measurement file per source.
-# Designed for two triggers:
+# Designed for three triggers:
 #
 #   1. workflow_dispatch — manual trigger when a maintainer wants to refresh
 #      the public-facing recall numbers (e.g. before a release announcement).
@@ -11,11 +11,25 @@ name: Measure All Benchmarks
 #      release so the numbers cited in release notes are pinned to the
 #      released ATR version.
 #
+#   3. schedule, weekly — re-measures main so the recall trend shows whether
+#      the rule flywheel is turning. Until 2026-10 the first two were the only
+#      triggers and this workflow had never run: releases are published by a
+#      bot, and a release made with GITHUB_TOKEN triggers no workflow. The
+#      numbers on main stopped at #478 (2026-08-17) without anything turning red.
+#
 # This workflow does NOT run on every push — re-measuring per commit is
 # expensive (10-20 minutes for the full sweep) and the daily eval CI already
 # refreshes atr-self-test on every PR.
+#
+# Output reaches main the way the other bot lanes' does: one rolling branch,
+# measure-all/rolling, pushed against a lease, and one open PR. Nothing is
+# pushed to main directly.
 
 on:
+  schedule:
+    # Mondays 05:00 UTC. "Garak Miss -> Semantic Proposals" chains after this
+    # run, and "Promote Semantic (T2) Rules" after that one.
+    - cron: '0 5 * * 1'
   workflow_dispatch:
     inputs:
       sources:
@@ -29,13 +43,69 @@ permissions:
   contents: write
   pull-requests: write
 
+# Two runs at once would both lease the same rolling sha; the second push fails.
+concurrency:
+  group: measure-all
+  cancel-in-progress: false
+
 jobs:
   measure:
     runs-on: ubuntu-latest
     steps:
+      # The push below authenticates explicitly; nothing is left in .git/config
+      # for `npm ci` and the eval scripts it installs to read.
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          persist-credentials: false
+
+      # While the rolling PR is open, the measurement files it adds are carried
+      # into this run, so a week nobody merged stays in the trend instead of
+      # being replaced by this week's. Each source's latest.json is carried too
+      # when the PR's pointer is newer than main's, the same rule
+      # writeMeasurement applies: a source this run does not measure again (a
+      # dispatch for a subset, or a fetch that only warned) keeps last week's
+      # pointer instead of falling back to main's, and data/stats.json, which
+      # Sync stats rebuilds from the pointers, follows. A source this run does
+      # measure moves its pointer past the carried one. A PR closed without
+      # merging is not carried; its measurements were rejected. The sha fetched
+      # here is the lease the push step overwrites against. Same-repo PRs only:
+      # a fork can open a PR from its own measure-all/rolling.
+      - name: Carry the rolling PR's measurements
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          BRANCH="measure-all/rolling"
+          OLD_SHA=""
+          if git fetch --quiet origin "$BRANCH" 2>/dev/null; then
+            OLD_SHA=$(git rev-parse "origin/$BRANCH")
+          fi
+          echo "ROLLING_OLD_SHA=$OLD_SHA" >> "$GITHUB_ENV"
+          OPEN=$(gh pr list --head "$BRANCH" --state open --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository | not)][0].number // empty')
+          if [ -z "$OPEN" ] || [ -z "$OLD_SHA" ]; then
+            echo "No open rolling PR; measuring from $(git rev-parse --short HEAD) alone."
+            exit 0
+          fi
+          CARRIED=$(git diff --name-only --diff-filter=A "HEAD...origin/$BRANCH" -- data/measurements/)
+          POINTERS=$(git diff --name-only --diff-filter=M "HEAD...origin/$BRANCH" -- data/measurements/ \
+            | grep '/latest\.json$' || true)
+          for P in $POINTERS; do
+            # jq compares strings by code point, as writeMeasurement does; a
+            # pointer that does not parse is not carried.
+            if git show "origin/$BRANCH:$P" \
+                | jq -e --slurpfile main "$P" '.measured_at > $main[0].measured_at' > /dev/null 2>&1; then
+              CARRIED=$(printf '%s\n%s' "$CARRIED" "$P" | sed '/^$/d')
+            fi
+          done
+          if [ -z "$CARRIED" ]; then
+            echo "Rolling PR #$OPEN carries no measurement newer than main's."
+            exit 0
+          fi
+          printf '%s\n' "$CARRIED" | xargs git checkout "origin/$BRANCH" --
+          echo "Carried from rolling PR #$OPEN:"
+          printf '%s\n' "$CARRIED" | sed 's/^/  /'
 
       - uses: actions/setup-node@v5
         with:
@@ -180,40 +250,65 @@ jobs:
           git config user.name "ATR Measurement Bot"
           git config user.email "measurement-bot@agentthreatrule.org"
 
-      - name: Push branch + open PR
+      - name: Push to the rolling branch and open or update its PR
         if: steps.changes.outputs.has_changes == 'true'
         env:
           # A PR opened with the default GITHUB_TOKEN is authored by app/github-actions, and
-          # every check on it parks at action_required forever instead of running. Opening it
-          # with a PAT makes a real user the author so the PR's own CI runs. Falls back to
-          # GITHUB_TOKEN when ATR_REPO_TOKEN is absent (PR still opens, checks still park).
+          # every check on it parks at action_required forever instead of running; a push made
+          # with GITHUB_TOKEN does not trigger the PR's CI either. Pushing and opening with a
+          # PAT makes a real user the author, so the PR's CI runs on every later push too.
+          # Falls back to GITHUB_TOKEN when ATR_REPO_TOKEN is absent (PR still opens, checks
+          # still park).
+          PUSH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
-          set -e
-          DATE=$(date -u +%Y-%m-%d)
-          BRANCH="measure-all/$DATE"
-          # Idempotency: if the branch already exists from a prior same-day run,
-          # delete it and recreate so we don't get non-fast-forward push errors.
-          git push origin --delete "$BRANCH" 2>/dev/null || true
-          git checkout -b "$BRANCH"
-          git commit -m "chore(measurement): refresh measurements ($DATE)"
-          git push origin "$BRANCH"
-
-          # If a PR for today's branch already exists, update its body; else create.
-          EXISTING_PR=$(gh pr list --head "$BRANCH" --json number -q '.[0].number' 2>/dev/null || true)
-          BODY="Auto-generated measurement refresh (${DATE}).
-
-          See \`data/measurements/<source>/latest.json\` for each updated source and
-          \`data/stats.json\` for the aggregated benchmarks array.
-
-          Triggered by: ${{ github.event_name }}
-          Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          if [ -n "$EXISTING_PR" ]; then
-            gh pr edit "$EXISTING_PR" --body "$BODY"
-          else
-            gh pr create \
-              --title "chore(measurement): refresh measurements — $DATE" \
-              --body "$BODY" \
-              --base main \
-              --head "$BRANCH"
+          set -euo pipefail
+          BRANCH="measure-all/rolling"
+          # A dispatch on another branch measured that branch's rules, not main's,
+          # and its commits do not belong in a measurement PR against main. A release
+          # tag on main, the schedule and a dispatch on main all pass.
+          git fetch --quiet origin main
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::warning::$(git rev-parse --short HEAD) is not on main: measured, not pushed."
+            exit 0
           fi
+          DATE=$(date -u +%Y-%m-%d)
+          git commit -m "chore(measurement): refresh measurements ($DATE)"
+
+          # The helper is single-quoted, so argv carries the literal text $PUSH_TOKEN and
+          # never its value; the shell git spawns for the helper reads it from the
+          # environment. Nothing is written to .git/config.
+          # Lease on the sha the carry step fetched: the branch is replaced (its open
+          # PR's measurements were carried into this commit), a branch left by a merged
+          # or closed PR is replaced, and a branch someone else moved since this run
+          # started is not touched. An empty lease requires the branch not to exist.
+          # shellcheck disable=SC2016
+          git -c credential.helper= \
+              -c 'credential.helper=!f() { test "$1" = get || exit 0; echo username=x-access-token; echo "password=$PUSH_TOKEN"; }; f' \
+              push --force-with-lease="refs/heads/$BRANCH:${ROLLING_OLD_SHA:-}" origin "HEAD:refs/heads/$BRANCH"
+
+          OPEN=$(gh pr list --head "$BRANCH" --state open --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository | not)][0].number // empty')
+          if [ -n "$OPEN" ]; then
+            echo "Pushed this run's measurements to the open rolling PR #${OPEN}."
+            exit 0
+          fi
+
+          # No `|| echo` here: a PR that fails to open must fail the job.
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore(measurement): weekly measurement refresh (rolling)" \
+            --body-file - <<'BODY'
+          Auto-generated measurement refresh from .github/workflows/measure-all.yml.
+
+          See `data/measurements/<source>/latest.json` for each updated source and
+          `data/stats.json` for the aggregated benchmarks array. Each measurement file is
+          named for the day it was taken, so the files this PR adds are the recall trend
+          since the last merge.
+
+          This is a rolling PR. Each weekly run carries the measurement files already
+          waiting here, adds its own, regenerates latest.json and data/stats.json, and
+          pushes to measure-all/rolling. Merge it when ready; the next run starts a new one.
+          Closing it without merging drops the measurements it holds.
+          BODY
