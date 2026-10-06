@@ -43,6 +43,7 @@ import { needsUnicodeFlag } from '../src/engine.js';
 import { callClaude as sharedCallClaude, describeBackend, backendAvailable } from './lib/claude-client.js';
 import { coverageOf, successfulHackapromptMisses, describeNullResult, authoringRoom } from './lib/fn-mine-input.js';
 import { gateAuthoredBatch } from './lib/fn-mine-gate.js';
+import { assertSomeChunkRead, mineChunkReply, type ChunkResult, type MineCandidate } from './lib/fn-mine-reply.js';
 import {
   readRuleFileIds,
   duplicateRuleIds,
@@ -103,31 +104,6 @@ const CORPORA: readonly CorpusSpec[] = [
  */
 async function callClaude(systemPrompt: string, userPrompt: string, model: string): Promise<string> {
   return sharedCallClaude(systemPrompt, userPrompt, model, MAX_TOKENS);
-}
-
-function extractBalancedJson(text: string): string {
-  let cleaned = text.trim();
-  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
-  const firstBrace = cleaned.indexOf('{');
-  if (firstBrace === -1) throw new Error('No JSON object opening brace found in LLM output');
-  let depth = 0;
-  let inString = false;
-  let escape = false;
-  let lastBrace = -1;
-  for (let i = firstBrace; i < cleaned.length; i++) {
-    const ch = cleaned[i];
-    if (escape) { escape = false; continue; }
-    if (inString) {
-      if (ch === '\\') escape = true;
-      else if (ch === '"') inString = false;
-      continue;
-    }
-    if (ch === '"') { inString = true; continue; }
-    if (ch === '{') depth++;
-    else if (ch === '}') { depth--; if (depth === 0) { lastBrace = i; break; } }
-  }
-  if (lastBrace === -1) throw new Error('Unbalanced braces — no top-level JSON object closed');
-  return cleaned.slice(firstBrace, lastBrace + 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -232,13 +208,6 @@ OUTPUT FORMAT: pure JSON, no markdown fences, no prose before or after. First ch
 }
 If nothing in this slice yields a generalizable candidate, use an empty array — that is an honest, valid result.`;
 
-interface MineCandidate {
-  cluster: string;
-  regex: string;
-  category: string;
-  rationale: string;
-}
-
 function buildMinePrompt(chunkLabel: string, texts: readonly string[]): string {
   const numbered = texts.map((t, i) => `[${i}] ${t.slice(0, 300).replace(/\n/g, '\\n')}`).join('\n');
   return `CORPUS SLICE: ${chunkLabel} (${texts.length} false-negative attack texts — the detection engine currently misses ALL of these)
@@ -249,10 +218,13 @@ FALSE-NEGATIVE TEXTS:
 ${numbered}`;
 }
 
-async function mineChunk(chunkLabel: string, texts: readonly string[], model: string): Promise<MineCandidate[]> {
-  const raw = await callClaude(MINE_SYSTEM_PROMPT, buildMinePrompt(chunkLabel, texts), model);
-  const parsed = JSON.parse(extractBalancedJson(raw)) as { candidates?: MineCandidate[] };
-  return parsed.candidates ?? [];
+/** One chunk's candidates. An unreadable reply is asked for once more, then the chunk is skipped (see fn-mine-reply.ts). */
+async function mineChunk(chunkLabel: string, texts: readonly string[], model: string): Promise<ChunkResult> {
+  return mineChunkReply(
+    chunkLabel,
+    () => callClaude(MINE_SYSTEM_PROMPT, buildMinePrompt(chunkLabel, texts), model),
+    (line) => console.log(`::warning::[fn-mine] ${line}`),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -538,6 +510,7 @@ async function main(): Promise<void> {
   console.log(`[fn-mine] benign gate corpus: ${benignTexts.length} records`);
 
   const stages = { fnTotal: 0, uncovered: 0, proposed: 0, survived: 0 };
+  const replies = { asked: 0, unread: 0 };
   let allSurvivors: Array<GatedCandidate & { corpus: string }> = [];
   for (const spec of availableCorpora) {
     const fnRaw = loadFnCorpus(spec);
@@ -563,8 +536,10 @@ async function main(): Promise<void> {
     for (let i = 0; i < chunks.length; i++) {
       const label = `${spec.name}[${i * CHUNK_SIZE}:${i * CHUNK_SIZE + chunks[i].length}]`;
       console.log(`[fn-mine]   mining ${label}...`);
-      const cands = await mineChunk(label, chunks[i], model);
-      round1Candidates.push(...cands);
+      const chunk = await mineChunk(label, chunks[i], model);
+      replies.asked += 1;
+      if (!chunk.read) replies.unread += 1;
+      round1Candidates.push(...chunk.candidates);
     }
     const round1Survivors = gateCandidates(round1Candidates, fn.texts, benignTexts, minRecovers);
     stages.proposed += round1Candidates.length;
@@ -583,8 +558,10 @@ async function main(): Promise<void> {
       for (let i = 0; i < rChunks.length; i++) {
         const label = `${spec.name}-residual[${i * CHUNK_SIZE}:${i * CHUNK_SIZE + rChunks[i].length}]`;
         console.log(`[fn-mine]   mining ${label}...`);
-        const cands = await mineChunk(label, rChunks[i], model);
-        round2Candidates.push(...cands);
+        const chunk = await mineChunk(label, rChunks[i], model);
+        replies.asked += 1;
+        if (!chunk.read) replies.unread += 1;
+        round2Candidates.push(...chunk.candidates);
       }
       round2Survivors = gateCandidates(round2Candidates, fn.texts, benignTexts, minRecovers);
       stages.proposed += round2Candidates.length;
@@ -594,6 +571,12 @@ async function main(): Promise<void> {
     }
 
     for (const s of [...round1Survivors, ...round2Survivors]) allSurvivors.push({ ...s, corpus: spec.name });
+  }
+
+  // Every reply unreadable is a lane that could not run, not an empty week.
+  assertSomeChunkRead(replies.asked, replies.unread);
+  if (replies.unread > 0) {
+    console.log(`::warning::[fn-mine] ${replies.unread} of ${replies.asked} chunk(s) skipped: their replies could not be read as JSON.`);
   }
 
   // Dedup by exact regex, rank by recovers, cap.
