@@ -394,6 +394,27 @@ export function buildProposalDoc(
   };
 }
 
+// Top-level `date` of a proposal (YAML) or of the manifest (2-space JSON).
+const TOP_LEVEL_DATE = /^(?:date|  "date"): "?(\d{4}-\d{2}-\d{2})/m;
+
+/**
+ * The text to write over a committed proposal or manifest. The garak corpus is
+ * a frozen snapshot, so most runs find the same misses and their output differs
+ * from the committed files only in the run date stamped into them. Rewriting
+ * them then handed the rolling PR a diff of nothing but dates every week. Keep
+ * the committed text unless something besides the date changed.
+ */
+export function keepUnlessChanged(existing: string | undefined, fresh: string, freshDate: string): string {
+  const oldDate = existing === undefined ? undefined : TOP_LEVEL_DATE.exec(existing)?.[1];
+  if (existing === undefined || oldDate === undefined || oldDate === freshDate) return fresh;
+  return existing.replaceAll(oldDate, freshDate) === fresh ? existing : fresh;
+}
+
+function writeUnlessDateOnly(file: string, fresh: string, freshDate: string): void {
+  const existing = existsSync(file) ? readFileSync(file, "utf-8") : undefined;
+  writeFileSync(file, keepUnlessChanged(existing, fresh, freshDate), "utf-8");
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -461,7 +482,7 @@ function main(): number {
 
     if (WRITE) {
       if (!existsSync(OUT_DIR)) mkdirSync(OUT_DIR, { recursive: true });
-      writeFileSync(fileAbs, ymlOut, "utf-8");
+      writeUnlessDateOnly(fileAbs, ymlOut, reportDate);
     }
 
     manifest.push({
@@ -500,7 +521,7 @@ function main(): number {
 
   if (WRITE) {
     if (!existsSync(OUT_DIR)) mkdirSync(OUT_DIR, { recursive: true });
-    writeFileSync(join(OUT_DIR, "cluster-manifest.json"), JSON.stringify(manifestDoc, null, 2) + "\n", "utf-8");
+    writeUnlessDateOnly(join(OUT_DIR, "cluster-manifest.json"), JSON.stringify(manifestDoc, null, 2) + "\n", reportDate);
   }
 
   console.log(

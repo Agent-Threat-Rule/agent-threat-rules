@@ -21,12 +21,27 @@ name: Garak Miss -> Semantic Proposals
 # (agent-attack families only; content-safety dropped) is enforced inside the
 # bridge, mirroring the consumer's allowlist.
 
+# WHY NO SCHEDULE OF ITS OWN
+# --------------------------
+# The weekly cron was a safety net for when the benchmark run did not fire, and
+# it never did: measure-all only ran on release, which bot releases do not
+# trigger. measure-all now runs weekly, so this chains after it every week. The
+# garak corpus is a frozen snapshot (data/test-corpora/garak-full, committed
+# 2026-05-12), so a week that is skipped because measure-all failed misses
+# nothing, and the failed measure-all run is itself red.
+#
+# QUIET WHEN NOTHING CHANGED
+# --------------------------
+# On a frozen snapshot most runs find the same misses. Their only difference
+# from main was the run date, and the rolling PR was force-pushed every week
+# with a diff of nothing but dates (#624). The bridge now keeps a committed file
+# whose only change would be the date, and this job pushes nothing unless the
+# proposals changed.
+
 on:
   workflow_run:
     workflows: ["Measure All Benchmarks"]
     types: [completed]
-  schedule:
-    - cron: '20 6 * * 1'   # weekly, Monday — a safety net independent of the benchmark run
   workflow_dispatch:
     inputs:
       max_tp:
@@ -42,13 +57,15 @@ jobs:
   bridge:
     name: Bridge garak misses into semantic proposals
     runs-on: ubuntu-latest
-    # Only run on a successful benchmark run, or on manual/scheduled trigger.
+    # Only run on a successful benchmark run, or on a manual trigger.
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
     steps:
+      # The push below authenticates explicitly; nothing is left in .git/config
+      # for `npm ci` and the scripts it installs to read.
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -58,12 +75,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # A benchmark that fails must fail the job. It used to fall back to the
+      # committed report, which yields the committed proposals, which is the
+      # quiet "nothing changed" exit below: a broken benchmark looked like a
+      # week with no new misses.
       - name: Refresh garak full report (local corpus, no python needed)
         run: |
           if [ -d data/test-corpora/garak-full ]; then
             npx tsx scripts/run-garak-full-benchmark.ts \
-              --output data/garak-benchmark/garak-full-report.json \
-              || echo "::warning::garak-full benchmark exited non-zero; using existing committed report."
+              --output data/garak-benchmark/garak-full-report.json
           else
             echo "::notice::garak-full corpus not present in checkout — using existing committed report."
           fi
@@ -80,46 +100,69 @@ jobs:
       - name: Open PR for refreshed proposals (human review required)
         env:
           # A PR opened with the default GITHUB_TOKEN is authored by app/github-actions, and
-          # every check on it parks at action_required forever instead of running. Opening it
-          # with a PAT makes a real user the author so the PR's own CI runs. Falls back to
+          # every check on it parks at action_required forever instead of running. Pushing and
+          # opening with a PAT makes a real user the author so the PR's own CI runs. Falls back to
           # GITHUB_TOKEN when ATR_REPO_TOKEN is absent (PR still opens, checks still park).
+          PUSH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           git config user.name "ATR Garak Bridge"
           git config user.email "bridge@atr-framework.org"
 
-          # Stage only the bridge's outputs. The committed report is regenerated
-          # above but is an input, not part of this PR's reviewable surface — add
-          # it too so reviewers see exactly what the proposals were derived from.
-          git add proposals/garak-clusters/ data/garak-benchmark/garak-full-report.json 2>/dev/null \
-            || git add proposals/garak-clusters/
-
+          # The proposals are this lane's output; the report is the input they were
+          # derived from. A refreshed report always differs from main (its date, its
+          # rule count), so whether to push is decided on the proposals alone, and
+          # the report rides along only with a change it explains.
+          git add proposals/garak-clusters/
           if git diff --cached --quiet; then
-            echo "No proposal changes this run (misses unchanged since last bridge run)."
-          else
-            # One rolling branch, force-pushed each run, not one per run. The output of this
-            # lane is cumulative, so per-run branches only ever accumulated: across three lanes
-            # 18 such PRs were open on 2026-09-22, 42% of the repo's open PRs, which reads as an
-            # unmaintained project rather than as a branch-naming choice. Same fix as #587.
-            BRANCH="garak-miss-bridge/rolling"
-            git checkout -B "$BRANCH"
-            git commit -m "chore: refresh garak-clusters semantic proposals from current misses
+            echo "Proposals unchanged from main (same misses); nothing pushed, no PR opened or updated."
+            echo "garak bridge: proposals unchanged from main; nothing pushed." >> "${GITHUB_STEP_SUMMARY:-/dev/null}"
+            exit 0
+          fi
+          git add data/garak-benchmark/garak-full-report.json
+
+          # One rolling branch, force-pushed each run, not one per run. The output of this
+          # lane is cumulative, so per-run branches only ever accumulated: across three lanes
+          # 18 such PRs were open on 2026-09-22, 42% of the repo's open PRs, which reads as an
+          # unmaintained project rather than as a branch-naming choice. Same fix as #587.
+          BRANCH="garak-miss-bridge/rolling"
+          OLD_SHA=""
+          if git fetch --quiet origin "$BRANCH" 2>/dev/null; then
+            OLD_SHA=$(git rev-parse "origin/$BRANCH")
+          fi
+          git checkout -B "$BRANCH"
+          git commit -m "chore: refresh garak-clusters semantic proposals from current misses
 
           Source: data/garak-benchmark/garak-full-report.json (garak full benchmark).
           Pipeline: garak-miss-to-proposals.ts -> proposals/garak-clusters/ -> author-semantic-rules.ts.
           Scope: agent-attack families only (content-safety families and samples dropped).
           Status: proposals only; no rules authored. Human review required before any rule ships."
-            git push --force-with-lease -u origin "$BRANCH" || git push --force -u origin "$BRANCH"
-            # Rolling branch: skip creation when the PR is already open. It would fail
-            # anyway and fall through to the || echo below, which reads like an error.
-            if gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty' | grep -q .; then
-              echo "Rolling PR already open for ${BRANCH}; force-pushed, not opening a second."
-            else
-            gh pr create \
-              --title "garak-miss-bridge: refresh semantic attack proposals from current misses" \
-              --body "Regenerated proposals/garak-clusters/ from the latest garak full benchmark misses via scripts/garak-miss-to-proposals.ts. Only agent-attack families are included (prompt injection, jailbreak override, latent injection, system-prompt extraction, encoding/web injection, exploitation); content-safety families and content-safety samples are dropped to keep ATR in its lane. These are PROPOSALS only — no rule is authored or modified here. The T2 authoring pipeline (author-semantic-rules.ts) consumes them under its own deterministic 0-FP gate. Do NOT auto-merge; human review required." \
-              --label "needs-human-review" \
-              || echo "PR creation failed; branch '${BRANCH}' pushed — open PR manually (main was NOT modified)."
-            echo "Opened PR from ${BRANCH}"
-            fi
+
+          # The helper is single-quoted, so argv carries the literal text $PUSH_TOKEN and
+          # never its value; the shell git spawns for the helper reads it from the
+          # environment. Nothing is written to .git/config.
+          # The lease is the sha fetched above: the branch is replaced (the proposals are
+          # regenerated whole from main each run), but not if it moved since. It used to
+          # fall back to a plain --force when the lease failed, which is no lease at all.
+          # shellcheck disable=SC2016
+          git -c credential.helper= \
+              -c 'credential.helper=!f() { test "$1" = get || exit 0; echo username=x-access-token; echo "password=$PUSH_TOKEN"; }; f' \
+              push --force-with-lease="refs/heads/$BRANCH:$OLD_SHA" origin "HEAD:refs/heads/$BRANCH"
+
+          # Same-repo only: a fork's PR from a same-named branch does not track this branch.
+          OPEN=$(gh pr list --head "$BRANCH" --state open --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository | not)][0].number // empty')
+          if [ -n "$OPEN" ]; then
+            echo "Force-pushed the open rolling PR #${OPEN}; not opening a second."
+            exit 0
           fi
+
+          # No `|| echo` here: a PR that fails to open must fail the job. Swallowing
+          # that error is how a lane goes quiet behind a green check.
+          gh pr create \
+            --head "$BRANCH" \
+            --title "garak-miss-bridge: refresh semantic attack proposals from current misses" \
+            --body "Regenerated proposals/garak-clusters/ from the latest garak full benchmark misses via scripts/garak-miss-to-proposals.ts. Only agent-attack families are included (prompt injection, jailbreak override, latent injection, system-prompt extraction, encoding/web injection, exploitation); content-safety families and content-safety samples are dropped to keep ATR in its lane. These are PROPOSALS only — no rule is authored or modified here. The T2 authoring pipeline (author-semantic-rules.ts) consumes them under its own deterministic 0-FP gate. Do NOT auto-merge; human review required." \
+            --label "needs-human-review"
+          echo "Opened PR from ${BRANCH}"

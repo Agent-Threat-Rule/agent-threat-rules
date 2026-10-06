@@ -23,6 +23,7 @@ import {
   POSITIVE_CONTROL,
   successfulHackapromptMisses,
   describeNullResult,
+  assertNullResultComplete,
   authoringRoom,
 } from "../scripts/lib/fn-mine-input.js";
 
@@ -190,6 +191,20 @@ describe("describeNullResult", () => {
     expect(describeNullResult({ fnTotal: 50, uncovered: 0, proposed: 0, survived: 0 })).toMatch(/all 50 .*covered/i);
     expect(describeNullResult({ fnTotal: 50, uncovered: 12, proposed: 0, survived: 0 })).toMatch(/proposed no candidates/i);
     expect(describeNullResult({ fnTotal: 50, uncovered: 12, proposed: 4, survived: 0 })).toMatch(/gate rejected all 4/i);
+  });
+});
+
+// HackAPrompt's dataset is gated: with an expired HF_TOKEN its regeneration
+// fails, the miner skips it and mines PINT alone. PINT is mined out, so the run
+// printed NULL RESULT and went green, indistinguishable from an exhausted week.
+describe("assertNullResultComplete", () => {
+  it("accepts a null result when every corpus was mined", () => {
+    expect(() => assertNullResultComplete([])).not.toThrow();
+  });
+
+  it("fails a null result when a corpus was skipped, and names it", () => {
+    expect(() => assertNullResultComplete(["hackaprompt"])).toThrow(/hackaprompt failed to regenerate/);
+    expect(() => assertNullResultComplete(["hackaprompt", "pint"])).toThrow(/hackaprompt, pint/);
   });
 });
 
