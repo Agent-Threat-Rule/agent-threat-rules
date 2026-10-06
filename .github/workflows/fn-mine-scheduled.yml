@@ -330,6 +330,12 @@ jobs:
         if: steps.mine.outputs.files != ''
         run: npx tsx scripts/gate-rule-status.ts
 
+      # PR CI runs this in action-eligibility.yml: a rule may only declare the
+      # response actions its maturity and FP measurement have earned.
+      - name: Response actions must be earned
+        if: steps.mine.outputs.files != ''
+        run: npx tsx scripts/gate-action-eligibility.ts
+
       - name: Run tests
         if: steps.mine.outputs.files != ''
         run: npm test

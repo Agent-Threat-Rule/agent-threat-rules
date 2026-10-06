@@ -522,8 +522,8 @@ describe("promote-semantic.yml wiring of the authored-cluster record", () => {
   });
 
   // PR CI's rule-status-gate.yml: a new rule may not be status draft.
-  it("runs the rule status ratchet in the backstop", () => {
-    const st = workflowSteps().find((x) => (x.run ?? "").includes("scripts/gate-rule-status.ts"));
+  it.each(["scripts/gate-rule-status.ts", "scripts/gate-action-eligibility.ts"])("runs %s in the backstop", (cmd) => {
+    const st = workflowSteps().find((x) => (x.run ?? "").includes(cmd));
     expect(st?.if).toBe("steps.authored.outputs.any == 'true'");
     expect(names.indexOf(st?.name ?? "")).toBeLessThan(at("Push to the rolling branch and open or update its PR"));
   });

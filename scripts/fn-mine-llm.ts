@@ -272,11 +272,13 @@ function gateCandidates(
     // sentence recovers nothing. Examples stay the real, unmodified texts.
     let recovers = 0;
     const examples: string[] = [];
+    // A recovery must match both: removing the sentence shortens the text and
+    // can make a boundary the real submission does not have.
     gate.measureOn.forEach((m, i) => {
-      if (!re.test(m)) return;
-      recovers++;
       const original = fullFn[i] ?? m;
-      if (examples.length < 5 && re.test(original)) examples.push(original);
+      if (!re.test(m) || !re.test(original)) return;
+      recovers++;
+      if (examples.length < 5) examples.push(original);
     });
     if (recovers < minRecovers) {
       if (gate.measureOn !== fullFn && fullFn.filter((t) => re.test(t)).length >= minRecovers) {

@@ -226,6 +226,7 @@ describe("pre-push backstop", () => {
     "scripts/gate-redos.py",
     "npm run gate:generalization",
     "scripts/gate-rule-status.ts",
+    "scripts/gate-action-eligibility.ts",
     "npm test",
   ];
 
