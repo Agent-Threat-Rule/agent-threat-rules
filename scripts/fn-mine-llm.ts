@@ -527,7 +527,8 @@ async function mineCorpus(spec: MinedCorpusSpec, s: MineSettings): Promise<Corpu
   const fnRaw = await falseNegatives(spec, REPO_ROOT, (line) => console.log(`[fn-mine] ${line}`));
   // Coverage is judged by the eval harness over every rule on disk, drafts
   // included, with canaries, on the shape the corpus reaches an agent as; a
-  // broken judgement throws and fails the run.
+  // broken judgement throws, and main() skips this corpus with a warning and
+  // records it in the report.
   const cov = await coverageOf(fnRaw, path.join(REPO_ROOT, 'rules'), spec.shape);
   const fn = [...cov.uncovered];
   console.log(
@@ -755,7 +756,7 @@ async function main(): Promise<void> {
   }
 
   fs.mkdirSync(path.dirname(path.join(REPO_ROOT, REPORT_PATH)), { recursive: true });
-  fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify({ authored: kept, deferred }, null, 2));
+  fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify({ authored: kept, deferred, notMined: [...skippedCorpora, ...failedCorpora] }, null, 2));
   console.log(`[fn-mine] DONE — ${kept.length} rule(s) authored and gate-clean: ${kept.map((a) => a.id).join(', ')}`);
   console.log(`::authored-files::${kept.map((a) => a.file).join(',')}`);
   console.log(`::report-file::${REPORT_PATH}`);
