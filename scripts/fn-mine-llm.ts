@@ -66,7 +66,7 @@ import {
 } from './lib/fn-mine-corpora.js';
 import { gateAuthoredBatch } from './lib/fn-mine-gate.js';
 import { computeResidual, gateCandidates, type GateContext, type GatedCandidate } from './lib/fn-mine-candidate-gate.js';
-import { HELD_OUT_PERCENT, MIN_HELD_OUT_RECOVERS, seenLines, splitHeldOut } from './lib/fn-mine-heldout.js';
+import { HELD_OUT_PERCENT, MIN_HELD_OUT_RECOVERS, seenLines, splitHeldOut, unmineableReason } from './lib/fn-mine-heldout.js';
 import { dropToolOutputHits, requireToolOutputBenign, type ToolOutputBenign } from './lib/fn-mine-tool-benign.js';
 import { assertSomeChunkRead, mineChunkReply, type ChunkResult, type MineCandidate } from './lib/fn-mine-reply.js';
 import { finalizeAuthoredRule, hasBenchmarkArtifacts, withoutBenchmarkArtifacts } from './lib/fn-mine-quality.js';
@@ -474,8 +474,16 @@ interface CorpusRun {
   readonly unread: number;
 }
 
-/** Mine one corpus: its uncovered FNs, round 1, then the residual round. */
-async function mineCorpus(spec: MinedCorpusSpec, s: MineSettings): Promise<CorpusRun> {
+interface UncoveredSplit {
+  readonly fnTotal: number;
+  readonly uncovered: number;
+  /** The minable side: the only FN texts the model, the residual and the chunk plan see. */
+  readonly fn: readonly string[];
+  readonly heldOut: readonly string[];
+}
+
+/** A corpus's false negatives no rule on disk covers, split into minable and held out, logged. */
+async function uncoveredSplit(spec: MinedCorpusSpec): Promise<UncoveredSplit> {
   const fnRaw = await falseNegatives(spec, REPO_ROOT, (line) => console.log(`[fn-mine] ${line}`));
   // Coverage is judged by the eval harness over every rule on disk, drafts
   // included, with canaries, on the shape the corpus reaches an agent as; a
@@ -483,17 +491,27 @@ async function mineCorpus(spec: MinedCorpusSpec, s: MineSettings): Promise<Corpu
   // records it in the report.
   const cov = await coverageOf(fnRaw, path.join(REPO_ROOT, 'rules'), spec.shape);
   // Each text's coverage is judged on its own, so splitting the uncovered set
-  // is the same as judging each side separately. Only `fn` (the minable side)
-  // reaches the model, the residual and the chunk plan; the held-out side is
-  // only ever counted.
+  // is the same as judging each side separately. The held-out side is only
+  // ever counted.
   const { minable: fn, heldOut } = splitHeldOut(cov.uncovered);
   console.log(
     `[fn-mine] ${spec.name}: ${fnRaw.length} false negatives against the LIVE engine (${spec.shape}), ` +
       `${cov.coveredCount} already covered by a rule on disk (${cov.draftsEvaluated} drafts evaluated), ` +
       `${cov.uncovered.length} genuinely un-mined: ${fn.length} minable, ${heldOut.length} held out (${HELD_OUT_PERCENT}%, never shown)`,
   );
-  const empty = { corpus: spec.name, fnTotal: fnRaw.length, uncovered: cov.uncovered.length, proposed: 0, survived: 0 };
-  if (fn.length === 0) return { stages: empty, survivors: [], asked: 0, unread: 0 };
+  return { fnTotal: fnRaw.length, uncovered: cov.uncovered.length, fn, heldOut };
+}
+
+/** Mine one corpus: its uncovered FNs, round 1, then the residual round. */
+async function mineCorpus(spec: MinedCorpusSpec, s: MineSettings): Promise<CorpusRun> {
+  const { fnTotal, uncovered, fn, heldOut } = await uncoveredSplit(spec);
+  const empty = { corpus: spec.name, fnTotal, uncovered, proposed: 0, survived: 0 };
+  if (uncovered === 0) return { stages: empty, survivors: [], asked: 0, unread: 0 };
+  const notMinedBecause = unmineableReason(fn.length, heldOut.length, s.minRecovers);
+  if (notMinedBecause) {
+    console.log(`[fn-mine] ${spec.name}: not mined, ${notMinedBecause}`);
+    return { stages: { ...empty, notMinedBecause }, survivors: [], asked: 0, unread: 0 };
+  }
 
   const gate: GateContext = {
     corpusName: spec.name,

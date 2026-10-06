@@ -17,6 +17,7 @@ import {
   isHeldOut,
   seenLines,
   splitHeldOut,
+  unmineableReason,
 } from '../scripts/lib/fn-mine-heldout.js';
 import { countRecoveries } from '../scripts/lib/fn-mine-recoveries.js';
 import { withoutBenchmarkArtifacts } from '../scripts/lib/fn-mine-quality.js';
@@ -136,5 +137,19 @@ describe('heldOutRecoveries', () => {
 
   it(`requires at least ${MIN_HELD_OUT_RECOVERS}: one coincidental hit is not evidence`, () => {
     expect(MIN_HELD_OUT_RECOVERS).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe('unmineableReason', () => {
+  it('is null when both sides can meet their thresholds', () => {
+    expect(unmineableReason(8, MIN_HELD_OUT_RECOVERS, 8)).toBeNull();
+  });
+
+  it(`names a held-out side smaller than ${MIN_HELD_OUT_RECOVERS}: no candidate could pass`, () => {
+    expect(unmineableReason(40, 1, 8)).toBe(`only 1 held-out miss (< ${MIN_HELD_OUT_RECOVERS}): no candidate can pass the held-out check`);
+  });
+
+  it('names a minable side smaller than minRecovers', () => {
+    expect(unmineableReason(5, 10, 8)).toBe('only 5 minable misses (< 8): no candidate can reach minRecovers');
   });
 });

@@ -248,6 +248,26 @@ describe("describeNullResultByCorpus", () => {
   it("says nothing per corpus when no corpus ran", () => {
     expect(describeNullResultByCorpus([])).toMatch(/no false negatives/);
   });
+
+  // Review finding (2026-10-07): a corpus with fewer held-out misses than the
+  // held-out gate needs cannot yield a survivor, but read as "0 survived".
+  it("names a corpus that was not mined and why, instead of an ordinary 0 survived", () => {
+    const line = describeNullResultByCorpus([
+      { corpus: "pint", fnTotal: 9, uncovered: 3, proposed: 0, survived: 0, notMinedBecause: "only 1 held-out miss (< 2)" },
+      { corpus: "llmail-inject", fnTotal: 230, uncovered: 190, proposed: 12, survived: 0 },
+    ]);
+    expect(line).toMatch(/gate rejected all 12/);
+    expect(line).toContain("pint: 9 FN, 3 uncovered, not mined: only 1 held-out miss (< 2)");
+  });
+
+  it("says so in the headline when no corpus could be mined", () => {
+    const line = describeNullResultByCorpus([
+      { corpus: "pint", fnTotal: 9, uncovered: 3, proposed: 0, survived: 0, notMinedBecause: "only 1 held-out miss (< 2)" },
+      { corpus: "hackaprompt", fnTotal: 40, uncovered: 0, proposed: 0, survived: 0 },
+    ]);
+    expect(line).toMatch(/^NULL RESULT — no corpus with uncovered false negatives could be mined/);
+    expect(line).not.toMatch(/proposed no candidates/);
+  });
 });
 
 // HackAPrompt's dataset is gated: with an expired HF_TOKEN its regeneration

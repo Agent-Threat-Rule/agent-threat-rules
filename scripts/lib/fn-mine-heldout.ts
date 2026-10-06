@@ -150,3 +150,19 @@ export function heldOutRecoveries(re: RegExp, heldOut: readonly string[], corpus
   const measured = heldOut.map((t) => withoutBenchmarkArtifacts(corpus, t));
   return countRecoveries(re, measured, heldOut, (text, hit) => onSeenText(seen, text, hit)).recovers;
 }
+
+/**
+ * Why a corpus's split leaves nothing worth mining, or null. With fewer
+ * held-out misses than MIN_HELD_OUT_RECOVERS, or fewer minable ones than
+ * minRecovers, every candidate is dropped whatever the model proposes; the
+ * miner skips the corpus rather than spend model calls on it, and says so.
+ */
+export function unmineableReason(minable: number, heldOut: number, minRecovers: number): string | null {
+  if (heldOut < MIN_HELD_OUT_RECOVERS) {
+    return `only ${heldOut} held-out miss${heldOut === 1 ? '' : 'es'} (< ${MIN_HELD_OUT_RECOVERS}): no candidate can pass the held-out check`;
+  }
+  if (minable < minRecovers) {
+    return `only ${minable} minable miss${minable === 1 ? '' : 'es'} (< ${minRecovers}): no candidate can reach minRecovers`;
+  }
+  return null;
+}

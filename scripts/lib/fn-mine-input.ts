@@ -288,6 +288,8 @@ export function describeNullResult(c: MiningStageCounts): string {
 
 export interface CorpusStageCounts extends MiningStageCounts {
   readonly corpus: string;
+  /** Set when the corpus had uncovered misses but was not mined (fn-mine-heldout.ts unmineableReason). */
+  readonly notMinedBecause?: string;
 }
 
 /** The run's counts summed over its corpora. */
@@ -304,14 +306,24 @@ export function totalStages(perCorpus: readonly CorpusStageCounts[]): MiningStag
 }
 
 /**
- * describeNullResult over the whole run, then each corpus's own counts, so an
- * empty week says which corpus ran dry and at which stage.
+ * describeNullResult over the corpora that were mined, then each corpus's own
+ * counts, so an empty week says which corpus ran dry and at which stage. A
+ * corpus that was not mined says why, and when none with uncovered misses
+ * could be, the headline says that instead of "the model proposed nothing".
  */
 export function describeNullResultByCorpus(perCorpus: readonly CorpusStageCounts[]): string {
   const detail = perCorpus
-    .map((c) => `${c.corpus}: ${c.fnTotal} FN, ${c.uncovered} uncovered, ${c.proposed} proposed, ${c.survived} survived`)
+    .map((c) =>
+      c.notMinedBecause
+        ? `${c.corpus}: ${c.fnTotal} FN, ${c.uncovered} uncovered, not mined: ${c.notMinedBecause}`
+        : `${c.corpus}: ${c.fnTotal} FN, ${c.uncovered} uncovered, ${c.proposed} proposed, ${c.survived} survived`,
+    )
     .join('; ');
-  const head = describeNullResult(totalStages(perCorpus));
+  const mined = perCorpus.filter((c) => !c.notMinedBecause);
+  const noneMinable = mined.every((c) => c.uncovered === 0) && mined.length < perCorpus.length;
+  const head = noneMinable
+    ? 'NULL RESULT — no corpus with uncovered false negatives could be mined (held-out or minable side too small).'
+    : describeNullResult(totalStages(mined));
   return detail ? `${head} Per corpus — ${detail}.` : head;
 }
 
