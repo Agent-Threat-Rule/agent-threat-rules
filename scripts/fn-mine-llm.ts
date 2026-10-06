@@ -3,13 +3,13 @@
  * scripts/fn-mine-llm.ts
  *
  * Unattended false-negative mining: regenerates fresh FN reports against the
- * CURRENT rule set for the corpora ATR has committed fixtures for
- * (HackAPrompt, PINT), clusters the misses via Claude into generalizable
- * regex candidates, gates every candidate against the FULL FN set + FULL
- * benign corpus using the exact engine regex-compile semantics, authors
- * survivors as draft ATR rules, self-tests each on the real engine, and
- * re-verifies the whole batch against the repo's own safety gate before
- * handing off to the calling workflow to open a draft PR.
+ * CURRENT rule set for the corpora in scripts/lib/fn-mine-corpora.ts
+ * (HackAPrompt, PINT, LLMail-Inject, BrowseSafe-Bench), clusters the misses
+ * via Claude into generalizable regex candidates, gates every candidate
+ * against the FULL FN set + FULL benign corpus using the exact engine
+ * regex-compile semantics, authors survivors as draft ATR rules, self-tests
+ * each on the real engine, and re-verifies the whole batch against the repo's
+ * own safety gate before handing off to the calling workflow to open a draft PR.
  *
  * This is the scheduled/unattended counterpart to the interactive /fn-mine
  * Claude Code workflow — same methodology (full-set clustering, engine-
@@ -41,10 +41,26 @@ import { parseArgs } from 'node:util';
 import Anthropic from '@anthropic-ai/sdk';
 import { needsUnicodeFlag } from '../src/engine.js';
 import { callClaude as sharedCallClaude, describeBackend, backendAvailable } from './lib/claude-client.js';
-import { coverageOf, successfulHackapromptMisses, describeNullResult, authoringRoom } from './lib/fn-mine-input.js';
+import { coverageOf, describeNullResultByCorpus, authoringRoom, type CorpusStageCounts } from './lib/fn-mine-input.js';
+import {
+  MINED_CORPORA,
+  channelNote,
+  falseNegatives,
+  planChunks,
+  vendoredProblem,
+  type Chunk,
+  type MinedCorpusSpec,
+} from './lib/fn-mine-corpora.js';
 import { gateAuthoredBatch } from './lib/fn-mine-gate.js';
 import { assertSomeChunkRead, mineChunkReply, type ChunkResult, type MineCandidate } from './lib/fn-mine-reply.js';
-import { finalizeAuthoredRule, isRuleCategory, re2Problem, visibilityProblem, withoutHackapromptGoal } from './lib/fn-mine-quality.js';
+import {
+  finalizeAuthoredRule,
+  hasBenchmarkArtifacts,
+  isRuleCategory,
+  re2Problem,
+  visibilityProblem,
+  withoutBenchmarkArtifacts,
+} from './lib/fn-mine-quality.js';
 import { loadOwaspAllowlists, type OwaspAllowlists } from './lib/normalize-references.js';
 import { prepareGateCorpus, type GateCorpus } from './lib/semantic-gate.js';
 import { loadBenignSamples } from './lib/benign-corpus.js';
@@ -68,36 +84,10 @@ import {
 const REPO_ROOT = process.cwd();
 const DEFAULT_MODEL = process.env['ATR_FNMINE_MODEL'] ?? 'claude-sonnet-5';
 const MAX_TOKENS = 8192;
-const CHUNK_SIZE = 300;
 const RESIDUAL_THRESHOLD = 20; // below this many uncovered FN, skip round 2
 const REFERENCE_RULE = 'rules/prompt-injection/ATR-2026-00003-jailbreak-attempt.yaml';
 const REPORT_PATH = 'output/fn-mine-report.json';
 const RULE_ID_YEAR = '2026';
-
-interface CorpusSpec {
-  readonly name: string;
-  readonly corpusPath: string;
-  readonly reportPath: string;
-  readonly regenerate: readonly string[]; // shell commands to (re)build corpus + report
-}
-
-const CORPORA: readonly CorpusSpec[] = [
-  {
-    name: 'hackaprompt',
-    corpusPath: 'data/hackaprompt/hackaprompt-corpus.json',
-    reportPath: 'data/hackaprompt/hackaprompt-eval-report.json',
-    regenerate: [
-      'python3 scripts/hackaprompt-to-corpus.py --sample 5000',
-      'npx tsx src/eval/run-hackaprompt-benchmark.ts',
-    ],
-  },
-  {
-    name: 'pint',
-    corpusPath: 'data/pint-benchmark/pint-corpus.json',
-    reportPath: 'data/pint-benchmark/pint-eval-report.json',
-    regenerate: ['npx tsx src/eval/run-pint-benchmark.ts'],
-  },
-];
 
 // ---------------------------------------------------------------------------
 // Anthropic call plumbing (same pattern as scripts/quality-upgrade.ts)
@@ -151,43 +141,6 @@ function loadBenignTexts(): readonly string[] {
 }
 
 // ---------------------------------------------------------------------------
-// FN loading
-// ---------------------------------------------------------------------------
-
-interface FnCorpus {
-  readonly name: string;
-  readonly texts: readonly string[];
-}
-
-function loadHackapromptFn(spec: CorpusSpec): readonly string[] {
-  const corpus = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, spec.corpusPath), 'utf8'));
-  const report = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, spec.reportPath), 'utf8'));
-  const { texts, missed, droppedUnsuccessful } = successfulHackapromptMisses(corpus, report);
-  console.log(
-    `[fn-mine] hackaprompt: ${missed} missed, ${droppedUnsuccessful} of them failed in the competition ` +
-      `(correct=false) and are not mined, ${texts.length} successful submissions remain`,
-  );
-  return texts;
-}
-
-function loadPintFn(spec: CorpusSpec): readonly string[] {
-  const corpus = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, spec.corpusPath), 'utf8')) as Array<{ text: string }>;
-  const report = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, spec.reportPath), 'utf8'));
-  const missed = (report.report?.missedAttacks ?? report.missedAttacks ?? []) as Array<{ id: string }>;
-  return missed
-    .map((m) => {
-      const idx = parseInt(m.id.split('-')[1] ?? '', 10) - 1;
-      return corpus[idx]?.text;
-    })
-    .filter((t): t is string => Boolean(t));
-}
-
-function loadFnCorpus(spec: CorpusSpec): FnCorpus {
-  const texts = spec.name === 'hackaprompt' ? loadHackapromptFn(spec) : loadPintFn(spec);
-  return { name: spec.name, texts };
-}
-
-// ---------------------------------------------------------------------------
 // Mining (Claude clusters a chunk of FN texts into candidate regexes)
 // ---------------------------------------------------------------------------
 
@@ -201,6 +154,7 @@ RIGOR — reject your own candidate if it violates these:
 - NEVER an unbounded .* — use bounded [\\s\\S]{0,N} spans instead.
 - Add \\b word boundaries around bare keyword tokens.
 - HackAPrompt submissions all try to make the model say "I have been PWNED". That sentence is the competition's goal, not an attack technique: real attackers never send it. Never anchor a regex on "I have been", "PWNED" or its spellings; capture how the text gets the model to comply. The gate counts recoveries with that sentence removed.
+- Some slices name their benchmark's own scoring strings (a fixed recipient, a required reply, placeholder addresses). The same applies to them: never anchor on them; the gate removes them before counting.
 - You are NOT given the benign corpus or the full FN set — you cannot know true recovers/benignFP. Propose your honest best candidates; an independent script will gate them empirically and only survivors move forward. Over-proposing plausible-looking candidates that get rejected is fine; under-proposing is not.
 
 OUTPUT FORMAT: pure JSON, no markdown fences, no prose before or after. First character must be {. Schema:
@@ -216,9 +170,13 @@ OUTPUT FORMAT: pure JSON, no markdown fences, no prose before or after. First ch
 }
 If nothing in this slice yields a generalizable candidate, use an empty array — that is an honest, valid result.`;
 
-function buildMinePrompt(chunkLabel: string, texts: readonly string[]): string {
-  const numbered = texts.map((t, i) => `[${i}] ${t.slice(0, 300).replace(/\n/g, '\\n')}`).join('\n');
-  return `CORPUS SLICE: ${chunkLabel} (${texts.length} false-negative attack texts — the detection engine currently misses ALL of these)
+function buildMinePrompt(chunk: Chunk, spec: MinedCorpusSpec): string {
+  const numbered = chunk.texts
+    .map((t, i) => `[${i}] ${t.slice(0, spec.budget.promptChars).replace(/\n/g, '\\n')}`)
+    .join('\n');
+  const goal = spec.goalNote ? `\nBENCHMARK SCORING STRINGS: ${spec.goalNote}\n` : '';
+  return `CORPUS SLICE: ${chunk.label} (${chunk.texts.length} false-negative attack texts — the detection engine currently misses ALL of these)
+${channelNote(spec.shape)}${goal}
 
 Cluster these by shared attack STRUCTURE (the injection mechanism/technique), not surface topic. For each sizable cluster, propose ONE generalizable regex per the rules in your system prompt.
 
@@ -227,10 +185,10 @@ ${numbered}`;
 }
 
 /** One chunk's candidates. An unreadable reply is asked for once more, then the chunk is skipped (see fn-mine-reply.ts). */
-async function mineChunk(chunkLabel: string, texts: readonly string[], model: string): Promise<ChunkResult> {
+async function mineChunk(chunk: Chunk, spec: MinedCorpusSpec, model: string): Promise<ChunkResult> {
   return mineChunkReply(
-    chunkLabel,
-    () => callClaude(MINE_SYSTEM_PROMPT, buildMinePrompt(chunkLabel, texts), model),
+    chunk.label,
+    () => callClaude(MINE_SYSTEM_PROMPT, buildMinePrompt(chunk, spec), model),
     (line) => console.log(`::warning::[fn-mine] ${line}`),
   );
 }
@@ -246,7 +204,8 @@ interface GatedCandidate extends MineCandidate {
 }
 
 interface GateContext {
-  /** The texts recoveries are counted on: the FN texts, HackAPrompt's with its goal sentence removed. */
+  readonly corpusName: string;
+  /** The texts recoveries are counted on: the FN texts with the corpus's benchmark artifacts removed. */
   readonly measureOn: readonly string[];
   /** MEASUREMENT_CORPORA, for the corpus visibility gate's arithmetic. */
   readonly corpus: GateCorpus;
@@ -268,11 +227,11 @@ function gateCandidates(
     // The PR's RE2 portability gate compiles every regex with Go's regexp.
     const re2 = re2Problem(c.regex);
     if (re2) { drop(c, re2); continue; }
-    // Counted on measureOn, so a regex that only recovers HackAPrompt's goal
-    // sentence recovers nothing. Examples stay the real, unmodified texts.
+    // Counted on measureOn, so a regex that only recovers a benchmark's scoring
+    // strings recovers nothing. Examples stay the real, unmodified texts.
     let recovers = 0;
     const examples: string[] = [];
-    // A recovery must match both: removing the sentence shortens the text and
+    // A recovery must match both: removing the artifacts shortens the text and
     // can make a boundary the real submission does not have.
     gate.measureOn.forEach((m, i) => {
       const original = fullFn[i] ?? m;
@@ -282,7 +241,7 @@ function gateCandidates(
     });
     if (recovers < minRecovers) {
       if (gate.measureOn !== fullFn && fullFn.filter((t) => re.test(t)).length >= minRecovers) {
-        drop(c, `recovers ${recovers} < ${minRecovers} without HackAPrompt's goal sentence: it keys on "I have been PWNED"`);
+        drop(c, `recovers ${recovers} < ${minRecovers} without ${gate.corpusName}'s benchmark artifacts: it keys on the benchmark's scoring strings`);
       }
       continue;
     }
@@ -473,6 +432,127 @@ function writeNullReport(note: string): void {
   fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify({ authored: [], note }, null, 2));
 }
 
+/**
+ * The corpora this run can mine. A report corpus whose regeneration fails, or a
+ * vendored corpus missing from disk, is skipped and logged loudly: one corpus's
+ * external dependency (HackAPrompt's upstream dataset requiring auth, say) must
+ * not stop the others. Every corpus unavailable fails the run.
+ */
+function prepareCorpora(): readonly MinedCorpusSpec[] {
+  console.log('[fn-mine] regenerating FN reports against the current rule set...');
+  const available: MinedCorpusSpec[] = [];
+  for (const spec of MINED_CORPORA) {
+    try {
+      if (spec.kind === 'vendored') {
+        const problem = vendoredProblem(spec, REPO_ROOT);
+        if (problem) throw new Error(problem);
+      } else {
+        for (const cmd of spec.regenerate) {
+          console.log(`[fn-mine]   $ ${cmd}`);
+          execSync(cmd, { cwd: REPO_ROOT, stdio: 'inherit' });
+        }
+      }
+      available.push(spec);
+    } catch (e) {
+      console.log(`[fn-mine] WARNING: ${spec.name} corpus is unavailable — skipping this corpus for this run.`);
+      console.log(`[fn-mine]   ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+  if (available.length === 0) {
+    throw new Error('Every corpus failed to regenerate — nothing to mine. See warnings above for per-corpus failure reasons.');
+  }
+  return available;
+}
+
+interface MineSettings {
+  readonly model: string;
+  readonly minRecovers: number;
+  readonly benignTexts: readonly string[];
+  readonly gateCorpus: GateCorpus;
+}
+
+interface RoundResult {
+  readonly proposed: number;
+  readonly survivors: readonly GatedCandidate[];
+  readonly asked: number;
+  readonly unread: number;
+}
+
+/** One round: each chunk the budget allows to the model, every candidate through the gate. */
+async function mineRound(
+  label: string,
+  texts: readonly string[],
+  fn: readonly string[],
+  spec: MinedCorpusSpec,
+  gate: GateContext,
+  s: MineSettings,
+): Promise<RoundResult> {
+  const candidates: MineCandidate[] = [];
+  let unread = 0;
+  const chunks = planChunks(label, texts, spec.budget);
+  for (const chunk of chunks) {
+    console.log(`[fn-mine]   mining ${chunk.label}...`);
+    const reply = await mineChunk(chunk, spec, s.model);
+    if (!reply.read) unread += 1;
+    candidates.push(...reply.candidates);
+  }
+  const waiting = texts.length - chunks.length * spec.budget.chunkSize;
+  if (waiting > 0) {
+    console.log(`[fn-mine]   ${label}: chunk cap ${spec.budget.maxChunksPerRound} reached; ${waiting} FN wait for a later run`);
+  }
+  const survivors = gateCandidates(candidates, fn, s.benignTexts, s.minRecovers, gate);
+  return { proposed: candidates.length, survivors, asked: chunks.length, unread };
+}
+
+interface CorpusRun {
+  readonly stages: CorpusStageCounts;
+  readonly survivors: readonly GatedCandidate[];
+  readonly asked: number;
+  readonly unread: number;
+}
+
+/** Mine one corpus: its uncovered FNs, round 1, then the residual round. */
+async function mineCorpus(spec: MinedCorpusSpec, s: MineSettings): Promise<CorpusRun> {
+  const fnRaw = await falseNegatives(spec, REPO_ROOT, (line) => console.log(`[fn-mine] ${line}`));
+  // Coverage is judged by the eval harness over every rule on disk, drafts
+  // included, with canaries, on the shape the corpus reaches an agent as; a
+  // broken judgement throws and fails the run.
+  const cov = await coverageOf(fnRaw, path.join(REPO_ROOT, 'rules'), spec.shape);
+  const fn = [...cov.uncovered];
+  console.log(
+    `[fn-mine] ${spec.name}: ${fnRaw.length} false negatives against the LIVE engine (${spec.shape}), ` +
+      `${cov.coveredCount} already covered by a rule on disk (${cov.draftsEvaluated} drafts evaluated), ` +
+      `${fn.length} genuinely un-mined`,
+  );
+  const empty = { corpus: spec.name, fnTotal: fnRaw.length, uncovered: fn.length, proposed: 0, survived: 0 };
+  if (fn.length === 0) return { stages: empty, survivors: [], asked: 0, unread: 0 };
+
+  const gate: GateContext = {
+    corpusName: spec.name,
+    measureOn: hasBenchmarkArtifacts(spec.name) ? fn.map((t) => withoutBenchmarkArtifacts(spec.name, t)) : fn,
+    corpus: s.gateCorpus,
+  };
+  const r1 = await mineRound(spec.name, fn, fn, spec, gate, s);
+  console.log(`[fn-mine] ${spec.name} round 1: ${r1.proposed} proposed -> ${r1.survivors.length} survive the gate`);
+
+  const residual = computeResidual(fn, r1.survivors);
+  let r2: RoundResult = { proposed: 0, survivors: [], asked: 0, unread: 0 };
+  if (residual.length >= RESIDUAL_THRESHOLD) {
+    console.log(`[fn-mine] ${spec.name}: ${residual.length} FN still uncovered -> mining residual`);
+    r2 = await mineRound(`${spec.name}-residual`, residual, fn, spec, gate, s);
+    console.log(`[fn-mine] ${spec.name} round 2 (residual): ${r2.proposed} proposed -> ${r2.survivors.length} survive`);
+  } else {
+    console.log(`[fn-mine] ${spec.name}: only ${residual.length} FN uncovered — below residual threshold (${RESIDUAL_THRESHOLD}), skipping round 2`);
+  }
+  const survivors = [...r1.survivors, ...r2.survivors];
+  return {
+    stages: { ...empty, proposed: r1.proposed + r2.proposed, survived: survivors.length },
+    survivors,
+    asked: r1.asked + r2.asked,
+    unread: r1.unread + r2.unread,
+  };
+}
+
 interface AuthoredRule {
   id: string;
   file: string;
@@ -533,101 +613,21 @@ async function main(): Promise<void> {
     }
   }
 
-  console.log('[fn-mine] regenerating FN reports against the current rule set...');
-  // Per-corpus fault tolerance: an external dependency failing for ONE corpus
-  // (e.g. HackAPrompt's upstream HuggingFace dataset requiring auth) must not
-  // crash the whole run — the OTHER corpora should still get mined. A corpus
-  // that fails to regenerate is skipped for this run and logged loudly, not
-  // silently — this is exactly the kind of failure `set -o pipefail` in the
-  // calling workflow is there to make visible if left unhandled.
-  const availableCorpora: CorpusSpec[] = [];
-  for (const spec of CORPORA) {
-    try {
-      for (const cmd of spec.regenerate) {
-        console.log(`[fn-mine]   $ ${cmd}`);
-        execSync(cmd, { cwd: REPO_ROOT, stdio: 'inherit' });
-      }
-      availableCorpora.push(spec);
-    } catch (e) {
-      console.log(`[fn-mine] WARNING: ${spec.name} corpus regeneration failed — skipping this corpus for this run.`);
-      console.log(`[fn-mine]   ${e instanceof Error ? e.message : String(e)}`);
-    }
-  }
-  if (availableCorpora.length === 0) {
-    throw new Error('Every corpus failed to regenerate — nothing to mine. See warnings above for per-corpus failure reasons.');
-  }
-
+  const availableCorpora = prepareCorpora();
   const benignTexts = loadBenignTexts();
   console.log(`[fn-mine] benign gate corpus: ${benignTexts.length} records`);
   const gateCorpus = prepareGateCorpus(loadBenignSamples(REPO_ROOT));
   if (gateCorpus.samples.length === 0) throw new Error('MEASUREMENT_CORPORA is empty: the visibility check would pass every candidate');
 
-  const stages = { fnTotal: 0, uncovered: 0, proposed: 0, survived: 0 };
+  const perCorpus: CorpusStageCounts[] = [];
   const replies = { asked: 0, unread: 0 };
   let allSurvivors: Array<GatedCandidate & { corpus: string }> = [];
   for (const spec of availableCorpora) {
-    const fnRaw = loadFnCorpus(spec);
-    // Coverage is judged by the eval harness over every rule on disk, drafts
-    // included, with canaries; a broken judgement throws and fails the run.
-    const cov = await coverageOf(fnRaw.texts, path.join(REPO_ROOT, 'rules'));
-    const fn = { name: fnRaw.name, texts: [...cov.uncovered] };
-    stages.fnTotal += fnRaw.texts.length;
-    stages.uncovered += fn.texts.length;
-    console.log(
-      `[fn-mine] ${spec.name}: ${fnRaw.texts.length} false negatives against the LIVE engine, ` +
-      `${cov.coveredCount} already covered by a rule on disk (${cov.draftsEvaluated} drafts evaluated), ` +
-      `${fn.texts.length} genuinely un-mined`,
-    );
-    if (fn.texts.length === 0) continue;
-
-    // Round 1: chunked mining over the FULL FN set.
-    const chunks: string[][] = [];
-    for (let start = 0; start < fn.texts.length; start += CHUNK_SIZE) {
-      chunks.push(fn.texts.slice(start, start + CHUNK_SIZE));
-    }
-    let round1Candidates: MineCandidate[] = [];
-    for (let i = 0; i < chunks.length; i++) {
-      const label = `${spec.name}[${i * CHUNK_SIZE}:${i * CHUNK_SIZE + chunks[i].length}]`;
-      console.log(`[fn-mine]   mining ${label}...`);
-      const chunk = await mineChunk(label, chunks[i], model);
-      replies.asked += 1;
-      if (!chunk.read) replies.unread += 1;
-      round1Candidates.push(...chunk.candidates);
-    }
-    const gate: GateContext = {
-      measureOn: spec.name === 'hackaprompt' ? fn.texts.map(withoutHackapromptGoal) : fn.texts,
-      corpus: gateCorpus,
-    };
-    const round1Survivors = gateCandidates(round1Candidates, fn.texts, benignTexts, minRecovers, gate);
-    stages.proposed += round1Candidates.length;
-    console.log(`[fn-mine] ${spec.name} round 1: ${round1Candidates.length} proposed -> ${round1Survivors.length} survive the gate`);
-
-    // Round 2: residual (only what round 1 left uncovered).
-    const residual = computeResidual(fn.texts, round1Survivors);
-    let round2Survivors: GatedCandidate[] = [];
-    if (residual.length >= RESIDUAL_THRESHOLD) {
-      console.log(`[fn-mine] ${spec.name}: ${residual.length} FN still uncovered -> mining residual`);
-      const rChunks: string[][] = [];
-      for (let start = 0; start < residual.length; start += CHUNK_SIZE) {
-        rChunks.push(residual.slice(start, start + CHUNK_SIZE));
-      }
-      let round2Candidates: MineCandidate[] = [];
-      for (let i = 0; i < rChunks.length; i++) {
-        const label = `${spec.name}-residual[${i * CHUNK_SIZE}:${i * CHUNK_SIZE + rChunks[i].length}]`;
-        console.log(`[fn-mine]   mining ${label}...`);
-        const chunk = await mineChunk(label, rChunks[i], model);
-        replies.asked += 1;
-        if (!chunk.read) replies.unread += 1;
-        round2Candidates.push(...chunk.candidates);
-      }
-      round2Survivors = gateCandidates(round2Candidates, fn.texts, benignTexts, minRecovers, gate);
-      stages.proposed += round2Candidates.length;
-      console.log(`[fn-mine] ${spec.name} round 2 (residual): ${round2Candidates.length} proposed -> ${round2Survivors.length} survive`);
-    } else {
-      console.log(`[fn-mine] ${spec.name}: only ${residual.length} FN uncovered — below residual threshold (${RESIDUAL_THRESHOLD}), skipping round 2`);
-    }
-
-    for (const s of [...round1Survivors, ...round2Survivors]) allSurvivors.push({ ...s, corpus: spec.name });
+    const run = await mineCorpus(spec, { model, minRecovers, benignTexts, gateCorpus });
+    perCorpus.push(run.stages);
+    replies.asked += run.asked;
+    replies.unread += run.unread;
+    for (const s of run.survivors) allSurvivors.push({ ...s, corpus: spec.name });
   }
 
   // Every reply unreadable is a lane that could not run, not an empty week.
@@ -646,7 +646,7 @@ async function main(): Promise<void> {
   console.log(`[fn-mine] total survivors: ${allSurvivors.length}. Authoring top ${picked.length}${deferred > 0 ? ` (deferring ${deferred} to next run)` : ''}.`);
 
   if (picked.length === 0) {
-    const note = describeNullResult({ ...stages, survived: allSurvivors.length });
+    const note = describeNullResultByCorpus(perCorpus);
     console.log(`[fn-mine] ${note} Not an error.`);
     writeNullReport(note);
     console.log('::authored-files::');

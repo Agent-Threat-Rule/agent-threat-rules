@@ -18,12 +18,17 @@
  * the rule tree in which draft rules are made evaluable — a rule a previous run
  * authored and nobody has promoted yet still counts as covering its cluster.
  * Canaries make a broken check fail the run instead of going quiet.
+ *
+ * Each corpus is judged on the event shape its samples reach an agent through
+ * (DeliveryShape): a HackAPrompt or PINT prompt as user input, an LLMail email
+ * or a BrowseSafe page as a tool's output.
  */
 import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runEval } from '../../src/eval/eval-harness.js';
+import { runEval, type EvalEventShapeMode } from '../../src/eval/eval-harness.js';
 import type { CorpusSample } from '../../src/eval/corpus.js';
+import type { DeliveryShape } from './fn-corpora.js';
 
 /** Plain text no rule should fire on. Either one covered means the check is broken. */
 export const NEGATIVE_CANARIES: readonly string[] = Object.freeze(['hello', 'What is the capital of France?']);
@@ -83,8 +88,44 @@ function makeDraftsEvaluable(dir: string): number {
   return count;
 }
 
-function sample(id: string, text: string, expectedDetection: boolean): CorpusSample {
-  return { id, text, category: 'fn-mine', expectedDetection, eventType: 'llm_input', tier: 'any', difficulty: 'medium' };
+export type { DeliveryShape };
+
+interface Presentation {
+  readonly eventType: CorpusSample['eventType'];
+  readonly eventShape: EvalEventShapeMode;
+  readonly fields?: (text: string) => Record<string, string>;
+}
+
+/**
+ * How each DeliveryShape (scripts/lib/fn-corpora.ts) is presented to the engine.
+ *
+ *   `llm_input`     — the user typed it. Presented as the HackAPrompt and PINT
+ *                     benchmarks present it: the declared llm_input event plus
+ *                     the canonical shape set, so this check agrees with the
+ *                     reports whose misses it is handed.
+ *   `tool_response` — a tool returned it (an email the mail tool read, a page
+ *                     the browser fetched). Presented as promptChannelShapes()'
+ *                     tool-response event alone: the engine admits mcp_exchange
+ *                     and llm_io rules on it, and a rule that fires only on a
+ *                     shape this text never takes does not cover it.
+ */
+const PRESENTATIONS: Readonly<Record<DeliveryShape, Presentation>> = Object.freeze({
+  llm_input: { eventType: 'llm_input', eventShape: 'canonical' },
+  tool_response: { eventType: 'tool_response', eventShape: 'legacy', fields: (text) => ({ tool_response: text }) },
+});
+
+function sample(id: string, text: string, expectedDetection: boolean, shape: DeliveryShape): CorpusSample {
+  const p = PRESENTATIONS[shape];
+  return {
+    id,
+    text,
+    category: 'fn-mine',
+    expectedDetection,
+    eventType: p.eventType,
+    tier: 'any',
+    difficulty: 'medium',
+    ...(p.fields ? { fields: p.fields(text) } : {}),
+  };
 }
 
 function checkControls(
@@ -105,13 +146,14 @@ function checkControls(
   }
 }
 
-async function missedIds(rulesDir: string, texts: readonly string[]): Promise<Set<string>> {
+async function missedIds(rulesDir: string, texts: readonly string[], shape: DeliveryShape): Promise<Set<string>> {
   const corpus: CorpusSample[] = [
-    ...texts.map((t, i) => sample(`fn-${i}`, t, true)),
-    sample('control-positive', POSITIVE_CONTROL, true),
-    ...NEGATIVE_CANARIES.map((t, i) => sample(`canary-${i}`, t, false)),
+    ...texts.map((t, i) => sample(`fn-${i}`, t, true, shape)),
+    sample('control-positive', POSITIVE_CONTROL, true, shape),
+    ...NEGATIVE_CANARIES.map((t, i) => sample(`canary-${i}`, t, false, shape)),
   ];
-  const { report } = await runEval({ rulesDir, corpus, eventShape: 'canonical', enableEmbedding: false });
+  const eventShape = PRESENTATIONS[shape].eventShape;
+  const { report } = await runEval({ rulesDir, corpus, eventShape, enableEmbedding: false });
   const missed = new Set(report.missedAttacks.map((r) => r.id));
   checkControls(report.falsePositives, missed);
   return missed;
@@ -119,7 +161,7 @@ async function missedIds(rulesDir: string, texts: readonly string[]): Promise<Se
 
 /**
  * Which of `texts` no rule under `rulesDir` (drafts included) detects, judged by
- * the eval harness on the same event shapes the benchmark uses. Throws
+ * the eval harness on `shape` (the benchmark's own for llm_input). Throws
  * CoverageCheckError when a canary or the positive control says the judgement
  * itself cannot be trusted.
  *
@@ -128,13 +170,17 @@ async function missedIds(rulesDir: string, texts: readonly string[]): Promise<Se
  * decides what is left to mine; the canaries run there too, so a draft that
  * matches anything still fails the run.
  */
-export async function coverageOf(texts: readonly string[], rulesDir: string): Promise<CoverageResult> {
+export async function coverageOf(
+  texts: readonly string[],
+  rulesDir: string,
+  shape: DeliveryShape = 'llm_input',
+): Promise<CoverageResult> {
   const root = mkdtempSync(join(tmpdir(), 'fn-mine-coverage-'));
   try {
     const copy = join(root, 'rules');
     cpSync(rulesDir, copy, { recursive: true });
 
-    const missedByLive = await missedIds(copy, texts);
+    const missedByLive = await missedIds(copy, texts, shape);
     const coveredByLive = texts.filter((_, i) => !missedByLive.has(`fn-${i}`)).length;
     if (texts.length > 0 && coveredByLive / texts.length > MAX_COVERED_FRACTION) {
       throw new CoverageCheckError(
@@ -144,12 +190,27 @@ export async function coverageOf(texts: readonly string[], rulesDir: string): Pr
     }
 
     const draftsEvaluated = makeDraftsEvaluable(copy);
-    const missed = draftsEvaluated > 0 ? await missedIds(copy, texts) : missedByLive;
+    const missed = draftsEvaluated > 0 ? await missedIds(copy, texts, shape) : missedByLive;
     const uncovered = texts.filter((_, i) => missed.has(`fn-${i}`));
     return { uncovered, coveredCount: texts.length - uncovered.length, draftsEvaluated };
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+}
+
+/**
+ * The false negatives of a vendored corpus: which of `texts` the non-draft rules
+ * under `rulesDir` miss on `shape`. This is the benchmark report HackAPrompt and
+ * PINT get from src/eval, computed here because nothing else runs these corpora;
+ * it is what coverageOf() is then handed. Same canaries, same failure.
+ */
+export async function liveMisses(
+  texts: readonly string[],
+  rulesDir: string,
+  shape: DeliveryShape,
+): Promise<readonly string[]> {
+  const missed = await missedIds(rulesDir, texts, shape);
+  return texts.filter((_, i) => missed.has(`fn-${i}`));
 }
 
 interface HackapromptRecord {
@@ -199,6 +260,35 @@ export function describeNullResult(c: MiningStageCounts): string {
   if (c.proposed === 0) return `NULL RESULT — ${c.uncovered} uncovered false negatives, but the model proposed no candidates.`;
   if (c.survived === 0) return `NULL RESULT — the gate rejected all ${c.proposed} proposed candidates (min recovers or any benign hit).`;
   return `${c.survived} candidate(s) survived the gate.`;
+}
+
+export interface CorpusStageCounts extends MiningStageCounts {
+  readonly corpus: string;
+}
+
+/** The run's counts summed over its corpora. */
+export function totalStages(perCorpus: readonly CorpusStageCounts[]): MiningStageCounts {
+  return perCorpus.reduce(
+    (t, c) => ({
+      fnTotal: t.fnTotal + c.fnTotal,
+      uncovered: t.uncovered + c.uncovered,
+      proposed: t.proposed + c.proposed,
+      survived: t.survived + c.survived,
+    }),
+    { fnTotal: 0, uncovered: 0, proposed: 0, survived: 0 },
+  );
+}
+
+/**
+ * describeNullResult over the whole run, then each corpus's own counts, so an
+ * empty week says which corpus ran dry and at which stage.
+ */
+export function describeNullResultByCorpus(perCorpus: readonly CorpusStageCounts[]): string {
+  const detail = perCorpus
+    .map((c) => `${c.corpus}: ${c.fnTotal} FN, ${c.uncovered} uncovered, ${c.proposed} proposed, ${c.survived} survived`)
+    .join('; ');
+  const head = describeNullResult(totalStages(perCorpus));
+  return detail ? `${head} Per corpus — ${detail}.` : head;
 }
 
 /**

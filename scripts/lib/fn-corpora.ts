@@ -46,6 +46,19 @@ import yaml from "js-yaml";
  */
 export type CorpusChannel = "prompt" | "document";
 
+/**
+ * Which event a prompt-channel sample reaches the agent as. Both are prompt
+ * channel; the difference is who put the text there.
+ *
+ *   `llm_input`     — the user typed it (HackAPrompt, PINT, garak).
+ *   `tool_response` — a tool returned it: an email the mail tool read, a page
+ *                     the browser fetched. Indirect injection.
+ *
+ * Unset means `llm_input`, which is what every corpus registered before this
+ * field existed was measured as.
+ */
+export type DeliveryShape = "llm_input" | "tool_response";
+
 /** One sample, normalised. `family` is the corpus's own taxonomy, verbatim. */
 export interface CorpusSample {
   readonly id: string;
@@ -65,6 +78,8 @@ export interface CorpusDef {
   readonly usable: boolean;
   /** Why usable is false, or what the corpus contributes when it is true. */
   readonly note: string;
+  /** The production event a prompt-channel sample arrives as (default llm_input). */
+  readonly eventShape?: DeliveryShape;
   readonly load: (root: string) => readonly CorpusSample[];
 }
 
@@ -456,6 +471,26 @@ export const CORPORA: readonly CorpusDef[] = Object.freeze([
     usable: true,
     note: "PromptInject goal-hijacking / prompt-leaking grid. Templated: a small set of rogue strings crossed with delimiters and escapes, so distinct techniques are far fewer than the row count.",
     load: loadPromptinject,
+  },
+  {
+    id: "llmail-inject",
+    channel: "prompt",
+    eventShape: "tool_response",
+    path: "data/test-corpora/llmail-inject/corpus.json",
+    labelled: true,
+    usable: true,
+    note: "Microsoft LLMail-Inject (MIT): human-written emails that made an email agent call send_email, kept only when all five challenge objectives succeeded. Each email reaches the agent as the mail tool's OUTPUT, not as user input. Every row carries the challenge's fixed recipient and body (see BENCHMARK_ARTIFACTS); provenance in SOURCE.md.",
+    load: loadAttackFixtures("data/test-corpora/llmail-inject/corpus.json", "llmail"),
+  },
+  {
+    id: "browsesafe-bench",
+    channel: "prompt",
+    eventShape: "tool_response",
+    path: "data/test-corpora/browsesafe-bench/corpus.json",
+    labelled: true,
+    usable: true,
+    note: "Perplexity BrowseSafe-Bench (MIT), test split: web pages with a hidden prompt injection, reaching a browser agent as the browser tool's OUTPUT. GENERATED (LLM rewriting plus eleven fixed templates), not human-written. Each page is stored as the text units no benign page of the split holds, so the injection is in a few KB instead of ~53 KB of HTML; provenance in SOURCE.md.",
+    load: loadAttackFixtures("data/test-corpora/browsesafe-bench/corpus.json", "browsesafe"),
   },
   {
     id: "autoresearch-adversarial",
