@@ -41,7 +41,13 @@ import { parseArgs } from 'node:util';
 import Anthropic from '@anthropic-ai/sdk';
 import { needsUnicodeFlag } from '../src/engine.js';
 import { callClaude as sharedCallClaude, describeBackend, backendAvailable } from './lib/claude-client.js';
-import { coverageOf, successfulHackapromptMisses, describeNullResult, authoringRoom } from './lib/fn-mine-input.js';
+import {
+  coverageOf,
+  successfulHackapromptMisses,
+  describeNullResult,
+  assertNullResultComplete,
+  authoringRoom,
+} from './lib/fn-mine-input.js';
 import { gateAuthoredBatch } from './lib/fn-mine-gate.js';
 import { assertSomeChunkRead, mineChunkReply, type ChunkResult, type MineCandidate } from './lib/fn-mine-reply.js';
 import { finalizeAuthoredRule, isRuleCategory, re2Problem, visibilityProblem, withoutHackapromptGoal } from './lib/fn-mine-quality.js';
@@ -539,8 +545,10 @@ async function main(): Promise<void> {
   // crash the whole run — the OTHER corpora should still get mined. A corpus
   // that fails to regenerate is skipped for this run and logged loudly, not
   // silently — this is exactly the kind of failure `set -o pipefail` in the
-  // calling workflow is there to make visible if left unhandled.
+  // calling workflow is there to make visible if left unhandled. If the others
+  // then yield nothing, the run fails rather than report a null result.
   const availableCorpora: CorpusSpec[] = [];
+  const skippedCorpora: string[] = [];
   for (const spec of CORPORA) {
     try {
       for (const cmd of spec.regenerate) {
@@ -549,7 +557,8 @@ async function main(): Promise<void> {
       }
       availableCorpora.push(spec);
     } catch (e) {
-      console.log(`[fn-mine] WARNING: ${spec.name} corpus regeneration failed — skipping this corpus for this run.`);
+      skippedCorpora.push(spec.name);
+      console.log(`::warning::[fn-mine] ${spec.name} corpus regeneration failed — skipping this corpus for this run.`);
       console.log(`[fn-mine]   ${e instanceof Error ? e.message : String(e)}`);
     }
   }
@@ -646,6 +655,8 @@ async function main(): Promise<void> {
   console.log(`[fn-mine] total survivors: ${allSurvivors.length}. Authoring top ${picked.length}${deferred > 0 ? ` (deferring ${deferred} to next run)` : ''}.`);
 
   if (picked.length === 0) {
+    // A skipped corpus makes this a partial run, not an exhausted one.
+    assertNullResultComplete(skippedCorpora);
     const note = describeNullResult({ ...stages, survived: allSurvivors.length });
     console.log(`[fn-mine] ${note} Not an error.`);
     writeNullReport(note);
