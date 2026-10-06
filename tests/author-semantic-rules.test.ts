@@ -26,6 +26,8 @@ import {
   parsePerPrCap,
   promotionBudget,
   loadPendingRules,
+  atrIdAllocator,
+  readOpenPrFiles,
   type AuthorContext,
   type SemanticDraft,
 } from "../scripts/author-semantic-rules.js";
@@ -571,6 +573,32 @@ describe("per-PR cap", () => {
     expect(promotionBudget(8, 12, 10)).toBe(0);
     // A dispatch asking for more than the cap still stays under it.
     expect(promotionBudget(25, 0, 10)).toBe(10);
+  });
+});
+
+// The semantic lane allocated from disk only: main plus its own rolling branch.
+// The fn-mine lane's open PR held 02847/02848 that neither showed, so the next
+// semantic rule would have been 02847 too, and the second PR to merge would fail
+// "Duplicate rule ID".
+describe("rule id allocation", () => {
+  it("allocates past every taken id, open PRs' included, and never repeats", () => {
+    const next = atrIdAllocator([2845, 2846, 2847, 2848]);
+    expect([next(), next()]).toEqual(["ATR-2026-02849", "ATR-2026-02850"]);
+  });
+
+  it("starts at 1 with nothing taken, and pads to five digits", () => {
+    expect(atrIdAllocator([])()).toBe("ATR-2026-00001");
+  });
+
+  it("reads the open-PR path list, one path per line, and throws when the file is missing", () => {
+    const dir = mkdtempSync(join(tmpdir(), "atr-open-pr-"));
+    try {
+      writeFileSync(join(dir, "open.txt"), "rules/a/ATR-2026-02847-x.yaml\n\n  stats.json \n");
+      expect(readOpenPrFiles(join(dir, "open.txt"))).toEqual(["rules/a/ATR-2026-02847-x.yaml", "stats.json"]);
+      expect(() => readOpenPrFiles(join(dir, "missing.txt"))).toThrow();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 

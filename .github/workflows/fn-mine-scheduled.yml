@@ -165,7 +165,7 @@ jobs:
         run: |
           set -euo pipefail
           LIST="$RUNNER_TEMP/open-pr-files.txt"
-          gh pr list --state open --limit 1000 --json files --jq '.[].files[].path' > "$LIST"
+          bash "$GITHUB_WORKSPACE/scripts/list-open-pr-files.sh" "$LIST"
           echo "FN_MINE_OPEN_PR_FILES=$LIST" >> "$GITHUB_ENV"
           echo "Open PRs touch $(grep -c '^rules/' "$LIST" || true) rule file(s)."
 
