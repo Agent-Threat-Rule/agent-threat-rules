@@ -58,5 +58,15 @@ export {
   getMaturityThresholds,
 } from "./validate-maturity.js";
 
+// Wild-validation measurement provenance
+export {
+  WILD_MEASUREMENT_FIELDS,
+  isMeasuredFpRate,
+  isMeasuredSampleCount,
+  unmeasuredFpReason,
+  deriveWildFpRate,
+} from "./wild-measurement.js";
+export type { WildScanHit, WildRateDerivation } from "./wild-measurement.js";
+
 // Adapters
 export { parseATRRule, atrRuleToMetadata } from "./adapters/atr.js";

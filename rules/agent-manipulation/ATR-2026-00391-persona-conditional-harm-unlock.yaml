@@ -22,9 +22,9 @@ maturity: test
 severity: high
 references:
   owasp_llm:
-    - "LLM01:2025 - Prompt Injection"
+    - "LLM01:2025"
   owasp_agentic:
-    - "ASI01:2026 - Agent Behaviour Hijack"
+    - "ASI01:2026"
   mitre_atlas:
     - "AML.T0051 - LLM Prompt Injection"
     - "AML.T0054 - LLM Jailbreak"
@@ -88,7 +88,7 @@ detection:
       description: 'curly-brace unlock emoji prefix "{🔓 PersonaName}" — extends the [🔓JAILBREAK] pattern (ATR-2026-00346) to the curly-brace bracket format used in BreadClyde (#153); the padlock emoji in a structured prefix signals a jailbreak unlock mandate regardless of bracket style'
     - field: tool_response
       operator: regex
-      value: 'All\s+answers?\s+will\s+begin\s+with\s+[''\"{\[]\s*🔓'
+      value: 'All\s+answers?\s+will\s+begin\s+with\s+[''"{\[]\s*🔓'
       description: '"All answers will begin with [/{ 🔓" — answer-prefix unlock emoji mandate; requiring the model to prefix every response with an unlock symbol overrides safety presentation and signals a jailbreak persona is active'
   condition: any
   false_positives:

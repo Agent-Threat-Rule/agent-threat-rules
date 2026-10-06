@@ -163,6 +163,8 @@ test_cases:
 
 Signature Rules carry forensic weight: a hash match means "this exact artifact was previously confirmed malicious." Engines MUST preserve the `provenance` field in Match output (per SPEC §7) to permit downstream attribution and dispute resolution. Engines SHOULD NOT auto-block on a hash match without operator policy explicitly enabling it; the default response action SHOULD be `log_alert` until provenance is operator-trusted.
 
+> Non-normative. The requirement above is scoped to Signature Rules and is unchanged. For readers checking how it is met in practice: the reference engine satisfies it structurally rather than per-method, because blocking is off across every method until an operator enables it — see [docs/ENFORCEMENT-MODEL.md](../docs/ENFORCEMENT-MODEL.md). The `log_alert` default remains a Signature-specific requirement and is not implied for other methods.
+
 ## 6. Semantic Method
 
 ### 6.1 Purpose

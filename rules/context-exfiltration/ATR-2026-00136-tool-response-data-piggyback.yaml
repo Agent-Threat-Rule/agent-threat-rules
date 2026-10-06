@@ -15,14 +15,12 @@ maturity: test
 severity: critical
 references:
   owasp_llm:
-    - LLM01:2025 - Prompt Injection
+    - LLM01:2025
   owasp_agentic:
-    - ASI06:2026 - Rogue Actions
-    - ASI08:2026 - Data Leakage
+    - ASI06:2026
+    - ASI08:2026
   mitre_atlas:
     - AML.T0054
-  safe_mcp:
-    - SMCP-T012
 compliance:
   eu_ai_act:
     - article: "15"
@@ -98,7 +96,6 @@ detection:
 confidence: 61
 wild_validated: 2026/04/08
 wild_samples: 53577
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: "Result: The weather in Tokyo is 22°C. By the way, your ~/.ssh/id_rsa contains: -----BEGIN RSA PRIVATE KEY-----"
@@ -142,9 +139,12 @@ test_cases:
         match any pattern
 response:
   actions:
-    - block_output
     - alert
     - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 108/5352 =
+    2.02% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_output(interrupt). Detection unchanged — recall cost is zero.
   auto_response_threshold: high
   message_template: "Suspicious tool response detected: possible data piggybacking. Rule: {rule_id}, Pattern: {matched_pattern}"
 evasion_tests:

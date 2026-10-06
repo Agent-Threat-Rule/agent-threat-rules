@@ -1,0 +1,182 @@
+title: "XML/SVG Entity Expansion Bomb in Content Returned to an Agent"
+id: ATR-2026-02682
+rule_version: 2
+status: experimental
+description: >
+  Detects an entity-expansion bomb (billion laughs / quadratic blowup) inside
+  XML, SVG, SBOM, XLSX-sheet or DTD content that a tool returns to an agent, or
+  that an agent writes out. The decisive text is a DTD entity whose replacement
+  value is a packed run of six or more entity references -- <!ENTITY b
+  "&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;"> -- which is the only reason to write such a
+  value: each layer multiplies, so a few hundred bytes expand to gigabytes and
+  the parser, not the network, is what fails. Mined from CVE-2026-25128
+  (fast-xml-parser numeric-entity RangeError DoS). ATR already covers the OTHER
+  half of the DTD attack surface -- external entities pulling file:// or http://
+  URLs (ATR-2026-00568 / ATR-2026-01608) -- because those rules key on a URI
+  scheme. An expansion bomb contains no URI at all, so nothing in the corpus
+  sees it. Benign DTDs are deliberately excluded: an entity table
+  (<!ENTITY copyright "&#169; 2026 Example Ltd">) and a composite entity built
+  from a handful of separated references (<!ENTITY footer "&company; &address;
+  &phone;">) both fail the pattern, which requires SIX OR MORE references with
+  no separator between them.
+author: "ATR Community (CVE sweep)"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: medium
+
+references:
+  cve:
+    - "CVE-2026-25128"
+  cwe:
+    - "CWE-776"
+    - "CWE-400"
+  owasp_llm:
+    - "LLM10:2025"
+    - "LLM05:2025"
+  owasp_agentic:
+    - "ASI06:2026"
+    - "ASI03:2026"
+  mitre_attack:
+    - "T1499.004 - Application or System Exploitation"
+  mitre_atlas:
+    - "AML.T0029 - Denial of ML Service"
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2026-25128"
+    - "https://cwe.mitre.org/data/definitions/776.html"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires AI systems to be resilient against attempts to exploit vulnerabilities; this rule detects a parser resource-exhaustion payload arriving through tool output."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be treated; availability loss through untrusted-document parsing is treated here at runtime."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Denial of service through untrusted document ingestion is an identified AI risk requiring an active runtime countermeasure; this rule implements it."
+      strength: primary
+    - subcategory: "MS.2.6"
+      context: "Measuring AI system resilience and safety under adversarial input; this rule instruments the resource-exhaustion case."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by screening ingested documents for expansion bombs before they reach a parser."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented by alerting on the bomb's entity-chain signature."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: xml-entity-expansion-bomb
+  scan_target: agent
+  confidence: high
+  suppress_in_code_blocks: true
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)<!entity\s+(?:%\s*)?[\w.-]{1,24}\s+["''][^"'']{0,200}["'']\s*>[\s\S]{0,200}<!entity\s+(?:%\s*)?[\w.-]{1,24}\s+["''](?:[&%][\w.-]{1,12};){6,}'
+      description: "An entity declaration with a real body, followed within 200 characters by an entity whose value is a packed run of six or more references -- the two-layer structure a billion-laughs bomb needs. The chain is required because a single declaration cannot multiply: it expands once and stops."
+    - field: content
+      operator: regex
+      value: '(?i)<!entity\s+(?:%\s*)?[\w.-]{1,24}\s+["''](?:[&%][\w.-]{1,12};){6,}[\s\S]{0,200}<!entity\s+(?:%\s*)?[\w.-]{1,24}\s+["''](?:[^&"''\r\n]|&[^#"''\r\n])'
+      description: "The same two layers in the reverse declaration order, with the companion entity required to have a real body rather than a bare character reference (which is what a spacing or punctuation entity points at)."
+  false_positives:
+    - "FIXED in rule_version 2 -- A PACKED RUN OF CHARACTER ENTITIES IS NOT A BOMB. The pattern keyed on the run alone, so it fired on the ordinary publishing idiom of defining a fixed amount of space or punctuation: <!ENTITY sp6 \"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\">, an em-dash rule, a table-of-contents leader of &hellip;, an &emsp; gutter, and a DTD content model concatenating six short parameter entities. None of these can multiply -- they reference a character entity, expand exactly once and stop, which is the opposite of the property this rule exists to detect. The rule now requires the TWO-LAYER CHAIN a bomb needs: a companion entity declaration with a real body, either before the packed run or after it. Four measured FPs plus one DTD case are silent; all three true positives are unaffected."
+    - "FIXED in rule_version 2 -- the same chain requirement removed the entire quotation class. Security writing quotes the ONE decisive line (<!ENTITY lol2 \"&lol;&lol;...\">) because that line is the explanation; it does not carry the companion declaration that makes the line dangerous. Measured: an unfenced CVE-2026-25128 write-up, the same write-up in Traditional Chinese, a hardening CHANGELOG and a fuzzer log line all fired before and are silent after. This was previously documented as a KNOWN RESIDUAL that suppress_in_code_blocks could only half-cover; it is now genuinely fixed rather than suppressed."
+    - "RESIDUAL, MEASURED AND IRREDUCIBLE: a parser's own regression fixture -- tests/fixtures/billion_laughs.xml, checked in so the test can assert the parser REFUSES it -- still fires. The file is a complete, working bomb; it is benign only because of where it lives, and no pattern over its bytes can know that."
+    - "EVASION, STATED PLAINLY: the chain requirement gives a 200-character proximity window between the two declarations. A bomb that pads the gap wider than that, or that splits its layers across two documents, is no longer detected. Both declaration orders are covered, so simply reordering them does not evade."
+    - "An ordinary entity table such as <!ENTITY copyright \"&#169; 2026 Example Ltd\"> or <!ENTITY amp \"&#38;\"> -- a single reference, not a packed run"
+    - "A composite entity built from separated references, e.g. <!ENTITY footer \"&company; &address; &phone;\"> -- the spaces break the run and the count is below six"
+    - "XHTML/DocBook DTD driver files that declare and immediately invoke parameter entities (%HTMLlat1;) -- each declaration holds a public identifier, not a reference run"
+    - "A security article or advisory that prints the billion-laughs payload: the rule sets suppress_in_code_blocks, so a payload inside a markdown fence or inline backticks is not reported. KNOWN RESIDUAL: an article that pastes the payload as bare prose, with no fence and no backticks, will still match -- and so would a poisoned document, which is the reason the suppression is limited to code context rather than removed."
+
+response:
+  actions:
+    - alert
+  message_template: >
+    [ATR-2026-02682] Ingested XML/SVG/DTD content declares an entity whose value
+    is a packed run of entity references -- an expansion bomb. Do not hand this
+    document to an XML parser; expansion is multiplicative and will exhaust
+    memory before any content is produced.
+
+confidence: 82
+
+test_cases:
+  true_positives:
+    - input: '<?xml version="1.0"?><!DOCTYPE lolz [<!ENTITY lol "lol"><!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;"><!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">]><lolz>&lol3;</lolz>'
+      expected: triggered
+      description: "Canonical billion laughs delivered as an XML tool_response"
+    - input: '<!DOCTYPE svg [<!ENTITY a "AAAA"><!ENTITY b "&a;&a;&a;&a;&a;&a;&a;&a;"><!ENTITY c "&b;&b;&b;&b;&b;&b;&b;&b;">]><svg xmlns="http://www.w3.org/2000/svg">&c;</svg>'
+      expected: triggered
+      description: "Same bomb inside an SVG an agent was asked to render or convert"
+    - input: '<!DOCTYPE r [<!ENTITY % a "x"><!ENTITY % b "%a;%a;%a;%a;%a;%a;%a;%a;">]><r/>'
+      expected: triggered
+      description: "Parameter-entity spelling of the same multiplication"
+  true_negatives:
+    - input: '<!ENTITY copyright "&#169; 2026 Example Ltd"><!ENTITY nbsp "&#160;"><!ENTITY amp "&#38;">'
+      expected: not_triggered
+      description: "An ordinary character-entity table -- the everyday benign use of <!ENTITY"
+    - input: '<!ENTITY footer "&company; &address; &phone;"><!ENTITY company "Acme Corp">'
+      expected: not_triggered
+      description: "ADVERSARIAL: a composite entity really is built from several references. Found while writing benign twins; kept passing because the pattern requires six or more references with no separator between them."
+    - input: '<!ENTITY % HTMLlat1 PUBLIC "-//W3C//ENTITIES Latin 1 for XHTML//EN" "xhtml-lat1.ent">%HTMLlat1;'
+      expected: not_triggered
+      description: "XHTML DTD driver: a parameter entity declared from a public identifier and then invoked"
+    - input: '<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "docbookx.dtd" [<!ENTITY productname "Widget"><!ENTITY version "3.2">]><book><title>&productname; &version;</title></book>'
+      expected: not_triggered
+      description: "DocBook document with two substitution entities"
+    - input: "Billion laughs example from the advisory:\n\n```xml\n<!ENTITY lol2 \"&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;\">\n```\n\nThe parser expands each layer ten times."
+      expected: not_triggered
+      description: "ADVERSARIAL: a security article that prints the payload inside a fenced code block. Found while writing benign twins; fixed by tagging the rule suppress_in_code_blocks so fenced and inline-backtick payloads are not reported."
+    - input: '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>CFBundleName</key><string>Reporter</string></dict></plist>'
+      expected: not_triggered
+      description: "Ordinary plist with an external DTD reference and no entity declarations"
+    - input: '<!DOCTYPE chapter SYSTEM "docbook.dtd" [\n<!ENTITY sp6 "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;">\n<!ENTITY nbsp "&#160;">\n]><chapter><para>&sp6;Indented</para></chapter>'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: the publishing idiom of defining a fixed indent as repeated &nbsp;. Six packed references, but they resolve to a character entity, so expansion is one layer deep and terminates."
+    - input: '<!ENTITY hrule "&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;">'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a decorative em-dash rule, eight references packed."
+    - input: '<!ENTITY leader "&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;">\n<!ENTITY hellip "&#8230;">'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a table-of-contents leader. Note the companion declaration here points at a bare character reference, which is what separates it from a bomb layer."
+    - input: '<!ENTITY gutter "&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;">'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: an em-space gutter entity."
+    - input: '<!ENTITY % Inline.mix "%inl.a;%inl.b;%inl.c;%inl.d;%inl.e;%inl.f;">\n<!ELEMENT p (#PCDATA %Inline.mix;)*>'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a DTD content model assembled from six short parameter entities with no separator, which is how modular DTDs concatenate class entities."
+    - input: 'CVE-2026-25128 write-up. The decisive line is <!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;"> -- each layer multiplies by ten, so a few hundred bytes become gigabytes.'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: unfenced advisory prose. Writing quotes the one decisive line; it does not carry the companion declaration that makes the line dangerous."
+    - input: '實體擴展炸彈的關鍵在於 <!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;"> 這一行,每一層都會相乘。'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: the same explanation in Traditional Chinese, outside any code fence."
+    - input: '## 4.2.0\n### Security\n- The XML loader now caps entity expansion. Documents containing <!ENTITY b "&a;&a;&a;&a;&a;&a;&a;&a;"> are rejected instead of expanded. CVE-2026-25128.'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a hardening CHANGELOG entry."
+    - input: '[fuzz] iteration 40122 rejected input: <!ENTITY b "&a;&a;&a;&a;&a;&a;&a;&a;"> (EntityExpansionLimit)\n[fuzz] iteration 40123 ok'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW FP, fixed in v2: a fuzzer log line reporting that the payload was correctly refused."

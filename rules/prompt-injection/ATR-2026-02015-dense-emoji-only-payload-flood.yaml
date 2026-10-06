@@ -21,9 +21,9 @@ severity: high
 
 references:
   owasp_llm:
-    - "LLM01:2025 - Prompt Injection"
+    - "LLM01:2025"
   owasp_agentic:
-    - "ASI01:2026 - Agent Goal Hijack"
+    - "ASI01:2026"
   mitre_atlas:
     - "AML.T0051 - LLM Prompt Injection"
     - "AML.T0054 - LLM Jailbreak"
@@ -76,7 +76,7 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: "(?:[\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{27BF}]\\s*){8,}"
+      value: "(?:[🌀-🫿☀-➿]\\s*){8,}"
       description: "Dense run of 8+ consecutive emoji-class codepoints (pictographs/symbols/dingbats), a payload-flood shape used to evade text-based filters. Channel caveat: apply to untrusted-input channels (user turn / tool_response); low risk against system/developer content."
   condition: any
   false_positives:
@@ -98,7 +98,6 @@ response:
 confidence: 68
 wild_validated: "2026/07/07"
 wild_samples: 4817
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: "😀🚀🌀😀🚀🌀😀🚀🌀😀🚀🌀😀🚀🌀😀🚀🌀😀🚀🌀"

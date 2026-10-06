@@ -113,6 +113,11 @@ Every rule at EXPERIMENTAL or above has a numeric confidence score (0-100) refle
 | 40-59 | Low | Experimental, narrow coverage | Evaluation and research only |
 | 0-39 | Draft | Minimal testing | Not deployed |
 
+The "Deployment Guidance" column is a review and promotion signal, not a runtime
+filter. The reference engine does not read this score when deciding whether to
+act; the switches that do are the lane and the blocking opt-in described in
+[For Consumers](#for-consumers) below.
+
 ### Score Calculation
 
 Confidence is computed from four factors:
@@ -225,15 +230,39 @@ See [rule-writing-guide.md](./rule-writing-guide.md) for detailed authoring inst
 
 ## For Consumers
 
-- **Enterprise blocking**: Only use rules with `maturity: stable` and `confidence >= 80`
-- **Alert-only monitoring**: Rules with `maturity: experimental` and `confidence >= 60`
-- **Research/evaluation**: Any maturity level
+The reference engine does not enforce unless you ask it to. By default it
+reports detections and returns no blocking decision, whatever maturity the
+matching rules are. Choosing a posture therefore means setting two independent
+switches — the **lane** (which maturities may fire) and the **blocking** opt-in
+(whether ATR may act). See
+[ENFORCEMENT-MODEL.md](./ENFORCEMENT-MODEL.md) for the full model.
 
-Filter rules by maturity in your scanner configuration:
+| Posture | Lane | Blocking | Rules that fire |
+|---|---|---|---|
+| **Enterprise blocking** | `enforce` | on | `maturity: stable` only |
+| **Alert-only monitoring** | `alert` | off | `stable` + `test` |
+| **Research / evaluation** | `hunt` (default) | off (default) | every maturity except `deprecated` |
 
-```yaml
-# example scanner config
-atr:
-  min_maturity: stable     # Only load stable rules
-  min_confidence: 80       # Only fire rules with confidence >= 80
+```bash
+# Enterprise blocking: stable rules only, and they are permitted to act.
+atr guard --lane enforce --blocking
+# Equivalently, for a process you do not control the argv of:
+ATR_LANE=enforce ATR_BLOCKING=1 atr guard
 ```
+
+```ts
+new ATREngine({ rulesDir, lane: 'enforce' });   // which rules fire
+new HookHandler({ engine, executor, blocking: true });  // whether ATR may act
+```
+
+**Do not enable blocking on the `hunt` lane** unless you have measured the
+false-positive cost on your own traffic. `hunt` loads every maturity, including
+rules that have never been validated against real-world data.
+
+> **The `confidence >= 80` half of this guidance is not enforceable today.** The
+> 0–100 score defined in [§Confidence Score](#confidence-score) above is not
+> read by the reference engine at match time; the engine derives a match
+> confidence from the rule's three-valued `tags.confidence` instead. Filter on
+> `maturity` (via the lane) for a threshold that actually takes effect, and treat
+> the numeric confidence score as a review and promotion signal rather than a
+> runtime gate.

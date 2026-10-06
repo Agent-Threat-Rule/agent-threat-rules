@@ -32,11 +32,11 @@ severity: critical
 
 references:
   owasp_llm:
-    - "LLM01:2025 - Prompt Injection"
-    - "LLM06:2025 - Excessive Agency"
+    - "LLM01:2025"
+    - "LLM06:2025"
   owasp_agentic:
-    - "ASI01:2026 - Prompt Injection (Direct + Indirect)"
-    - "ASI04:2026 - Unauthorized Resource Access"
+    - "ASI01:2026"
+    - "ASI04:2026"
   mitre_atlas:
     - "AML.T0051.001 - Indirect"
   research:
@@ -46,10 +46,19 @@ references:
 
 compliance:
   nist_csf:
-    - "DE.CM-09"
-    - "PR.AC-04"
-  etsi_ts_104223:
-    - "P4.4"
+    - subcategory: "DE.CM-09"
+      context: >
+        Neither span is suspicious alone — retrieving a web page is ordinary, and so is
+        calling a write tool. The adverse pattern is the ordering, and only monitoring
+        the running system as DE.CM-09 requires makes that ordering visible.
+      strength: primary
+    - subcategory: "PR.AA-05"
+      context: >
+        Letting untrusted retrieved content reach a write, destructive or exfiltrative
+        tool means the agent is exercising more privilege than the provenance of its
+        input warrants. Secondary: the rule is evidence that the least-privilege intent
+        behind PR.AA-05 is not holding, not a control that defines it.
+      strength: secondary
   eu_ai_act:
     - article: "15"
       context: >
@@ -154,10 +163,13 @@ detection:
 
 response:
   actions:
-    - block_tool
-    - quarantine_session
     - alert
     - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): 0 FP but the measurement
+    is incomplete — the harness reported conditions it could not exercise, so the silence is an
+    unasked question; ceiling = observe. Removed block_tool(interrupt),
+    quarantine_session(terminate). Detection unchanged — recall cost is zero.
   message_template: >
     [ATR-2026-00550] CRITICAL: Indirect prompt injection trace shape
     detected. Untrusted RETRIEVER span {{trace.preceded_by_span.id}}
@@ -170,7 +182,6 @@ response:
 
 confidence: 88
 
-wild_fp_rate: 0
 
 test_cases:
   true_positives:

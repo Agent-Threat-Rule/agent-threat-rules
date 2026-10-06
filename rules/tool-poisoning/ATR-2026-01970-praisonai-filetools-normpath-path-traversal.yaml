@@ -18,8 +18,8 @@ detection_tier: pattern
 maturity: test
 severity: critical
 references:
-  owasp_llm: ["LLM06:2025 - Excessive Agency"]
-  owasp_agentic: ["ASI06:2026 - Tool Misuse"]
+  owasp_llm: ["LLM06:2025"]
+  owasp_agentic: ["ASI06:2026"]
   mitre_atlas: ["AML.T0049 - Exploit Public-Facing Application"]
   mitre_attack: ["T1190 - Exploit Public-Facing Application"]
   cve: ["CVE-2026-35615"]
@@ -89,7 +89,6 @@ response:
     normpath-then-dotdot-check lets '../' paths escape the workspace and read/write
     any host file (e.g. /etc/passwd). Block this call and upgrade PraisonAI to >= 1.5.113.
 confidence: 80
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: "FileTools.read_file('/tmp/../etc/passwd')"

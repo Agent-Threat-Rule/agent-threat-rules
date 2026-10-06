@@ -21,10 +21,10 @@ references:
   mitre_atlas:
     - AML.T0024 - Exfiltration via AI Inference API
   owasp_llm:
-    - LLM02:2025 - Sensitive Information Disclosure
+    - LLM02:2025
   owasp_agentic:
-    - ASI06:2026 - Insufficient Access Controls
-    - ASI03:2026 - Agent Identity and Access Abuse
+    - ASI06:2026
+    - ASI03:2026
 compliance:
   eu_ai_act:
     - article: "15"
@@ -93,7 +93,10 @@ response:
   actions:
     - block_tool
     - alert
-    - quarantine_session
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): 0/5352 benign FP, but
+    maturity is "test" — only stable is rated for irreversible actions; ceiling = degrade.
+    Removed quarantine_session(terminate). Detection unchanged — recall cost is zero.
   message_template: |
     [ATR-2026-00423] Natural-language sensitive-file disclosure instruction.
     The skill directs the agent to read or include contents of a well-known

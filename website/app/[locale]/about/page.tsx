@@ -74,8 +74,8 @@ const MILESTONES: Milestone[] = [
       zh: "大規模惡意軟體行動研究發布",
     },
     detail: {
-      en: "Scanned 96,096 skills across five registries. Documented malicious skills from three coordinated threat actors (552 confirmed on the live blacklist). Notified NousResearch via issue #9809.",
-      zh: "跨五個 registry 掃描 96,096 個 skill，記錄三個協同行為者的惡意 skill（即時黑名單已確認 552 個），透過 issue #9809 通報 NousResearch。",
+      en: "Scanned 101,280 agent skills and MCP definitions across five registries; 1,434 flagged (engine v2.0.0, as of 2026-04-13). Documented malicious skills from three coordinated threat accounts and notified NousResearch via issue #9809.",
+      zh: "跨五個 registry 掃描 101,280 個 agent skill 與 MCP 定義，1,434 個被標記（engine v2.0.0，資料日期 2026-04-13）。記錄三個協同帳號的惡意 skill，並透過 issue #9809 通報 NousResearch。",
     },
   },
   {
@@ -103,12 +103,12 @@ const MILESTONES: Milestone[] = [
   {
     date: "2026-04-22",
     title: {
-      en: "Cisco AI Defense production rollout (PR #99)",
-      zh: "Cisco AI Defense production 上線 (PR #99)",
+      en: "ATR rule pack merged into cisco-ai-defense/skill-scanner (PR #99)",
+      zh: "ATR 規則集合併進 cisco-ai-defense/skill-scanner (PR #99)",
     },
     detail: {
-      en: "Follow-up production PR after the 34-rule PoC. Lands the full ATR rule pack inside Cisco AI Defense's skill-scanner. ATR now ships in two Cisco production paths: rule-packs CLI and skill-scanner.",
-      zh: "34 條 PoC 之後的 production 跟進 PR,把完整 ATR 規則集送進 Cisco AI Defense 的 skill-scanner。ATR 同時走兩條 Cisco production 路徑:rule-packs CLI + skill-scanner。",
+      en: "Follow-up PR after the 34-rule PoC, landing the ATR rule pack in the Cisco AI Defense team's open-source skill-scanner repo. Two consumption paths exist there: the rule-packs CLI and skill-scanner. This is a merged pull request in a public repository, not a statement about Cisco's commercial product.",
+      zh: "34 條 PoC 之後的跟進 PR,把 ATR 規則集送進 Cisco AI Defense 團隊的開源 skill-scanner repo。該 repo 裡有兩條消費路徑:rule-packs CLI 與 skill-scanner。這是公開 repo 裡一個已合併的 PR,不是對 Cisco 商業產品的陳述。",
     },
   },
   {
@@ -231,8 +231,8 @@ export default async function AboutPage({
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "但成長從不是目的——對精確度誠實才是。v3.5.0 引入偵測車道:每條規則標明成熟度,使用者自己決定要信任到什麼程度。enforce 車道只讓最成熟的規則開火(在 65,000 筆良性語料上約 0.24% 誤報);預設的 hunt 車道把全部規則當建議性訊號跑(約 9%)。ATR 逐車道揭露誤報率,從不用單一個好看的數字一概而論。一個標準的可信度,取決於它願不願意公開自己最差的數字。"
-            : "But growth was never the point — honesty about precision is. The v3.5.0 release introduced detection lanes: every rule declares a maturity, and the consumer decides how far to trust it. The enforce lane fires only the most mature rules (~0.24% false positives on a 65,000-sample benign corpus); the default hunt lane runs everything as advisory (~9%). ATR reports false-positive rates lane by lane, never as a single flattering number. A standard earns trust by publishing its worst figure, not hiding it."}
+            ? "但成長從不是目的——對精確度誠實才是。v3.5.0 引入偵測車道:每條規則標明成熟度,使用者自己決定要信任到什麼程度。enforce 車道只讓最成熟的規則開火;預設的 hunt 車道把全部規則當建議性訊號跑。ATR 逐車道揭露誤報率,從不用單一個好看的數字一概而論——而各車道目前的誤報率數字已被撤回、等待重新量測,因為量測所用的良性語料被發現混入真實越獄樣本。一個標準的可信度,取決於它願不願意公開自己最差的數字,以及在一個數字站不住時願不願意把它撤掉。"
+            : "But growth was never the point — honesty about precision is. The v3.5.0 release introduced detection lanes: every rule declares a maturity, and the consumer decides how far to trust it. The enforce lane fires only the most mature rules; the default hunt lane runs everything as advisory. ATR reports false-positive rates lane by lane, never as a single flattering number — and the current per-lane figures are withdrawn pending re-measurement, because the benign corpus they were measured on was found to contain real jailbreak samples. A standard earns trust by publishing its worst figure, and by withdrawing any figure it can no longer stand behind."}
         </p>
       </Section>
 
@@ -296,8 +296,8 @@ export default async function AboutPage({
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "目前的外部採用包含兩條生產環境部署(Cisco AI Defense 完整規則集進 skill-scanner、Microsoft AGT 287 條規則加每週自動同步),外加 Gen Digital Sage 已合併的規則包,兩個標準機構已合併(MISP/CIRCL 的 taxonomies #323 + galaxy #1207、OWASP A-S-R-H #74),以及兩條送審中的 standards-body 提案(NIST AI RMF 社群 OSCAL catalog 已自 publish · usnistgov/oscal-content#338 協作分支審查中,非 NIST 背書;OpenTelemetry GenAI SIG 的 agent.threat.detection.* PR #165 review 中)——這種「企業把鞋帶綁緊就提 PR」的採用模式,是 ATR 想要的治理質感。"
-            : "External adoption to date includes two in production (Cisco AI Defense's full rule pack in skill-scanner, Microsoft AGT's 287 rules plus weekly auto-sync) plus Gen Digital's merged Sage pack; two standards-body integrations actually merged (MISP / CIRCL taxonomies #323 + galaxy #1207, and OWASP A-S-R-H #74); and two standards-body submissions in review (a community-authored OSCAL catalog for NIST AI RMF self-published by the ATR maintainers, with usnistgov/oscal-content#338 collaboration branch in review — not a NIST endorsement; and the agent.threat.detection.* semantic-conventions PR #165 in OpenTelemetry GenAI SIG review). This pattern — enterprises integrating via pull request instead of private forks — is the governance texture ATR is built for."}
+            ? "目前的外部採用包含三筆已合併的上游整合(Cisco AI Defense 的開源 skill-scanner、Microsoft AGT 287 條規則加每週自動同步、Gen Digital Sage 已合併的規則包 —— 憑據都是公開 repo 裡已合併的 PR),兩個標準機構已合併(MISP/CIRCL 的 taxonomies #323 + galaxy #1207、OWASP A-S-R-H #74),以及兩條送審中的 standards-body 提案(NIST AI RMF 社群 OSCAL catalog 已自 publish · usnistgov/oscal-content#338 協作分支審查中,非 NIST 背書;OpenTelemetry GenAI SIG 的 agent.threat.detection.* PR #165 review 中)——這種「企業把鞋帶綁緊就提 PR」的採用模式,是 ATR 想要的治理質感。"
+            : "External adoption to date includes three merged upstream integrations (the ATR rule pack in Cisco AI Defense's open-source skill-scanner, Microsoft AGT's 287 rules plus weekly auto-sync, and Gen Digital's merged Sage pack — each evidenced by a merged pull request in a public repository); two standards-body integrations actually merged (MISP / CIRCL taxonomies #323 + galaxy #1207, and OWASP A-S-R-H #74); and two standards-body submissions in review (a community-authored OSCAL catalog for NIST AI RMF self-published by the ATR maintainers, with usnistgov/oscal-content#338 collaboration branch in review — not a NIST endorsement; and the agent.threat.detection.* semantic-conventions PR #165 in OpenTelemetry GenAI SIG review). This pattern — enterprises integrating via pull request instead of private forks — is the governance texture ATR is built for."}
         </p>
         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
           <a

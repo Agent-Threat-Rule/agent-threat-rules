@@ -16,9 +16,9 @@ references:
   mitre_atlas:
     - AML.T0057 - LLM Data Leakage
   owasp_llm:
-    - LLM02:2025 - Sensitive Information Disclosure
+    - LLM02:2025
   owasp_agentic:
-    - ASI08:2026 - Data Leakage
+    - ASI08:2026
 metadata_provenance:
   mitre_atlas: auto-generated
 compliance:
@@ -66,7 +66,7 @@ detection:
     - field: content
       operator: regex
       value: >-
-        (?i)(?:process\.env|os\.environ|ENV|environment\s+variable)\s*[\[.\s]+\s*(?:OPENAI|ANTHROPIC|GITHUB|AWS|AZURE|GCP|STRIPE|TWILIO|SENDGRID|DATABASE|DB|POSTGRES|MYSQL|REDIS|SECRET|PRIVATE|AUTH)[A-Z_]*(?:API)?[_\s-]*(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIALS?)\s*[\]]*\s+(?:is\s+(?:defined|set|present|available|stored)|exists?|but\s+(?:I\s+)?(?:cannot|can.t|unable|don.t
+        (?i)(?:process\.env|os\.environ|ENV|environment\s+variable)[\[.\s]+(?:OPENAI|ANTHROPIC|GITHUB|AWS|AZURE|GCP|STRIPE|TWILIO|SENDGRID|DATABASE|DB|POSTGRES|MYSQL|REDIS|SECRET|PRIVATE|AUTH)[A-Z_]*(?:[\s-][_\s-]*)?(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIALS?)(?:\s*\]+)?\s+(?:is\s+(?:defined|set|present|available|stored)|exists?|but\s+(?:I\s+)?(?:cannot|can.t|unable|don.t
         have))
       description: Confirming env var existence while claiming no access
   false_positives:
@@ -76,7 +76,6 @@ detection:
 confidence: 41
 wild_validated: 2026/04/08
 wild_samples: 53577
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: The environment variable is stored at process.env.OPENAI_API_KEY but I cannot access its value.

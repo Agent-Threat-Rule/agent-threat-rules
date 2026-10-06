@@ -1,7 +1,7 @@
 # ATR -> OWASP Agentic Top 10 (2026) Mapping
 
 Last updated: 2026-07-12
-ATR version: v3.5.8 (783 rules with OWASP Agentic tags)
+ATR version: v3.5.8 (826 rules with OWASP Agentic tags)
 OWASP framework: Agentic Top 10 v1.0 (December 2025)
 
 ## Summary
@@ -230,7 +230,7 @@ Plus 3 additional rules tagged ASI10 -- see `docs/owasp-agentic-mapping.json` fo
 
 Each YAML file under `rules/` is scanned for OWASP Agentic Top 10 tags in two locations:
 
-1. `references.owasp_agentic` -- string list (e.g. `"ASI01:2026 - Agent Goal Hijack"`)
+1. `references.owasp_agentic` -- string list (e.g. `"ASI01:2026"`)
 2. `compliance.owasp_agentic[].id` -- structured form (e.g. `id: ASI01:2026`)
 
 Bucketing is done on the `ASI[0-9]{2}` prefix to absorb legacy taxonomy suffixes. A rule mapping to multiple ASI categories counts in each. Strength tiers: **STRONG** >= 8 · **MODERATE** 4-7 · **LIMITED** 1-3.

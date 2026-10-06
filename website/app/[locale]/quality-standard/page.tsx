@@ -11,7 +11,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: "Quality Standard (RFC-001 v1.1) - ATR",
   description:
-    "An open detection-rule quality standard for the AI agent era. A maturity ladder with explicit gates, detection lanes that report false-positive rates per lane instead of a single figure, a vendor-neutral validator anyone can run, wild-validated on 96,096 real agents (as of 2026-04-14). MIT licensed. Effective 2026-04-14.",
+    "An open detection-rule quality standard for the AI agent era. A maturity ladder with explicit gates, detection lanes that report false-positive rates per lane instead of a single figure, a vendor-neutral validator anyone can run, wild-validated on 101,280 real agent skills and MCP definitions (engine v2.0.0, as of 2026-04-13). MIT licensed. Effective 2026-04-14.",
 };
 
 /* =============================================================
@@ -185,10 +185,10 @@ function Cell({ v }: { v: "yes" | "no" | "partial" }) {
 // figure carries an explicit "as of" date. Re-verify against data/stats.json
 // before citing externally — rule/scan counts move.
 const EVIDENCE = [
-  { stat: "Live", label: "Full ATR rule pack in Cisco AI Defense production" },
-  { stat: "96,096", label: "Real agent skills scanned across 6 registries (as of 2026-04-14)" },
-  { stat: "99.7%", label: "Precision on the PINT-format adversarial corpus" },
-  { stat: "~0.24%", label: "False-positive rate on the enforce lane (mature rules only)" },
+  { stat: "Merged", label: "ATR rule pack merged into cisco-ai-defense/skill-scanner (PR #99, 2026-04-22)" },
+  { stat: "101,280", label: "Real agent skills and MCP definitions scanned across 5 registries (engine v2.0.0, as of 2026-04-13)" },
+  { stat: "1,434", label: "Items flagged by that scan (as of 2026-04-13)" },
+  { stat: "Withdrawn", label: "Per-lane false-positive rates \u2014 withdrawn pending re-measurement" },
 ];
 
 const EXAMPLE_RULE = {
@@ -574,8 +574,8 @@ export default async function QualityStandardPage({
         </h2>
         <p className="text-sm text-stone mb-6 max-w-2xl">
           {locale === "zh"
-            ? "階梯不只是個標籤,它驅動三條偵測車道。每條車道是「放行哪些成熟度」與「對誤報的容忍度」之間,一個明擺著的取捨——而每條車道的誤報率,都各自公開。"
-            : "The ladder is not just a label — it drives three detection lanes. Each lane is an explicit tradeoff between which maturities it admits and how much false positive it tolerates. And each lane publishes its own false-positive rate."}
+            ? "階梯不只是個標籤,它驅動三條偵測車道。每條車道是「放行哪些成熟度」與「對誤報的容忍度」之間,一個明擺著的取捨。誤報率逐車道公開——但目前的數字已被撤回、等待重新量測。"
+            : "The ladder is not just a label — it drives three detection lanes. Each lane is an explicit tradeoff between which maturities it admits and how much false positive it tolerates. Each lane publishes its own false-positive rate — and those figures are currently withdrawn, pending re-measurement."}
         </p>
       </Reveal>
 
@@ -585,14 +585,16 @@ export default async function QualityStandardPage({
             <div className="font-data text-xs text-blue tracking-wider uppercase mb-2">
               {locale === "zh" ? "enforce 車道" : "enforce lane"}
             </div>
-            <div className="font-display text-3xl font-extrabold text-ink mb-1">~0.24%</div>
+            <div className="font-display text-3xl font-extrabold text-ink mb-1">
+              {locale === "zh" ? "最窄" : "Narrowest"}
+            </div>
             <div className="font-data text-xs text-stone mb-3">
-              {locale === "zh" ? "誤報率 · 僅 stable + confirm" : "false positives · stable + confirm only"}
+              {locale === "zh" ? "僅 stable + confirm · 誤報率待重測" : "stable + confirm only · FP rate pending re-measurement"}
             </div>
             <p className="text-sm text-stone leading-relaxed">
               {locale === "zh"
-                ? "只放行最成熟、經人工確認的規則。精確度買來的代價是召回率下降——這是刻意的取捨,擺在明處,讓在生產環境封鎖的人自己選。"
-                : "Admits only the most mature, human-confirmed rules. The precision is bought by giving up recall — a deliberate tradeoff, stated openly, for anyone who blocks in production."}
+                ? "只放行最成熟、經人工確認的規則。精確度買來的代價是召回率下降——這是刻意的取捨,擺在明處,讓在生產環境封鎖的人自己選。這條車道原先公布的誤報率已撤回:它所依據的良性語料被發現混入真實越獄樣本,重測完成前不再引用數字。"
+                : "Admits only the most mature, human-confirmed rules. The precision is bought by giving up recall — a deliberate tradeoff, stated openly, for anyone who blocks in production. The false-positive rate previously published for this lane is withdrawn: the benign corpus it was measured on was found to contain real jailbreak samples, so no figure is quoted until the re-measurement lands."}
             </p>
           </div>
         </Reveal>
@@ -619,14 +621,16 @@ export default async function QualityStandardPage({
             <div className="font-data text-xs text-stone tracking-wider uppercase mb-2">
               {locale === "zh" ? "hunt 車道（預設）" : "hunt lane (default)"}
             </div>
-            <div className="font-display text-3xl font-extrabold text-ink mb-1">~9%</div>
+            <div className="font-display text-3xl font-extrabold text-ink mb-1">
+              {locale === "zh" ? "最寬" : "Widest"}
+            </div>
             <div className="font-data text-xs text-stone mb-3">
-              {locale === "zh" ? "誤報率 · 全部規則,純建議性" : "false positives · everything, advisory only"}
+              {locale === "zh" ? "全部規則,純建議性 · 誤報率待重測" : "everything, advisory only · FP rate pending re-measurement"}
             </div>
             <p className="text-sm text-stone leading-relaxed">
               {locale === "zh"
-                ? "把所有規則當作建議性訊號全開,給做威脅獵捕的人最大的可見度。約 9% 的誤報率不是被藏起來的瑕疵——它就印在這裡,因為這條車道從不自動封鎖任何東西。"
-                : "Runs every rule as an advisory signal, giving threat hunters maximum visibility. The ~9% false-positive rate is not a flaw hidden in a footnote — it is printed right here, because this lane never blocks anything on its own."}
+                ? "把所有規則當作建議性訊號全開,給做威脅獵捕的人最大的可見度。這條車道的誤報率明顯高於 enforce 車道——那不是瑕疵,是這條車道的設計,因為它從不自動封鎖任何東西。原先公布的百分比同樣已撤回、等待重新量測。"
+                : "Runs every rule as an advisory signal, giving threat hunters maximum visibility. Its false-positive rate is materially higher than the enforce lane's — that is the design, not a flaw, because this lane never blocks anything on its own. The percentage previously published here is likewise withdrawn, pending re-measurement."}
             </p>
           </div>
         </Reveal>
@@ -639,8 +643,8 @@ export default async function QualityStandardPage({
           </div>
           <p className="text-sm text-ink leading-relaxed">
             {locale === "zh"
-              ? "0.24% 與 9% 是同一套規則、兩條車道的真實數字。把它們並排印出來,而不是只報那個漂亮的,是這個標準對「品質」的定義:一個標準的可信度,取決於它願不願意公開自己最差的數字。採用者拿到的不是一個被擦亮的承諾,而是一張可以自己驗證的取捨表。"
-              : "0.24% and 9% are the real figures from one ruleset across two lanes. Printing them side by side — instead of quoting only the flattering one — is what this standard means by quality: a standard earns trust by publishing its worst figure, not hiding it. Adopters get a tradeoff table they can verify themselves, not a polished promise."}
+              ? "這個標準對「品質」的定義有兩半:公開自己最差的數字,以及在發現一個數字站不住時把它撤掉。兩條車道的誤報率原本並排印在這裡;後來發現量測所用的良性語料混入了真實越獄樣本,於是數字被撤回、等待重新量測,而不是留在原地繼續好看。採用者拿到的不是一個被擦亮的承諾,而是一張可以自己驗證的取捨表——包含目前哪一格是空的。"
+              : "This standard defines quality in two halves: publish your worst figure, and withdraw any figure you can no longer stand behind. Both lanes' false-positive rates used to be printed side by side here. The benign corpus they were measured on was then found to contain real jailbreak samples, so the numbers were withdrawn pending re-measurement rather than left standing because they looked good. Adopters get a tradeoff table they can verify themselves — including which cell is currently empty."}
           </p>
         </div>
       </Reveal>

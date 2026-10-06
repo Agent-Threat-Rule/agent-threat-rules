@@ -24,19 +24,19 @@ severity: critical
 
 references:
   owasp_llm:
-    - "LLM01:2025 - Prompt Injection"
-    - "LLM03:2025 - Supply Chain Vulnerabilities"
+    - "LLM01:2025"
+    - "LLM03:2025"
   owasp_agentic:
-    - "ASI03:2026 - Tool Misuse"
-    - "ASI07:2026 - Insecure Inter-Agent Communication"
+    - "ASI03:2026"
+    - "ASI07:2026"
   mitre_atlas:
     - "AML.T0051.001 - Indirect"
     - "AML.T0053 - AI Agent Tool Invocation"
-    - "AML.T0110 - AI Agent Tool Poisoning"
+    - "AML.T0110.000 - AI Agent Tool Poisoning: Definition and Instructions"
     - "AML.T0104 - Publish Poisoned AI Agent Tool"
   safe_mcp:
-    - "SAFE-T1102 - Prompt Manipulation"
-    - "SAFE-T1001 - Tool Poisoning"
+    - "SAF-T1102"
+    - "SAF-T1001"
   research:
     - "Invariant Labs: MCP Security Notification — Tool Poisoning Attacks (April 2025)"
     - "Fake Postmark MCP Server npm package credential exfil (January 2026)"
@@ -147,7 +147,10 @@ detection:
 response:
   actions:
     - alert
-    - block_tool
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 227/5352 =
+    4.24% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_tool(interrupt). Detection unchanged — recall cost is zero.
   message_template: >
     [ATR-2026-00161] CRITICAL: MCP tool description contains a cross-tool
     shadowing or hidden directive attack. The tool signature may appear

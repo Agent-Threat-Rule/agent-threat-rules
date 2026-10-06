@@ -19,9 +19,9 @@ maturity: test
 severity: critical
 references:
   owasp_llm:
-    - "LLM06:2025 - Excessive Agency"
+    - "LLM06:2025"
   owasp_agentic:
-    - "ASI06:2026 - Tool Misuse"
+    - "ASI06:2026"
   mitre_atlas:
     - "AML.T0049 - Exploit Public-Facing Application"
   mitre_attack:
@@ -107,7 +107,6 @@ response:
     StdioClientTransport, reachable unauthenticated with x-request-from: internal.
     Block this input and upgrade Flowise to >= 3.0.1 (flowise-components >= 3.0.8).
 confidence: 85
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: 'POST /api/v1/node-load-method/customMCP {"inputs":{"mcpServerConfig":{"command":"touch","args":["/tmp/yofitofi"]}},"loadMethod":"listActions"}'

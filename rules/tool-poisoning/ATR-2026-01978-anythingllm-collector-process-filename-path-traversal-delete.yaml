@@ -17,8 +17,8 @@ detection_tier: pattern
 maturity: test
 severity: critical
 references:
-  owasp_llm: ["LLM06:2025 - Excessive Agency"]
-  owasp_agentic: ["ASI06:2026 - Tool Misuse"]
+  owasp_llm: ["LLM06:2025"]
+  owasp_agentic: ["ASI06:2026"]
   mitre_atlas: ["AML.T0049 - Exploit Public-Facing Application"]
   mitre_attack: ["T1190 - Exploit Public-Facing Application"]
   cve: ["CVE-2023-5832"]
@@ -71,7 +71,6 @@ response:
   message_template: >
     [ATR-2026-01978] CRITICAL: AnythingLLM collector POST /process accepts a filename with ../ traversal, enabling arbitrary file deletion outside the hotdir (e.g. anythingllm.db) on versions < 0.1.0 (CVE-2023-5832). Block and patch.
 confidence: 80
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: 'POST /process {"filename": "../../server/storage/anythingllm.db"}'

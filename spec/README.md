@@ -282,6 +282,6 @@ OASIS Open Project."
 - Spec issues: GitHub Issues with label `spec-bug` or `spec-question`
 - Spec proposals: GitHub Pull Requests with AEP template
 - Maintainer: Adam Lin <adam@agentthreatrule.org>
-- Fiscal sponsor: Open Source Collective Inc. (501(c)(3),
-  EIN 81-1567737)
+- Fiscal sponsor: Open Source Collective Inc. (501(c)(6),
+  EIN 82-2037583)
 - TSC (post-ratification): tsc@agentthreatrule.org (mailing list, public)

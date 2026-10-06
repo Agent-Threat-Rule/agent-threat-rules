@@ -1,0 +1,253 @@
+title: "JavaScript Sandbox Escape by Acquiring the Function Constructor Reflectively"
+id: ATR-2026-02681
+rule_version: 2
+status: experimental
+description: >
+  Detects code handed to an agent code-execution / expression-evaluation tool
+  that reaches the Function constructor WITHOUT writing the well-known
+  x.constructor.constructor ladder, by pulling the "constructor" property off a
+  prototype through a reflective accessor -- Reflect.get(Reflect.getPrototypeOf(
+  async function(){}), "constructor") or Object.getOwnPropertyDescriptor(
+  Object.getPrototypeOf(Object), "constructor").value -- and then invoking it on
+  a source string that returns the global object. Mined from CVE-2025-53626
+  (@pdfme/common expression evaluation) and its sibling CVE-2025-61927
+  (happy-dom VM context escape). ATR already detects the direct ladder
+  (ATR-2026-00436 / ATR-2026-01953); those rules key on the literal
+  ".constructor.constructor" or "process.mainModule.require", so the reflective
+  spelling -- which produces the identical Function object -- passes them
+  untouched. The rule requires BOTH halves in one event: the reflective
+  acquisition of "constructor" from a prototype, and a quoted source string
+  whose body returns this/globalThis/global/process. Either half alone is
+  ordinary metaprogramming and is deliberately not matched.
+author: "ATR Community (CVE sweep)"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+
+references:
+  cve:
+    - "CVE-2025-53626"
+    - "CVE-2025-61927"
+  cwe:
+    - "CWE-94"
+    - "CWE-693"
+    - "CWE-1321"
+  owasp_llm:
+    - "LLM05:2025"
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI05:2026"
+    - "ASI04:2026"
+  mitre_attack:
+    - "T1059.007 - JavaScript"
+  mitre_atlas:
+    - "AML.T0053 - AI Agent Tool Invocation"
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2025-53626"
+    - "https://nvd.nist.gov/vuln/detail/CVE-2025-61927"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resilience against attempts to alter system behaviour by exploiting vulnerabilities; this rule detects a sandbox escape that converts a restricted expression evaluator into arbitrary host code execution."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be treated; this rule is the runtime treatment for the code-sandbox escape risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Sandbox escape from an agent code-execution tool is an identified AI risk requiring an active runtime countermeasure; this rule implements it."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Measuring AI system security by testing whether restricted evaluators can be escaped; this rule is the detection instrument for that measurement."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by detecting expression payloads that break the evaluator's containment."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented by alerting on the reflective Function-constructor acquisition."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: js-sandbox-escape-reflective
+  scan_target: agent
+  confidence: high
+  suppress_in_code_blocks: true
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: "(?:\\\\{0,2}[\"'][\\w-]{0,24}(?:code|script|expression|expr|snippet|program)\\\\{0,2}[\"']\\s*:\\s*\\\\{0,2}[\"']|[\\w-]{0,24}(?:code|script|expression|expr|snippet|program)\\s*=\\s*\\\\{0,2}[\"'])[^\\n]{0,100}(?:getownpropertydescriptor|reflect\\.get)\\s*\\(\\s*(?:object|reflect)\\.getprototypeof[^\\n]{0,40}\\\\?[\"']constructor\\\\?[\"'][^\\n]{0,120}\\\\?[\"'`]\\s*return\\s+(?:this|globalthis|global|process)\\b"
+      description: >-
+        Reflective acquisition of the constructor slot from a prototype,
+        followed on the same line by a quoted source string that returns the
+        global object -- the Function constructor obtained without ever writing
+        .constructor.constructor, then invoked to hand back the host realm. The
+        whole thing must sit inside a CODE-VALUED TOOL ARGUMENT
+        ("code": "...", "script": "...", expression="..."), which is the channel
+        the title claims and the only one that separates evaluating the payload
+        from merely writing it down. See false_positives.
+    - field: content
+      operator: regex
+      value: "(?:\\\\{0,2}[\"'][\\w-]{0,24}(?:code|script|expression|expr|snippet|program)\\\\{0,2}[\"']\\s*:\\s*\\\\{0,2}[\"']|[\\w-]{0,24}(?:code|script|expression|expr|snippet|program)\\s*=\\s*\\\\{0,2}[\"'])[^\\n]{0,100}(?:object|reflect)\\.getprototypeof\\s*\\(\\s*(?:async\\s+function|function\\s*\\*)[^\\n]{0,40}\\\\?[\"']?constructor\\\\?[\"']?[^\\n]{0,80}\\\\?[\"'`]\\s*return\\s+(?:this|globalthis|global|process)\\b"
+      description: >-
+        The AsyncFunction / GeneratorFunction ladder in a code-valued tool
+        argument: the prototype of an async or generator function literal is
+        taken, its constructor read (quoted or dotted), and that constructor
+        invoked on a quoted source string returning the global object. Reading
+        the AsyncFunction constructor alone is a legitimate feature-detection
+        idiom and is NOT matched -- only its invocation on a global-returning
+        body, inside a code argument.
+  false_positives:
+    - "Serialization and deep-clone helpers that read a descriptor for an ordinary property, e.g. Object.getOwnPropertyDescriptor(Object.getPrototypeOf(instance), 'render') -- the property name must literally be 'constructor'"
+    - "A class-identity check such as Object.getPrototypeOf(o).constructor === Object -- no quoted return-the-global source string follows, so nothing matches"
+    - "Prototype-pollution defences that inspect Object.prototype's own descriptors (e.g. for '__proto__') -- the property name is not 'constructor'"
+    - >-
+      ADVERSARIAL REVIEW 2026-08-24, FIXED. Rule v1 matched the escape anywhere
+      in `field: content`. Twelve freshly written benign samples were run
+      through the engine and ALL TWELVE fired. The decisive ones were not
+      exotic: a vm2 sandbox-hardening test asserting the escape is BLOCKED, an
+      isolated-vm regression test, an ESLint "examples of incorrect code"
+      block, a static-analysis fixture array, a sandbox library changelog, a
+      Japanese security blog, a fenced code block in an article explaining
+      CVE-2025-53626, and ATR's own test_cases block. Every one of those is
+      something a coding agent writes to a FILE.
+
+      That is not a coincidence. On a tool_call event `field: content` resolves
+      to fields.content, and src/hook-handler.ts sets that from
+      toolInput.content -- the body of a Write/Edit call. So rule v1's dominant
+      production surface was file writes, not evaluation, which is the exact
+      opposite of what its own title says. Fixed by requiring the payload to sit
+      in a CODE-VALUED ARGUMENT (a code/script/expression-style key, then a
+      quote). "content" is deliberately NOT in that key list: writing a file is
+      not evaluating it. tags.suppress_in_code_blocks was added as a second
+      layer for fenced and backticked article text.
+    - >-
+      KNOWN RESIDUAL: code that legitimately needs the global object and reaches
+      for it through this ladder -- a globalThis fallback such as
+      Object.getPrototypeOf(async function(){}).constructor("return this")() --
+      still fires if it is submitted to an evaluation tool. It is a real idiom,
+      but inside an agent's code-execution argument it is also indistinguishable
+      from the escape, and the well-behaved spelling (globalThis, or plain
+      Function) is available. Triage, not a pattern change.
+    - >-
+      KNOWN GAP: a payload written to a file and evaluated later by a second
+      step is no longer matched here. Rule v1 claimed that ground and paid for
+      it with a 12/12 false-positive rate on benign security and test content.
+
+response:
+  actions:
+    - alert
+  message_template: >
+    [ATR-2026-02681] Code submitted to an execution/evaluation tool acquires the
+    Function constructor through a reflective accessor and invokes it on a
+    source string that returns the global object. This is a sandbox escape, not
+    metaprogramming -- do not evaluate it.
+
+confidence: 85
+
+test_cases:
+  true_positives:
+    - input: '{"tool":"expression_eval","arguments":{"expression":"Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Object),\"constructor\").value(\"return this\")()"}}'
+      expected: triggered
+      description: "CVE-2025-53626 reflective form in the expression argument of an evaluation tool: descriptor .value IS the Function constructor, invoked on a global-returning source string"
+    - input: '{"tool":"node_eval","code":"const F = Reflect.get(Reflect.getPrototypeOf(async function(){}),\"constructor\"); F(\"return process\")().mainModule"}'
+      expected: triggered
+      description: "AsyncFunction route through Reflect.get, then invoked to return process"
+    - input: '{"tool":"run_js","arguments":{"code":"Object.getPrototypeOf(async function(){}).constructor(\"return globalThis.process\")().env.AWS_SECRET_ACCESS_KEY"}}'
+      expected: triggered
+      description: "Dotted spelling of the AsyncFunction ladder in a code argument -- the same escape without any reflective accessor name"
+    - input: 'js_eval(code="Object.getPrototypeOf(function*(){}).constructor(''return process'')().mainModule.require(''fs'')")'
+      expected: triggered
+      description: "GeneratorFunction ladder passed as a keyword argument rather than JSON"
+    - input: '{"tool_name":"sandbox_eval","tool_args":"{\\"script\\":\\"Reflect.get(Reflect.getPrototypeOf(async function(){}),\\\"constructor\\\")(\\\"return globalThis\\\")()\\"}"}'
+      expected: triggered
+      description: "JSON-ENCODED tool arguments, the shape src/hook-handler.ts actually produces -- every quote arrives backslash-escaped"
+  true_negatives:
+    - input: '((a,b)=>a(b(Object),"constructor").value)(Object.getOwnPropertyDescriptor, Object.getPrototypeOf)'
+      expected: not_triggered
+      description: "KNOWN GAP, recorded deliberately: the accessor is passed as a parameter so no literal accessor name precedes getPrototypeOf. Detecting this needs data-flow, not a pattern."
+    - input: 'const desc = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(instance), "render"); if (desc) return desc.value.call(instance);'
+      expected: not_triggered
+      description: "Ordinary descriptor read for a real method name"
+    - input: 'if (Object.getPrototypeOf(o).constructor === Object) { return "plain object"; }'
+      expected: not_triggered
+      description: "Plain-object check via direct property access"
+    - input: 'const d = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(model), "constructor"); logger.debug("ctor descriptor", d);'
+      expected: not_triggered
+      description: "A genuine reflective read of the constructor descriptor for logging"
+    - input: 'Object.getOwnPropertyDescriptor(Object.prototype, "__proto__").set.call(target, null)'
+      expected: not_triggered
+      description: "Prototype-pollution hardening working on __proto__, not constructor"
+    - input: 'const proto = Object.getPrototypeOf(async function(){}); console.log(proto[Symbol.toStringTag]);'
+      expected: not_triggered
+      description: "Feature detection of AsyncFunction via its toStringTag"
+    - input: 'const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor; // polyfill loader: return this constructor so callers can build async bodies'
+      expected: not_triggered
+      description: "The canonical benign way to obtain AsyncFunction, byte-identical to the first half of the escape"
+    - input: 'expect(Object.getPrototypeOf(function*(){}).constructor.name).toBe("GeneratorFunction");'
+      expected: not_triggered
+      description: "Unit test asserting the GeneratorFunction constructor name"
+    - input: 'function clone(src){ for (const k of Reflect.ownKeys(src)) { const d = Reflect.getOwnPropertyDescriptor(src, k); Reflect.defineProperty(out, k, d); } return out; }'
+      expected: not_triggered
+      description: "Descriptor-copying clone helper, no prototype/constructor pairing"
+    - input: 'The sandbox escape works because Reflect.getPrototypeOf of an async function exposes a constructor that behaves like Function.'
+      expected: not_triggered
+      description: "SECURITY WRITING describing this exact escape in prose, with no code"
+    - input: 'it("blocks the AsyncFunction ladder", () => { expect(() => vm.run(''Object.getPrototypeOf(async function(){}).constructor("return process")()'')).toThrow(); });'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. A vm2-style sandbox-hardening test asserting the escape is BLOCKED. Defensive code carrying the payload verbatim is the single most common benign shape for this rule."
+    - input: 'test("descriptor route is denied", async () => { await expect(ctx.eval(''Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Object),"constructor").value("return this")()'')).rejects.toThrow(); });'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. An isolated-vm regression test for the descriptor route."
+    - input: "The reflective route looks like this:\n\n```js\nObject.getOwnPropertyDescriptor(Object.getPrototypeOf(Object),\"constructor\").value(\"return this\")()\n```\n\nIt produces the same Function object as the classic ladder."
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. SECURITY WRITING with a fenced code block explaining CVE-2025-53626. Rule v1 had no code-block suppression at all, so every article about this escape fired."
+    - input: 'The payload `Reflect.get(Reflect.getPrototypeOf(async function(){}),"constructor")("return process")()` escapes the evaluator.'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. The same article text with inline backticks."
+    - input: '// Examples of INCORRECT code for this rule:\nObject.getPrototypeOf(async function(){}).constructor("return this")();'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. An ESLint rule doc listing the construct as an example of what NOT to write."
+    - input: 'export const SANDBOX_ESCAPE_FIXTURES = [\n  ''Object.getPrototypeOf(async function(){}).constructor("return process")()'',\n  ''Reflect.get(Reflect.getPrototypeOf(async function(){}),"constructor")("return this")()'',\n];'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. A static-analysis scanner's own fixture array -- exactly the file ATR itself ships."
+    - input: '  true_positives:\n    - input: ''Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Object),"constructor").value("return this")()''\n      expected: triggered'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. ATR's OWN test_cases block. A rule that fires when an agent edits the rule file is unusable during self-scan."
+    - input: '- security: block the reflective route Object.getPrototypeOf(async function(){}).constructor("return this")() in addition to the dotted ladder (thanks @reporter).'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. A sandbox library changelog entry announcing the FIX for this escape."
+    - input: 'サンドボックス脱出の実例です。Object.getPrototypeOf(async function(){}).constructor("return globalThis")() を評価するとホストの global が返ります。対策は評価器を無効化することです。'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. Non-English (Japanese) security writing with the code inline."
+    - input: 'var globalObj = typeof globalThis === "object" ? globalThis : Object.getPrototypeOf(async function(){}).constructor("return this")();'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. A globalThis fallback shim written into a source file. Silent now because a file body is not a code-valued evaluation argument; see the KNOWN RESIDUAL note for the case where the same line IS submitted to an evaluator."
+    - input: 'try { Object.getPrototypeOf(async function(){}).constructor("return this")(); cspAllowsEval = true; } catch (e) { cspAllowsEval = false; }'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. CSP unsafe-eval feature detection in a source file."
+    - input: 'const getGlobal = () => Object.getPrototypeOf(function*(){}).constructor("return globalThis")();'
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. A bundler global shim using the GeneratorFunction spelling."

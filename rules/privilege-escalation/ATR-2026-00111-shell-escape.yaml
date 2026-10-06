@@ -16,11 +16,11 @@ maturity: test
 severity: critical
 references:
   owasp_agentic:
-    - ASI05:2026 - Unexpected Code Execution
+    - ASI05:2026
   mitre_attack:
     - T1059.004 - Unix Shell
   owasp_llm:
-    - LLM06:2025 - Excessive Agency
+    - LLM06:2025
   mitre_atlas:
     - AML.T0050 - Command and Scripting Interpreter
 compliance:
@@ -101,13 +101,15 @@ detection:
     - Security audit reports containing example payloads for documentation of discovered vulnerabilities
 response:
   actions:
-    - block_tool
     - alert
     - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 168/5352 =
+    3.14% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_tool(interrupt). Detection unchanged — recall cost is zero.
 confidence: 65
 wild_validated: 2026/04/08
 wild_samples: 53577
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: filename; rm -rf /tmp/data

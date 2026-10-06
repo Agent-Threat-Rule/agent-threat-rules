@@ -24,9 +24,9 @@ severity: high
 
 references:
   owasp_llm:
-    - "LLM01:2025 - Prompt Injection"
+    - "LLM01:2025"
   owasp_agentic:
-    - "ASI01:2026 - Agent Goal Hijack"
+    - "ASI01:2026"
   mitre_atlas:
     - "AML.T0051 - LLM Prompt Injection"
     - "AML.T0054 - LLM Jailbreak"
@@ -83,7 +83,7 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: "[\\u{1F1E6}-\\u{1F1FF}]{6,}"
+      value: "[🇦-🇿]{6,}"
       description: "Codepoint-range detector, channel-agnostic (matches any UTF-8 text containing a run of Unicode regional-indicator symbols, e.g. chat input, file content, tool output). Purely structural — does not depend on which letters are spelled or what payload topic is targeted. A run of >=6 regional-indicator codepoints (3+ paired flag-emoji-width letters) reliably distinguishes deliberate alphabet-spelling from the 1-2 country flags seen in ordinary travel/geography text."
 
   condition: any
@@ -108,7 +108,6 @@ response:
 confidence: 85
 wild_validated: "2026/07/06"
 wild_samples: 10
-wild_fp_rate: 0
 
 test_cases:
   true_positives:

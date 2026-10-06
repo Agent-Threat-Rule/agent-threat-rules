@@ -20,9 +20,9 @@ severity: high
 
 references:
   owasp_llm:
-    - "LLM01:2025 - Prompt Injection"
+    - "LLM01:2025"
   owasp_agentic:
-    - "ASI01:2026 - Agent Goal Hijack"
+    - "ASI01:2026"
   mitre_atlas:
     - "AML.T0051 - LLM Prompt Injection"
     - "AML.T0054 - LLM Jailbreak"
@@ -77,7 +77,7 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: "[\\u{1F1E6}-\\u{1F1FF}]{4,}"
+      value: "[🇦-🇿]{4,}"
       description: "Run of 4+ consecutive Unicode regional-indicator symbols spelling a word letter-by-letter instead of pairing into flag emoji (Discord/Twitter-culture obfuscation convention)"
   condition: any
   false_positives:
@@ -99,7 +99,6 @@ response:
 confidence: 85
 wild_validated: "2026/07/07"
 wild_samples: 4817
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: "🇮🇭🇦🇻🇪🇧🇪🇪🇳🇵🇼🇳🇪🇩"

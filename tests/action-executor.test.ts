@@ -3,6 +3,10 @@
  *
  * Validates action deduplication, priority ordering, adapter delegation,
  * error handling, dry-run mode, and the onActionComplete callback.
+ *
+ * Cases whose subject is an action above the OBSERVE blast-radius tier pass
+ * `blocking: true`: dispatching those is opt-in and off by default. The default
+ * (suppressed, adapter untouched) is pinned in tests/enforcement.test.ts.
  */
 
 import { describe, it, expect, vi } from "vitest";
@@ -108,7 +112,7 @@ describe("ActionExecutor", () => {
       }),
     });
 
-    const executor = new ActionExecutor({ adapter });
+    const executor = new ActionExecutor({ adapter, blocking: true });
     // Provide actions in non-priority order
     const ctx = makeContext(["snapshot", "kill_agent", "alert"]);
 
@@ -133,7 +137,7 @@ describe("ActionExecutor", () => {
 
   it("calls the correct adapter method for each action type", async () => {
     const adapter = createMockAdapter();
-    const executor = new ActionExecutor({ adapter });
+    const executor = new ActionExecutor({ adapter, blocking: true });
 
     const ctx = makeContext(["block_input", "escalate"]);
     await executor.execute(ctx);
@@ -171,7 +175,7 @@ describe("ActionExecutor", () => {
 
   it("dry-run mode returns success without calling adapter", async () => {
     const adapter = createMockAdapter();
-    const executor = new ActionExecutor({ adapter, dryRun: true });
+    const executor = new ActionExecutor({ adapter, dryRun: true, blocking: true });
 
     const ctx = makeContext(["kill_agent", "alert"]);
     const results = await executor.execute(ctx);

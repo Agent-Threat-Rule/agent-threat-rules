@@ -1,0 +1,20 @@
+# actionlint configuration.
+#
+# The gate exists to catch workflows that GitHub will refuse to load. On
+# 2026-09-22 three workflows carried `if: ${{ secrets.X != '' }}` at step level;
+# that is valid YAML, so a YAML parse check passed it, but GitHub rejects the
+# whole file and the run appears with zero jobs and the file path as its name.
+# main was broken for ten minutes and every push produced three more failure
+# notifications. actionlint catches exactly that:
+#
+#   context "secrets" is not allowed here. available contexts are "env",
+#   "github", "inputs", "job", "matrix", "needs", "runner", "steps", ...
+#
+# Style findings are deliberately not fatal. A gate that goes red over
+# `{ cmd1; cmd2; } >> file` is a gate someone eventually switches off, and then
+# the correctness checks go with it.
+paths:
+  .github/workflows/**:
+    ignore:
+      # SC2129: prefers a grouped redirect over consecutive `>>`. Pure style.
+      - 'shellcheck reported issue in this script: SC2129'

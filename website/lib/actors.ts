@@ -65,8 +65,8 @@ const SHARED_CAMPAIGN_TIMELINE: ThreatActor["timeline"] = [
   {
     date: "2026-04-12",
     event: {
-      en: "Full scan of 96,096 skills completed across five sources.",
-      zh: "完成跨五個來源、共 96,096 個 skill 的完整掃描。",
+      en: "Full scan completed across five sources: 101,280 items scanned, 1,434 flagged (engine v2.0.0).",
+      zh: "完成跨五個來源的完整掃描：101,280 個項目、1,434 個被標記（engine v2.0.0）。",
     },
   },
   {

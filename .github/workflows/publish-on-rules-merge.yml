@@ -39,11 +39,18 @@ jobs:
       github.event.head_commit.author.email == 'bot@agentthreatrule.org'
 
     steps:
+      # Pushes to main from this workflow go out as ATR_REPO_TOKEN rather than the
+      # default GITHUB_TOKEN. With GITHUB_TOKEN the pusher is github-actions[bot],
+      # which cannot be placed on a repository ruleset's bypass list — GitHub rejects
+      # the Integration actor at repo level. A direct push also carries no status
+      # checks of its own, so once `main` requires them this push is refused, and the
+      # failure lands late in the job after the release work is already done.
+      # ATR_REPO_TOKEN belongs to a repository admin, who is on the bypass list.
       - name: Checkout
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -58,6 +65,28 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      # A staged major must be shipped by a human, not swept out as a patch on
+      # the next rules merge. package.json going to 4.0.0 while npm latest is
+      # still 3.x means a breaking change is waiting: `npm version patch` here
+      # would publish it as 4.0.1 with a release note about crystallized rules,
+      # and the release notes for the break would never exist. Blocks until the
+      # major is on npm; then majors match again and the patch train resumes.
+      #
+      # Fails closed: if `npm view` cannot answer, PUBLISHED stays 0.0.0 and the
+      # majors mismatch. Not publishing is the safe direction.
+      - name: Refuse to auto-publish across a staged major
+        run: |
+          LOCAL=$(node -p "require('./package.json').version")
+          PUBLISHED=$(npm view agent-threat-rules version 2>/dev/null || echo "0.0.0")
+          if [ "${LOCAL%%.*}" != "${PUBLISHED%%.*}" ]; then
+            echo "::error::package.json is $LOCAL but npm latest is $PUBLISHED."
+            echo "A major is staged and unpublished. Ship it deliberately"
+            echo "(workflow_dispatch with bump_type, or npm publish by hand),"
+            echo "then automated patch publishing resumes on its own."
+            exit 1
+          fi
+          echo "majors match ($LOCAL vs $PUBLISHED) - patch train may proceed"
 
       - name: Bump version
         id: bump

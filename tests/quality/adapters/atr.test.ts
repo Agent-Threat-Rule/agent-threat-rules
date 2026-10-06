@@ -31,9 +31,9 @@ response:
   actions: [alert]
 references:
   owasp_llm:
-    - "LLM01:2025 - Prompt Injection"
+    - "LLM01:2025"
   owasp_agentic:
-    - "ASI01:2026 - Agent Goal Hijack"
+    - "ASI01:2026"
   mitre_atlas:
     - "AML.T0051"
 tags:

@@ -1,0 +1,50 @@
+title: "PROBE — can preceded_by compare a value across the two spans?"
+id: ATR-PROBE-0001
+rule_version: 1
+status: experimental
+description: >
+  Probe, not a rule. Attempts a taint assertion: the URL the tool is
+  called with equals the URL the preceding retriever fetched. If the
+  ${span.attributes...} placeholder binds to the TARGET span this fires;
+  if it binds to the PREDECESSOR it can never fire.
+author: "ATR Community"
+date: "2026/08/11"
+schema_version: "1.0"
+maturity: draft
+severity: low
+tags: {category: prompt-injection, subcategory: probe, scan_target: runtime, confidence: low}
+agent_source: {type: agent_trace, framework: [any], provider: [any]}
+detection:
+  method: trace
+  condition: any
+  conditions:
+    - field: trace.forbid_violation
+      operator: regex
+      value: "(?i)forbid_violation:probe"
+      description: synthetic
+  trace:
+    ingest_format: openinference
+    forbid:
+      - shape:
+          span.kind: "TOOL"
+          attributes:
+            tool.args.url: {exists: true}
+        preceded_by:
+          span.kind: "RETRIEVER"
+          attributes:
+            source.url: "${span.attributes.tool.args.url}"
+        within_trace: true
+        description: taint attempt
+response: {actions: [alert]}
+confidence: 10
+test_cases:
+  true_positives:
+    - input: |
+        {"spans":[{"id":"r1","kind":"RETRIEVER","attributes":{"source.url":"https://x.tld/a"}},{"id":"t1","kind":"TOOL","attributes":{"tool.args":{"url":"https://x.tld/a"}}}]}
+      expected: triggered
+      description: "SAME url in both spans — a real taint check would fire here"
+  true_negatives:
+    - input: |
+        {"spans":[{"id":"r1","kind":"RETRIEVER","attributes":{"source.url":"https://x.tld/a"}},{"id":"t1","kind":"TOOL","attributes":{"tool.args":{"url":"https://unrelated.tld/b"}}}]}
+      expected: not_triggered
+      description: "DIFFERENT urls — must not fire"

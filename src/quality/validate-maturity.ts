@@ -13,6 +13,7 @@
 
 import { computeConfidence } from "./compute-confidence.js";
 import { validateRuleMeetsStandard } from "./quality-gate.js";
+import { isMeasuredFpRate, unmeasuredFpReason } from "./wild-measurement.js";
 import type {
   DemotionDecision,
   FpReport,
@@ -74,12 +75,18 @@ export function canPromote(
         `wild_samples ${rule.wildSamples ?? 0} below threshold ${MIN_WILD_SAMPLES_FOR_STABLE}`,
       );
     }
-    if (
-      rule.wildFpRate === undefined ||
-      rule.wildFpRate > MAX_WILD_FP_FOR_STABLE
-    ) {
+    // Default-deny: an unmeasured rate is not a low one. stable IS the enforce
+    // (auto-block) lane, so the absence of a measurement has to read as "not
+    // eligible", never as "clean". isMeasuredFpRate also rejects null/NaN,
+    // which would otherwise sail through `> MAX` as false. See
+    // src/quality/wild-measurement.ts for why omission is the encoding.
+    if (!isMeasuredFpRate(rule.wildFpRate)) {
       blockers.push(
-        `wild_fp_rate ${rule.wildFpRate ?? "unmeasured"}% above threshold ${MAX_WILD_FP_FOR_STABLE}%`,
+        `wild_fp_rate unmeasured — ${unmeasuredFpReason(rule.wildFpRate)}`,
+      );
+    } else if (rule.wildFpRate > MAX_WILD_FP_FOR_STABLE) {
+      blockers.push(
+        `wild_fp_rate ${rule.wildFpRate}% above threshold ${MAX_WILD_FP_FOR_STABLE}%`,
       );
     }
     if (rule.wildValidatedAt) {
@@ -136,9 +143,20 @@ export function shouldDemote(
     return { shouldDemote: false, reasons: [] };
   }
 
-  // Reason 1: wild FP rate exceeds threshold
+  // Reason 1: wild FP rate exceeds threshold.
+  //
+  // Note the asymmetry with canPromote, which is deliberate. Promotion is
+  // default-DENY on an unmeasured rate: it must not grant the enforce lane on
+  // a rate nobody took. Demotion is default-KEEP: it revokes on evidence of
+  // harm, and an absent measurement is not evidence of harm. Making absence
+  // demote would today evict all 106 maturity: stable rules, only 2 of which
+  // carry a wild_fp_rate at all — a lane-wide policy change, not a bug fix.
+  // The absence is surfaced instead by tests/wild-fp-provenance.test.ts.
+  //
+  // isMeasuredFpRate (not `!== undefined`) so null/NaN cannot suppress a
+  // demotion by failing the `>` comparison.
   if (
-    rule.wildFpRate !== undefined &&
+    isMeasuredFpRate(rule.wildFpRate) &&
     rule.wildFpRate > DEMOTION_FP_RATE_THRESHOLD
   ) {
     reasons.push(

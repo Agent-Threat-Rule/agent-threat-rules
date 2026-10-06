@@ -20,9 +20,9 @@ maturity: test
 severity: critical
 references:
   owasp_llm:
-    - "LLM06:2025 - Excessive Agency"
+    - "LLM06:2025"
   owasp_agentic:
-    - "ASI06:2026 - Tool Misuse"
+    - "ASI06:2026"
   mitre_atlas:
     - "AML.T0049 - Exploit Public-Facing Application"
   mitre_attack:
@@ -108,7 +108,6 @@ response:
     past 1.0.108; require per-request auth and stop serializing request URLs that
     contain access_token.
 confidence: 80
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: '{"jsonrpc":"2.0","method":"tools/call","id":2,"params":{"name":"get_ad_accounts","arguments":{"limit":1}}}'

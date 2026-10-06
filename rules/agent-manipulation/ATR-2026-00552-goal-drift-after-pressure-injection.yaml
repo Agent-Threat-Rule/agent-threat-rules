@@ -33,11 +33,11 @@ severity: high
 
 references:
   owasp_agentic:
-    - "ASI02:2026 - Agent Manipulation"
-    - "ASI06:2026 - Identity Spoofing & Impersonation"
+    - "ASI02:2026"
+    - "ASI06:2026"
   owasp_llm:
-    - "LLM01:2025 - Prompt Injection"
-    - "LLM06:2025 - Excessive Agency"
+    - "LLM01:2025"
+    - "LLM06:2025"
   mitre_atlas:
     - "AML.T0051 - LLM Prompt Injection"
     - "AML.T0051.000 - Direct"
@@ -49,11 +49,13 @@ references:
 
 compliance:
   nist_csf:
-    - "DE.AE-02"
-    - "PR.AT-01"
-  etsi_ts_104223:
-    - "P3.2"
-    - "P4.4"
+    - subcategory: "DE.AE-02"
+      context: >
+        The rule does exactly what DE.AE-02 asks for: it does not stop at observing that
+        the agent's goal changed, it ties that change back to the retriever or
+        tool-response span carrying the pressure text that preceded it. The association
+        is the finding; a goal change on its own is not.
+      strength: primary
   eu_ai_act:
     - article: "14"
       context: >
@@ -215,7 +217,6 @@ response:
 
 confidence: 75
 
-wild_fp_rate: 0
 
 test_cases:
   true_positives:

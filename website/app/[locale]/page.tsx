@@ -79,8 +79,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const categoryCount = taxonomy.length;
   const mergedCount = stats.ecosystemIntegrations.filter(e => e.type === "merged").length;
   const specVersion = getSpecMeta().version;
-  // Tier 1 in ADOPTERS.md = shipped in a publicly-available product.
-  const productionCount = stats.ecosystemIntegrations.filter(
+  // Tier 1 in ADOPTERS.md = rule pack merged into a named organization's own
+  // repository, evidenced by a merged PR. It is not a claim that any vendor
+  // ships ATR in a commercial product.
+  const tier1MergedCount = stats.ecosystemIntegrations.filter(
     (e) => e.tier === "1" && e.type === "merged",
   ).length;
   // The home logo wall shows standards bodies, production deployments, and
@@ -225,7 +227,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 <span className="text-ink">OpenTelemetry</span>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-                <span>{zh ? "已上線:" : "In production:"}</span>
+                <span>{zh ? "已合併至上游:" : "Merged upstream:"}</span>
                 <span className="font-semibold text-ink">Microsoft AGT</span>
                 <span className="text-fog">·</span>
                 <span className="font-semibold text-ink">Cisco AI Defense</span>
@@ -308,20 +310,20 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.1}>
             <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-4 md:mb-5 leading-[1.8]">
               {zh
-                ? "skills 已掃描 — 史上最大規模的 AI agent 安全掃描"
-                : "skills scanned — the largest AI agent security scan ever conducted"}
+                ? "個 skill 與 MCP server 定義已掃描 — 跨五個公開 registry"
+                : "agent skills and MCP definitions scanned — across five public registries"}
             </div>
           </Reveal>
           <Reveal delay={0.15}>
             <div className="font-data text-[clamp(48px,10vw,120px)] font-bold text-critical/[0.18] leading-[0.9] mb-3 md:mb-4">
-              1,302
+              <NumberScramble target={stats.megaScanFlagged.toLocaleString()} duration={2000} liveKey="megaScanFlagged" />
             </div>
           </Reveal>
           <Reveal delay={0.2}>
             <h2 className="font-display text-[20px] md:text-[clamp(22px,3vw,32px)] font-extrabold tracking-[-1px] leading-[1.35] mb-3 md:mb-4 max-w-[620px] text-balance">
               {zh
-                ? <>個 skill 被標記,552 個經人工複審確認為惡意。三個協同攻擊者。史上最大的 AI agent 惡意軟體行動。</>
-                : <>skills flagged, 552 confirmed malware after manual review. Three coordinated threat actors. The largest AI agent malware campaign ever documented.</>}
+                ? <>個 skill 被標記。標記量高度集中在少數幾個發布帳號,指向協同的惡意軟體行動。</>
+                : <>skills flagged. The flags concentrate heavily in a handful of publisher accounts, pointing at coordinated malware campaigns.</>}
             </h2>
           </Reveal>
           <Reveal delay={0.25}>
@@ -334,6 +336,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 <div key={a.actor} className="bg-paper p-4 md:p-5">
                   <div className="font-data text-xs text-stone mb-1">{a.actor}</div>
                   <div className="font-data text-2xl font-bold text-critical">{a.count}</div>
+                  <div className="font-data text-[10px] text-stone mt-0.5">{zh ? "該帳號發布的 skill 數" : "skills published by this account"}</div>
                   <div className="text-xs text-mist mt-1">{a.desc}</div>
                 </div>
               ))}
@@ -342,8 +345,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.3}>
             <p className="text-sm md:text-base text-graphite max-w-[520px] mt-5 leading-[1.8] text-pretty">
               {zh
-                ? "ATR 掃描 ClawHub、OpenClaw、Skills.sh 等六個 registry,共 96,096 個 skill 時發現了這些攻擊者。1,302 個 skill 被標記,經人工複審後確認 552 個為惡意,全數加入黑名單並已通報 NousResearch。"
-                : "ATR found these threat actors scanning 96,096 skills across six registries — ClawHub, OpenClaw, Skills.sh, and three others. 1,302 were flagged; 552 confirmed malware after manual review, all blacklisted and reported to NousResearch."}
+                ? `ATR 在 ClawHub、OpenClaw、Skills.sh、Hermes 與 MCP registry 五個來源掃描 ${stats.megaScanTotal.toLocaleString()} 個 skill 與 MCP server 定義時發現了這些帳號(engine v2.0.0,${stats.megaScanDate})。${stats.megaScanFlagged.toLocaleString()} 個項目被標記。這些帳號是以「整個帳號是已知惡意行動」為單位裁定的——屬於發布者層級的歸因,不是逐檔判讀;標記項目已加入公開黑名單並通報 NousResearch。`
+                : `ATR found these accounts while scanning ${stats.megaScanTotal.toLocaleString()} agent skills and MCP server definitions across five sources — ClawHub, OpenClaw, Skills.sh, Hermes, and an MCP registry index (engine v2.0.0, ${stats.megaScanDate}). ${stats.megaScanFlagged.toLocaleString()} items were flagged. These accounts were adjudicated account-wide as known malware campaigns — publisher-level attribution rather than per-file analysis; flagged items were blacklisted and reported to NousResearch.`}
             </p>
           </Reveal>
           <Reveal delay={0.35}>
@@ -415,8 +418,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.1}>
             <h2 className="font-display text-[24px] md:text-[clamp(28px,4vw,48px)] font-extrabold tracking-[-1.5px] md:tracking-[-2px] leading-[1.15] text-ink max-w-[820px] text-balance">
               {zh
-                ? "已在生產環境運行的安全平台,把 ATR 當成上游規則來源。"
-                : "Security platforms run ATR in production as an upstream rule source."}
+                ? "安全團隊把 ATR 當成上游規則來源,合併進自己的公開 repo。"
+                : "Security teams consume ATR as an upstream rule source, merged into their own public repos."}
             </h2>
           </Reveal>
 
@@ -431,7 +434,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 },
                 {
                   name: "Cisco AI Defense",
-                  detail: zh ? "PR #79 + #99 已合併 · 完整規則集進入 skill-scanner 生產環境" : "PR #79 + #99 merged · full rule pack in skill-scanner production",
+                  detail: zh ? "PR #79 + #99 已合併 · 規則集進入開源 skill-scanner repo" : "PR #79 + #99 merged · rule pack in the open-source skill-scanner repo",
                   href: "https://github.com/cisco-ai-defense/skill-scanner/pull/99",
                 },
                 {
@@ -497,7 +500,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.35}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog mt-8 md:mt-10">
               {[
-                { num: String(productionCount), label: zh ? "已在生產環境" : "in production", sub: zh ? "Microsoft · Cisco · Gen Digital" : "Microsoft, Cisco, Gen Digital" },
+                { num: String(tier1MergedCount), label: zh ? "已合併的上游整合" : "merged upstream", sub: zh ? "Microsoft · Cisco · Gen Digital" : "Microsoft, Cisco, Gen Digital" },
                 { num: String(stats.ruleCount), label: zh ? "條偵測規則" : "detection rules", sub: zh ? `跨 ${categoryCount} 個類別` : `across ${categoryCount} categories` },
                 { num: stats.megaScanTotal.toLocaleString(), label: zh ? "skills 已掃描" : "skills scanned", sub: zh ? "跨多個 registry" : "across registries" },
                 { num: `${mergedCount}/${stats.ecosystemIntegrations.length}`, label: zh ? "生態系 PR" : "ecosystem PRs", sub: zh ? "已合併" : "merged" },
@@ -550,8 +553,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.18}>
             <p className="text-sm md:text-base text-graphite font-light max-w-[640px] mb-6 md:mb-8 leading-[1.8] text-pretty">
               {zh
-                ? <>但成長從不是目的——對精確度誠實才是。v3.5.0 引入偵測車道:每條規則標明成熟度,使用者自己決定要信任到哪。enforce 車道只放最成熟的規則開火(在 65,000 筆良性語料上約 0.24% 誤報);預設的 hunt 車道把全部規則當建議性訊號跑(約 9%)。誤報率逐車道揭露,而不是用一個好看的數字一概而論。<strong>一個標準的可信度,取決於它願不願意公開自己最差的數字。</strong></>
-                : <>But growth was never the point — honesty about precision is. v3.5.0 introduced detection lanes: every rule declares a maturity, and the consumer decides how far to trust it. The enforce lane fires only the most mature rules (~0.24% false positives on a 65,000-sample benign corpus); the default hunt lane runs everything as advisory (~9%). False-positive rates are reported lane by lane, never as a single flattering number. <strong>A standard earns trust by publishing its worst figure, not hiding it.</strong></>}
+                ? <>但成長從不是目的——對精確度誠實才是。v3.5.0 引入偵測車道:每條規則標明成熟度,使用者自己決定要信任到哪。enforce 車道只放最成熟的規則開火,預設的 hunt 車道把全部規則當建議性訊號跑。誤報率逐車道揭露,而不是用一個好看的數字一概而論——<strong>而目前各車道的誤報率數字已被撤回、等待重新量測,因為原本的量測基準站不住腳。</strong>撤掉一個自己不再站得住的數字,跟公開最差的數字一樣,都是這個標準對誠實的定義。</>
+                : <>But growth was never the point — honesty about precision is. v3.5.0 introduced detection lanes: every rule declares a maturity, and the consumer decides how far to trust it. The enforce lane fires only the most mature rules; the default hunt lane runs everything as advisory. False-positive rates are reported lane by lane, never as a single flattering number — and <strong>the per-lane figures previously published here are withdrawn pending re-measurement</strong>, because the basis they were measured on did not hold up. Withdrawing a number you can no longer stand behind is the same discipline as publishing your worst one.</>}
             </p>
           </Reveal>
 
@@ -588,7 +591,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 { name: "OWASP Agentic", score: "10/10", desc: zh ? "完整覆蓋" : "Full coverage" },
                 { name: "SAFE-MCP", score: "91.8%", desc: zh ? "78/85 技術" : "78/85 techniques" },
                 { name: "OWASP AST10", score: "7/10", desc: zh ? "3 個是流程層級" : "3 are process-level" },
-                { name: "PINT F1", score: String(stats.pintF1), desc: zh ? "850 個樣本" : "850 samples" },
+                { name: "PINT-format F1", score: String(stats.pintF1), desc: zh ? `自建 ${stats.pintSamples} 樣本語料(非 Lakera 官方 PINT)` : `self-built ${stats.pintSamples}-sample corpus (not Lakera's official PINT)` },
               ].map((s) => (
                 <div key={s.name} className="bg-paper p-6 md:p-8 text-center">
                   <div className="font-data text-[10px] md:text-xs font-medium text-stone tracking-[2px] uppercase mb-2 md:mb-3">{s.name}</div>

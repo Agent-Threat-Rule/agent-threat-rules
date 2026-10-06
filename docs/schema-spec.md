@@ -198,7 +198,7 @@ See the rule writing guide for severity calibration criteria.
 |----------|-------|
 | Type | `array` of `string` |
 | Description | OWASP LLM Top 10 (2025) references |
-| Example | `["LLM01:2025 - Prompt Injection"]` |
+| Example | `["LLM01:2025"]` |
 
 ### references.owasp_agentic
 
@@ -206,7 +206,7 @@ See the rule writing guide for severity calibration criteria.
 |----------|-------|
 | Type | `array` of `string` |
 | Description | OWASP Top 10 for Agentic Applications (2026) references |
-| Example | `["ASI01:2026 - Agent Goal Hijack"]` |
+| Example | `["ASI01:2026"]` |
 
 ### references.mitre_atlas
 
@@ -567,7 +567,7 @@ severity: medium
 
 references:
   owasp_llm:
-    - "LLM01:2025 - Prompt Injection"
+    - "LLM01:2025"
 
 tags:
   category: prompt-injection

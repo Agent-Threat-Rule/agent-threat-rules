@@ -2,7 +2,7 @@
 
 Comprehensive guide to writing detection rules for AI agent threats.
 
-For a quick template, run `atr scaffold`. For the full schema reference, see [schema-spec.md](./schema-spec.md).
+For a quick template, run `atr scaffold`. For the normative rule format, see [SPEC.md](../SPEC.md).
 
 ---
 
@@ -334,7 +334,7 @@ detection_tier: pattern
 maturity: experimental
 severity: high
 references:
-  owasp_llm: ["LLM01:2025 - Prompt Injection"]
+  owasp_llm: ["LLM01:2025"]
   mitre_atlas: ["AML.T0051 - LLM Prompt Injection"]
 tags:
   category: prompt-injection

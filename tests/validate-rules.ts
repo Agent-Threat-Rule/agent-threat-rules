@@ -242,6 +242,26 @@ function validateRule(filePath: string): ValidationResult {
     // References (warning if missing)
     if (!rule['references']) {
       warnings.push('Missing references (OWASP LLM / MITRE ATLAS mapping recommended)');
+    } else {
+      // Every reference list must hold plain strings. spec/schema/rule.schema.json
+      // already says items: {type: string}, but nothing enforced it here, so an
+      // unquoted framework title containing ": " parsed as a YAML map instead of a
+      // string and shipped to main. The website renders these straight into JSX,
+      // where a map is not a valid React child, and every deploy after it failed
+      // at prerender for three days while validate stayed green. Error, not warning.
+      const references = rule['references'] as Record<string, unknown>;
+      for (const [field, value] of Object.entries(references)) {
+        if (!Array.isArray(value)) continue;
+        value.forEach((entry, i) => {
+          if (typeof entry !== 'string') {
+            errors.push(
+              `references.${field}[${i}] must be a string, got ${
+                Array.isArray(entry) ? 'array' : typeof entry
+              } (${JSON.stringify(entry)}). A value containing ": " needs quoting in YAML.`
+            );
+          }
+        });
+      }
     }
 
     // Validate regex patterns don't cause errors
@@ -255,8 +275,15 @@ function validateRule(filePath: string): ValidationResult {
             // Strip leading inline flags (JS uses RegExp flags instead)
             pattern = pattern.replace(/^\(\?[imsx]+\)/, '');
             try {
-              // Use 'u' flag when pattern contains \u{XXXXX} or \p{} — matches ATR engine behaviour
-              const needsUnicode = /\\u\{|\\p\{/.test(pattern);
+              // Use 'u' when the pattern needs it. \u{...} and \p{...} need it by
+              // syntax; so does a literal astral character, because without 'u' a
+              // class range written with literals is a SyntaxError rather than a
+              // range. Literals are the spelling ATR rules use, since \u{...} is
+              // JS-only and unusable from the Python and Go channels — keep this
+              // in step with needsUnicodeFlag in src/engine.ts.
+              const needsUnicode =
+                /\\u\{|\\p\{/.test(pattern) ||
+                [...pattern].some((ch) => (ch.codePointAt(0) ?? 0) > 0xffff);
               new RegExp(pattern, needsUnicode ? 'u' : '');
             } catch (e) {
               const desc = cond['description'] ?? cond['field'] ?? 'unknown';

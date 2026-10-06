@@ -18,8 +18,8 @@ detection_tier: pattern
 maturity: test
 severity: critical
 references:
-  owasp_llm: ["LLM06:2025 - Excessive Agency"]
-  owasp_agentic: ["ASI06:2026 - Tool Misuse"]
+  owasp_llm: ["LLM06:2025"]
+  owasp_agentic: ["ASI06:2026"]
   mitre_atlas: ["AML.T0049 - Exploit Public-Facing Application"]
   mitre_attack: ["T1190 - Exploit Public-Facing Application"]
   cve: ["CVE-2024-3025"]
@@ -71,7 +71,6 @@ response:
   message_template: >
     [ATR-2026-01973] CRITICAL: AnythingLLM logo endpoint path traversal (CVE-2024-3025) reads/deletes arbitrary files such as storage/anythingllm.db. Block and patch.
 confidence: 80
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: "GET /api/system/logo?filename=../../../storage/anythingllm.db HTTP/1.1"

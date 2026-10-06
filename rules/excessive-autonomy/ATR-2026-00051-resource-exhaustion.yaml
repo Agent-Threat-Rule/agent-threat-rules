@@ -18,10 +18,10 @@ maturity: test
 severity: high
 references:
   owasp_llm:
-    - LLM06:2025 - Excessive Agency
-    - LLM10:2025 - Unbounded Consumption
+    - LLM06:2025
+    - LLM10:2025
   owasp_agentic:
-    - ASI05:2026 - Unexpected Code Execution
+    - ASI05:2026
   mitre_atlas:
     - AML.T0046 - Spamming AI System with Chaff Data
     - AML.T0053 - AI Agent Tool Invocation
@@ -141,10 +141,13 @@ detection:
     - Database migration tool copying entire tables during a sanctioned schema upgrade window
 response:
   actions:
-    - reduce_permissions
     - escalate
     - alert
     - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 64/5352 = 1.20%
+    exceeds the 0.5% production ceiling; ceiling = interrupt. Removed
+    reduce_permissions(degrade). Detection unchanged — recall cost is zero.
   auto_response_threshold: high
   message_template: |
     [ATR-2026-051] HIGH: Resource exhaustion pattern detected for agent
@@ -154,7 +157,6 @@ response:
 confidence: 73
 wild_validated: 2026/04/08
 wild_samples: 53577
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: SELECT * FROM transactions;

@@ -1,0 +1,30 @@
+name: ReDoS Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "rules/**"
+      - "data/redos-baseline.json"
+      - "scripts/gate-redos.py"
+  workflow_dispatch:
+
+# The latency gate measures what a rule costs on the eval corpus. It is
+# structurally blind to catastrophic backtracking, because a ReDoS pattern is
+# cheap on ordinary text and only explodes on a string shaped like its own
+# grammar. ATR-2026-01005 sat at maturity: stable, cost nothing measurable on
+# the corpus, and took over four minutes on 129 bytes.
+jobs:
+  redos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install PyYAML
+      - name: Scan the rule corpus for catastrophic backtracking
+        run: python3 scripts/gate-redos.py --rules rules

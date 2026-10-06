@@ -4,7 +4,7 @@ Version: 0.1.0 (INTERNAL DRAFT — not published)
 Status: Draft alignment mapping for ETSI TS 104 223 V1.1.1 and the UK NCSC/DSIT AI Cyber Security Code of Practice
 Date: 2026-06-12
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
-Mapped corpus: Agent Threat Rules v3.5.8 (783 rules / 10 categories; disk == data/stats.json on 2026-07-12)
+Mapped corpus: Agent Threat Rules v3.5.8 (826 rules / 10 categories; disk == data/stats.json on 2026-07-12)
 Reference frameworks:
   - ETSI TS 104 223 V1.1.1 (2025-04) "Securing Artificial Intelligence (SAI); Baseline Cyber Security Requirements for AI Models and Systems"
   - UK AI Cyber Security Code of Practice (DSIT / NCSC), "Code of practice for the cyber security of AI"
@@ -149,7 +149,7 @@ security assessment process"); **5.2.5-2** (pre-deployment testing) and **5.2.5-
 
 | Provision focus | ATR contribution | Cited rules / mechanism |
 |-----------------|------------------|--------------------------|
-| Security-assessment test artefacts | Every conforming ATR rule bundles `test_cases.true_positives` and `test_cases.true_negatives` (ATR-SPEC-v1 §; ≥1 each at experimental maturity, ≥5 each at stable). A rule corpus is therefore a reusable, machine-runnable security-test input to a broader assessment process. | Corpus-wide property; see e.g. ATR-2026-00001, ATR-2026-00549 test blocks |
+| Security-assessment test artefacts | Every ATR rule at `maturity: experimental` or above bundles `test_cases.true_positives` and `test_cases.true_negatives` — verified across the corpus, no exceptions. SPEC.md §5.6 additionally requires ≥5 of each at `stable`; **the corpus does not yet meet that second threshold uniformly**, so it is stated here as a specification requirement and not as a property of the shipped rules. Recount before citing either: `node -e` over `rules/**/*.yaml` grouping by `maturity` and `test_cases.*.length`. A rule corpus is therefore a reusable, machine-runnable security-test input to a broader assessment process. | Corpus-wide property; see e.g. ATR-2026-00001, ATR-2026-00549 test blocks |
 | Adversarial-input test coverage | The prompt-injection, model-abuse, and tool-poisoning categories double as an adversarial test battery for an agent under evaluation | Categories: prompt-injection (177), model-abuse (10), tool-poisoning (47) — counts per data/stats.json 2026-06-12 |
 
 Note: ATR supplies a machine-checkable *input* to a security-assessment process. It
@@ -267,7 +267,7 @@ hardening is out of scope.
 
 ### 6.2 ATR
 
-- ATR-SPEC-v1.md — rule format, identifier scheme, evaluation semantics, test-case
+- SPEC.md — rule format, identifier scheme, evaluation semantics, test-case
   requirements.
 - data/stats.json — canonical rule-count record.
 - spec/mappings/atr-to-nist-csf-2.0.md — companion mapping (same informative-

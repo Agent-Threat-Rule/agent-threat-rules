@@ -27,10 +27,10 @@ severity: medium
 
 references:
   owasp_llm:
-    - "LLM03:2025 - Supply Chain Vulnerabilities"
-    - "LLM05:2025 - Improper Output Handling"
+    - "LLM03:2025"
+    - "LLM05:2025"
   owasp_agentic:
-    - "ASI04:2026 - Agentic Supply Chain Vulnerabilities"
+    - "ASI04:2026"
   mitre_atlas:
     - "AML.T0010 - AI Supply Chain Compromise"
     - "AML.T0056 - Extract LLM System Prompt"
@@ -143,10 +143,13 @@ detection:
 
 response:
   actions:
-    - block_tool
     - alert
     - snapshot
     - escalate
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 2814/5352 =
+    52.58% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_tool(interrupt). Detection unchanged — recall cost is zero.
   auto_response_threshold: high
   message_template: >
     [ATR-2026-061] Skill behavior does not match declared description. Tool arguments

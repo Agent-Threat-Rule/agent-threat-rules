@@ -30,10 +30,10 @@ severity: critical
 
 references:
   owasp_agentic:
-    - "ASI04:2026 - Unauthorized Resource Access"
-    - "ASI06:2026 - Memory and Context Poisoning"
+    - "ASI04:2026"
+    - "ASI06:2026"
   owasp_llm:
-    - "LLM03:2025 - Training Data Poisoning"
+    - "LLM03:2025"
   mitre_atlas:
     - "AML.T0080 - AI Agent Context Poisoning"
   research:
@@ -42,10 +42,20 @@ references:
 
 compliance:
   nist_csf:
-    - "PR.DS-01"
-    - "PR.AC-04"
-  etsi_ts_104223:
-    - "P5.1"
+    - subcategory: "PR.DS-01"
+      context: >
+        A memory or vector store is data-at-rest. Writing into a partition belonging to
+        a different conversation is an integrity failure of that store under PR.DS-01,
+        and it persists — unlike a transient leak, the bad record stays until something
+        removes it.
+      strength: primary
+    - subcategory: "PR.AA-05"
+      context: >
+        The conversation boundary is an authorization boundary, so a write that crosses
+        it is also a least-privilege failure. Secondary because PR.AA-05 governs how
+        permissions are defined and reviewed, while this rule only observes one being
+        exceeded at runtime.
+      strength: secondary
   eu_ai_act:
     - article: "10"
       context: >
@@ -153,9 +163,13 @@ detection:
 
 response:
   actions:
-    - block_tool
     - alert
     - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): 0 FP but the measurement
+    is incomplete — the harness reported conditions it could not exercise, so the silence is an
+    unasked question; ceiling = observe. Removed block_tool(interrupt). Detection unchanged —
+    recall cost is zero.
   message_template: >
     [ATR-2026-00551] HIGH: Cross-conversation memory write detected. Tool
     {{trace.matched_span.attributes.tool.name}} (span
@@ -168,7 +182,6 @@ response:
 
 confidence: 85
 
-wild_fp_rate: 0
 
 test_cases:
   true_positives:

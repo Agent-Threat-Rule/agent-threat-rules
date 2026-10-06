@@ -19,8 +19,8 @@ detection_tier: pattern
 maturity: test
 severity: critical
 references:
-  owasp_llm: ["LLM06:2025 - Excessive Agency"]
-  owasp_agentic: ["ASI06:2026 - Tool Misuse"]
+  owasp_llm: ["LLM06:2025"]
+  owasp_agentic: ["ASI06:2026"]
   mitre_atlas: ["AML.T0049 - Exploit Public-Facing Application"]
   mitre_attack: ["T1190 - Exploit Public-Facing Application"]
   cve: ["CVE-2025-66481"]
@@ -73,7 +73,6 @@ response:
   message_template: >
     [ATR-2026-01967] CRITICAL: DeepChat Mermaid XSS bypass (CVE-2025-66481) escalates to RCE by registering a malicious MCP server via electron ipcRenderer. Block and upgrade past 0.5.1.
 confidence: 85
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: "<audio src=x onerror=window.electron.ipcRenderer.invoke('presenter:call','mcpPresenter','addMcpServer','test',{command:'calc.exe',args:[],type:'stdio',enabled:true,name:'test'}).then(()=>window.electron.ipcRenderer.invoke('presenter:call','mcpPresenter','startServer','test'))>"

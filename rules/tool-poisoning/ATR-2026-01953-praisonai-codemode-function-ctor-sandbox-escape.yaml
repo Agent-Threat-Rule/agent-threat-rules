@@ -18,8 +18,8 @@ detection_tier: pattern
 maturity: test
 severity: critical
 references:
-  owasp_llm: ["LLM06:2025 - Excessive Agency"]
-  owasp_agentic: ["ASI06:2026 - Tool Misuse"]
+  owasp_llm: ["LLM06:2025"]
+  owasp_agentic: ["ASI06:2026"]
   mitre_atlas: ["AML.T0049 - Exploit Public-Facing Application"]
   mitre_attack: ["T1190 - Exploit Public-Facing Application"]
   cve: ["GHSA-vmmj-pfw7-fjwp"]
@@ -78,7 +78,6 @@ response:
     Function-constructor breakout (`.constructor.constructor('return process')()` / process.mainModule.require)
     grants host fs + child_process RCE despite sandbox:true. Block and upgrade praisonai to >= 1.7.2.
 confidence: 85
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: "({}).constructor.constructor('return process')()"

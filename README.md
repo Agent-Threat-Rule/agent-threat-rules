@@ -13,7 +13,7 @@ AI Agent 威脅偵測規則的開放格式
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-ATR%20Scan-2ea44f?style=flat-square&logo=github)](https://github.com/marketplace/actions/atr-scan)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square)](LICENSE)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19178002-blue?style=flat-square)](https://doi.org/10.5281/zenodo.19178002)
-[![Rules](https://img.shields.io/badge/rules-783-blue?style=flat-square)](#5-specification)
+[![Rules](https://img.shields.io/badge/rules-826-blue?style=flat-square)](#5-specification)
 [![Categories](https://img.shields.io/badge/categories-10-blue?style=flat-square)](#7-coverage)
 [![OWASP Agentic](https://img.shields.io/badge/OWASP_Agentic_Top_10-10%2F10-brightgreen?style=flat-square)](#7-coverage)
 [![SAFE-MCP](https://img.shields.io/badge/SAFE--MCP-91.8%25-brightgreen?style=flat-square)](#7-coverage)
@@ -70,13 +70,14 @@ ATD is ATR's technique catalog: an enumeration of agent-runtime attack *techniqu
 - [8. Evaluation](#8-evaluation)
 - [9. Governance](#9-governance)
 - [10. Security](#10-security)
-- [11. Contributing](#11-contributing)
-- [12. Citation](#12-citation)
-- [13. Maintainers](#13-maintainers)
-- [14. Sponsorship](#14-sponsorship)
-- [15. License](#15-license)
-- [16. Acknowledgments](#16-acknowledgments)
-- [17. References](#17-references)
+- [11. Telemetry](#11-telemetry)
+- [12. Contributing](#12-contributing)
+- [13. Citation](#13-citation)
+- [14. Maintainers](#14-maintainers)
+- [15. Sponsorship](#15-sponsorship)
+- [16. License](#16-license)
+- [17. Acknowledgments](#17-acknowledgments)
+- [18. References](#18-references)
 
 ---
 
@@ -203,17 +204,107 @@ matches = engine.evaluate(AgentEvent(content="...", event_type="llm_input"))
 | MCP server | Live integration with Claude Code, Cursor, Windsurf, and other MCP clients |
 | Splunk / Elastic export | SIEM rule pack for runtime detection |
 
-### Detection lanes (v3.5.0)
+### Detection lanes
+
+A lane selects which rules may fire. It is one of the two runtime switches; the
+other is blocking, which decides whether ATR may act on what fired, and which
+the next section covers. Neither implies the other.
+[docs/ENFORCEMENT-MODEL.md](docs/ENFORCEMENT-MODEL.md) is the full reference.
 
 Each rule carries a maturity-driven **lane**, so a consumer can trade recall for precision instead of running every rule at one fixed threshold:
 
-| Lane | Fires | Intended use | FP on a 65K-sample benign gate |
+| Lane | Fires | Intended use | FP on a benign gate |
 |---|---|---|---:|
-| `enforce` | `stable` rules behind an embedding `confirm` guard | Auto-block | ~0.24% |
+| `enforce` | `stable` only | Narrowest, highest-precision set — the one to run when blocking is on | withdrawn |
 | `alert` | `stable` + `test` | Analyst / correlation | — |
-| `hunt` | all rules except `deprecated` | Advisory / eval (**default**) | ~9% |
+| `hunt` | all rules except `deprecated` | Broadest visibility (**default**) | withdrawn |
 
-Lanes are opt-in and fully backward-compatible: the default is `hunt`, so existing integrations behave exactly as before. Selecting `enforce` raises precision by firing only the most mature rules — and therefore catches fewer attacks. Report false-positive rates lane-keyed (`enforce` ~0.24% / `hunt` ~9% on the 65K-sample benign gate), not as a single overall figure. That gate is a separate corpus from the per-source measurements in [§8 Evaluation](#8-evaluation).
+Lanes are opt-in and backward-compatible for detection: the default is `hunt`, so every integration sees exactly the rules it saw before. Selecting `enforce` raises precision by firing only the most mature rules — and therefore catches fewer attacks. False-positive rates should always be reported lane-keyed rather than as a single overall figure, and that gate is a separate corpus from the per-source measurements in [§8 Evaluation](#8-evaluation).
+
+**The two lane FP rates previously published here (`enforce` ~0.24% / `hunt` ~9% over a "65K-sample benign gate") are withdrawn, and should not be cited.** Three things were wrong with them. The gate was labelled 65,000 samples; both rates were actually measured on a 10,863-sample subsample of it. The benign corpus contained real jailbreak samples — material the rules are meant to catch, sitting in the set that defines a false positive — until the exclusion filter merged on 2026-08-04 (#373), so the corpus changed underneath both figures. And the ladder that produced the `hunt` figure depended on a file that is no longer in the repository, so that one cannot be reproduced at all. Re-measurement against the current benign corpus is pending; until it lands there is a gap here rather than a number.
+
+### Detection and enforcement are separate switches
+
+Detection always runs. **Blocking is opt-in and off by default.** In the default
+mode `atr guard` reports what it found and changes nothing: it emits no
+permission decision to the host, and it dispatches no response action above the
+`observe` blast-radius tier (`alert` / `snapshot` / `shadow` / `escalate` still
+run). Turning blocking on is the explicit operator directive [SPEC.md](SPEC.md)
+§5.5 requires before an engine may execute response actions automatically.
+([spec/atr-method-v1.1.md](spec/atr-method-v1.1.md) §5.6 says the same thing for
+hash matches specifically; §5.5 of SPEC.md is the engine-wide one.)
+
+**ATR never answers `permissionDecision: "allow"` — in either mode.** That
+decision is not neutral in the Claude Code contract; it is an affirmative
+approval that suppresses the host's own permission prompt, so answering it on
+every operation ATR had not looked for would make a hooked session permit *more*
+than an unhooked one. A permission decision is emitted only to **restrain** —
+`deny` or `ask` — and only with blocking on. Any other verdict omits the whole
+`hookSpecificOutput` envelope, and the finding travels in `atr_decision`,
+`atr_reason` and `matched_rules` instead. Turning blocking on does not bring the
+affirmative decision back.
+
+| Switch | CLI flag | Environment (CLI only) | Library config | Default |
+|---|---|---|---|---|
+| Detection lane | `--lane <enforce\|alert\|hunt>` | `ATR_LANE` | `new ATREngine({ lane })` | `hunt` |
+| Blocking | `--blocking` / `--no-blocking` | `ATR_BLOCKING` | `blocking` on `ActionExecutor` / `HookHandler` | off |
+
+**The two surfaces resolve differently, and they do not share a chain:**
+
+- **Library** — explicit config **>** built-in default. `ATREngine`,
+  `ActionExecutor` and `HookHandler` do not read the environment at all, so an
+  embedded engine cannot be re-pointed by a variable the host never set.
+- **CLI** — flag **>** environment variable **>** built-in default.
+
+An unrecognised `--lane` value is a usage error, never a silent fallback:
+`atr guard --lane enfroce` exits 1 with
+`Error: Invalid --lane "enfroce". Expected one of: enforce, alert, hunt.`
+An unrecognised value in the *environment* warns on stderr, falls back to the
+safe default and keeps running (exit 0), because `atr guard` runs as a Claude
+Code command hook where a non-zero exit discards every detection and prints no
+reason. If `ATR_LANE` is the variable that could not be read, blocking is forced
+off even when `--blocking` was passed — the fallback lane is the broadest one,
+and enforcing on a lane the operator never chose is the only degradation that
+would be more dangerous than the request.
+
+```bash
+atr guard                                 # advisory: report only (the default)
+atr guard --lane enforce --blocking       # blocking on, and only the 106 of 777
+                                          # live rules that are maturity: stable
+                                          # may fire (see the recall note below)
+ATR_LANE=enforce ATR_BLOCKING=1 atr guard # the same, via the environment
+```
+
+**`--lane enforce` costs recall, and the cost is large.** It loads only
+`maturity: stable` rules: **106 of the 777 live rules** in this repository at the
+commit this paragraph was written against. That is the trade being made every
+time enforcement is recommended alongside it — narrower firing set, lower
+false-positive rate, fewer attacks caught. Rule counts move daily, and a
+`grep`-based count is wrong here (eight rules quote the value as
+`maturity: "stable"`), so re-derive by parsing before quoting the figure
+anywhere:
+
+```bash
+python3 - <<'PY'
+import glob, yaml
+rules = [yaml.safe_load(open(p, encoding='utf-8'))
+         for p in glob.glob('rules/**/*.yaml', recursive=True)]
+live = [r for r in rules
+        if r.get('status') not in ('draft', 'deprecated')
+        and str(r.get('maturity') or '').strip() != 'deprecated']
+stable = [r for r in live if str(r.get('maturity') or '').strip() == 'stable']
+print(f'files={len(rules)} live={len(live)} enforce={len(stable)}')
+PY
+```
+
+Programmatic embedding: `new ATREngine({ lane })` for the lane,
+`new ActionExecutor({ adapter, blocking })` and
+`new HookHandler({ engine, executor, blocking })` for enforcement. **These are
+the only inputs** — the constructors ignore `ATR_LANE` and `ATR_BLOCKING`, so
+setting them will not configure an embedded engine. An unrecognised lane throws
+a `TypeError`, and so does a non-boolean `blocking`: `blocking: "false"` is a
+string, and every non-empty string is truthy, so it used to switch enforcement
+**on** while reading as an explicit "off".
 
 ## 5. Specification
 
@@ -221,11 +312,12 @@ Lanes are opt-in and fully backward-compatible: the default is `hunt`, so existi
 |---|---|---|
 | Specification (canonical pointer) | [SPEC.md](SPEC.md) | Resolves to the authoritative documents below |
 | Rule format spec (normative) | [SPEC.md](SPEC.md) | Rule format, identifier scheme, evaluation semantics |
-| Framework spec | [ATR-FRAMEWORK-SPEC.md](ATR-FRAMEWORK-SPEC.md) | Multi-layer detection framework design |
+| Framework spec | [ATR-FRAMEWORK-SPEC.md](ATR-FRAMEWORK-SPEC.md) | **Superseded 2026-05-16 by [SPEC.md](SPEC.md).** Kept as a historical artifact; multi-layer detection framework design |
 | Machine-readable schema | [spec/atr-schema.yaml](spec/atr-schema.yaml) | Authoritative validation source |
-| Schema field reference | [docs/schema-spec.md](docs/schema-spec.md) | Human-readable schema docs |
+| Schema field reference | [docs/schema-spec.md](docs/schema-spec.md) | **Superseded 2026-05-16 by [SPEC.md](SPEC.md).** Kept as a historical artifact; human-readable schema docs |
 | Quality standard | [docs/QUALITY-STANDARD.md](docs/QUALITY-STANDARD.md) | Rule promotion criteria (experimental → stable) |
 | Quality gate | [docs/QUALITY-GATE.md](docs/QUALITY-GATE.md) | Safety-gate semantics for community PRs |
+| Enforcement model | [docs/ENFORCEMENT-MODEL.md](docs/ENFORCEMENT-MODEL.md) | Lane and blocking switches, decision channels, migration (reference implementation, not normative) |
 | Limitations | [LIMITATIONS.md](LIMITATIONS.md) | What ATR cannot detect; documented evasion techniques |
 | Threat model | [THREAT-MODEL.md](THREAT-MODEL.md) | Threat analysis driving the rule set |
 
@@ -272,7 +364,7 @@ Production deployments and standards-body integrations, as of 2026-07-05 (every 
 | Organization | Integration | Reference |
 |---|---|---|
 | Microsoft Agent Governance Toolkit | 287-rule expansion + weekly auto-sync (merged 2026-04-26); 15-rule PoC (merged 2026-04-13) | [PR #1277](https://github.com/microsoft/agent-governance-toolkit/pull/1277) · [PR #908](https://github.com/microsoft/agent-governance-toolkit/pull/908) |
-| Cisco AI Defense (skill-scanner) | Full rule pack in production (merged 2026-04-22); original PoC (merged 2026-04-03) | [PR #99](https://github.com/cisco-ai-defense/skill-scanner/pull/99) · [PR #79](https://github.com/cisco-ai-defense/skill-scanner/pull/79) |
+| Cisco AI Defense (skill-scanner) | Full rule pack merged into the open-source scanner repository (2026-04-22); original PoC (merged 2026-04-03). This is a merge into that repository, not a statement about any vendor product. | [PR #99](https://github.com/cisco-ai-defense/skill-scanner/pull/99) · [PR #79](https://github.com/cisco-ai-defense/skill-scanner/pull/79) |
 | MISP (CIRCL) | Threat-intel cluster (galaxy, merged 2026-05-10) + rule-ID tagging vocabulary (taxonomies, merged 2026-05-10) | [galaxy #1207](https://github.com/MISP/misp-galaxy/pull/1207) · [taxonomies #323](https://github.com/MISP/misp-taxonomies/pull/323) |
 | Gen Digital Sage (Norton / Avast / AVG parent) | Rule pack merged 2026-05-11 | [PR #33](https://github.com/gendigitalinc/sage/pull/33) |
 | OWASP Agent Security Regression Harness | ATR referenced as the canonical agent-threat detection ruleset in the threat catalogue (merged 2026-05-11) | [PR #74](https://github.com/OWASP/agent-security-regression-harness/pull/74) |
@@ -361,10 +453,10 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | Source | Source version | Samples | Recall | Precision | FP rate | ATR version | Measured |
 |---|---|---:|---:|---:|---:|---|---|
 | AdvBench (LLM-attacks behaviors) | upstream-2026-06-16 | 520 | 2.1% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| atr-self-test | internal | 341 | 89.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| atr-self-test | internal | 341 | 96.6% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
-| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 92.5% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| garak-full (all probe families) | 23-families | 3,475 | 57.2% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
+| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 92.3% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
+| garak-full (all probe families) | 23-families | 3,475 | 57.2% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
 | hackaprompt | v1 | 4,780 | 69.6% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | HarmBench (CAIS behaviors) | upstream-2026-06-16 | 400 | 2.8% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | hh-rlhf (Anthropic red-team-attempts) [^stdcorpora] | snapshot-2026-04 | 4,957 | 1.5% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
@@ -373,12 +465,12 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | MITRE ATLAS [^stdcorpora] | snapshot-2026-04 | 182 | 39.0% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | OWASP LLM Top 10 [^stdcorpora] | snapshot-2026-04 | 56 | 16.1% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| PINT-format (deepset + Lakera Gandalf) [^pint] | v1 | 850 | 60.3% | 100.0% | 0.0% | 3.5.11 | 2026-08-04 |
+| PINT-format (deepset + Lakera Gandalf) [^pint] | v1 | 850 | 65.4% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
 | PromptBench (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 3,280 | 15.7% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
 | promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 97.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | PromptInject (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 1,080 | 100.0% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) | 97.0% | 0.20% | 3.5.0 | 2026-06-16 |
-| Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) | corpus-2026-04-14 | 96,096 | — | 57.7% (floor) | 1.35% flag rate | 2.0.0 | 2026-04-14 |
+| SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) | 97.0% | 0.20% | 3.5.12 | 2026-08-15 |
+| Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) [^wildscan] | full-scan-v2-2026-04-13 | 101,280 | — | not measured | 1.42% flag rate | 2.0.0 | 2026-04-13 |
 
 All detection corpora were (re-)measured against ATR 3.5.0 on 2026-06-16,
 except `autoresearch` (an internal predicted-rule corpus with no standalone
@@ -402,16 +494,18 @@ were never measurements of ATR.
 The per-row `ATR version` column above is the version each cell was actually
 measured against, mirroring the `atr_version` field in each
 `data/measurements/<source>/latest.json`. The headline `garak` recall moved
-98.0% (3.0.0) → 97.2% (3.5.0) → 95.7% (3.5.8) → 92.5% (3.5.11). The 3.5.8 →
+98.0% (3.0.0) → 97.2% (3.5.0) → 95.7% (3.5.8) → 92.5% (3.5.11) → 92.3%
+(3.5.12). The 3.5.8 →
 3.5.11 step is a real loss of detections, not a change in how they are counted:
 PR #327 tightened an over-broad persona regex in `ATR-2026-00001` that had been
 false-positiving on benign "you are now an expert …" prose, and tightening it
 also gave up the recall that regex had been earning on novel-persona jailbreaks
 ("you are now TrueGPT / ChatINF / Raven …"). The harness event shape changed in
-the same window (see below), and it is not the cause: replayed on today's 780
+the same window (see below), and it is not the cause: replayed on 780
 rules, the old shape scores 92.2% and the corrected shape 92.5%, a 0.3-point
 difference in the corrected shape's favour. The 3.2-point drop from 95.7% is
-the rules.
+the rules. The 3.5.11 → 3.5.12 step is one prompt (600/650 vs 601/650) and
+should be read as noise, not as a trend.
 
 Two numbers that briefly appeared here are **withdrawn**: between 2026-08-04
 and 2026-08-05, this table and `stats.json` cited **91.5%** for `garak` and
@@ -424,13 +518,13 @@ number is a version-pinned, reproducible measurement. It was also produced by a 
 that built an event of `type: 'llm_io'`, which is a rule *source* and not an
 `AgentEventType`; `src/engine.ts` could not map it and so ran every rule of
 every source against the event instead of the two source types the harness
-documented itself as using. The 92.5% above replaces it: measured on
-2026-08-05 at 780 rules through `llm_input` + `tool_response`, the two channels
+documented itself as using. The 92.3% above replaces it: measured on
+2026-08-15 at 784 rules through `llm_input` + `tool_response`, the two channels
 `src/hook-handler.ts` can actually deliver a prompt on, and written to
-`data/measurements/garak/2026-08-05_garak-inthewild-jailbreak-corpus-650_atr-3-5-11.json`
+`data/measurements/garak/2026-08-15_garak-inthewild-jailbreak-corpus-650_atr-3-5-12.json`
 with the commit that produced it. Under the wider shape set used for
 false-positive measurement (which also runs `engine.scanSkill()`) the same
-corpus scores 93.1%; that number is recorded in the measurement's `breakdown`
+corpus scores 92.9%; that number is recorded in the measurement's `breakdown`
 and is deliberately not the published one, because a garak prompt never reaches
 production as a SKILL.md. `.github/workflows/eval.yml` now runs
 `scripts/check-benchmark-citations.ts`, which fails CI if this table or
@@ -453,13 +547,18 @@ See [CHANGELOG.md](CHANGELOG.md).
     benchmark. That corpus is private and roughly 5x larger; this row is a
     self-built 850-sample corpus in PINT's format, assembled from
     `deepset/prompt-injections` (660) and `Lakera/gandalf_ignore_instructions`
-    (190). It also carries a scope caveat worth stating plainly: only **29 of
-    780 rules** fire on it at all, and `ATR-2026-00001` alone accounts for 226
-    of the 272 detections. Read it as a prompt-injection-family score, not as
+    (190). It also carries a scope caveat worth stating plainly: only **63 of
+    784 rules** fire on it at all, and `ATR-2026-00001` alone accounts for 226
+    of the 295 detections. Read it as a prompt-injection-family score, not as
     ATR's overall coverage. The row moved 63.6% → 60.3% between 3.5.0 and
     3.5.11 for the same reason `garak` moved: PR #327 tightened
     `ATR-2026-00001`'s persona-switch regex to stop it false-positiving on
-    benign prose. Precision moved 99.7% → 100% over the same span.
+    benign prose. Precision moved 99.7% → 100% over the same span. It then
+    recovered 60.3% → 65.4% at 3.5.12 (2026-08-15) as rules added since
+    3.5.11 widened the family: rules firing on this corpus went 29 → 63 while
+    `ATR-2026-00001`'s own contribution stayed at 226, so the gain came from
+    the tail, not from re-loosening the one dominant rule. Precision held at
+    100% (0 FP on the 399 benign samples).
 
 [^promptcorpora]: **Read both of these as closed-book scores.** Until
     2026-08-05 the harness recorded its per-rule breakdown as the literal
@@ -522,8 +621,8 @@ See [CHANGELOG.md](CHANGELOG.md).
     measures ATR against attack write-ups, not against traffic.
 
 Two `garak` rows are deliberate: the headline `garak` source tracks NVIDIA's
-in-the-wild jailbreak corpus (narrow, the ~92.5% number ATR cites publicly,
-refreshed 2026-08-05 against ATR 3.5.11), while `garak-full` tracks
+in-the-wild jailbreak corpus (narrow, the ~92% number ATR cites publicly,
+refreshed 2026-08-15 against ATR 3.5.12), while `garak-full` tracks
 every probe family in upstream garak (broad, includes families like
 `badchars`, `dra`, `encoding` that ATR's regex layer intentionally does
 not target). Both are valid measurements against different corpora; they
@@ -555,10 +654,10 @@ the file path and `metadata.measurement_file` in `stats.json` for the absolute
 repo path.
 
 False-positive rate is lane-keyed as of v3.5.0, not a single overall figure.
-ATR ships detection lanes (`enforce` / `alert` / `hunt`); on a 65K-sample
-benign gate the `enforce` lane (stable + `confirm`-gated rules) holds ~0.24%
-FP, while the default `hunt` lane (all rules) runs ~9% FP. Per-corpus `FP rate`
-cells above are measured in the default `hunt` lane. See [CHANGELOG.md](CHANGELOG.md)
+ATR ships detection lanes (`enforce` / `alert` / `hunt`). The specific lane FP
+rates previously quoted here are withdrawn and awaiting re-measurement — see
+the note in the lanes section above for why. Per-corpus `FP rate` cells above
+are measured in the default `hunt` lane. See [CHANGELOG.md](CHANGELOG.md)
 (v3.5.0) for the lane definitions.
 
 ```bash
@@ -578,7 +677,9 @@ npx tsx scripts/measurement/verify.ts       # validate every measurement file
 npx tsx scripts/sync-stats-from-measurements.ts                              # refresh stats.json benchmarks[]
 ```
 
-Raw data: [`data/full-scan-v2-2026-04-14.json`](data/full-scan-v2-2026-04-14.json) (96,096-skill scan; 1,302 flagged, 552 confirmed malicious after manual review); full malware-campaign report in [`docs/research/openclaw-malware-campaign-2026-04.md`](docs/research/openclaw-malware-campaign-2026-04.md).
+Raw data: [`data/full-scan-v2-2026-04-14.json`](data/full-scan-v2-2026-04-14.json) — 101,280 skills scanned, 1,434 flagged, engine 2.0.0, timestamped 2026-04-13. The malware-campaign write-up is in [`docs/research/openclaw-malware-campaign-2026-04.md`](docs/research/openclaw-malware-campaign-2026-04.md).
+
+[^wildscan]: Scanned and flagged counts come from `total_scanned` and `total_flagged` in the raw scan file; the flag rate is those two divided. **No precision figure is given because none was measured over this run.** Earlier material paired a manual-review count against a smaller 96,096-skill analysis subset and reported the ratio as a precision floor. The review covered that subset rather than all 1,434 flags, so the ratio does not describe this scan and is not reproducible from the raw file; it has been withdrawn rather than recomputed. Establishing precision here means re-reviewing a sample of the 1,434 flags, which has not been done.
 
 ATR is honest about what it cannot detect. Regex catalogs miss paraphrased attacks, semantic rephrasings of credential exfiltration, and novel attack shapes not present in the training corpus. `PromptBench` (3,280 character- and word-level robustness perturbations) is a different threat class from prompt injection and sits largely outside ATR's content scope; ATR still matches the 23.2% that carry injection-shaped payloads, at 100% precision. See [LIMITATIONS.md](LIMITATIONS.md) for the documented evasion-test corpus (64 techniques as of 2026-05) and the layering recommendation: ATR is the content layer; pair with credential brokering, sandbox execution, and human-in-the-loop for high-blast-radius actions.
 
@@ -596,9 +697,44 @@ ATR is currently single-maintainer (BDFL) under Adam Lin, transitioning to a Tec
 
 ## 10. Security
 
-Vulnerability reports are coordinated under [SECURITY.md](SECURITY.md). Please use the private security advisory channel on the GitHub repository, not public issues, for any report concerning a vulnerability in the engine or the rule corpus.
+Vulnerability reports are coordinated under [SECURITY.md](SECURITY.md). Report privately — not in a public issue — for anything concerning a vulnerability in the engine or the rule corpus. Two channels are open: a [GitHub Security Advisory](https://github.com/Agent-Threat-Rule/agent-threat-rules/security/advisories/new) (private vulnerability reporting is enabled on this repository, verified 2026-09-22), or email to <adam@agentthreatrule.org>. Response-time commitments are in [SECURITY.md](SECURITY.md).
 
-## 11. Contributing
+## 11. Telemetry
+
+**Nothing in this project sends anything anywhere unless you ask it to.** Scanning is a local operation: `atr scan`, `atr scan-skill`, `atr guard`, `atr validate`, and the library (`new ATREngine(...)`) are all silent by default.
+
+Anonymous detection reporting is available as an opt-in, for deployments that want to contribute detections to a shared sensor network.
+
+- **Turn it on:** `--report-to-cloud`. Without this flag nothing leaves your machine.
+- **Endpoint:** `--tc-url <url>`, or the `ATR_TC_URL` environment variable. **One of the two is required** — there is no built-in default, so opting in without naming a recipient is an error, not a silent choice of one. ATR is an open standard rather than any single collector's client, and a package that carried a destination for detection data would be making that choice on your behalf. Pass the base URL only (`https://host`); `/api/threats` is appended for you. HTTPS is required for anything that is not localhost.
+- `--no-report` is still accepted and is now a no-op, since off is the default.
+
+When reporting is on, `atr scan` prints a notice saying so before it starts and names the endpoint when it finishes. The rest of this section describes what is sent **when you have opted in**.
+
+**Every scanned item produces at least one event, including items where no rule matched** — those are reported as a single `__clean__` event rather than being skipped. An item that matches more than one rule produces one event per match, so a noisy file can emit several. Events are batched (50 per request, or every 60 seconds, whichever comes first) and flushed once more before the process exits. An unreachable endpoint is not fatal: the batch is re-queued and your scan results are unaffected.
+
+A detection event on the wire looks like this, verbatim apart from the UUID and hash:
+
+```json
+{"events":[{"attackSourceIP":"<random UUID>","attackType":"skill-compromise","mitreTechnique":"ATR-2026-00120","sigmaRuleMatched":"ATR-2026-00120","timestamp":"2026-09-22T08:09:40.946Z","region":"unknown","severity":"critical","confidence":0.92,"contentHash":"<sha256 hex>","scanTarget":"skill"}]}
+```
+
+| Field | What it actually carries |
+|---|---|
+| `attackSourceIP` | A random UUID generated fresh for each process. Despite the field name, no IP address is read or sent — though, as with any HTTP request, the receiving server sees the network source address. The same UUID is repeated in a client-id request header, so events from one run are linkable to each other, but not across runs. |
+| `attackType` | The matched rule's category, or `clean`. |
+| `mitreTechnique` / `sigmaRuleMatched` | Both carry the ATR rule ID, or `__clean__`. The names are legacy on the receiving side; neither holds a MITRE or Sigma identifier. |
+| `severity`, `confidence` | Taken from the matched rule. |
+| `contentHash` | A full, unsalted SHA-256 of the scanned content. It is not the content and cannot be reversed into it, but it is an exact fingerprint: anyone who already holds a candidate file can hash it and learn whether you scanned that file. |
+| `scanTarget` | The literal string `skill`, or the event type for MCP event scans. Never a file path. |
+| `timestamp` | ISO 8601, when the rule was evaluated. |
+| `region` | Always the literal string `unknown`. |
+
+Not sent: the scanned content, file names, file paths, your username, hostname, environment variables, or the ATR version. Requests are unauthenticated unless `TC_API_KEY` is set in the environment, in which case it is attached as a bearer token.
+
+If you are scanning material whose existence you cannot disclose, simply do not pass `--report-to-cloud`.
+
+## 12. Contributing
 
 The fastest contribution path requires no local setup:
 
@@ -610,7 +746,7 @@ Other contribution paths (evasion reports, false-positive reports, full rule aut
 
 All contributions are MIT-licensed by submission. There is no CLA.
 
-## 12. Citation
+## 13. Citation
 
 If you use ATR in academic work or security research, please cite the dataset via DOI:
 
@@ -629,15 +765,15 @@ The companion research paper is published on Zenodo: [PDF](docs/paper/ATR-Paper-
 
 Machine-readable citation metadata is available in [CITATION.cff](CITATION.cff) (CFF v1.2.0).
 
-## 13. Maintainers
+## 14. Maintainers
 
 - **Adam Lin (林冠辛)** — BDFL, [@eeee2345](https://github.com/eeee2345), adam@agentthreatrule.org, Taiwan.
 
 The TSC seating process is open per [GOVERNANCE.md](GOVERNANCE.md).
 
-## 14. Sponsorship
+## 15. Sponsorship
 
-ATR's rules, engine, and pipeline are MIT licensed in perpetuity. Maintenance — CVE-class response, weekly cross-ecosystem sync, the auto-review pipeline — runs on community sponsorship through [Open Source Collective, Inc.](https://opencollective.com/opensource) (501(c)(6), EIN 81-1567737).
+ATR's rules, engine, and pipeline are MIT licensed in perpetuity. Maintenance — CVE-class response, weekly cross-ecosystem sync, the auto-review pipeline — runs on community sponsorship through [Open Source Collective, Inc.](https://opencollective.com/opensource) (501(c)(6), EIN 82-2037583).
 
 **Sponsor page: [opencollective.com/agent-threat-rules](https://opencollective.com/agent-threat-rules)**
 
@@ -653,17 +789,17 @@ Three funding milestones make the trajectory concrete:
 
 Organizations that want a deeper engagement — a named maintainer contact, faster turnaround on CVE-class updates, or co-authored rules attributed to your organization — can arrange a custom sponsorship tier through Open Source Collective. Email <adam@agentthreatrule.org>.
 
-## 15. License
+## 16. License
 
 ATR is released under the [MIT License](LICENSE). All contributions are MIT-licensed by submission.
 
-## 16. Acknowledgments
+## 17. Acknowledgments
 
 ATR's design draws on prior work in: [Sigma](https://github.com/SigmaHQ/sigma) (SIEM detection format), [YARA](https://github.com/VirusTotal/yara) (malware signature format), [OWASP LLM Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/), [OWASP Agentic Top 10](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/), [MITRE ATLAS](https://atlas.mitre.org/), [NVIDIA garak](https://github.com/NVIDIA/garak), [Lakera PINT](https://github.com/lakeraai/pint-benchmark), [Meta LlamaFirewall](https://ai.meta.com/research/publications/llamafirewall-an-open-source-guardrail-system-for-building-secure-ai-agents/), and [SAFE-MCP (OpenSSF)](https://github.com/safe-agentic-framework/safe-mcp).
 
-The 96,096-skill ecosystem scan was made possible by the maintainers of OpenClaw, Skills.sh, Hermes Agent, and ClawHub publishing their registries openly.
+The 2026-04 ecosystem-wide skill scan was made possible by the maintainers of OpenClaw, Skills.sh, Hermes Agent, and ClawHub publishing their registries openly.
 
-## 17. References
+## 18. References
 
 ### Normative
 

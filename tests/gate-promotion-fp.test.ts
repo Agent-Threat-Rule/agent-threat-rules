@@ -172,6 +172,7 @@ describe("parseCliOptions", () => {
       base: "origin/main",
       emitClean: null,
       emitDirty: null,
+      emitMeasurement: null,
       filterMode: false,
     });
   });

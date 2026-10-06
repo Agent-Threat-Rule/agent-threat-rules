@@ -16,10 +16,10 @@ severity: high
 
 references:
   owasp_llm:
-    - "LLM06:2025 - Excessive Agency"
-    - "LLM03:2025 - Supply Chain Vulnerabilities"
+    - "LLM06:2025"
+    - "LLM03:2025"
   owasp_agentic:
-    - "ASI03:2026 - Identity and Privilege Abuse"
+    - "ASI03:2026"
   mitre_atlas:
     - "AML.T0040 - AI Model Inference API Access"
 
@@ -106,10 +106,13 @@ detection:
 
 response:
   actions:
-    - block_tool
     - alert
-    - reduce_permissions
     - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 403/5352 =
+    7.53% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_tool(interrupt), reduce_permissions(degrade). Detection unchanged — recall cost is
+    zero.
   auto_response_threshold: high
   message_template: >
     [ATR-2026-064] Over-permissioned skill detected. Tool is attempting operations
@@ -119,7 +122,6 @@ response:
 confidence: 73
 wild_validated: "2026/04/08"
 wild_samples: 53577
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input:

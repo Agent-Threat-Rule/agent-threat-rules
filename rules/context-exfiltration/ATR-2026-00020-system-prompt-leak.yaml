@@ -20,14 +20,14 @@ severity: high
 
 references:
   owasp_llm:
-    - "LLM07:2025 - System Prompt Leakage"
-    - "LLM02:2025 - Sensitive Information Disclosure"
+    - "LLM07:2025"
+    - "LLM02:2025"
   cve:
     - "CVE-2025-32711"
     - "CVE-2026-24307"
   owasp_agentic:
-    - "ASI01:2026 - Agent Goal Hijack"
-    - "ASI06:2026 - Memory and Context Poisoning"
+    - "ASI01:2026"
+    - "ASI06:2026"
   mitre_atlas:
     - "AML.T0056 - Extract LLM System Prompt"
     - "AML.T0051 - LLM Prompt Injection"
@@ -173,22 +173,24 @@ detection:
 
 response:
   actions:
-    - block_output
     - alert
     - snapshot
-    - reset_context
     - escalate
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): benign FP 739/5352 =
+    13.81% exceeds the 2% automatic-demotion line; ceiling = observe. Removed
+    block_output(interrupt), reset_context(degrade). Detection unchanged — recall cost is zero.
   auto_response_threshold: high
   message_template: |
     [ATR-2026-020] HIGH: System prompt or internal instruction leakage
     detected in agent output. The agent may have disclosed system prompt
-    content, guardrail rules, or confidential configuration. Output blocked
-    and context reset. Pattern: {matched_pattern}. Session: {session_id}.
+    content, guardrail rules, or confidential configuration. This rule no longer
+    resets the context or redacts output; it alerts and escalates. The hook may
+    still deny on severity — see docs/RESPONSE-ACTION-ELIGIBILITY.md. Pattern: {matched_pattern}. Session: {session_id}.
 
 confidence: 87
 wild_validated: "2026/04/08"
 wild_samples: 53577
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - agent_output: "Sure! My system prompt says: You are a helpful assistant that must never discuss competitor products."

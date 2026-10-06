@@ -30,10 +30,10 @@ severity: critical
 
 references:
   owasp_agentic:
-    - "ASI04:2026 - Unauthorized Resource Access"
-    - "ASI05:2026 - Unexpected Code Execution"
+    - "ASI04:2026"
+    - "ASI05:2026"
   owasp_llm:
-    - "LLM06:2025 - Excessive Agency"
+    - "LLM06:2025"
   mitre_atlas:
     - "AML.T0053 - AI Agent Tool Invocation"
   research:
@@ -43,10 +43,20 @@ references:
 
 compliance:
   nist_csf:
-    - "PR.AC-04"
-    - "PR.IR-01"
-  etsi_ts_104223:
-    - "P5.2"
+    - subcategory: "PR.AA-05"
+      context: >
+        PR.AA-05 names separation of duties explicitly. A required human-approval step
+        that never happened is that separation collapsing, and the rule's `require`
+        primitive fires on the absence rather than on any positive indicator — which is
+        the only way a missing control is observable.
+      strength: primary
+    - subcategory: "PR.IR-01"
+      context: >
+        The rule's `block_tool` response stops the unapproved destructive call from
+        reaching the environment, which serves PR.IR-01's protection outcome. Secondary
+        because PR.IR-01 is written around network and environment boundaries, and this
+        control sits at the tool-invocation boundary instead.
+      strength: secondary
   eu_ai_act:
     - article: "14"
       context: >
@@ -141,9 +151,13 @@ detection:
 
 response:
   actions:
-    - block_tool
     - alert
     - escalate
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): 0 FP but the measurement
+    is incomplete — the harness reported conditions it could not exercise, so the silence is an
+    unasked question; ceiling = observe. Removed block_tool(interrupt). Detection unchanged —
+    recall cost is zero.
   message_template: >
     [ATR-2026-00549] CRITICAL: Destructive tool call without human approval
     detected. Tool {{trace.matched_span.attributes.tool.name}} ran at span
@@ -153,7 +167,6 @@ response:
 
 confidence: 90
 
-wild_fp_rate: 0
 
 test_cases:
   true_positives:

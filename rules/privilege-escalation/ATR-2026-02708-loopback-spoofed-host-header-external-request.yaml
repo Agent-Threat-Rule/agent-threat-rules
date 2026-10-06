@@ -1,0 +1,223 @@
+title: "Agent HTTP Request Claims a Loopback Origin While Targeting an External Host"
+id: ATR-2026-02708
+rule_version: 2
+status: experimental
+description: >
+  Detects an agent HTTP tool call that sends a request to a NAMED external host
+  while declaring a loopback origin in a header the server is likely to trust --
+  `Host: 127.0.0.1`, `X-Forwarded-For: 127.0.0.1`, `X-Real-IP: localhost`,
+  `X-Originating-IP: ::1`. Mined from CVE-2026-61435 (PraisonAI), whose
+  bind-host authorization check derived "is this request local?" from
+  `request.url.hostname`, i.e. from the Host header the caller supplies, so an
+  internet-reachable deployment granted localhost-only privileges to anyone who
+  asked for them. Verified on the shipped engine: two payload forms across all
+  five event types matched nothing, and a grep of rules/ finds no
+  Host/X-Forwarded-For spoofing rule at all.
+  RULE_VERSION 2, after adversarial review fired version 1 on 6 of 22 benign
+  probes. Three constraints were added, each forced by a probe.
+  (1) THE CALL MUST BE REQUEST-ISSUING. Version 1 checked only the argument
+  text, so an agent writing a penetration-test note through write_file --
+  `ffuf -u https://target.example/admin -H "X-Forwarded-For: 127.0.0.1"` --
+  matched, because the payload was in the file body. Code-block suppression,
+  which version 1 relied on for exactly this sample, only helps when the
+  example is fenced, and a note file is not.
+  (2) `host` NEEDS A REAL HEADER CONTEXT. Version 1 accepted any QUOTED key
+  named host, and its false-positive note claimed configuration files were
+  excluded by that quoting requirement. They are not: JSON quotes its keys, so
+  `{"tool":"db_query","arguments":{"host":"localhost","schema_url":"https://schemas.corp.example/..."}}`
+  matched. `host` now requires -H, --header, a headers object, or an HTTP wire
+  line. The `x-*` names keep the looser form, since nothing else is called
+  x-forwarded-for.
+  (3) THE TWO HALVES MUST BE ADJACENT AND IN THE SAME STATEMENT. Version 1 only
+  asked that both appear somewhere in the arguments, so
+  `curl -H 'Host: localhost' http://127.0.0.1:8080/health; curl
+  https://status.corp.example/ping` satisfied them from two different commands.
+  The gap is now 120 characters with no `;`, no newline, no `://`, no pipe and
+  no `&` -- the last four because every remaining false positive was a loopback
+  header attached to a LOOPBACK request, with an unrelated external URL in a
+  trailing comment, an echo, or the other half of a pipeline.
+  The pairing remains the precision handle: a request TO 127.0.0.1 carrying a
+  virtual-host `Host:` header is ordinary local testing and does not match,
+  because the external-URL condition demands a hostname ending in an alphabetic
+  TLD, which no dotted-quad or bare `localhost` target satisfies.
+author: "ATR Community (CVE sweep)"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cwe:
+    - "CWE-290"
+    - "CWE-350"
+  owasp_llm:
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI06:2026"
+  mitre_attack:
+    - "T1078 - Valid Accounts"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  cve:
+    - "CVE-2026-61435"
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2026-61435"
+
+metadata_provenance:
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resistance to unauthorised use; this rule detects an agent request forging a loopback origin to satisfy a localhost-only authorization check on a remote service."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be treated; this rule is the runtime treatment for header-derived trust decisions in agent-reachable services."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Authorization bypass via a spoofed origin header is an identified AI risk requiring an active runtime countermeasure; this rule implements it."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Cataloguing caller-controlled origin headers as an AI-specific authorization risk in the organizational risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by detecting forged origin headers before the request is issued."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented through runtime detection of the spoofed header."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: forged-loopback-origin-header
+  scan_target: runtime
+  confidence: high
+  suppress_in_code_blocks: true
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: all
+  conditions:
+    # (1) The event must be a REQUEST-ISSUING tool call. Version 1 had no such
+    # requirement, so an agent writing a penetration-test note containing the
+    # ffuf example line (`-u https://target.example/admin -H
+    # "X-Forwarded-For: 127.0.0.1"`) through write_file matched: the payload is
+    # in the file body, not in a request. Code-block suppression, which version 1
+    # relied on for this, only helps when the example is fenced.
+    - field: tool_args
+      operator: regex
+      value: '(?:["\x27](?:tool|tool_name|toolName|name|function|mcp_tool)["\x27]\s{0,3}:\s{0,3}["\x27][\w.\-]{0,40}(?:http|curl|wget|fetch|request|req|api|webhook|url|browse|axios|httpx)[\w.\-]{0,20}["\x27]|["\x27](?:command|cmd|script|shell|args|argv)["\x27]\s{0,3}:\s{0,3}[\s\S]{0,20}\b(?:curl|wget|httpie|\bxh\b|invoke-webrequest)\b)'
+      description: "The call is issued by an HTTP-request tool, or by a shell tool running an HTTP client"
+
+    # (2) The external target and the loopback-valued origin header must be
+    # ADJACENT -- within 120 characters and with no statement break between them.
+    # Version 1 asked only that both appear somewhere in the arguments, so
+    # `curl -H 'Host: localhost' http://127.0.0.1:8080/health; curl
+    # https://status.corp.example/ping` -- a local vhost check followed by an
+    # unrelated external ping -- satisfied both halves from two different commands.
+    # The gap also admits no `://`, no pipe and no `&`, because the remaining
+    # false positives were all the same shape: a loopback header attached to a
+    # LOOPBACK request, with an unrelated external URL in a trailing comment, an
+    # echo, or the other half of a pipeline.
+    # `host` additionally requires a real header context (-H, --header, a headers
+    # object, or an HTTP wire line), because `{"host":"localhost"}` is a connection
+    # parameter in every database and service config; version 1 accepted any quoted
+    # key named host, and its "config files do not match" claim held only for
+    # UNQUOTED yaml keys.
+    - field: tool_args
+      operator: regex
+      value: '(?:https?://[a-z0-9-]{2,30}(?:\.[a-z0-9-]{1,30}){0,4}\.[a-z]{2,12}(?:[:/?"\x27]|\s|$)(?:[^:;\n|&]|:[^/;\n|&]|:/[^/;\n|&]){0,120}(?:(?:-H\s{1,3}["\x27]?|--header\s{1,3}["\x27]?|\bheaders?\b["\x27]?\s{0,3}[:=]?\s{0,3}[{(\[]?\s{0,3}["\x27]?)host["\x27]?\s{0,3}[:=]\s{0,3}["\x27]?\s{0,2}(?:127\.\d{1,3}\.\d{1,3}\.\d{1,3}|localhost|\[?::1\]?|0\.0\.0\.0)\b|(?:^|[\r\n])\s{0,3}host["\x27]?\s{0,3}[:=]\s{0,3}["\x27]?\s{0,2}(?:127\.\d{1,3}\.\d{1,3}\.\d{1,3}|localhost|\[?::1\]?|0\.0\.0\.0)\b|(?:["\x27]|(?:-H\s{1,3}["\x27]?|--header\s{1,3}["\x27]?|\bheaders?\b["\x27]?\s{0,3}[:=]?\s{0,3}[{(\[]?\s{0,3}["\x27]?))(?:x-forwarded-for|x-real-ip|x-originating-ip|x-client-ip|x-forwarded-host)["\x27]?\s{0,3}[:=]\s{0,3}["\x27]?\s{0,2}(?:127\.\d{1,3}\.\d{1,3}\.\d{1,3}|localhost|\[?::1\]?|0\.0\.0\.0)\b)|(?:(?:-H\s{1,3}["\x27]?|--header\s{1,3}["\x27]?|\bheaders?\b["\x27]?\s{0,3}[:=]?\s{0,3}[{(\[]?\s{0,3}["\x27]?)host["\x27]?\s{0,3}[:=]\s{0,3}["\x27]?\s{0,2}(?:127\.\d{1,3}\.\d{1,3}\.\d{1,3}|localhost|\[?::1\]?|0\.0\.0\.0)\b|(?:^|[\r\n])\s{0,3}host["\x27]?\s{0,3}[:=]\s{0,3}["\x27]?\s{0,2}(?:127\.\d{1,3}\.\d{1,3}\.\d{1,3}|localhost|\[?::1\]?|0\.0\.0\.0)\b|(?:["\x27]|(?:-H\s{1,3}["\x27]?|--header\s{1,3}["\x27]?|\bheaders?\b["\x27]?\s{0,3}[:=]?\s{0,3}[{(\[]?\s{0,3}["\x27]?))(?:x-forwarded-for|x-real-ip|x-originating-ip|x-client-ip|x-forwarded-host)["\x27]?\s{0,3}[:=]\s{0,3}["\x27]?\s{0,2}(?:127\.\d{1,3}\.\d{1,3}\.\d{1,3}|localhost|\[?::1\]?|0\.0\.0\.0)\b)(?:[^:;\n|&]|:[^/;\n|&]|:/[^/;\n|&]){0,120}https?://[a-z0-9-]{2,30}(?:\.[a-z0-9-]{1,30}){0,4}\.[a-z]{2,12}(?:[:/?"\x27]|\s|$))'
+      description: "A named external host and a loopback-valued origin header, adjacent and in the same statement"
+  false_positives:
+    - "A deliberate penetration test replaying a webhook with X-Forwarded-For: 127.0.0.1 against a staging host. This matches, and matching is correct: the act being performed is the bypass, whoever is performing it."
+    - "Local virtual-host testing (`curl -H 'Host: app.example.com' http://127.0.0.1:8080/`), where the loopback address is the TARGET and the header carries a real name. Neither half matches."
+    - "A reverse-proxy configuration using `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for`, since the value is a variable rather than a loopback literal."
+    - "Configuration that binds a service locally while naming a remote API -- `{\"host\":\"localhost\"}` beside `https://api.corp.example`, `- HOST=0.0.0.0` in a compose file, a local debugging proxy on a request to an external API. All of these FIRED version 1; `host` now needs a real header context."
+    - "Security-tool documentation whose examples contain the payload, fenced or not. The rule now also requires the call itself to be request-issuing, so writing the ffuf line into a notes file does not match."
+
+response:
+  actions:
+    - alert
+  message_template: >
+    [ATR-2026-02708] Agent request targets a named external host while
+    declaring a loopback origin (Host / X-Forwarded-For / X-Real-IP). Derive
+    locality from the socket, never from a caller-supplied header.
+
+confidence: 80
+
+test_cases:
+  true_positives:
+    - input: '{"tool":"http_request","arguments":{"url":"http://target.example:8000/api/v1/agents","headers":{"Host":"127.0.0.1"}}}'
+      expected: triggered
+      description: "CVE-2026-61435 shape -- the Host header the bind-host check reads is set to loopback on a remote target"
+    - input: '{"tool":"http_request","arguments":{"url":"https://api.target.example/admin","headers":{"X-Forwarded-For":"127.0.0.1","Host":"localhost"}}}'
+      expected: triggered
+      description: "X-Forwarded-For and Host both forged against an external admin endpoint"
+    - input: '{"tool":"bash","command":"curl -s -H \"X-Real-IP: ::1\" https://console.target.example/internal/metrics"}'
+      expected: triggered
+      description: "IPv6 loopback spelling through a shell curl invocation"
+    - input: '{"tool":"http_post","arguments":{"url":"https://staging.target.example/api/webhook","headers":{"x-forwarded-for":"127.0.0.2","Content-Type":"application/json"}}}'
+      expected: triggered
+      description: "Any address in 127.0.0.0/8 satisfies the same localhost checks"
+  true_negatives:
+    - input: '{"tool":"db_query","arguments":{"host":"localhost","database":"app","schema_url":"https://schemas.corp.example/v1/app.json","sql":"SELECT 1"}}'
+      expected: not_triggered
+      description: "A database tool given a local host and a remote schema URL -- JSON quotes its keys, which is why quoting alone never excluded configuration"
+    - input: '{"tool":"bash","command":"curl -sS -H ''Host: localhost'' http://127.0.0.1:8080/health; curl -sS https://status.corp.example/ping"}'
+      expected: not_triggered
+      description: "A local vhost check and an unrelated external ping in one command -- version 1 took one half from each"
+    - input: '{"tool":"write_file","arguments":{"path":"notes.txt","content":"Header bypass check: ffuf -w words.txt -u https://target.example/admin -H \"X-Forwarded-For: 127.0.0.1\" -mc 200"}}'
+      expected: not_triggered
+      description: "The ffuf example written into an UNFENCED note file, which code-block suppression cannot reach"
+    - input: '{"tool":"bash","command":"curl -H ''Host: localhost'' http://127.0.0.1:3000/healthz # mirrors https://app.corp.example"}'
+      expected: not_triggered
+      description: "A loopback request whose trailing comment names the production URL"
+    - input: '{"tool":"bash","command":"curl -sS https://api.corp.example/v1/ping -o /dev/null -w ''%{time_total}'' | curl -X POST --header ''X-Real-IP: 127.0.0.1'' http://127.0.0.1:9000/timing --data-binary @-"}'
+      expected: not_triggered
+      description: "External call piped into a POST to a LOCAL collector -- the spoofed header belongs to the loopback request"
+    - input: '{"tool":"http_request","arguments":{"url":"https://api.corp.example/v1/items","headers":{"X-Request-Id":"a91f"},"proxy":{"host":"127.0.0.1","port":8888}}}'
+      expected: not_triggered
+      description: "External API call routed through a local debugging proxy"
+    - input: '{"tool":"http_request","arguments":{"url":"https://api.corp.example/v1","headers":{"Host":"api.corp.example"}}}'
+      expected: not_triggered
+      description: "A genuine virtual-host header on an external request"
+    - input: '{"tool":"http_get","arguments":{"url":"https://api.corp.example/openapi.json","note":"spec documents x-real-ip: 127.0.0.1 as ignored"}}'
+      expected: not_triggered
+      description: "Fetching a spec whose prose documents the header"
+    - input: '{"tool":"http_request","arguments":{"url":"https://api.corp.example/health","headers":{"X-Request-Id":"abc"},"備註":"不要送 x-forwarded-for: 127.0.0.1"}}'
+      expected: not_triggered
+      description: "Non-English note instructing the agent NOT to send the header"
+    - input: '{"tool":"write_file","arguments":{"path":"playwright.config.json","content":"{\"use\":{\"baseURL\":\"https://staging.corp.example\"},\"webServer\":{\"host\":\"127.0.0.1\",\"port\":3000}}"}}'
+      expected: not_triggered
+      description: "Test config: local web server, external baseURL"
+    - input: '{"tool":"bash","command":"curl -H \"Host: app.example.com\" http://127.0.0.1:8080/healthz"}'
+      expected: not_triggered
+      description: "Ordinary local virtual-host testing: loopback is the target, the header carries a real name"
+    - input: '{"tool":"http_get","arguments":{"url":"https://api.corp.example/v1/status","headers":{"X-Request-Id":"a91f","Authorization":"Bearer <redacted>"}}}'
+      expected: not_triggered
+      description: "A normal external request with routine headers"
+    - input: '{"tool":"write_file","path":"nginx.conf","content":"proxy_set_header Host $host;\n proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n proxy_pass http://backend.internal.example;"}'
+      expected: not_triggered
+      description: "Reverse-proxy configuration passing variables, not loopback literals"
+    - input: '{"tool":"write_file","path":"config.yml","content":"database:\n  host: localhost\n  port: 5432\napi:\n  base_url: https://api.corp.example/v1"}'
+      expected: not_triggered
+      description: "An ordinary config file binding the database locally while naming a remote API -- one of the three measured false positives that forced the header-context requirement"
+
+evasion_tests:
+  - input: '{"tool":"http_request","arguments":{"url":"https://target.example/admin","headers":{"HOST":"127.000.000.001"}}}'
+    expected: not_triggered
+    bypass_technique: zero_padded_loopback_octets
+    notes: "KNOWN GAP, stated rather than papered over: zero-padded and alternate encodings of 127.0.0.1 (127.000.000.001, 2130706433, 0x7f000001) are not in the loopback alternation. Adding a decimal-integer branch here would collide with ordinary numeric header values, and the encoded-loopback family is better handled by one dedicated rule than by a branch in every rule that mentions loopback."

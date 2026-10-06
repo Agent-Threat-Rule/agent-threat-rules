@@ -91,7 +91,7 @@ the CSF 2.0 subcategories the rule corpus supplies evidence for.
 
 | CSF 2.0 Subcategory | Outcome | ATR Evidence | Rules (examples) |
 |---------------------|---------|--------------|------------------|
-| PR.AC-04 | Access permissions and authorizations are managed | Require-primitive trace rule 00549 enforces human-approval predecessor for destructive tools | ATR-2026-00549 (require, trace) |
+| PR.AA-05 | Access permissions, entitlements, and authorizations are defined in a policy, managed, enforced, and reviewed, and incorporate the principles of least privilege and separation of duties | Require-primitive trace rule 00549 enforces human-approval predecessor for destructive tools | ATR-2026-00549 (require, trace) |
 | PR.IR-01 | Unauthorized access protection | Cross-conversation memory write rule blocks tenant-boundary escapes | ATR-2026-00551 (forbid + cross-attribute, trace) |
 | GV.PO-01 | Policy for managing cybersecurity risks is established | Rules surface destructive autonomy that policy did not authorize | ATR-2026-00549, -00551 |
 
@@ -156,7 +156,7 @@ preventive controls:
 | ATR Action | CSF 2.0 Subcategory |
 |------------|---------------------|
 | `block_input` / `block_output` / `block_request` | PR.IR-01 (unauthorized access protection) |
-| `block_tool` | PR.IR-01 + PR.AC-04 (access permissions) |
+| `block_tool` | PR.IR-01 + PR.AA-05 (access permissions) |
 | `quarantine_session` / `quarantine_artifact` | PR.IR-04 (asset segregation) |
 | `redact_match` | PR.DS-02 (data-in-transit protected) |
 | `revoke_credential` | PR.AA-02 (credentials issued, managed, revoked) |
@@ -169,7 +169,7 @@ attention:
 
 | ATR Trace Rule Pattern | CSF 2.0 Subcategory |
 |------------------------|---------------------|
-| Missing human-approval predecessor (require primitive) | GV.PO-01 (policy established), PR.AC-04 |
+| Missing human-approval predecessor (require primitive) | GV.PO-01 (policy established), PR.AA-05 |
 | Cross-tenant scope drift (invariant primitive) | GV.SC-04 (supplier criticality), GV.OC-04 (legal/regulatory requirements understood) |
 | Goal drift / autonomy escape (composite) | GV.RM-01 (risk management strategy), GV.SC-07 (risks from suppliers monitored) |
 

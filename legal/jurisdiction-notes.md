@@ -24,7 +24,7 @@ The TSC will commission qualified legal counsel review per `governance/CHARTER.m
 
 ATR is a detection-rule corpus that crosses jurisdictions in three ways:
 
-1. **Project fiscal sponsor** is a US 501(c)(3) (Open Source Collective Inc.). This pulls some US legal context onto the project (US trademark law, US copyright law, US sanctions compliance).
+1. **Project fiscal sponsor** is a US 501(c)(6) (Open Source Collective Inc.). This pulls some US legal context onto the project (US trademark law, US copyright law, US sanctions compliance).
 2. **Adopters deploy ATR in multiple jurisdictions.** EU GDPR, UK DPA, China PIPL, Singapore PDPA, etc. each have requirements for what kind of detection processing is permitted.
 3. **Sovereign sub-range mechanism** (per `governance/CHARTER.md` § 8.2) explicitly invites national authorities to issue rules. This creates direct standards-body-to-sovereign relationships that must respect each sovereign's legal context.
 

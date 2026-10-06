@@ -11,6 +11,7 @@
  * @module agent-threat-rules/quality/quality-gate
  */
 
+import { isMeasuredFpRate, isMeasuredSampleCount } from "./wild-measurement.js";
 import type {
   Maturity,
   Provenance,
@@ -125,11 +126,18 @@ export function validateRuleMeetsStandard(
   // empirical claim (wild_fp_rate exactly 0% on >=N samples). Authors who
   // cannot meet this bar must add more detection conditions OR keep the rule
   // at maturity `draft` until they can.
+  // `isMeasuredFpRate(...) && === 0` rather than a bare `=== 0`: the exception
+  // is priced as a hard empirical claim, so it must be bought with a real
+  // measurement. An omitted rate already fails `=== 0`; the explicit predicate
+  // states the requirement instead of relying on that coincidence, and keeps a
+  // future `null`/`"0"` from buying the exception for free. See
+  // src/quality/wild-measurement.ts.
   const meetsSinglePatternException =
     level === "experimental" &&
     rule.conditions >= 1 &&
-    rule.wildSamples !== undefined &&
+    isMeasuredSampleCount(rule.wildSamples) &&
     rule.wildSamples >= SINGLE_PATTERN_EXCEPTION_MIN_SAMPLES &&
+    isMeasuredFpRate(rule.wildFpRate) &&
     rule.wildFpRate === 0;
 
   if (rule.conditions < req.minConditions) {

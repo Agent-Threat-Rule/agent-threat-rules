@@ -21,10 +21,10 @@ references:
   mitre_atlas:
     - AML.T0010 - AI Supply Chain Compromise
   owasp_llm:
-    - LLM01:2025 - Prompt Injection
+    - LLM01:2025
   owasp_agentic:
-    - ASI01:2026 - Agent Goal Hijack
-    - ASI04:2026 - Insufficient User Consent
+    - ASI01:2026
+    - ASI04:2026
 compliance:
   eu_ai_act:
     - article: "13"
@@ -98,7 +98,10 @@ response:
   actions:
     - block_tool
     - alert
-    - quarantine_session
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): 0/5352 benign FP, but
+    maturity is "test" — only stable is rated for irreversible actions; ceiling = degrade.
+    Removed quarantine_session(terminate). Detection unchanged — recall cost is zero.
   message_template: |
     [ATR-2026-00430] Trust-escalation / authority impersonation detected.
     The skill fabricates a trust context (vendor approval, user pre-

@@ -9,8 +9,9 @@ import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ATREngine } from '../engine.js';
 import type { AgentEvent, ATRMatch, ScanResult, ScanType } from '../types.js';
+import type { Lane } from '../quality/rule-contract.js';
 import { scanResultToSARIF } from '../converters/sarif.js';
-import { createTCReporter } from '../tc-reporter.js';
+import { createTCReporter, resolveTcUrl } from '../tc-reporter.js';
 import { createSemanticJudgeFromConfig } from './semantic-judge-config.js';
 
 const SEVERITY_ORDER = ['informational', 'low', 'medium', 'high', 'critical'] as const;
@@ -45,6 +46,14 @@ export interface ScanOptions {
   readonly semanticModel?: string;
   readonly semanticTimeout?: string;
   readonly semanticNoJsonMode?: boolean;
+  /**
+   * Detection lane (which rule maturities may fire). Undefined means the
+   * engine's built-in default; `src/cli.ts` resolves `--lane` and `ATR_LANE`
+   * and always passes an explicit value, because the engine itself no longer
+   * reads the environment. Scanning never blocks anything, so the blocking
+   * opt-in has no meaning here; only the lane does.
+   */
+  readonly lane?: Lane;
 }
 
 /** Detect whether the target is an MCP event JSON or SKILL.md file/directory. */
@@ -93,15 +102,26 @@ export async function cmdScanUnified(
     process.exit(1);
   }
 
-  // Threat Cloud reporting is ON by default — use --no-report to disable
-  const reporter = options.reportToCloud !== false
-    ? createTCReporter({
+  // Threat Cloud reporting is OFF by default. Scanning is a local operation, and a
+  // scan of internal material must not leave the machine because of a default. Opt in
+  // explicitly with --report-to-cloud.
+  let reporter: ReturnType<typeof createTCReporter> | undefined;
+  if (options.reportToCloud === true) {
+    try {
+      reporter = createTCReporter({
         tcUrl: options.tcUrl,
         onError: (err) => console.error(`${DIM}TC upload: ${err.message}${RESET}`),
-      })
-    : undefined;
+      });
+    } catch (err) {
+      // No endpoint configured. Refusing here is the point: the alternative is
+      // picking a recipient for the operator, which is what a built-in default
+      // did. Fail with the fix in the message rather than a stack trace.
+      console.error(`${RED}Error: ${err instanceof Error ? err.message : String(err)}${RESET}`);
+      process.exit(1);
+    }
+  }
   if (reporter) {
-    console.error(`${DIM}Threat Cloud: anonymous reporting enabled (--no-report to disable)${RESET}`);
+    console.error(`${DIM}Threat Cloud: anonymous reporting enabled via --report-to-cloud${RESET}`);
   }
 
   if (options.failOn !== undefined && !SEVERITY_ORDER.includes(options.failOn as typeof SEVERITY_ORDER[number])) {
@@ -123,7 +143,7 @@ export async function cmdScanUnified(
     if (reporter) {
       await reporter.destroy();
       if (!options.json && !options.sarif) {
-        console.log(`${DIM}  Threat Cloud: detections reported to ${options.tcUrl ?? 'https://tc.panguard.ai'}${RESET}`);
+        console.log(`${DIM}  Threat Cloud: detections reported to ${resolveTcUrl(options.tcUrl)}${RESET}`);
       }
     }
   }
@@ -160,7 +180,12 @@ async function scanMcpEvents(
   }
 
   const semantic = createSemanticJudgeFromScanOptions(options);
-  const engine = new ATREngine({ rulesDir, reporter, semanticJudge: semantic.judge });
+  const engine = new ATREngine({
+    rulesDir,
+    reporter,
+    semanticJudge: semantic.judge,
+    ...(options.lane ? { lane: options.lane } : {}),
+  });
   await engine.loadRules();
   if (semantic.enabled && !options.json && !options.sarif) {
     console.error(`${DIM}Semantic judge: enabled for method=semantic rules${RESET}`);
@@ -256,7 +281,12 @@ async function scanSkillFiles(
   }
 
   const semantic = createSemanticJudgeFromScanOptions(options);
-  const engine = new ATREngine({ rulesDir, reporter, semanticJudge: semantic.judge });
+  const engine = new ATREngine({
+    rulesDir,
+    reporter,
+    semanticJudge: semantic.judge,
+    ...(options.lane ? { lane: options.lane } : {}),
+  });
   await engine.loadRules();
   if (semantic.enabled && !options.json && !options.sarif) {
     console.error(`${DIM}Semantic judge: enabled for method=semantic rules${RESET}`);

@@ -9,6 +9,10 @@
  */
 
 import { load as parseYaml } from "js-yaml";
+import {
+  isMeasuredFpRate,
+  isMeasuredSampleCount,
+} from "../wild-measurement.js";
 import type {
   MetadataProvenance,
   Maturity,
@@ -125,10 +129,15 @@ export function atrRuleToMetadata(rule: RawATRRule): RuleMetadata {
     hasOwaspRef,
     hasMitreRef,
     hasFalsePositiveDocs,
-    ...(rule.wild_samples !== undefined
+    // Only carry a wild measurement forward when it IS one. A `null` or a
+    // numeric string survives `!== undefined` but reaches every downstream
+    // comparison (`rate > threshold`) as false, which reads to a gate as a
+    // perfect score — see src/quality/wild-measurement.ts. Dropping it here
+    // makes it `undefined`, the one encoding the gates refuse.
+    ...(isMeasuredSampleCount(rule.wild_samples)
       ? { wildSamples: rule.wild_samples }
       : {}),
-    ...(rule.wild_fp_rate !== undefined
+    ...(isMeasuredFpRate(rule.wild_fp_rate)
       ? { wildFpRate: rule.wild_fp_rate }
       : {}),
     ...(rule.wild_validated ? { wildValidatedAt: rule.wild_validated } : {}),

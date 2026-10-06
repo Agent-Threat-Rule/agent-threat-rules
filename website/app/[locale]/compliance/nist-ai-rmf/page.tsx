@@ -394,8 +394,8 @@ export default async function NistAiRmfPage({
             <span className="text-blue font-data text-xs pt-[5px]">→</span>
             <span>
               {zh
-                ? "效能 benchmark:NVIDIA garak in-the-wild jailbreak recall 98.0%(650 樣本)、完整 23-probe garak 38.5%(3,475 樣本)· 498 條已標註 SKILL.md 上 FP rate 0.20% · DOI 10.5281/zenodo.19178002"
-                : "Performance benchmarks: 98.0% recall on NVIDIA garak's in-the-wild jailbreak set (650 samples) and 38.5% across the full 23-probe garak suite (3,475 samples) · 0.20% FP rate on 498 labeled benign SKILL.md samples · DOI 10.5281/zenodo.19178002"}
+                ? "效能 benchmark(ATR 3.5.12,量測於 2026-08-15):NVIDIA garak in-the-wild jailbreak recall 92.3%(650 樣本)、完整 23-probe garak 57.2%(3,475 樣本)· 498 條已標註 SKILL.md 語料上 FP rate 0.20% · DOI 10.5281/zenodo.19178002"
+                : "Performance benchmarks (ATR 3.5.12, measured 2026-08-15): 92.3% recall on NVIDIA garak's in-the-wild jailbreak set (650 samples) and 57.2% across the full 23-probe garak suite (3,475 samples) · 0.20% FP rate on the 498-sample labeled SKILL.md corpus · DOI 10.5281/zenodo.19178002"}
             </span>
           </li>
         </ul>

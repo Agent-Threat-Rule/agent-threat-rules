@@ -63,15 +63,37 @@ describe("computeConfidence", () => {
       ).toBe(50);
     });
 
-    it("clamps wild FP rate to [0, 100]", () => {
+    it("treats an out-of-range FP rate as unmeasured, not as a clamped one", () => {
+      // BEHAVIOUR CHANGE (see src/quality/wild-measurement.ts).
+      //
+      // This used to clamp: `Math.max(0, Math.min(100, rule.wildFpRate))`, so
+      // wildFpRate: -5 became 0 and scored 100 — a corrupt value earning the
+      // MAXIMUM precision score. That is the same failure this module exists to
+      // close, one layer down: a number the code cannot interpret must not be
+      // read as evidence of precision.
+      //
+      // A rate outside [0, 100] is not a measurement, so the score now falls
+      // back to the honest test-case estimate. With this fixture's 0 test cases
+      // that estimate is 0 for both directions.
       expect(
         computeConfidence(rule({ wildSamples: 1000, wildFpRate: -5 }))
           .precisionScore,
-      ).toBe(100);
+      ).toBe(0);
       expect(
         computeConfidence(rule({ wildSamples: 1000, wildFpRate: 150 }))
           .precisionScore,
       ).toBe(0);
+      // ...and the fallback really is the test-case estimate, not a hard 0.
+      expect(
+        computeConfidence(
+          rule({
+            wildSamples: 1000,
+            wildFpRate: -5,
+            truePositives: 5,
+            trueNegatives: 5,
+          }),
+        ).precisionScore,
+      ).toBe(100);
     });
   });
 

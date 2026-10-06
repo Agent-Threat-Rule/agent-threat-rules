@@ -60,7 +60,7 @@ Adopters whose adoption is itself a public-good interoperability artefact
 ### OWASP Agent Security Regression Harness
 - **Org**: OWASP Foundation
 - **Type**: reference
-- **Integration**: ATR rule corpus referenced as the canonical agent-threat detection ruleset in the project's threat catalogue
+- **Integration**: Four ATR-derived regression scenarios contributed to the harness (goal hijack, MCP trust boundary, prompt injection, sensitive-data disclosure). The scenario files carry no ATR attribution upstream, so this is a contribution to the harness rather than a reference to ATR by it
 - **Evidence**: <https://github.com/OWASP/agent-security-regression-harness/pull/74>
 - **Since**: 2026-05-11
 - **Status**: shipped
@@ -91,6 +91,15 @@ Adopters whose adoption is itself a public-good interoperability artefact
 
 ---
 
+### Gemara
+- **Org**: Gemara project (OSPS / interoperability)
+- **Type**: reference
+- **Integration**: ATR detection categories mapped onto Gemara capability-catalog format; the example directory under `examples/ai-agent/` is the project's only worked example. Contributed by ATR, merged by Gemara maintainer jpower432
+- **Evidence**: <https://github.com/gemaraproj/gemara/pull/428>
+- **Since**: 2026-07-21
+- **Still-present**: examples/ai-agent/atr-categories-to-capabilities-mapping.yaml contains "ATR"
+- **Status**: shipped
+
 ## Tier 1 — Production deployments
 
 Adopters who ship ATR in a publicly-available customer-facing product or
@@ -108,7 +117,7 @@ deployment publicly (merged PR, public docs, conference talk, etc.).
 ### Microsoft Agent Governance Toolkit
 - **Org**: Microsoft
 - **Type**: rule-import
-- **Integration**: 287-rule ATR expansion auto-synced weekly into the Agent Governance Toolkit detection layer
+- **Integration**: ATR rule pack, auto-synced weekly auto-synced weekly into the Agent Governance Toolkit detection layer
 - **Evidence**: <https://github.com/microsoft/agent-governance-toolkit/pull/1277>
 - **Since**: 2026-04-26
 - **Status**: shipped
@@ -116,12 +125,21 @@ deployment publicly (merged PR, public docs, conference talk, etc.).
 ### Gen Digital Sage
 - **Org**: Gen Digital (Norton / Avast / LifeLock parent)
 - **Type**: rule-import
-- **Integration**: Full ATR rule pack integrated into the Sage agentic-AI risk-scoring layer
+- **Integration**: ATR-derived agent-layer threat patterns contributed to the Sage agentic-AI risk-scoring layer
 - **Evidence**: <https://github.com/gendigitalinc/sage/pull/33>
 - **Since**: 2026-05-11
 - **Status**: shipped
 
 ---
+
+### NVIDIA NeMo Agent Toolkit
+- **Org**: NVIDIA
+- **Type**: reference
+- **Integration**: NVIDIA's own README lists `NeMo-Agent-Toolkit-ATR` alongside the Tavily and Redis plugins under the Public Plugin API for Third-Party Tools. Written and merged by NVIDIA maintainer bbednarski9 — ATR did not open this PR
+- **Evidence**: <https://github.com/NVIDIA/NeMo-Agent-Toolkit/pull/2039>
+- **Since**: 2026-06-10
+- **Still-present**: README.md contains "NeMo-Agent-Toolkit-ATR"
+- **Status**: shipped
 
 ## Tier 2 — Open-source tooling & SDK integrations
 
@@ -152,14 +170,6 @@ Listed when the integration code has been merged or released.
 - **Since**: 2026-04-08
 - **Status**: in-review
 
-### NVIDIA garak
-- **Org**: NVIDIA
-- **Type**: rule-import
-- **Integration**: ATR detector plugin for the garak red-teaming framework
-- **Evidence**: <https://github.com/NVIDIA/garak/pull/1676>
-- **Since**: 2026-05-20
-- **Status**: in-review
-
 ### SigmaHQ
 - **Org**: SigmaHQ
 - **Type**: adapter
@@ -171,7 +181,7 @@ Listed when the integration code has been merged or released.
 ### Microsoft PyRIT
 - **Org**: Microsoft
 - **Type**: rule-import
-- **Integration**: ATR adversarial-payload dataset loader merged into PyRIT (PR #1715, merged 2026-05-27 by maintainer Roman Lutz); a follow-up AgentThreatRulesScorer (PR #1893) is in review
+- **Integration**: ATR adversarial-payload dataset loader merged into PyRIT (PR #1715, merged 2026-05-27 by maintainer Roman Lutz). A follow-up AgentThreatRulesScorer (PR #1893) was merged 2026-08-17 and reverted 2026-08-18 by PR #2410; only the dataset loader ships today
 - **Evidence**: <https://github.com/microsoft/PyRIT/pull/1715>
 - **Since**: 2026-05-27
 - **Status**: shipped
@@ -184,13 +194,23 @@ Listed when the integration code has been merged or released.
 - **Since**: 2026-06-16
 - **Status**: shipped
 
-### OpenAI Guardrails
-- **Org**: OpenAI
+### Cisco AI BOM
+- **Org**: Cisco
 - **Type**: adapter
-- **Integration**: Optional ATR deterministic text check contributed to the OpenAI Guardrails Python SDK
-- **Evidence**: <https://github.com/openai/openai-guardrails-python/pull/77>
-- **Since**: 2026-06-16
-- **Status**: in-review
+- **Integration**: `security_enrichment.py` uses pyatr to tag detected skill, prompt, agent and MCP components with MITRE ATLAS technique IDs
+- **Evidence**: <https://github.com/cisco-ai-defense/aibom/pull/53>
+- **Since**: 2026-07-08
+- **Still-present**: aibom/src/aibom/security_enrichment.py contains "pyatr"
+- **Status**: shipped
+
+### Google ADK
+- **Org**: Google
+- **Type**: adapter
+- **Integration**: ATR guardrail plugin documented in Google's official ADK integration catalogue, live at adk.dev/integrations/atr-guardrail/. Contributed by ATR, merged by Google maintainer koverholt
+- **Evidence**: <https://github.com/google/adk-docs/pull/1850>
+- **Since**: 2026-06-24
+- **Still-present**: docs/integrations/atr-guardrail.md contains "Agent Threat Rules"
+- **Status**: shipped
 
 ### Cisco mcp-scanner
 - **Org**: Cisco
@@ -220,7 +240,7 @@ Listed when the integration code has been merged or released.
 - **Org**: NVIDIA
 - **Type**: rule-import
 - **Integration**: Agent Threat Rules detection rail for the NeMo Guardrails library
-- **Evidence**: <https://github.com/NVIDIA-NeMo/Guardrails/pull/1992>
+- **Evidence**: <https://github.com/NVIDIA-NeMo/Guardrails/pull/2251>
 - **Since**: 2026-06-04
 - **Status**: in-review
 
@@ -246,6 +266,7 @@ discoverability.
 - **Integration**: Aigis↔ATR crosswalk — maps Aigis detection patterns to ATR rule IDs through the shared MITRE ATLAS technique axis, with a two-direction ATLAS coverage-gap analysis; merged into the Aigis repo
 - **Evidence**: <https://github.com/killertcell428/aigis/pull/154>
 - **Since**: 2026-07-07
+- **Still-present**: docs/compliance/ATR_CROSSWALK.md contains "agent-threat-rules"
 - **Status**: shipped
 
 ### ottosulin/awesome-ai-security
@@ -254,6 +275,7 @@ discoverability.
 - **Integration**: ATR listed in the MCP Security section
 - **Evidence**: <https://github.com/ottosulin/awesome-ai-security/pull/192>
 - **Since**: 2026-05-20
+- **Still-present**: README.md contains "agent-threat-rules"
 - **Status**: shipped
 
 ### e2b-dev/awesome-ai-agents
@@ -278,6 +300,7 @@ discoverability.
 - **Integration**: ATR listed in the LLM safety & security awesome-list
 - **Evidence**: <https://github.com/CryptoAILab/Awesome-LM-SSP/pull/108>
 - **Since**: 2026-04-02
+- **Still-present**: collection/toolkit.md contains "agent-threat-rules"
 - **Status**: shipped
 
 ### precize/Agentic-AI-Top10-Vulnerability
@@ -286,6 +309,7 @@ discoverability.
 - **Integration**: ATR detection mapping across the agentic-AI vulnerability categories in a third-party catalogue
 - **Evidence**: <https://github.com/precize/Agentic-AI-Top10-Vulnerability/pull/14>
 - **Since**: 2026-03-30
+- **Still-present**: ATR-DETECTION-MAPPING.md contains "agent-threat-rules"
 - **Status**: shipped
 
 ### wearetyomsmnv/Awesome-LLM-agent-Security
@@ -294,6 +318,7 @@ discoverability.
 - **Integration**: ATR listed in the LLM-agent security tooling awesome-list
 - **Evidence**: <https://github.com/wearetyomsmnv/Awesome-LLM-agent-Security/pull/6>
 - **Since**: 2026-04-08
+- **Still-present**: README.md contains "agent-threat-rules"
 - **Status**: shipped
 
 ### nibzard/awesome-agentic-patterns
@@ -302,14 +327,24 @@ discoverability.
 - **Integration**: "Deterministic Threat Rule Scanning" pattern accepted, referencing ATR
 - **Evidence**: <https://github.com/nibzard/awesome-agentic-patterns/pull/58>
 - **Since**: 2026-04-09
+- **Still-present**: patterns/deterministic-threat-rule-scanning.md contains "agent-threat-rules"
 - **Status**: shipped
 
-### TalEliyahu/Awesome-AI-Security
-- **Org**: Tal Eliyahu (independent)
+### OWASP Agentic Skills Top 10
+- **Org**: OWASP
 - **Type**: reference
-- **Integration**: ATR listed in the AI security resource awesome-list
-- **Evidence**: <https://github.com/TalEliyahu/Awesome-AI-Security/pull/53>
-- **Since**: 2026-04-10
+- **Integration**: ATR-to-AST crosswalk and the wild-scan dataset accepted as external references; both PRs merged by project lead kenhuangus
+- **Evidence**: <https://github.com/OWASP/www-project-agentic-skills-top-10/pull/48>
+- **Since**: 2026-07-09
+- **Status**: shipped
+
+### xlabs-club/awesome-x-ops
+- **Org**: xlabs-club
+- **Type**: reference
+- **Integration**: ATR added to the English and Simplified-Chinese lists by maintainer l10178 — ATR did not open this PR
+- **Evidence**: <https://github.com/xlabs-club/awesome-x-ops/pull/220>
+- **Since**: 2026-08-17
+- **Still-present**: README.md contains "agent-threat-rules"
 - **Status**: shipped
 
 ### AMD GAIA
@@ -326,6 +361,7 @@ discoverability.
 - **Integration**: ATR listed in the Static Analysis & Linters section
 - **Evidence**: <https://github.com/ProjectRecon/awesome-ai-agents-security/pull/17>
 - **Since**: 2026-06-12
+- **Still-present**: README.md contains "agent-threat-rules"
 - **Status**: shipped
 
 ### raphabot/awesome-cybersecurity-agentic-ai
@@ -334,6 +370,7 @@ discoverability.
 - **Integration**: ATR listed in the Tools section
 - **Evidence**: <https://github.com/raphabot/awesome-cybersecurity-agentic-ai/pull/24>
 - **Since**: 2026-06-28
+- **Still-present**: README.md contains "agent-threat-rules"
 - **Status**: shipped
 
 ---
@@ -361,4 +398,7 @@ noted here with the reason and the original "Since" date preserved.
 - **Semgrep** (was Tier 2 · since 2026-05-10) — no merged PR or verifiable evidence link could be located. Removed 2026-06-14.
 - **Puliczek/awesome-mcp-security** (was Tier 3 · since 2026-04-21) — ATR is not present in the project README; listing could not be verified. Removed 2026-06-14.
 - **aaif-goose (block/goose)** (was Tier 2 · since 2026-05-19) — evidence PR aaif-goose/goose#9304 is goose's generic PreToolUse denial hook; the PR body does not reference ATR, so it is not an ATR-specific integration. Removed 2026-06-16.
-- **Google ADK** (was Tier 2 · since 2026-06-16) — evidence PR google/adk-python#6130 was closed without merge. Removed 2026-07-05.
+- **Google ADK** (was Tier 2 · since 2026-06-16) — the samples PR google/adk-python#6130 was closed without merge, so this entry was removed 2026-07-05. The docs integration landed separately in google/adk-docs#1850 and Google ADK is listed again under Tier 2 from that evidence.
+- **NVIDIA garak** (was Tier 2 · since 2026-05-20) — evidence PR NVIDIA/garak#1676 was closed without merge on 2026-08-04, withdrawn by its author after four months in changes-requested. Removed 2026-08-23.
+- **OpenAI Guardrails** (was Tier 2 · since 2026-06-16) — evidence PR openai/openai-guardrails-python#77 was closed without merge by an OpenAI maintainer on 2026-08-18, who recommended a separately maintained integration instead. Removed 2026-08-23.
+- **TalEliyahu/Awesome-AI-Security** (was Tier 3 · since 2026-04-10) — the listing was merged but is no longer present in the project README; it was removed upstream some time before 2026-05-09. Removed 2026-08-23.

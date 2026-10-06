@@ -43,25 +43,41 @@ jobs:
             echo "$CHANGED" > changed_rules.txt
           fi
 
+      # The validate and test steps below each used to spawn one `npx` process
+      # per changed file. That is fine for a three-rule PR and quadratic pain
+      # for a sweep: PR #436 touched 787 files and this job took 1h24m, almost
+      # all of it Node start-up. Both commands accept a directory and recurse,
+      # so the changed files are staged once and each command runs once.
+      # Paths are preserved under the stage so reported files still read as
+      # rules/<category>/<id>.yaml.
+      - name: Stage changed rules
+        if: steps.changed-rules.outputs.has_changes == 'true'
+        run: |
+          rm -rf .rulestage
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              mkdir -p ".rulestage/$(dirname "$file")"
+              cp "$file" ".rulestage/$file"
+            fi
+          done < changed_rules.txt
+          echo "Staged $(find .rulestage -name '*.yaml' -o -name '*.yml' | wc -l) rule file(s)."
+
       - name: Validate changed rules
         if: steps.changed-rules.outputs.has_changes == 'true'
         id: validate
         run: |
-          PASS=0
-          FAIL=0
-          ERRORS=""
+          npx agent-threat-rules validate .rulestage --json > validate.json || true
 
-          while IFS= read -r file; do
-            if [ -f "$file" ]; then
-              echo "Validating: $file"
-              if npx agent-threat-rules validate "$file" 2>&1; then
-                PASS=$((PASS + 1))
-              else
-                FAIL=$((FAIL + 1))
-                ERRORS="${ERRORS}\n- ${file}"
-              fi
-            fi
-          done < changed_rules.txt
+          PASS=$(jq -r '.passed // 0' validate.json)
+          FAIL=$(jq -r '.failed // 0' validate.json)
+          ERRORS=$(jq -r '
+            [.results[]? | select(.valid | not)
+             | "- " + (.file | sub("^.*/\\.rulestage/"; "")) + ": " + ((.errors // []) | join("; "))]
+            | join("\n")' validate.json)
+
+          jq -r '.results[]? | select(.valid | not)
+                 | "INVALID " + (.file | sub("^.*/\\.rulestage/"; ""))' validate.json
+          echo "Validated $(jq -r '.total // 0' validate.json) rule file(s): $PASS ok, $FAIL invalid."
 
           echo "validate_pass=$PASS" >> "$GITHUB_OUTPUT"
           echo "validate_fail=$FAIL" >> "$GITHUB_OUTPUT"
@@ -79,23 +95,23 @@ jobs:
         if: steps.changed-rules.outputs.has_changes == 'true'
         id: test
         run: |
-          PASS=0
-          FAIL=0
-          ERRORS=""
+          npx agent-threat-rules test .rulestage --json > test.json || true
 
-          while IFS= read -r file; do
-            if [ -f "$file" ]; then
-              echo "Testing: $file"
-              OUTPUT=$(npx agent-threat-rules test "$file" 2>&1) || true
-              if echo "$OUTPUT" | grep -q "All tests passed"; then
-                PASS=$((PASS + 1))
-              else
-                FAIL=$((FAIL + 1))
-                ERRORS="${ERRORS}\n- ${file}"
-              fi
-              echo "$OUTPUT"
-            fi
-          done < changed_rules.txt
+          # Counts are per test case now, not per file. The old loop grepped for
+          # "All tests passed", which a rule reports even when every one of its
+          # cases was unevaluable — so a rule nothing could evaluate counted as a
+          # pass. failed == 0 is the gate; unevaluable is surfaced separately.
+          PASS=$(jq -r '.passed // 0' test.json)
+          FAIL=$(jq -r '.failed // 0' test.json)
+          SKIPPED=$(jq -r '.skipped // 0' test.json)
+          ERRORS=$(jq -r '
+            [.failures[]? | "- " + .ruleId + " [" + .testType + "]: expected "
+             + .expected + ", got " + .got]
+            | unique | join("\n")' test.json)
+
+          jq -r '.failures[]? | "FAIL " + .ruleId + " [" + .testType + "] " + (.input // "")' test.json
+          jq -r '.skippedRules[]? | "UNEVALUABLE " + .ruleId + " (" + (.cases|tostring) + " case(s)): " + .reason' test.json
+          echo "Ran $(jq -r '.totalTests // 0' test.json) case(s) across $(jq -r '.totalRules // 0' test.json) rule(s): $PASS pass, $FAIL fail, $SKIPPED unevaluable."
 
           echo "test_pass=$PASS" >> "$GITHUB_OUTPUT"
           echo "test_fail=$FAIL" >> "$GITHUB_OUTPUT"

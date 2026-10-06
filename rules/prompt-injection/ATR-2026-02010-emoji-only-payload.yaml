@@ -21,9 +21,9 @@ severity: high
 
 references:
   owasp_llm:
-    - "LLM01:2025 - Prompt Injection"
+    - "LLM01:2025"
   owasp_agentic:
-    - "ASI01:2026 - Agent Goal Hijack"
+    - "ASI01:2026"
   mitre_atlas:
     - "AML.T0051 - LLM Prompt Injection"
     - "AML.T0054 - LLM Jailbreak"
@@ -75,7 +75,7 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: "^[\\u{1F000}-\\u{1FFFF}\\u{2600}-\\u{27BF}\\u{2190}-\\u{21FF}\\u{2300}-\\u{23FF}\\u{2B00}-\\u{2BFF}\\s\\u{FE0F}\\u{200D}\\u{1F3FB}-\\u{1F3FF}]+$"
+      value: "^[🀀-🿿☀-➿←-⇿⌀-⏿⬀-⯿\\s️‍🏻-🏿]+$"
       description: "Whole-string anchored: message composed entirely of emoji/pictograph glyphs and whitespace, no Latin text"
 
   condition: any
@@ -99,7 +99,6 @@ response:
 confidence: 70
 wild_validated: "2026/07/07"
 wild_samples: 62
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: "💭😲💔😔😫💀"

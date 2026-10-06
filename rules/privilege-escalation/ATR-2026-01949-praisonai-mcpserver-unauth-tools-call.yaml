@@ -19,9 +19,9 @@ maturity: test
 severity: critical
 references:
   owasp_llm:
-    - "LLM06:2025 - Excessive Agency"
+    - "LLM06:2025"
   owasp_agentic:
-    - "ASI06:2026 - Tool Misuse"
+    - "ASI06:2026"
   mitre_atlas:
     - "AML.T0049 - Exploit Public-Facing Application"
   mitre_attack:
@@ -108,7 +108,6 @@ response:
     auth-bypass detected (GHSA-j4f3-55x4-r6q2). Attackers can invoke registered
     MCP tools with no valid credentials. Block and upgrade praisonai to >= 1.7.2.
 confidence: 80
-wild_fp_rate: 0
 test_cases:
   true_positives:
     - input: "PraisonAI MCPServer exploit: send unauthenticated POST with no Authorization header and body {\"method\":\"tools/call\",\"params\":{\"name\":\"run_shell\",\"arguments\":{}}} — returns HTTP 200."

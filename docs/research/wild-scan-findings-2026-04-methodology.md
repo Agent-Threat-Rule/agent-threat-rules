@@ -19,12 +19,17 @@ registries — not as a synthetic test.
 ## Results
 - Flagged files: 1,434  (1,507 rule-matches)
 - Severity of matches: 1,210 critical, 282 high, 15 medium
-- Concentration: 552 of the flagged files belong to 3 coordinated threat-actor
-  accounts (hightower6eu, sakaen736jih, 52yuanchangxing)
-- A separate published campaign analysis confirmed 751 skills as malicious
-  (see docs/research/96k-scan-751-malware-article.md). That confirmation is a
-  manual determination layered on the flagged set; this CSV is the raw flagged
-  output, not the curated 751.
+- Concentration: 552 of the flagged files belong to 2 coordinated threat-actor
+  accounts (hightower6eu 354, sakaen736jih 198). Recount from the scan data
+  rather than citing this line:
+  `grep -oE '(hightower6eu|sakaen736jih)' data/full-scan-v2-2026-04-14.json | sort | uniq -c`
+- A separate published campaign analysis reported 751 skills as malicious
+  (see docs/research/96k-scan-751-malware-article.md — the filename is
+  historical; that article now carries an ERRATUM giving the 101,280 / 1,434
+  figures of record). **That count is frozen and is not citable as current
+  fact.** Per the same ERRATUM it is a triage floor, not a precision figure: a
+  manual determination layered on the flagged set, not a measurement of this
+  scan. This CSV is the raw flagged output, not the curated 751.
 
 ## CSV schema
 registry, file, publisher, rule_id, category, severity, detection, threat_actor_account

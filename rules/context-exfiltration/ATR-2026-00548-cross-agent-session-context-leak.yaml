@@ -31,8 +31,8 @@ severity: high
 
 references:
   owasp_agentic:
-    - "ASI03:2026 - Data Exfiltration"
-    - "ASI06:2026 - Identity Spoofing & Impersonation"
+    - "ASI03:2026"
+    - "ASI06:2026"
   mitre_atlas:
     - "AML.T0024 - Exfiltration via AI Inference API"
   research:
@@ -40,12 +40,16 @@ references:
     - "Compositional Privacy Risks in Multi-Agent Systems (arXiv:2509.14284)"
 
   owasp_llm:
-    - LLM02:2025 - Sensitive Information Disclosure
+    - LLM02:2025
 compliance:
   nist_csf:
-    - "DE.CM-09"
-  etsi_ts_104223:
-    - "P4.3"
+    - subcategory: "DE.CM-09"
+      context: >
+        DE.CM-09 covers monitoring runtime environments and their data. A session or
+        user identifier that changes partway along a delegation chain is a defect in
+        exactly that data, visible only by watching the running system — no static
+        review of the agents would surface it.
+      strength: primary
   eu_ai_act:
     - article: "10"
       context: >
@@ -136,7 +140,11 @@ detection:
 response:
   actions:
     - alert
-    - quarantine_session
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): 0 FP but the measurement
+    is incomplete — the harness reported conditions it could not exercise, so the silence is an
+    unasked question; ceiling = observe. Removed quarantine_session(terminate). Detection
+    unchanged — recall cost is zero.
   message_template: >
     [ATR-2026-00548] HIGH: Cross-agent session context leak detected. The
     delegation chain starting at span {{trace.root_span_id}} exhibits drift
@@ -147,7 +155,6 @@ response:
 
 confidence: 85
 
-wild_fp_rate: 0
 
 test_cases:
   true_positives:

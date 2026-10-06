@@ -21,11 +21,11 @@ severity: critical
 
 references:
   owasp_llm:
-    - "LLM02:2025 - Sensitive Information Disclosure"
-    - "LLM01:2025 - Prompt Injection"
+    - "LLM02:2025"
+    - "LLM01:2025"
   owasp_agentic:
-    - "ASI01:2026 - Agent Goal Hijack"
-    - "ASI03:2026 - Tool Misuse"
+    - "ASI01:2026"
+    - "ASI03:2026"
   mitre_atlas:
     - "AML.T0051.001 - Indirect"
     - "AML.T0057 - LLM Data Leakage"
@@ -87,7 +87,11 @@ detection:
     - "Security testing documentation describing MFA bypass techniques"
 
 response:
-  actions: [alert, block_tool, quarantine_session]
+  actions: [alert, block_tool]
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): 0/5352 benign FP, but
+    maturity is "test" — only stable is rated for irreversible actions; ceiling = degrade.
+    Removed quarantine_session(terminate). Detection unchanged — recall cost is zero.
   auto_response_threshold: high
   message_template: >
     [ATR-2026-00862] MFA/OTP code exfiltration injection detected — injected payload
