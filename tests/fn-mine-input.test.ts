@@ -259,7 +259,7 @@ describe("assertNullResultComplete", () => {
   });
 
   it("fails a null result when a corpus was skipped, and names it", () => {
-    expect(() => assertNullResultComplete(["hackaprompt"])).toThrow(/hackaprompt failed to regenerate/);
+    expect(() => assertNullResultComplete(["hackaprompt"])).toThrow(/hackaprompt failed to regenerate or to mine/);
     expect(() => assertNullResultComplete(["hackaprompt", "pint"])).toThrow(/hackaprompt, pint/);
   });
 });

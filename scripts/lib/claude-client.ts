@@ -82,9 +82,19 @@ export function selectBackend(): { backend: Backend; reason: string } {
   );
 }
 
+/**
+ * An argv string cannot hold a NUL byte, and spawn throws on one. Corpus text
+ * can carry them (scraped HTML in browsesafe-bench does), and one such sample
+ * in a mining chunk killed a whole fn-mine run. Removing NUL changes nothing a
+ * model can read.
+ */
+export function argvSafe(text: string): string {
+  return text.includes("\u0000") ? text.replace(/\u0000/g, "") : text;
+}
+
 async function callViaCli(system: string, user: string, model: string): Promise<string> {
-  const args = ["-p", user, "--model", model, "--output-format", "text", "--allowed-tools", ""];
-  if (system) args.push("--system-prompt", system);
+  const args = ["-p", argvSafe(user), "--model", model, "--output-format", "text", "--allowed-tools", ""];
+  if (system) args.push("--system-prompt", argvSafe(system));
 
   return new Promise<string>((resolve, reject) => {
     // ANTHROPIC_API_KEY is stripped so a stale key in the environment cannot

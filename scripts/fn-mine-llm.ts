@@ -527,7 +527,8 @@ async function mineCorpus(spec: MinedCorpusSpec, s: MineSettings): Promise<Corpu
   const fnRaw = await falseNegatives(spec, REPO_ROOT, (line) => console.log(`[fn-mine] ${line}`));
   // Coverage is judged by the eval harness over every rule on disk, drafts
   // included, with canaries, on the shape the corpus reaches an agent as; a
-  // broken judgement throws and fails the run.
+  // broken judgement throws, and main() skips this corpus with a warning and
+  // records it in the report.
   const cov = await coverageOf(fnRaw, path.join(REPO_ROOT, 'rules'), spec.shape);
   const fn = [...cov.uncovered];
   console.log(
@@ -635,12 +636,29 @@ async function main(): Promise<void> {
   const perCorpus: CorpusStageCounts[] = [];
   const replies = { asked: 0, unread: 0 };
   let allSurvivors: Array<GatedCandidate & { corpus: string }> = [];
+  // One corpus failing mid-mining (a sample the model call cannot carry, a
+  // coverage error) used to end the run and discard every other corpus's
+  // survivors. It is skipped like a corpus that failed to regenerate: its
+  // survivors are lost, the others are authored, and a null result with a
+  // failed corpus still fails the run. If every corpus fails, so does the run.
+  const failedCorpora: string[] = [];
   for (const spec of availableCorpora) {
-    const run = await mineCorpus(spec, { model, minRecovers, benignTexts, gateCorpus });
+    let run: CorpusRun;
+    try {
+      run = await mineCorpus(spec, { model, minRecovers, benignTexts, gateCorpus });
+    } catch (e) {
+      failedCorpora.push(spec.name);
+      console.log(`::warning::[fn-mine] ${spec.name}: mining failed — skipping this corpus for this run.`);
+      console.log(`[fn-mine]   ${e instanceof Error ? e.message.slice(0, 500) : String(e)}`);
+      continue;
+    }
     perCorpus.push(run.stages);
     replies.asked += run.asked;
     replies.unread += run.unread;
     for (const s of run.survivors) allSurvivors.push({ ...s, corpus: spec.name });
+  }
+  if (failedCorpora.length === availableCorpora.length) {
+    throw new Error(`mining failed for every corpus (${failedCorpora.join(', ')}); see the warnings above`);
   }
 
   // Every reply unreadable is a lane that could not run, not an empty week.
@@ -660,7 +678,7 @@ async function main(): Promise<void> {
 
   if (picked.length === 0) {
     // A skipped corpus makes this a partial run, not an exhausted one.
-    assertNullResultComplete(skippedCorpora);
+    assertNullResultComplete([...skippedCorpora, ...failedCorpora]);
     const note = describeNullResultByCorpus(perCorpus);
     console.log(`[fn-mine] ${note} Not an error.`);
     writeNullReport(note);
@@ -738,7 +756,7 @@ async function main(): Promise<void> {
   }
 
   fs.mkdirSync(path.dirname(path.join(REPO_ROOT, REPORT_PATH)), { recursive: true });
-  fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify({ authored: kept, deferred }, null, 2));
+  fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify({ authored: kept, deferred, notMined: [...skippedCorpora, ...failedCorpora] }, null, 2));
   console.log(`[fn-mine] DONE — ${kept.length} rule(s) authored and gate-clean: ${kept.map((a) => a.id).join(', ')}`);
   console.log(`::authored-files::${kept.map((a) => a.file).join(',')}`);
   console.log(`::report-file::${REPORT_PATH}`);

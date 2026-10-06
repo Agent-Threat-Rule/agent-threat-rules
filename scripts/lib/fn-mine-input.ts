@@ -301,8 +301,8 @@ export function describeNullResultByCorpus(perCorpus: readonly CorpusStageCounts
 export function assertNullResultComplete(skippedCorpora: readonly string[]): void {
   if (skippedCorpora.length === 0) return;
   throw new Error(
-    `no rule survived, and ${skippedCorpora.join(', ')} failed to regenerate and was not mined: ` +
-      'this is not a null result (the regeneration warning above says why)',
+    `no rule survived, and ${skippedCorpora.join(', ')} failed to regenerate or to mine and was not mined: ` +
+      'this is not a null result (the warning above says why)',
   );
 }
 
