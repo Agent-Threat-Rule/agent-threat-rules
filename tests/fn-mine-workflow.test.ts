@@ -187,21 +187,54 @@ describe("open-PR rule files step", () => {
     expect(names.indexOf(COLLECT)).toBeLessThan(names.indexOf(MINE));
   });
 
+  // The step runs scripts/list-open-pr-files.sh from the checkout; here, this repository's.
+  const WORKSPACE = { GITHUB_WORKSPACE: resolve(__dirname, "..") };
+
   it("writes the paths open PRs touch to a file the miner is pointed at", () => {
     const sb = sandbox("main");
-    const listed = "rules/prompt-injection/ATR-2026-02846-semantic.yaml\ndocs/x.md\n";
-    writeFileSync(join(sb.root, "gh.out"), listed);
-    const res = runStep(sb, step(COLLECT).run ?? "", { FAKE_GH_OUT: join(sb.root, "gh.out") });
+    const prs = [
+      { number: 638, changedFiles: 2, files: [{ path: "rules/prompt-injection/ATR-2026-02846-semantic.yaml" }, { path: "docs/x.md" }] },
+    ];
+    writeFileSync(join(sb.root, "gh.out"), JSON.stringify(prs));
+    const res = runStep(sb, step(COLLECT).run ?? "", { ...WORKSPACE, FAKE_GH_OUT: join(sb.root, "gh.out") });
     expect(res.status, res.stderr).toBe(0);
     const pointer = /^FN_MINE_OPEN_PR_FILES=(.+)$/m.exec(githubEnv(sb))?.[1];
     expect(pointer).toBeTruthy();
-    expect(readFileSync(pointer ?? "", "utf8")).toBe(listed);
+    expect(readFileSync(pointer ?? "", "utf8")).toBe("rules/prompt-injection/ATR-2026-02846-semantic.yaml\ndocs/x.md\n");
   });
 
   it("fails the job when gh cannot list the open PRs", () => {
     const sb = sandbox("main");
-    const res = runStep(sb, step(COLLECT).run ?? "", { FAKE_GH_STATUS: "1" });
+    const res = runStep(sb, step(COLLECT).run ?? "", { ...WORKSPACE, FAKE_GH_STATUS: "1" });
     expect(res.status).not.toBe(0);
     expect(githubEnv(sb)).not.toMatch(/FN_MINE_OPEN_PR_FILES/);
+  });
+});
+
+// #639 failed three PR checks the lane never ran. The backstop runs the PR's
+// rule checks on the tree about to be pushed, and only when rules were authored.
+describe("pre-push backstop", () => {
+  const BACKSTOP = [
+    "npm run validate",
+    "npm run validate:compliance",
+    "npm run audit:mappings",
+    "scripts/generate-attack-crosswalk.py --check",
+    "scripts/generate-ast-crosswalk.py --check",
+    "scripts/gate-re2-portability.ts",
+    "scripts/gate-corpus-visibility.ts",
+    "scripts/check-rules-safety.ts --base origin/main",
+    "scripts/gate-redos.py",
+    "npm run gate:generalization",
+    "scripts/gate-rule-status.ts",
+    "scripts/gate-action-eligibility.ts",
+    "npm test",
+  ];
+
+  it.each(BACKSTOP)("runs %s after the mining and before the push, only when rules were authored", (cmd) => {
+    const all = steps();
+    const i = all.findIndex((s) => (s.run ?? "").includes(cmd) && all.indexOf(s) > all.findIndex((t) => t.name === MINE));
+    expect(i, `no step after mining runs ${cmd}`).toBeGreaterThan(-1);
+    expect(i).toBeLessThan(all.findIndex((s) => s.name === PUSH));
+    expect(all[i].if).toBe("steps.mine.outputs.files != ''");
   });
 });

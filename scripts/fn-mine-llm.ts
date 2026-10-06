@@ -43,6 +43,14 @@ import { needsUnicodeFlag } from '../src/engine.js';
 import { callClaude as sharedCallClaude, describeBackend, backendAvailable } from './lib/claude-client.js';
 import { coverageOf, successfulHackapromptMisses, describeNullResult, authoringRoom } from './lib/fn-mine-input.js';
 import { gateAuthoredBatch } from './lib/fn-mine-gate.js';
+import { assertSomeChunkRead, mineChunkReply, type ChunkResult, type MineCandidate } from './lib/fn-mine-reply.js';
+import { finalizeAuthoredRule, isRuleCategory, re2Problem, visibilityProblem, withoutHackapromptGoal } from './lib/fn-mine-quality.js';
+import { loadOwaspAllowlists, type OwaspAllowlists } from './lib/normalize-references.js';
+import { prepareGateCorpus, type GateCorpus } from './lib/semantic-gate.js';
+import { loadBenignSamples } from './lib/benign-corpus.js';
+import { RULE_YAML_OPTIONS } from './lib/semantic-rule-builder.js';
+import yaml from 'js-yaml';
+import type { ATRCategory } from '../src/types.js';
 import {
   readRuleFileIds,
   duplicateRuleIds,
@@ -103,31 +111,6 @@ const CORPORA: readonly CorpusSpec[] = [
  */
 async function callClaude(systemPrompt: string, userPrompt: string, model: string): Promise<string> {
   return sharedCallClaude(systemPrompt, userPrompt, model, MAX_TOKENS);
-}
-
-function extractBalancedJson(text: string): string {
-  let cleaned = text.trim();
-  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
-  const firstBrace = cleaned.indexOf('{');
-  if (firstBrace === -1) throw new Error('No JSON object opening brace found in LLM output');
-  let depth = 0;
-  let inString = false;
-  let escape = false;
-  let lastBrace = -1;
-  for (let i = firstBrace; i < cleaned.length; i++) {
-    const ch = cleaned[i];
-    if (escape) { escape = false; continue; }
-    if (inString) {
-      if (ch === '\\') escape = true;
-      else if (ch === '"') inString = false;
-      continue;
-    }
-    if (ch === '"') { inString = true; continue; }
-    if (ch === '{') depth++;
-    else if (ch === '}') { depth--; if (depth === 0) { lastBrace = i; break; } }
-  }
-  if (lastBrace === -1) throw new Error('Unbalanced braces — no top-level JSON object closed');
-  return cleaned.slice(firstBrace, lastBrace + 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -217,6 +200,7 @@ RIGOR — reject your own candidate if it violates these:
 - For emoji/astral codepoints write the LITERAL character, not an escape. \\u{XXXX} is JavaScript-only and does not compile in the Python or Go channels; \\UXXXXXXXX is Python-only and a no-op in JS. The literal is the one spelling all three accept, and the engine adds the 'u' flag when it sees one.
 - NEVER an unbounded .* — use bounded [\\s\\S]{0,N} spans instead.
 - Add \\b word boundaries around bare keyword tokens.
+- HackAPrompt submissions all try to make the model say "I have been PWNED". That sentence is the competition's goal, not an attack technique: real attackers never send it. Never anchor a regex on "I have been", "PWNED" or its spellings; capture how the text gets the model to comply. The gate counts recoveries with that sentence removed.
 - You are NOT given the benign corpus or the full FN set — you cannot know true recovers/benignFP. Propose your honest best candidates; an independent script will gate them empirically and only survivors move forward. Over-proposing plausible-looking candidates that get rejected is fine; under-proposing is not.
 
 OUTPUT FORMAT: pure JSON, no markdown fences, no prose before or after. First character must be {. Schema:
@@ -225,19 +209,12 @@ OUTPUT FORMAT: pure JSON, no markdown fences, no prose before or after. First ch
     {
       "cluster": "short-kebab-technique-name",
       "regex": "the exact regex source (JS re syntax, with leading (?i) if case-insensitive)",
-      "category": "one of: agent-manipulation, context-exfiltration, data-poisoning, excessive-autonomy, model-abuse, model-security, privilege-escalation, prompt-injection, skill-compromise, tool-poisoning",
+      "category": "one of: agent-manipulation, context-exfiltration, data-poisoning, excessive-autonomy, model-abuse, privilege-escalation, prompt-injection, skill-compromise, tool-poisoning",
       "rationale": "one sentence: what technique this captures and why it generalizes"
     }
   ]
 }
 If nothing in this slice yields a generalizable candidate, use an empty array — that is an honest, valid result.`;
-
-interface MineCandidate {
-  cluster: string;
-  regex: string;
-  category: string;
-  rationale: string;
-}
 
 function buildMinePrompt(chunkLabel: string, texts: readonly string[]): string {
   const numbered = texts.map((t, i) => `[${i}] ${t.slice(0, 300).replace(/\n/g, '\\n')}`).join('\n');
@@ -249,10 +226,13 @@ FALSE-NEGATIVE TEXTS:
 ${numbered}`;
 }
 
-async function mineChunk(chunkLabel: string, texts: readonly string[], model: string): Promise<MineCandidate[]> {
-  const raw = await callClaude(MINE_SYSTEM_PROMPT, buildMinePrompt(chunkLabel, texts), model);
-  const parsed = JSON.parse(extractBalancedJson(raw)) as { candidates?: MineCandidate[] };
-  return parsed.candidates ?? [];
+/** One chunk's candidates. An unreadable reply is asked for once more, then the chunk is skipped (see fn-mine-reply.ts). */
+async function mineChunk(chunkLabel: string, texts: readonly string[], model: string): Promise<ChunkResult> {
+  return mineChunkReply(
+    chunkLabel,
+    () => callClaude(MINE_SYSTEM_PROMPT, buildMinePrompt(chunkLabel, texts), model),
+    (line) => console.log(`::warning::[fn-mine] ${line}`),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -265,25 +245,50 @@ interface GatedCandidate extends MineCandidate {
   exampleFNs: string[];
 }
 
+interface GateContext {
+  /** The texts recoveries are counted on: the FN texts, HackAPrompt's with its goal sentence removed. */
+  readonly measureOn: readonly string[];
+  /** MEASUREMENT_CORPORA, for the corpus visibility gate's arithmetic. */
+  readonly corpus: GateCorpus;
+}
+
 function gateCandidates(
   candidates: readonly MineCandidate[],
   fullFn: readonly string[],
   benignTexts: readonly string[],
   minRecovers: number,
+  gate: GateContext,
 ): GatedCandidate[] {
   const survivors: GatedCandidate[] = [];
+  const drop = (c: MineCandidate, why: string) => console.log(`[fn-mine]   drop ${c.cluster}: ${why}`);
   for (const c of candidates) {
+    if (!isRuleCategory(c.category)) { drop(c, `unknown category ${JSON.stringify(c.category)}`); continue; }
     const re = compileEngineAccurate(c.regex);
     if (!re) continue; // invalid-after-engine-normalize — drop silently, logged by caller if desired
+    // The PR's RE2 portability gate compiles every regex with Go's regexp.
+    const re2 = re2Problem(c.regex);
+    if (re2) { drop(c, re2); continue; }
+    // Counted on measureOn, so a regex that only recovers HackAPrompt's goal
+    // sentence recovers nothing. Examples stay the real, unmodified texts.
     let recovers = 0;
     const examples: string[] = [];
-    for (const t of fullFn) {
-      if (re.test(t)) {
-        recovers++;
-        if (examples.length < 5) examples.push(t);
+    // A recovery must match both: removing the sentence shortens the text and
+    // can make a boundary the real submission does not have.
+    gate.measureOn.forEach((m, i) => {
+      const original = fullFn[i] ?? m;
+      if (!re.test(m) || !re.test(original)) return;
+      recovers++;
+      if (examples.length < 5) examples.push(original);
+    });
+    if (recovers < minRecovers) {
+      if (gate.measureOn !== fullFn && fullFn.filter((t) => re.test(t)).length >= minRecovers) {
+        drop(c, `recovers ${recovers} < ${minRecovers} without HackAPrompt's goal sentence: it keys on "I have been PWNED"`);
       }
+      continue;
     }
-    if (recovers < minRecovers) continue;
+    if (examples.length === 0) continue;
+    const visibility = visibilityProblem(c.regex, gate.corpus);
+    if (visibility) { drop(c, visibility); continue; }
     let benignFP = 0;
     for (const t of benignTexts) {
       if (t && re.test(t)) { benignFP++; if (benignFP > 0) break; } // any hit is disqualifying
@@ -306,7 +311,7 @@ function computeResidual(fullFn: readonly string[], survivors: readonly GatedCan
 function buildAuthorSystemPrompt(referenceYaml: string): string {
   return `You are authoring ONE payload-grounded ATR detection rule YAML file. NEVER mention PanGuard anywhere in the output.
 
-Copy this reference rule's structure EXACTLY (field order; references block with owasp_llm/owasp_agentic/mitre_atlas/mitre_attack; compliance block with ALL THREE of eu_ai_act/nist_ai_rmf/iso_42001; metadata_provenance; tags; agent_source; detection; response; confidence; wild_fp_rate; test_cases):
+Copy this reference rule's structure EXACTLY (field order; references block with owasp_llm/owasp_agentic/mitre_atlas/mitre_attack; compliance block with ALL THREE of eu_ai_act/nist_ai_rmf/iso_42001; metadata_provenance; tags; agent_source; detection; response; confidence; test_cases), except wild_fp_rate (see below):
 
 --- REFERENCE RULE ---
 ${referenceYaml}
@@ -316,12 +321,13 @@ Requirements:
 - detection.conditions must include EXACTLY the given gated regex verbatim (field: content, operator: regex) — do not alter it.
 - test_cases.true_positives: 2-3 of the given real FN attack texts (truncate to ~180 chars, escape for YAML double-quoted strings).
 - test_cases.true_negatives: 3-4 benign texts you write that do NOT match the given regex (verify mentally before including).
-- references use REAL valid ids: owasp_llm e.g. "LLM01:2025"; owasp_agentic e.g. "ASI01:2026 - ..." (pick one fitting the technique); mitre_atlas e.g. "AML.T0051 - LLM Prompt Injection" or "AML.T0054 - LLM Jailbreak".
+- references use REAL valid ids: owasp_llm and owasp_agentic as BARE ids, no title (e.g. "LLM01:2025", "ASI01:2026"; pick ones fitting the technique); mitre_atlas e.g. "AML.T0051 - LLM Prompt Injection" or "AML.T0054 - LLM Jailbreak".
 - compliance: use this exact gate-passing shape, parameterized to the technique:
   eu_ai_act: article 15 (primary) + article 9 (secondary)
   nist_ai_rmf: subcategory MP.5.1 (primary) + MG.3.2 (secondary)
   iso_42001: clause 8.1 (primary) + clause 8.3 (secondary)
-- status: draft, maturity: test, author: "ATR Community", severity: high.
+- status: experimental, maturity: test, author: "ATR Community", severity: high. (draft rules are never evaluated by the engine.)
+- Do NOT include wild_fp_rate, even though the reference rule has one: it records a measurement in the wild, and this rule has had none.
 
 OUTPUT FORMAT: pure YAML, no markdown fences, no prose before or after. The output must be a single complete, valid YAML document.`;
 }
@@ -346,6 +352,23 @@ async function authorRule(id: string, c: GatedCandidate, referenceYaml: string, 
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48);
+}
+
+/**
+ * Write the model's rule as the PR's checks require it (finalizeAuthoredRule:
+ * status, wild_fp_rate, OWASP ids). Returns why it could not, for the
+ * corrective retry, or null once written.
+ */
+function writeAuthoredRule(fullPath: string, text: string, category: ATRCategory, allowlists: OwaspAllowlists): string | null {
+  let doc: unknown;
+  try {
+    doc = yaml.load(text);
+  } catch (e) {
+    return `the output is not valid YAML: ${e instanceof Error ? e.message : String(e)}`;
+  }
+  if (!doc || typeof doc !== 'object' || Array.isArray(doc)) return 'the output is not a single YAML mapping';
+  fs.writeFileSync(fullPath, yaml.dump(finalizeAuthoredRule(doc as Record<string, unknown>, category, allowlists), RULE_YAML_OPTIONS));
+  return null;
 }
 
 /** Runs `node dist/cli.js test <file>`; returns null on success, failure text otherwise. */
@@ -536,8 +559,11 @@ async function main(): Promise<void> {
 
   const benignTexts = loadBenignTexts();
   console.log(`[fn-mine] benign gate corpus: ${benignTexts.length} records`);
+  const gateCorpus = prepareGateCorpus(loadBenignSamples(REPO_ROOT));
+  if (gateCorpus.samples.length === 0) throw new Error('MEASUREMENT_CORPORA is empty: the visibility check would pass every candidate');
 
   const stages = { fnTotal: 0, uncovered: 0, proposed: 0, survived: 0 };
+  const replies = { asked: 0, unread: 0 };
   let allSurvivors: Array<GatedCandidate & { corpus: string }> = [];
   for (const spec of availableCorpora) {
     const fnRaw = loadFnCorpus(spec);
@@ -563,10 +589,16 @@ async function main(): Promise<void> {
     for (let i = 0; i < chunks.length; i++) {
       const label = `${spec.name}[${i * CHUNK_SIZE}:${i * CHUNK_SIZE + chunks[i].length}]`;
       console.log(`[fn-mine]   mining ${label}...`);
-      const cands = await mineChunk(label, chunks[i], model);
-      round1Candidates.push(...cands);
+      const chunk = await mineChunk(label, chunks[i], model);
+      replies.asked += 1;
+      if (!chunk.read) replies.unread += 1;
+      round1Candidates.push(...chunk.candidates);
     }
-    const round1Survivors = gateCandidates(round1Candidates, fn.texts, benignTexts, minRecovers);
+    const gate: GateContext = {
+      measureOn: spec.name === 'hackaprompt' ? fn.texts.map(withoutHackapromptGoal) : fn.texts,
+      corpus: gateCorpus,
+    };
+    const round1Survivors = gateCandidates(round1Candidates, fn.texts, benignTexts, minRecovers, gate);
     stages.proposed += round1Candidates.length;
     console.log(`[fn-mine] ${spec.name} round 1: ${round1Candidates.length} proposed -> ${round1Survivors.length} survive the gate`);
 
@@ -583,10 +615,12 @@ async function main(): Promise<void> {
       for (let i = 0; i < rChunks.length; i++) {
         const label = `${spec.name}-residual[${i * CHUNK_SIZE}:${i * CHUNK_SIZE + rChunks[i].length}]`;
         console.log(`[fn-mine]   mining ${label}...`);
-        const cands = await mineChunk(label, rChunks[i], model);
-        round2Candidates.push(...cands);
+        const chunk = await mineChunk(label, rChunks[i], model);
+        replies.asked += 1;
+        if (!chunk.read) replies.unread += 1;
+        round2Candidates.push(...chunk.candidates);
       }
-      round2Survivors = gateCandidates(round2Candidates, fn.texts, benignTexts, minRecovers);
+      round2Survivors = gateCandidates(round2Candidates, fn.texts, benignTexts, minRecovers, gate);
       stages.proposed += round2Candidates.length;
       console.log(`[fn-mine] ${spec.name} round 2 (residual): ${round2Candidates.length} proposed -> ${round2Survivors.length} survive`);
     } else {
@@ -594,6 +628,12 @@ async function main(): Promise<void> {
     }
 
     for (const s of [...round1Survivors, ...round2Survivors]) allSurvivors.push({ ...s, corpus: spec.name });
+  }
+
+  // Every reply unreadable is a lane that could not run, not an empty week.
+  assertSomeChunkRead(replies.asked, replies.unread);
+  if (replies.unread > 0) {
+    console.log(`::warning::[fn-mine] ${replies.unread} of ${replies.asked} chunk(s) skipped: their replies could not be read as JSON.`);
   }
 
   // Dedup by exact regex, rank by recovers, cap.
@@ -626,6 +666,7 @@ async function main(): Promise<void> {
   let nextId = nextRuleSeq(usedRuleSeqs(readRuleFileIds(REPO_ROOT, 'rules'), openPrFiles, RULE_ID_YEAR));
 
   const referenceYaml = fs.readFileSync(path.join(REPO_ROOT, REFERENCE_RULE), 'utf8');
+  const allowlists = loadOwaspAllowlists(REPO_ROOT);
   const authored: AuthoredRule[] = [];
 
   for (const c of picked) {
@@ -637,15 +678,14 @@ async function main(): Promise<void> {
     fs.mkdirSync(path.dirname(fullPath), { recursive: true });
 
     console.log(`[fn-mine] authoring ${id} (${c.cluster}, recovers=${c.recovers})...`);
-    let yaml = await authorRule(id, c, referenceYaml, model);
-    fs.writeFileSync(fullPath, yaml.endsWith('\n') ? yaml : yaml + '\n');
-
-    let failure = selfTest(file);
+    const category = c.category as ATRCategory; // checked by isRuleCategory in the gate
+    let failure =
+      writeAuthoredRule(fullPath, await authorRule(id, c, referenceYaml, model), category, allowlists) ?? selfTest(file);
     if (failure) {
       console.log(`[fn-mine]   self-test failed, one corrective retry for ${id}...`);
-      yaml = await authorRule(id, c, referenceYaml, model, failure);
-      fs.writeFileSync(fullPath, yaml.endsWith('\n') ? yaml : yaml + '\n');
-      failure = selfTest(file);
+      failure =
+        writeAuthoredRule(fullPath, await authorRule(id, c, referenceYaml, model, failure), category, allowlists) ??
+        selfTest(file);
     }
     if (failure) {
       console.log(`[fn-mine]   DROPPING ${id} — self-test still failing after retry:\n${failure}`);
