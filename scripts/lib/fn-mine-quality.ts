@@ -148,14 +148,42 @@ function earnedResponse(doc: Doc): Doc | undefined {
 }
 
 /**
+ * The detection block with exactly one condition, the gated regex verbatim on
+ * the content field, and condition any. The author model is told to copy the
+ * reference rule, whose detection holds several user_input conditions; what
+ * the gate measured (recoveries, held-out, benign, tool output) is the regex
+ * alone, so anything else the model wrote would run unmeasured. The model's
+ * description for the condition is kept, and the rest of the block
+ * (false_positives) with it.
+ */
+function gatedDetection(doc: Doc, regex: string): Doc {
+  const detection = doc.detection && typeof doc.detection === 'object' ? (doc.detection as Doc) : {};
+  const written = Array.isArray(detection.conditions) ? (detection.conditions as Doc[]) : [];
+  const described = written.find((c) => c && typeof c.description === 'string');
+  const condition = {
+    field: 'content',
+    operator: 'regex',
+    value: regex,
+    ...(described ? { description: described.description } : {}),
+  };
+  return { ...detection, conditions: [condition], condition: 'any' };
+}
+
+/**
  * The authored rule as the PR's checks require it, whatever the model wrote:
  * status experimental (draft is never evaluated) at maturity test (alert lane,
  * never enforce), response actions the maturity has earned, no wild_fp_rate
  * (this lane measures nothing in the wild), and OWASP references as bare
- * allowlisted ids, with the category default when none survive. Returns a new
- * object.
+ * allowlisted ids, with the category default when none survive, and a
+ * detection block that is exactly `gatedRegex` (gatedDetection). Returns a
+ * new object.
  */
-export function finalizeAuthoredRule(doc: Doc, category: ATRCategory, allowlists: OwaspAllowlists): Record<string, unknown> {
+export function finalizeAuthoredRule(
+  doc: Doc,
+  category: ATRCategory,
+  allowlists: OwaspAllowlists,
+  gatedRegex: string,
+): Record<string, unknown> {
   const { wild_fp_rate: _unmeasured, ...rest } = doc;
   const references = (doc.references && typeof doc.references === 'object' ? doc.references : {}) as Doc;
   const owasp = normalizeReferences(
@@ -168,6 +196,7 @@ export function finalizeAuthoredRule(doc: Doc, category: ATRCategory, allowlists
     status: 'experimental',
     maturity: AUTHORED_MATURITY,
     references: { ...references, ...owasp },
+    detection: gatedDetection(doc, gatedRegex),
     ...(response ? { response } : {}),
   };
 }

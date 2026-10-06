@@ -163,7 +163,8 @@ describe('isRuleCategory', () => {
 });
 
 describe('finalizeAuthoredRule', () => {
-  const fixed = finalizeAuthoredRule(PR639_RULE, 'prompt-injection', ALLOW);
+  const GATED = '(?i)WNED\\b[\\s\\S]{0,150}\\bI\\s*have\\s*been\\b';
+  const fixed = finalizeAuthoredRule(PR639_RULE, 'prompt-injection', ALLOW, GATED);
 
   it('starts from the rule as #639 shipped it', () => {
     expect(PR639_RULE.status).toBe('draft');
@@ -176,7 +177,7 @@ describe('finalizeAuthoredRule', () => {
   it('sets status experimental, which the engine evaluates (gate-rule-status), at maturity test', () => {
     expect(fixed.status).toBe('experimental');
     expect(fixed.maturity).toBe('test');
-    expect(finalizeAuthoredRule({ ...PR639_RULE, maturity: 'stable' }, 'prompt-injection', ALLOW).maturity).toBe('test');
+    expect(finalizeAuthoredRule({ ...PR639_RULE, maturity: 'stable' }, 'prompt-injection', ALLOW, GATED).maturity).toBe('test');
   });
 
   // Once the rule is live, the block_input it copied from the reference rule
@@ -200,6 +201,52 @@ describe('finalizeAuthoredRule', () => {
     expect(refs.owasp_agentic).toEqual(['ASI01:2026']);
     expect(refs.owasp_llm).toEqual(['LLM01:2025']);
     expect(refs.mitre_atlas).toEqual((PR639_RULE.references as Record<string, unknown>).mitre_atlas);
+  });
+
+  // Review finding (2026-10-07): the gates check the candidate regex, but the
+  // author model copies the reference rule, which has several user_input
+  // conditions. What the engine runs must be exactly what was gated.
+  describe('detection is exactly the gated regex', () => {
+    const conditionsOf = (doc: Record<string, unknown>) =>
+      (doc.detection as { conditions: { field: string; operator: string; value: string }[] }).conditions;
+
+    it('keeps one content regex condition, the gated regex verbatim, with condition any', () => {
+      expect(conditionsOf(fixed).map(({ field, operator, value }) => ({ field, operator, value }))).toEqual([
+        { field: 'content', operator: 'regex', value: GATED },
+      ]);
+      expect((fixed.detection as { condition: string }).condition).toBe('any');
+    });
+
+    it('drops conditions the model copied from the reference rule', () => {
+      const detection = PR639_RULE.detection as { conditions: unknown[] };
+      const padded = {
+        ...PR639_RULE,
+        detection: {
+          ...detection,
+          condition: 'all',
+          conditions: [...detection.conditions, { field: 'user_input', operator: 'regex', value: '(?i)\\bDAN\\b' }],
+        },
+      };
+      const out = conditionsOf(finalizeAuthoredRule(padded, 'prompt-injection', ALLOW, GATED));
+      expect(out.map((c) => c.value)).toEqual([GATED]);
+    });
+
+    it('replaces a regex the model altered, keeping its description', () => {
+      const detection = PR639_RULE.detection as { conditions: Record<string, unknown>[] };
+      const altered = {
+        ...PR639_RULE,
+        detection: { ...detection, conditions: [{ ...detection.conditions[0], value: '(?i)WNED' }] },
+      };
+      const [c] = conditionsOf(finalizeAuthoredRule(altered, 'prompt-injection', ALLOW, GATED));
+      expect(c.value).toBe(GATED);
+      expect((c as { description?: string }).description).toMatch(/suffix-teaching/);
+    });
+
+    it('keeps the rest of the detection block (false_positives)', () => {
+      expect((fixed.detection as { false_positives: unknown[] }).false_positives).toEqual(
+        (PR639_RULE.detection as { false_positives: unknown[] }).false_positives,
+      );
+    });
   });
 
   it('leaves the input alone', () => {

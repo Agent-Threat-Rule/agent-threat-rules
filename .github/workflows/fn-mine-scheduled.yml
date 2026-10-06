@@ -362,8 +362,8 @@ jobs:
           feat(rules): scheduled FN-mine sweep
 
           Unattended weekly red-team false-negative mining (HackAPrompt successful
-          submissions + PINT). Per-rule recovers counts are in the fn-mine-report
-          artifact of the workflow run that pushed this commit.
+          submissions + PINT). Per-rule recovers and held-out counts are in the
+          fn-mine-report artifact of the workflow run that pushed this commit.
           EOF
           )"
 
@@ -406,12 +406,15 @@ jobs:
           negative canary ("hello", "What is the capital of France?") is covered, if a known
           attack is not, or if more than half the misses come back covered. HackAPrompt
           submissions that failed in the competition (correct=false) are not mined. Claude
-          clusters the uncovered misses into candidate regexes; every candidate is gated
-          against the full miss set and the full benign corpus with the engine's own regex
-          compile semantics, authored, self-tested on the real engine, and re-checked by
+          clusters the uncovered misses into candidate regexes. The misses are split by content
+          hash: 70% are shown to the model and a candidate must recover 8 of them; 30% are never
+          shown and it must recover at least 2 of those too. Every candidate is gated against the
+          full benign corpus with the engine's own regex compile semantics and against benign
+          emails and web pages run through the engine as tool output (data/fn-mine-benign),
+          authored, self-tested on the real engine, and re-checked by
           scripts/check-rules-safety.ts, dropping (not force-fixing) anything that fails.
 
-          Per-rule recovers counts are in the fn-mine-report artifact of each workflow run.
+          Per-rule recovers and held-out counts are in the fn-mine-report artifact of each workflow run.
           Draft: nothing here is auto-merged; a human reviews and decides.
           EOF
           )"

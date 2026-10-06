@@ -213,6 +213,30 @@ export async function liveMisses(
   return texts.filter((_, i) => missed.has(`fn-${i}`));
 }
 
+/**
+ * Each rule under `rulesDir` that fires on any of `texts`, with the indices of
+ * the texts it fires on, judged by the eval harness on `shape` exactly as
+ * coverageOf and liveMisses present a sample. Every text goes in as a benign
+ * sample, so every detection comes back as a false positive. No canaries: the
+ * caller decides what a broken judgement looks like (the FN-mine tool-output
+ * gate requires each candidate to fire on its own recoveries).
+ */
+export async function detectionsByRule(
+  rulesDir: string,
+  texts: readonly string[],
+  shape: DeliveryShape,
+): Promise<ReadonlyMap<string, readonly number[]>> {
+  if (texts.length === 0) return new Map();
+  const corpus = texts.map((t, i) => sample(`text-${i}`, t, false, shape));
+  const { report } = await runEval({ rulesDir, corpus, eventShape: PRESENTATIONS[shape].eventShape, enableEmbedding: false });
+  const byRule = new Map<string, number[]>();
+  for (const r of report.falsePositives) {
+    const index = Number(r.id.slice('text-'.length));
+    for (const id of r.matchedRules) byRule.set(id, [...(byRule.get(id) ?? []), index]);
+  }
+  return byRule;
+}
+
 interface HackapromptRecord {
   readonly id: string;
   readonly text: string;
@@ -264,6 +288,8 @@ export function describeNullResult(c: MiningStageCounts): string {
 
 export interface CorpusStageCounts extends MiningStageCounts {
   readonly corpus: string;
+  /** Set when the corpus had uncovered misses but was not mined (fn-mine-heldout.ts unmineableReason). */
+  readonly notMinedBecause?: string;
 }
 
 /** The run's counts summed over its corpora. */
@@ -280,14 +306,24 @@ export function totalStages(perCorpus: readonly CorpusStageCounts[]): MiningStag
 }
 
 /**
- * describeNullResult over the whole run, then each corpus's own counts, so an
- * empty week says which corpus ran dry and at which stage.
+ * describeNullResult over the corpora that were mined, then each corpus's own
+ * counts, so an empty week says which corpus ran dry and at which stage. A
+ * corpus that was not mined says why, and when none with uncovered misses
+ * could be, the headline says that instead of "the model proposed nothing".
  */
 export function describeNullResultByCorpus(perCorpus: readonly CorpusStageCounts[]): string {
   const detail = perCorpus
-    .map((c) => `${c.corpus}: ${c.fnTotal} FN, ${c.uncovered} uncovered, ${c.proposed} proposed, ${c.survived} survived`)
+    .map((c) =>
+      c.notMinedBecause
+        ? `${c.corpus}: ${c.fnTotal} FN, ${c.uncovered} uncovered, not mined: ${c.notMinedBecause}`
+        : `${c.corpus}: ${c.fnTotal} FN, ${c.uncovered} uncovered, ${c.proposed} proposed, ${c.survived} survived`,
+    )
     .join('; ');
-  const head = describeNullResult(totalStages(perCorpus));
+  const mined = perCorpus.filter((c) => !c.notMinedBecause);
+  const noneMinable = mined.every((c) => c.uncovered === 0) && mined.length < perCorpus.length;
+  const head = noneMinable
+    ? 'NULL RESULT — no corpus with uncovered false negatives could be mined (held-out or minable side too small).'
+    : describeNullResult(totalStages(mined));
   return detail ? `${head} Per corpus — ${detail}.` : head;
 }
 

@@ -56,15 +56,21 @@ export function matchExcerpt(text: string, re: RegExp, maxChars: number): string
   }
 }
 
-/** The line(s) the match spans, normalized: two recoveries with one key are one attack. */
-function recoveryKey(text: string, m: RegExpExecArray): string {
+/** One line as recoveries compare it: case and whitespace do not make a different attack. */
+export function lineKey(line: string): string {
+  return line.toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+/** The raw line(s) the match spans. */
+export function spannedLines(text: string, m: RegExpExecArray): string {
   const start = m.index === 0 ? 0 : text.lastIndexOf('\n', m.index - 1) + 1;
   const newline = text.indexOf('\n', m.index + m[0].length);
-  return text
-    .slice(start, newline === -1 ? text.length : newline)
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
+  return text.slice(start, newline === -1 ? text.length : newline);
+}
+
+/** The line(s) the match spans, normalized: two recoveries with one key are one attack. */
+function recoveryKey(text: string, m: RegExpExecArray): string {
+  return lineKey(spannedLines(text, m));
 }
 
 export interface Recoveries {
@@ -80,9 +86,15 @@ export interface Recoveries {
  * What `re` recovers. `measureOn[i]` is `originals[i]` with the benchmark's
  * artifacts removed; a recovery must match both, because removing them can
  * make a boundary the real submission does not have. Excerpts come from the
- * originals, unmodified.
+ * originals, unmodified. A match `excluded` says the model was already shown
+ * is not a recovery (the held-out count passes fn-mine-heldout.ts onSeenText).
  */
-export function countRecoveries(re: RegExp, measureOn: readonly string[], originals: readonly string[]): Recoveries {
+export function countRecoveries(
+  re: RegExp,
+  measureOn: readonly string[],
+  originals: readonly string[],
+  excluded: (measured: string, hit: RegExpExecArray) => boolean = () => false,
+): Recoveries {
   const rx = stateless(re);
   const keys = new Set<string>();
   const examples: string[] = [];
@@ -90,7 +102,7 @@ export function countRecoveries(re: RegExp, measureOn: readonly string[], origin
   measureOn.forEach((measured, i) => {
     const original = originals[i] ?? measured;
     const hit = rx.exec(measured);
-    if (!hit || !rx.test(original)) return;
+    if (!hit || !rx.test(original) || excluded(measured, hit)) return;
     copies += 1;
     const key = recoveryKey(measured, hit);
     if (keys.has(key)) return;
