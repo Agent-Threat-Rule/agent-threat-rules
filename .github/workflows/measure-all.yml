@@ -61,12 +61,16 @@ jobs:
 
       # While the rolling PR is open, the measurement files it adds are carried
       # into this run, so a week nobody merged stays in the trend instead of
-      # being replaced by this week's. Only added files are carried: latest.json
-      # and data/stats.json are regenerated below from whatever is newest, and
-      # this run's own files overwrite a same-named carried one. A PR closed
-      # without merging is not carried; its measurements were rejected. The sha
-      # fetched here is the lease the push step overwrites against. Same-repo
-      # PRs only: a fork can open a PR from its own measure-all/rolling.
+      # being replaced by this week's. Each source's latest.json is carried too
+      # when the PR's pointer is newer than main's, the same rule
+      # writeMeasurement applies: a source this run does not measure again (a
+      # dispatch for a subset, or a fetch that only warned) keeps last week's
+      # pointer instead of falling back to main's, and data/stats.json, which
+      # Sync stats rebuilds from the pointers, follows. A source this run does
+      # measure moves its pointer past the carried one. A PR closed without
+      # merging is not carried; its measurements were rejected. The sha fetched
+      # here is the lease the push step overwrites against. Same-repo PRs only:
+      # a fork can open a PR from its own measure-all/rolling.
       - name: Carry the rolling PR's measurements
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -85,8 +89,18 @@ jobs:
             exit 0
           fi
           CARRIED=$(git diff --name-only --diff-filter=A "HEAD...origin/$BRANCH" -- data/measurements/)
+          POINTERS=$(git diff --name-only --diff-filter=M "HEAD...origin/$BRANCH" -- data/measurements/ \
+            | grep '/latest\.json$' || true)
+          for P in $POINTERS; do
+            # jq compares strings by code point, as writeMeasurement does; a
+            # pointer that does not parse is not carried.
+            if git show "origin/$BRANCH:$P" \
+                | jq -e --slurpfile main "$P" '.measured_at > $main[0].measured_at' > /dev/null 2>&1; then
+              CARRIED=$(printf '%s\n%s' "$CARRIED" "$P" | sed '/^$/d')
+            fi
+          done
           if [ -z "$CARRIED" ]; then
-            echo "Rolling PR #$OPEN adds no measurement file main lacks."
+            echo "Rolling PR #$OPEN carries no measurement newer than main's."
             exit 0
           fi
           printf '%s\n' "$CARRIED" | xargs git checkout "origin/$BRANCH" --

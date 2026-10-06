@@ -36,7 +36,9 @@ name: Garak Miss -> Semantic Proposals
 # from main was the run date, and the rolling PR was force-pushed every week
 # with a diff of nothing but dates (#624). The bridge now keeps a committed file
 # whose only change would be the date, and this job pushes nothing unless the
-# proposals changed.
+# proposals changed. While the rolling PR is open, "committed" means that PR's
+# head, not main: a proposal only the PR carries would otherwise be re-dated and
+# force-pushed every week it waits for review.
 
 on:
   workflow_run:
@@ -75,6 +77,26 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # The open rolling PR's head is the baseline the proposals are compared
+      # with, and the sha fetched here is the lease the push overwrites against.
+      # Same-repo only: a fork's PR from a same-named branch does not track it.
+      - name: Find the open rolling PR
+        env:
+          GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          BRANCH="garak-miss-bridge/rolling"
+          OLD_SHA=""
+          if git fetch --quiet origin "$BRANCH" 2>/dev/null; then
+            OLD_SHA=$(git rev-parse "origin/$BRANCH")
+          fi
+          OPEN=$(gh pr list --head "$BRANCH" --state open --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository | not)][0].number // empty')
+          if [ -z "$OLD_SHA" ]; then OPEN=""; fi
+          echo "ROLLING_OLD_SHA=$OLD_SHA" >> "$GITHUB_ENV"
+          echo "ROLLING_PR=$OPEN" >> "$GITHUB_ENV"
+          echo "Open rolling PR: ${OPEN:-none}"
+
       # A benchmark that fails must fail the job. It used to fall back to the
       # committed report, which yields the committed proposals, which is the
       # quiet "nothing changed" exit below: a broken benchmark looked like a
@@ -89,10 +111,15 @@ jobs:
           fi
 
       - name: Generate semantic proposals from misses
+        env:
+          MAX_TP: ${{ github.event.inputs.max_tp || '40' }}
         run: |
-          npx tsx scripts/garak-miss-to-proposals.ts \
-            --write \
-            --max-tp "${{ github.event.inputs.max_tp || '40' }}"
+          set -euo pipefail
+          set -- --write --max-tp "$MAX_TP"
+          if [ -n "${ROLLING_PR:-}" ]; then
+            set -- "$@" --baseline-ref origin/garak-miss-bridge/rolling
+          fi
+          npx tsx scripts/garak-miss-to-proposals.ts "$@"
 
       - name: Unit-test the bridge
         run: npx vitest run tests/garak-miss-to-proposals.test.ts
@@ -113,11 +140,20 @@ jobs:
           # The proposals are this lane's output; the report is the input they were
           # derived from. A refreshed report always differs from main (its date, its
           # rule count), so whether to push is decided on the proposals alone, and
-          # the report rides along only with a change it explains.
+          # the report rides along only with a change it explains. They are compared
+          # with the open rolling PR when there is one, since that is what a push
+          # would replace.
+          BRANCH="garak-miss-bridge/rolling"
+          BASE="HEAD"
+          WHERE="main"
+          if [ -n "${ROLLING_PR:-}" ]; then
+            BASE="origin/$BRANCH"
+            WHERE="the open rolling PR #${ROLLING_PR}"
+          fi
           git add proposals/garak-clusters/
-          if git diff --cached --quiet; then
-            echo "Proposals unchanged from main (same misses); nothing pushed, no PR opened or updated."
-            echo "garak bridge: proposals unchanged from main; nothing pushed." >> "${GITHUB_STEP_SUMMARY:-/dev/null}"
+          if git diff --cached --quiet "$BASE" -- proposals/garak-clusters/; then
+            echo "Proposals unchanged from ${WHERE} (same misses); nothing pushed, no PR opened or updated."
+            echo "garak bridge: proposals unchanged from ${WHERE}; nothing pushed." >> "${GITHUB_STEP_SUMMARY:-/dev/null}"
             exit 0
           fi
           git add data/garak-benchmark/garak-full-report.json
@@ -126,11 +162,7 @@ jobs:
           # lane is cumulative, so per-run branches only ever accumulated: across three lanes
           # 18 such PRs were open on 2026-09-22, 42% of the repo's open PRs, which reads as an
           # unmaintained project rather than as a branch-naming choice. Same fix as #587.
-          BRANCH="garak-miss-bridge/rolling"
-          OLD_SHA=""
-          if git fetch --quiet origin "$BRANCH" 2>/dev/null; then
-            OLD_SHA=$(git rev-parse "origin/$BRANCH")
-          fi
+          OLD_SHA="${ROLLING_OLD_SHA:-}"
           git checkout -B "$BRANCH"
           git commit -m "chore: refresh garak-clusters semantic proposals from current misses
 
@@ -142,7 +174,7 @@ jobs:
           # The helper is single-quoted, so argv carries the literal text $PUSH_TOKEN and
           # never its value; the shell git spawns for the helper reads it from the
           # environment. Nothing is written to .git/config.
-          # The lease is the sha fetched above: the branch is replaced (the proposals are
+          # The lease is the sha the find step fetched: the branch is replaced (the proposals are
           # regenerated whole from main each run), but not if it moved since. It used to
           # fall back to a plain --force when the lease failed, which is no lease at all.
           # shellcheck disable=SC2016

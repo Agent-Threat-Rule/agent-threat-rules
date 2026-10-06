@@ -16,13 +16,19 @@
  * No API key / network needed: everything here is the bridge's pure layer.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
+import { execFileSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   isAgentAttackPrompt,
   clusterMisses,
   buildProposalDoc,
   clusterSha8,
   keepUnlessChanged,
+  baselineText,
+  refResolves,
 } from "../scripts/garak-miss-to-proposals.js";
 
 // Categories the consumer (author-semantic-rules.ts VALID_CATEGORIES) accepts.
@@ -181,5 +187,67 @@ describe("keepUnlessChanged (no date-only rewrites)", () => {
     const old = `date: "2026-09-21"\ntest_cases:\n  true_positives:\n    - input: |-\n        date: 2020-01-01\n`;
     const fresh = old.replace("2026-09-21", "2026-10-05");
     expect(keepUnlessChanged(old, fresh, "2026-10-05")).toBe(old);
+  });
+});
+
+// While the rolling PR waits for review, its head is what a fresh proposal is
+// compared with. Compared with main, a proposal only that PR carries was
+// rewritten with each run date and the PR force-pushed with nothing but dates.
+describe("baselineText (compare with the open rolling PR)", () => {
+  const repos: string[] = [];
+  afterEach(() => {
+    for (const d of repos.splice(0)) rmSync(d, { recursive: true, force: true });
+  });
+
+  const PENDING = "proposals/garak-clusters/ATR-GARAK-0c4383a1.proposal.yaml";
+  const ON_MAIN = "proposals/garak-clusters/cluster-manifest.json";
+  const doc = (date: string) => `date: "${date}"\ndescription: Sourced from report (run ${date}).\n`;
+
+  /** main holds ON_MAIN only; branch `rolling` adds PENDING, as the open PR does. */
+  function repo(): string {
+    const dir = mkdtempSync(join(tmpdir(), "garak-baseline-"));
+    repos.push(dir);
+    const run = (...args: string[]) =>
+      execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.invalid", ...args], { cwd: dir });
+    const write = (rel: string, text: string) => {
+      mkdirSync(join(dir, "proposals/garak-clusters"), { recursive: true });
+      writeFileSync(join(dir, rel), text);
+    };
+    run("init", "--quiet", "-b", "main");
+    write(ON_MAIN, '{ "date": "2026-09-21" }\n');
+    run("add", "-A");
+    run("commit", "--quiet", "-m", "main");
+    run("checkout", "--quiet", "-b", "rolling");
+    write(PENDING, doc("2026-10-12"));
+    run("add", "-A");
+    run("commit", "--quiet", "-m", "rolling");
+    run("checkout", "--quiet", "main");
+    return dir;
+  }
+
+  it("keeps the pending PR's proposal when the next run only moves its date", () => {
+    const dir = repo();
+    const existing = baselineText(join(dir, PENDING), "rolling", dir);
+    expect(existing).toBe(doc("2026-10-12"));
+    expect(keepUnlessChanged(existing, doc("2026-10-19"), "2026-10-19")).toBe(doc("2026-10-12"));
+  });
+
+  it("compares with main when no rolling PR is open", () => {
+    const dir = repo();
+    expect(baselineText(join(dir, PENDING), undefined, dir)).toBeUndefined();
+    expect(baselineText(join(dir, ON_MAIN), undefined, dir)).toBe('{ "date": "2026-09-21" }\n');
+  });
+
+  it("falls back to the checked-out file when the PR's head lacks it", () => {
+    const dir = repo();
+    writeFileSync(join(dir, "proposals/garak-clusters/only-local.yaml"), "x\n");
+    expect(baselineText(join(dir, "proposals/garak-clusters/only-local.yaml"), "rolling", dir)).toBe("x\n");
+  });
+
+  it("refuses a baseline ref that does not resolve or reads as an option", () => {
+    const dir = repo();
+    expect(refResolves("rolling", dir)).toBe(true);
+    expect(refResolves("origin/garak-miss-bridge/rolling", dir)).toBe(false);
+    expect(refResolves("--output=/tmp/x", dir)).toBe(false);
   });
 });
