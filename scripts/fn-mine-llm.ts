@@ -19,23 +19,39 @@
  *
  * Never merges anything. Drops (does not force-fix) any candidate that
  * fails self-test or the safety gate — an empty result is a valid, honest
- * outcome, not an error.
+ * outcome, not an error. A safety-gate failure it cannot attribute to its own
+ * batch, a duplicate rule id on the branch, or an open-PR listing it cannot
+ * read fails the run instead: those are not empty weeks.
  *
  * Usage:
  *   npx tsx scripts/fn-mine-llm.ts [--dry-run] [--cap 5] [--min-recovers 8]
  *
  * Environment:
- *   ANTHROPIC_API_KEY required
+ *   CLAUDE_CODE_OAUTH_TOKEN (preferred) or ANTHROPIC_API_KEY — see scripts/lib/claude-client.ts
  *   ATR_FNMINE_MODEL optional (default: claude-sonnet-5)
+ *   FN_MINE_OPEN_PR_FILES optional: a file listing the paths open PRs touch, one
+ *     per line (the workflow writes it, so this step needs no GitHub token).
+ *     Unset, the miner asks `gh pr list` itself.
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import Anthropic from '@anthropic-ai/sdk';
 import { needsUnicodeFlag } from '../src/engine.js';
 import { callClaude as sharedCallClaude, describeBackend, backendAvailable } from './lib/claude-client.js';
+import { coverageOf, successfulHackapromptMisses, describeNullResult, authoringRoom } from './lib/fn-mine-input.js';
+import { gateAuthoredBatch } from './lib/fn-mine-gate.js';
+import {
+  readRuleFileIds,
+  duplicateRuleIds,
+  describeDuplicateRuleIds,
+  usedRuleSeqs,
+  nextRuleSeq,
+  formatRuleId,
+  type RuleFileId,
+} from './lib/rule-ids.js';
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -48,6 +64,7 @@ const CHUNK_SIZE = 300;
 const RESIDUAL_THRESHOLD = 20; // below this many uncovered FN, skip round 2
 const REFERENCE_RULE = 'rules/prompt-injection/ATR-2026-00003-jailbreak-attempt.yaml';
 const REPORT_PATH = 'output/fn-mine-report.json';
+const RULE_ID_YEAR = '2026';
 
 interface CorpusSpec {
   readonly name: string;
@@ -160,11 +177,14 @@ interface FnCorpus {
 }
 
 function loadHackapromptFn(spec: CorpusSpec): readonly string[] {
-  const corpus = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, spec.corpusPath), 'utf8')) as Array<{ id: string; text: string }>;
-  const byId = new Map(corpus.map((c) => [c.id, c.text]));
+  const corpus = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, spec.corpusPath), 'utf8'));
   const report = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, spec.reportPath), 'utf8'));
-  const missed = (report.report?.missedAttacks ?? report.missedAttacks ?? []) as Array<{ id: string }>;
-  return missed.map((m) => byId.get(m.id)).filter((t): t is string => Boolean(t));
+  const { texts, missed, droppedUnsuccessful } = successfulHackapromptMisses(corpus, report);
+  console.log(
+    `[fn-mine] hackaprompt: ${missed} missed, ${droppedUnsuccessful} of them failed in the competition ` +
+      `(correct=false) and are not mined, ${texts.length} successful submissions remain`,
+  );
+  return texts;
 }
 
 function loadPintFn(spec: CorpusSpec): readonly string[] {
@@ -182,41 +202,6 @@ function loadPintFn(spec: CorpusSpec): readonly string[] {
 function loadFnCorpus(spec: CorpusSpec): FnCorpus {
   const texts = spec.name === 'hackaprompt' ? loadHackapromptFn(spec) : loadPintFn(spec);
   return { name: spec.name, texts };
-}
-
-/**
- * Load every regex condition from every rule currently on disk, REGARDLESS of
- * maturity/status. The live engine skips status:draft rules (so they don't
- * suppress the benchmark's measured FN count), but a rule authored by a PRIOR
- * fn-mine run for the same attack cluster still exists on disk — mining that
- * cluster again next week would just produce a near-duplicate PR forever,
- * since draft rules stay invisible to the benchmark until a human promotes
- * them. Filtering FN texts against ALL existing regexes (draft included)
- * before mining prevents this — it treats "already authored, awaiting
- * promotion" the same as "already covered" for mining-input purposes.
- */
-function loadAllExistingRegexes(): RegExp[] {
-  const out: RegExp[] = [];
-  const walk = (dir: string): void => {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      const p = path.join(dir, entry.name);
-      if (entry.isDirectory()) { walk(p); continue; }
-      if (!entry.name.endsWith('.yaml')) continue;
-      const text = fs.readFileSync(p, 'utf8');
-      // Cheap line-based extraction (avoids a full YAML parse for every rule):
-      // matches `value: "..."` or `value: '...'` lines under a regex condition.
-      for (const m of text.matchAll(/^\s*value:\s*["'](.+)["']\s*$/gm)) {
-        const re = compileEngineAccurate(m[1].replace(/\\(["'])/g, '$1'));
-        if (re) out.push(re);
-      }
-    }
-  };
-  walk(path.join(REPO_ROOT, 'rules'));
-  return out;
-}
-
-function filterAlreadyCovered(texts: readonly string[], existing: readonly RegExp[]): string[] {
-  return texts.filter((t) => !existing.some((re) => re.test(t)));
 }
 
 // ---------------------------------------------------------------------------
@@ -402,9 +387,68 @@ function runSafetyGate(): SafetyGateResult {
   return { pass, failedFiles, raw };
 }
 
+/**
+ * Gate this run's authored rules, dropping the ones a failure blames — including
+ * a rule whose TN a waiting rule in the rolling PR matches, which the gate files
+ * under the waiting rule. Throws when a failure names nothing this run authored.
+ */
+function gateAuthored(authored: readonly AuthoredRule[]): readonly AuthoredRule[] {
+  return gateAuthoredBatch(authored, runSafetyGate, (rule, blamedBy) => {
+    console.log(`[fn-mine]   safety-gate rejected ${rule.id} — dropping: ${blamedBy.join(' | ')}`);
+    fs.rmSync(path.join(REPO_ROOT, rule.file), { force: true });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Rule ids
+// ---------------------------------------------------------------------------
+
+/** A branch holding a duplicate id can never pass validate-rules; adding to it wastes the run. */
+function assertNoDuplicateRuleIds(onDisk: readonly RuleFileId[]): void {
+  const dups = duplicateRuleIds(onDisk);
+  if (dups.size > 0) throw new Error(`${describeDuplicateRuleIds(dups)} Nothing was mined.`);
+}
+
+/**
+ * Paths open PRs touch. Another lane's rolling PR allocates from its own branch
+ * and holds ids main lacks; allocating without them collides when either merges.
+ * Unreadable is an error, not an empty list: an empty list is how they collided.
+ */
+function openPrRuleFiles(): readonly string[] {
+  const listed = process.env['FN_MINE_OPEN_PR_FILES'];
+  const read = (): string =>
+    listed
+      ? fs.readFileSync(listed, 'utf8')
+      : execFileSync('gh', ['pr', 'list', '--state', 'open', '--limit', '1000', '--json', 'files', '--jq', '.[].files[].path'], {
+          cwd: REPO_ROOT,
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'pipe'],
+        });
+  try {
+    return read().split('\n').map((l) => l.trim()).filter(Boolean);
+  } catch (e) {
+    const source = listed ? `FN_MINE_OPEN_PR_FILES (${listed})` : '`gh pr list`';
+    throw new Error(
+      `could not read the rule files open PRs hold from ${source}: ${e instanceof Error ? e.message : String(e)}. ` +
+        'Ids allocated without them collide with other lanes; nothing was mined.',
+    );
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
+
+/** Rule files this branch adds over origin/main — the rolling PR's waiting rules. */
+function pendingNewRuleFiles(): number {
+  const out = execSync('git diff --name-only --diff-filter=A origin/main -- rules/', { cwd: REPO_ROOT, encoding: 'utf8' });
+  return out.split('\n').filter((f) => /\.ya?ml$/.test(f)).length;
+}
+
+function writeNullReport(note: string): void {
+  fs.mkdirSync(path.dirname(path.join(REPO_ROOT, REPORT_PATH)), { recursive: true });
+  fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify({ authored: [], note }, null, 2));
+}
 
 interface AuthoredRule {
   id: string;
@@ -428,6 +472,43 @@ async function main(): Promise<void> {
   const isDryRun = values['dry-run'] as boolean;
 
   console.log(`[fn-mine] model=${model} cap=${cap} minRecovers=${minRecovers} dryRun=${isDryRun}`);
+
+  // After the resume merged main in: a waiting rule whose id main took since
+  // (another lane merged first) makes the rolling PR unmergeable. Say so here,
+  // by file, rather than keep stacking rules onto it.
+  assertNoDuplicateRuleIds(readRuleFileIds(REPO_ROOT, 'rules'));
+
+  const perPrLimit = Number(process.env['MAX_NEW_PER_PR'] ?? '10');
+  const pending = pendingNewRuleFiles();
+  const room = authoringRoom(cap, pending, perPrLimit);
+  if (room === 0) {
+    const note =
+      `NULL RESULT — this branch already adds ${pending} rule file(s) over main and the per-PR limit is ${perPrLimit}. ` +
+      'Merge the rolling PR, or close it (the next run then starts fresh from main); nothing is mined until there is room.';
+    console.log(`[fn-mine] ${note}`);
+    writeNullReport(note);
+    console.log('::authored-files::');
+    return;
+  }
+  if (room < cap) console.log(`[fn-mine] ${pending} rule(s) already wait in this branch; authoring at most ${room} this run.`);
+
+  // Read before spending model credit; a dry run allocates no ids.
+  const openPrFiles = isDryRun ? [] : openPrRuleFiles();
+
+  // The safety gate below re-checks every rule this branch adds over main, so a
+  // waiting rule that now fails it (a stricter gate, a grown benign corpus, an
+  // edit in review) would make the gate reject this run's batch without naming
+  // any of it. Stop before spending model credit, and name the file.
+  if (pending > 0) {
+    const pre = runSafetyGate();
+    if (!pre.pass) {
+      const named = pre.failedFiles.length > 0 ? pre.failedFiles.join(', ') : '(the gate named no file; see its output)';
+      throw new Error(
+        `rule(s) already waiting in this branch fail check-rules-safety against current main: ${named}. ` +
+          `Fix or remove them in the rolling PR; nothing was mined.\n${pre.raw.slice(-2000)}`,
+      );
+    }
+  }
 
   console.log('[fn-mine] regenerating FN reports against the current rule set...');
   // Per-corpus fault tolerance: an external dependency failing for ONE corpus
@@ -456,17 +537,19 @@ async function main(): Promise<void> {
   const benignTexts = loadBenignTexts();
   console.log(`[fn-mine] benign gate corpus: ${benignTexts.length} records`);
 
-  const existingRegexes = loadAllExistingRegexes();
-  console.log(`[fn-mine] existing rule regexes on disk (any status, incl. draft): ${existingRegexes.length}`);
-
+  const stages = { fnTotal: 0, uncovered: 0, proposed: 0, survived: 0 };
   let allSurvivors: Array<GatedCandidate & { corpus: string }> = [];
   for (const spec of availableCorpora) {
     const fnRaw = loadFnCorpus(spec);
-    const fnFiltered = filterAlreadyCovered(fnRaw.texts, existingRegexes);
-    const fn = { name: fnRaw.name, texts: fnFiltered };
+    // Coverage is judged by the eval harness over every rule on disk, drafts
+    // included, with canaries; a broken judgement throws and fails the run.
+    const cov = await coverageOf(fnRaw.texts, path.join(REPO_ROOT, 'rules'));
+    const fn = { name: fnRaw.name, texts: [...cov.uncovered] };
+    stages.fnTotal += fnRaw.texts.length;
+    stages.uncovered += fn.texts.length;
     console.log(
       `[fn-mine] ${spec.name}: ${fnRaw.texts.length} false negatives against the LIVE engine, ` +
-      `${fnRaw.texts.length - fn.texts.length} already covered by an existing (possibly draft) rule, ` +
+      `${cov.coveredCount} already covered by a rule on disk (${cov.draftsEvaluated} drafts evaluated), ` +
       `${fn.texts.length} genuinely un-mined`,
     );
     if (fn.texts.length === 0) continue;
@@ -484,6 +567,7 @@ async function main(): Promise<void> {
       round1Candidates.push(...cands);
     }
     const round1Survivors = gateCandidates(round1Candidates, fn.texts, benignTexts, minRecovers);
+    stages.proposed += round1Candidates.length;
     console.log(`[fn-mine] ${spec.name} round 1: ${round1Candidates.length} proposed -> ${round1Survivors.length} survive the gate`);
 
     // Round 2: residual (only what round 1 left uncovered).
@@ -503,6 +587,7 @@ async function main(): Promise<void> {
         round2Candidates.push(...cands);
       }
       round2Survivors = gateCandidates(round2Candidates, fn.texts, benignTexts, minRecovers);
+      stages.proposed += round2Candidates.length;
       console.log(`[fn-mine] ${spec.name} round 2 (residual): ${round2Candidates.length} proposed -> ${round2Survivors.length} survive`);
     } else {
       console.log(`[fn-mine] ${spec.name}: only ${residual.length} FN uncovered — below residual threshold (${RESIDUAL_THRESHOLD}), skipping round 2`);
@@ -516,14 +601,14 @@ async function main(): Promise<void> {
   allSurvivors = allSurvivors
     .filter((s) => { const k = s.regex.trim(); if (seen.has(k)) return false; seen.add(k); return true; })
     .sort((a, b) => b.recovers - a.recovers);
-  const picked = allSurvivors.slice(0, cap);
+  const picked = allSurvivors.slice(0, room);
   const deferred = allSurvivors.length - picked.length;
   console.log(`[fn-mine] total survivors: ${allSurvivors.length}. Authoring top ${picked.length}${deferred > 0 ? ` (deferring ${deferred} to next run)` : ''}.`);
 
   if (picked.length === 0) {
-    console.log('[fn-mine] NULL RESULT — nothing survived the gate this run. Not an error.');
-    fs.mkdirSync(path.dirname(path.join(REPO_ROOT, REPORT_PATH)), { recursive: true });
-    fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify({ authored: [], note: 'null result' }, null, 2));
+    const note = describeNullResult({ ...stages, survived: allSurvivors.length });
+    console.log(`[fn-mine] ${note} Not an error.`);
+    writeNullReport(note);
     console.log('::authored-files::');
     return;
   }
@@ -531,22 +616,20 @@ async function main(): Promise<void> {
   if (isDryRun) {
     console.log('[fn-mine] --dry-run: stopping before authoring. Survivors:');
     console.log(JSON.stringify(picked, null, 2));
+    console.log(`[fn-mine] NULL RESULT — --dry-run: ${picked.length} survivor(s) found, authoring skipped.`);
+    console.log('::authored-files::');
     return;
   }
 
-  // Compute next free ATR id: max across origin/main + all open PR branches (best-effort — just origin/main here;
-  // the calling workflow's checkout is fresh so origin/main is authoritative at trigger time).
-  const existingIds = execSync("find rules -name '*.yaml' -exec grep -h '^id: ATR-' {} \\;", { cwd: REPO_ROOT, encoding: 'utf8' })
-    .split('\n')
-    .map((l) => parseInt(l.match(/ATR-2026-(\d+)/)?.[1] ?? '0', 10))
-    .filter((n) => n > 0);
-  let nextId = Math.max(0, ...existingIds) + 1;
+  // Next free id past everything on disk (main + the rolling PR) AND every rule
+  // file an open PR touches — the other rolling lane allocates from its own branch.
+  let nextId = nextRuleSeq(usedRuleSeqs(readRuleFileIds(REPO_ROOT, 'rules'), openPrFiles, RULE_ID_YEAR));
 
   const referenceYaml = fs.readFileSync(path.join(REPO_ROOT, REFERENCE_RULE), 'utf8');
   const authored: AuthoredRule[] = [];
 
   for (const c of picked) {
-    const id = `ATR-2026-${String(nextId).padStart(5, '0')}`;
+    const id = formatRuleId(RULE_ID_YEAR, nextId);
     nextId++;
     const slug = slugify(c.cluster);
     const file = `rules/${c.category}/${id}-${slug}.yaml`;
@@ -579,48 +662,30 @@ async function main(): Promise<void> {
   }
 
   // Repo-standard gates. Regenerate crosswalk docs first (a rule change always
-  // makes them stale), then validate/compliance/mappings, then the safety gate.
-  // Anything the safety gate rejects is DROPPED (not force-fixed) and the gate
-  // re-run once on the remainder — matches the "quality over volume" norm.
+  // makes them stale), then the safety gate. Anything the gate rejects is
+  // DROPPED (not force-fixed) and the gate re-run on the remainder until it
+  // passes — matches the "quality over volume" norm. A failure that names
+  // nothing this run authored fails the run (see scripts/lib/fn-mine-gate.ts).
   execSync('npm run build', { cwd: REPO_ROOT, stdio: 'inherit' });
   execSync('python3 scripts/generate-attack-crosswalk.py', { cwd: REPO_ROOT, stdio: 'inherit' });
   execSync('python3 scripts/generate-ast-crosswalk.py', { cwd: REPO_ROOT, stdio: 'inherit' });
 
-  for (let attempt = 0; attempt < 2 && authored.length > 0; attempt++) {
-    const gate = runSafetyGate();
-    if (gate.pass) break;
-    const dropIds = new Set(gate.failedFiles);
-    const before = authored.length;
-    for (let i = authored.length - 1; i >= 0; i--) {
-      if (dropIds.has(authored[i].file)) {
-        console.log(`[fn-mine]   safety-gate rejected ${authored[i].id} — dropping: ${gate.raw.match(new RegExp(`✗\\s+${authored[i].file}.*`))?.[0] ?? ''}`);
-        fs.rmSync(path.join(REPO_ROOT, authored[i].file), { force: true });
-        authored.splice(i, 1);
-      }
-    }
-    if (authored.length === before) {
-      // Gate failed but didn't name a specific file we recognize — bail safely rather than guess.
-      console.log('[fn-mine] safety gate failed without attributable per-file rejections — dropping entire batch to be safe.');
-      for (const a of authored) fs.rmSync(path.join(REPO_ROOT, a.file), { force: true });
-      authored.length = 0;
-    }
-  }
+  const kept = gateAuthored(authored);
 
-  if (authored.length > 0) {
+  if (kept.length === 0) {
+    console.log('[fn-mine] NULL RESULT after safety-gate — the gate rejected every authored rule (reasons above). Not an error.');
+    console.log('::authored-files::');
+    return;
+  }
+  if (kept.length < authored.length) {
     execSync('python3 scripts/generate-attack-crosswalk.py', { cwd: REPO_ROOT, stdio: 'inherit' });
     execSync('python3 scripts/generate-ast-crosswalk.py', { cwd: REPO_ROOT, stdio: 'inherit' });
   }
 
-  if (authored.length === 0) {
-    console.log('[fn-mine] NULL RESULT after safety-gate — nothing survived. Not an error.');
-    console.log('::authored-files::');
-    return;
-  }
-
   fs.mkdirSync(path.dirname(path.join(REPO_ROOT, REPORT_PATH)), { recursive: true });
-  fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify({ authored, deferred }, null, 2));
-  console.log(`[fn-mine] DONE — ${authored.length} rule(s) authored and gate-clean: ${authored.map((a) => a.id).join(', ')}`);
-  console.log(`::authored-files::${authored.map((a) => a.file).join(',')}`);
+  fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify({ authored: kept, deferred }, null, 2));
+  console.log(`[fn-mine] DONE — ${kept.length} rule(s) authored and gate-clean: ${kept.map((a) => a.id).join(', ')}`);
+  console.log(`::authored-files::${kept.map((a) => a.file).join(',')}`);
   console.log(`::report-file::${REPORT_PATH}`);
 }
 
