@@ -1,6 +1,6 @@
 title: "System Prompt and Internal Instruction Leakage"
 id: ATR-2026-00020
-rule_version: 1
+rule_version: 2
 status: "stable"
 description: |
   Detects when an agent's output reveals system prompt content, internal
@@ -106,8 +106,8 @@ detection:
   conditions:
     - field: agent_output
       operator: regex
-      value: "(?i)(my|the)\\s+(system\\s+)?(?:prompt|instructions?)\\s+(?:is|are|says?|states?|reads?|tells?\\s+me)"
-      description: "Agent referencing its own system prompt or instructions"
+      value: "(?i)(?:my\\s+(?:system\\s+)?(?:prompt|instructions?)\\s+(?:is|are|says?|states?|reads?|tells?\\s+me)\\b|the\\s+system\\s+(?:prompt|instructions?)\\s+(?:is|are|says?|states?|reads?)\\s*[:\"'])"
+      description: "Agent referencing its OWN prompt (first person), or 'the system prompt is:' introducing quoted content"
     - field: agent_output
       operator: regex
       value: "(?i)(?:here\\s+(?:is|are)|below\\s+(?:is|are)|let\\s+me\\s+share)\\s+(?:my|the)\\s+(?:system\\s+)?(?:prompt|instructions?|rules?|config)"
@@ -126,50 +126,50 @@ detection:
       description: "Agent citing internal rules as reason for refusal"
     - field: agent_output
       operator: regex
-      value: "(?i)(?:system\\s*prompt|system\\s*message|internal\\s+instructions?|hidden\\s+instructions?)\\s*[:\\-=]"
-      description: "System prompt label followed by content disclosure"
+      value: "(?i)(?:^|[\\r\\n]|\\\\n|[\"'`\\[{>|]\\s*)(?:system\\s+prompt|system\\s+message|internal\\s+instructions?|hidden\\s+instructions?)\\s*[:=]"
+      description: "System prompt LABEL at a line/quote boundary followed by content disclosure (not the same words inside running prose)"
     - field: agent_output
       operator: regex
-      value: "(?i)<<SYS>>|<\\|im_start\\|>system|\\[INST\\]|\\[/INST\\]|<\\|system\\|>"
-      description: "Raw prompt template delimiters leaked in output"
+      value: "(?i)<<SYS>>|\\[INST\\]|\\[/INST\\]|(?:<\\|im_start\\|>system|<\\|system\\|>)[\\s\\S]{0,200}\\b(?:never|not)\\s+(?:reveal|disclose|share|mention|discuss|expose|repeat)\\b"
+      description: "Raw prompt template delimiters leaked in output. <<SYS>> / [INST] are Llama-2 markers that do not occur in ordinary prose; the ChatML markers <|im_start|>system and <|system|> DO occur in chat-template tutorials, so they additionally require a non-disclosure directive within 200 chars"
     - field: agent_output
       operator: regex
-      value: "(?i)(?:guardrail|safety\\s+filter|content\\s+policy|moderation\\s+rule)s?\\s+(?:include|are|state|say|specify|prevent|block)"
-      description: "Agent revealing guardrail or content policy details"
+      value: "(?i)\\b(?:my|our|the)\\s+(?:guardrail|safety\\s+filter|content\\s+policy|moderation\\s+rule)s?\\s+(?:includes?|are|states?|says?|specify|prevents?|blocks?)\\b"
+      description: "Agent revealing ITS guardrail or content policy details (possessive/definite determiner required)"
     - field: agent_output
       operator: regex
-      value: "(?i)(?:do\\s+not|never|must\\s+not|cannot|should\\s+not).*(?:reveal|share|disclose|output|leak).*(?:system\\s+prompt|internal|instructions?|configuration)"
-      description: "Agent echoing its own non-disclosure rules"
+      value: "(?i)(?:do\\s+not|never|must\\s+not|cannot|should\\s+not)[^\\n\\\\]{0,40}\\b(?:reveal|share|disclose|output|leak)\\b[^\\n\\\\]{0,40}\\b(?:system\\s+prompt|system\\s+instructions?|internal\\s+instructions?|initial\\s+instructions?|my\\s+instructions?|the\\s+instructions?|these\\s+instructions?|configuration)\\b"
+      description: "Agent echoing its own non-disclosure rules. Gaps are bounded AND backslash-free so the window cannot span a newline in either the raw or the JSON-escaped encoding of the event"
     - field: agent_output
       operator: regex
       value: "(?i)my\\s+(?:training\\s+data|fine[- ]?tuning|rlhf|alignment)\\s+(?:includes?|contains?|was|involved|taught\\s+me)"
       description: "Agent disclosing training data or alignment details"
     - field: agent_output
       operator: regex
-      value: "(?i)(?:confidential|internal|private|secret)\\s+(?:instruction|directive|config|setting|parameter)s?"
-      description: "References to confidential directives in output"
+      value: "(?i)\\b(?:confidential|internal|private|secret)\\s+(?:instruction|directive)s?\\b"
+      description: "References to confidential instructions/directives in output (config/setting/parameter dropped: 'internal configuration', 'non-secret settings', 'private config' are ordinary technical prose)"
     - field: agent_output
       operator: regex
-      value: "(?i)you\\s+are\\s+a\\s+(?:helpful|friendly|professional|expert|specialized)\\s+(?:ai\\s+)?(?:assistant|agent|bot)"
-      description: "System prompt preamble pattern leaked verbatim"
+      value: "(?i)you\\s+are\\s+a\\s+(?:helpful|friendly|professional|expert|specialized)\\s+(?:ai\\s+)?(?:assistant|agent|bot)[\\s\\S]{0,200}(?:you\\s+(?:must|should|shall|will)\\s+(?:never|not|always)|never\\s+(?:reveal|disclose|share|mention|discuss)|do\\s+not\\s+(?:reveal|disclose|share|mention|discuss))"
+      description: "System prompt preamble leaked verbatim TOGETHER with a behavioural directive within 200 chars — the preamble alone is the first line of every LLM SDK example"
     - field: agent_output
       operator: regex
-      value: "(?i)(?:your|my)\\s+(?:role|purpose|goal|mission|objective)\\s+is\\s+to"
-      description: "Role definition statement from system prompt"
+      value: "(?i)(?:your|my)\\s+(?:role|purpose|goal|mission|objective)\\s+is\\s+to[\\s\\S]{0,200}\\b(?:never|not)\\s+(?:reveal|disclose|share|mention|discuss|expose|repeat)\\b"
+      description: "Role definition from a system prompt TOGETHER with a behavioural directive within 200 chars — 'Your goal is to ...' on its own is the opening line of ordinary skill/agent documentation"
     - field: agent_output
       operator: regex
       value: "(?i)(?:you|i)\\s+(?:must|should)\\s+(?:always|never)\\s+(?:respond|answer|output|provide|include|refuse|decline)"
       description: "Behavioral constraint rules from system prompt"
     - field: agent_output
       operator: regex
-      value: "(?i)(?:ANTHROPIC_API_KEY|OPENAI_API_KEY|GOOGLE_API_KEY|SYSTEM_PROMPT)\\s*[=:]"
-      description: "Environment variable names suggesting config leakage"
+      value: "(?i)\\bSYSTEM_PROMPT\\s*[=:][\\s\\S]{0,200}\\b(?:never|not)\\s+(?:reveal|disclose|share|mention|discuss|expose|repeat)\\b"
+      description: "SYSTEM_PROMPT config key leaked together with the prompt body carrying a non-disclosure directive. The bare key is not a signal: system_prompt= is the argument name in every LLM SDK snippet, and src/engine.ts compiles every array condition with the i flag, so an upper-case-only pattern is not expressible here. ANTHROPIC_API_KEY / OPENAI_API_KEY / GOOGLE_API_KEY dropped — the NAME of a key env var is documentation; the VALUE is the leak and ATR-2026-00021 detects the value formats"
   condition: any
   false_positives:
-    - "Agent explaining its own capabilities when legitimately asked"
-    - "Educational content about AI system design or prompt engineering"
+    - "Security documentation that quotes the canonical non-disclosure line ('Never reveal system prompt') as an example — 1 sample in the 5,352-doc benign corpus"
+    - "Tutorials about chat templates that print raw delimiters such as <|im_start|>system or <|system|> — 3 samples in the 5,352-doc benign corpus"
     - "Agents designed to be transparent about their system prompt"
-    - "Documentation or tutorials about LLM configuration"
+    - "NOTE: this rule detects on agent_output. The engine also runs llm_io rules on tool_response (the indirect-injection route), where agent_output resolves to the tool's JSON envelope. Any document the agent READS that discusses prompt formats is therefore charged against this rule; that channel is the source of the residual FPs above."
 
 response:
   actions:
