@@ -95,11 +95,24 @@ jobs:
       # branch behind (delete_branch_on_merge only fires on merge); resuming it
       # would bring rejected rules back and let them suppress their clusters. The
       # sha fetched here is the lease the push step overwrites against.
+      #
+      # Only main resumes. A dispatch on another ref (trying a miner change before
+      # merging it) would otherwise have its working tree swapped for main's or
+      # the rolling branch's, so the run would mine with main's miner beside this
+      # ref's dist/, and could push to the rolling PR. It mines with its own code
+      # instead, as a forced dry run that pushes nothing.
       - name: Resume the rolling branch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+          # refs/heads/main is spelled out like origin/main below; the schedule
+          # payload is not guaranteed to carry the repository's default branch.
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::warning::Dispatched on $GITHUB_REF: mining this ref's own code, fn-mine/rolling not resumed, dry run forced, nothing pushed."
+            echo "FORCE_DRY_RUN=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
           BRANCH="fn-mine/rolling"
           OLD_SHA=""
           if git fetch --quiet origin "$BRANCH" 2>/dev/null; then
@@ -140,6 +153,22 @@ jobs:
             git commit --no-edit
           fi
 
+      # The miner allocates ids past these. The other rolling lane
+      # (auto-semantic/rolling) allocates from its own branch, so its open PR holds
+      # ids main lacks, and "highest on disk + 1" handed them out again. Listed
+      # here, not by the miner, so the mining step (attack payloads fed to a model
+      # CLI that inherits its environment) holds no GitHub token. gh failing fails
+      # the job; an empty list is how the ids collided.
+      - name: Collect the rule files open PRs hold
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          LIST="$RUNNER_TEMP/open-pr-files.txt"
+          gh pr list --state open --limit 1000 --json files --jq '.[].files[].path' > "$LIST"
+          echo "FN_MINE_OPEN_PR_FILES=$LIST" >> "$GITHUB_ENV"
+          echo "Open PRs touch $(grep -c '^rules/' "$LIST" || true) rule file(s)."
+
       - name: Install Claude CLI (subscription-credit backend)
         # `secrets` is not available in a step-level `if` — GitHub refuses to load the
         # whole workflow, which is how this file broke main on 2026-09-22 (0 jobs, run
@@ -165,7 +194,7 @@ jobs:
         run: |
           set -eo pipefail
           DRY_RUN_FLAG=""
-          if [ "${{ inputs.dry_run }}" = "true" ]; then DRY_RUN_FLAG="--dry-run"; fi
+          if [ "${{ inputs.dry_run }}" = "true" ] || [ "${FORCE_DRY_RUN:-}" = "true" ]; then DRY_RUN_FLAG="--dry-run"; fi
           npx tsx scripts/fn-mine-llm.ts $DRY_RUN_FLAG --cap "${{ inputs.cap || '5' }}" | tee /tmp/fn-mine.out
           FILES=$(grep "::authored-files::" /tmp/fn-mine.out | tail -1 | sed 's/::authored-files:://' || true)
           echo "files=$FILES" >> "$GITHUB_OUTPUT"
@@ -194,8 +223,9 @@ jobs:
         if: steps.mine.outputs.files != ''
         run: node scripts/reconcile-rule-count.mjs
 
+      # FORCE_DRY_RUN: a non-main dispatch never pushes, whatever its miner prints.
       - name: Push to the rolling branch and open or update its PR
-        if: steps.mine.outputs.files != ''
+        if: steps.mine.outputs.files != '' && env.FORCE_DRY_RUN != 'true'
         env:
           # A PR opened with the default GITHUB_TOKEN is authored by app/github-actions, and
           # every check on it parks at action_required forever instead of running; a push made
