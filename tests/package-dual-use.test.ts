@@ -9,8 +9,8 @@
  * here instead of at the registry.
  */
 import { describe, it, expect } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
 
 const ROOT = resolve(__dirname, "..");
 const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
@@ -37,5 +37,40 @@ describe("npm dual-use declaration", () => {
     expect(text).not.toMatch(/<[a-z][^>]*>/i);
     expect(text).toMatch(/attack strings/i);
     expect(text).toMatch(/detect/i);
+  });
+});
+
+function sourceFiles(dir: string): string[] {
+  return readdirSync(dir).flatMap((name) => {
+    const full = join(dir, name);
+    if (statSync(full).isDirectory()) return sourceFiles(full);
+    return full.endsWith(".ts") ? [full] : [];
+  });
+}
+
+// npm Trust & Safety reads DISCLOSURE against the code. These tie its factual
+// claims to src/ so the two cannot drift apart silently.
+describe("DISCLOSURE matches the code", () => {
+  const disclosure = readFileSync(join(ROOT, "DISCLOSURE"), "utf8");
+
+  it("names the endpoint the LLM judges fall back to", () => {
+    const fallsBack = ["src/judges/openai-compatible.ts", "src/layer-integration.ts"].filter((f) =>
+      readFileSync(join(ROOT, f), "utf8").includes("https://api.openai.com"),
+    );
+    if (fallsBack.length > 0) {
+      expect(disclosure).toContain("https://api.openai.com");
+    }
+  });
+
+  it("starts no process through a shell, as it says", () => {
+    expect(disclosure).toMatch(/passed to a shell/);
+    const childProcessImport = /import\s*(\{[^}]*\}|\*\s+as\s+\w+|\w+)\s*from\s*["'](?:node:)?child_process["']/g;
+    const offenders = sourceFiles(join(ROOT, "src")).flatMap((file) => {
+      const text = readFileSync(file, "utf8");
+      const imports = [...text.matchAll(childProcessImport)].map((m) => m[1]!);
+      const shellApi = imports.some((names) => !names.startsWith("{") || /\bexec(Sync)?\b/.test(names));
+      return shellApi || /\bshell\s*:\s*true\b/.test(text) ? [relative(ROOT, file)] : [];
+    });
+    expect(offenders).toEqual([]);
   });
 });

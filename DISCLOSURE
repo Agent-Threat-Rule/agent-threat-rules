@@ -22,18 +22,44 @@ rules/ contain attack strings on purpose:
 - test cases: sample attack inputs that each rule must detect, and benign
   samples it must not.
 
-These strings are data. The engine compiles the patterns as regular expressions
-and matches them against text supplied by the caller. Rule content is never
-executed, evaluated as code, or passed to a shell.
+These strings are data. The engine matches the patterns, as regular expressions
+or as literal strings, against text supplied by the caller. Rule content is
+never executed, evaluated as code, or passed to a shell.
 
 What the package does not do
 
 - It has no preinstall, install or postinstall scripts.
-- It makes no network requests unless the user configures an endpoint. Optional
-  reporting, Threat Cloud CLI commands and LLM-based judges only contact a URL
-  or endpoint the user supplies; there is no built-in default.
-- Some CLI subcommands start local helper processes (git, find, and the
-  package's own rule validator). None of them run rule content.
+- It makes no network requests by default. Each network path listed below
+  stays off until the user turns it on.
+- It does not run rule content, and it starts no process through a shell.
+
+Network access (all opt-in)
+
+- Threat Cloud reporting and the Threat Cloud CLI commands contact only a URL
+  the user supplies (--tc-url, ATR_TC_URL or TC_URL). There is no built-in
+  default for them.
+- The LLM-based semantic judges run only when the caller turns them on and
+  supplies an API key: in code through createOpenAICompatibleJudge or the
+  engine's semanticModule option, and in the CLI through --semantic or
+  ATR_SEMANTIC. If no base URL is set (baseUrl, --semantic-base-url,
+  ATR_SEMANTIC_BASE_URL or LLM_BASE_URL), they send the text being evaluated
+  to https://api.openai.com. Setting a base URL points them at another
+  endpoint, including a local model.
+- The optional embedding module needs @xenova/transformers, which this package
+  does not install. If the user installs it, that library downloads its model,
+  from the Hugging Face Hub by default, the first time the module is used.
+
+Local processes
+
+- The atr tc pull command, for operators of a Threat Cloud endpoint, checks
+  that each rule the endpoint returns has a well-formed rule id and one of the
+  schema's categories before writing it under the rules directory. It then
+  runs the package's own rule validator on the file in a separate Node.js
+  process.
+- The skill benchmark script (dist/eval/skill-benchmark.js) starts git and
+  find to record the commit it measured and count the rule files.
+- These processes are started without a shell, and none of them runs rule
+  content.
 
 Intended use
 

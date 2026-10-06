@@ -79,6 +79,23 @@ jobs:
             patch) PATCH=$((PATCH + 1)) ;;
           esac
           NEW="$MAJOR.$MINOR.$PATCH"
+          # A re-run starts again from the commit the first attempt checked out,
+          # so it computes the same version. If that attempt already pushed the
+          # tag, bumping again stops at `git tag` and nothing is staged. Continue
+          # from the tag instead: it is the tree the earlier attempt tagged and
+          # staged. Only on a re-run, so a first attempt that meets a tag made
+          # elsewhere still fails.
+          if [ "${GITHUB_RUN_ATTEMPT:-1}" -gt 1 ] && git ls-remote --exit-code --tags origin "refs/tags/v$NEW" >/dev/null; then
+            git fetch --force origin "refs/tags/v$NEW:refs/tags/v$NEW"
+            git checkout --quiet --detach "v$NEW"
+            if [ "$(node -p "require('./package.json').version")" != "$NEW" ]; then
+              echo "::error::tag v$NEW does not carry version $NEW in package.json."
+              exit 1
+            fi
+            echo "v$NEW was pushed by an earlier attempt of this run; continuing from it."
+            echo "VERSION=$NEW" >> "$GITHUB_ENV"
+            exit 0
+          fi
           node -e "
             const fs = require('fs');
             const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
