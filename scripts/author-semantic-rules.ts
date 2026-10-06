@@ -71,10 +71,12 @@
  *
  * ID ALLOCATION
  * -------------
- * Uses the strict-increment nextAtrId() pattern from promote-detection-ready.ts
- * (Set of seen ids + `while seen.has(next) next++`), NOT the early
- * local-crystallize baseId+created scheme that collided. IDs are allocated only
- * AFTER a draft passes the gate, so failures never burn an id.
+ * Strict increment past every id already taken (scripts/lib/rule-ids.ts):
+ * ids declared and named on disk, and ids in the names of rule files open PRs
+ * touch (--open-pr-files). Disk alone is main plus this lane's rolling branch;
+ * the fn-mine lane's open PR holds ids neither has, and allocating without them
+ * collides when the second PR merges. IDs are allocated only AFTER a draft
+ * passes the gate, so failures never burn an id.
  *
  * USAGE
  *   npx tsx scripts/author-semantic-rules.ts            # dry-run (uses whichever backend is configured)
@@ -88,6 +90,9 @@
  *                               scripts/semantic-authored-history.ts: every cluster
  *                               this lane has authored, including rules a closed PR
  *                               or a reviewer threw away.
+ *   ... --open-pr-files FILE    paths the repository's open PRs touch, one per line
+ *                               (the workflow writes it with `gh pr list`). New ids
+ *                               skip every rule id named there. Required with --write.
  *   ... --base REF              the PR's base (the workflow passes origin/main). Rules
  *                               already new against it -- a resumed rolling branch's --
  *                               count against check-rules-safety's per-PR cap
@@ -147,6 +152,7 @@ export {
 export { buildSemanticRule, earnedActions } from "./lib/semantic-rule-builder.js";
 import { readExcludeList } from "./lib/semantic-exclusions.js";
 import { getNewRuleFiles } from "./check-rules-safety.js";
+import { formatRuleId, nextRuleSeq, readRuleFileIds, usedRuleSeqs } from "./lib/rule-ids.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -174,6 +180,8 @@ const MAX_PROMOTE = opt("--max") ? parseInt(opt("--max")!, 10) : DEFAULT_MAX;
 const REPORT_PATH = opt("--report");
 const EXCLUDE_FROM = opt("--exclude-from");
 const BASE_REF = opt("--base");
+const OPEN_PR_FILES = opt("--open-pr-files");
+const RULE_ID_YEAR = "2026";
 const DRY_RUN = !WRITE;
 
 /**
@@ -292,25 +300,42 @@ export function loadPendingRules(
 const NO_PENDING: PendingRules = { files: [], rules: [], errors: [] };
 
 // ---------------------------------------------------------------------------
-// ID allocation — strict increment (the promote-detection-ready.ts pattern)
+// ID allocation — strict increment past every taken id (scripts/lib/rule-ids.ts)
 // ---------------------------------------------------------------------------
-function nextAtrId(): () => string {
-  const seen = new Set<number>();
-  const idRe = /^id:\s*ATR-2026-(\d{5})\b/m;
-  for (const f of walkYamlAll(RULES_BASE)) {
-    try {
-      const m = idRe.exec(readFileSync(f, "utf-8"));
-      if (m) seen.add(parseInt(m[1], 10));
-    } catch {
-      /* skip */
-    }
-  }
-  let next = (Math.max(0, ...Array.from(seen)) + 1) || 1;
+/** Hands out ids above every taken sequence number, never one already handed out. */
+export function atrIdAllocator(used: readonly number[], year: string = RULE_ID_YEAR): () => string {
+  const taken = new Set(used);
+  let next = nextRuleSeq(used);
   return () => {
-    while (seen.has(next)) next += 1;
-    seen.add(next);
-    return `ATR-2026-${String(next).padStart(5, "0")}`;
+    while (taken.has(next)) next += 1;
+    taken.add(next);
+    return formatRuleId(year, next);
   };
+}
+
+/** The paths open PRs touch, one per line. Unreadable is fatal: an empty list is how ids collide. */
+export function readOpenPrFiles(path: string): readonly string[] {
+  return readFileSync(path, "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
+}
+
+function nextAtrId(openPrFiles: readonly string[]): () => string {
+  return atrIdAllocator(usedRuleSeqs(readRuleFileIds(REPO_ROOT, "rules"), openPrFiles, RULE_ID_YEAR));
+}
+
+function openPrFilesOrExit(): readonly string[] {
+  if (!OPEN_PR_FILES) {
+    if (WRITE) {
+      console.error("FATAL: --write needs --open-pr-files: ids allocated without other open PRs' rules collide with them");
+      process.exit(1);
+    }
+    return [];
+  }
+  try {
+    return readOpenPrFiles(OPEN_PR_FILES);
+  } catch (e) {
+    console.error(`FATAL: cannot read --open-pr-files ${OPEN_PR_FILES}: ${e instanceof Error ? e.message : String(e)}`);
+    process.exit(1);
+  }
 }
 
 // Like walkYaml but for the rules tree (any .yaml/.yml, not just proposals).
@@ -695,7 +720,7 @@ async function main(): Promise<void> {
 
   const ctx: AuthorContext = {
     requestDraft: callLlm,
-    idGen: nextAtrId(),
+    idGen: nextAtrId(openPrFilesOrExit()),
     benignSamples,
     allowlists: loadOwaspAllowlists(REPO_ROOT),
     foreign,

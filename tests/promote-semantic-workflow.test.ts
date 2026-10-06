@@ -84,6 +84,7 @@ interface Pr {
   state: "OPEN" | "CLOSED" | "MERGED";
   isCrossRepository: boolean;
   labels?: Array<{ name: string }>;
+  files?: Array<{ path: string }>;
 }
 
 interface Fixture {
@@ -382,6 +383,34 @@ describe.skipIf(!HAS_JQ)("promote-semantic.yml rolling-branch steps", () => {
     });
   });
 
+  describe("Collect the rule files open PRs hold", () => {
+    const COLLECT = "Collect the rule files open PRs hold";
+    const OUT = "/tmp/semantic-open-pr-files.txt";
+
+    it("lists every path open PRs touch, including another lane's rules, and no closed PR's", () => {
+      setPrs(fx, [
+        { number: 639, state: "OPEN", isCrossRepository: false, files: [{ path: "rules/prompt-injection/ATR-2026-02847-x.yaml" }, { path: "stats.json" }] },
+        { number: 638, state: "OPEN", isCrossRepository: false, files: [{ path: "rules/prompt-injection/ATR-2026-02846-y.yaml" }] },
+        { number: 632, state: "CLOSED", isCrossRepository: false, files: [{ path: "rules/prompt-injection/ATR-2026-02853-z.yaml" }] },
+      ]);
+      const r = runStep(fx, COLLECT);
+      expect(r.status, r.out).toBe(0);
+      expect(readFileSync(OUT, "utf-8").split("\n").filter(Boolean)).toEqual([
+        "rules/prompt-injection/ATR-2026-02847-x.yaml",
+        "stats.json",
+        "rules/prompt-injection/ATR-2026-02846-y.yaml",
+      ]);
+      expect(r.out).toContain("Open PRs touch 2 rule file(s).");
+    });
+
+    it("fails the job when the open PRs cannot be listed", () => {
+      setPrs(fx, []);
+      fx = { ...fx, env: { ...fx.env, FAKE_GH_FAIL: "1" } };
+      const r = runStep(fx, COLLECT);
+      expect(r.status, r.out).not.toBe(0);
+    });
+  });
+
   describe("Push to the rolling branch and open or update its PR", () => {
     const PUSH = "Push to the rolling branch and open or update its PR";
 
@@ -477,6 +506,13 @@ describe("promote-semantic.yml wiring of the authored-cluster record", () => {
   // cap and as check-5 peers; the author script only sees them through --base.
   it("tells the author script the PR's base, so it counts the rules the PR already adds", () => {
     expect(runBlock("Author semantic rules (deterministic 0-FP gate)")).toContain("--base origin/main");
+  });
+
+  it("collects open PRs' rule files before dependency code runs, and hands them to the author script", () => {
+    expect(at("Collect the rule files open PRs hold")).toBeLessThan(at("Install dependencies"));
+    expect(runBlock("Author semantic rules (deterministic 0-FP gate)")).toContain(
+      "--open-pr-files /tmp/semantic-open-pr-files.txt",
+    );
   });
 
   it("runs the tests before pushing a resumed branch that authored nothing", () => {
