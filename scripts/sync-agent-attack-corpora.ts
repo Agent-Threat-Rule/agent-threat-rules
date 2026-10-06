@@ -28,19 +28,32 @@
  *
  * Evaluated and not vendored: see NOT_VENDORED in scripts/lib/agent-attack-corpora.ts.
  *
+ * It also vendors the BENIGN tool output the FN-mine gate checks candidates
+ * against, into data/fn-mine-benign/ (scripts/lib/tool-output-benign.ts says
+ * why, and that they feed that gate only):
+ *
+ *   ISTA-DASLab/Panza-emails (Apache-2.0). Emails three people wrote and
+ *     donated; every row, contact details masked.
+ *
+ *   perplexity-ai/browsesafe-bench (MIT), benign pages of the same test split
+ *     at the same revision, through the same text-unit extraction and masking
+ *     as the attack pages, in content-hash order until the 5 MB budget.
+ *
  * Usage:
  *   npx tsx scripts/sync-agent-attack-corpora.ts                      # dry-run
  *   npx tsx scripts/sync-agent-attack-corpora.ts --write              # write corpora
  *   npx tsx scripts/sync-agent-attack-corpora.ts --source llmail-inject --write
+ *   npx tsx scripts/sync-agent-attack-corpora.ts --source panza-emails --write
  *
- * No token is needed: all three endpoints serve public datasets anonymously.
+ * No token is needed: every endpoint serves public datasets anonymously.
  *
  * Exit codes:
  *   0 success
  *   1 fatal (network, license or revision mismatch)
  */
+import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { createInterface } from 'node:readline';
 import { Readable } from 'node:stream';
 import type { ReadableStream as WebReadableStream } from 'node:stream/web';
@@ -66,6 +79,22 @@ import {
   type LlmailRawRow,
   type UpstreamDataset,
 } from './lib/agent-attack-corpora.js';
+import {
+  APACHE_2_0_FILE,
+  APACHE_2_0_SHA256,
+  APACHE_2_0_URL,
+  BENIGN_EMAILS,
+  BENIGN_PAGES,
+  MAX_BENIGN_PAGE_CHARS,
+  benignDocument,
+  benignPageRows,
+  benignSourceMarkdown,
+  jsonObjects,
+  panzaRows,
+  type BenignDocMeta,
+  type BenignSource,
+  type PanzaRawRow,
+} from './lib/tool-output-benign.js';
 
 const REPO_ROOT = process.cwd();
 const OUT_DIR = 'data/test-corpora';
@@ -73,7 +102,7 @@ const HUB = 'https://huggingface.co';
 const ROWS_API = 'https://datasets-server.huggingface.co/rows';
 const ROWS_PAGE = 100;
 
-const resolveUrl = (d: UpstreamDataset, file: string): string =>
+const resolveUrl = (d: Pick<UpstreamDataset, 'repo' | 'revision'>, file: string): string =>
   `${HUB}/datasets/${d.repo}/resolve/${d.revision}/${file}`;
 
 const RETRIES = 5;
@@ -92,7 +121,7 @@ async function fetchOk(url: string, attempt = 0): Promise<Response> {
 }
 
 /** The card's license line, after checking it permits vendoring. */
-async function checkedLicense(d: UpstreamDataset): Promise<string> {
+async function checkedLicense(d: Pick<UpstreamDataset, 'repo' | 'revision' | 'license'>): Promise<string> {
   const readme = await (await fetchOk(resolveUrl(d, 'README.md'))).text();
   const problem = licenseProblem(readme, d.license);
   if (problem) throw new Error(`${d.repo}@${d.revision}: ${problem}; not vendoring it.`);
@@ -124,12 +153,12 @@ async function collectLlmail(): Promise<readonly CorpusRow[]> {
   return llmailRows(succeeded);
 }
 
-async function hubRevision(d: UpstreamDataset): Promise<string> {
+async function hubRevision(d: Pick<UpstreamDataset, 'repo'>): Promise<string> {
   const info = (await (await fetchOk(`${HUB}/api/datasets/${d.repo}`)).json()) as { sha?: string };
   return info.sha ?? '';
 }
 
-async function assertMainIsPinned(d: UpstreamDataset): Promise<void> {
+async function assertMainIsPinned(d: Pick<UpstreamDataset, 'repo' | 'revision'>): Promise<void> {
   const sha = await hubRevision(d);
   if (sha !== d.revision) {
     throw new Error(
@@ -144,7 +173,7 @@ interface RowsPage {
   readonly num_rows_total?: number;
 }
 
-async function browsesafeSplit(split: string): Promise<readonly BrowsesafeRawRow[]> {
+async function fetchBrowsesafeSplit(split: string): Promise<readonly BrowsesafeRawRow[]> {
   const out: BrowsesafeRawRow[] = [];
   for (let offset = 0, total = Infinity; offset < total; offset += ROWS_PAGE) {
     const q = `dataset=${encodeURIComponent(BROWSESAFE.repo)}&config=default&split=${split}&offset=${offset}&length=${ROWS_PAGE}`;
@@ -158,12 +187,54 @@ async function browsesafeSplit(split: string): Promise<readonly BrowsesafeRawRow
   return out;
 }
 
+/** One read of a split per run: the attack and the benign corpus are cut from the same rows. */
+const splits = new Map<string, Promise<readonly BrowsesafeRawRow[]>>();
+
+/** The split's rows, read while main is the pinned revision (checked before and after). */
+function browsesafeSplit(split: string): Promise<readonly BrowsesafeRawRow[]> {
+  const cached = splits.get(split);
+  if (cached) return cached;
+  const read = (async () => {
+    await assertMainIsPinned(BROWSESAFE);
+    const rows = await fetchBrowsesafeSplit(split);
+    await assertMainIsPinned(BROWSESAFE);
+    console.log(`[sync]   ${split} split: ${rows.length} rows`);
+    return rows;
+  })();
+  splits.set(split, read);
+  return read;
+}
+
 async function collectBrowsesafe(): Promise<readonly CorpusRow[]> {
-  await assertMainIsPinned(BROWSESAFE);
-  const rows = await browsesafeSplit('test');
-  await assertMainIsPinned(BROWSESAFE);
-  console.log(`[sync]   test split: ${rows.length} rows`);
-  return browsesafeRows(rows, 'test');
+  return browsesafeRows(await browsesafeSplit('test'), 'test');
+}
+
+async function collectBenignPages(): Promise<readonly CorpusRow[]> {
+  return benignPageRows(await browsesafeSplit('test'), 'test');
+}
+
+const PANZA_FILES = ['david', 'isabel', 'marcus'].flatMap((who) => [`${who}/train.jsonl`, `${who}/test.jsonl`]);
+
+/** Every Panza email, read at the pinned revision; family is donor/split. */
+async function collectPanza(): Promise<readonly CorpusRow[]> {
+  const raw: { row: PanzaRawRow; family: string }[] = [];
+  for (const file of PANZA_FILES) {
+    const text = await (await fetchOk(resolveUrl(BENIGN_EMAILS, file))).text();
+    const family = file.replace(/\.jsonl$/, '');
+    for (const line of text.split('\n')) {
+      if (line.trim()) for (const row of jsonObjects(line)) raw.push({ row: row as PanzaRawRow, family });
+    }
+  }
+  console.log(`[sync]   ${raw.length} emails read`);
+  return panzaRows(raw);
+}
+
+/** The Apache-2.0 text, refused unless it is the text pinned by hash. */
+async function apacheLicenseText(): Promise<string> {
+  const text = await (await fetchOk(APACHE_2_0_URL)).text();
+  const sha = createHash('sha256').update(text).digest('hex');
+  if (sha !== APACHE_2_0_SHA256) throw new Error(`${APACHE_2_0_URL}: sha256 ${sha}, pinned ${APACHE_2_0_SHA256}`);
+  return text;
 }
 
 interface SourcePlan {
@@ -208,6 +279,55 @@ const SOURCES: readonly SourcePlan[] = [
   },
 ];
 
+interface BenignPlan {
+  readonly source: BenignSource;
+  readonly files: readonly string[];
+  readonly filter: string;
+  readonly notes?: readonly string[];
+  readonly collect: () => Promise<readonly CorpusRow[]>;
+}
+
+const BENIGN_SOURCES: readonly BenignPlan[] = [
+  {
+    source: BENIGN_EMAILS,
+    files: PANZA_FILES,
+    filter:
+      'every row; subject and body joined; CRLF to LF; email addresses replaced, phone numbers masked; ' +
+      'deduplicated on the final text; stratified by donor/split in sha256 order',
+    collect: collectPanza,
+  },
+  {
+    source: BENIGN_PAGES,
+    files: ['test.parquet (via datasets-server rows API, split=test)'],
+    filter:
+      "label == 'no'; the whole page's text units (pageUnits, as for the attack pages); pages over " +
+      `${MAX_BENIGN_PAGE_CHARS} chars skipped; identifiers masked as for the attack pages; NUL bytes removed; ` +
+      `sha256 order; at most ${MAX_ROWS} and ${MAX_CORPUS_BYTES} bytes`,
+    notes: [
+      'Same split and revision as data/test-corpora/browsesafe-bench, read the same way (see its SOURCE.md); ' +
+        'that corpus is the attack pages minus every unit these benign pages share.',
+    ],
+    collect: collectBenignPages,
+  },
+];
+
+async function syncBenign(plan: BenignPlan, write: boolean, retrieved: string): Promise<void> {
+  const { source } = plan;
+  console.log(`[sync] ${source.id} <- ${source.repo}@${source.revision} (benign, FN-mine gate only)`);
+  const licenseLine = await checkedLicense(source);
+  const candidates = await plan.collect();
+  const rows = withinBudget(stratifiedSample(candidates, MAX_ROWS), MAX_CORPUS_BYTES);
+  console.log(`[sync]   ${candidates.length} rows pass the filter, ${rows.length} kept`);
+  if (!write) return;
+  const meta: BenignDocMeta = { source, retrieved, filter: plan.filter, notes: plan.notes };
+  const dir = join(REPO_ROOT, dirname(source.path));
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(REPO_ROOT, source.path), `${JSON.stringify(benignDocument(rows, meta), null, 2)}\n`);
+  writeFileSync(join(dir, 'SOURCE.md'), benignSourceMarkdown(meta, licenseLine, plan.files, rows.length));
+  if (source.license === 'apache-2.0') writeFileSync(join(dir, APACHE_2_0_FILE), await apacheLicenseText());
+  console.log(`[sync]   wrote ${dirname(source.path)}/`);
+}
+
 async function syncOne(plan: SourcePlan, write: boolean, retrieved: string): Promise<void> {
   const { dataset } = plan;
   console.log(`[sync] ${dataset.id} <- ${dataset.repo}@${dataset.revision}`);
@@ -228,13 +348,18 @@ async function main(): Promise<void> {
   const { values } = parseArgs({
     options: { write: { type: 'boolean', default: false }, source: { type: 'string' } },
   });
-  const wanted = values.source ? SOURCES.filter((s) => s.dataset.id === values.source) : SOURCES;
-  if (wanted.length === 0) {
-    throw new Error(`unknown source "${values.source}" -- known: ${SOURCES.map((s) => s.dataset.id).join(', ')}`);
+  const pick = <T>(plans: readonly T[], id: (p: T) => string): readonly T[] =>
+    values.source ? plans.filter((p) => id(p) === values.source) : plans;
+  const attacks = pick(SOURCES, (p) => p.dataset.id);
+  const benign = pick(BENIGN_SOURCES, (p) => p.source.id);
+  if (attacks.length + benign.length === 0) {
+    const known = [...SOURCES.map((s) => s.dataset.id), ...BENIGN_SOURCES.map((s) => s.source.id)];
+    throw new Error(`unknown source "${values.source}" -- known: ${known.join(', ')}`);
   }
   console.log(`=== sync-agent-attack-corpora.ts (${values.write ? 'WRITE' : 'dry-run'}) ===`);
   const retrieved = new Date().toISOString().slice(0, 10);
-  for (const plan of wanted) await syncOne(plan, values.write === true, retrieved);
+  for (const plan of attacks) await syncOne(plan, values.write === true, retrieved);
+  for (const plan of benign) await syncBenign(plan, values.write === true, retrieved);
 }
 
 main().catch((err) => {
