@@ -83,6 +83,11 @@
  *   ... --source hackaprompt    only this cluster source (hackaprompt|promptinject|garak)
  *   ... --include-quarantined   also read quarantined sources (garak); supervised runs only
  *   ... --report /tmp/r.json    write a run-summary JSON (for the workflow)
+ *   ... --exclude-from FILE     never author a cluster listed in FILE (one proposal
+ *                               path per line). The workflow writes it with
+ *                               scripts/semantic-authored-history.ts: every cluster
+ *                               this lane has authored, including rules a closed PR
+ *                               or a reviewer threw away.
  *
  * ENV
  *   CLAUDE_CODE_OAUTH_TOKEN  preferred — routes through the local `claude` CLI and spends
@@ -135,6 +140,7 @@ export {
   type FindCandidatesOptions,
 } from "./lib/semantic-clusters.js";
 export { buildSemanticRule, earnedActions } from "./lib/semantic-rule-builder.js";
+import { readExcludeList } from "./lib/semantic-exclusions.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -160,6 +166,7 @@ const SOURCE_FILTER = opt("--source");
 const INCLUDE_QUARANTINED = flag("--include-quarantined");
 const MAX_PROMOTE = opt("--max") ? parseInt(opt("--max")!, 10) : DEFAULT_MAX;
 const REPORT_PATH = opt("--report");
+const EXCLUDE_FROM = opt("--exclude-from");
 const DRY_RUN = !WRITE;
 
 /**
@@ -193,6 +200,22 @@ export function excludeAuthored<T extends { proposalRel: string }>(
   const alreadyAuthored: T[] = [];
   for (const c of candidates) (authored.has(c.proposalRel) ? alreadyAuthored : fresh).push(c);
   return { fresh, alreadyAuthored };
+}
+
+/**
+ * Split the clusters found into the ones to author, the ones whose rule is in
+ * the tree, and the ones authored before whose rule is gone (a rolling PR closed
+ * without merging, a rule a reviewer deleted). The tree alone forgets the last
+ * kind and hands those clusters straight back. Order is kept.
+ */
+export function selectCandidates<T extends { proposalRel: string }>(
+  found: T[],
+  inTree: Set<string>,
+  authoredEver: Set<string>,
+): { fresh: T[]; alreadyAuthored: T[]; authoredBefore: T[] } {
+  const { fresh: notInTree, alreadyAuthored } = excludeAuthored(found, inTree);
+  const { fresh, alreadyAuthored: authoredBefore } = excludeAuthored(notInTree, authoredEver);
+  return { fresh, alreadyAuthored, authoredBefore };
 }
 
 function loadAuthoredClusters(): Set<string> {
@@ -448,6 +471,7 @@ interface RunInputs {
   readonly candidatesTotal: number;
   readonly skipped: readonly Skip[];
   readonly alreadyAuthored: number;
+  readonly authoredBefore: number;
 }
 
 function buildSummary(inputs: RunInputs, outcomes: readonly Outcome[]) {
@@ -464,6 +488,7 @@ function buildSummary(inputs: RunInputs, outcomes: readonly Outcome[]) {
     skipped_out_of_scope: inputs.skipped.length,
     skipped_quarantined: inputs.skipped.filter((s) => s.reason === QUARANTINE_REASON).length,
     skipped_already_authored: inputs.alreadyAuthored,
+    skipped_authored_before: inputs.authoredBefore,
     promoted: count((o) => o.kind === "promoted"),
     routed_to_human: count((o) => o.kind === "routed"),
     errors: count((o) => o.kind === "error"),
@@ -491,6 +516,7 @@ function reportSummary(summary: Summary): void {
       routed_to_human: summary.routed_to_human,
       skipped_out_of_scope: summary.skipped_out_of_scope,
       skipped_already_authored: summary.skipped_already_authored,
+      skipped_authored_before: summary.skipped_authored_before,
       errors: summary.errors,
       errors_infrastructure: summary.errors_infrastructure,
     })}`,
@@ -553,8 +579,15 @@ async function main(): Promise<void> {
     includeQuarantined: INCLUDE_QUARANTINED,
   });
   // Dedupe before capping. Slicing first would spend the whole --max budget
-  // on clusters that already have a rule and author nothing new.
-  const { fresh: candidates, alreadyAuthored } = excludeAuthored(found, loadAuthoredClusters());
+  // on clusters that already have a rule and author nothing new. A cluster
+  // authored in an earlier rolling PR that was closed or had the rule removed
+  // (--exclude-from, written by the workflow) is not authored again.
+  const authoredEver = EXCLUDE_FROM ? readExcludeList(EXCLUDE_FROM) : new Set<string>();
+  const { fresh: candidates, alreadyAuthored, authoredBefore } = selectCandidates(
+    found,
+    loadAuthoredClusters(),
+    authoredEver,
+  );
   const benignSamples = loadBenignCorpus();
   const foreign = loadForeignRules();
   console.log(`[author-semantic] llm backend: ${describeBackend()}`);
@@ -576,6 +609,7 @@ async function main(): Promise<void> {
       candidatesTotal: candidates.length,
       skipped,
       alreadyAuthored: alreadyAuthored.length,
+      authoredBefore: authoredBefore.length,
     },
     outcomes,
   );
