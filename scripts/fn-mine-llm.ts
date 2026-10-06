@@ -201,7 +201,7 @@ ${referenceYaml}
 --- END REFERENCE ---
 
 Requirements:
-- detection.conditions must include EXACTLY the given gated regex verbatim (field: content, operator: regex) — do not alter it.
+- detection.conditions must be EXACTLY ONE condition: the given gated regex verbatim (field: content, operator: regex), condition: any. Do not copy the reference rule's conditions and do not alter the regex; the file is rewritten to exactly that condition anyway.
 - test_cases.true_positives: 2-3 of the given real FN attack excerpts, copied VERBATIM. Each is a JSON string that the gated regex matches; a JSON string is a valid YAML double-quoted scalar, so write it as given. Do not shorten or reword it: the regex must still match it.
 - test_cases.true_negatives: 3-4 benign texts you write that do NOT match the given regex (verify mentally before including).
 - references use REAL valid ids: owasp_llm and owasp_agentic as BARE ids, no title (e.g. "LLM01:2025", "ASI01:2026"; pick ones fitting the technique); mitre_atlas e.g. "AML.T0051 - LLM Prompt Injection" or "AML.T0054 - LLM Jailbreak".
@@ -239,10 +239,11 @@ function slugify(s: string): string {
 
 /**
  * Write the model's rule as the PR's checks require it (finalizeAuthoredRule:
- * status, wild_fp_rate, OWASP ids). Returns why it could not, for the
- * corrective retry, or null once written.
+ * status, wild_fp_rate, OWASP ids) and with detection set to exactly the gated
+ * regex, whatever conditions the model copied or altered. Returns why it could
+ * not, for the corrective retry, or null once written.
  */
-function writeAuthoredRule(fullPath: string, text: string, category: ATRCategory, allowlists: OwaspAllowlists): string | null {
+function writeAuthoredRule(fullPath: string, text: string, c: GatedCandidate, allowlists: OwaspAllowlists): string | null {
   let doc: unknown;
   try {
     doc = yaml.load(text);
@@ -250,7 +251,8 @@ function writeAuthoredRule(fullPath: string, text: string, category: ATRCategory
     return `the output is not valid YAML: ${e instanceof Error ? e.message : String(e)}`;
   }
   if (!doc || typeof doc !== 'object' || Array.isArray(doc)) return 'the output is not a single YAML mapping';
-  fs.writeFileSync(fullPath, yaml.dump(finalizeAuthoredRule(doc as Record<string, unknown>, category, allowlists), RULE_YAML_OPTIONS));
+  const category = c.category as ATRCategory; // checked by isRuleCategory in the gate
+  fs.writeFileSync(fullPath, yaml.dump(finalizeAuthoredRule(doc as Record<string, unknown>, category, allowlists, c.regex), RULE_YAML_OPTIONS));
   return null;
 }
 
@@ -677,13 +679,11 @@ async function main(): Promise<void> {
     fs.mkdirSync(path.dirname(fullPath), { recursive: true });
 
     console.log(`[fn-mine] authoring ${id} (${c.cluster}, recovers=${c.recovers}, heldOut=${c.heldOutRecovers})...`);
-    const category = c.category as ATRCategory; // checked by isRuleCategory in the gate
-    let failure =
-      writeAuthoredRule(fullPath, await authorRule(id, c, referenceYaml, model), category, allowlists) ?? selfTest(file);
+    let failure = writeAuthoredRule(fullPath, await authorRule(id, c, referenceYaml, model), c, allowlists) ?? selfTest(file);
     if (failure) {
       console.log(`[fn-mine]   self-test failed, one corrective retry for ${id}...`);
       failure =
-        writeAuthoredRule(fullPath, await authorRule(id, c, referenceYaml, model, failure), category, allowlists) ??
+        writeAuthoredRule(fullPath, await authorRule(id, c, referenceYaml, model, failure), c, allowlists) ??
         selfTest(file);
     }
     if (failure) {
