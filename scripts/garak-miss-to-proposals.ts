@@ -53,6 +53,7 @@
  *   ... --report data/garak-benchmark/garak-full-report.json   # input report path
  *   ... --max-tp 40                                            # cap true_positives per family
  *   ... --out proposals/garak-clusters                         # output dir
+ *   ... --baseline-ref origin/garak-miss-bridge/rolling        # compare with the open PR's text
  *
  * EXIT CODES
  *   0 success (wrote / would write >=0 proposals)
@@ -60,9 +61,10 @@
  *   2 report present but contained zero in-scope agent misses (nothing to do)
  */
 
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 
@@ -171,6 +173,7 @@ const WRITE = flag("--write");
 const REPORT_PATH = resolve(opt("--report") ?? DEFAULT_REPORT);
 const OUT_DIR = resolve(opt("--out") ?? DEFAULT_OUT);
 const MAX_TP = opt("--max-tp") ? Math.max(MIN_TP, parseInt(opt("--max-tp")!, 10)) : DEFAULT_MAX_TP;
+const BASELINE_REF = opt("--baseline-ref");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -394,12 +397,57 @@ export function buildProposalDoc(
   };
 }
 
+// Top-level `date` of a proposal (YAML) or of the manifest (2-space JSON).
+const TOP_LEVEL_DATE = /^(?:date|  "date"): "?(\d{4}-\d{2}-\d{2})/m;
+
+/**
+ * The text to write over a committed proposal or manifest. The garak corpus is
+ * a frozen snapshot, so most runs find the same misses and their output differs
+ * from the committed files only in the run date stamped into them. Rewriting
+ * them then handed the rolling PR a diff of nothing but dates every week. Keep
+ * the committed text unless something besides the date changed.
+ */
+export function keepUnlessChanged(existing: string | undefined, fresh: string, freshDate: string): string {
+  const oldDate = existing === undefined ? undefined : TOP_LEVEL_DATE.exec(existing)?.[1];
+  if (existing === undefined || oldDate === undefined || oldDate === freshDate) return fresh;
+  return existing.replaceAll(oldDate, freshDate) === fresh ? existing : fresh;
+}
+
+/**
+ * The text a fresh proposal or manifest is compared with. While the rolling PR
+ * is open its head is the baseline: a proposal that PR adds is missing from
+ * main or differs there, so compared with main it was rewritten with each new
+ * run date and the PR force-pushed with nothing but dates while it waited for
+ * review. A file the baseline lacks falls back to the checked-out copy.
+ */
+export function baselineText(file: string, ref: string | undefined, repoRoot: string = REPO_ROOT): string | undefined {
+  if (ref !== undefined) {
+    const shown = spawnSync("git", ["show", `${ref}:${relative(repoRoot, file)}`], { cwd: repoRoot, encoding: "utf-8" });
+    if (shown.status === 0) return shown.stdout;
+  }
+  return existsSync(file) ? readFileSync(file, "utf-8") : undefined;
+}
+
+/** True when `ref` names a commit; a baseline that does not resolve must not pass silently. */
+export function refResolves(ref: string, repoRoot: string = REPO_ROOT): boolean {
+  if (ref.startsWith("-")) return false;
+  return spawnSync("git", ["rev-parse", "--verify", "--quiet", `${ref}^{commit}`], { cwd: repoRoot }).status === 0;
+}
+
+function writeUnlessDateOnly(file: string, fresh: string, freshDate: string): void {
+  writeFileSync(file, keepUnlessChanged(baselineText(file, BASELINE_REF), fresh, freshDate), "utf-8");
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 function main(): number {
   if (!existsSync(REPORT_PATH)) {
     console.error(`[fatal] garak report not found: ${REPORT_PATH}`);
+    return 1;
+  }
+  if (BASELINE_REF !== undefined && !refResolves(BASELINE_REF)) {
+    console.error(`[fatal] --baseline-ref does not name a commit: ${BASELINE_REF}`);
     return 1;
   }
   let report: GarakReport;
@@ -461,7 +509,7 @@ function main(): number {
 
     if (WRITE) {
       if (!existsSync(OUT_DIR)) mkdirSync(OUT_DIR, { recursive: true });
-      writeFileSync(fileAbs, ymlOut, "utf-8");
+      writeUnlessDateOnly(fileAbs, ymlOut, reportDate);
     }
 
     manifest.push({
@@ -500,7 +548,7 @@ function main(): number {
 
   if (WRITE) {
     if (!existsSync(OUT_DIR)) mkdirSync(OUT_DIR, { recursive: true });
-    writeFileSync(join(OUT_DIR, "cluster-manifest.json"), JSON.stringify(manifestDoc, null, 2) + "\n", "utf-8");
+    writeUnlessDateOnly(join(OUT_DIR, "cluster-manifest.json"), JSON.stringify(manifestDoc, null, 2) + "\n", reportDate);
   }
 
   console.log(

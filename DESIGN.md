@@ -1,5 +1,18 @@
 # ATR — Agent Threat Rules: Design System
 
+**Scope: this is the design system for the public website (agentthreatrule.org)
+— visual language, colour, typography, layout, and the narrative copy for each
+page section. It is not a software architecture document; for how the detection
+engine and rule schema are built, see [`spec/atr-schema.yaml`](spec/atr-schema.yaml)
+and the README.**
+
+**Rule for every number on this page:** site statistics are pulled live from
+`stats.ts` / [`data/stats.json`](data/stats.json) at build time. The figures
+written into the copy examples below are illustrative placeholders showing
+*shape and formatting only* — they are not a source of truth and must never be
+hardcoded into the site. Rule counts move daily. Before any figure ships in
+public copy, check it against `data/stats.json` and the README evaluation table.
+
 ## 1. VISUAL THEME & ATMOSPHERE
 
 ATR's design philosophy centers on "cold authority." The site is a technical standard's public face, not a product marketing page, not a dashboard, not a docs site. It exists to make one statement: AI agents are under attack, and ATR is the detection standard the industry is converging on.
@@ -69,11 +82,11 @@ No gradients. Period. Depth is achieved through whitespace, typography scale, an
 |------|------|------|--------|-------------|----------------|-------|-------|
 | Hero Statement | Inter Tight | clamp(36px, 6vw, 80px) | 900 | 1.05 | -3px | Ink Black / Stone | "Now we protect agents" in Ink Black, "We used to protect people" in Stone |
 | Section Heading | Inter Tight | clamp(28px, 4vw, 48px) | 800 | 1.1 | -2px | Ink Black | One per viewport section |
-| Section Label | JetBrains Mono | 12px | 500 | 1.0 | 3px | Stone | UPPERCASE, above section headings. "WHAT ATR DETECTS", "ALREADY IN PRODUCTION" |
+| Section Label | JetBrains Mono | 12px | 500 | 1.0 | 3px | Stone | UPPERCASE, above section headings. "WHAT ATR DETECTS", "MERGED UPSTREAM" |
 | Subheading | Inter Tight | 20px | 600 | 1.3 | -0.5px | Ink Black | Card titles, subsection headers |
 | Body | Inter | 16px | 400 | 1.7 | 0 | Graphite | Paragraph text, descriptions |
 | Body Small | Inter | 14px | 400 | 1.6 | 0 | Stone | Card descriptions, metadata |
-| Data Large | JetBrains Mono | clamp(36px, 5vw, 64px) | 700 | 1.0 | -1px | Ink Black | Big stats: "100", "99.7%", "<5ms" |
+| Data Large | JetBrains Mono | clamp(36px, 5vw, 64px) | 700 | 1.0 | -1px | Ink Black | Big stats: "100", "10/10", "<5ms" |
 | Data Unit | JetBrains Mono | 0.4em of parent | 400 | 1.0 | 0 | Stone | Units after big stats: "rules", "%", "ms" |
 | Data Inline | JetBrains Mono | 14px | 400 | 1.0 | 0 | Ink Black | Rule IDs, inline stats, code |
 | Nav Item | Inter | 14px | 500 | 1.0 | 0.5px | Ink Black | Navigation labels |
@@ -81,10 +94,10 @@ No gradients. Period. Depth is achieved through whitespace, typography scale, an
 | Badge | JetBrains Mono | 11px | 600 | 1.0 | 0.5px | Semantic color | Severity badges, status labels, UPPERCASE |
 
 ### Typography Principles
-- **Monospace for every number.** This is the rule. "108 rules" uses JetBrains Mono for "108" and Inter for "rules." This creates visual rhythm that says "we measured this precisely."
+- **Monospace for every number.** This is the rule. When the live rule count renders as `<count> rules`, the numeral uses JetBrains Mono and the word "rules" uses Inter. This creates visual rhythm that says "we measured this precisely."
 - **Weight contrast, not size contrast.** Hero is 900 weight. Body is 400. The difference in authority comes from weight, not from making things bigger.
 - **Negative letter-spacing at display sizes.** -3px on hero, -2px on section headings. Creates density and gravitas. Normal spacing at body size for readability.
-- **UPPERCASE monospace for section labels.** "WHAT ATR DETECTS", "THE NUMBERS", "ALREADY IN PRODUCTION" — this is the intelligence briefing aesthetic. Sparse, formatted, classified-document-feeling.
+- **UPPERCASE monospace for section labels.** "WHAT ATR DETECTS", "THE NUMBERS", "MERGED UPSTREAM" — this is the intelligence briefing aesthetic. Sparse, formatted, classified-document-feeling.
 
 ---
 
@@ -198,7 +211,7 @@ Each major section occupies approximately one viewport height. The scroll rhythm
 | 1. The Shift | Hero statement + stats + CTA | 100vh | Paper White |
 | 2. The Threat | Big threat number + narrative | 100vh | Paper White |
 | 3. The Numbers | 6-cell data grid | 100vh | Ash |
-| 4. The Categories | 8 threat categories | auto (taller) | Paper White |
+| 4. The Categories | threat categories (count from stats.ts) | auto (taller) | Paper White |
 | 5. The Proof | "Cisco ships ATR" statement | 100vh | Paper White |
 | 6. The Standards | 4-column coverage scores | 80vh | Ash |
 | 7. The Future | Crystallization + AI-native contribution | 100vh | Paper White |
@@ -290,7 +303,7 @@ No shadows. ATR communicates hierarchy through:
 - Use rounded corners beyond 2px — angular geometry from the logo is the design language
 - Add animations for the sake of movement — the only animation is a one-time count-up on data entry into viewport
 - Use more than one chromatic color (Signal Blue) — monochrome + one accent is the rule
-- Show the PanGuard name, logo, or brand anywhere — ATR is vendor-neutral
+- Show any vendor's name, logo, or brand as ATR's own — ATR is an independent, vendor-neutral standard, and no company's branding belongs on it. Naming an organisation whose open-source repo merged a PR is a factual credit and is fine; presenting any vendor as ATR's owner, sponsor or parent is not.
 - Use emojis, icons from icon libraries, or decorative illustrations — the logo mark is the only graphic element
 - Make the site feel like a docs site (sidebar nav, breadcrumbs, version selector) — it's a cinematic narrative
 - Add a blog, changelog, or news section — if it can go stale, it undermines the standard's authority
@@ -356,18 +369,41 @@ Below: narrative paragraph about the attack surface.
 
 **Scene 3 — The Numbers:**
 6-cell grid. Each cell: one big monospace number + one description line.
-Live values from stats.ts (current: 113 rules / 99.6% MCP precision / 100% SKILL.md recall / 96,096 skills scanned / 10/10 OWASP Agentic / 91.8% SAFE-MCP)
+All six values are pulled live from stats.ts — never hardcoded. The cells are:
+rule count, SKILL.md benchmark recall, skills scanned, OWASP Agentic coverage
+(10/10), SAFE-MCP coverage (78/85), and one benchmark recall figure from the
+README evaluation table. Do not put a false-positive or precision rate in this
+grid: the lane FP rates are withdrawn and not citable, and a bare "precision"
+number with no corpus attached is exactly the kind of claim this project has had
+to retract.
 
 **Scene 4 — The Categories:**
 "What ATR detects."
-Responsive grid (1/2/3 cols) of 8 threat categories. Each: name + count + one-line description. Current slugs: prompt-injection, tool-poisoning, skill-compromise, context-exfiltration, agent-manipulation, privilege-escalation, excessive-autonomy, model-level-attacks (merged from model-abuse + data-poisoning).
+Responsive grid (1/2/3 cols) of the threat categories. Each: name + count +
+one-line description. There are ten category directories under `rules/`
+(`ls rules/` is the live list): prompt-injection, tool-poisoning,
+skill-compromise, context-exfiltration, agent-manipulation,
+privilege-escalation, excessive-autonomy, model-abuse, data-poisoning,
+model-security. If the site merges any of these for presentation, the merge
+happens in the view layer and the underlying counts still come from stats.ts.
 
 **Scene 5 — The Proof:**
-"Cisco AI Defense ships 34 ATR rules as upstream."
-The story: engineer submitted PR, reviewed, merged in 3 days. Link to PR #79.
+"ATR rules ship inside Cisco's open-source skill scanner."
+The story: we submitted a PR to the `cisco-ai-defense/skill-scanner` repository;
+their maintainers reviewed and merged it. Link to PR #79.
+
+**Copy boundary — do not overstate this.** The merge is into an open-source
+scanner repository under Cisco's GitHub org. It is **not** a shipment inside the
+Cisco AI Defense commercial product, and the site must never say "shipped in
+Cisco AI Defense", "in Cisco AI Defense production", or imply a vendor
+endorsement or partnership. Write what is verifiable: we sent a PR, they merged
+it. Same discipline for every other org in the prove-points table.
 
 **Scene 6 — The Standards:**
-4-column row: OWASP 10/10 / SAFE-MCP 91.8% / AST10 7/10 / PINT-format F1 77.3
+4-column row: OWASP Agentic 10/10 · SAFE-MCP 78/85 · AST10 7/10 · one
+version-pinned benchmark figure pulled from stats.ts. Whatever benchmark cell is
+shown must carry its ATR version and measurement date, as the README table does
+— an unpinned benchmark number is not publishable.
 
 **Scene 7 — The Future (AI-Native Contribution + Crystallization):**
 "ATR rules don't have to be written by hand."
@@ -379,40 +415,44 @@ This is the key differentiator — no other detection standard has automated rul
 "Integrate ATR."
 `npm install -g agent-threat-rules`
 Four paths: TypeScript, Python, Raw YAML, SIEM converters.
-"The same path Cisco walked."
+"The same path our ecosystem contributors walked."
 
 ### All Prove Points (must appear on site)
 
+Every row's `Data` column is a **claim that must be re-verified before it ships**,
+against `data/stats.json`, `ADOPTERS.md` (the source of truth for who actually
+adopted ATR, with PR evidence), or the README evaluation table. Counts marked
+"live" move on their own and must be bound to stats.ts, not typed into copy.
+
 | Prove Point | Where | Data |
 |-------------|-------|------|
-| Cisco AI Defense merge | Scene 5 (hero proof) + /integrate | PR #79, 1,272 additions, 34 rules |
-| Cisco rule-packs CLI | Scene 5 | PR #80, built specifically for ATR |
-| OWASP Agentic Top 10 merge | Scene 6 + /coverage | PR #14, 10/10 categories |
-| SAFE-MCP coverage | Scene 6 + /coverage | 78/85 techniques, 91.8% |
+| `cisco-ai-defense/skill-scanner` merge | Scene 5 (hero proof) + /integrate | PR #79 merged. Describe as an open-source repo merge, never as a Cisco product shipment. |
+| Cisco rule-packs CLI | Scene 5 | PR #80 |
+| OWASP Agentic Top 10 coverage | Scene 6 + /coverage | 10/10 categories — a *mapping* ATR maintains, not an OWASP endorsement or an official OWASP merge. Do not imply either. |
+| SAFE-MCP coverage | Scene 6 + /coverage | 78/85 techniques (conservative lower bound) |
 | OWASP AST10 coverage | Scene 6 + /coverage | 7/10, 3 are process-level |
-| PINT-format corpus (self-built) | Scene 3 + /research | 850 samples, 99.7% precision, 63.2% recall, F1 77.3 |
-| ClawHub full scan | Scene 2 + /research | 36,394 skills, 182 CRITICAL, 1,124 HIGH |
-| Skills.sh crawl | /research | 91,226 skills from 124 publishers |
-| npm downloads | Footer or Scene 3 | 23,000+ monthly across all packages |
+| PINT-format corpus (self-built) | Scene 3 + /research | 850 samples. Pull recall/precision/F1 live from the README table with the ATR version and measurement date attached. Not a run of Lakera's official private PINT benchmark — say so. |
+| Wild scan | Scene 2 + /research | 101,280 skills scanned, 1,434 flagged. These two are the only citable wild-scan figures; earlier scan totals and "confirmed malware" counts are frozen and must not be used. |
+| npm downloads | Footer or Scene 3 | live — query npm, do not hardcode |
 | Zenodo paper | /research | DOI 10.5281/zenodo.19178002 |
-| CVE mappings | /rules | 13 CVEs across 16 rules |
-| Ecosystem PRs | /contribute or footer | 11 submitted, 3 merged, covering 90K+ GitHub stars |
+| CVE mappings | /rules | live — count from the rules' `references.cve` fields |
+| Ecosystem PRs | /contribute or footer | live — `ADOPTERS.md` is the source of truth; a merged PR is not proof the integration is still present, so re-verify before publishing |
 | Threat Cloud crystallization | Scene 7 + /contribute | LLM auto-generates rule proposals from new attacks |
 | Five-tier architecture | /research | Tier 0-2 shipped, Tier 2.5-4 roadmap |
 
 ### Example Component Prompts
 
 **Hero Section:**
-"Create a full-viewport hero on Paper White (#FAFAF8). Center the ATR logo mark at top (the geometric A with speed lines, 80px height). Below: 'We used to protect people.' in Inter Tight 80px weight 900 color Stone (#6B6B76). Next line: 'Now we protect agents.' in Inter Tight 80px weight 900 color Ink Black (#0B0B0F). Below: three stats in JetBrains Mono — pull live values from stats.ts (e.g. '113 rules', '8 categories', '99.6% precision') separated by centered dots. Two buttons: primary Signal Blue 'Integrate ATR' and secondary bordered 'Explore Rules'. Both 2px border-radius."
+"Create a full-viewport hero on Paper White (#FAFAF8). Center the ATR logo mark at top (the geometric A with speed lines, 80px height). Below: 'We used to protect people.' in Inter Tight 80px weight 900 color Stone (#6B6B76). Next line: 'Now we protect agents.' in Inter Tight 80px weight 900 color Ink Black (#0B0B0F). Below: three stats in JetBrains Mono — pull live values from stats.ts (rule count, category count, and one version-pinned coverage figure such as '10/10 OWASP Agentic') separated by centered dots. Do not hardcode these and do not use a bare precision or false-positive percentage here. Two buttons: primary Signal Blue 'Integrate ATR' and secondary bordered 'Explore Rules'. Both 2px border-radius."
 
 **Numbers Grid:**
-"Build a 3-column grid on Ash (#F3F3F0) background with 2px Paper White gaps between cells. Each cell: big number in JetBrains Mono 64px weight 700 Ink Black, unit text in JetBrains Mono 24px weight 400 Stone, description in Inter 14px weight 400 Stone below. Pull live values from stats.ts — current cells: rules count, MCP precision, SKILL.md recall, skills scanned (mega scan total), OWASP Agentic 10/10, SAFE-MCP 91.8%."
+"Build a 3-column grid on Ash (#F3F3F0) background with 2px Paper White gaps between cells. Each cell: big number in JetBrains Mono 64px weight 700 Ink Black, unit text in JetBrains Mono 24px weight 400 Stone, description in Inter 14px weight 400 Stone below. Pull live values from stats.ts — the six cells are those listed in Scene 3 above: rule count, SKILL.md benchmark recall, skills scanned, OWASP Agentic 10/10, SAFE-MCP 78/85, and one version-pinned benchmark recall figure. No precision or false-positive percentage in this grid, per the Scene 3 boundary."
 
 **Category Grid:**
-"Create a 3-column grid with 1px Fog (#E8E8E5) borders between cells, on Paper White. Each cell: category name in Inter Tight 15px weight 600 Ink Black, rule count in JetBrains Mono 12px Signal Blue (#2563EB), one-line description in Inter 13px Stone. Nine cells for nine threat categories. Hover: border-color transitions to Stone. Sharp corners everywhere."
+"Create a 3-column grid with 1px Fog (#E8E8E5) borders between cells, on Paper White. Each cell: category name in Inter Tight 15px weight 600 Ink Black, rule count in JetBrains Mono 12px Signal Blue (#2563EB), one-line description in Inter 13px Stone. One cell per category directory under `rules/` (ten as of 2026-09-22 — bind the list to stats.ts rather than hardcoding a cell count). Hover: border-color transitions to Stone. Sharp corners everywhere."
 
 **Proof Scene:**
-"Full-viewport section, centered. Small monospace label 'ALREADY IN PRODUCTION' in JetBrains Mono 12px Stone, 3px letter-spacing, uppercase. Main statement: 'Cisco AI Defense ships 34 ATR rules as upstream.' in Inter Tight 48px weight 800 Ink Black, with 'Cisco AI Defense' in Signal Blue. Below: story paragraph in Inter 16px Graphite. Below: 'View the PR on GitHub' link in JetBrains Mono 13px Signal Blue with underline on hover."
+"Full-viewport section, centered. Small monospace label 'MERGED UPSTREAM' in JetBrains Mono 12px Stone, 3px letter-spacing, uppercase. Main statement: 'ATR rules ship inside Cisco's open-source skill scanner.' in Inter Tight 48px weight 800 Ink Black, with 'open-source skill scanner' in Signal Blue. (Wording is deliberate: the merge is into the `cisco-ai-defense/skill-scanner` repo, not the Cisco AI Defense product — see the copy boundary in Scene 5.) Below: story paragraph in Inter 16px Graphite. Below: 'View the PR on GitHub' link in JetBrains Mono 13px Signal Blue with underline on hover."
 
 **Crystallization Scene:**
 "Full-viewport section. Label: 'THE FUTURE' in monospace uppercase Stone. Heading: 'ATR rules don't have to be written by hand.' in Inter Tight 48px weight 800 Ink Black. Left column: explanation of Threat Cloud crystallization — LLM analyzes new attack patterns, proposes YAML rules, community reviews and merges. Right column: four contribution paths stacked vertically, each with monospace numbering and description. Background Paper White."

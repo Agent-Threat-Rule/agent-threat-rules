@@ -1,14 +1,14 @@
 {
   "$comment": "Single source of truth for ATR project numbers. Any user-facing surface (README, CITATION.cff, panguard.ai, docs site, schema.org JSON-LD, Zenodo metadata) MUST read from this file via scripts/sync-stats.ts. Hand-edits to derived files will be overwritten on next sync. Bump version + ruleCount here, then run `npm run sync:stats`. CI does this automatically on rules-merge release. ruleCount.total counts files matching `^id: ATR-` (excludes drafts/templates); CI in publish-on-rules-merge.yml uses the identical method to avoid drift.",
-  "version": "4.0.0",
-  "previousVersion": "3.5.12",
-  "lastUpdated": "2026-08-11",
+  "version": "4.1.3",
+  "previousVersion": "4.0.0",
+  "lastUpdated": "2026-09-14",
   "ruleCount": {
-    "total": 835,
-    "effective": 828,
+    "total": 826,
+    "effective": 819,
     "inert": 7,
     "stable": 59,
-    "experimental": 769,
+    "experimental": 760,
     "draft": 5,
     "deprecated": 2,
     "comment": "total = stable + experimental + draft + deprecated. Validated by `find rules -name '*.yaml' -type f -exec grep -l '^id: ATR-' {} \\;` in scripts/sync-stats.ts. Status breakdown counted via `grep -rh '^status:' rules/ --include='*.yaml' | sort | uniq -c` (handles both quoted and unquoted YAML strings)."
@@ -73,13 +73,14 @@
     },
     "benign": {
       "lanes": {
-        "enforce": 0.24,
-        "hunt": 9
+        "enforce": null,
+        "hunt": null
       },
-      "samples": 65000,
+      "samples": null,
       "defaultLane": "hunt",
-      "source": "65K-sample benign gate (v3.5.0 detection lanes)",
-      "comment": "Lane-keyed FP rate, not a single overall figure: enforce (stable + confirm-gated rules) ~0.24% / hunt (all rules, default) ~9%."
+      "status": "withdrawn",
+      "source": "withdrawn pending re-measurement",
+      "comment": "Withdrawn 2026-09-19 and not citable. The previously published rates (enforce ~0.24% / hunt ~9%) were labelled as measured over a 65,000-sample benign gate but came from a 10,863-sample subsample; the benign corpus contained real jailbreak samples until the exclusion filter merged 2026-08-04 (#373); and the ladder producing the hunt figure depended on a file no longer in the repository. Re-measurement against the current benign corpus is pending."
     }
   },
   "ecosystem": {
@@ -96,14 +97,16 @@
   "distribution": {
     "npm": {
       "package": "agent-threat-rules",
-      "downloads30d": 23000
+      "downloads30d": null,
+      "comment": "downloads30d withdrawn 2026-09-27 and not citable, for the same reason as githubStars below: nothing writes it and nothing reads it. The previously published 23000 overstated the real figure by 57% — the npm registry reported 14,613 for 2026-08-27 to 2026-09-25. Recount rather than citing any number here: curl -s https://api.npmjs.org/downloads/point/last-month/agent-threat-rules"
     },
     "pypi": {
       "package": "pyatr",
       "downloads30d": 0
     },
     "githubMarketplace": "https://github.com/marketplace/actions/atr-scan",
-    "githubStars": 86
+    "githubStars": null,
+    "comment": "githubStars withdrawn 2026-09-25 and not citable. The previously published 86 was already in this file when it was added on 2026-05-16 and was never updated; no script or workflow writes it, and nothing in this repository reads it. For the live count see https://github.com/Agent-Threat-Rule/agent-threat-rules."
   },
   "coverage": {
     "owaspAgentic": {

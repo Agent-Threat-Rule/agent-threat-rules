@@ -1,8 +1,8 @@
 # Contributing to ATR
 
-ATR is an MIT-licensed open standard for detecting AI agent attacks — think Snort rules but for LLMs and MCP tools. 768 detection rules across 10 categories; canonical rule counts and per-lane precision/FP figures live in [`data/stats.json`](data/stats.json) and the README evaluation table. Merged into open-source repos at Microsoft, Cisco, MISP, and OWASP-community projects. When you contribute a detection rule, it ships to every downstream consumer within hours.
+ATR is an MIT-licensed open standard for detecting AI agent attacks — think Snort rules but for LLMs and MCP tools. Detection rules span 10 categories; the canonical rule count and the version-pinned benchmark table live in [`data/stats.json`](data/stats.json) and the README, which are the numbers to quote (the count moves daily, so this page does not carry one). Note that the per-lane false-positive rates once published in the README are **withdrawn and not citable** — see the lanes section there. ATR rules have been merged into open-source repos maintained by Microsoft, Cisco, MISP, and OWASP-community projects. When you contribute a detection rule, it ships to every downstream consumer of the npm package on their next update.
 
-No CLA. No telemetry. No proprietary tooling.
+No CLA. No proprietary tooling. No telemetry by default — the CLI sends nothing unless you pass `--report-to-cloud` (see the Telemetry section of the README).
 
 ---
 
@@ -23,12 +23,12 @@ You spotted an attack pattern. You have example payloads. That's enough to start
 
 3. Submit the issue.
 
-That's it. A workflow runs immediately and opens a draft PR. The proposal YAML
-is auto-generated from your examples. You do not need to clone anything.
+That's it. A maintainer reviews the issue and, if it is accepted, turns it
+into a proposal on a draft PR. You do not need to clone anything.
 
 A maintainer reviews the regex shape and runs the full quality gate before
-merging. You can stop at step 3, or check out the PR branch and write the
-regex yourself if you want to stay involved.
+merging. You can stop at step 3, or, if you want to stay involved, propose a
+regex yourself in a PR comment or in a PR of your own.
 
 ---
 
@@ -61,7 +61,14 @@ part (finding the attack) is already done.
    npx tsx scripts/check-rules-safety.ts path/to/your-rule.yaml
    ```
 
-   This checks your rule against 432 known-benign skills. Must show 0 FP.
+   This checks your rule against the committed benign skill corpus, walking
+   subdirectories. Must show 0 FP. The gate prints the sample count it used;
+   trust that number over any figure written here, and count the corpus yourself
+   rather than trusting this line:
+
+   ```bash
+   find data/skill-benchmark/benign -name '*.md' | wc -l
+   ```
 
 5. Run the test suite:
 
@@ -83,9 +90,12 @@ npx tsx scripts/next-rule-id.ts
 
 Once your issue or PR lands:
 
-1. Automated PR opens (probe path) or CI runs (direct PR path). The safety gate
-   checks 0 FP against 432 benign samples. If it fails, the PR gets the
-   `needs-human-review` label and a maintainer looks at it manually.
+1. A maintainer opens the proposal PR (probe path) or CI runs (direct PR
+   path). The CI safety gate (`validate.yml`) checks the rule files a PR adds
+   or changes under `rules/`, so a probe is gated when its proposal is
+   promoted to `rules/`. It checks 0 FP against the benign skill corpus (the
+   gate prints the sample count it used).
+   If it fails, the check fails and a maintainer looks at it manually.
 
 2. Maintainer reviews the regex. Usually one round of tightening. The benign
    corpus is the bar — the regex must not fire on clean content.
@@ -93,12 +103,14 @@ Once your issue or PR lands:
 3. PR merges. The `publish-on-rules-merge.yml` workflow runs automatically:
    patch version bump, npm publish, GitHub release.
 
-4. Downstream sync runs. Microsoft AGT, Cisco AI Defense, MISP galaxy, and OWASP
-   pull from the npm package on their regular cadence. Your rule is live in
-   production at those organizations within their next update cycle.
+4. The new version is on npm. Open-source projects that vendor ATR — including
+   repos under Microsoft, Cisco, MISP and OWASP-community orgs — pick it up
+   whenever they next sync. What ATR can promise is the publish; when and
+   whether any downstream repo updates is theirs to decide, and merging a rule
+   here is not a claim that it is running in any company's product.
 
-Typical time from probe submission to npm publish: same day or next day,
-depending on maintainer availability.
+There is no set time from probe submission to npm publish; it depends on
+maintainer availability.
 
 ---
 
@@ -115,8 +127,9 @@ Your name also appears in:
 
 - [CONTRIBUTORS.md](./CONTRIBUTORS.md)
 - Release notes for each version that includes your rule
-- Downstream at Microsoft, Cisco, OWASP, MISP — every consumer of the npm
-  package gets the YAML with your name in it
+- Downstream — every consumer of the npm package, including the open-source
+  repos under the Microsoft, Cisco, OWASP-community and MISP orgs that vendor
+  ATR, gets the YAML with your name in it
 
 If your rule maps to a CVE you discovered, `references.cve` links your work
 permanently in the rule record.
@@ -146,8 +159,9 @@ Required for any rule to merge:
 
 - At least 3 true positive test cases — real attack payloads, not synthetic
 - At least 3 true negative test cases — real benign strings, not placeholders
-- 0 false positives on the benign skill corpus, 467 samples as of ATR v4.0.0
-  (`check-rules-safety.ts`; count it with
+- 0 false positives on the benign skill corpus (`check-rules-safety.ts`, which
+  prints the sample count it used)
+  (count the directory with
   `find data/skill-benchmark/benign -name '*.md' | wc -l` rather than trusting
   this line)
 - Regex must be attack-specific. Broad patterns that match general conversation
@@ -176,11 +190,12 @@ npx agent-threat-rules validate path/to/rule.yaml
 npx agent-threat-rules test path/to/rule.yaml
 ```
 
-Rule schema: `spec/atr-schema.yaml`. Categories: `rules/prompt-injection/`,
-`rules/tool-poisoning/`, `rules/context-exfiltration/`,
-`rules/agent-manipulation/`, `rules/privilege-escalation/`,
-`rules/excessive-autonomy/`, `rules/skill-compromise/`,
-`rules/data-poisoning/`, `rules/model-security/`.
+Rule schema: `spec/atr-schema.yaml`. The ten category directories are
+`rules/prompt-injection/`, `rules/tool-poisoning/`,
+`rules/context-exfiltration/`, `rules/agent-manipulation/`,
+`rules/privilege-escalation/`, `rules/excessive-autonomy/`,
+`rules/skill-compromise/`, `rules/model-abuse/`, `rules/data-poisoning/` and
+`rules/model-security/` (`ls rules/` is the live list).
 
 ---
 

@@ -1,134 +1,147 @@
 # ATR Coverage Report
 
-Generated: 2026-03-12 | Rules: 71 (54 experimental + 17 draft) | Version: 0.4.0
+> **Status: manually maintained snapshot, last reviewed 2026-09-22.**
+> This file is **not generated** — no script writes it, so it drifts. It had
+> stood untouched since 2026-03-12, when it described a 71-rule, v0.4.0 corpus,
+> and by then every number and nearly every rule ID in it was wrong.
+>
+> Authoritative sources, in order of preference:
+>
+> | You want | Read this | Generated? |
+> |---|---|---|
+> | Live rule counts, categories, benchmarks | [`data/stats.json`](data/stats.json) | yes |
+> | OWASP Agentic Top 10 per-category rule counts | [`docs/OWASP-AGENTIC-MAPPING.md`](docs/OWASP-AGENTIC-MAPPING.md) | yes |
+> | SAFE-MCP technique coverage | [`docs/SAFE-MCP-MAPPING.md`](docs/SAFE-MCP-MAPPING.md) | yes |
+> | Version-pinned benchmark results | README §Evaluation | from `data/measurements/` |
+> | What ATR structurally cannot detect | [`LIMITATIONS.md`](LIMITATIONS.md) | no |
+>
+> Quote those. Do not quote a rule count from this page — it does not carry one.
 
-## OWASP Top 10 for Agentic Applications (2026) Coverage
+## Framework Coverage Summary
 
-| Risk | Description | ATR Rules | Status |
-|------|-------------|-----------|--------|
-| ASI01 | Agent Goal Hijack | ATR-2026-001, 002, 003, 004, 005, 020, 030, 032 | Covered |
-| ASI02 | Tool Misuse and Exploitation | ATR-2026-010, 011, 012, 013, 062, 063, 066 | Covered |
-| ASI03 | Identity and Privilege Abuse | ATR-2026-012, 021, 040, 041, 064, 074 | Covered |
-| ASI04 | Agentic Supply Chain Vulnerabilities | ATR-2026-060, 061, 065, 072, 073 | Covered |
-| ASI05 | Unexpected Code Execution | ATR-2026-010, 050, 051, 062 | Covered |
-| ASI06 | Memory and Context Poisoning | ATR-2026-002, 004, 020, 070, 075 | Covered |
-| ASI07 | Multi-Agent Manipulation | (no explicit ASI07 references found in rules) | Gap |
-| ASI08 | Agentic RAG Poisoning | (no explicit ASI08 references found in rules; ATR-2026-070 covers RAG poisoning via ASI06) | Partial |
-| ASI09 | Insufficient Logging and Monitoring | (no explicit ASI09 references found in rules) | Gap |
-| ASI10 | Rogue Agents | ATR-2026-030, 074 | Covered |
+Reviewed 2026-09-22 against the rules then on disk. Every rule in the repository
+carries at least one OWASP Agentic (`ASI`) tag, and every ASI category from
+ASI01 to ASI10 has rules mapped to it.
 
-**Coverage: 6 of 10 risks covered, 2 partial, 2 gaps.**
+| Framework | Coverage | Per-category detail |
+|---|---|---|
+| OWASP Agentic Top 10 (2026) | **10 / 10 categories** | [`docs/OWASP-AGENTIC-MAPPING.md`](docs/OWASP-AGENTIC-MAPPING.md) |
+| OWASP LLM Top 10 (2025) | **10 / 10 risks** have tagged rules | per-rule `compliance` / `tags` fields |
+| SAFE-MCP (OpenSSF) | **78 / 85 techniques** (conservative lower bound) | [`docs/SAFE-MCP-MAPPING.md`](docs/SAFE-MCP-MAPPING.md) |
+| MITRE ATLAS | referenced across the corpus | per-rule `mitre_atlas` field |
+| MITRE ATT&CK | referenced across the corpus | per-rule mapping fields |
 
-Notes:
-- ASI07 (Multi-Agent Manipulation): No rules explicitly target ASI07. Some cross-agent patterns exist under ASI01/ASI10 (ATR-2026-030, 032, 074) but multi-agent protocol-level attacks are not addressed.
-- ASI08 (Agentic RAG Poisoning): ATR-2026-070 covers textual RAG poisoning but maps to ASI06, not ASI08. Embedding-level poisoning is not covered.
-- ASI09 (Insufficient Logging and Monitoring): Out of scope for detection rules. This is an engine/platform concern.
+Reproduce the ASI verdict yourself:
 
-## OWASP LLM Top 10 (2025) Coverage
+```bash
+for i in 01 02 03 04 05 06 07 08 09 10; do
+  printf 'ASI%s: %s rules\n' "$i" "$(grep -rl "ASI$i" rules/ | wc -l)"
+done
+```
 
-| Risk | Description | ATR Rules | Status |
-|------|-------------|-----------|--------|
-| LLM01 | Prompt Injection | ATR-2026-001, 002, 003, 004, 005, 010, 011, 030, 032, 066, 070, 073, 075 | Covered |
-| LLM02 | Sensitive Information Disclosure | ATR-2026-020, 021, 075 | Covered |
-| LLM03 | Supply Chain Vulnerabilities | ATR-2026-060, 061, 062, 063, 064, 065, 070, 072, 073 | Covered |
-| LLM04 | Data and Model Poisoning | (no explicit LLM04 references found) | Gap |
-| LLM05 | Improper Output Handling | ATR-2026-010, 011, 013, 030, 060, 061, 066 | Covered |
-| LLM06 | Excessive Agency | ATR-2026-012, 013, 030, 032, 040, 041, 050, 051, 062, 063, 064, 072, 074 | Covered |
-| LLM07 | System Prompt Leakage | ATR-2026-020, 021 | Covered |
-| LLM08 | Excessive Agency (Vector Stores) | ATR-2026-070, 074 | Covered |
-| LLM09 | Misinformation | (no explicit LLM09 references found) | Gap |
-| LLM10 | Unbounded Consumption | ATR-2026-050, 051, 072 | Covered |
+Counting *rules that mention a tag* is a coarser measure than the generated
+mapping doc's parse of the `compliance` field, so treat the numbers that command
+prints as an upper bound and the generated doc as the citable figure.
 
-**Coverage: 7 of 10 risks covered, 3 gaps.**
+### A note on the category titles
 
-Notes:
-- LLM04 (Data and Model Poisoning): No rules explicitly target LLM04. ATR-2026-070 and 073 address related patterns but map to LLM01/LLM03.
-- LLM09 (Misinformation): No rules target misinformation or hallucination detection. Requires semantic analysis beyond regex.
-- Detection is regex-based; sophisticated attacks using paraphrasing or semantic manipulation may evade detection (see [LIMITATIONS.md](LIMITATIONS.md)).
+Earlier revisions of this file labelled ASI07 "Multi-Agent Manipulation", ASI08
+"Agentic RAG Poisoning" and ASI09 "Insufficient Logging and Monitoring", and
+recorded ASI07 and ASI09 as uncovered gaps. Those titles came from a draft
+taxonomy that OWASP did not ship. Under Agentic Top 10 v1.0 (December 2025) the
+categories are **ASI07 Insecure Inter-Agent Communication**, **ASI08 Cascading
+Failures** and **ASI09 Human-Agent Trust Exploitation**, and all three have
+rules. The old "6 of 10 covered, 2 partial, 2 gaps" verdict was wrong on both
+the taxonomy and the count; it is removed rather than carried forward.
 
-## CVE Coverage
+---
 
-| CVE | Description | ATR Rules |
-|-----|-------------|-----------|
-| CVE-2024-5184 | LLM prompt injection vulnerability | ATR-2026-001, 002, 003, 004 |
-| CVE-2024-3402 | LLM prompt injection bypass | ATR-2026-001, 003 |
-| CVE-2024-22524 | Indirect prompt injection via content | ATR-2026-002 |
-| CVE-2025-53773 | GitHub Copilot RCE via prompt injection | ATR-2026-001, 003 |
-| CVE-2025-32711 | System prompt leakage / indirect injection | ATR-2026-002, 004, 011, 020, 021 |
-| CVE-2026-24307 | Agent memory/context manipulation | ATR-2026-002, 020 |
-| CVE-2025-68143 | MCP tool response RCE | ATR-2026-010, 066 |
-| CVE-2025-68144 | MCP tool response injection | ATR-2026-010, 066 |
-| CVE-2025-68145 | MCP tool response exploitation | ATR-2026-010 |
-| CVE-2025-6514 | MCP malicious response | ATR-2026-010 |
-| CVE-2025-59536 | Tool output injection / hidden capability | ATR-2026-010, 011, 062 |
-| CVE-2026-21852 | MCP server compromise | ATR-2026-010 |
-| CVE-2026-0628 | Privilege escalation via agent tools | ATR-2026-040 |
+## Historical snapshot: per-rule framework tables (v0.4.0 era, 2026-03-12)
 
-**Total: 13 CVE references mapped to 16 rules.** Mappings are based on attack pattern similarity; empirical validation against CVE payloads has not been performed.
+**Do not use the rule IDs below.** They use the retired three-digit scheme
+(`ATR-2026-001`), which was replaced by the five-digit scheme
+(`ATR-2026-00001`). They also enumerate a 71-rule corpus that has since grown by
+an order of magnitude, so these tables are badly incomplete as well as
+mis-numbered. They are kept only as a record of what the early mapping work
+covered.
 
-## MITRE ATLAS Coverage
+For a live answer, read the rule's own fields:
 
-| Technique | Description | ATR Rules |
-|-----------|-------------|-----------|
-| AML.T0051 | LLM Prompt Injection | ATR-2026-001, 002, 003, 004, 005, 020, 030, 032, 074, 075 |
-| AML.T0051.000 | Direct Prompt Injection | ATR-2026-001, 004 |
-| AML.T0051.001 | Indirect Prompt Injection | ATR-2026-002, 010, 011, 066, 070, 074 |
-| AML.T0054 | LLM Jailbreak | ATR-2026-003 |
-| AML.T0053 | LLM Plugin Compromise | ATR-2026-011, 012, 050, 051, 063 |
-| AML.T0056 | LLM Meta Prompt Extraction | ATR-2026-010, 020, 061 |
-| AML.T0043 | Craft Adversarial Data | ATR-2026-005, 030, 032 |
-| AML.T0010 | ML Supply Chain Compromise | ATR-2026-060, 061, 062, 065 |
-| AML.T0040 | AI Model Inference API Access | ATR-2026-040, 041, 064 |
-| AML.T0046 | Spamming ML System with Chaff Data | ATR-2026-050, 051 |
-| AML.T0049 | Exploit Public-Facing Application | ATR-2026-013 |
-| AML.T0050 | Command and Scripting Interpreter | ATR-2026-040 |
-| AML.T0047 | ML-Enabled Product or Service | ATR-2026-041 |
-| AML.T0044 | Full ML Model Access | ATR-2026-072 |
-| AML.T0024 | Exfiltration via ML Inference API | ATR-2026-063, 072 |
-| AML.T0020 | Poison Training Data | ATR-2026-070, 073 |
-| AML.T0018 | Backdoor ML Model | ATR-2026-073 |
-| AML.T0055 | Unsecured Credentials | ATR-2026-021 |
-| AML.T0057 | LLM Data Leakage | ATR-2026-021 |
-| AML.T0052.000 | Spearphishing via Social Engineering LLM | ATR-2026-030 |
+```bash
+# every CVE referenced anywhere in the corpus
+grep -rhoE 'CVE-[0-9]{4}-[0-9]+' rules/ | sort -u
 
-## MITRE ATT&CK Coverage
+# rules mapped to a given ATLAS technique
+grep -rl 'AML.T0051' rules/
+```
 
-| Technique | Description | ATR Rules |
-|-----------|-------------|-----------|
-| T1059 | Command and Scripting Interpreter | ATR-2026-010, 012 |
-| T1071 | Application Layer Protocol | ATR-2026-010, 013 |
-| T1083 | File and Directory Discovery | ATR-2026-012 |
-| T1090 | Proxy | ATR-2026-013 |
-| T1548 | Abuse Elevation Control Mechanism | ATR-2026-040 |
-| T1611 | Escape to Host | ATR-2026-040 |
-| T1078 | Valid Accounts | ATR-2026-074 |
-| T1550 | Use Alternate Authentication Material | ATR-2026-074 |
-| T1565 | Data Manipulation | ATR-2026-070 |
-| T1565.001 | Stored Data Manipulation | ATR-2026-075 |
-| T1195 | Supply Chain Compromise | ATR-2026-060 |
+### CVE mappings (historical)
+
+| CVE | Description |
+|-----|-------------|
+| CVE-2024-5184 | LLM prompt injection vulnerability |
+| CVE-2024-3402 | LLM prompt injection bypass |
+| CVE-2024-22524 | Indirect prompt injection via content |
+| CVE-2025-53773 | GitHub Copilot RCE via prompt injection |
+| CVE-2025-32711 | System prompt leakage / indirect injection |
+| CVE-2026-24307 | Agent memory/context manipulation |
+| CVE-2025-68143 | MCP tool response RCE |
+| CVE-2025-68144 | MCP tool response injection |
+| CVE-2025-68145 | MCP tool response exploitation |
+| CVE-2025-6514 | MCP malicious response |
+| CVE-2025-59536 | Tool output injection / hidden capability |
+| CVE-2026-21852 | MCP server compromise |
+| CVE-2026-0628 | Privilege escalation via agent tools |
+
+The corpus now references far more CVEs than this table lists. Mappings are
+based on attack pattern similarity; empirical validation against live CVE
+payloads has not been performed.
+
+### MITRE ATLAS techniques (historical)
+
+AML.T0051 (LLM Prompt Injection) and its `.000` / `.001` sub-techniques,
+AML.T0054 (LLM Jailbreak), AML.T0053 (LLM Plugin Compromise), AML.T0056 (LLM
+Meta Prompt Extraction), AML.T0043 (Craft Adversarial Data), AML.T0010 (ML
+Supply Chain Compromise), AML.T0040 (AI Model Inference API Access), AML.T0046
+(Spamming ML System with Chaff Data), AML.T0049 (Exploit Public-Facing
+Application), AML.T0050 (Command and Scripting Interpreter), AML.T0047
+(ML-Enabled Product or Service), AML.T0044 (Full ML Model Access), AML.T0024
+(Exfiltration via ML Inference API), AML.T0020 (Poison Training Data),
+AML.T0018 (Backdoor ML Model), AML.T0055 (Unsecured Credentials), AML.T0057
+(LLM Data Leakage), AML.T0052.000 (Spearphishing via Social Engineering LLM).
+
+### MITRE ATT&CK techniques (historical)
+
+T1059 (Command and Scripting Interpreter), T1071 (Application Layer Protocol),
+T1083 (File and Directory Discovery), T1090 (Proxy), T1548 (Abuse Elevation
+Control Mechanism), T1611 (Escape to Host), T1078 (Valid Accounts), T1550 (Use
+Alternate Authentication Material), T1565 (Data Manipulation), T1565.001 (Stored
+Data Manipulation), T1195 (Supply Chain Compromise).
+
+---
 
 ## Known Gaps
 
-The following attack categories are **not covered** by ATR's current rule set:
+These are structural limits of pattern-based detection. They are not fixed by
+adding rules, and they do not expire the way a rule count does.
+[`LIMITATIONS.md`](LIMITATIONS.md) is the fuller treatment.
 
-### Detection Gaps
+1. **Multi-modal attacks (image-based prompt injection)** -- ATR rules operate on text content only. Attacks embedded in images, audio, or video (e.g. OCR-based prompt injection via screenshots, steganographic payloads in images sent to vision models) are not detectable with regex patterns.
 
-1. **Multi-modal attacks (image-based prompt injection)** -- ATR rules operate on text content only. Attacks embedded in images, audio, or video (e.g., OCR-based prompt injection via screenshots, steganographic payloads in images sent to vision models) are not detectable with regex patterns.
+2. **Embedding and vector poisoning attacks** -- Attacks that manipulate vector embeddings at the numerical level (e.g. adversarial perturbations to embedding vectors, cosine similarity manipulation) are outside the scope of text-based regex detection. Textual RAG poisoning is covered; embedding-level attacks are not.
 
-2. **Embedding and vector poisoning attacks** -- Attacks that manipulate vector embeddings at the numerical level (e.g., adversarial perturbations to embedding vectors, cosine similarity manipulation) are outside the scope of text-based regex detection. ATR-2026-070 covers textual RAG poisoning but not embedding-level attacks.
+3. **OAuth/SSO token theft via agent** -- ATR detects credential exposure in agent output, but coverage is thin for agents being manipulated into initiating OAuth flows, intercepting authorization codes, or abusing delegated credentials through redirect manipulation.
 
-3. **OAuth/SSO token theft via agent** -- While ATR-2026-021 detects credential exposure in agent output, there are no rules for detecting agents being manipulated into initiating OAuth flows, intercepting authorization codes, or abusing delegated credentials through redirect manipulation.
+4. **Real-time behavioral anomaly detection** -- ATR rules use static pattern matching. They cannot detect anomalies that require temporal analysis, such as unusual tool call frequency, atypical data access patterns over time, or gradual behavioral drift. That needs runtime statistical analysis, not regex.
 
-4. **Real-time behavioral anomaly detection** -- ATR rules use static pattern matching (regex). They cannot detect behavioral anomalies that require temporal analysis, such as unusual tool call frequency, atypical data access patterns over time, or gradual behavioral drift. This requires runtime statistical analysis beyond regex capabilities.
+5. **Misinformation and hallucination detection** -- Rules tagged LLM09 exist, but no rule attempts to decide whether an output is factually true. Detecting hallucination requires ground-truth comparison or semantic analysis, which pattern matching cannot do.
 
-5. **Misinformation and hallucination detection (LLM09:2025)** -- No rules target factually incorrect or fabricated outputs. Detecting hallucinations requires ground-truth comparison or semantic analysis, which is outside the scope of regex-based detection.
+6. **Logging and monitoring completeness** -- ATR defines what to detect, not how to log or monitor. Ensuring sufficient logging coverage is an engine and platform concern, not a rule concern.
 
-6. **Logging and monitoring completeness (ASI09:2026)** -- ATR defines what to detect, not how to log or monitor. Ensuring sufficient logging coverage is an engine implementation concern, not a rule concern.
+7. **Adversarial suffix attacks** -- GCG-style adversarial suffixes produce statistically random-looking token sequences that cannot be reliably matched by regex without extreme false positive rates.
 
-7. **Adversarial suffix attacks** -- GCG-style adversarial suffixes (e.g., random-looking token sequences that cause model misbehavior) produce strings that are statistically random and cannot be reliably matched by regex patterns without extreme false positive rates.
+8. **Multilingual prompt injection** -- Some obfuscation is covered (homoglyphs, encoding), but injection payloads written entirely in non-English languages are not systematically addressed. The rules are English-first.
 
-8. **Multilingual prompt injection** -- While some obfuscation is covered (homoglyphs, encoding), prompt injection payloads written entirely in non-English languages (e.g., Chinese, Arabic, Korean instruction overrides) are not systematically addressed.
+9. **Agent-to-agent protocol-level attacks** -- ATR rules inspect message content, not protocol metadata. Attacks that manipulate message routing, ordering, timing, or protocol headers in multi-agent frameworks are not covered.
 
-9. **Agent-to-agent protocol-level attacks** -- ATR rules inspect message content but not protocol metadata. Attacks that manipulate message routing, ordering, timing, or protocol headers in multi-agent communication frameworks are not covered.
-
-10. **Model denial-of-service via context stuffing** -- While ATR-2026-051 detects resource exhaustion patterns, there are no rules for detecting deliberate context window stuffing attacks designed to push the system prompt out of the context window.
+10. **Model denial-of-service via context stuffing** -- Resource exhaustion patterns are detected, but deliberate context-window stuffing designed to push the system prompt out of context is not specifically modelled.

@@ -32,7 +32,7 @@ const RED_TEAM_TOOLS: RedTeamTool[] = [
     prUrl: "https://github.com/NVIDIA/garak/pull/1676",
     hook: "The reference open-source LLM vulnerability scanner. 50+ probe families, jmartin-tech + leondz maintainers.",
     what_atr_did:
-      "Wrapped 330 ATR rules as garak detectors. PR #1676 cleared two review rounds; the in-the-wild jailbreak set (650 prompts) posted 98.0% recall, while the full 23-probe garak suite (3,475 prompts) is 38.5%. Per-family: latentinjection 34.4%, sysprompt_extraction 67.9%, dan 90.2%.",
+      "Wrapped 330 ATR rules as garak detectors. PR #1676 cleared two review rounds. Current version-pinned figures: 92.3% recall on the in-the-wild jailbreak set (650 prompts) and 57.2% on the full 23-probe garak suite (3,475 prompts), both at ATR 3.5.12, measured 2026-08-15. The per-family breakdown quoted at PR time (latentinjection 34.4%, sysprompt_extraction 67.9%, dan 90.2%) was taken on an earlier ATR version and has not been re-measured since.",
   },
   {
     name: "HarmBench",
@@ -102,7 +102,7 @@ const RED_TEAM_TOOLS: RedTeamTool[] = [
     prUrl: "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/51",
     hook: "The largest crowd-sourced prompt-injection competition corpus, 4,780 competition samples across GPT/Claude/PaLM. EMNLP 2023 best-paper nominee.",
     what_atr_did:
-      "Clustered 4,780 HackAPrompt samples by attack family. Shipped 5 ATR rules (ATR-2026-00452..00456) from dominant clusters. HackAPrompt recall: 28.6% before sprint → 66.0% after. 100% precision maintained. Each rule cites the HackAPrompt cluster in metadata_provenance.",
+      "Clustered 4,780 HackAPrompt samples by attack family. Shipped 5 ATR rules (ATR-2026-00452..00456) from dominant clusters. HackAPrompt recall moved 28.6% → 66.0% across that sprint (2026-05-12); the current version-pinned measurement is 69.6% at ATR 3.5.0, taken 2026-06-16. The corpus is 100% adversarial and carries no benign population, so it yields no precision or false-positive figure. Each rule cites the HackAPrompt cluster in metadata_provenance.",
   },
   {
     name: "NeMo-Guardrails + llm-guard + Promptfoo",
@@ -186,7 +186,7 @@ const ATTRIBUTION_STATS: AttributionStat[] = [
     number: "0 FP",
     label: "Required across the benign gate before a rule ships",
     detail:
-      "A 6-check quality gate: own-TP must match + 431 benign + 1,352 extended + 157 research-mention + 1,611 cross-rule conflict-free + own true_negative coverage. A rule that fires on the paper describing the attack does not ship. The standard would rather miss a clever variant than corrupt the corpus with a false positive — and it publishes its real per-lane figures rather than a single flattering one.",
+      "A 6-check quality gate: own-TP must match, 0 FP across the benign, extended, code and research-mention corpora, 0 cross-rule conflicts, and own true_negative coverage. The gate prints the sample counts it used on every run — those are the figures of record, not a number on this page. A rule that fires on the paper describing the attack does not ship. The standard would rather miss a clever variant than corrupt the corpus with a false positive — and it publishes its real per-lane figures rather than a single flattering one.",
   },
 ];
 
@@ -260,9 +260,9 @@ const CONTRIBUTOR_BENEFITS: ContributorBenefit[] = [
   {
     for: "Independent researchers",
     benefit:
-      "Ship a detection without hand-writing regex. Submit positive and negative examples; the deterministic auto-regex generator tries four variants against the full gate, and roughly one in three passes on the first attempt.",
+      "Ship a detection without hand-writing regex. Submit positive and negative examples; a maintainer writes the regex from them and runs it through the full gate.",
     proof:
-      "The generator clears 0 FP across 3,551 samples (benign + extended + research-mention + cross-rule) before a candidate is ever shown. The PR labels itself gate-passed and goes straight to maintainer review — the same gate every rule in the standard had to clear.",
+      "Your benign look-alikes become the rule's true negatives. The regex must match none of them and hold 0 FP on the benign corpus before it merges. That is the same gate every rule in the standard had to clear.",
   },
   {
     for: "Bug bounty hunters",
@@ -433,7 +433,7 @@ export default async function RedTeamPage({
       </section>
 
       {/* ============================================================
-          HOW IT WORKS — auto-regex highlighted
+          HOW IT WORKS — a maintainer converts the probe
       ============================================================ */}
       <section
         id="how-it-works"
@@ -448,8 +448,8 @@ export default async function RedTeamPage({
             </div>
             <h2 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] leading-[1.05] mb-12 max-w-[720px]">
               {zh
-                ? "Probe 進來、auto-regex 自動產、quality gate 全綠才 merge。"
-                : "Probe in. Auto-regex generates. Quality gate validates. Merge if green."}
+                ? "Probe 進來、maintainer 寫 regex、quality gate 全綠才 merge。"
+                : "Probe in. A maintainer writes the regex. Quality gate validates. Merge if green."}
             </h2>
           </Reveal>
 
@@ -485,18 +485,18 @@ export default async function RedTeamPage({
                 <div className="md:col-span-10">
                   <h3 className="font-display text-xl font-bold mb-3">
                     {zh
-                      ? "Auto-regex 跑 4 個變體"
-                      : "Auto-regex tries 4 variants"}
+                      ? "Maintainer 從你的樣本寫 regex"
+                      : "A maintainer writes the regex from your samples"}
                   </h3>
                   <p className="text-base text-paper/80 leading-relaxed mb-2">
                     {zh
-                      ? "Deterministic n-gram set-cover algorithm 從你的 positive examples 萃取 distinctive phrases，建 alternation regex，加 word boundary、whitespace anchor 或 co-occurrence 約束 — 每個變體跑完整 gate。"
-                      : "Deterministic n-gram set-cover algorithm extracts distinctive phrases from your positives, builds an alternation regex, tightens with word boundaries / whitespace anchors / co-occurrence constraints. Each variant runs through the full gate."}
+                      ? "Maintainer 審你的 issue，從你的 positive examples 寫 detection regex，你的 benign lookalike 則成為 true negatives。你也可以自己提 regex，留在 PR comment 或另開一條 PR。"
+                      : "A maintainer reviews your issue and writes a detection regex from your positive examples; your benign lookalikes become the true negatives. You can also propose a regex yourself, in a PR comment or in a PR of your own."}
                   </p>
                   <p className="text-sm text-paper/60">
                     {zh
-                      ? "Gate = 自己 TP 必須 100% 命中 + 1,783 樣本 benign+extended corpus 0 FP + 157 樣本 research-mention 0 FP + 跨規則 0 衝突。"
-                      : "Gate = your TPs must match 100% + 1,783-sample benign+extended corpus 0 FP + 157-sample research-mention 0 FP + 0 cross-rule conflicts."}
+                      ? "Gate = 自己 TP 必須 100% 命中 + benign、extended、code、research-mention corpus 全部 0 FP + 跨規則 0 衝突。樣本數以 gate 執行時印出的為準。"
+                      : "Gate = your TPs must match 100% + 0 FP on the benign, extended, code and research-mention corpora + 0 cross-rule conflicts. The gate prints the sample counts it used."}
                   </p>
                 </div>
               </div>
@@ -515,8 +515,8 @@ export default async function RedTeamPage({
                   </h3>
                   <p className="text-base text-paper/80 leading-relaxed mb-2">
                     {zh
-                      ? "PR 帶 gate-passed label。Maintainer 看 regex shape 是否太字面、需不需要 generalize — 通常 1-3 天 merge。沒過就留 stub，maintainer 手寫 regex（仍然會用你的 test cases）。"
-                      : "PR lands with the gate-passed label. Maintainer reviews regex shape — is it too literal, can it generalize? Usually merged within 1-3 days. If gate didn't clear, stays as stub and a maintainer hand-crafts the regex (still using your test cases as ground truth)."}
+                      ? "不論 regex 是誰寫的，都會審 regex shape 是否太字面、需不需要 generalize。Gate 沒過就留在 proposal，繼續收緊 regex（仍然會用你的 test cases）。"
+                      : "Whoever wrote the regex, it gets a shape review: is it too literal, can it generalize? If the gate doesn't clear, it stays a proposal while the regex is tightened (still using your test cases as ground truth)."}
                   </p>
                 </div>
               </div>
@@ -674,8 +674,8 @@ export default async function RedTeamPage({
           </div>
           <h2 className="font-display text-[clamp(24px,3.4vw,36px)] font-extrabold tracking-[-2px] leading-tight mb-4 max-w-[720px]">
             {zh
-              ? "5 個語料庫 · 75 條新規則 · HackAPrompt 召回率 28.6% → 66.0%"
-              : "5 corpora · 75 new rules · HackAPrompt recall 28.6% → 66.0%"}
+              ? "5 個語料庫 · 75 條新規則 · HackAPrompt 召回率 28.6% → 66.0%（2026-05-12 該次 sprint）"
+              : "5 corpora · 75 new rules · HackAPrompt recall 28.6% → 66.0% (over that 2026-05-12 sprint)"}
           </h2>
           <p className="text-base text-stone font-light max-w-[640px] mb-4">
             {zh
@@ -691,11 +691,11 @@ export default async function RedTeamPage({
         <Reveal delay={0.1}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-fog mb-8">
             {[
-              { corpus: "HackAPrompt", samples: "4,780", rules: "5", ruleIds: "ATR-2026-00452..00456", recall: "28.6% → 66.0%" },
+              { corpus: "HackAPrompt", samples: "4,780", rules: "5", ruleIds: "ATR-2026-00452..00456", recall: zh ? "28.6% → 66.0%（該 sprint 當時）" : "28.6% → 66.0% (at the time of that sprint)" },
               { corpus: zh ? "Vendor test suites" : "Vendor test suites", samples: "94", rules: "6", ruleIds: "ATR-2026-00500..00505", recall: "" },
               { corpus: "PromptInject", samples: zh ? "全語料庫" : "full corpus", rules: "4", ruleIds: "ATR-2026-00506..00509", recall: "" },
               { corpus: "OWASP LLM Top 10 + ATLAS PoCs", samples: zh ? "8 標準分類" : "8 standard categories", rules: "8", ruleIds: "ATR-2026-00510..00517", recall: "" },
-              { corpus: zh ? "Garak in-the-wild jailbreak" : "Garak in-the-wild jailbreak", samples: "650", rules: zh ? "已有覆蓋" : "existing coverage", ruleIds: "98.0% recall", recall: "" },
+              { corpus: zh ? "Garak in-the-wild jailbreak" : "Garak in-the-wild jailbreak", samples: "650", rules: zh ? "已有覆蓋" : "existing coverage", ruleIds: zh ? "92.3% recall（ATR 3.5.12，2026-08-15）" : "92.3% recall (ATR 3.5.12, 2026-08-15)", recall: "" },
             ].map((row) => (
               <div key={row.corpus} className="bg-paper p-5 md:p-6">
                 <div className="font-display text-sm font-bold text-ink mb-2">{row.corpus}</div>
@@ -914,41 +914,9 @@ export default async function RedTeamPage({
         <Reveal delay={0.2}>
           <p className="text-xs text-stone mt-6 max-w-[640px]">
             {zh
-              ? '排程從 GitHub issue / PR 同步。Merge 後從這裡移到 "Already Integrated"。Maintainer 若想插隊：security@agentthreatrule.org。'
-              : 'Schedule syncs from filed GitHub issues / PRs. Once merged, entries move to "Already Integrated" above. Maintainers wanting earlier engagement: security@agentthreatrule.org.'}
+              ? '排程從 GitHub issue / PR 同步。Merge 後從這裡移到 "Already Integrated"。Maintainer 若想插隊：adam@agentthreatrule.org。'
+              : 'Schedule syncs from filed GitHub issues / PRs. Once merged, entries move to "Already Integrated" above. Maintainers wanting earlier engagement: adam@agentthreatrule.org.'}
           </p>
-        </Reveal>
-      </section>
-
-      {/* ============================================================
-          PIPELINE PROOF — concrete: what passed last week
-      ============================================================ */}
-      <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
-        <Reveal>
-          <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-4">
-            {zh ? "Pipeline 不是 vapor" : "Pipeline is not vapor"}
-          </div>
-          <h2 className="font-display text-[clamp(24px,3.4vw,36px)] font-extrabold tracking-[-2px] leading-tight mb-8 max-w-[680px]">
-            {zh
-              ? "Auto-regex 已經對你的範本 0 FP 跨 3,551 樣本。"
-              : "Auto-regex already clears 0 FP across 3,551 samples on the sample probe."}
-          </h2>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <div className="bg-ash/40 border border-fog p-6 md:p-8 font-data text-xs md:text-sm text-ink overflow-x-auto">
-            <pre className="whitespace-pre leading-relaxed">{`$ npx tsx scripts/auto-regex.ts \\
-    --file proposals/red-team-probes/dan-trust-phrase-wrapping.proposal.yaml \\
-    --write
-
-[auto-regex] 3 TPs, 3 TNs — generating candidate regex…
-[auto-regex] gate corpora: 431 benign + 1,352 extended + 157 research + 1,611 cross-rule TNs
-[auto-regex] variant 0: 3 phrases, tp=100%, fp=0
-  (benign=0 ext=0 res=0 cross=0) — PASS
-[auto-regex] wrote regex to proposals/red-team-probes/...
-
-::auto-regex-summary::
-{ "passed": true, "variant": 0, "tp_coverage": 1, "total_fp": 0 }`}</pre>
-          </div>
         </Reveal>
       </section>
 

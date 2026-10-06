@@ -1,0 +1,93 @@
+name: npm staged publishing
+
+# Staged publishing put a version in a queue that nothing in this repository can
+# see or act on. On 2026-09-22 a publish reported success and signed provenance,
+# and the version did not appear on the registry; the account's Staged Packages
+# page showed nothing waiting; and the registry answered the next attempt with
+#
+#   npm error code E409
+#   409 Conflict - Cannot publish over previously staged version "4.1.1".
+#
+# So the version was staged, and the only surface that would admit it was an
+# error message. This workflow is the missing instrument: it lists what is
+# staged and can approve or reject it, from CI, with the credential the
+# repository already holds.
+#
+# Manual dispatch only. Approving publishes to the public registry and cannot be
+# undone after 72 hours, so it is never automatic and never runs on a push.
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'What to do'
+        required: true
+        default: list
+        type: choice
+        options: [list, approve, reject]
+      version:
+        description: 'Version, e.g. 4.1.1. Required for approve and reject; ignored for list.'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  stage:
+    name: ${{ inputs.action }} staged version
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      # Staged publishing needs npm >= 11.15.0 and the Node 22 line ships 10.x.
+      # An older client cannot see the staging queue at all, which is why a
+      # publish into it looked like a success.
+      - name: Upgrade npm
+        run: |
+          npm install -g npm@latest
+          npm --version
+
+      - name: Refuse approve or reject without a version
+        if: ${{ inputs.action != 'list' && inputs.version == '' }}
+        run: |
+          echo "action=${{ inputs.action }} needs a version input" >&2
+          exit 1
+
+      - name: Run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PKG: agent-threat-rules
+        run: |
+          set -o pipefail
+          case "${{ inputs.action }}" in
+            list)
+              npm stage list "$PKG"
+              ;;
+            approve)
+              # This is the irreversible one. Print what is about to go public
+              # before doing it, so the log carries the decision and not only
+              # its outcome.
+              npm stage list "$PKG"
+              echo "--- approving $PKG@${{ inputs.version }} ---"
+              npm stage approve "$PKG@${{ inputs.version }}"
+              ;;
+            reject)
+              npm stage list "$PKG"
+              echo "--- rejecting $PKG@${{ inputs.version }} ---"
+              npm stage reject "$PKG@${{ inputs.version }}"
+              ;;
+          esac
+
+      - name: Say what the registry actually shows now
+        if: ${{ always() && inputs.action != 'list' }}
+        run: |
+          # The registry is the only authority on whether a version shipped. A
+          # green job above is not evidence; this is.
+          V="${{ inputs.version }}"
+          echo "dist-tags: $(curl -s https://registry.npmjs.org/agent-threat-rules | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.stringify(JSON.parse(s)["dist-tags"])))')"
+          echo "version $V: HTTP $(curl -s -o /dev/null -w '%{http_code}' "https://registry.npmjs.org/agent-threat-rules/$V")"
