@@ -92,7 +92,7 @@ detection:
       description: 'Ignore-say/ignore-print with known garak rogue strings (hate-humans, kill-humans, long-prompt)'
     - field: tool_response
       operator: regex
-      value: '(?:^|\n)(?:\s*>\s*)+\s*(?:IGNORE|DISREGARD|NEW\s+INSTRUCTION|OVERRIDE|SYSTEM\s*:)'
+      value: '(?:^|\n)\s*(?:>\s*)+(?:IGNORE|DISREGARD|NEW\s+INSTRUCTION|OVERRIDE|SYSTEM\s*:)'
       description: 'Markdown blockquote-wrapped instruction override — > IGNORE / > SYSTEM: prefix used to visually isolate injection'
   condition: any
   false_positives:

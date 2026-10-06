@@ -1,5 +1,7 @@
 /* ATR Implementer Report — W3C-style formal table of organizations
- * shipping ATR in production. Self-declared via PR against ADOPTERS.md.
+ * that have merged ATR into their own public repositories. Self-declared
+ * via PR against ADOPTERS.md. A merged PR is not a statement about any
+ * vendor's commercial product.
  * Replaces the older /ecosystem marketing layout with a numbered,
  * peer-reviewable report.
  */
@@ -24,8 +26,8 @@ export async function generateMetadata({
     title: "Implementer Report — ATR",
     description:
       locale === "zh"
-        ? "已在生產環境部署 ATR 的組織。透過對 ADOPTERS.md registry 的 pull request 自我宣告。"
-        : "Organizations that have shipped ATR in production. Self-declared via pull request to the ADOPTERS.md registry.",
+        ? "已整合 ATR 的組織,每一筆的憑據都是公開 repo 裡一個已合併的 pull request。透過對 ADOPTERS.md registry 的 pull request 自我宣告。"
+        : "Organizations that have integrated ATR, each evidenced by a merged pull request in a public repository. Self-declared via pull request to the ADOPTERS.md registry.",
   };
 }
 
@@ -157,8 +159,8 @@ export default async function ImplementersPage({
         </h2>
         <p>
           {zh
-            ? "下表列出已整合或引用 ATR 的組織。符規等級欄位區分 L1 Engine(在自家偵測引擎中實際執行 ATR 規則)與 L1 Citation / L1 Galaxy(引用或編入分類法)。Engine 一行的份量最重——它代表又有一個獨立團隊只憑規格就把這個格式實作出來,而且在生產環境裡跑得起來。每一筆紀錄連結至構成公開採用證據的合併 pull request 或整合 commit;沒有任何一筆是私下宣稱的,全部可在 GitHub 上自行驗證。"
-            : "The following organizations have integrated or referenced ATR. The Conformance column distinguishes L1 Engine (ATR rules actually running inside the organization's own detection engine) from L1 Citation / L1 Galaxy (referenced or incorporated into a taxonomy). An Engine row carries the most weight — it means another independent team implemented the format from the spec alone and ran it in production. Each entry links to the merged pull request or integration commit that constitutes the public adoption record; nothing here is asserted privately — every row is verifiable on GitHub."}
+            ? "下表列出已整合或引用 ATR 的組織。符規等級欄位區分 L1 Engine(在自家偵測引擎中實際執行 ATR 規則)與 L1 Citation / L1 Galaxy(引用或編入分類法)。Engine 一行的份量最重——它代表又有一個獨立團隊只憑規格就把這個格式實作出來,而且在自家引擎裡跑得起來。每一筆紀錄連結至構成公開採用證據的合併 pull request 或整合 commit;沒有任何一筆是私下宣稱的,全部可在 GitHub 上自行驗證。"
+            : "The following organizations have integrated or referenced ATR. The Conformance column distinguishes L1 Engine (ATR rules actually running inside the organization's own detection engine) from L1 Citation / L1 Galaxy (referenced or incorporated into a taxonomy). An Engine row carries the most weight — it means another independent team implemented the format from the spec alone and ran it inside their own engine. Each entry links to the merged pull request or integration commit that constitutes the public adoption record; nothing here is asserted privately — every row is verifiable on GitHub."}
         </p>
 
         {/* Desktop / tablet table */}

@@ -474,7 +474,7 @@ failure here is a failure you did not have to wait for a runner to learn.
 | # | command | what it proves |
 | --- | --- | --- |
 | 1 | `npm run validate` | schema-valid; every required field present |
-| 2 | `npx tsx scripts/check-rules-safety.ts --file <rule>` | the six auto-merge checks: TP/TN both non-empty, author not `MiroFish Predicted`, the rule matches **its own** true-positives, 0 FP on `data/skill-benchmark/benign` (467 SKILL.md samples), 0 FP on `data/research-mentions/corpus.jsonl` (157 samples) plus the extended benign and benign-code corpora, no match on any *other* rule's true-negatives, and at most 10 new rules per PR |
+| 2 | `npx tsx scripts/check-rules-safety.ts --file <rule>` | the six auto-merge checks: TP/TN both non-empty, author not `MiroFish Predicted`, the rule matches **its own** true-positives, 0 FP on `data/skill-benchmark/benign` (every SKILL.md under it, subdirectories included), 0 FP on `data/research-mentions/corpus.jsonl` (157 samples) plus the extended benign and benign-code corpora, no match on any *other* rule's true-negatives, and at most 10 new rules per PR |
 | 3 | `npx tsx scripts/gate-rule-status.ts` | the rule can actually fire (not `status: draft`) |
 | 4 | `npx tsx scripts/gate-promotion-fp.ts --ids <file>` | 0 FP across the full 12,060-sample benign corpora |
 | 5 | `npx tsx scripts/gate-corpus-visibility.ts --verify-blind` | the 0 above is evidence rather than an unasked question |
@@ -494,8 +494,11 @@ Two notes on running these locally:
   `npm run typecheck:scripts`. A green `npm run typecheck` says nothing about a
   script you just edited, and this document's own tooling shipped a missing
   import past a green `tsc` before that was noticed.
-- `check-rules-safety.ts`'s docstring says the benign skill corpus holds 432
-  samples. It holds 467. Count it, do not read it.
+- Count the benign corpus, do not read a number about it — and prefer the gate's
+  own printed count over both. `check-rules-safety.ts` walks subdirectories as of
+  2026-09-22; before that it read only the top level, so the 35 files under
+  `benign/ninja-legit/` were in the corpus but never charged against any rule.
+  Any FP measurement taken before that date was taken over 432 samples, not 467.
 
 ---
 
@@ -662,7 +665,7 @@ for f in sorted(glob.glob('data/fn-mining/*.json')):
 "
 
 # §6 / §8 - gate populations and the maturity ladder
-find data/skill-benchmark/benign -name '*.md' | wc -l     # 467
+find data/skill-benchmark/benign -name '*.md' | wc -l     # the gate walks subdirectories too
 wc -l < data/research-mentions/corpus.jsonl               # 157
 npx tsx scripts/mine-corpus-fn.ts --corpus nemo-guardrails --no-write | grep 'Benign gate'
 python3 -c "

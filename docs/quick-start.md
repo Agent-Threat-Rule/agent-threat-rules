@@ -242,6 +242,6 @@ for (const match of matches) {
 ## Next Steps
 
 - [Rule Writing Guide](./rule-writing-guide.md) -- comprehensive guide to writing detection rules
-- [Schema Specification](./schema-spec.md) -- full ATR schema reference
+- [ATR Core Specification](../SPEC.md) -- normative rule format (fields in §5)
 - [Contribution Paths](./contribution-paths.md) -- three ways to contribute rules
 - [MiroFish Prediction Guide](./mirofish-prediction-guide.md) -- generate rules with swarm AI

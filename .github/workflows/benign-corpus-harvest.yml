@@ -85,7 +85,13 @@ jobs:
       - name: Open review PR
         if: inputs.dry_run != true
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # A PR opened with the default GITHUB_TOKEN is authored by app/github-actions, and
+          # GitHub parks every check on it at action_required forever rather than running it —
+          # deliberately, to stop workflows triggering each other. The consequence here was that
+          # this lane's PRs could never go green, so they could never be merged, so they piled up.
+          # On 2026-09-22, 64 checks across 8 branches were sitting unrun, some for 16 days.
+          # Opening with a PAT makes a real user the author, so the PR's own CI runs.
+          GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           set -eo pipefail
           # Only commit + PR if benign samples ACTUALLY changed on disk.
@@ -94,16 +100,20 @@ jobs:
             exit 0
           fi
           DATE=$(date -u +%Y-%m-%d)
-          BRANCH="benign-corpus/$DATE"
+          # One rolling branch, force-pushed each run, not one per run. The output of this
+          # lane is cumulative, so per-run branches only ever accumulated: across three lanes
+          # 18 such PRs were open on 2026-09-22, 42% of the repo's open PRs, which reads as an
+          # unmaintained project rather than as a branch-naming choice. Same fix as #587.
+          BRANCH="benign-corpus/rolling"
           # honest counts for the PR body
           ADDED=$(git diff --numstat data/benign-corpus-extended/ | awk '{a+=$1} END {print a+0}')
           git config user.name "ATR Corpus Bot"
           git config user.email "corpus-bot@agentthreatrule.org"
           git push origin --delete "$BRANCH" 2>/dev/null || true
-          git checkout -b "$BRANCH"
+          git checkout -B "$BRANCH"
           git add data/benign-corpus-extended/
           git commit -m "chore(corpus): weekly benign harvest $DATE — +$ADDED samples (arxiv/npm/pypi)"
-          git push origin "$BRANCH"
+          git push --force-with-lease origin "$BRANCH" || git push --force origin "$BRANCH"
           {
             echo "Weekly benign-corpus harvest for $DATE — +$ADDED new benign samples."
             echo ""
@@ -113,9 +123,16 @@ jobs:
             echo ""
             echo "Low-risk otherwise: this only broadens the FP test surface the maturity gate scans against — it adds no rules and blocks no traffic."
           } > /tmp/corpus-pr-body.md
-          gh pr create \
-            --base main --head "$BRANCH" \
-            --title "chore(corpus): weekly benign harvest $DATE (+$ADDED samples)" \
-            --body-file /tmp/corpus-pr-body.md \
-            --label "needs-human-review" \
-            --draft
+          # Rolling branch: reuse the open PR if there is one. Without this, the second
+          # run on the rolling branch fails because `gh pr create` refuses a duplicate.
+          EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            echo "Rolling PR #$EXISTING already open; force-pushed $BRANCH, not opening a second."
+          else
+            gh pr create \
+              --base main --head "$BRANCH" \
+              --title "chore(corpus): weekly benign harvest $DATE (+$ADDED samples)" \
+              --body-file /tmp/corpus-pr-body.md \
+              --label "needs-human-review" \
+              --draft
+          fi

@@ -13,8 +13,10 @@
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, mkdirSync, unlinkSync } from 'node:fs';
-import { resolve, join } from 'node:path';
-import { execSync } from 'node:child_process';
+import { resolve, join, dirname } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import yaml from 'js-yaml';
 
 const RED = '\x1b[31m';
 const GREEN = '\x1b[32m';
@@ -30,8 +32,19 @@ interface TCConfig {
 }
 
 function getConfig(options: Record<string, string | undefined>): TCConfig {
+  // No built-in endpoint, for the same reason the reporter has none: this
+  // package must not name a collector. These are operator commands, so failing
+  // here costs one flag; the alternative is a hostname nobody chose.
+  const tcUrl = options['tc-url'] ?? process.env['TC_URL'];
+  if (!tcUrl || !tcUrl.trim()) {
+    console.error(
+      `${RED}Error: no Threat Cloud endpoint. Pass --tc-url <url> or set TC_URL. ` +
+        `ATR ships no default endpoint.${RESET}`,
+    );
+    process.exit(1);
+  }
   return {
-    tcUrl: (options['tc-url'] ?? process.env['TC_URL'] ?? 'https://tc.panguard.ai').replace(/\/+$/, ''),
+    tcUrl: tcUrl.trim().replace(/\/+$/, ''),
     adminKey: options['tc-key'] ?? process.env['TC_ADMIN_API_KEY'] ?? process.env['TC_API_KEY'] ?? '',
     rulesDir: resolve(options['rules'] ?? 'rules'),
     dryRun: options['dry-run'] === 'true',
@@ -96,6 +109,75 @@ export async function cmdTCSync(options: Record<string, string | undefined>): Pr
 }
 
 // ── atr tc pull ───────────────────────────────────────────────
+
+/** The tags.category enum in spec/atr-schema.yaml: the only directories a pulled rule may go in. */
+export const TC_PULL_CATEGORIES: ReadonlySet<string> = new Set([
+  'prompt-injection',
+  'tool-poisoning',
+  'context-exfiltration',
+  'agent-manipulation',
+  'privilege-escalation',
+  'excessive-autonomy',
+  'data-poisoning',
+  'model-abuse',
+  'skill-compromise',
+]);
+
+const RULE_ID_RE = /^ATR-\d{4}-\d{5}$/;
+
+// The validator is this package's own CLI, found next to this module (dist/cli.js)
+// rather than relative to whatever directory the command runs in.
+const CLI_PATH = fileURLToPath(new URL('../cli.js', import.meta.url));
+
+export type PulledRulePlan =
+  | { readonly ok: true; readonly id: string; readonly category: string; readonly slug: string; readonly filePath: string }
+  | { readonly ok: false; readonly reason: string };
+
+interface PulledRuleFields {
+  readonly id?: unknown;
+  readonly tags?: { readonly category?: unknown; readonly subcategory?: unknown } | null;
+}
+
+function describeValue(value: unknown): string {
+  return (JSON.stringify(value) ?? String(value)).slice(0, 80);
+}
+
+/**
+ * Decide where a rule fetched from Threat Cloud may be written. The endpoint's
+ * response is untrusted, and the id and category become a file name and a
+ * directory, so both must have a form a real rule can have. Fields are read
+ * from the parsed YAML: a regex over the text picks up `subcategory:` keys in
+ * compliance blocks before the rule's own tags.
+ */
+export function planPulledRule(content: string, rulesDir: string): PulledRulePlan {
+  let doc: PulledRuleFields;
+  try {
+    doc = (yaml.load(content) ?? {}) as PulledRuleFields;
+  } catch {
+    return { ok: false, reason: 'not valid YAML' };
+  }
+  const id = doc.id;
+  if (typeof id !== 'string' || !RULE_ID_RE.test(id)) {
+    return { ok: false, reason: `id ${describeValue(id)} is not of the form ATR-YYYY-NNNNN` };
+  }
+  const category = doc.tags?.category;
+  if (typeof category !== 'string' || !TC_PULL_CATEGORIES.has(category)) {
+    return { ok: false, reason: `${id}: category ${describeValue(category)} is not an ATR category` };
+  }
+  const sub = doc.tags?.subcategory;
+  const slug = (typeof sub === 'string' ? sub : id).toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 40);
+  return { ok: true, id, category, slug, filePath: join(rulesDir, category, `${id}-${slug}.yaml`) };
+}
+
+/** Run the package's rule validator on one file. No shell: the path is a single argv entry. */
+function ruleFileIsValid(filePath: string): boolean {
+  try {
+    execFileSync(process.execPath, [CLI_PATH, 'validate', filePath], { encoding: 'utf-8', stdio: 'pipe' });
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export async function cmdTCPull(options: Record<string, string | undefined>): Promise<void> {
   const cfg = getConfig(options);
@@ -174,28 +256,30 @@ export async function cmdTCPull(options: Record<string, string | undefined>): Pr
       (_, prefix, regex) => `${prefix}'${regex.replace(/'/g, "''")}'`,
     );
 
-    const id = content.match(/^id:\s*(\S+)/m)?.[1] ?? 'unknown';
-    const category = content.match(/category:\s*(\S+)/m)?.[1] ?? 'prompt-injection';
-    const sub = content.match(/subcategory:\s*(\S+)/m)?.[1] ?? id.toLowerCase();
-    const slug = sub.replace(/[^a-z0-9-]/g, '-').slice(0, 40);
-
-    const catDir = join(cfg.rulesDir, category);
-    if (!existsSync(catDir)) mkdirSync(catDir, { recursive: true });
-    const filePath = join(catDir, `${id}-${slug}.yaml`);
+    const plan = planPulledRule(content, cfg.rulesDir);
+    if (!plan.ok) {
+      console.log(`  ${RED}x${RESET} rejected, not written: ${plan.reason}`);
+      continue;
+    }
+    const { id, category, slug, filePath } = plan;
+    // The text match that built existingIds misses a quoted id; never replace a file.
+    if (existingIds.has(id) || existsSync(filePath)) {
+      console.log(`  ${RED}x${RESET} rejected, not written: ${id} is already in the repo`);
+      continue;
+    }
 
     if (cfg.dryRun) {
       console.log(`  ${DIM}[DRY RUN] ${filePath}${RESET}`);
       continue;
     }
 
+    mkdirSync(dirname(filePath), { recursive: true });
     writeFileSync(filePath, content);
 
-    // Validate
-    try {
-      execSync(`node dist/cli.js validate "${filePath}"`, { encoding: 'utf-8', stdio: 'pipe' });
+    if (ruleFileIsValid(filePath)) {
       written.push(filePath);
       console.log(`  ${GREEN}+${RESET} ${id} (${category}/${slug})`);
-    } catch {
+    } else {
       console.log(`  ${RED}x${RESET} ${id} — invalid, removed`);
       unlinkSync(filePath);
     }

