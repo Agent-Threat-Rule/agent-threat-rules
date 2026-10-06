@@ -46,9 +46,11 @@ name: Promote Semantic (T2) Rules
 # is open, the resume step below would put them back on the tree, the dedupe
 # would count their clusters as authored so the gate never re-judges them, and
 # the backstop would fail every run. The resume step now stops on such a branch
-# with this instruction instead. Once #632 is closed, the next run starts from
-# main, re-authors those clusters under the current gate and force-pushes the
-# rolling branch against the lease it fetched.
+# with this instruction instead. Closing a rolling PR normally rejects its
+# clusters for good (see the history record below), so also label #632
+# `semantic-reauthor`: that drops its head from the record, and the next run
+# starts from main, re-authors those clusters under the current gate and
+# force-pushes the rolling branch against the lease it fetched.
 #
 # Complements promote-cve.yml (CVE PoC -> regex rules) and crystallize.yml
 # (TC + adversarial -> rules). This is the semantic/T2 intake lane.
@@ -67,6 +69,10 @@ name: Promote Semantic (T2) Rules
 # rule in it, and deleting a rule from it rejects that one; the lane does not
 # author those clusters again. Without that record a closed PR's clusters sort
 # straight back to the top and come back regenerated in the next PR.
+# The one exception is a PR closed for how it was built rather than for what it
+# detects (#632, authored before the current gate): label it `semantic-reauthor`
+# when closing it and its head is left out of the record, so its clusters are
+# authored again under the current gate.
 
 on:
   # Chain after the CVE collector so semantic authoring runs on the freshest
@@ -172,7 +178,7 @@ jobs:
             fi
           done < <(git diff --name-only --diff-filter=A origin/main "origin/$BRANCH" -- rules/)
           if [ -n "$STALE" ]; then
-            echo "::error::Rolling PR #$OPEN holds rules authored before the current gate or from a quarantined source:$STALE. Close PR #$OPEN without merging; the next run starts from main and re-authors those clusters under the current gate. This run authored nothing."
+            echo "::error::Rolling PR #$OPEN holds rules authored before the current gate or from a quarantined source:$STALE. Close PR #$OPEN without merging and label it semantic-reauthor; the next run starts from main and re-authors those clusters under the current gate. This run authored nothing."
             exit 1
           fi
 
@@ -200,7 +206,9 @@ jobs:
           fi
 
       # The record of every cluster this lane has authored (see the header) is read
-      # from the head of every same-repo rolling PR -- open, closed or merged.
+      # from the head of every same-repo rolling PR -- open, closed or merged --
+      # except one closed unmerged with the `semantic-reauthor` label, whose
+      # clusters a maintainer has sent back to be authored again.
       # GitHub keeps refs/pull/N/head after a PR closes, even once the push step
       # has overwritten the branch, so a rejection several PRs back still counts.
       # Not the bare branch: it can hold rules no PR ever showed a reviewer (a run
@@ -215,8 +223,10 @@ jobs:
           BRANCH="auto-semantic/rolling"
           # A failed listing must fail the job: an empty record lets every rejected
           # cluster back in behind a green run.
-          PRS=$(gh pr list --head "$BRANCH" --state all --limit 1000 --json number,isCrossRepository \
-            --jq '.[] | select(.isCrossRepository | not) | .number')
+          PRS=$(gh pr list --head "$BRANCH" --state all --limit 1000 --json number,isCrossRepository,state,labels \
+            --jq '.[] | select(.isCrossRepository | not)
+                      | select((.state == "CLOSED" and any(.labels[]?; .name == "semantic-reauthor")) | not)
+                      | .number')
           REFSPECS=()
           for N in $PRS; do
             REFSPECS+=("+refs/pull/$N/head:refs/semantic-history/$N")
@@ -304,8 +314,10 @@ jobs:
             *) echo "::error::invalid source '$INPUT_SOURCE' (allowed: hackaprompt|promptinject|garak)"; exit 1 ;;
           esac
           set +e
+          # --base: rules a resumed rolling branch already adds count against
+          # check-rules-safety's per-PR cap and are gated as peers, as the PR's CI counts them.
           npx tsx scripts/author-semantic-rules.ts --write --max "$INPUT_MAX" "${SOURCE_ARG[@]}" \
-            --exclude-from /tmp/semantic-authored.txt --report /tmp/semantic-report.json
+            --base origin/main --exclude-from /tmp/semantic-authored.txt --report /tmp/semantic-report.json
           EXIT=$?
           set -e
           # 0 = ok (promoted 0 or more; any failures were content-level)
@@ -323,9 +335,10 @@ jobs:
           fi
           echo "author-semantic-rules exited $EXIT (0=ok, 2=no-key, 3=all-human, 4=lane-down)"
 
-      # A run that authored nothing pushes nothing (the push step exits 0 on an
-      # unchanged rules/ tree), so the backstop has none of this run's work to
-      # judge. Running it anyway made a no-op run fail on rules it never wrote.
+      # A run that authored nothing pushes no rule, so the backstop has none of
+      # this run's work to judge; running it anyway made a no-op run fail on rules
+      # it never wrote. (A resumed branch can still push main merged in; `npm test`
+      # below runs for that.)
       - name: Did this run author a rule?
         id: authored
         run: |
@@ -454,8 +467,10 @@ jobs:
         if: steps.authored.outputs.any == 'true'
         run: npm run gate:generalization
 
+      # Also on a resumed branch that authored nothing: the push step still pushes
+      # it with main merged in and the derived files regenerated.
       - name: Run tests
-        if: steps.authored.outputs.any == 'true'
+        if: steps.authored.outputs.any == 'true' || env.ROLLING_RESUMED == '1'
         run: npm test
 
       - name: Count rules after

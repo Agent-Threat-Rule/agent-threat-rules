@@ -142,6 +142,46 @@ export function re2Findings(value: string): readonly Finding[] {
   return scanPattern(value);
 }
 
+// Letter and digit escapes that mean the same thing to JavaScript (no `u` flag)
+// and to RE2. CI's RE2 gate compiles every pattern with Go's regexp, which
+// rejects an escaped letter or digit it does not know, and the static scanner
+// above does not flag those (\Z, \h, \e and \cJ all pass it). Others are
+// refused because they mean different things: \A, \z, \a, \Q, \E and \p are
+// literal letters to JavaScript and anchors, quoting or classes to RE2, and
+// \1-\9 are backreferences to JavaScript and octal or invalid to RE2.
+const PORTABLE_ESCAPES = new Set(["d", "D", "s", "S", "w", "W", "b", "B", "t", "n", "r", "f", "v"]);
+// Inside a class \b is backspace to JavaScript and an error to RE2.
+const PORTABLE_CLASS_ESCAPES = new Set(["d", "D", "s", "S", "w", "W", "t", "n", "r", "f", "v"]);
+
+/** Is `\` + source[i] (and what follows) an escape both engines read the same way? */
+function portableEscapeAt(source: string, i: number, inClass: boolean): boolean {
+  const c = source[i] ?? "";
+  if (c === "x") return /^[0-9a-fA-F]{2}$/.test(source.slice(i + 1, i + 3));
+  if (c === "0") return !/[0-9]/.test(source[i + 1] ?? "");
+  if (/[A-Za-z0-9]/.test(c)) return (inClass ? PORTABLE_CLASS_ESCAPES : PORTABLE_ESCAPES).has(c);
+  // ASCII punctuation is a literal to both; RE2 rejects an escaped non-ASCII character.
+  return c.length > 0 && c.charCodeAt(0) < 0x80;
+}
+
+/** Every escape in `value` that RE2 rejects or reads differently from JavaScript, e.g. ["\\Z"]. */
+export function unportableEscapes(value: string): string[] {
+  const source = value.replace(ENGINE_INLINE_FLAGS, "");
+  const found: string[] = [];
+  let inClass = false;
+  for (let i = 0; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === "\\") {
+      if (!portableEscapeAt(source, i + 1, inClass)) found.push(`\\${source[i + 1] ?? ""}`);
+      i += 1;
+    } else if (ch === "[" && !inClass) {
+      inClass = true;
+    } else if (ch === "]" && inClass) {
+      inClass = false;
+    }
+  }
+  return [...new Set(found)];
+}
+
 // ---------------------------------------------------------------------------
 // Gate corpus: MEASUREMENT_CORPORA, prepared once and reused for every draft
 // ---------------------------------------------------------------------------
@@ -221,9 +261,49 @@ function checkFallbackShape(raw: string): GateResult | null {
 
 function checkRe2(raw: string): GateResult | null {
   const findings = re2Findings(raw);
-  if (findings.length === 0) return null;
-  const what = findings.map((f) => `${f.cls} ${f.token}`).join(", ");
-  return fail(`fallback_regex is not RE2 portable (${what}); downstream RE2 engines reject it`);
+  if (findings.length > 0) {
+    const what = findings.map((f) => `${f.cls} ${f.token}`).join(", ");
+    return fail(`fallback_regex is not RE2 portable (${what}); downstream RE2 engines reject it`);
+  }
+  const escapes = unportableEscapes(raw);
+  if (escapes.length > 0) {
+    return fail(
+      `fallback_regex is not RE2 portable (escape ${escapes.join(", ")}): RE2 rejects it or reads it ` +
+        "differently from JavaScript, and CI's RE2 gate compiles every pattern with Go's regexp",
+    );
+  }
+  return null;
+}
+
+const STRING_FIELDS = [
+  "reason",
+  "fallback_regex",
+  "fallback_description",
+  "judge_prompt",
+  "attack_definition",
+  "not_detected",
+] as const;
+const STRING_LIST_FIELDS = ["false_positive_scenarios", "paraphrase_tests"] as const;
+
+/**
+ * The draft is parsed model output, so its shape is not guaranteed. A field of
+ * the wrong type is a bad draft, routed like any other, not an exception: one
+ * thrown in the gate worker is counted as the lane being down.
+ */
+function checkDraftShape(draft: unknown): GateResult | null {
+  if (!draft || typeof draft !== "object" || Array.isArray(draft)) return fail("malformed draft: not a JSON object");
+  const d = draft as Record<string, unknown>;
+  // null is what a model writes for "none"; the builder already reads it as absent.
+  const wrongString = STRING_FIELDS.find((k) => d[k] != null && typeof d[k] !== "string");
+  if (wrongString) return fail(`malformed draft: ${wrongString} is ${typeof d[wrongString]}, not a string`);
+  const wrongList = STRING_LIST_FIELDS.find(
+    (k) => d[k] != null && !(Array.isArray(d[k]) && (d[k] as unknown[]).every((v) => typeof v === "string")),
+  );
+  if (wrongList) return fail(`malformed draft: ${wrongList} is not a list of strings`);
+  if (d.insufficient != null && typeof d.insufficient !== "boolean") {
+    return fail("malformed draft: insufficient is not a boolean");
+  }
+  return null;
 }
 
 function checkTruePositiveHits(split: { readonly hits: string[]; readonly misses: string[] }): GateResult | null {
@@ -264,13 +344,15 @@ export function validateSemanticDraft(
   trueNegatives: readonly string[],
   corpus: GateCorpus,
 ): GateResult {
+  const shape = checkDraftShape(draft);
+  if (shape) return shape;
   if (draft.insufficient) return fail(`llm-insufficient: ${draft.reason ?? "no reason given"}`);
   const judge = checkJudge(draft);
   if (judge) return judge;
 
   const raw = (draft.fallback_regex ?? "").trim();
-  const shape = checkFallbackShape(raw);
-  if (shape) return shape;
+  const fallbackShape = checkFallbackShape(raw);
+  if (fallbackShape) return fallbackShape;
   const compiled = compileFallback(raw);
   if (!compiled.ok) return fail(compiled.reason);
   const re2 = checkRe2(raw);

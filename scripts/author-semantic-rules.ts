@@ -88,6 +88,11 @@
  *                               scripts/semantic-authored-history.ts: every cluster
  *                               this lane has authored, including rules a closed PR
  *                               or a reviewer threw away.
+ *   ... --base REF              the PR's base (the workflow passes origin/main). Rules
+ *                               already new against it -- a resumed rolling branch's --
+ *                               count against check-rules-safety's per-PR cap
+ *                               (MAX_NEW_PER_PR, default 10) and are gated as peers
+ *                               (check 5). Without it the run assumes a PR of its own.
  *
  * ENV
  *   CLAUDE_CODE_OAUTH_TOKEN  preferred — routes through the local `claude` CLI and spends
@@ -141,6 +146,7 @@ export {
 } from "./lib/semantic-clusters.js";
 export { buildSemanticRule, earnedActions } from "./lib/semantic-rule-builder.js";
 import { readExcludeList } from "./lib/semantic-exclusions.js";
+import { getNewRuleFiles } from "./check-rules-safety.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -167,6 +173,7 @@ const INCLUDE_QUARANTINED = flag("--include-quarantined");
 const MAX_PROMOTE = opt("--max") ? parseInt(opt("--max")!, 10) : DEFAULT_MAX;
 const REPORT_PATH = opt("--report");
 const EXCLUDE_FROM = opt("--exclude-from");
+const BASE_REF = opt("--base");
 const DRY_RUN = !WRITE;
 
 /**
@@ -229,6 +236,60 @@ function loadAuthoredClusters(): Set<string> {
   }
   return authoredClustersFromRules(docs);
 }
+
+// ---------------------------------------------------------------------------
+// The PR this run adds to: check-rules-safety's per-PR cap and its peers
+// ---------------------------------------------------------------------------
+/**
+ * check-rules-safety fails a PR that adds more than MAX_NEW_PER_PR rule files
+ * (default 10), and on a resumed rolling branch the rules earlier runs added
+ * count too. Read with the same default and the same refusal of a value that
+ * is not a positive integer.
+ */
+export function parsePerPrCap(raw: string | undefined): number {
+  const cap = Number(raw ?? "10");
+  if (!Number.isInteger(cap) || cap <= 0) throw new Error(`MAX_NEW_PER_PR must be a positive integer, got "${raw}"`);
+  return cap;
+}
+
+/** How many candidates this run may take on without pushing the PR past the per-PR cap. */
+export function promotionBudget(requested: number, alreadyInPr: number, perPrCap: number): number {
+  return Math.max(0, Math.min(requested, perPrCap - alreadyInPr));
+}
+
+export interface PendingRules {
+  readonly files: readonly string[];
+  /** Each file as its YAML loads: the peers check-rules-safety's check 5 charges a new rule against. */
+  readonly rules: readonly Record<string, unknown>[];
+  readonly errors: readonly string[];
+}
+
+/**
+ * The rules the PR already adds against `base`, found the way check-rules-safety
+ * finds them (getNewRuleFiles: added since the merge base, plus untracked).
+ */
+export function loadPendingRules(
+  base: string,
+  repoRoot: string,
+  listNew: (base: string, repoRoot: string, onError: (m: string) => void) => string[] = (b, r, e) =>
+    getNewRuleFiles(b, r, undefined, e),
+): PendingRules {
+  const errors: string[] = [];
+  const files = listNew(base, repoRoot, (m) => errors.push(m));
+  const rules: Record<string, unknown>[] = [];
+  for (const f of files) {
+    try {
+      const doc = yaml.load(readFileSync(join(repoRoot, f), "utf-8"));
+      if (doc && typeof doc === "object" && !Array.isArray(doc)) rules.push(doc as Record<string, unknown>);
+      else errors.push(`${f}: not a YAML mapping`);
+    } catch (e) {
+      errors.push(`${f}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+  return { files, rules, errors };
+}
+
+const NO_PENDING: PendingRules = { files: [], rules: [], errors: [] };
 
 // ---------------------------------------------------------------------------
 // ID allocation — strict increment (the promote-detection-ready.ts pattern)
@@ -450,7 +511,7 @@ function loadBenignCorpus(): readonly string[] {
  * fail closed when writing: an empty mention corpus or an unreadable rule would
  * clear drafts of FPs nobody measured, and the backstop would then fail the run.
  */
-function loadForeignRules(): ForeignRules {
+function loadForeignRules(pending: PendingRules): ForeignRules {
   const mentions = loadCorpusTexts(join(REPO_ROOT, RESEARCH_MENTIONS_CORPUS));
   const tns = loadRuleTrueNegatives(RULES_BASE);
   const problems = [
@@ -461,7 +522,30 @@ function loadForeignRules(): ForeignRules {
     console.error(`FATAL: the cross-rule / research-mention gate cannot run safely: ${problems.slice(0, 3).join("; ")}`);
     process.exit(1);
   }
-  return { mentions, ruleTrueNegatives: tns.samples, peers: [] };
+  return { mentions, ruleTrueNegatives: tns.samples, peers: pending.rules };
+}
+
+/**
+ * The rules the PR already adds, or none without --base. Fails closed when
+ * writing: a rule that cannot be read is a peer nobody gated against.
+ */
+function loadPendingOrExit(): PendingRules {
+  if (!BASE_REF) return NO_PENDING;
+  const pending = loadPendingRules(BASE_REF, REPO_ROOT);
+  if (WRITE && pending.errors.length > 0) {
+    console.error(`FATAL: cannot read the rules this PR already adds: ${pending.errors.slice(0, 3).join("; ")}`);
+    process.exit(1);
+  }
+  return pending;
+}
+
+function perPrCapOrExit(): number {
+  try {
+    return parsePerPrCap(process.env.MAX_NEW_PER_PR);
+  } catch (e) {
+    console.error(`FATAL: ${e instanceof Error ? e.message : String(e)}`);
+    process.exit(1);
+  }
 }
 
 interface RunInputs {
@@ -472,6 +556,8 @@ interface RunInputs {
   readonly skipped: readonly Skip[];
   readonly alreadyAuthored: number;
   readonly authoredBefore: number;
+  readonly alreadyInPr: number;
+  readonly budget: number;
 }
 
 function buildSummary(inputs: RunInputs, outcomes: readonly Outcome[]) {
@@ -489,6 +575,8 @@ function buildSummary(inputs: RunInputs, outcomes: readonly Outcome[]) {
     skipped_quarantined: inputs.skipped.filter((s) => s.reason === QUARANTINE_REASON).length,
     skipped_already_authored: inputs.alreadyAuthored,
     skipped_authored_before: inputs.authoredBefore,
+    rules_already_in_pr: inputs.alreadyInPr,
+    promotion_budget: inputs.budget,
     promoted: count((o) => o.kind === "promoted"),
     routed_to_human: count((o) => o.kind === "routed"),
     errors: count((o) => o.kind === "error"),
@@ -588,8 +676,21 @@ async function main(): Promise<void> {
     loadAuthoredClusters(),
     authoredEver,
   );
+  if (!Number.isInteger(MAX_PROMOTE) || MAX_PROMOTE < 0) {
+    console.error(`FATAL: --max must be a non-negative integer, got "${opt("--max")}"`);
+    process.exit(1);
+  }
+  const pending = loadPendingOrExit();
+  const perPrCap = perPrCapOrExit();
+  const budget = promotionBudget(MAX_PROMOTE, pending.files.length, perPrCap);
+  if (budget < MAX_PROMOTE) {
+    console.log(
+      `::notice::the PR already adds ${pending.files.length} rule(s) and check-rules-safety allows ${perPrCap} ` +
+        `per PR, so this run takes on ${budget} candidate(s), not ${MAX_PROMOTE}`,
+    );
+  }
   const benignSamples = loadBenignCorpus();
-  const foreign = loadForeignRules();
+  const foreign = loadForeignRules(pending);
   console.log(`[author-semantic] llm backend: ${describeBackend()}`);
 
   const ctx: AuthorContext = {
@@ -599,7 +700,7 @@ async function main(): Promise<void> {
     allowlists: loadOwaspAllowlists(REPO_ROOT),
     foreign,
   };
-  const outcomes = await authorAll(candidates.slice(0, MAX_PROMOTE), ctx);
+  const outcomes = await authorAll(candidates.slice(0, budget), ctx);
 
   const summary = buildSummary(
     {
@@ -610,6 +711,8 @@ async function main(): Promise<void> {
       skipped,
       alreadyAuthored: alreadyAuthored.length,
       authoredBefore: authoredBefore.length,
+      alreadyInPr: pending.files.length,
+      budget,
     },
     outcomes,
   );

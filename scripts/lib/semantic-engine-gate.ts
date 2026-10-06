@@ -51,7 +51,10 @@ export interface ForeignRules {
   readonly mentions: readonly string[];
   /** Every other rule's true_negatives, rules promoted earlier this run included (check 5). */
   readonly ruleTrueNegatives: readonly OwnedSample[];
-  /** Rules promoted earlier this run. Check 5 also makes them offenders against a later rule's TNs. */
+  /**
+   * Rules this PR already adds: a resumed rolling branch's rules and this run's
+   * promotions so far. Check 5 also makes them offenders against a later rule's TNs.
+   */
   readonly peers: readonly Record<string, unknown>[];
 }
 
@@ -138,7 +141,11 @@ function checkCorpora(
   return null;
 }
 
-/** check-rules-safety check 5 the other way round: a peer promoted earlier this run as the offender. */
+/**
+ * check-rules-safety check 5 the other way round: a peer as the offender. Peers
+ * are every rule the PR already adds -- a resumed rolling branch's earlier runs
+ * and this run's promotions so far -- since CI charges all of them as new.
+ */
 function checkPeers(rule: Record<string, unknown>, peers: readonly Record<string, unknown>[]): GateResult | null {
   if (peers.length === 0) return null;
   const engine = scopedEngine(peers);
@@ -147,7 +154,7 @@ function checkPeers(rule: Record<string, unknown>, peers: readonly Record<string
     const offender = [...matchedRuleIds(engine, text)].find((id) => id !== ownId);
     if (offender !== undefined) {
       return fail(
-        `cross-rule conflict (check-rules-safety check 5): ${offender}, promoted earlier this run, ` +
+        `cross-rule conflict (check-rules-safety check 5): ${offender}, already new in this PR, ` +
           `fires on this rule's true_negative "${snippet(text)}"`,
       );
     }

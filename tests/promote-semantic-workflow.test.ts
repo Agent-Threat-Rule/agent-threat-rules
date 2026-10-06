@@ -36,6 +36,7 @@ interface Step {
   name?: string;
   run?: string;
   env?: Record<string, string>;
+  if?: string;
 }
 
 function workflowSteps(): Step[] {
@@ -82,6 +83,7 @@ interface Pr {
   number: number;
   state: "OPEN" | "CLOSED" | "MERGED";
   isCrossRepository: boolean;
+  labels?: Array<{ name: string }>;
 }
 
 interface Fixture {
@@ -348,6 +350,28 @@ describe.skipIf(!HAS_JQ)("promote-semantic.yml rolling-branch steps", () => {
       expect(git(fx.work, "rev-parse", "refs/semantic-history/500")).toBe(earlier);
     });
 
+    // #632 was closed for how it was built (before the current gate), not for what
+    // it detects. Without a way out its clusters were rejected for good, the four
+    // that pass the current gate included.
+    it("leaves out a PR closed unmerged with the semantic-reauthor label, and only that", () => {
+      const REAUTHOR = [{ name: "semantic-reauthor" }];
+      for (const n of [632, 500, 410, 700]) git(fx.origin, "update-ref", `refs/pull/${n}/head`, fx.mainSha);
+      setPrs(fx, [
+        { number: 632, state: "CLOSED", isCrossRepository: false, labels: REAUTHOR },
+        { number: 500, state: "CLOSED", isCrossRepository: false, labels: [{ name: "needs-human-review" }] },
+        { number: 410, state: "MERGED", isCrossRepository: false, labels: REAUTHOR },
+        { number: 700, state: "OPEN", isCrossRepository: false, labels: REAUTHOR },
+      ]);
+      const r = runStep(fx, "Fetch the history of every rolling PR");
+      expect(r.status, r.out).toBe(0);
+      const refs = git(fx.work, "for-each-ref", "--format=%(refname)", "refs/semantic-history/").split("\n");
+      expect(refs.sort()).toEqual([
+        "refs/semantic-history/410",
+        "refs/semantic-history/500",
+        "refs/semantic-history/700",
+      ]);
+    });
+
     it("fails when the PR list cannot be read, rather than proceeding with no history", () => {
       // An empty record would let every rejected cluster back in, behind a green run.
       setPrs(fx, [{ number: 632, state: "CLOSED", isCrossRepository: false }]);
@@ -447,5 +471,17 @@ describe("promote-semantic.yml wiring of the authored-cluster record", () => {
 
   it("runs a script that exists", () => {
     expect(existsSync(resolve(REPO_ROOT, "scripts/semantic-authored-history.ts"))).toBe(true);
+  });
+
+  // check-rules-safety counts a resumed branch's earlier rules against the per-PR
+  // cap and as check-5 peers; the author script only sees them through --base.
+  it("tells the author script the PR's base, so it counts the rules the PR already adds", () => {
+    expect(runBlock("Author semantic rules (deterministic 0-FP gate)")).toContain("--base origin/main");
+  });
+
+  it("runs the tests before pushing a resumed branch that authored nothing", () => {
+    const tests = workflowSteps().find((st) => st.name === "Run tests");
+    expect(tests?.if).toContain("env.ROLLING_RESUMED == '1'");
+    expect(tests?.if).toContain("steps.authored.outputs.any == 'true'");
   });
 });

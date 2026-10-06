@@ -12,6 +12,7 @@ import {
   fallbackMatches,
   splitTruePositives,
   re2Findings,
+  unportableEscapes,
   prepareGateCorpus,
   findBenignFp,
   fallbackVisibility,
@@ -136,6 +137,45 @@ describe("re2Findings", () => {
 
   it("is empty for a plain RE2-portable pattern with a leading (?i)", () => {
     expect(re2Findings("(?i)\\b(say|print)\\s+.{0,50}\\bsecret\\s+key\\b")).toEqual([]);
+  });
+});
+
+// CI's RE2 gate compiles every pattern with Go's regexp, which rejects an
+// escaped letter it does not know. The static scanner passes \Z, \h, \e and \cJ,
+// so before this check a draft using one cleared the lane and failed the backstop.
+describe("unportableEscapes", () => {
+  it.each(["\\Z", "\\h", "\\e", "\\cJ", "\\G", "\\K", "\\R"])("reports %s, which Go's regexp rejects", (esc) => {
+    expect(unportableEscapes(`(?i)ignore${esc}previous`)).toEqual([esc.slice(0, 2)]);
+  });
+
+  // Literal letters to JavaScript (no u flag), anchors / quoting / classes to RE2.
+  it.each(["\\A", "\\z", "\\a", "\\Q", "\\E", "\\p"])("reports %s, which the two engines read differently", (esc) => {
+    expect(unportableEscapes(`x${esc}y`)).toEqual([esc]);
+  });
+
+  it("reports a numbered backreference and an octal-looking \\0 followed by a digit", () => {
+    expect(unportableEscapes("(a)\\1")).toEqual(["\\1"]);
+    expect(unportableEscapes("a\\012")).toEqual(["\\0"]);
+  });
+
+  it("reports \\x without two hex digits and an escaped non-ASCII character", () => {
+    expect(unportableEscapes("\\x{41}")).toEqual(["\\x"]);
+    expect(unportableEscapes("caf\\é")).toEqual(["\\é"]);
+  });
+
+  it("reports \\b inside a class (backspace to JavaScript, an error to RE2) but not outside one", () => {
+    expect(unportableEscapes("[\\b]")).toEqual(["\\b"]);
+    expect(unportableEscapes("\\bignore\\b")).toEqual([]);
+  });
+
+  it("accepts the escapes both engines share, and escaped punctuation", () => {
+    expect(
+      unportableEscapes("(?i)\\bignore\\s+(all\\W+)?previous\\.\\d\\D\\S\\w\\B\\t\\n\\r\\f\\v\\x41\\0[\\s\\-\\]]\\/\\(\\)"),
+    ).toEqual([]);
+  });
+
+  it("does not read an escaped backslash as the start of another escape", () => {
+    expect(unportableEscapes("a\\\\Zb")).toEqual([]);
   });
 });
 

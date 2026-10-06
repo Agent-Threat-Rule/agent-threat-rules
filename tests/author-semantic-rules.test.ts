@@ -23,6 +23,9 @@ import {
   findCandidates,
   isQuarantinedSource,
   authorAll,
+  parsePerPrCap,
+  promotionBudget,
+  loadPendingRules,
   type AuthorContext,
   type SemanticDraft,
 } from "../scripts/author-semantic-rules.js";
@@ -119,6 +122,39 @@ describe("validateSemanticDraft gate", () => {
     const r = validateSemanticDraft({ ...goodDraft(), judge_prompt: noGuard }, TPS, TNS, BENIGN);
     expect(r.ok).toBe(false);
     expect(r.reason).toContain("untrusted");
+  });
+
+  // CI's RE2 gate compiles with Go's regexp; the static scanner alone passes \Z.
+  it("REJECTS a fallback with an escape Go's regexp rejects", () => {
+    const d = { ...goodDraft(), fallback_regex: `${goodDraft().fallback_regex!}\\Z` };
+    const r = validateSemanticDraft(d, TPS, TNS, BENIGN);
+    expect(r.ok).toBe(false);
+    expect(r.reason).toContain("escape \\Z");
+  });
+
+  // Model output is parsed JSON. A wrong-typed field used to throw in the gate
+  // worker, which counts as the lane being down, not as a bad draft.
+  it.each([
+    ["paraphrase_tests as a string", { paraphrase_tests: "one rewording" }, "paraphrase_tests"],
+    ["false_positive_scenarios with a number", { false_positive_scenarios: ["ok", 3] }, "false_positive_scenarios"],
+    ["judge_prompt as an object", { judge_prompt: { text: "x" } }, "judge_prompt"],
+    ["insufficient as a string", { insufficient: "yes" }, "insufficient"],
+  ])("ROUTES a malformed draft (%s) instead of throwing", (_name, patch, field) => {
+    const d = { ...goodDraft(), ...patch } as unknown as SemanticDraft;
+    const r = validateSemanticDraft(d, TPS, TNS, BENIGN);
+    expect(r.ok).toBe(false);
+    expect(r.reason).toContain("malformed draft");
+    expect(r.reason).toContain(field);
+  });
+
+  it("ROUTES a draft that is not a JSON object", () => {
+    const r = validateSemanticDraft(["not", "a", "draft"] as unknown as SemanticDraft, TPS, TNS, BENIGN);
+    expect(r).toMatchObject({ ok: false, reason: "malformed draft: not a JSON object" });
+  });
+
+  it("reads null in an optional field as absent, as the builder does", () => {
+    const d = { ...goodDraft(), not_detected: null, paraphrase_tests: null } as unknown as SemanticDraft;
+    expect(validateSemanticDraft(d, TPS, TNS, BENIGN)).toMatchObject({ ok: true });
   });
 
   it("REJECTS a too-generic single-token fallback regex", () => {
@@ -515,6 +551,67 @@ describe("excludeAuthored", () => {
 // leaves nothing in it, so the tree alone hands the same clusters back to the next
 // run. The history record (--exclude-from) is what keeps a rejection rejected.
 import { selectCandidates } from "../scripts/author-semantic-rules.js";
+
+// check-rules-safety fails a PR that adds more than MAX_NEW_PER_PR rules, and on
+// a resumed rolling branch the rules earlier runs added count too. A run that
+// ignored them pushed the PR over the cap and the backstop threw the run away.
+describe("per-PR cap", () => {
+  it("reads MAX_NEW_PER_PR with check-rules-safety's default and refuses a non-integer", () => {
+    expect(parsePerPrCap(undefined)).toBe(10);
+    expect(parsePerPrCap("4")).toBe(4);
+    expect(() => parsePerPrCap("ten")).toThrow(/positive integer/);
+    expect(() => parsePerPrCap("0")).toThrow(/positive integer/);
+    expect(() => parsePerPrCap("2.5")).toThrow(/positive integer/);
+  });
+
+  it("budgets only what the PR has room for", () => {
+    expect(promotionBudget(8, 0, 10)).toBe(8);
+    expect(promotionBudget(8, 6, 10)).toBe(4);
+    expect(promotionBudget(8, 10, 10)).toBe(0);
+    expect(promotionBudget(8, 12, 10)).toBe(0);
+    // A dispatch asking for more than the cap still stays under it.
+    expect(promotionBudget(25, 0, 10)).toBe(10);
+  });
+});
+
+describe("loadPendingRules", () => {
+  let dir: string;
+  beforeAll(() => {
+    dir = mkdtempSync(join(tmpdir(), "atr-pending-"));
+    mkdirSync(join(dir, "rules", "prompt-injection"), { recursive: true });
+    writeFileSync(join(dir, "rules", "prompt-injection", "a.yaml"), "id: ATR-2026-09001\ntitle: a\n");
+    writeFileSync(join(dir, "rules", "prompt-injection", "list.yaml"), "- not\n- a rule\n");
+    writeFileSync(join(dir, "rules", "prompt-injection", "bad.yaml"), "id: [unclosed\n");
+  });
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+  it("loads each rule the PR already adds as a peer, listed against the base", () => {
+    const seen: string[] = [];
+    const pending = loadPendingRules("origin/main", dir, (base) => {
+      seen.push(base);
+      return ["rules/prompt-injection/a.yaml"];
+    });
+    expect(seen).toEqual(["origin/main"]);
+    expect(pending.files).toEqual(["rules/prompt-injection/a.yaml"]);
+    expect(pending.rules).toEqual([{ id: "ATR-2026-09001", title: "a" }]);
+    expect(pending.errors).toEqual([]);
+  });
+
+  it("reports a file it cannot load and a git error, instead of dropping them", () => {
+    const pending = loadPendingRules("origin/main", dir, (_b, _r, onError) => {
+      onError("git diff failed");
+      return ["rules/prompt-injection/bad.yaml", "rules/prompt-injection/list.yaml", "rules/prompt-injection/gone.yaml"];
+    });
+    expect(pending.files).toHaveLength(3);
+    expect(pending.rules).toEqual([]);
+    expect(pending.errors[0]).toBe("git diff failed");
+    expect(pending.errors.slice(1).map((e) => e.split(":")[0])).toEqual([
+      "rules/prompt-injection/bad.yaml",
+      "rules/prompt-injection/list.yaml",
+      "rules/prompt-injection/gone.yaml",
+    ]);
+  });
+});
 
 describe("selectCandidates", () => {
   const c = (rel: string) => ({ proposalRel: rel, title: rel });
