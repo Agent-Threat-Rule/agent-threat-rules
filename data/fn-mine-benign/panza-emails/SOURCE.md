@@ -7,10 +7,12 @@ Benign tool output for the FN-mine gate (scripts/fn-mine-llm.ts) only: a candida
 - Files: `david/train.jsonl`, `david/test.jsonl`, `isabel/train.jsonl`, `isabel/test.jsonl`, `marcus/train.jsonl`, `marcus/test.jsonl`
 - License (dataset card front matter, quoted): `license: apache-2.0`
 - Retrieved: 2026-10-06
-- Row filter: every row; subject and body joined; CRLF to LF; email addresses replaced, phone numbers masked; deduplicated on the final text; stratified by donor/split in sha256 order
+- Row filter: every row; subject and body joined; CRLF to LF; email addresses replaced, phone numbers and Zoom meeting ids masked; deduplicated on the final text; stratified by donor/split in sha256 order
 - Rows kept: 526
 
 Regenerate with `npx tsx scripts/sync-agent-attack-corpora.ts --source panza-emails --write`.
+
+Narrow set: 526 emails written by three people (david, isabel, marcus), almost all short messages they sent themselves: scheduling, replies, requests to colleagues. It holds no quoted replies or forwarded message bodies, newsletters, marketing mail, receipts, automated notifications or calendar invites. A rule that fires on those is not caught here; a clean result on this set is evidence about ordinary correspondence only.
 
 ## License
 
@@ -20,5 +22,5 @@ Apache License, Version 2.0, which its dataset card declares (https://huggingfac
 
 Changes made to the upstream rows (Apache-2.0 section 4(b)): subject and body joined as "subject, blank line,
 body"; CRLF line ends converted to LF; leading and trailing whitespace trimmed; email addresses replaced by
-`redacted@example.com`; phone numbers masked digit by digit; signed-URL parameters and tokens masked as in the
-attack corpora; NUL bytes removed; duplicate texts dropped.
+`redacted@example.com`; phone numbers and Zoom meeting ids masked digit by digit, Zoom passcodes masked;
+signed-URL parameters and tokens masked as in the attack corpora; NUL bytes removed; duplicate texts dropped.

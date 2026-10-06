@@ -57,8 +57,20 @@ describe('scrubContactDetails', () => {
     expect(scrubContactDetails('call +43 664 1234567 or (555) 123-4567')).toBe('call +00 000 0000000 or (000) 000-0000');
   });
 
+  // Review finding (2026-10-07): "(374) 974-9986." survived in the vendored emails.
+  it('masks a phone number that ends a sentence or a clause', () => {
+    expect(scrubContactDetails('my phone number is (374) 974-9986.')).toBe('my phone number is (000) 000-0000.');
+    expect(scrubContactDetails('call 555-123-4567, or +43 664 1234567.')).toBe('call 000-000-0000, or +00 000 0000000.');
+  });
+
+  it('masks meeting ids and passcodes in Zoom links', () => {
+    expect(scrubContactDetails('Join https://us04web.zoom.us/j/23456789012?pwd=abcDEF123 now')).toBe(
+      'Join https://us04web.zoom.us/j/00000000000?pwd=REDACTED now',
+    );
+  });
+
   it('leaves dates, times, versions and amounts alone', () => {
-    const text = 'Meeting on 2024-10-12 at 14:30, release 1.2.3, budget 1,500 EUR, room 101';
+    const text = 'Meeting on 2024-10-12 at 14:30, release 1.2.3, budget 1,500 EUR, room 101, years 2023-2024.';
     expect(scrubContactDetails(text)).toBe(text);
   });
 });
@@ -151,6 +163,7 @@ describe('vendored tool-output benign corpora', () => {
         if (source === BENIGN_EMAILS) {
           for (const s of doc.samples) {
             for (const m of s.text.match(/[\w.%+-]+@[\w-]+(?:\.[\w-]+)+/g) ?? []) expect(m).toBe('redacted@example.com');
+            for (const m of s.text.match(/\(\d{3}\)\s?\d{3}-\d{4}|zoom\.us\/j\/\d+/g) ?? []) expect(m).not.toMatch(/[1-9]/);
           }
         }
       });

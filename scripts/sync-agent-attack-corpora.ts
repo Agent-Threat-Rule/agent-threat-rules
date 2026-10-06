@@ -84,6 +84,7 @@ import {
   APACHE_2_0_SHA256,
   APACHE_2_0_URL,
   BENIGN_EMAILS,
+  EMAIL_SET_LIMITS,
   BENIGN_PAGES,
   MAX_BENIGN_PAGE_CHARS,
   benignDocument,
@@ -292,8 +293,9 @@ const BENIGN_SOURCES: readonly BenignPlan[] = [
     source: BENIGN_EMAILS,
     files: PANZA_FILES,
     filter:
-      'every row; subject and body joined; CRLF to LF; email addresses replaced, phone numbers masked; ' +
-      'deduplicated on the final text; stratified by donor/split in sha256 order',
+      'every row; subject and body joined; CRLF to LF; email addresses replaced, phone numbers and Zoom ' +
+      'meeting ids masked; deduplicated on the final text; stratified by donor/split in sha256 order',
+    notes: [EMAIL_SET_LIMITS],
     collect: collectPanza,
   },
   {

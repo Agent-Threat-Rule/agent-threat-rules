@@ -10,8 +10,11 @@
  * BrowseSafe-Bench (attack pages), both delivered as tool_response, and
  * certified every candidate "0 benign FP" on data/benign-corpus-extended:
  * prompts, skill docs, code, conversations and arXiv text, and not one email or
- * web page. A regex on "please forward this to" passed that gate and would
- * fire on half of a real inbox.
+ * web page. Zero hits there say nothing about mail or pages. The rules on main
+ * show the size of that blind spot: they pass the repo's benign gates, and
+ * scripts/report-tool-output-benign-fp.ts measured 34 of them firing on 465 of
+ * these 694 benign pages (ATR-2026-00011 alone on 439, mostly the benchmark's
+ * planted warning banners).
  *
  * Scope: these corpora are read by the FN-mine gate only. They are NOT in
  * MEASUREMENT_CORPORA (scripts/lib/benign-corpus.ts) or any repo-wide quality
@@ -23,7 +26,8 @@
  *
  *   ISTA-DASLab/Panza-emails (Apache-2.0). Emails three people wrote and
  *     donated for research on personalised writing; names and places in them
- *     were replaced by the publishers. Every row is kept.
+ *     were replaced by the publishers. Every row is kept. Narrow: 526 short
+ *     messages from three senders (EMAIL_SET_LIMITS).
  *
  *   perplexity-ai/browsesafe-bench (MIT), the benign (label 'no') pages of the
  *     test split the attack corpus is cut from, at the same revision, through
@@ -114,6 +118,18 @@ export const NOT_VENDORED_EMAIL: readonly { readonly source: string; readonly re
   },
 ]);
 
+/**
+ * What the email set does not cover, stated in its SOURCE.md. A candidate that
+ * passes it has been tested on personal and work mail three people sent, not
+ * on the bulk of a real inbox.
+ */
+export const EMAIL_SET_LIMITS =
+  'Narrow set: 526 emails written by three people (david, isabel, marcus), almost all short messages they ' +
+  'sent themselves: scheduling, replies, requests to colleagues. It holds no quoted replies or forwarded ' +
+  'message bodies, newsletters, marketing mail, receipts, automated notifications or calendar invites. A rule ' +
+  'that fires on those is not caught here; a clean result on this set is evidence about ordinary ' +
+  'correspondence only.';
+
 // ---------------------------------------------------------------------------
 // Row handling
 // ---------------------------------------------------------------------------
@@ -124,7 +140,15 @@ export function withoutNul(text: string): string {
 }
 
 const EMAIL_ADDRESS = /[\w.%+-]+@[\w-]+(?:\.[\w-]+)+/g;
-const PHONE = /(?<![\w.,:/-])(?:\+\d{1,3}[ .-]?)?(?:\(\d{2,4}\)[ .-]?)?\d{3,4}[ .-]\d{3,7}(?:[ .-]\d{2,4})?(?![\w.,:/-])/g;
+/**
+ * A phone number: optional country code and area code, then two or three digit
+ * groups. It may end a sentence or a clause ("... 974-9986."), but not run on
+ * into a word, a path or another number ("1.2.3", "10:30", "4567.89").
+ */
+const PHONE = /(?<![\w.,:/-])(?:\+\d{1,3}[ .-]?)?(?:\(\d{2,4}\)[ .-]?)?\d{3,4}[ .-]\d{3,7}(?:[ .-]\d{2,4})?(?![\w:/-]|[.,]\w)/g;
+/** A Zoom meeting id (zoom.us/j/<id>) and its passcode parameter. */
+const ZOOM_ID = /(zoom\.us\/(?:j|w|my)\/)(\d+)/gi;
+const ZOOM_PWD = /([?&]pwd=)[^&\s"'#<>]+/gi;
 const YEAR_RANGE = /^(?:19|20)\d\d[ .-](?:19|20)\d\d$/;
 const MIN_PHONE_DIGITS = 7;
 
@@ -134,13 +158,17 @@ function maskPhone(m: string): string {
 }
 
 /**
- * `text` with email addresses replaced whole and phone numbers masked digit by
- * digit. The publishers already replaced names and places; addresses and
+ * `text` with email addresses replaced whole, phone numbers and Zoom meeting
+ * ids masked digit by digit and Zoom passcodes masked. The publishers already replaced names and places; addresses and
  * numbers are what is left that could reach a person. The shapes stay, so a
  * rule that keys on "an address" or "a number" is still tested.
  */
 export function scrubContactDetails(text: string): string {
-  return text.replace(EMAIL_ADDRESS, 'redacted@example.com').replace(PHONE, maskPhone);
+  return text
+    .replace(EMAIL_ADDRESS, 'redacted@example.com')
+    .replace(ZOOM_ID, (_m, prefix: string, id: string) => `${prefix}${id.replace(/\d/g, '0')}`)
+    .replace(ZOOM_PWD, '$1REDACTED')
+    .replace(PHONE, maskPhone);
 }
 
 /**
@@ -277,8 +305,8 @@ function licenseSection(source: BenignSource): readonly string[] {
     '',
     'Changes made to the upstream rows (Apache-2.0 section 4(b)): subject and body joined as "subject, blank line,',
     'body"; CRLF line ends converted to LF; leading and trailing whitespace trimmed; email addresses replaced by',
-    '`redacted@example.com`; phone numbers masked digit by digit; signed-URL parameters and tokens masked as in the',
-    'attack corpora; NUL bytes removed; duplicate texts dropped.',
+    '`redacted@example.com`; phone numbers and Zoom meeting ids masked digit by digit, Zoom passcodes masked;',
+    'signed-URL parameters and tokens masked as in the attack corpora; NUL bytes removed; duplicate texts dropped.',
   ];
 }
 
