@@ -16,7 +16,7 @@
  * --min-recovers, 30% are never shown and a candidate must recover some of
  * them too. Every candidate must also fire on no benign email or web page
  * presented to the engine as tool output (scripts/lib/fn-mine-tool-benign.ts);
- * without those corpora the tool_response corpora are not mined.
+ * without those corpora the run fails before mining anything.
  *
  * This is the scheduled/unattended counterpart to the interactive /fn-mine
  * Claude Code workflow — same methodology (full-set clustering, engine-
@@ -67,7 +67,7 @@ import {
 import { gateAuthoredBatch } from './lib/fn-mine-gate.js';
 import { computeResidual, gateCandidates, type GateContext, type GatedCandidate } from './lib/fn-mine-candidate-gate.js';
 import { HELD_OUT_PERCENT, MIN_HELD_OUT_RECOVERS, seenLines, splitHeldOut } from './lib/fn-mine-heldout.js';
-import { dropToolOutputHits, readToolOutputBenign, type ToolOutputBenign } from './lib/fn-mine-tool-benign.js';
+import { dropToolOutputHits, requireToolOutputBenign, type ToolOutputBenign } from './lib/fn-mine-tool-benign.js';
 import { assertSomeChunkRead, mineChunkReply, type ChunkResult, type MineCandidate } from './lib/fn-mine-reply.js';
 import { finalizeAuthoredRule, hasBenchmarkArtifacts, withoutBenchmarkArtifacts } from './lib/fn-mine-quality.js';
 import { loadOwaspAllowlists, type OwaspAllowlists } from './lib/normalize-references.js';
@@ -362,13 +362,11 @@ function writeNullReport(note: string): void {
  * The corpora this run can mine, and the ones it could not. A report corpus
  * whose regeneration fails, or a vendored corpus missing from disk, is skipped
  * and logged loudly: one corpus's external dependency (HackAPrompt's upstream
- * dataset requiring auth, say) must not stop the others. A tool_response corpus
- * is skipped when the benign tool-output corpora cannot be read
- * (`toolBenignProblem`): its candidates would be certified on prompts and code
- * alone. A skipped corpus makes a null result partial (assertNullResultComplete),
- * not exhausted. Every corpus unavailable fails the run.
+ * dataset requiring auth, say) must not stop the others. A skipped corpus
+ * makes a null result partial (assertNullResultComplete), not exhausted. Every
+ * corpus unavailable fails the run.
  */
-function prepareCorpora(toolBenignProblem: string | null): {
+function prepareCorpora(): {
   readonly available: readonly MinedCorpusSpec[];
   readonly skipped: readonly string[];
 } {
@@ -377,9 +375,6 @@ function prepareCorpora(toolBenignProblem: string | null): {
   const skipped: string[] = [];
   for (const spec of MINED_CORPORA) {
     try {
-      if (spec.shape === 'tool_response' && toolBenignProblem) {
-        throw new Error(`the benign tool-output corpora are unavailable (${toolBenignProblem}); not mined without them`);
-      }
       if (spec.kind === 'vendored') {
         const problem = vendoredProblem(spec, REPO_ROOT);
         if (problem) throw new Error(problem);
@@ -404,27 +399,23 @@ function prepareCorpora(toolBenignProblem: string | null): {
 
 /**
  * The benign sides of the gate, each logged: the regex-only text corpus, the
- * measurement corpora the visibility check counts on, and whether the
- * tool-output corpora (read by the caller) are there.
+ * measurement corpora the visibility check counts on, and the tool-output
+ * corpora (read by the caller, which fails the run without them).
  */
-function readBenignGate(toolBenign: ToolOutputBenign | null): { benignTexts: readonly string[]; gateCorpus: GateCorpus } {
+function readBenignGate(toolBenign: ToolOutputBenign): { benignTexts: readonly string[]; gateCorpus: GateCorpus } {
   const benignTexts = loadBenignTexts();
   console.log(`[fn-mine] benign gate corpus: ${benignTexts.length} records`);
-  if (toolBenign) {
-    console.log(`[fn-mine] benign tool-output corpus: ${toolBenign.emails.length} emails, ${toolBenign.pages.length} pages (every candidate, as tool_response)`);
-  } else {
-    console.log('::warning::[fn-mine] benign tool-output corpora unavailable: tool_response corpora skipped, prompt corpora gated without them.');
-  }
+  console.log(`[fn-mine] benign tool-output corpus: ${toolBenign.emails.length} emails, ${toolBenign.pages.length} pages (every candidate, as tool_response)`);
   const gateCorpus = prepareGateCorpus(loadBenignSamples(REPO_ROOT));
   if (gateCorpus.samples.length === 0) throw new Error('MEASUREMENT_CORPORA is empty: the visibility check would pass every candidate');
   return { benignTexts, gateCorpus };
 }
 
 /** What the per-rule report records about the gate, so a reviewer reads the held-out counts against it. */
-function gateReportNote(toolBenign: ToolOutputBenign | null): Record<string, unknown> {
+function gateReportNote(toolBenign: ToolOutputBenign): Record<string, unknown> {
   return {
     heldOut: { percent: HELD_OUT_PERCENT, minRecovers: MIN_HELD_OUT_RECOVERS },
-    toolOutputBenign: toolBenign ? { emails: toolBenign.emails.length, pages: toolBenign.pages.length } : null,
+    toolOutputBenign: { emails: toolBenign.emails.length, pages: toolBenign.pages.length },
   };
 }
 
@@ -433,8 +424,8 @@ interface MineSettings {
   readonly minRecovers: number;
   readonly benignTexts: readonly string[];
   readonly gateCorpus: GateCorpus;
-  /** Benign emails and pages every candidate is run against as tool output; null only when no tool_response corpus is mined. */
-  readonly toolBenign: ToolOutputBenign | null;
+  /** Benign emails and pages every candidate is run against as tool output. */
+  readonly toolBenign: ToolOutputBenign;
 }
 
 interface RoundResult {
@@ -469,7 +460,7 @@ async function mineRound(
     console.log(`[fn-mine]   ${label}: chunk cap ${spec.budget.maxChunksPerRound} reached; ${texts.length - shown.length} FN not shown this round`);
   }
   const gated = gateCandidates(candidates, fn, s.benignTexts, s.minRecovers, gate);
-  const survivors = s.toolBenign ? await dropToolOutputHits(gated, s.toolBenign) : gated;
+  const survivors = await dropToolOutputHits(gated, s.toolBenign);
   for (const c of survivors) {
     console.log(`[fn-mine]   keep ${c.cluster}: recovers ${c.recovers} shown FN, ${c.heldOutRecovers} of ${gate.heldOut.length} held out`);
   }
@@ -596,9 +587,10 @@ async function main(): Promise<void> {
     }
   }
 
-  const toolBenignRead = readToolOutputBenign(REPO_ROOT);
-  const toolBenign = 'corpus' in toolBenignRead ? toolBenignRead.corpus : null;
-  const { available: availableCorpora, skipped: skippedCorpora } = prepareCorpora('problem' in toolBenignRead ? toolBenignRead.problem : null);
+  // Before any corpus is regenerated or any model credit spent: without these
+  // no candidate can be gated, whichever corpus it comes from.
+  const toolBenign = requireToolOutputBenign(REPO_ROOT);
+  const { available: availableCorpora, skipped: skippedCorpora } = prepareCorpora();
   const { benignTexts, gateCorpus } = readBenignGate(toolBenign);
 
   const perCorpus: CorpusStageCounts[] = [];

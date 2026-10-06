@@ -12,7 +12,8 @@
  * the engine's own normalization (NFKC, zero-width stripping, confusable
  * folding), field resolution and source admission decide, as they will in
  * production. A candidate that does not fire on its own recoveries there is
- * dropped too: its zero benign hits would have measured nothing.
+ * dropped too: its zero benign hits would have measured nothing. Without the
+ * corpora the run fails (requireToolOutputBenign).
  *
  * Applied to every candidate, not only those mined from tool_response corpora:
  * the lane authors llm_io rules, and the engine runs llm_io rules on
@@ -50,16 +51,27 @@ function readBenignFile(root: string, source: BenignSource): { texts: readonly s
   return { texts };
 }
 
-/**
- * Both vendored corpora, or the first problem. The miner fails closed on a
- * problem: the tool_response corpora are not mined without these.
- */
+/** Both vendored corpora, or the first problem. */
 export function readToolOutputBenign(root: string): { corpus: ToolOutputBenign } | { problem: string } {
   const emails = readBenignFile(root, BENIGN_EMAILS);
   if ('problem' in emails) return emails;
   const pages = readBenignFile(root, BENIGN_PAGES);
   if ('problem' in pages) return pages;
   return { corpus: { emails: emails.texts, pages: pages.texts } };
+}
+
+/**
+ * Both vendored corpora, or an error that fails the run. Every candidate
+ * needs them, whichever corpus it was mined from (see the module comment), so
+ * without them the miner authors nothing rather than gate on prompts and code
+ * alone and go green.
+ */
+export function requireToolOutputBenign(root: string): ToolOutputBenign {
+  const read = readToolOutputBenign(root);
+  if ('problem' in read) {
+    throw new Error(`the benign tool-output corpora cannot be read: ${read.problem}. Every candidate is gated on them; nothing was mined.`);
+  }
+  return read.corpus;
 }
 
 /**

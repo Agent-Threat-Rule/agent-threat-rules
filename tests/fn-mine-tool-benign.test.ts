@@ -12,6 +12,7 @@ import { join, resolve } from 'node:path';
 import {
   dropToolOutputHits,
   readToolOutputBenign,
+  requireToolOutputBenign,
   toolOutputVerdicts,
   type ToolOutputBenign,
 } from '../scripts/lib/fn-mine-tool-benign.js';
@@ -159,6 +160,24 @@ describe('readToolOutputBenign', () => {
       }
       const r = readToolOutputBenign(dir);
       expect('problem' in r && r.problem).toMatch(/declares 3 samples but holds 1/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+// Review finding (2026-10-07): without these corpora, HackAPrompt and PINT
+// candidates were still authored without the tool-output gate and the run
+// went green. Their llm_io rules run on tool_response too.
+describe('requireToolOutputBenign', () => {
+  it('returns the corpora when both read', () => {
+    expect(requireToolOutputBenign(REPO_ROOT).emails.length).toBeGreaterThan(500);
+  });
+
+  it('throws, naming the problem and that nothing was mined, when one cannot be read', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'fn-mine-require-'));
+    try {
+      expect(() => requireToolOutputBenign(dir)).toThrow(/panza-emails\/corpus\.json is missing[\s\S]*nothing was mined/);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
