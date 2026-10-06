@@ -4,6 +4,36 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Security
+
+- **`atr tc pull` checks the rules a Threat Cloud endpoint returns before
+  writing them, and no longer goes through a shell.** The response is now
+  treated as untrusted: a rule is written only if its id has the form
+  `ATR-YYYY-NNNNN`, its category is one of the schema's categories and no rule
+  with that id is already in the repo; anything else is rejected without
+  touching the disk. The validator then runs as a separate Node.js process with
+  the file path as a plain argument. Before, the id and category came from the
+  response unchecked and the validator was started through a shell, so a
+  compromised or impersonated endpoint could affect the operator's machine
+  beyond the rules directory. The category is also read from the rule's `tags`,
+  not from the first `subcategory:` line in a compliance block, and the
+  validator is found next to the installed CLI rather than in the current
+  directory, so valid rules are no longer filed under the wrong directory or
+  rejected when the command runs outside a checkout of this repo.
+
+### Changed
+
+- **The package is declared dual-use under the npm Dual-Use Content Policy.**
+  npm's publish-time malware scanning, introduced in July 2026, blocked 4.1.1,
+  4.1.2 and 4.1.3: rule files carry attack strings by design, as detection
+  patterns and test samples, and the scanner treats them like malware.
+  `package.json` now carries `"contentPolicy": {"class": "dual-use"}`, and a
+  plain-text `DISCLOSURE` file at the package root says what the attack content
+  is for and what the package does not do. Under that policy, CI may only stage
+  a release; a maintainer approves it with 2FA before it goes live, so
+  `publish.yml` now stages through trusted publishing and waits for the approval
+  before creating the GitHub release.
+
 ## [4.1.3] - 2026-10-06
 
 The first release of the 4.1 line to reach npm; 4.1.2 did not either. Its
