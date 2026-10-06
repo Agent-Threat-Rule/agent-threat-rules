@@ -13,7 +13,7 @@ AI Agent 威脅偵測規則的開放格式
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-ATR%20Scan-2ea44f?style=flat-square&logo=github)](https://github.com/marketplace/actions/atr-scan)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square)](LICENSE)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19178002-blue?style=flat-square)](https://doi.org/10.5281/zenodo.19178002)
-[![Rules](https://img.shields.io/badge/rules-825-blue?style=flat-square)](#5-specification)
+[![Rules](https://img.shields.io/badge/rules-826-blue?style=flat-square)](#5-specification)
 [![Categories](https://img.shields.io/badge/categories-10-blue?style=flat-square)](#7-coverage)
 [![OWASP Agentic](https://img.shields.io/badge/OWASP_Agentic_Top_10-10%2F10-brightgreen?style=flat-square)](#7-coverage)
 [![SAFE-MCP](https://img.shields.io/badge/SAFE--MCP-91.8%25-brightgreen?style=flat-square)](#7-coverage)
@@ -312,9 +312,9 @@ string, and every non-empty string is truthy, so it used to switch enforcement
 |---|---|---|
 | Specification (canonical pointer) | [SPEC.md](SPEC.md) | Resolves to the authoritative documents below |
 | Rule format spec (normative) | [SPEC.md](SPEC.md) | Rule format, identifier scheme, evaluation semantics |
-| Framework spec | [ATR-FRAMEWORK-SPEC.md](ATR-FRAMEWORK-SPEC.md) | Multi-layer detection framework design |
+| Framework spec | [ATR-FRAMEWORK-SPEC.md](ATR-FRAMEWORK-SPEC.md) | **Superseded 2026-05-16 by [SPEC.md](SPEC.md).** Kept as a historical artifact; multi-layer detection framework design |
 | Machine-readable schema | [spec/atr-schema.yaml](spec/atr-schema.yaml) | Authoritative validation source |
-| Schema field reference | [docs/schema-spec.md](docs/schema-spec.md) | Human-readable schema docs |
+| Schema field reference | [docs/schema-spec.md](docs/schema-spec.md) | **Superseded 2026-05-16 by [SPEC.md](SPEC.md).** Kept as a historical artifact; human-readable schema docs |
 | Quality standard | [docs/QUALITY-STANDARD.md](docs/QUALITY-STANDARD.md) | Rule promotion criteria (experimental → stable) |
 | Quality gate | [docs/QUALITY-GATE.md](docs/QUALITY-GATE.md) | Safety-gate semantics for community PRs |
 | Enforcement model | [docs/ENFORCEMENT-MODEL.md](docs/ENFORCEMENT-MODEL.md) | Lane and blocking switches, decision channels, migration (reference implementation, not normative) |

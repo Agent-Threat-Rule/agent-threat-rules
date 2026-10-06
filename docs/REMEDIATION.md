@@ -215,7 +215,7 @@ Regardless of category, when ATR fires a CRITICAL or HIGH alert:
 
 ## Resources
 
-- [ATR Rule Schema](schema-spec.md) — Understanding rule definitions
+- [ATR Core Specification](../SPEC.md) — Understanding rule definitions
 - [Quick Start](quick-start.md) — Setting up ATR scanning
 - [Rule Writing Guide](rule-writing-guide.md) — Contributing new detection rules
 - [OWASP Agentic Top 10 Mapping](OWASP-MAPPING.md) — How ATR maps to OWASP categories

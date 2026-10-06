@@ -18,7 +18,7 @@ on:
 
 permissions:
   contents: write
-  id-token: write  # required by `npm publish --provenance`
+  id-token: write  # mints the OIDC token npm trusted publishing exchanges for a credential
 
 jobs:
   publish:
@@ -45,6 +45,16 @@ jobs:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
+      # Trusted publishing needs npm >= 11.5.1, and the Node 22 line still ships
+      # npm 10.x. Without this the publish step falls back to looking for a token
+      # and fails with ENEEDAUTH, which reads like a credential problem and is not.
+      # The same old client is also below the 11.15.0 staged-publishing floor that
+      # publish-current-version.yml pins and checks; npm@latest clears both.
+      - name: Upgrade npm for OIDC
+        run: |
+          npm install -g npm@latest
+          npm --version
+
       - name: Install dependencies
         run: npm ci
 
@@ -69,6 +79,23 @@ jobs:
             patch) PATCH=$((PATCH + 1)) ;;
           esac
           NEW="$MAJOR.$MINOR.$PATCH"
+          # A re-run starts again from the commit the first attempt checked out,
+          # so it computes the same version. If that attempt already pushed the
+          # tag, bumping again stops at `git tag` and nothing is staged. Continue
+          # from the tag instead: it is the tree the earlier attempt tagged and
+          # staged. Only on a re-run, so a first attempt that meets a tag made
+          # elsewhere still fails.
+          if [ "${GITHUB_RUN_ATTEMPT:-1}" -gt 1 ] && git ls-remote --exit-code --tags origin "refs/tags/v$NEW" >/dev/null; then
+            git fetch --force origin "refs/tags/v$NEW:refs/tags/v$NEW"
+            git checkout --quiet --detach "v$NEW"
+            if [ "$(node -p "require('./package.json').version")" != "$NEW" ]; then
+              echo "::error::tag v$NEW does not carry version $NEW in package.json."
+              exit 1
+            fi
+            echo "v$NEW was pushed by an earlier attempt of this run; continuing from it."
+            echo "VERSION=$NEW" >> "$GITHUB_ENV"
+            exit 0
+          fi
           node -e "
             const fs = require('fs');
             const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
@@ -91,6 +118,21 @@ jobs:
           VERSION="${GITHUB_REF#refs/tags/v}"
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
+      # npm publishes the version in package.json, not the tag name. A tag pushed
+      # on a commit that is not the version bump would publish whatever version
+      # package.json carries there, under a GitHub release named after the tag.
+      # 4.1.1 is already staged on the registry and cannot be published over, so
+      # stop here, before anything is sent.
+      - name: Tag must match package.json
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$PKG_VERSION" != "$VERSION" ]; then
+            echo "::error::tag v$VERSION but package.json is $PKG_VERSION. Tag the commit where the version bump landed."
+            exit 1
+          fi
+          echo "tag v$VERSION matches package.json"
+
       # Was an inline script that rebuilt data/stats.json from scratch with five
       # fields. It destroyed two of them: `benchmarks` and
       # `benchmarks_generated_at`, which website/lib/stats.ts calls the canonical
@@ -109,10 +151,29 @@ jobs:
       - name: Reconcile stats.json
         run: npm run reconcile-stats
 
-      - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # Staged through npm trusted publishing (OIDC); there is no token here and
+      # none is wanted. Trust is configured on the package: npmjs.com ->
+      # agent-threat-rules -> Settings -> Trusted publishing, matching organization
+      # `Agent-Threat-Rule`, repository `agent-threat-rules`, workflow filename
+      # `publish.yml`, all case-sensitive. Renaming this file breaks publishing
+      # until the trusted publisher is recreated.
+      #
+      # Staged, not published, because the package is declared dual-use
+      # (package.json contentPolicy, DISCLOSURE). npm's publish-time malware
+      # scanning blocked 4.1.1, 4.1.2 and 4.1.3, whose rule files carry attack
+      # strings by design, and the Dual-Use Content Policy permits trusted
+      # publishing for a dual-use package only as a stage: a maintainer approves
+      # it with 2FA before it goes live (https://docs.npmjs.com/policies/dual-use/).
+      #
+      # Re-running this job after approving is safe: a version already on the
+      # registry is not staged again, and a version an earlier run staged (E409
+      # "previously staged") goes straight to the wait below.
+      - name: Stage the release on npm
         run: |
+          if [ "$(npm view "agent-threat-rules@${VERSION}" version --prefer-online 2>/dev/null)" = "$VERSION" ]; then
+            echo "agent-threat-rules@${VERSION} is already on the registry; nothing to stage."
+            exit 0
+          fi
           # Auto-detect dist-tag from prerelease identifier so 3.0.0-alpha.X
           # doesn't accidentally take over the `latest` tag (which represents
           # the stable release line).
@@ -121,8 +182,44 @@ jobs:
             const m = v.match(/-([a-zA-Z]+)/);
             console.log(m ? m[1] : 'latest');
           ")
-          echo "Publishing with dist-tag: $TAG"
-          npm publish --access public --provenance --tag "$TAG"
+          echo "Staging with dist-tag: $TAG"
+          set +e
+          npm stage publish --access public --tag "$TAG" 2>&1 | tee /tmp/stage.out
+          RC=${PIPESTATUS[0]}
+          set -e
+          if [ "$RC" -ne 0 ]; then
+            if grep -q 'previously staged version' /tmp/stage.out; then
+              echo "::notice::agent-threat-rules@${VERSION} was staged by an earlier run; waiting for its approval."
+            else
+              exit "$RC"
+            fi
+          fi
+          {
+            echo "### agent-threat-rules@${VERSION} is staged on npm"
+            echo
+            echo "Approve it with 2FA on npmjs.com (Staged Packages), or run"
+            echo "\`npm stage list agent-threat-rules\` and \`npm stage approve <stage-id>\`."
+            echo
+            echo "This job waits up to 60 minutes for the approval, then creates the GitHub release."
+            echo "If it times out, approve the version and re-run this workflow run."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # npm can accept a publish and still not serve it: 4.1.1, 4.1.2 and 4.1.3
+      # each printed "+ agent-threat-rules@<version>", went green, and were blocked
+      # by publish-time scanning. Ask for this exact version and fail, before a
+      # GitHub release announces an install command that does not work, if it does
+      # not appear within an hour of staging.
+      - name: Wait for approval and the registry
+        run: |
+          for _ in $(seq 1 120); do
+            if [ "$(npm view "agent-threat-rules@${VERSION}" version --prefer-online 2>/dev/null)" = "$VERSION" ]; then
+              echo "agent-threat-rules@${VERSION} is on the registry."
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::error::agent-threat-rules@${VERSION} is not on the registry after 60 minutes. Approve the staged version with 2FA, then re-run this workflow run. If npm emailed that the version did not pass automated review, it was blocked; appeal with the reference ID in that email."
+          exit 1
 
       - name: Count rules for release notes
         id: rules
@@ -136,6 +233,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # A re-run of a release whose publish failed reaches this step with the
+          # release already created; leave it rather than fail the run.
+          if gh release view "v${VERSION}" >/dev/null 2>&1; then
+            echo "Release v${VERSION} already exists; leaving it as is."
+            exit 0
+          fi
           PREV_TAG=$(git tag --sort=-creatordate | sed -n '2p' || echo "")
           CHANGELOG=""
           if [ -n "$PREV_TAG" ]; then
@@ -167,15 +270,6 @@ jobs:
 
           Full stats: [data/stats.json](https://raw.githubusercontent.com/Agent-Threat-Rule/agent-threat-rules/main/data/stats.json)
           "
-
-      - name: Verify npm publish
-        run: |
-          sleep 10
-          PUBLISHED=$(npm info agent-threat-rules version 2>/dev/null || echo "unknown")
-          echo "Published version: $PUBLISHED"
-          if [ "$PUBLISHED" != "${{ env.VERSION }}" ]; then
-            echo "WARNING: npm shows $PUBLISHED, expected ${{ env.VERSION }} (may need propagation time)"
-          fi
 
       - name: Sync rules to Threat Cloud
         env:
