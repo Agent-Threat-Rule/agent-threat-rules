@@ -47,11 +47,13 @@ import {
   channelNote,
   falseNegatives,
   planChunks,
+  unseenFirst,
   vendoredProblem,
   type Chunk,
   type MinedCorpusSpec,
 } from './lib/fn-mine-corpora.js';
 import { gateAuthoredBatch } from './lib/fn-mine-gate.js';
+import { countRecoveries } from './lib/fn-mine-recoveries.js';
 import { assertSomeChunkRead, mineChunkReply, type ChunkResult, type MineCandidate } from './lib/fn-mine-reply.js';
 import {
   finalizeAuthoredRule,
@@ -200,7 +202,8 @@ async function mineChunk(chunk: Chunk, spec: MinedCorpusSpec, model: string): Pr
 interface GatedCandidate extends MineCandidate {
   recovers: number;
   benignFP: number;
-  exampleFNs: string[];
+  /** Excerpts around the match, verbatim (countRecoveries): what the true positives are cut from. */
+  exampleFNs: readonly string[];
 }
 
 interface GateContext {
@@ -228,19 +231,13 @@ function gateCandidates(
     const re2 = re2Problem(c.regex);
     if (re2) { drop(c, re2); continue; }
     // Counted on measureOn, so a regex that only recovers a benchmark's scoring
-    // strings recovers nothing. Examples stay the real, unmodified texts.
-    let recovers = 0;
-    const examples: string[] = [];
-    // A recovery must match both: removing the artifacts shortens the text and
-    // can make a boundary the real submission does not have.
-    gate.measureOn.forEach((m, i) => {
-      const original = fullFn[i] ?? m;
-      if (!re.test(m) || !re.test(original)) return;
-      recovers++;
-      if (examples.length < 5) examples.push(original);
-    });
+    // strings recovers nothing, and as distinct attacks, so copies of one
+    // template sentence count once. Examples are excerpts of the real texts.
+    const { recovers, copies, examples } = countRecoveries(re, gate.measureOn, fullFn);
     if (recovers < minRecovers) {
-      if (gate.measureOn !== fullFn && fullFn.filter((t) => re.test(t)).length >= minRecovers) {
+      if (copies >= minRecovers) {
+        drop(c, `recovers ${copies} texts but only ${recovers} distinct line(s) < ${minRecovers}: copies of one template`);
+      } else if (gate.measureOn !== fullFn && fullFn.filter((t) => re.test(t)).length >= minRecovers) {
         drop(c, `recovers ${recovers} < ${minRecovers} without ${gate.corpusName}'s benchmark artifacts: it keys on the benchmark's scoring strings`);
       }
       continue;
@@ -278,7 +275,7 @@ ${referenceYaml}
 
 Requirements:
 - detection.conditions must include EXACTLY the given gated regex verbatim (field: content, operator: regex) — do not alter it.
-- test_cases.true_positives: 2-3 of the given real FN attack texts (truncate to ~180 chars, escape for YAML double-quoted strings).
+- test_cases.true_positives: 2-3 of the given real FN attack excerpts, copied VERBATIM. Each is a JSON string that the gated regex matches; a JSON string is a valid YAML double-quoted scalar, so write it as given. Do not shorten or reword it: the regex must still match it.
 - test_cases.true_negatives: 3-4 benign texts you write that do NOT match the given regex (verify mentally before including).
 - references use REAL valid ids: owasp_llm and owasp_agentic as BARE ids, no title (e.g. "LLM01:2025", "ASI01:2026"; pick ones fitting the technique); mitre_atlas e.g. "AML.T0051 - LLM Prompt Injection" or "AML.T0054 - LLM Jailbreak".
 - compliance: use this exact gate-passing shape, parameterized to the technique:
@@ -298,8 +295,8 @@ technique/cluster: ${c.cluster}
 rationale: ${c.rationale}
 GATED REGEX (engine-verified recovers=${c.recovers}, benignFP=0 — use EXACTLY as given): ${JSON.stringify(c.regex)}
 
-Real false-negative attack texts this rule must fire on (use 2-3 as true_positives):
-${c.exampleFNs.map((t, i) => `${i + 1}. ${t.slice(0, 200)}`).join('\n')}`;
+Excerpts of real false-negative attack texts this rule must fire on, each containing the regex's match (use 2-3 as true_positives):
+${c.exampleFNs.map((t, i) => `${i + 1}. ${JSON.stringify(t)}`).join('\n')}`;
 }
 
 async function authorRule(id: string, c: GatedCandidate, referenceYaml: string, model: string, correctionNote?: string): Promise<string> {
@@ -476,6 +473,8 @@ interface RoundResult {
   readonly survivors: readonly GatedCandidate[];
   readonly asked: number;
   readonly unread: number;
+  /** The texts the round's chunks showed the model. */
+  readonly shown: readonly string[];
 }
 
 /** One round: each chunk the budget allows to the model, every candidate through the gate. */
@@ -496,12 +495,12 @@ async function mineRound(
     if (!reply.read) unread += 1;
     candidates.push(...reply.candidates);
   }
-  const waiting = texts.length - chunks.length * spec.budget.chunkSize;
-  if (waiting > 0) {
-    console.log(`[fn-mine]   ${label}: chunk cap ${spec.budget.maxChunksPerRound} reached; ${waiting} FN wait for a later run`);
+  const shown = chunks.flatMap((c) => c.texts);
+  if (texts.length > shown.length) {
+    console.log(`[fn-mine]   ${label}: chunk cap ${spec.budget.maxChunksPerRound} reached; ${texts.length - shown.length} FN not shown this round`);
   }
   const survivors = gateCandidates(candidates, fn, s.benignTexts, s.minRecovers, gate);
-  return { proposed: candidates.length, survivors, asked: chunks.length, unread };
+  return { proposed: candidates.length, survivors, asked: chunks.length, unread, shown };
 }
 
 interface CorpusRun {
@@ -536,10 +535,12 @@ async function mineCorpus(spec: MinedCorpusSpec, s: MineSettings): Promise<Corpu
   console.log(`[fn-mine] ${spec.name} round 1: ${r1.proposed} proposed -> ${r1.survivors.length} survive the gate`);
 
   const residual = computeResidual(fn, r1.survivors);
-  let r2: RoundResult = { proposed: 0, survivors: [], asked: 0, unread: 0 };
+  let r2: RoundResult = { proposed: 0, survivors: [], asked: 0, unread: 0, shown: [] };
   if (residual.length >= RESIDUAL_THRESHOLD) {
     console.log(`[fn-mine] ${spec.name}: ${residual.length} FN still uncovered -> mining residual`);
-    r2 = await mineRound(`${spec.name}-residual`, residual, fn, spec, gate, s);
+    // What round 1's cap kept from the model goes first; re-planning from index
+    // 0 re-sent round 1's chunks whenever nothing survived.
+    r2 = await mineRound(`${spec.name}-residual`, unseenFirst(residual, r1.shown), fn, spec, gate, s);
     console.log(`[fn-mine] ${spec.name} round 2 (residual): ${r2.proposed} proposed -> ${r2.survivors.length} survive`);
   } else {
     console.log(`[fn-mine] ${spec.name}: only ${residual.length} FN uncovered — below residual threshold (${RESIDUAL_THRESHOLD}), skipping round 2`);

@@ -53,7 +53,8 @@ const LLMAIL_GOAL = [
  * BrowseSafe-Bench's fixed template payloads name placeholder exfiltration
  * targets; about a quarter of its attack pages carry one, verbatim. A regex on
  * them recovers hundreds of copies of eleven sentences and detects nothing an
- * attacker would send.
+ * attacker would send. With them removed, the copies of one sentence share a
+ * line and count once (countRecoveries in fn-mine-recoveries.ts).
  */
 const BROWSESAFE_PLACEHOLDERS = [
   /attacker@evil\.com/gi,

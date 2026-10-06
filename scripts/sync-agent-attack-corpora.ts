@@ -132,7 +132,10 @@ async function hubRevision(d: UpstreamDataset): Promise<string> {
 async function assertMainIsPinned(d: UpstreamDataset): Promise<void> {
   const sha = await hubRevision(d);
   if (sha !== d.revision) {
-    throw new Error(`${d.repo}: main is ${sha}, pinned ${d.revision}. The rows API serves main; re-pin before syncing.`);
+    throw new Error(
+      `${d.repo}: main is ${sha}, pinned ${d.revision}. The rows API serves only main, so these rows cannot be ` +
+        're-read from the pin; re-pin (and review the new rows) before syncing.',
+    );
   }
 }
 
@@ -167,8 +170,17 @@ interface SourcePlan {
   readonly dataset: UpstreamDataset;
   readonly files: readonly string[];
   readonly filter: string;
+  readonly notes?: readonly string[];
   readonly collect: () => Promise<readonly CorpusRow[]>;
 }
+
+/**
+ * The rows API serves only main, so the pin is a tripwire: once upstream
+ * commits, the sync refuses rather than vendor other rows. Reading the pinned
+ * parquet would need a parquet reader this repo does not carry; the LFS hash
+ * lets anyone audit the rows against it instead.
+ */
+const BROWSESAFE_PARQUET_SHA256 = '00cbad96b60fee46e016d79af6981fb221384c61f12cf28b4f04b5a6420573d0';
 
 const SOURCES: readonly SourcePlan[] = [
   {
@@ -184,7 +196,14 @@ const SOURCES: readonly SourcePlan[] = [
     files: ['test.parquet (via datasets-server rows API, split=test)'],
     filter:
       "label == 'yes'; page projected to text units absent from every benign page of the split; " +
-      `projections over ${MAX_PROJECTION_CHARS} chars skipped; sha256 order; at most ${MAX_ROWS} and ${MAX_CORPUS_BYTES} bytes`,
+      `projections over ${MAX_PROJECTION_CHARS} chars skipped; signed-URL parameters, tokens, freemail local parts and ` +
+      `AWS account ids masked; sha256 order; at most ${MAX_ROWS} and ${MAX_CORPUS_BYTES} bytes`,
+    notes: [
+      'Regeneration reads the datasets-server rows API, which serves only the main branch. It works while main ' +
+        'equals the pinned revision and refuses otherwise. The rows come from the pinned `test.parquet` ' +
+        `(${HUB}/datasets/${BROWSESAFE.repo}/resolve/${BROWSESAFE.revision}/test.parquet, LFS sha256 ` +
+        `\`${BROWSESAFE_PARQUET_SHA256}\`), which stays available to audit them after upstream moves on.`,
+    ],
     collect: collectBrowsesafe,
   },
 ];
@@ -197,7 +216,7 @@ async function syncOne(plan: SourcePlan, write: boolean, retrieved: string): Pro
   const rows = withinBudget(stratifiedSample(candidates, MAX_ROWS), MAX_CORPUS_BYTES);
   console.log(`[sync]   ${candidates.length} rows pass the filter, ${rows.length} kept`);
   if (!write) return;
-  const meta: CorpusDocMeta = { dataset, retrieved, filter: plan.filter };
+  const meta: CorpusDocMeta = { dataset, retrieved, filter: plan.filter, notes: plan.notes };
   const dir = join(REPO_ROOT, OUT_DIR, dataset.id);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, 'corpus.json'), `${JSON.stringify(corpusDocument(rows, meta), null, 2)}\n`);

@@ -25,9 +25,11 @@ import { liveMisses, successfulHackapromptMisses } from './fn-mine-input.js';
 /**
  * How much of a corpus one run shows the model. Every chunk is one model call,
  * so maxChunksPerRound bounds the calls: at most 2 x maxChunksPerRound per
- * corpus (round 1 and the residual round). Texts past the cap wait for a later
- * run; the gate still counts recoveries over the corpus's full FN set, and the
- * misses a run's rules cover drop out of the next run's window.
+ * corpus (round 1 and the residual round). The residual round shows the texts
+ * round 1 could not first (unseenFirst), so one run reaches up to
+ * 2 x maxChunksPerRound x chunkSize misses. Texts past that wait until merged
+ * rules cover earlier ones; the gate still counts recoveries over the corpus's
+ * full FN set.
  */
 export interface MineBudget {
   /** Texts per model call. */
@@ -120,16 +122,35 @@ export const MINED_CORPORA: readonly MinedCorpusSpec[] = Object.freeze([
   },
 ]);
 
-/** Where a vendored corpus lives on disk, or null when it is not registered. */
-function vendoredPath(spec: VendoredCorpusSpec): string | null {
-  return corpusById(spec.registryId)?.path ?? null;
+/** What a vendored corpus file says it holds, or why it cannot be read. */
+function declaredCount(file: string): { readonly count: number | null } | { readonly problem: string } {
+  try {
+    const doc = JSON.parse(fs.readFileSync(file, 'utf8')) as { count?: unknown };
+    return { count: typeof doc.count === 'number' ? doc.count : null };
+  } catch (e) {
+    return { problem: `is not valid JSON (${e instanceof Error ? e.message : String(e)})` };
+  }
 }
 
-/** Why a vendored corpus cannot be mined this run, or null. Report corpora regenerate instead. */
+/**
+ * Why a vendored corpus cannot be mined this run, or null. Report corpora
+ * regenerate instead. The registry loader reads an unreadable file as no
+ * samples, which would mine nothing and report 0 FN as an exhausted corpus;
+ * so the file must parse, hold attacks, and hold as many as it declares.
+ */
 export function vendoredProblem(spec: VendoredCorpusSpec, root: string): string | null {
-  const rel = vendoredPath(spec);
-  if (rel === null) return `${spec.registryId} is not in scripts/lib/fn-corpora.ts CORPORA`;
-  return fs.existsSync(path.join(root, rel)) ? null : `${rel} is missing (run scripts/sync-agent-attack-corpora.ts --write)`;
+  const def = corpusById(spec.registryId);
+  if (!def) return `${spec.registryId} is not in scripts/lib/fn-corpora.ts CORPORA`;
+  const file = path.join(root, def.path);
+  if (!fs.existsSync(file)) return `${def.path} is missing (run scripts/sync-agent-attack-corpora.ts --write)`;
+  const declared = declaredCount(file);
+  if ('problem' in declared) return `${def.path} ${declared.problem}`;
+  const attacks = def.load(root).filter((s) => s.label === 'attack').length;
+  if (attacks === 0) return `${def.path} holds no attack samples`;
+  if (declared.count !== null && declared.count !== attacks) {
+    return `${def.path} declares ${declared.count} rows but ${attacks} attack samples load`;
+  }
+  return null;
 }
 
 const readJson = (root: string, rel: string): unknown => JSON.parse(fs.readFileSync(path.join(root, rel), 'utf8'));
@@ -186,6 +207,16 @@ export function planChunks(name: string, texts: readonly string[], budget: MineB
     chunks.push({ label: `${name}[${start}:${start + slice.length}]`, texts: slice });
   }
   return chunks;
+}
+
+/**
+ * `texts` with those not in `shown` first, each group in its own order. The
+ * residual round plans its chunks from this, so the FNs past round 1's cap
+ * reach the model before round 1's are shown again.
+ */
+export function unseenFirst(texts: readonly string[], shown: readonly string[]): readonly string[] {
+  const seen = new Set(shown);
+  return [...texts.filter((t) => !seen.has(t)), ...texts.filter((t) => seen.has(t))];
 }
 
 /** The channel line the mining prompt opens with, so the model knows who wrote the text. */

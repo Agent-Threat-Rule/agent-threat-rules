@@ -26,6 +26,13 @@ export interface UpstreamDataset {
   readonly revision: string;
   /** The SPDX id the dataset card must declare, or the sync refuses to vendor. */
   readonly license: string;
+  /**
+   * The copyright line of the upstream LICENSE file, verbatim. MIT's one
+   * condition is that it and the permission notice travel with every copy.
+   */
+  readonly copyright: string;
+  /** Where that LICENSE file is. */
+  readonly licenseUrl: string;
 }
 
 export const LLMAIL: UpstreamDataset = Object.freeze({
@@ -33,6 +40,9 @@ export const LLMAIL: UpstreamDataset = Object.freeze({
   repo: 'microsoft/llmail-inject-challenge',
   revision: '1063bdf01ec8762b812d5e06ee768a06faa5a6f7',
   license: 'mit',
+  copyright: 'Copyright (c) Microsoft Corporation.',
+  // The dataset repo ships no LICENSE file; its card links this code repo.
+  licenseUrl: 'https://github.com/microsoft/llmail-inject-challenge/blob/main/LICENSE',
 });
 
 export const BROWSESAFE: UpstreamDataset = Object.freeze({
@@ -40,7 +50,31 @@ export const BROWSESAFE: UpstreamDataset = Object.freeze({
   repo: 'perplexity-ai/browsesafe-bench',
   revision: 'b506fb5bc7fd4472c8738055a67a0ef6406afdc9',
   license: 'mit',
+  copyright: 'Copyright 2025 Perplexity AI, Inc.',
+  licenseUrl:
+    'https://huggingface.co/datasets/perplexity-ai/browsesafe-bench/blob/b506fb5bc7fd4472c8738055a67a0ef6406afdc9/LICENSE',
 });
+
+/** The MIT permission notice, as both upstream LICENSE files carry it. */
+export const MIT_PERMISSION_NOTICE = [
+  'Permission is hereby granted, free of charge, to any person obtaining a copy',
+  'of this software and associated documentation files (the "Software"), to deal',
+  'in the Software without restriction, including without limitation the rights',
+  'to use, copy, modify, merge, publish, distribute, sublicense, and/or sell',
+  'copies of the Software, and to permit persons to whom the Software is',
+  'furnished to do so, subject to the following conditions:',
+  '',
+  'The above copyright notice and this permission notice shall be included in all',
+  'copies or substantial portions of the Software.',
+  '',
+  'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR',
+  'IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,',
+  'FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE',
+  'AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER',
+  'LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,',
+  'OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE',
+  'SOFTWARE.',
+].join('\n');
 
 /**
  * Evaluated and NOT vendored. The card's front matter says `license: other`;
@@ -239,17 +273,47 @@ export interface BrowsesafeRawRow {
   readonly label?: string | null;
 }
 
+/**
+ * Credentials and personal identifiers the captured base pages carry, none of
+ * them part of an injection: signed-URL and session parameters (expired JWTs,
+ * an S3 presigned URL with its key id), freemail local parts, AWS account ids.
+ * A public repo should not republish them, and a rule's true positive cut from
+ * the page could carry one into rules/. Each is masked, keeping its shape.
+ */
+const SECRET_PARAM =
+  /([?&](?:jwt|token|access_token|id_token|refresh_token|redir_token|auth|sig|signature|x-amz-[a-z-]+|api_?key|session(?:_?id)?|login_hint)=)[^&\s"'#<>]+/gi;
+const JWT = /\beyJ[\w-]{8,}\.[\w-]{8,}\.[\w-]*/g;
+const AWS_KEY_ID = /\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/g;
+const FREEMAIL = /[\w.%+-]+@((?:gmail|googlemail|yahoo|hotmail|outlook|live|icloud|aol|proton(?:mail)?)\.[a-z.]{2,})/gi;
+const AWS_ACCOUNT = /\b\d{12}(?=-[a-z0-9]+\.[a-z0-9-]+\.console\.aws\.amazon\.com)|(?<=arn:aws:[a-z0-9-]*:[a-z0-9-]*:)\d{12}\b/g;
+
+/** `text` with the identifiers above masked. */
+export function scrubIdentifiers(text: string): string {
+  return text
+    .replace(SECRET_PARAM, '$1REDACTED')
+    .replace(JWT, 'REDACTED_JWT')
+    .replace(AWS_KEY_ID, 'AKIA_REDACTED')
+    .replace(FREEMAIL, 'redacted@$1')
+    .replace(AWS_ACCOUNT, '000000000000');
+}
+
 /** Projections longer than this are skipped: the miner reads one per prompt line. */
 export const MAX_PROJECTION_CHARS = 6000;
 
-/** Attack rows of one BrowseSafe split, projected against its benign rows. */
+/**
+ * Attack rows of one BrowseSafe split, projected against its benign rows. The
+ * size limit is judged on the projection as the page holds it; identifiers are
+ * masked after (scrubIdentifiers).
+ */
 export function browsesafeRows(rows: readonly BrowsesafeRawRow[], split: string): readonly CorpusRow[] {
   const benign = new Set(rows.filter((r) => r.label === 'no').flatMap((r) => pageUnits(r.content ?? '')));
   const out: CorpusRow[] = [];
   for (const r of rows) {
     if (r.label !== 'yes' || !r.content) continue;
     const text = attackProjection(r.content, benign);
-    if (text.length >= MIN_UNIT_CHARS && text.length <= MAX_PROJECTION_CHARS) out.push({ text, family: split });
+    if (text.length >= MIN_UNIT_CHARS && text.length <= MAX_PROJECTION_CHARS) {
+      out.push({ text: scrubIdentifiers(text), family: split });
+    }
   }
   return out;
 }
@@ -262,6 +326,8 @@ export interface CorpusDocMeta {
   readonly dataset: UpstreamDataset;
   readonly retrieved: string;
   readonly filter: string;
+  /** What else a reader of SOURCE.md must know to regenerate or audit the rows. */
+  readonly notes?: readonly string[];
 }
 
 /** corpus.json in the schema scripts/lib/fn-corpora.ts loadAttackFixtures reads. */
@@ -271,6 +337,7 @@ export function corpusDocument(rows: readonly CorpusRow[], meta: CorpusDocMeta):
     source_url: `https://huggingface.co/datasets/${meta.dataset.repo}`,
     revision: meta.dataset.revision,
     license: meta.dataset.license.toUpperCase(),
+    copyright: meta.dataset.copyright,
     extraction_date: meta.retrieved,
     row_filter: meta.filter,
     count: rows.length,
@@ -278,7 +345,10 @@ export function corpusDocument(rows: readonly CorpusRow[], meta: CorpusDocMeta):
   };
 }
 
-/** SOURCE.md: where the rows came from, under what license, and which rows. */
+/**
+ * SOURCE.md: where the rows came from, which rows, and the upstream copyright
+ * and MIT permission notice the rows are redistributed under.
+ */
 export function sourceMarkdown(meta: CorpusDocMeta, licenseLine: string, files: readonly string[], count: number): string {
   const { dataset } = meta;
   return [
@@ -293,6 +363,19 @@ export function sourceMarkdown(meta: CorpusDocMeta, licenseLine: string, files: 
     `- Rows kept: ${count}`,
     '',
     'Regenerate with `npx tsx scripts/sync-agent-attack-corpora.ts --write`.',
+    ...(meta.notes ?? []).flatMap((n) => ['', n]),
+    '',
+    '## License',
+    '',
+    `The rows in corpus.json are a portion of the upstream dataset, redistributed under its MIT license (${dataset.licenseUrl}):`,
+    '',
+    '```',
+    'MIT License',
+    '',
+    dataset.copyright,
+    '',
+    MIT_PERMISSION_NOTICE,
+    '```',
     '',
   ].join('\n');
 }

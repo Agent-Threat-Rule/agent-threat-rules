@@ -17,6 +17,7 @@ import {
   channelNote,
   falseNegatives,
   planChunks,
+  unseenFirst,
   vendoredProblem,
   type VendoredCorpusSpec,
 } from '../scripts/lib/fn-mine-corpora.js';
@@ -111,6 +112,26 @@ describe('planChunks', () => {
   });
 });
 
+// The residual round re-planned from index 0: with no survivor in round 1 (the
+// usual week) it re-sent round 1's chunks verbatim, and the FNs past the cap
+// were never shown to the model in any run.
+describe('unseenFirst', () => {
+  const budget = { chunkSize: 2, promptChars: 10, maxChunksPerRound: 2 };
+  const fn = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+
+  it('shows the residual round what round 1 could not, before what it already saw', () => {
+    const shown = planChunks('x', fn, budget).flatMap((c) => c.texts);
+    const residual = planChunks('x-residual', unseenFirst(fn, shown), budget).flatMap((c) => c.texts);
+    expect(residual).toEqual(['e', 'f', 'g', 'a']);
+    expect(new Set([...shown, ...residual])).toEqual(new Set(fn));
+  });
+
+  it('keeps the order within each group and drops nothing', () => {
+    expect(unseenFirst(['a', 'b', 'c', 'd'], ['b', 'd'])).toEqual(['a', 'c', 'b', 'd']);
+    expect(unseenFirst(['a', 'b'], [])).toEqual(['a', 'b']);
+  });
+});
+
 describe('channelNote', () => {
   it('names the tool output as the channel for tool_response corpora', () => {
     expect(channelNote('tool_response')).toMatch(/TOOL's OUTPUT/);
@@ -151,6 +172,21 @@ describe('falseNegatives for a vendored corpus', () => {
     const fn = await falseNegatives(spec!, root, (l) => lines.push(l));
     expect(fn).toEqual(['a new trick nobody detects yet']);
     expect(lines.join('\n')).toMatch(/2 attacks presented as tool_response, 1 missed/);
+  });
+
+  // A truncated or emptied corpus.json loaded as 0 attacks, reported 0 FN, and
+  // the run ended as a green "nothing to mine".
+  it('reports a corpus that is not valid JSON, holds no attacks, or disagrees with its count', () => {
+    const spec = MINED_CORPORA.find((s): s is VendoredCorpusSpec => s.name === 'llmail-inject');
+    const root = fixtureRoot(['a new trick nobody detects yet']);
+    const file = join(root, 'data/test-corpora/llmail-inject/corpus.json');
+    expect(vendoredProblem(spec!, root)).toBeNull();
+    writeFileSync(file, '{"attacks": [');
+    expect(vendoredProblem(spec!, root)).toMatch(/not valid JSON/);
+    writeFileSync(file, JSON.stringify({ count: 0, attacks: [] }));
+    expect(vendoredProblem(spec!, root)).toMatch(/no attack/);
+    writeFileSync(file, JSON.stringify({ count: 2, attacks: [{ text: 'a new trick nobody detects yet', label: 'attack' }] }));
+    expect(vendoredProblem(spec!, root)).toMatch(/declares 2.*1/);
   });
 
   it('reports a corpus missing from disk instead of mining nothing quietly', () => {
