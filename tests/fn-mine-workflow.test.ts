@@ -210,3 +210,31 @@ describe("open-PR rule files step", () => {
     expect(githubEnv(sb)).not.toMatch(/FN_MINE_OPEN_PR_FILES/);
   });
 });
+
+// #639 failed three PR checks the lane never ran. The backstop runs the PR's
+// rule checks on the tree about to be pushed, and only when rules were authored.
+describe("pre-push backstop", () => {
+  const BACKSTOP = [
+    "npm run validate",
+    "npm run validate:compliance",
+    "npm run audit:mappings",
+    "scripts/generate-attack-crosswalk.py --check",
+    "scripts/generate-ast-crosswalk.py --check",
+    "scripts/gate-re2-portability.ts",
+    "scripts/gate-corpus-visibility.ts",
+    "scripts/check-rules-safety.ts --base origin/main",
+    "scripts/gate-redos.py",
+    "npm run gate:generalization",
+    "scripts/gate-rule-status.ts",
+    "scripts/gate-action-eligibility.ts",
+    "npm test",
+  ];
+
+  it.each(BACKSTOP)("runs %s after the mining and before the push, only when rules were authored", (cmd) => {
+    const all = steps();
+    const i = all.findIndex((s) => (s.run ?? "").includes(cmd) && all.indexOf(s) > all.findIndex((t) => t.name === MINE));
+    expect(i, `no step after mining runs ${cmd}`).toBeGreaterThan(-1);
+    expect(i).toBeLessThan(all.findIndex((s) => s.name === PUSH));
+    expect(all[i].if).toBe("steps.mine.outputs.files != ''");
+  });
+});

@@ -481,6 +481,18 @@ jobs:
         if: steps.authored.outputs.any == 'true'
         run: npm run gate:generalization
 
+      # PR CI runs this in rule-status-gate.yml: a new rule may not be status draft,
+      # which the engine never evaluates.
+      - name: Rule status ratchet (no new inert rule)
+        if: steps.authored.outputs.any == 'true'
+        run: npx tsx scripts/gate-rule-status.ts
+
+      # PR CI runs this in action-eligibility.yml: a rule may only declare the
+      # response actions its maturity and FP measurement have earned.
+      - name: Response actions must be earned
+        if: steps.authored.outputs.any == 'true'
+        run: npx tsx scripts/gate-action-eligibility.ts
+
       # Also on a resumed branch that authored nothing: the push step still pushes
       # it with main merged in and the derived files regenerated.
       - name: Run tests

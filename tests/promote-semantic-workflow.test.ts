@@ -521,6 +521,13 @@ describe("promote-semantic.yml wiring of the authored-cluster record", () => {
     );
   });
 
+  // PR CI's rule-status-gate.yml: a new rule may not be status draft.
+  it.each(["scripts/gate-rule-status.ts", "scripts/gate-action-eligibility.ts"])("runs %s in the backstop", (cmd) => {
+    const st = workflowSteps().find((x) => (x.run ?? "").includes(cmd));
+    expect(st?.if).toBe("steps.authored.outputs.any == 'true'");
+    expect(names.indexOf(st?.name ?? "")).toBeLessThan(at("Push to the rolling branch and open or update its PR"));
+  });
+
   it("runs the tests before pushing a resumed branch that authored nothing", () => {
     const tests = workflowSteps().find((st) => st.name === "Run tests");
     expect(tests?.if).toContain("env.ROLLING_RESUMED == '1'");
