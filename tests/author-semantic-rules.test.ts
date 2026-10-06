@@ -367,6 +367,61 @@ describe("excludeAuthored", () => {
   });
 });
 
+// The tree only shows rules that still exist. A rolling PR closed without merging
+// leaves nothing in it, so the tree alone hands the same clusters back to the next
+// run. The history record (--exclude-from) is what keeps a rejection rejected.
+import { selectCandidates } from "../scripts/author-semantic-rules.js";
+
+describe("selectCandidates", () => {
+  const c = (rel: string) => ({ proposalRel: rel, title: rel });
+
+  it("skips a cluster authored before even when its rule is gone from the tree", () => {
+    const found = [c("a.yaml"), c("b.yaml"), c("c.yaml")];
+    const r = selectCandidates(found, new Set(), new Set(["b.yaml"]));
+    expect(r.fresh.map((x) => x.proposalRel)).toEqual(["a.yaml", "c.yaml"]);
+    expect(r.authoredBefore.map((x) => x.proposalRel)).toEqual(["b.yaml"]);
+  });
+
+  it("reports clusters in the tree and clusters only in history separately, order kept", () => {
+    const found = [c("a.yaml"), c("b.yaml"), c("c.yaml"), c("d.yaml")];
+    const r = selectCandidates(found, new Set(["a.yaml", "c.yaml"]), new Set(["a.yaml", "d.yaml"]));
+    expect(r.fresh.map((x) => x.proposalRel)).toEqual(["b.yaml"]);
+    expect(r.alreadyAuthored.map((x) => x.proposalRel)).toEqual(["a.yaml", "c.yaml"]);
+    expect(r.authoredBefore.map((x) => x.proposalRel)).toEqual(["d.yaml"]);
+  });
+
+  it("does not hand a closed rolling PR's clusters back to the next run (#632)", () => {
+    // The eight clusters #632 authored, in the order findCandidates() returns them,
+    // followed by clusters nobody has authored yet.
+    const rejected = [
+      "proposals/hackaprompt-clusters/backslash-per-character-encoding.proposal.yaml",
+      "proposals/hackaprompt-clusters/conditional-empty-input-injection.proposal.yaml",
+      "proposals/hackaprompt-clusters/direct-pwned-payload-injection.proposal.yaml",
+      "proposals/hackaprompt-clusters/no-period-output-override.proposal.yaml",
+      "proposals/hackaprompt-clusters/secret-key-reveal-demand.proposal.yaml",
+      "proposals/promptinject-clusters/ATR-PI-04ab2274.proposal.yaml",
+      "proposals/garak-clusters/ATR-GARAK-0c4383a1.proposal.yaml",
+      "proposals/garak-clusters/ATR-GARAK-0e572bb5.proposal.yaml",
+    ];
+    const untouched = [
+      "proposals/garak-clusters/ATR-GARAK-fixture1.proposal.yaml",
+      "proposals/garak-clusters/ATR-GARAK-fixture2.proposal.yaml",
+    ];
+    const found = [...rejected, ...untouched].map(c);
+    // The PR was closed, so a run from main sees none of its rules in the tree.
+    const r = selectCandidates(found, new Set(), new Set(rejected));
+    expect(r.fresh.slice(0, 8).map((x) => x.proposalRel)).toEqual(untouched);
+    expect(r.authoredBefore).toHaveLength(8);
+  });
+
+  it("with no history record, behaves exactly like the tree-only dedupe", () => {
+    const found = [c("a.yaml"), c("b.yaml")];
+    const r = selectCandidates(found, new Set(["a.yaml"]), new Set());
+    expect(r.fresh.map((x) => x.proposalRel)).toEqual(["b.yaml"]);
+    expect(r.authoredBefore).toHaveLength(0);
+  });
+});
+
 describe("earnedActions", () => {
   it("drops actions above the observe tier and keeps declaration order", () => {
     expect(earnedActions(["block_input", "alert", "escalate"], "test")).toEqual(["alert", "escalate"]);

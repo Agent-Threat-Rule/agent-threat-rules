@@ -59,6 +59,11 @@
  *   ... --max 5                 cap promotions
  *   ... --source hackaprompt    only this cluster source (hackaprompt|promptinject|garak)
  *   ... --report /tmp/r.json    write a run-summary JSON (for the workflow)
+ *   ... --exclude-from FILE     never author a cluster listed in FILE (one proposal
+ *                               path per line). The workflow writes it with
+ *                               scripts/semantic-authored-history.ts: every cluster
+ *                               this lane has authored, including rules a closed PR
+ *                               or a reviewer threw away.
  *
  * ENV
  *   CLAUDE_CODE_OAUTH_TOKEN  preferred — routes through the local `claude` CLI and spends
@@ -86,6 +91,7 @@ import { RuleScaffolder } from "../src/rule-scaffolder.js";
 import { ineligibleActions, maxTierFor } from "../src/quality/action-eligibility.js";
 import type { ATRCategory, ATRSeverity } from "../src/types.js";
 import { callClaude as sharedCallClaude, describeBackend, backendAvailable } from "./lib/claude-client.js";
+import { readExcludeList } from "./lib/semantic-exclusions.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -154,6 +160,7 @@ const WRITE = flag("--write");
 const SOURCE_FILTER = opt("--source");
 const MAX_PROMOTE = opt("--max") ? parseInt(opt("--max")!, 10) : DEFAULT_MAX;
 const REPORT_PATH = opt("--report");
+const EXCLUDE_FROM = opt("--exclude-from");
 const DRY_RUN = !WRITE;
 
 // ---------------------------------------------------------------------------
@@ -462,6 +469,22 @@ export function excludeAuthored<T extends { proposalRel: string }>(
   return { fresh, alreadyAuthored };
 }
 
+/**
+ * Split the clusters found into the ones to author, the ones whose rule is in
+ * the tree, and the ones authored before whose rule is gone (a rolling PR closed
+ * without merging, a rule a reviewer deleted). The tree alone forgets the last
+ * kind and hands those clusters straight back. Order is kept.
+ */
+export function selectCandidates<T extends { proposalRel: string }>(
+  found: T[],
+  inTree: Set<string>,
+  authoredEver: Set<string>,
+): { fresh: T[]; alreadyAuthored: T[]; authoredBefore: T[] } {
+  const { fresh: notInTree, alreadyAuthored } = excludeAuthored(found, inTree);
+  const { fresh, alreadyAuthored: authoredBefore } = excludeAuthored(notInTree, authoredEver);
+  return { fresh, alreadyAuthored, authoredBefore };
+}
+
 function loadAuthoredClusters(): Set<string> {
   const docs: unknown[] = [];
   for (const f of walkYamlAll(RULES_BASE)) {
@@ -763,7 +786,12 @@ async function main(): Promise<void> {
   const { candidates: found, skipped } = findCandidates();
   // Dedupe before capping. Slicing first would spend the whole --max budget
   // on clusters that already have a rule and author nothing new.
-  const { fresh: candidates, alreadyAuthored } = excludeAuthored(found, loadAuthoredClusters());
+  const authoredEver = EXCLUDE_FROM ? readExcludeList(EXCLUDE_FROM) : new Set<string>();
+  const { fresh: candidates, alreadyAuthored, authoredBefore } = selectCandidates(
+    found,
+    loadAuthoredClusters(),
+    authoredEver,
+  );
   const limited = candidates.slice(0, MAX_PROMOTE);
   const idGen = nextAtrId();
   const benignCode = loadBenignCode();
@@ -793,6 +821,7 @@ async function main(): Promise<void> {
     candidates_attempted: limited.length,
     skipped_out_of_scope: skipped.length,
     skipped_already_authored: alreadyAuthored.length,
+    skipped_authored_before: authoredBefore.length,
     promoted: 0,
     routed_to_human: 0,
     errors: 0,
@@ -866,6 +895,7 @@ async function main(): Promise<void> {
       routed_to_human: summary.routed_to_human,
       skipped_out_of_scope: summary.skipped_out_of_scope,
       skipped_already_authored: summary.skipped_already_authored,
+      skipped_authored_before: summary.skipped_authored_before,
       errors: summary.errors,
       errors_infrastructure: summary.errors_infrastructure,
     })}`,
