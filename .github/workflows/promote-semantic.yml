@@ -31,6 +31,13 @@ name: Promote Semantic (T2) Rules
 # in review -- and skips it (_semantic_authored.source_cluster). Before this,
 # every run started from the top of the same list and opened a new PR that
 # duplicated the last one.
+#
+# The tree only shows rules that still exist, so it also reads git history:
+# every cluster a lane rule has ever named on main or on any same-repo rolling
+# PR's head is skipped too. Closing the rolling PR without merging rejects every
+# rule in it, and deleting a rule from it rejects that one; the lane does not
+# author those clusters again. Without that record a closed PR's clusters sort
+# straight back to the top and come back regenerated in the next PR.
 
 on:
   # Chain after the CVE collector so semantic authoring runs on the freshest
@@ -79,40 +86,87 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      # Resume only while the rolling PR is open. A PR closed without merging leaves
+      # its branch behind (delete_branch_on_merge only fires on merge); resuming it
+      # would bring the rejected rules back. The sha fetched here is the lease the
+      # push step overwrites against.
+      # `gh pr list --head` matches the branch name only, and a fork can open a PR
+      # from its own auto-semantic/rolling, so only a same-repo PR counts.
       - name: Resume the rolling branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           git config user.name "ATR Semantic Author"
           git config user.email "semantic-author@atr-framework.org"
           BRANCH="auto-semantic/rolling"
+          OLD_SHA=""
           if git fetch --quiet origin "$BRANCH" 2>/dev/null; then
-            # Everything on the branch already landed (e.g. its PR was squash-merged):
-            # start clean from main rather than carry history that main already has.
-            if git diff --quiet origin/main "origin/$BRANCH" -- rules/; then
-              echo "Rolling branch has no rules main lacks; starting fresh from main."
-              git checkout -B "$BRANCH" origin/main
-            else
-              git checkout -B "$BRANCH" "origin/$BRANCH"
-              if ! git merge --no-edit origin/main; then
-                # main's reconcile-stats bot rewrites the same two count caches this
-                # branch carries, so they collide on every merge. They are derived
-                # from rules/ and recomputed after authoring; take main's copy and
-                # move on. A conflict anywhere else still needs a human.
-                CONFLICTED=$(git diff --name-only --diff-filter=U)
-                OTHER=$(printf '%s\n' "$CONFLICTED" | grep -vxE 'stats\.json|data/stats\.json' || true)
-                if [ -n "$OTHER" ]; then
-                  echo "::error::auto-semantic/rolling conflicts with main in: $OTHER. Resolve it by hand; this run did not author anything."
-                  exit 1
-                fi
-                git checkout --theirs -- stats.json data/stats.json
-                git add stats.json data/stats.json
-                git commit --no-edit
-              fi
-            fi
-          else
-            echo "No rolling branch yet; starting from main."
-            git checkout -B "$BRANCH" origin/main
+            OLD_SHA=$(git rev-parse "origin/$BRANCH")
           fi
+          echo "ROLLING_OLD_SHA=$OLD_SHA" >> "$GITHUB_ENV"
+          OPEN=$(gh pr list --head "$BRANCH" --state open --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository | not)][0].number // empty')
+
+          if [ -z "$OPEN" ] || [ -z "$OLD_SHA" ] || git diff --quiet origin/main "origin/$BRANCH" -- rules/; then
+            if [ -n "$OLD_SHA" ] && [ -z "$OPEN" ]; then
+              echo "auto-semantic/rolling exists without an open PR (merged or closed); starting fresh from main."
+            else
+              echo "No rolling PR with rules main lacks; starting fresh from main."
+            fi
+            git checkout -B "$BRANCH" origin/main
+            exit 0
+          fi
+
+          echo "Resuming auto-semantic/rolling for open PR #$OPEN."
+          # Tells the push step that this branch is the open PR's, so it is pushed
+          # even in a run that authors nothing (see there).
+          echo "ROLLING_RESUMED=1" >> "$GITHUB_ENV"
+          git checkout -B "$BRANCH" "origin/$BRANCH"
+          if ! git merge --no-edit origin/main; then
+            # The two count caches and the two crosswalk documents are generated from
+            # rules/, and main's rule PRs and reconcile-stats bot rewrite them, so they
+            # collide on most merges. Take main's copy to clear the markers; all four
+            # are regenerated from the merged tree after authoring, before the tests.
+            # A conflict anywhere else still needs a human.
+            DERIVED='stats\.json|data/stats\.json|docs/crosswalks/atr-(attack|ast)-crosswalk\.md'
+            CONFLICTED=$(git diff --name-only --diff-filter=U)
+            OTHER=$(printf '%s\n' "$CONFLICTED" | grep -vxE "$DERIVED" || true)
+            if [ -n "$OTHER" ]; then
+              echo "::error::auto-semantic/rolling conflicts with main in: $OTHER. Resolve it by hand; this run did not author anything."
+              exit 1
+            fi
+            printf '%s\n' "$CONFLICTED" | xargs git checkout --theirs --
+            printf '%s\n' "$CONFLICTED" | xargs git add --
+            git commit --no-edit
+          fi
+
+      # The record of every cluster this lane has authored (see the header) is read
+      # from the head of every same-repo rolling PR -- open, closed or merged.
+      # GitHub keeps refs/pull/N/head after a PR closes, even once the push step
+      # has overwritten the branch, so a rejection several PRs back still counts.
+      # Not the bare branch: it can hold rules no PR ever showed a reviewer (a run
+      # whose `gh pr create` failed). Not a fork's PR: anyone can open one, and its
+      # history must not be able to switch clusters off. This runs before `npm ci`
+      # so the token is never in a step that executes the dependency tree.
+      - name: Fetch the history of every rolling PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          BRANCH="auto-semantic/rolling"
+          # A failed listing must fail the job: an empty record lets every rejected
+          # cluster back in behind a green run.
+          PRS=$(gh pr list --head "$BRANCH" --state all --limit 1000 --json number,isCrossRepository \
+            --jq '.[] | select(.isCrossRepository | not) | .number')
+          REFSPECS=()
+          for N in $PRS; do
+            REFSPECS+=("+refs/pull/$N/head:refs/semantic-history/$N")
+          done
+          if [ "${#REFSPECS[@]}" -gt 0 ]; then
+            git fetch --quiet origin "${REFSPECS[@]}"
+          fi
+          echo "Fetched the head of ${#REFSPECS[@]} rolling PR(s)."
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -156,6 +210,11 @@ jobs:
           npm install -g @anthropic-ai/claude-code
 
 
+      - name: List every cluster the lane has already authored
+        run: |
+          npx tsx scripts/semantic-authored-history.ts --out /tmp/semantic-authored.txt \
+            origin/main --glob 'refs/semantic-history/*'
+
       - name: Author semantic rules (deterministic 0-FP gate)
         env:
           # Preferred: subscription credit. Absent -> the client falls back to the API key below.
@@ -177,7 +236,8 @@ jobs:
             *) echo "::error::invalid source '$INPUT_SOURCE' (allowed: hackaprompt|promptinject|garak)"; exit 1 ;;
           esac
           set +e
-          npx tsx scripts/author-semantic-rules.ts --write --max "$INPUT_MAX" "${SOURCE_ARG[@]}" --report /tmp/semantic-report.json
+          npx tsx scripts/author-semantic-rules.ts --write --max "$INPUT_MAX" "${SOURCE_ARG[@]}" \
+            --exclude-from /tmp/semantic-authored.txt --report /tmp/semantic-report.json
           EXIT=$?
           set -e
           # 0 = ok (promoted 0 or more; any failures were content-level)
@@ -202,6 +262,14 @@ jobs:
       # failed here.
       - name: Reconcile rule-count caches
         run: node scripts/reconcile-rule-count.mjs
+
+      # Both crosswalk documents count rules too, and validate.yml checks them on
+      # every PR with --check. A new rule makes them stale, so the PR this lane
+      # opens would fail validation unless they move in the same commit.
+      - name: Regenerate the crosswalk documents
+        run: |
+          python3 scripts/generate-attack-crosswalk.py
+          python3 scripts/generate-ast-crosswalk.py
 
       - name: Validate new rules
         run: npm run validate
@@ -233,9 +301,24 @@ jobs:
           AFTER=${{ steps.after.outputs.count }}
           NEW=$((AFTER - BEFORE))
 
-          git add rules/ stats.json data/stats.json
+          git add rules/ stats.json data/stats.json docs/crosswalks/
           if git diff --cached --quiet -- rules/; then
             echo "No new semantic rules this run (every in-scope cluster already has a rule, or all drafts went to human review)."
+            # A resumed branch can still have moved: main merged in, the derived files
+            # regenerated. Push that, or the open PR stays conflicting with main and its
+            # crosswalks stay stale until some later run happens to author a rule.
+            # Only on the resume path: on the fresh-from-main path HEAD is main, and
+            # pushing it would just overwrite a closed PR's branch with main.
+            if [ "${ROLLING_RESUMED:-}" = 1 ] && { ! git diff --cached --quiet || [ "$(git rev-parse HEAD)" != "$ROLLING_OLD_SHA" ]; }; then
+              git diff --cached --quiet || git commit -m "chore: sync rolling branch with main"
+              # Same helper and lease as below (see the comment there). HEAD descends
+              # from the leased sha, so this is a fast-forward.
+              # shellcheck disable=SC2016
+              git -c credential.helper= \
+                  -c 'credential.helper=!f() { test "$1" = get || exit 0; echo username=x-access-token; echo "password=$PUSH_TOKEN"; }; f' \
+                  push --force-with-lease="refs/heads/$BRANCH:$ROLLING_OLD_SHA" origin "HEAD:refs/heads/$BRANCH"
+              echo "Synced the open rolling PR's branch with main."
+            fi
             exit 0
           fi
 
@@ -251,12 +334,19 @@ jobs:
           # environment. Nothing is written to .git/config.
           # SC2016 is the point here, not a mistake: expanding $PUSH_TOKEN now would put
           # the token in argv, where any process listing on the runner can read it.
+          # The lease is the sha the resume step fetched: a resumed branch fast-forwards,
+          # a branch left by a merged or closed PR is replaced, and a branch someone else
+          # moved since this run started is not touched. Empty means it must not exist.
           # shellcheck disable=SC2016
           git -c credential.helper= \
               -c 'credential.helper=!f() { test "$1" = get || exit 0; echo username=x-access-token; echo "password=$PUSH_TOKEN"; }; f' \
-              push origin "HEAD:refs/heads/$BRANCH"
+              push --force-with-lease="refs/heads/$BRANCH:${ROLLING_OLD_SHA:-}" origin "HEAD:refs/heads/$BRANCH"
 
-          OPEN=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          # Same-repo only, as in the resume step: a fork's PR from a same-named branch
+          # does not track this branch, and reporting it here would leave the rules on
+          # a branch no PR shows.
+          OPEN=$(gh pr list --head "$BRANCH" --state open --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository | not)][0].number // empty')
           if [ -n "$OPEN" ]; then
             echo "Added ${NEW} rule(s) to the open rolling PR #${OPEN}."
             exit 0
@@ -268,10 +358,12 @@ jobs:
             --head "$BRANCH" \
             --title "auto-semantic: T2 semantic rules for human review (rolling)" \
             --label "needs-human-review" \
-            --body "$(cat <<'BODY'
+            --body-file - <<'BODY'
           Authored method=semantic (T2) rules from semantic-attack adversarial clusters (PromptInject / HackAPrompt / garak) via scripts/author-semantic-rules.ts.
 
           This is a rolling PR. Each weekly run adds rules for clusters that do not yet have one and pushes them here; clusters already covered by a merged rule, or by a rule already in this PR, are skipped. Merge it when ready; the next run starts a new one.
+
+          Closing this PR without merging rejects every rule in it, and deleting a rule from it rejects that rule: the lane reads its own history and does not author those clusters again.
 
           Why semantic, not regex: pure regex on a reworded prompt injection is the MiroFish failure mode (keys on the describing wording, false-positives on benign paraphrases, bypassed by the next rewording). Each rule here follows the ATR-2026-00573 T2 shape: a narrow regex fallback (anchor plus redirect, low false-positive by design) used only when no judge is configured, and a high-quality LLM-as-judge prompt that defines the attack class with positive and negative cues and returns strict JSON.
 
@@ -279,4 +371,3 @@ jobs:
 
           Status experimental, maturity test. Do not auto-merge; human review required.
           BODY
-          )"
