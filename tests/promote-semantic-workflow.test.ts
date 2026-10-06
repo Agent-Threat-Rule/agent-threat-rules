@@ -85,6 +85,7 @@ interface Pr {
   isCrossRepository: boolean;
   labels?: Array<{ name: string }>;
   files?: Array<{ path: string }>;
+  changedFiles?: number;
 }
 
 interface Fixture {
@@ -219,7 +220,12 @@ function exported(fx: Fixture): Record<string, string> {
   return Object.fromEntries(lines.map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
 }
 
-function runStep(fx: Fixture, name: string, counts?: { before: number; after: number }) {
+function runStep(
+  fx: Fixture,
+  name: string,
+  counts?: { before: number; after: number },
+  extraEnv: Record<string, string> = {},
+) {
   const script = runBlock(name)
     .replace(/\$\{\{\s*steps\.before\.outputs\.count\s*\}\}/g, String(counts?.before ?? 0))
     .replace(/\$\{\{\s*steps\.after\.outputs\.count\s*\}\}/g, String(counts?.after ?? 0));
@@ -229,7 +235,7 @@ function runStep(fx: Fixture, name: string, counts?: { before: number; after: nu
   const r = spawnSync("bash", ["--noprofile", "--norc", "-eo", "pipefail", file], {
     cwd: fx.work,
     encoding: "utf-8",
-    env: { ...fx.env, ...exported(fx) },
+    env: { ...fx.env, ...exported(fx), ...extraEnv },
   });
   return { status: r.status, out: `${r.stdout}${r.stderr}` };
 }
@@ -393,7 +399,7 @@ describe.skipIf(!HAS_JQ)("promote-semantic.yml rolling-branch steps", () => {
         { number: 638, state: "OPEN", isCrossRepository: false, files: [{ path: "rules/prompt-injection/ATR-2026-02846-y.yaml" }] },
         { number: 632, state: "CLOSED", isCrossRepository: false, files: [{ path: "rules/prompt-injection/ATR-2026-02853-z.yaml" }] },
       ]);
-      const r = runStep(fx, COLLECT);
+      const r = runStep(fx, COLLECT, undefined, { GITHUB_WORKSPACE: REPO_ROOT });
       expect(r.status, r.out).toBe(0);
       expect(readFileSync(OUT, "utf-8").split("\n").filter(Boolean)).toEqual([
         "rules/prompt-injection/ATR-2026-02847-x.yaml",
@@ -406,7 +412,7 @@ describe.skipIf(!HAS_JQ)("promote-semantic.yml rolling-branch steps", () => {
     it("fails the job when the open PRs cannot be listed", () => {
       setPrs(fx, []);
       fx = { ...fx, env: { ...fx.env, FAKE_GH_FAIL: "1" } };
-      const r = runStep(fx, COLLECT);
+      const r = runStep(fx, COLLECT, undefined, { GITHUB_WORKSPACE: REPO_ROOT });
       expect(r.status, r.out).not.toBe(0);
     });
   });

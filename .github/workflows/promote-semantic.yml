@@ -246,7 +246,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          gh pr list --state open --limit 1000 --json files --jq '.[].files[].path' > /tmp/semantic-open-pr-files.txt
+          bash "$GITHUB_WORKSPACE/scripts/list-open-pr-files.sh" /tmp/semantic-open-pr-files.txt
           echo "Open PRs touch $(grep -c '^rules/' /tmp/semantic-open-pr-files.txt || true) rule file(s)."
 
       - name: Setup Node.js
