@@ -223,6 +223,117 @@ jobs:
         if: steps.mine.outputs.files != ''
         run: node scripts/reconcile-rule-count.mjs
 
+      # ── Pre-push backstop ──────────────────────────────────────────────────
+      # The first rolling PR this lane opened (#639) failed three PR checks the
+      # miner never ran: status draft, an unmeasured wild_fp_rate and a title in
+      # references.owasp_agentic. The miner now writes those fields itself, and
+      # these are the PR's rule checks, as promote-semantic.yml runs them, on
+      # the tree about to be pushed. A failure fails the job before the push.
+      # Keep them in sync with promote-semantic.yml and their source workflows.
+      - name: Install PyYAML for the ReDoS gate
+        if: steps.mine.outputs.files != ''
+        run: pip install PyYAML
+
+      - name: Validate new rules
+        if: steps.mine.outputs.files != ''
+        run: npm run validate
+
+      - name: Validate compliance mappings against framework allowlists
+        if: steps.mine.outputs.files != ''
+        run: npm run validate:compliance
+
+      - name: Enforce 100% framework coverage (keeps framework-coverage claims honest)
+        if: steps.mine.outputs.files != ''
+        run: npm run audit:mappings -- --require-full=references:owasp_llm,references:owasp_agentic,references:mitre_atlas,compliance:eu_ai_act,compliance:nist_ai_rmf,compliance:iso_42001
+
+      - name: ATT&CK crosswalk freshness (doc must match rule metadata)
+        if: steps.mine.outputs.files != ''
+        run: python3 scripts/generate-attack-crosswalk.py --check
+
+      - name: AST crosswalk freshness (doc must match rule metadata)
+        if: steps.mine.outputs.files != ''
+        run: python3 scripts/generate-ast-crosswalk.py --check
+
+      # The RE2 gate's oracle compiles every pattern with Go's regexp (which IS
+      # RE2); pinned as in re2-portability.yml.
+      - uses: actions/setup-go@v5
+        if: steps.mine.outputs.files != ''
+        with:
+          go-version: "1.25"
+          cache: false
+
+      - name: Audit rule regexes against RE2
+        if: steps.mine.outputs.files != ''
+        run: npx tsx scripts/audit-re2-portability.ts --json --verify-re2 > re2-audit.json
+
+      - name: RE2 portability ratchet
+        if: steps.mine.outputs.files != ''
+        run: npx tsx scripts/gate-re2-portability.ts --audit re2-audit.json --require-oracle
+
+      - name: RE2 equivalence artifact is current
+        if: steps.mine.outputs.files != ''
+        run: |
+          npx tsx scripts/verify-re2-equivalence.ts \
+            --write-equivalence /tmp/re2-equivalence.fresh.json > /dev/null || true
+          python3 - <<'PY'
+          import json, sys
+          def load(p):
+              with open(p, encoding="utf-8") as fh:
+                  return json.load(fh)
+          def tagging_verdict(d):
+              return {
+                  rule_id: sorted(
+                      [entry.get("location", ""), sorted(entry.get("causes", []))]
+                      for entry in entries
+                  )
+                  for rule_id, entries in d.get("divergentRules", {}).items()
+              }
+          committed, fresh = load("data/re2-equivalence.json"), load("/tmp/re2-equivalence.fresh.json")
+          want, got = tagging_verdict(committed), tagging_verdict(fresh)
+          if want != got:
+              print("data/re2-equivalence.json is stale. Regenerate and commit:")
+              print("  npx tsx scripts/verify-re2-equivalence.ts --write-equivalence data/re2-equivalence.json")
+              for rule_id in sorted(set(want) | set(got)):
+                  if want.get(rule_id) != got.get(rule_id):
+                      print(f"  {rule_id}: committed={want.get(rule_id)} actual={got.get(rule_id)}")
+              sys.exit(1)
+          print(
+              "equivalence artifact current: "
+              f"{fresh.get('re2Equivalent')}/{fresh.get('patternsRewritten')} rewritten patterns "
+              f"verified portable, {len(got)} rule(s) measured divergent under RE2"
+          )
+          PY
+
+      - name: Corpus visibility ratchet
+        if: steps.mine.outputs.files != ''
+        run: npx tsx scripts/gate-corpus-visibility.ts --verify-blind
+
+      # check-rules-safety sees the authored files whether they are committed
+      # (a resumed rolling branch) or still untracked (this run's new rules).
+      - name: Rule safety gate (duplicate IDs + cross-rule conflicts + own-TP coverage)
+        if: steps.mine.outputs.files != ''
+        run: npx tsx scripts/check-rules-safety.ts --base origin/main
+
+      # PR CI runs this in redos-gate.yml. The author step ran it on each draft
+      # alone; this is the whole tree about to be pushed.
+      - name: ReDoS gate (catastrophic backtracking on pumped inputs)
+        if: steps.mine.outputs.files != ''
+        run: python3 scripts/gate-redos.py --rules rules
+
+      - name: Generalization gate (own-TP coverage + self-FP, full set)
+        if: steps.mine.outputs.files != ''
+        run: npm run gate:generalization
+
+      # PR CI runs this in rule-status-gate.yml: a new rule may not be status draft,
+      # which the engine never evaluates.
+      - name: Rule status ratchet (no new inert rule)
+        if: steps.mine.outputs.files != ''
+        run: npx tsx scripts/gate-rule-status.ts
+
+      - name: Run tests
+        if: steps.mine.outputs.files != ''
+        run: npm test
+
       # FORCE_DRY_RUN: a non-main dispatch never pushes, whatever its miner prints.
       - name: Push to the rolling branch and open or update its PR
         if: steps.mine.outputs.files != '' && env.FORCE_DRY_RUN != 'true'
