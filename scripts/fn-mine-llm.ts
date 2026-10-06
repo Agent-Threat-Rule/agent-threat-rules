@@ -6,10 +6,17 @@
  * CURRENT rule set for the corpora in scripts/lib/fn-mine-corpora.ts
  * (HackAPrompt, PINT, LLMail-Inject, BrowseSafe-Bench), clusters the misses
  * via Claude into generalizable regex candidates, gates every candidate
- * against the FULL FN set + FULL benign corpus using the exact engine
+ * against the FN set + FULL benign corpus using the exact engine
  * regex-compile semantics, authors survivors as draft ATR rules, self-tests
  * each on the real engine, and re-verifies the whole batch against the repo's
  * own safety gate before handing off to the calling workflow to open a draft PR.
+ *
+ * Each corpus's uncovered misses are split by content hash (scripts/lib/
+ * fn-mine-heldout.ts): 70% are shown to the model and count toward
+ * --min-recovers, 30% are never shown and a candidate must recover some of
+ * them too. Every candidate must also fire on no benign email or web page
+ * presented to the engine as tool output (scripts/lib/fn-mine-tool-benign.ts);
+ * without those corpora the tool_response corpora are not mined.
  *
  * This is the scheduled/unattended counterpart to the interactive /fn-mine
  * Claude Code workflow — same methodology (full-set clustering, engine-
@@ -39,7 +46,6 @@ import path from 'node:path';
 import { execFileSync, execSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import Anthropic from '@anthropic-ai/sdk';
-import { needsUnicodeFlag } from '../src/engine.js';
 import { callClaude as sharedCallClaude, describeBackend, backendAvailable } from './lib/claude-client.js';
 import {
   coverageOf,
@@ -59,16 +65,11 @@ import {
   type MinedCorpusSpec,
 } from './lib/fn-mine-corpora.js';
 import { gateAuthoredBatch } from './lib/fn-mine-gate.js';
-import { countRecoveries } from './lib/fn-mine-recoveries.js';
+import { computeResidual, gateCandidates, type GateContext, type GatedCandidate } from './lib/fn-mine-candidate-gate.js';
+import { HELD_OUT_PERCENT, MIN_HELD_OUT_RECOVERS, splitHeldOut } from './lib/fn-mine-heldout.js';
+import { dropToolOutputHits, readToolOutputBenign, type ToolOutputBenign } from './lib/fn-mine-tool-benign.js';
 import { assertSomeChunkRead, mineChunkReply, type ChunkResult, type MineCandidate } from './lib/fn-mine-reply.js';
-import {
-  finalizeAuthoredRule,
-  hasBenchmarkArtifacts,
-  isRuleCategory,
-  re2Problem,
-  visibilityProblem,
-  withoutBenchmarkArtifacts,
-} from './lib/fn-mine-quality.js';
+import { finalizeAuthoredRule, hasBenchmarkArtifacts, withoutBenchmarkArtifacts } from './lib/fn-mine-quality.js';
 import { loadOwaspAllowlists, type OwaspAllowlists } from './lib/normalize-references.js';
 import { prepareGateCorpus, type GateCorpus } from './lib/semantic-gate.js';
 import { loadBenignSamples } from './lib/benign-corpus.js';
@@ -112,23 +113,8 @@ async function callClaude(systemPrompt: string, userPrompt: string, model: strin
 }
 
 // ---------------------------------------------------------------------------
-// Engine-accurate regex gate (mirrors src/engine.ts's normalizeRegex + the
-// auto 'iu' flag rule EXACTLY — see compilePatterns() in src/engine.ts).
+// Benign text corpus (the regex-only check; see fn-mine-candidate-gate.ts)
 // ---------------------------------------------------------------------------
-
-function normalizeRegex(pattern: string): string {
-  return pattern.replace(/^\(\?[imsx]+\)/, '');
-}
-
-function compileEngineAccurate(value: string): RegExp | null {
-  const pattern = normalizeRegex(value);
-  const flags = needsUnicodeFlag(pattern) ? 'iu' : 'i';
-  try {
-    return new RegExp(pattern, flags);
-  } catch {
-    return null;
-  }
-}
 
 function loadBenignTexts(): readonly string[] {
   const dir = path.join(REPO_ROOT, 'data/benign-corpus-extended');
@@ -199,71 +185,6 @@ async function mineChunk(chunk: Chunk, spec: MinedCorpusSpec, model: string): Pr
     () => callClaude(MINE_SYSTEM_PROMPT, buildMinePrompt(chunk, spec), model),
     (line) => console.log(`::warning::[fn-mine] ${line}`),
   );
-}
-
-// ---------------------------------------------------------------------------
-// Gate — engine-accurate recovers/benignFP over the FULL sets
-// ---------------------------------------------------------------------------
-
-interface GatedCandidate extends MineCandidate {
-  recovers: number;
-  benignFP: number;
-  /** Excerpts around the match, verbatim (countRecoveries): what the true positives are cut from. */
-  exampleFNs: readonly string[];
-}
-
-interface GateContext {
-  readonly corpusName: string;
-  /** The texts recoveries are counted on: the FN texts with the corpus's benchmark artifacts removed. */
-  readonly measureOn: readonly string[];
-  /** MEASUREMENT_CORPORA, for the corpus visibility gate's arithmetic. */
-  readonly corpus: GateCorpus;
-}
-
-function gateCandidates(
-  candidates: readonly MineCandidate[],
-  fullFn: readonly string[],
-  benignTexts: readonly string[],
-  minRecovers: number,
-  gate: GateContext,
-): GatedCandidate[] {
-  const survivors: GatedCandidate[] = [];
-  const drop = (c: MineCandidate, why: string) => console.log(`[fn-mine]   drop ${c.cluster}: ${why}`);
-  for (const c of candidates) {
-    if (!isRuleCategory(c.category)) { drop(c, `unknown category ${JSON.stringify(c.category)}`); continue; }
-    const re = compileEngineAccurate(c.regex);
-    if (!re) continue; // invalid-after-engine-normalize — drop silently, logged by caller if desired
-    // The PR's RE2 portability gate compiles every regex with Go's regexp.
-    const re2 = re2Problem(c.regex);
-    if (re2) { drop(c, re2); continue; }
-    // Counted on measureOn, so a regex that only recovers a benchmark's scoring
-    // strings recovers nothing, and as distinct attacks, so copies of one
-    // template sentence count once. Examples are excerpts of the real texts.
-    const { recovers, copies, examples } = countRecoveries(re, gate.measureOn, fullFn);
-    if (recovers < minRecovers) {
-      if (copies >= minRecovers) {
-        drop(c, `recovers ${copies} texts but only ${recovers} distinct line(s) < ${minRecovers}: copies of one template`);
-      } else if (gate.measureOn !== fullFn && fullFn.filter((t) => re.test(t)).length >= minRecovers) {
-        drop(c, `recovers ${recovers} < ${minRecovers} without ${gate.corpusName}'s benchmark artifacts: it keys on the benchmark's scoring strings`);
-      }
-      continue;
-    }
-    if (examples.length === 0) continue;
-    const visibility = visibilityProblem(c.regex, gate.corpus);
-    if (visibility) { drop(c, visibility); continue; }
-    let benignFP = 0;
-    for (const t of benignTexts) {
-      if (t && re.test(t)) { benignFP++; if (benignFP > 0) break; } // any hit is disqualifying
-    }
-    if (benignFP > 0) continue;
-    survivors.push({ ...c, recovers, benignFP: 0, exampleFNs: examples });
-  }
-  return survivors;
-}
-
-function computeResidual(fullFn: readonly string[], survivors: readonly GatedCandidate[]): string[] {
-  const compiled = survivors.map((s) => compileEngineAccurate(s.regex)).filter((r): r is RegExp => r !== null);
-  return fullFn.filter((t) => !compiled.some((re) => re.test(t)));
 }
 
 // ---------------------------------------------------------------------------
@@ -436,21 +357,27 @@ function writeNullReport(note: string): void {
 }
 
 /**
- * The corpora this run can mine. A report corpus whose regeneration fails, or a
- * vendored corpus missing from disk, is skipped and logged loudly: one corpus's
- * external dependency (HackAPrompt's upstream dataset requiring auth, say) must
- * not stop the others. Every corpus unavailable fails the run.
+ * The corpora this run can mine, and the ones it could not. A report corpus
+ * whose regeneration fails, or a vendored corpus missing from disk, is skipped
+ * and logged loudly: one corpus's external dependency (HackAPrompt's upstream
+ * dataset requiring auth, say) must not stop the others. A tool_response corpus
+ * is skipped when the benign tool-output corpora cannot be read
+ * (`toolBenignProblem`): its candidates would be certified on prompts and code
+ * alone. A skipped corpus makes a null result partial (assertNullResultComplete),
+ * not exhausted. Every corpus unavailable fails the run.
  */
-/**
- * The corpora this run can mine, and the ones it could not: a skipped corpus
- * makes a null result partial (assertNullResultComplete), not exhausted.
- */
-function prepareCorpora(): { readonly available: readonly MinedCorpusSpec[]; readonly skipped: readonly string[] } {
+function prepareCorpora(toolBenignProblem: string | null): {
+  readonly available: readonly MinedCorpusSpec[];
+  readonly skipped: readonly string[];
+} {
   console.log('[fn-mine] regenerating FN reports against the current rule set...');
   const available: MinedCorpusSpec[] = [];
   const skipped: string[] = [];
   for (const spec of MINED_CORPORA) {
     try {
+      if (spec.shape === 'tool_response' && toolBenignProblem) {
+        throw new Error(`the benign tool-output corpora are unavailable (${toolBenignProblem}); not mined without them`);
+      }
       if (spec.kind === 'vendored') {
         const problem = vendoredProblem(spec, REPO_ROOT);
         if (problem) throw new Error(problem);
@@ -473,11 +400,39 @@ function prepareCorpora(): { readonly available: readonly MinedCorpusSpec[]; rea
   return { available, skipped };
 }
 
+/**
+ * The benign sides of the gate, each logged: the regex-only text corpus, the
+ * measurement corpora the visibility check counts on, and whether the
+ * tool-output corpora (read by the caller) are there.
+ */
+function readBenignGate(toolBenign: ToolOutputBenign | null): { benignTexts: readonly string[]; gateCorpus: GateCorpus } {
+  const benignTexts = loadBenignTexts();
+  console.log(`[fn-mine] benign gate corpus: ${benignTexts.length} records`);
+  if (toolBenign) {
+    console.log(`[fn-mine] benign tool-output corpus: ${toolBenign.emails.length} emails, ${toolBenign.pages.length} pages (every candidate, as tool_response)`);
+  } else {
+    console.log('::warning::[fn-mine] benign tool-output corpora unavailable: tool_response corpora skipped, prompt corpora gated without them.');
+  }
+  const gateCorpus = prepareGateCorpus(loadBenignSamples(REPO_ROOT));
+  if (gateCorpus.samples.length === 0) throw new Error('MEASUREMENT_CORPORA is empty: the visibility check would pass every candidate');
+  return { benignTexts, gateCorpus };
+}
+
+/** What the per-rule report records about the gate, so a reviewer reads the held-out counts against it. */
+function gateReportNote(toolBenign: ToolOutputBenign | null): Record<string, unknown> {
+  return {
+    heldOut: { percent: HELD_OUT_PERCENT, minRecovers: MIN_HELD_OUT_RECOVERS },
+    toolOutputBenign: toolBenign ? { emails: toolBenign.emails.length, pages: toolBenign.pages.length } : null,
+  };
+}
+
 interface MineSettings {
   readonly model: string;
   readonly minRecovers: number;
   readonly benignTexts: readonly string[];
   readonly gateCorpus: GateCorpus;
+  /** Benign emails and pages every candidate is run against as tool output; null only when no tool_response corpus is mined. */
+  readonly toolBenign: ToolOutputBenign | null;
 }
 
 interface RoundResult {
@@ -511,7 +466,11 @@ async function mineRound(
   if (texts.length > shown.length) {
     console.log(`[fn-mine]   ${label}: chunk cap ${spec.budget.maxChunksPerRound} reached; ${texts.length - shown.length} FN not shown this round`);
   }
-  const survivors = gateCandidates(candidates, fn, s.benignTexts, s.minRecovers, gate);
+  const gated = gateCandidates(candidates, fn, s.benignTexts, s.minRecovers, gate);
+  const survivors = s.toolBenign ? await dropToolOutputHits(gated, s.toolBenign) : gated;
+  for (const c of survivors) {
+    console.log(`[fn-mine]   keep ${c.cluster}: recovers ${c.recovers} shown FN, ${c.heldOutRecovers} of ${gate.heldOut.length} held out`);
+  }
   return { proposed: candidates.length, survivors, asked: chunks.length, unread, shown };
 }
 
@@ -530,18 +489,23 @@ async function mineCorpus(spec: MinedCorpusSpec, s: MineSettings): Promise<Corpu
   // broken judgement throws, and main() skips this corpus with a warning and
   // records it in the report.
   const cov = await coverageOf(fnRaw, path.join(REPO_ROOT, 'rules'), spec.shape);
-  const fn = [...cov.uncovered];
+  // Each text's coverage is judged on its own, so splitting the uncovered set
+  // is the same as judging each side separately. Only `fn` (the minable side)
+  // reaches the model, the residual and the chunk plan; the held-out side is
+  // only ever counted.
+  const { minable: fn, heldOut } = splitHeldOut(cov.uncovered);
   console.log(
     `[fn-mine] ${spec.name}: ${fnRaw.length} false negatives against the LIVE engine (${spec.shape}), ` +
       `${cov.coveredCount} already covered by a rule on disk (${cov.draftsEvaluated} drafts evaluated), ` +
-      `${fn.length} genuinely un-mined`,
+      `${cov.uncovered.length} genuinely un-mined: ${fn.length} minable, ${heldOut.length} held out (${HELD_OUT_PERCENT}%, never shown)`,
   );
-  const empty = { corpus: spec.name, fnTotal: fnRaw.length, uncovered: fn.length, proposed: 0, survived: 0 };
+  const empty = { corpus: spec.name, fnTotal: fnRaw.length, uncovered: cov.uncovered.length, proposed: 0, survived: 0 };
   if (fn.length === 0) return { stages: empty, survivors: [], asked: 0, unread: 0 };
 
   const gate: GateContext = {
     corpusName: spec.name,
     measureOn: hasBenchmarkArtifacts(spec.name) ? fn.map((t) => withoutBenchmarkArtifacts(spec.name, t)) : fn,
+    heldOut,
     corpus: s.gateCorpus,
   };
   const r1 = await mineRound(spec.name, fn, fn, spec, gate, s);
@@ -572,6 +536,8 @@ interface AuthoredRule {
   file: string;
   cluster: string;
   recovers: number;
+  /** Distinct held-out FN texts the rule's regex recovers: texts the model never saw. */
+  heldOutRecovers: number;
 }
 
 async function main(): Promise<void> {
@@ -627,11 +593,10 @@ async function main(): Promise<void> {
     }
   }
 
-  const { available: availableCorpora, skipped: skippedCorpora } = prepareCorpora();
-  const benignTexts = loadBenignTexts();
-  console.log(`[fn-mine] benign gate corpus: ${benignTexts.length} records`);
-  const gateCorpus = prepareGateCorpus(loadBenignSamples(REPO_ROOT));
-  if (gateCorpus.samples.length === 0) throw new Error('MEASUREMENT_CORPORA is empty: the visibility check would pass every candidate');
+  const toolBenignRead = readToolOutputBenign(REPO_ROOT);
+  const toolBenign = 'corpus' in toolBenignRead ? toolBenignRead.corpus : null;
+  const { available: availableCorpora, skipped: skippedCorpora } = prepareCorpora('problem' in toolBenignRead ? toolBenignRead.problem : null);
+  const { benignTexts, gateCorpus } = readBenignGate(toolBenign);
 
   const perCorpus: CorpusStageCounts[] = [];
   const replies = { asked: 0, unread: 0 };
@@ -645,7 +610,7 @@ async function main(): Promise<void> {
   for (const spec of availableCorpora) {
     let run: CorpusRun;
     try {
-      run = await mineCorpus(spec, { model, minRecovers, benignTexts, gateCorpus });
+      run = await mineCorpus(spec, { model, minRecovers, benignTexts, gateCorpus, toolBenign });
     } catch (e) {
       failedCorpora.push(spec.name);
       console.log(`::warning::[fn-mine] ${spec.name}: mining failed — skipping this corpus for this run.`);
@@ -710,7 +675,7 @@ async function main(): Promise<void> {
     const fullPath = path.join(REPO_ROOT, file);
     fs.mkdirSync(path.dirname(fullPath), { recursive: true });
 
-    console.log(`[fn-mine] authoring ${id} (${c.cluster}, recovers=${c.recovers})...`);
+    console.log(`[fn-mine] authoring ${id} (${c.cluster}, recovers=${c.recovers}, heldOut=${c.heldOutRecovers})...`);
     const category = c.category as ATRCategory; // checked by isRuleCategory in the gate
     let failure =
       writeAuthoredRule(fullPath, await authorRule(id, c, referenceYaml, model), category, allowlists) ?? selfTest(file);
@@ -725,7 +690,7 @@ async function main(): Promise<void> {
       fs.rmSync(fullPath, { force: true });
       continue;
     }
-    authored.push({ id, file, cluster: c.cluster, recovers: c.recovers });
+    authored.push({ id, file, cluster: c.cluster, recovers: c.recovers, heldOutRecovers: c.heldOutRecovers });
   }
 
   if (authored.length === 0) {
@@ -756,7 +721,8 @@ async function main(): Promise<void> {
   }
 
   fs.mkdirSync(path.dirname(path.join(REPO_ROOT, REPORT_PATH)), { recursive: true });
-  fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify({ authored: kept, deferred, notMined: [...skippedCorpora, ...failedCorpora] }, null, 2));
+  const report = { authored: kept, deferred, notMined: [...skippedCorpora, ...failedCorpora], gate: gateReportNote(toolBenign) };
+  fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify(report, null, 2));
   console.log(`[fn-mine] DONE — ${kept.length} rule(s) authored and gate-clean: ${kept.map((a) => a.id).join(', ')}`);
   console.log(`::authored-files::${kept.map((a) => a.file).join(',')}`);
   console.log(`::report-file::${REPORT_PATH}`);

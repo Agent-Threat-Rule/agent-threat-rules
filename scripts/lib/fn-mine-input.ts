@@ -213,6 +213,30 @@ export async function liveMisses(
   return texts.filter((_, i) => missed.has(`fn-${i}`));
 }
 
+/**
+ * Each rule under `rulesDir` that fires on any of `texts`, with the indices of
+ * the texts it fires on, judged by the eval harness on `shape` exactly as
+ * coverageOf and liveMisses present a sample. Every text goes in as a benign
+ * sample, so every detection comes back as a false positive. No canaries: the
+ * caller decides what a broken judgement looks like (the FN-mine tool-output
+ * gate requires each candidate to fire on its own recoveries).
+ */
+export async function detectionsByRule(
+  rulesDir: string,
+  texts: readonly string[],
+  shape: DeliveryShape,
+): Promise<ReadonlyMap<string, readonly number[]>> {
+  if (texts.length === 0) return new Map();
+  const corpus = texts.map((t, i) => sample(`text-${i}`, t, false, shape));
+  const { report } = await runEval({ rulesDir, corpus, eventShape: PRESENTATIONS[shape].eventShape, enableEmbedding: false });
+  const byRule = new Map<string, number[]>();
+  for (const r of report.falsePositives) {
+    const index = Number(r.id.slice('text-'.length));
+    for (const id of r.matchedRules) byRule.set(id, [...(byRule.get(id) ?? []), index]);
+  }
+  return byRule;
+}
+
 interface HackapromptRecord {
   readonly id: string;
   readonly text: string;
