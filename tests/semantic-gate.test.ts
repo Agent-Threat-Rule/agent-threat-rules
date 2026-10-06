@@ -174,6 +174,14 @@ describe("unportableEscapes", () => {
     ).toEqual([]);
   });
 
+  // JavaScript reads [] and [^] as empty classes; Go's regexp reads the ] as a
+  // literal and then finds no closing bracket ("missing closing ]").
+  it("reports an empty class and a negated empty class", () => {
+    expect(unportableEscapes("x[^]{0,50}ignore")).toEqual(["[^]"]);
+    expect(unportableEscapes("[]a\\B]")).toEqual(["[]"]);
+    expect(unportableEscapes("[\\]]x[^\\]]")).toEqual([]);
+  });
+
   it("does not read an escaped backslash as the start of another escape", () => {
     expect(unportableEscapes("a\\\\Zb")).toEqual([]);
   });

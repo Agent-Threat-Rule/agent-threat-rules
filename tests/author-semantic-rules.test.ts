@@ -129,7 +129,7 @@ describe("validateSemanticDraft gate", () => {
     const d = { ...goodDraft(), fallback_regex: `${goodDraft().fallback_regex!}\\Z` };
     const r = validateSemanticDraft(d, TPS, TNS, BENIGN);
     expect(r.ok).toBe(false);
-    expect(r.reason).toContain("escape \\Z");
+    expect(r.reason).toContain("not RE2 portable (\\Z)");
   });
 
   // Model output is parsed JSON. A wrong-typed field used to throw in the gate

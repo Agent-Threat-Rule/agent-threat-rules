@@ -163,7 +163,11 @@ function portableEscapeAt(source: string, i: number, inClass: boolean): boolean 
   return c.length > 0 && c.charCodeAt(0) < 0x80;
 }
 
-/** Every escape in `value` that RE2 rejects or reads differently from JavaScript, e.g. ["\\Z"]. */
+/**
+ * Every escape in `value` that RE2 rejects or reads differently from JavaScript,
+ * e.g. ["\\Z"], and every empty class: `[]` and `[^]` are valid JavaScript (match
+ * nothing / anything), but RE2 reads the `]` as a literal and finds no closing one.
+ */
 export function unportableEscapes(value: string): string[] {
   const source = value.replace(ENGINE_INLINE_FLAGS, "");
   const found: string[] = [];
@@ -174,6 +178,8 @@ export function unportableEscapes(value: string): string[] {
       if (!portableEscapeAt(source, i + 1, inClass)) found.push(`\\${source[i + 1] ?? ""}`);
       i += 1;
     } else if (ch === "[" && !inClass) {
+      const empty = source.startsWith("[]", i) ? "[]" : source.startsWith("[^]", i) ? "[^]" : undefined;
+      if (empty) found.push(empty);
       inClass = true;
     } else if (ch === "]" && inClass) {
       inClass = false;
@@ -268,7 +274,7 @@ function checkRe2(raw: string): GateResult | null {
   const escapes = unportableEscapes(raw);
   if (escapes.length > 0) {
     return fail(
-      `fallback_regex is not RE2 portable (escape ${escapes.join(", ")}): RE2 rejects it or reads it ` +
+      `fallback_regex is not RE2 portable (${escapes.join(", ")}): RE2 rejects it or reads it ` +
         "differently from JavaScript, and CI's RE2 gate compiles every pattern with Go's regexp",
     );
   }
