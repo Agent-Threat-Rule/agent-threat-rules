@@ -10,7 +10,7 @@
  * (scripts/lib/fn-mine-tool-benign.ts).
  */
 import { needsUnicodeFlag } from '../../src/engine.js';
-import { heldOutRecoveries, MIN_HELD_OUT_RECOVERS } from './fn-mine-heldout.js';
+import { heldOutRecoveries, MIN_HELD_OUT_RECOVERS, type SeenText } from './fn-mine-heldout.js';
 import { countRecoveries } from './fn-mine-recoveries.js';
 import { isRuleCategory, re2Problem, visibilityProblem } from './fn-mine-quality.js';
 import type { MineCandidate } from './fn-mine-reply.js';
@@ -50,6 +50,8 @@ export interface GateContext {
   readonly measureOn: readonly string[];
   /** The held-out FN texts, as the corpus holds them. Never shown to the model. */
   readonly heldOut: readonly string[];
+  /** The minable side's lines (seenLines): a held-out hit on text the model was shown is not counted. */
+  readonly seenLines: SeenText;
   /** MEASUREMENT_CORPORA, for the corpus visibility gate's arithmetic. */
   readonly corpus: GateCorpus;
 }
@@ -107,7 +109,7 @@ export function gateCandidates(
     if (re2) { drop(c, re2); continue; }
     const minable = minableRecoveries(c, re, fullFn, minRecovers, gate, drop);
     if (!minable) continue;
-    const heldOutRecovers = heldOutRecoveries(re, gate.heldOut, gate.corpusName);
+    const heldOutRecovers = heldOutRecoveries(re, gate.heldOut, gate.corpusName, gate.seenLines);
     if (heldOutRecovers < MIN_HELD_OUT_RECOVERS) {
       drop(c, `recovers ${minable.recovers} shown texts but ${heldOutRecovers} held-out (< ${MIN_HELD_OUT_RECOVERS} of ${gate.heldOut.length}): it does not reach texts the model never saw`);
       continue;

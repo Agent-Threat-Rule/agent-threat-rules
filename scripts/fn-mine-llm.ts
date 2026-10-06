@@ -66,7 +66,7 @@ import {
 } from './lib/fn-mine-corpora.js';
 import { gateAuthoredBatch } from './lib/fn-mine-gate.js';
 import { computeResidual, gateCandidates, type GateContext, type GatedCandidate } from './lib/fn-mine-candidate-gate.js';
-import { HELD_OUT_PERCENT, MIN_HELD_OUT_RECOVERS, splitHeldOut } from './lib/fn-mine-heldout.js';
+import { HELD_OUT_PERCENT, MIN_HELD_OUT_RECOVERS, seenLines, splitHeldOut } from './lib/fn-mine-heldout.js';
 import { dropToolOutputHits, readToolOutputBenign, type ToolOutputBenign } from './lib/fn-mine-tool-benign.js';
 import { assertSomeChunkRead, mineChunkReply, type ChunkResult, type MineCandidate } from './lib/fn-mine-reply.js';
 import { finalizeAuthoredRule, hasBenchmarkArtifacts, withoutBenchmarkArtifacts } from './lib/fn-mine-quality.js';
@@ -506,6 +506,7 @@ async function mineCorpus(spec: MinedCorpusSpec, s: MineSettings): Promise<Corpu
     corpusName: spec.name,
     measureOn: hasBenchmarkArtifacts(spec.name) ? fn.map((t) => withoutBenchmarkArtifacts(spec.name, t)) : fn,
     heldOut,
+    seenLines: seenLines(fn, spec.name),
     corpus: s.gateCorpus,
   };
   const r1 = await mineRound(spec.name, fn, fn, spec, gate, s);
