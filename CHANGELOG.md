@@ -4,6 +4,41 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+## [4.1.4] - 2026-10-07
+
+The first release since 4.0.0 meant to reach npm. 4.1.1, 4.1.2 and 4.1.3 were
+each blocked by npm's publish-time malware scanning, which reads the attack
+strings in rule files as malware, so `npm install agent-threat-rules` still
+returns 4.0.0. This release declares the package dual-use (see Changed below)
+and goes through npm's staged publishing, approved by a maintainer with 2FA. It
+carries everything listed under 4.1.3, 4.1.2, 4.1.1 and 4.1.0 below.
+
+### Added
+
+- **Four rules.** Each one passed the repository's PR checks, and is
+  experimental, maturity `test`, with alert-level response actions only:
+  - ATR-2026-02846: ignore-previous-and-following instructions (PromptInject
+    goal hijacking), a semantic rule with a narrow regex fallback.
+  - ATR-2026-02847: email exfiltration under a policy, audit or compliance
+    pretext.
+  - ATR-2026-02850: data exfiltration by email under a documentation pretext,
+    including French phrasings.
+  - ATR-2026-02851: a fake user turn inside content that instructs the agent to
+    send an email.
+  ATR-2026-02847, 02850 and 02851 come from human-written attack emails
+  (LLMail-Inject). They fire on none of 526 real emails or 694 benign web pages
+  presented as tool output, and each catches attack emails that were held out
+  while the rule was written.
+
+### Fixed
+
+- **pyATR falls back for regex conditions Python's `re` cannot compile** (such
+  as variable-width lookbehind) instead of dropping the condition (#554, thanks
+  @dc-tw).
+- **The test-case validator reads every key a test case can use.** It read four
+  of nine and misjudged rules whose cases use the others. Its failure count on
+  the current rules drops from 40 to 11, with no new failures (#607).
+
 ### Security
 
 - **`atr tc pull` checks the rules a Threat Cloud endpoint returns before
@@ -35,6 +70,8 @@ All notable changes to ATR will be documented in this file.
   before creating the GitHub release.
 
 ## [4.1.3] - 2026-10-06
+
+> Not published to npm (see 4.1.4).
 
 The first release of the 4.1 line to reach npm; 4.1.2 did not either. Its
 publish on 2026-10-01 went through trusted publishing (OIDC), printed
