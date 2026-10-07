@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 831
-- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 225
+- ATR rules total: 829
+- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 223
 - Distinct enterprise ATT&CK techniques referenced: 86
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 831
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 829
 - Distinct MITRE ATLAS techniques referenced: 45
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 831
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 829
 - ATR categories (distinct `tags.category` values): 10
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -51,7 +51,7 @@ against.
 |---|---|---|---|
 | T1005 | Data from Local System | `ATR-2026-01988`, `ATR-2026-02250`, `ATR-2026-02703` | context-exfiltration |
 | T1027 | Obfuscated Files or Information | `ATR-2026-00535`, `ATR-2026-02004`, `ATR-2026-02006`, `ATR-2026-02010`, `ATR-2026-02016`, `ATR-2026-02018`, `ATR-2026-02374`, `ATR-2026-02411`, `ATR-2026-02412`, `ATR-2026-02413`, `ATR-2026-02662` | model-abuse, model-security, prompt-injection |
-| T1036 | Masquerading | `ATR-2026-00117`, `ATR-2026-00204`, `ATR-2026-00572`, `ATR-2026-01932`, `ATR-2026-02350`, `ATR-2026-02666`, `ATR-2026-02848` | agent-manipulation, privilege-escalation, prompt-injection, tool-poisoning |
+| T1036 | Masquerading | `ATR-2026-00117`, `ATR-2026-00204`, `ATR-2026-00572`, `ATR-2026-01932`, `ATR-2026-02350`, `ATR-2026-02666` | agent-manipulation, privilege-escalation, tool-poisoning |
 | T1036.005 | Masquerading: Match Legitimate Name or Location | `ATR-2026-02410` | skill-compromise |
 | T1036.008 | Masquerading: Masquerade File Type | `ATR-2026-02405` | skill-compromise |
 | T1041 | Exfiltration Over C2 Channel | `ATR-2026-00201`, `ATR-2026-00576`, `ATR-2026-00863`, `ATR-2026-02261`, `ATR-2026-02262` | context-exfiltration, skill-compromise, tool-poisoning |
@@ -116,7 +116,7 @@ against.
 | T1553 | Subvert Trust Controls | `ATR-2026-00539` | privilege-escalation |
 | T1556 | Modify Authentication Process | `ATR-2026-01992` | privilege-escalation |
 | T1557 | Adversary-in-the-Middle | `ATR-2026-00116` | agent-manipulation |
-| T1562 | Impair Defenses | `ATR-2026-01993`, `ATR-2026-02001`, `ATR-2026-02013`, `ATR-2026-02400`, `ATR-2026-02401`, `ATR-2026-02849` | agent-manipulation, excessive-autonomy, prompt-injection |
+| T1562 | Impair Defenses | `ATR-2026-01993`, `ATR-2026-02001`, `ATR-2026-02013`, `ATR-2026-02400`, `ATR-2026-02401` | excessive-autonomy, prompt-injection |
 | T1562.001 | Disable or Modify Tools | `ATR-2026-02400`, `ATR-2026-02402`, `ATR-2026-02410`, `ATR-2026-02642`, `ATR-2026-02667` | excessive-autonomy, privilege-escalation, skill-compromise |
 | T1565 | Data Manipulation | `ATR-2026-00070`, `ATR-2026-00450`, `ATR-2026-02003` | data-poisoning, prompt-injection |
 | T1565.001 | Data Manipulation: Stored Data Manipulation | `ATR-2026-00075`, `ATR-2026-00200`, `ATR-2026-01155`, `ATR-2026-02143`, `ATR-2026-02144`, `ATR-2026-02303` | context-exfiltration, data-poisoning, skill-compromise |
@@ -143,7 +143,7 @@ For each ATR category: the enterprise ATT&CK techniques its rules reference
 
 ### agent-manipulation
 
-Rules in category: 109
+Rules in category: 108
 
 ATT&CK techniques (join key):
 
@@ -161,7 +161,6 @@ ATT&CK techniques (join key):
 | T1546 | Event Triggered Execution | `ATR-2026-00418` |
 | T1550 | Use Alternate Authentication Material | `ATR-2026-00074` |
 | T1557 | Adversary-in-the-Middle | `ATR-2026-00116` |
-| T1562 | Impair Defenses | `ATR-2026-02849` |
 | T1566 | Phishing | `ATR-2026-00119` |
 
 ATLAS techniques ATR adds: AML.T0010, AML.T0040, AML.T0043, AML.T0048, AML.T0049, AML.T0050, AML.T0051, AML.T0051.000, AML.T0051.001, AML.T0052.000, AML.T0054
@@ -336,14 +335,13 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### prompt-injection
 
-Rules in category: 249
+Rules in category: 248
 
 ATT&CK techniques (join key):
 
 | ATT&CK technique | Name | ATR rules |
 |---|---|---|
 | T1027 | Obfuscated Files or Information | `ATR-2026-00535`, `ATR-2026-02004`, `ATR-2026-02006`, `ATR-2026-02010`, `ATR-2026-02016`, `ATR-2026-02018`, `ATR-2026-02374` |
-| T1036 | Masquerading | `ATR-2026-02848` |
 | T1059 | Command and Scripting Interpreter | `ATR-2026-00535`, `ATR-2026-02019` |
 | T1059.004 | Command and Scripting Interpreter: Unix Shell | `ATR-2026-02374` |
 | T1552 | Unsecured Credentials | `ATR-2026-02002`, `ATR-2026-02007` |
