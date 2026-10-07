@@ -29,9 +29,10 @@ jobs:
       # (npm >= 11.15.0). On 2026-09-22 a publish from this workflow printed
       # `+ agent-threat-rules@4.1.1`, signed provenance into the Sigstore
       # transparency log, and said the package was being processed — and the
-      # version never appeared on the registry, nor in the account's Staged
-      # Packages queue. The package document's `time.modified` did not move at
-      # all, so the PUT was accepted and never committed.
+      # version never appeared on the registry. The package document's
+      # `time.modified` did not move. The registry had staged it instead: the
+      # retry on 2026-09-23 was refused with E409, "Cannot publish over
+      # previously staged version", so 4.1.1 cannot be published again.
       #
       # The registry now speaks a protocol where a token's permission decides
       # whether a publish goes live or waits for approval. An old client cannot
@@ -63,15 +64,24 @@ jobs:
       - name: Run tests
         run: npm test
 
+      # No token here, deliberately. The last three token publishes each failed on
+      # the token: 2026-09-14 publish-on-rules-merge.yml got E404 on PUT for 4.1.0;
+      # 2026-09-22 publish.yml got EOTP for 4.1.1, npm demanding a one-time password
+      # from CI; and later that day this workflow's 4.1.1 went to staging instead of
+      # the registry (see the step above). Since 2026-07-31 npm has restricted
+      # 2FA-bypass tokens, and it is targeting January 2027 for removing their
+      # direct publish altogether. Under trusted publishing the credential is minted
+      # per run and expires in minutes; attestations are generated automatically,
+      # so --provenance is dropped rather than passed.
+      #
+      # Trust is configured on the package, one entry per workflow file:
+      # npmjs.com -> agent-threat-rules -> Settings -> Trusted publishing must list
+      # an entry naming `publish-current-version.yml` exactly, separate from the
+      # one for publish.yml (npm allows up to ten per package). Without it this
+      # step fails to authenticate, so check the list before dispatching. Renaming
+      # this file breaks publishing until its entry is recreated.
       - name: Publish current version to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "Publishing agent-threat-rules@${VERSION}"
-          # --provenance, because publish.yml uses it and every published version
-          # so far carries an attestation. A release that arrives without one is
-          # a visible downgrade on the registry page for a security project, and
-          # npm will not let it be added after the fact. The job already declares
-          # id-token: write, which is the only precondition.
-          npm publish --access public --provenance
+          npm publish --access public

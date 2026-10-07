@@ -2,7 +2,7 @@
 
 Comprehensive guide to writing detection rules for AI agent threats.
 
-For a quick template, run `atr scaffold`. For the full schema reference, see [schema-spec.md](./schema-spec.md).
+For a quick template, run `atr scaffold`. For the normative rule format, see [SPEC.md](../SPEC.md).
 
 ---
 

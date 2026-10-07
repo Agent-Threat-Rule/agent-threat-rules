@@ -15,7 +15,7 @@
  * No network is touched: only backend SELECTION is under test.
  */
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { selectBackend, backendAvailable, describeBackend, NoBackendError } from "../scripts/lib/claude-client.js";
+import { selectBackend, backendAvailable, describeBackend, NoBackendError, argvSafe } from "../scripts/lib/claude-client.js";
 
 const TOUCHED = ["ATR_LLM_BACKEND", "CLAUDE_CODE_OAUTH_TOKEN", "ANTHROPIC_API_KEY"] as const;
 let saved: Record<string, string | undefined> = {};
@@ -110,5 +110,20 @@ describe("describeBackend", () => {
     process.env.ANTHROPIC_API_KEY = "sk-ant-api-SECRETVALUE";
     const out = describeBackend();
     expect(out).not.toContain("SECRETVALUE");
+  });
+});
+
+// browsesafe-bench pages carry NUL bytes; spawn throws on a NUL in argv, and
+// one such sample in a mining chunk ended a whole fn-mine run (run 37478785519).
+describe("argvSafe", () => {
+  it("removes NUL bytes and leaves everything else as it was", () => {
+    expect(argvSafe("a\u0000b\u0000")).toBe("ab");
+    expect(argvSafe("line\nnext\ttab ß")).toBe("line\nnext\ttab ß");
+  });
+
+  it("yields a string spawn accepts as an argument", async () => {
+    const { spawnSync } = await import("node:child_process");
+    expect(() => spawnSync("true", [argvSafe("x\u0000y")])).not.toThrow();
+    expect(() => spawnSync("true", ["x\u0000y"])).toThrow(/null bytes/);
   });
 });
