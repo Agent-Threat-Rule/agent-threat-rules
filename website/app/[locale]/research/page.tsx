@@ -52,8 +52,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-stone mb-3">
               {locale === "zh"
-                ? `ATR 標準為何存在的完整論述：當 agent 能自主行動，信任不再能假設，偵測必須變成一個任何人都能查核、版本化、社群維護的標準層。涵蓋 RFC-001 品質規範、96,096 個 skill 的生態系掃描（1,302 個被標記、經人工複審確認 552 個惡意），以及把標準從一次性快照變成活飛輪的機制。`
-                : `The full argument for why ATR exists: once agents act on their own, trust can no longer be assumed, and detection has to become a standard layer anyone can audit, version, and maintain. Covers the RFC-001 quality specification, a 96,096-skill ecosystem scan (1,302 flagged, 552 confirmed malware after manual review), and the mechanism that turns the standard from a one-time snapshot into a living one.`}
+                ? `ATR 標準為何存在的完整論述：當 agent 能自主行動，信任不再能假設，偵測必須變成一個任何人都能查核、版本化、社群維護的標準層。涵蓋 RFC-001 品質規範、野外生態系掃描，以及把標準從一次性快照變成活飛輪的機制。注意：本文發表時引用的掃描數字已被取代，目前可引用的只有 ${stats.megaScanTotal.toLocaleString()} 個掃描項目 / ${stats.megaScanFlagged.toLocaleString()} 個標記項目（engine v2.0.0，${stats.megaScanDate}）。`
+                : `The full argument for why ATR exists: once agents act on their own, trust can no longer be assumed, and detection has to become a standard layer anyone can audit, version, and maintain. Covers the RFC-001 quality specification, the in-the-wild ecosystem scan, and the mechanism that turns the standard from a one-time snapshot into a living one. Note: the scan figures quoted at publication time have been superseded — the citable figures are ${stats.megaScanTotal.toLocaleString()} items scanned / ${stats.megaScanFlagged.toLocaleString()} flagged (engine v2.0.0, ${stats.megaScanDate}).`}
             </p>
             <div className="flex flex-wrap gap-3">
               <a href="https://doi.org/10.5281/zenodo.19178002" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline">Zenodo (DOI)</a>
@@ -70,13 +70,13 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <div className="font-display text-base font-semibold text-ink mb-1">
               {locale === "zh"
-                ? "552 個確認惡意的 AI Agent Skill：史上最大規模的 AI Agent 惡意軟體行動"
-                : "552 Confirmed Malicious AI Agent Skills: The Largest AI Agent Malware Campaign Ever Documented"}
+                ? "OpenClaw registry 的協同惡意軟體行動：三個大量發布的攻擊帳號"
+                : "A Coordinated Malware Campaign in the OpenClaw Registry: Three Mass-Publishing Threat Accounts"}
             </div>
             <p className="text-sm text-stone mb-3">
               {locale === "zh"
-                ? "掃描 96,096 個 skill、標記 1,302 個風險項，人工複審後確認 552 個惡意軟體。發現三個協同攻擊者（hightower6eu 354、sakaen736jih 212、52yuanchangxing 137）。已通報 NousResearch 並全數加入黑名單。"
-                : "1,302 flagged across 96,096 skills scanned in six registries; 552 confirmed malware after manual review. Three coordinated threat actors (hightower6eu 354, sakaen736jih 212, 52yuanchangxing 137). Reported to NousResearch and blacklisted."}
+                ? `野外掃描標記了 ${stats.megaScanFlagged.toLocaleString()} 個項目，標記量集中在三個大量發布的帳號（hightower6eu、sakaen736jih、52yuanchangxing，發布數分別為 354 / 212 / 137 個 skill）。payload 包含加密 zip、base64 shell 指令與 C2 callback。已通報 NousResearch 並加入公開黑名單。報告中的裁定是以帳號為單位做的發布者層級歸因，不是逐檔判讀；報告內的彙總數字已被取代，請以本頁的可引用數字為準。`
+                : `The wild scan flagged ${stats.megaScanFlagged.toLocaleString()} items, concentrated in three mass-publishing accounts (hightower6eu, sakaen736jih, 52yuanchangxing — 354 / 212 / 137 published skills respectively). Payloads include encrypted zips, base64 shell commands, and C2 callbacks. Reported to NousResearch and blacklisted. The report's verdicts are publisher-level attribution applied account-wide, not per-file analysis, and its aggregate counts have been superseded — use the citable figures on this page.`}
             </p>
             <div className="flex flex-wrap gap-3">
               <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/research/openclaw-malware-campaign-2026-04.md" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline">{locale === "zh" ? "完整報告 (EN)" : "Full Report (EN)"}</a>
@@ -90,12 +90,12 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
               <span className="font-data text-xs text-mist">April 2026 · 7 pages · 32 references</span>
             </div>
             <div className="font-display text-base font-semibold text-ink mb-1">
-              96,096 Skills, 552 Confirmed Malware: A Large-Scale Security Audit of the AI Agent Ecosystem
+              A Large-Scale Security Audit of the AI Agent Ecosystem
             </div>
             <p className="text-sm text-stone mb-3">
               {locale === "zh"
-                ? "史上最大規模 AI agent 安全掃描。96,096 個 skill、1,302 個有風險、人工複審後 552 個確認惡意軟體。三個協同攻擊者。工具描述下毒佔偵測的 53%。"
-                : "The largest AI agent security scan to date. 96,096 skills across 6 registries, 1,302 flagged, 552 confirmed malware after manual review. Three coordinated threat actors. Credential access via tool descriptions accounts for 53% of detections."}
+                ? `跨五個公開 registry 的大規模 agent skill 與 MCP 定義掃描。三個協同攻擊帳號。工具描述下毒佔偵測的 53%。注意：本文發表時的彙總數字已被取代，目前可引用的只有 ${stats.megaScanTotal.toLocaleString()} 個掃描項目 / ${stats.megaScanFlagged.toLocaleString()} 個標記項目（engine v2.0.0，${stats.megaScanDate}）。`
+                : `A large-scale scan of agent skills and MCP definitions across five public registries. Three coordinated threat accounts. Credential access via tool descriptions accounts for 53% of detections. Note: the aggregate counts quoted at publication time have been superseded — the citable figures are ${stats.megaScanTotal.toLocaleString()} items scanned / ${stats.megaScanFlagged.toLocaleString()} flagged (engine v2.0.0, ${stats.megaScanDate}).`}
             </p>
             <div className="flex flex-wrap gap-3">
               <a href="https://doi.org/10.5281/zenodo.19476480" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline">Zenodo (DOI)</a>
@@ -150,6 +150,11 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
               </div>
             </div>
             <div className="font-data text-xs text-stone mt-3">{stats.pintSamples} {locale === "zh" ? "個樣本" : "samples"}</div>
+            <p className="text-xs text-mist mt-2 leading-[1.7]">
+              {locale === "zh"
+                ? `這不是 Lakera 官方 PINT benchmark（該語料為私有、規模約 5 倍）。這是一份 PINT 格式的自建 ${stats.pintSamples} 樣本語料，由 deepset/prompt-injections（660）與 Lakera/gandalf_ignore_instructions（190）組成。只有一小部分規則會在這份語料上開火，且單一條規則就佔了大部分偵測——請把它讀成「prompt injection 這個家族」的分數，不是 ATR 的整體覆蓋率。`
+                : `This is not Lakera's official PINT benchmark — that corpus is private and roughly 5x larger. This is a self-built ${stats.pintSamples}-sample corpus in PINT's format, assembled from deepset/prompt-injections (660) and Lakera/gandalf_ignore_instructions (190). Only a small subset of rules fire on it and a single rule accounts for most detections, so read it as a prompt-injection-family score, not as ATR's overall coverage.`}
+            </p>
           </div>
           {/* Self-test */}
           <div className="bg-paper p-6">
@@ -268,7 +273,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
       <Reveal delay={0.1}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog mb-8">
           <div className="bg-paper p-6">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-3">{locale === "zh" ? "生態系掃描（6 個 Registry）" : "Ecosystem Scan (6 Registries)"}</div>
+            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-3">{locale === "zh" ? "野外生態系掃描（5 個來源）" : "Wild ecosystem scan (5 sources)"}</div>
             <div className="font-data text-3xl font-bold text-ink mb-1"><CountUp target={stats.megaScanTotal} useComma liveKey="megaScanTotal" /></div>
             <div className="text-sm text-stone mb-3">{locale === "zh" ? "個 skill 已掃描" : "skills scanned"}</div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
@@ -344,8 +349,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {locale === "zh"
-                ? `六個 registry 共 ${stats.megaScanTotal.toLocaleString()} 個 skill。最大子集：OpenClaw ${stats.megaScanSources.openclaw.toLocaleString()}、ClawHub ${stats.clawHubCrawled.toLocaleString()}、Skills.sh ${stats.megaScanSources.skillsSh.toLocaleString()}，加上三個額外 MCP / skill index。每個 registry 透過公開 HTTP API 或 git 倉儲爬取。`
-                : `Six registries totaling ${stats.megaScanTotal.toLocaleString()} skills. Largest subsets: OpenClaw ${stats.megaScanSources.openclaw.toLocaleString()}, ClawHub ${stats.clawHubCrawled.toLocaleString()}, Skills.sh ${stats.megaScanSources.skillsSh.toLocaleString()}, plus three additional MCP / skill indexes. Each registry is crawled via public HTTP API or git repository.`}
+                ? `五個來源共 ${stats.megaScanTotal.toLocaleString()} 個項目（engine v2.0.0，${stats.megaScanDate}）。最大子集：OpenClaw ${stats.megaScanSources.openclaw.toLocaleString()}、ClawHub ${stats.clawHubCrawled.toLocaleString()}、Skills.sh ${stats.megaScanSources.skillsSh.toLocaleString()}，另有 Hermes Agent 與一個 MCP registry 索引。各來源的爬取數來自各自的爬蟲報告，與上面的總數是不同時間點的快照，兩者不會剛好相加。每個來源透過公開 HTTP API 或 git 倉儲爬取。`
+                : `Five sources totaling ${stats.megaScanTotal.toLocaleString()} items (engine v2.0.0, ${stats.megaScanDate}). Largest subsets: OpenClaw ${stats.megaScanSources.openclaw.toLocaleString()}, ClawHub ${stats.clawHubCrawled.toLocaleString()}, Skills.sh ${stats.megaScanSources.skillsSh.toLocaleString()}, plus Hermes Agent and an MCP registry index. The per-source crawl counts come from each crawler's own report and are snapshots taken at different times from the total above, so they are not expected to sum to it. Each source is crawled via public HTTP API or git repository.`}
             </p>
           </div>
           <div className="border-l-2 border-fog pl-4">
@@ -364,8 +369,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {locale === "zh"
-                ? `Precision / recall 採用外部 PINT dataset（${stats.pintSamples} 樣本），而非自產測試集——避免 overfit 到自家 test cases。另一組 SKILL.md benchmark 從真實 OpenClaw 抓 ${stats.skillBenchSamples} 個檔案，其中惡意樣本透過人工標記後作為 ground truth。`
-                : `Precision / recall uses the external PINT dataset (${stats.pintSamples} samples) rather than self-generated tests — this avoids overfitting to our own test cases. A separate SKILL.md benchmark uses ${stats.skillBenchSamples} real-world OpenClaw files, with malicious samples hand-labeled as ground truth.`}
+                ? `Precision / recall 跑在一份 PINT 格式的 ${stats.pintSamples} 樣本語料上。樣本本身來自外部公開資料集（deepset/prompt-injections、Lakera/gandalf_ignore_instructions），所以不會 overfit 到自家 test cases；但語料是我們自己組的，不是 Lakera 官方 PINT benchmark。另一組 SKILL.md benchmark 從真實 OpenClaw 抓 ${stats.skillBenchSamples} 個檔案，其中惡意樣本透過人工標記後作為 ground truth。`
+                : `Precision / recall runs on a ${stats.pintSamples}-sample corpus in PINT's format. The samples come from external public datasets (deepset/prompt-injections, Lakera/gandalf_ignore_instructions), so they are not overfitted to our own test cases — but the corpus is assembled by us and is not Lakera's official PINT benchmark. A separate SKILL.md benchmark uses ${stats.skillBenchSamples} real-world OpenClaw files, with malicious samples hand-labeled as ground truth.`}
             </p>
           </div>
           <div className="border-l-2 border-fog pl-4">
@@ -374,8 +379,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {locale === "zh"
-                ? "誤報率以真實 benign 樣本（通過人工或社群審查的正常 skill）除以總偵測數量測，並逐車道揭露、不用單一數字概括：enforce 車道只跑最成熟的規則（在一個約 65,000 筆的良性語料上約 0.24% 誤報），預設的 hunt 車道把全部規則當建議性訊號跑（約 9%）。一個標準的可信度，取決於它願不願意公開自己最差的數字——所以這裡兩個都列。每條已記錄的誤報情境會寫入 YAML 的 false_positives 欄位，並在規則頁面公開。"
-                : "False positive rate is measured against real benign samples (skills vetted by manual or community review), divided by total detections, and reported lane by lane rather than as one flattering number: the enforce lane runs only the most mature rules (~0.24% on a ~65,000-sample benign corpus), while the default hunt lane runs everything as an advisory signal (~9%). A standard earns trust by publishing its worst figure, not hiding it — so both are stated here. Every documented FP context is written into the rule YAML's false_positives field and surfaced on the rule page."}
+                ? "誤報率以真實 benign 樣本（通過人工或社群審查的正常 skill）除以總偵測數量測，並逐車道揭露、不用單一數字概括：enforce 車道只跑最成熟的規則，預設的 hunt 車道把全部規則當建議性訊號跑。目前各車道的誤報率數字已被撤回、等待重新量測——原先公布的數字所依據的良性語料被發現混入了真實越獄樣本，量測基準站不住腳，因此在重測完成前這裡不列數字。撤掉一個自己不再站得住的數字，跟公開最差的數字一樣，都是這個標準對誠實的定義。每條已記錄的誤報情境仍會寫入 YAML 的 false_positives 欄位，並在規則頁面公開。"
+                : "False positive rate is measured against real benign samples (skills vetted by manual or community review), divided by total detections, and reported lane by lane rather than as one flattering number: the enforce lane runs only the most mature rules, while the default hunt lane runs everything as an advisory signal. The per-lane figures previously published here are withdrawn and awaiting re-measurement — the benign corpus they were measured on was found to contain real jailbreak samples, so the basis did not hold, and no number is quoted here until the re-measurement lands. Withdrawing a number you can no longer stand behind is the same discipline as publishing your worst one. Every documented FP context is still written into the rule YAML's false_positives field and surfaced on the rule page."}
             </p>
           </div>
           <div className="border-l-2 border-fog pl-4">

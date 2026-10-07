@@ -62,7 +62,7 @@ Adds `PyYAML` to runtime deps (existing dep in many RAMPART downstream stacks; h
 
 ## Maintenance
 
-ATR is maintained by [Adam Lin](https://github.com/eeee2345) under fiscal sponsorship from Open Source Collective Inc. (501(c)(3), EIN 81-1567737). Rule corpus is MIT licensed with public GitHub history and a CC-0 / MIT companion catalog at `Agent-Threat-Rule/ai-rmf-oscal-catalog` mapping rules to NIST AI RMF (Path 1 invitation from NIST received 2026-05-11).
+ATR is maintained by [Adam Lin](https://github.com/eeee2345) under fiscal sponsorship from Open Source Collective Inc. (501(c)(6), EIN 82-2037583). Rule corpus is MIT licensed with public GitHub history and a CC-0 / MIT companion catalog at `Agent-Threat-Rule/ai-rmf-oscal-catalog` mapping rules to NIST AI RMF (Path 1 invitation from NIST received 2026-05-11).
 
 The corpus ships a new version on a 1-2 week cadence (latest tag at time of writing: v3.0.0-alpha.0, 425 rules). This adapter loads from a user-provided rules_dir so RAMPART consumers pin a specific corpus version rather than tracking ATR's main branch.
 

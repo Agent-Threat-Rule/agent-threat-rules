@@ -43,7 +43,12 @@ jobs:
     # and a contributor cannot forge the measurement without the diff showing.
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    # Was 90. The re-measure job hit it every single scheduled run from 2026-09-07
+    # to 2026-09-21 — 15 consecutive days at 90m00s, cancelled. A cancelled run is
+    # not a failed run, so nothing went red and nobody noticed that the only check
+    # able to catch a forged FP figure had not completed in three weeks. The corpus
+    # grew; the budget did not.
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -61,6 +66,10 @@ jobs:
 
       - name: Diff against the committed evidence
         run: |
+          # shellcheck disable=SC2016
+          # The single-quoted block below is a node -e program, not shell. Its $ and
+          # ?? are JavaScript; expanding them would corrupt the script.
+          #
           # Compare only the per-rule records. generated_at and commit differ by
           # construction; a diff there is not evidence of tampering.
           node -e '

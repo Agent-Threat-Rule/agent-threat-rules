@@ -4,6 +4,213 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Security
+
+- **`atr tc pull` checks the rules a Threat Cloud endpoint returns before
+  writing them, and no longer goes through a shell.** The response is now
+  treated as untrusted: a rule is written only if its id has the form
+  `ATR-YYYY-NNNNN`, its category is one of the schema's categories and no rule
+  with that id is already in the repo; anything else is rejected without
+  touching the disk. The validator then runs as a separate Node.js process with
+  the file path as a plain argument. Before, the id and category came from the
+  response unchecked and the validator was started through a shell, so a
+  compromised or impersonated endpoint could affect the operator's machine
+  beyond the rules directory. The category is also read from the rule's `tags`,
+  not from the first `subcategory:` line in a compliance block, and the
+  validator is found next to the installed CLI rather than in the current
+  directory, so valid rules are no longer filed under the wrong directory or
+  rejected when the command runs outside a checkout of this repo.
+
+### Changed
+
+- **The package is declared dual-use under the npm Dual-Use Content Policy.**
+  npm's publish-time malware scanning, introduced in July 2026, blocked 4.1.1,
+  4.1.2 and 4.1.3: rule files carry attack strings by design, as detection
+  patterns and test samples, and the scanner treats them like malware.
+  `package.json` now carries `"contentPolicy": {"class": "dual-use"}`, and a
+  plain-text `DISCLOSURE` file at the package root says what the attack content
+  is for and what the package does not do. Under that policy, CI may only stage
+  a release; a maintainer approves it with 2FA before it goes live, so
+  `publish.yml` now stages through trusted publishing and waits for the approval
+  before creating the GitHub release.
+
+## [4.1.3] - 2026-10-06
+
+The first release of the 4.1 line to reach npm; 4.1.2 did not either. Its
+publish on 2026-10-01 went through trusted publishing (OIDC), printed
+`+ agent-threat-rules@4.1.2`, and was placed in npm's staging queue instead of
+being published. It never appeared on the registry, and a re-run on 2026-10-05
+was refused with E409 ("Cannot publish over previously staged version"), so the
+number is skipped like 4.1.1. The trusted publisher has since been set to allow
+direct publishing. Rules, engine and spec are unchanged from the `v4.1.2` tag.
+
+### Changed
+
+- **The release workflow fails when the version never reaches the registry.**
+  It now asks npm for the exact version after publishing, waits up to ten
+  minutes, and fails before the GitHub release is created. Before, the check
+  read `latest`, ran after the release, and only warned, which is how both 4.1.1
+  and 4.1.2 went green without being published (#633).
+
+## [4.1.2] - 2026-10-01
+
+> Not published to npm (see 4.1.3).
+
+The first release of the 4.1 line to reach npm. Until this one,
+`npm install agent-threat-rules` returned 4.0.0. 4.1.2 carries everything
+listed under 4.1.1 and 4.1.0 below. Rules, engine and spec are unchanged from
+the `v4.1.1` tag; the README rewords one row of its ETSI mapping, which had
+stated a conformance requirement as a fact about the corpus.
+
+Neither earlier 4.1 tag reached the registry:
+
+- `4.1.0` (tagged 2026-09-14): the publish step got E404 on the registry PUT.
+- `4.1.1` (tagged 2026-09-22): the tag-triggered publish failed with EOTP, npm
+  asking CI for a one-time password. A manual republish later that day was
+  placed in npm's staging queue instead of being published, and the retry on
+  2026-09-23 was refused with E409. npm does not allow publishing over a staged
+  version, so the number is skipped.
+
+The 4.1.1 entry below opens by calling itself the first 4.1 release to reach
+npm. It was not; the entry is otherwise left as written.
+
+### Changed
+
+- **Releases publish through npm trusted publishing (OIDC).** `publish.yml` no
+  longer reads a registry token. npm mints a short-lived credential for each
+  run, bound to this repository and that workflow file, and generates the
+  provenance attestation itself (#606).
+
+## [4.1.1] - 2026-09-22
+
+> Not published to npm (see 4.1.2).
+
+The first release of the 4.1 line to actually reach npm. `4.1.0` was tagged on
+2026-09-14 and never published — the publish step failed on an expired registry
+token and nobody was watching, so for 30 days `npm install agent-threat-rules`
+kept returning 4.0.0 while `main` moved 38 commits ahead. **4.1.1 carries
+everything listed under 4.1.0 below, plus the entries here.** The version number
+skips 4.1.0 on purpose, so that what is on npm and what the git tag points at are
+the same tree.
+
+### Security
+
+- **`ATR-2026-00220` condition 2 backtracked catastrophically**, the same defect
+  as condition 0 of the same rule, which was fixed in #531 — a quantified run of
+  base64 characters between two unbounded `.*` gaps, with a literal at the end.
+  Only condition 0 was rewritten at the time. Measured on Node against a
+  base64-dense single line with no matching tail: 0.5s at 1 KB, 3.4s at 2 KB,
+  **23.4s at 4 KB**. The gaps are now bounded and the run is fixed-length;
+  the same inputs measure under a millisecond at 64 KB. All five of the rule's
+  true positives still fire and all five true negatives stay clean, with
+  condition 2 matching exactly the cases it matched before.
+  Reported as GHSA-66x9-5vw9-3wv3 against condition 0, which 4.1.0 had already
+  fixed; this closes the half of the rule that report did not cover.
+- **The package no longer ships a default endpoint for detection data.**
+  Reporting has been opt-in since 4.1.0, but opting in without naming a
+  recipient silently picked one. `--report-to-cloud` now requires `--tc-url` or
+  `ATR_TC_URL` and exits with an error naming the fix if neither is set. ATR is
+  an open standard, not one collector's client: an operator who turns reporting
+  on decides who receives it, and there is no address in the package to forget
+  to change. Detection events now also carry an `X-ATR-Client-Id` header; the
+  previous vendor-named header is still sent so existing collectors keep working.
+
+> **Nine conditions still backtrack** and are listed in
+> [`data/redos-baseline.json`](data/redos-baseline.json) with measured
+> times — `ATR-2026-00285#0` and `ATR-2026-00272#0` are the worst at 16s and
+> 14s, and `ATR-2026-00707#0` is `maturity: stable`, which means it runs in the
+> enforce lane. The ReDoS gate is a ratchet against that file: a green gate
+> means nothing got worse, not that the class is closed. Do not read this
+> release as "ReDoS fixed".
+
+### Changed
+
+- `CHANGELOG.md` is now included in the npm tarball. The `files` allowlist had
+  excluded it, so a release that fixed a security defect arrived at consumers
+  with nothing in the package to say so.
+
+### Fixed — external claims that overstated what had happened
+
+- **The npm package `description` claimed a vendor product shipped the ATR rule
+  pack.** What actually happened is that rules were merged into
+  `cisco-ai-defense/skill-scanner`, an open-source scanner repository — not the
+  same thing as shipping inside that vendor's product. The blurb is the single
+  most-copied sentence in the project, so it now says what the package is and
+  makes no adoption claim at all (#580).
+- **Withdrew the two per-lane false-positive rates** published alongside the
+  enforce/hunt split. Three defects, any one of which is disqualifying: both
+  were measured on a subsample roughly a sixth of the corpus they were credited
+  to; the benign corpus contained real jailbreak samples — material the rules
+  are meant to catch, sitting in the set that defines a false positive — until
+  an exclusion filter landed on 2026-08-04 (#373); and the ladder that produced
+  the hunt figure depended on a file no longer in the repository, so that figure
+  cannot be reproduced at all. A gap is more useful to an adopter than a number
+  nobody can reproduce. Re-measurement against the current benign corpus is
+  pending, and neither figure should be cited by anyone until it lands (#579).
+- **Corrected the fiscal sponsor's legal identity.** Nine files carried an EIN
+  that corresponds to no organization, and five of them additionally described
+  the sponsor as a 501(c)(3) when it is a 501(c)(6). The distinction is
+  substantive rather than cosmetic: funders that restrict grants to 501(c)(3)
+  recipients would have been misled (#578).
+
+## [4.1.0] - 2026-09-14
+
+> **Never published to npm.** The tag `v4.1.0` exists, but the publish failed on
+> an expired registry token and was not retried for 30 days. This version number
+> does not exist on the registry and never will; everything below shipped in
+> 4.1.1 instead.
+
+At release: 825 rule files, 818 effective.
+
+### Added
+
+- **A benign-twin corpus: 1,788 benign counterparts to attack payloads**, across
+  17 files, counted at the `v4.1.0` tag. Built so that a rule which fires on the
+  harmless sibling of the attack it targets can be caught before it ships. It
+  demoted one production rule on arrival.
+- **Forty rules from the full proposal re-sweep**, landed as four batches of
+  ten, plus fifteen from the CVE proposal backlog (#503, #504).
+- **A precompiled rule digest for consumers that cannot take an engine**
+  (#510), with a Python-verified variant, and a PyRIT digest that carries
+  every field and names the scope it is safe to use (#511).
+- `pyatr` 0.3.0: bundle refreshed, and the behaviour that had blocked the
+  refresh unpinned (#507).
+
+### Fixed — catastrophic backtracking
+
+- **Eight rules could be made to backtrack catastrophically**; the patterns are
+  rewritten and a gate now blocks the class from returning (#531).
+  `ATR-2026-02610` condition 0 was fixed separately for the same defect.
+- **`ATR-2026-01005`, the many-shot rule, is now linear** without giving up RE2
+  portability — the obvious fix would have traded one for the other (#546).
+
+### Fixed
+
+- **Ten rules from the re-sweep were withheld rather than shipped**: each fired
+  on its own benign twin from the same run, so the twin corpus caught them
+  before release (#565). `ATR-2026-02604` was withheld earlier for the same
+  reason.
+- **`\u{...}` is a JavaScript-only escape, so ten rules never compiled outside
+  the TypeScript engine** — they were silently absent for every other consumer
+  (#509).
+- The Sigma exporter did not preserve ATR's regex case semantics (#520).
+- The AVID importer stopped at the API's page limit instead of enumerating all
+  reports (#534).
+- The quality gate now checks peer true negatives within the same PR (#529),
+  and the website shows the effective rule count rather than the raw file count.
+
+### Removed
+
+- The one-shot bootstrap publish workflow, once it had served its purpose
+  (#541).
+
+## [4.0.0] - 2026-08-22
+
+> Releases 3.5.1 through 3.5.12 were automated rule-publish releases cut from
+> this same stretch of history and were never given their own entries. A few
+> items below — the benchmark-number corrections in particular — were first
+> published in one of them rather than in 4.0.0.
+
 ### Changed — blocking is now opt-in (BREAKING for anyone relying on the old default)
 
 - **`atr guard` no longer emits a `permissionDecision` unless blocking is
@@ -357,7 +564,49 @@ All notable changes to ATR will be documented in this file.
 
 No rule content changed and no threshold was loosened in any of the above.
 
+### Added — beyond the hook and lane work above
+
+- **The Cisco Skill Scanner pack is now a build artifact** rather than a
+  hand-assembled export (#495).
+- **A rule the benign corpus cannot see has not been measured** — CI now says
+  so instead of counting it clean (#460). The benign gate was also given the
+  two corpora it had been missing (#468).
+- `DETECTION-BOUNDARY.md` — what this layer detects and what it cannot (#461) —
+  and `ENFORCEMENT-MODEL.md`, which also made three contradicted statements
+  elsewhere in the docs true (#470).
+- `ATR-2026-02502`: covert remote-script injection into generated artifacts
+  (#462). The four tool-poisoning rules are mapped to MITRE ATLAS
+  `AML.T0110.000` (#465), and the CSA MAESTRO mapping is refreshed against the
+  current corpus (#464).
+
+### Fixed — the guard was not reading real events
+
+- **`atr guard` never read a real Claude Code event.** The shape it parsed was
+  not the shape the host sends (#483). The event shape now follows
+  `hook_event_name` as well as the dispatch, rather than the dispatch alone
+  (#487).
+
+### Fixed — rules that matched the wrong thing
+
+- `ATR-2026-00086` was detecting Russian, not spoofing (#489).
+- `ATR-2026-01904` read method calls as domains (#474).
+- `ATR-2026-00443` read an ordinary sentence as fragment assembly (#473).
+- `ATR-2026-01750` fired on descriptions of loops rather than demands for
+  output (#472).
+- An unquoted ATLAS `T0110.000` title broke the site build (#477).
+
+### Measurement
+
+- The benign false-positive evidence was re-derived at 785 rules (#497).
+- ATR was measured against 36,394 published ClawHub skills across three event
+  shapes (#490), and rule drift was measured against the 2026-04 wild scan
+  (#491).
+- The rule count in the standardization document was 357 rules out of date
+  (#479), and five benchmark corpora were refreshed (#478).
+
 ## [3.5.0] - 2026-06-16
+
+> **The two lane false-positive rates quoted in this 3.5.0 entry were withdrawn on 2026-09-19 and must not be cited.** The entry is left as published, because a changelog is a record of what was said at the time. See the withdrawal under [Unreleased] for the three defects that disqualified them; re-measurement is pending.
 
 ### Added
 
@@ -575,6 +824,14 @@ No rule content changed and no threshold was loosened in any of the above.
 - garak DanInTheWild coverage batch 8-9: jailbreak templates, emoji-flag, prompt-browser (ATR-00377~00392)
 
 ## [2.0.0] - 2026-04-15
+
+> **Historical entry — do not quote these figures as current.** The scan counts,
+> malware counts, benchmark rates and rule totals below are as published on
+> 2026-04-15 at 113 rules. The wild-scan figures in particular are under
+> reconciliation and are not a citable measurement; current corpus numbers live
+> in `data/stats.json` and in README §8 Evaluation. The "Cisco AI Defense" line
+> describes rules merged into the open-source `cisco-ai-defense/skill-scanner`
+> repository — it is not a statement about any vendor product.
 
 ### BREAKING
 

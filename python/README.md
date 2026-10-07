@@ -102,7 +102,7 @@ pytest tests/ -v
 
 ## Sponsorship
 
-pyATR's maintenance — CVE-class response, weekly cross-ecosystem sync, the auto-review pipeline — runs on community sponsorship through [Open Source Collective, Inc.](https://opencollective.com/opensource) (501(c)(6), EIN 81-1567737).
+pyATR's maintenance — CVE-class response, weekly cross-ecosystem sync, the auto-review pipeline — runs on community sponsorship through [Open Source Collective, Inc.](https://opencollective.com/opensource) (501(c)(6), EIN 82-2037583).
 
 **Sponsor page: [opencollective.com/agent-threat-rules](https://opencollective.com/agent-threat-rules)**
 

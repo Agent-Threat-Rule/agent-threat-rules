@@ -260,7 +260,7 @@ More endpoints → more detection data → better rules → more endpoints
 ```
 
 A malicious MCP server discovered by a solo developer's GitHub Action
-becomes a rule that protects every Cisco AI Defense deployment.
+becomes a rule that downstream consumers can pick up on their next sync, including the open-source cisco-ai-defense/skill-scanner repository.
 
 An evasion technique found by NVIDIA Garak's probes
 becomes a hardened pattern that shields every small startup's agent pipeline.
