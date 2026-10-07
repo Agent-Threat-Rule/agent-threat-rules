@@ -252,7 +252,24 @@ Listed when the integration code has been merged or released.
 - **Since**: 2026-06-26
 - **Status**: in-review
 
+### atr-to-yaral
+- **Org**: Ajay Nyayapathi
+- **Type**: adapter
+- **Integration**: Converts ATR YAML rules into YARA-L 2.0 rules for Google SecOps (Chronicle), including a real RE2 compile-check gate, Unicode-escape translation, and canary testing against each rule's own test cases
+- **Evidence**: <https://github.com/ajaynyayapathi/ATR-to-Yara-L-Converter/blob/main/atr-to-yaral/README.md>
+- **Since**: 2026-09-12
+- **Status**: shipped
+
 ---
+
+### prompt-protection
+- **Org**: Independent
+- **Type**: adapter
+- **Integration**: `prompt-protection/atr` compiles ATR rule packs into the library's own scoring engine and emits the spec ScanResult shape, honouring scan-target, agent-source, status and maturity-lane filtering; conditions it cannot express faithfully are skipped with a reason rather than approximated
+- **Evidence**: <https://github.com/mughalhere/prompt-protection/blob/main/docs/ATR.md>
+- **Since**: 2026-09-15
+- **Status**: shipped
+- **Categories**: prompt-injection, tool-poisoning, context-exfiltration, agent-manipulation, privilege-escalation, excessive-autonomy, data-poisoning, model-abuse, skill-compromise
 
 ## Tier 3 — Documentation references & awesome-lists
 
