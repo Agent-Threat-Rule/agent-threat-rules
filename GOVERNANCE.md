@@ -144,8 +144,10 @@ and merges. The ID is permanent.
 
 ### 5. Publication
 
-Merged rules are automatically:
-- Published in the next `npm publish` of `agent-threat-rules`
+Merged rules are:
+- Included in the next release of `agent-threat-rules`, which CI stages on npm
+  and a maintainer approves with 2FA (CONTRIBUTING.md, "How a release reaches
+  npm")
 - Synced to Threat Cloud for distribution to Guard daemons
 - Reflected on the ATR website
 

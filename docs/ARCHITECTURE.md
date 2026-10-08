@@ -365,7 +365,9 @@ that motivated it. They are worth reading; this table is only an index.
 | `atr-security-scan.yml` | the repo's own action against itself, SARIF upload | nothing (`fail-on-finding: false`) — it is dogfooding plus code scanning, not a gate. |
 
 Post-merge, not on PRs: `reconcile-stats.yml` recomputes the rule counts from
-disk and commits them back (§8), and `publish-on-rules-merge.yml` publishes.
+disk and commits them back (§8). Nothing publishes on merge: a `v*` tag runs
+`publish.yml`, which stages the version on npm for a maintainer to approve with
+2FA (CONTRIBUTING.md, "How a release reaches npm").
 
 ---
 
