@@ -88,6 +88,13 @@ function syncReadme(s: Stats): SyncResult {
       /(\[!\[npm\]\(https:\/\/img\.shields\.io\/npm\/v\/agent-threat-rules[^\)]*\)\]\([^)]+\))/,
       `$1`,
     );
+    // "Status of This Document" names the version the site's Working Draft
+    // banner also shows (website/lib/spec-meta.ts reads package.json). Unsynced,
+    // it sat at 3.0.0-alpha.1 through the whole 4.x line.
+    out = out.replace(
+      /(published as a \*\*Working Draft\*\* at version `)[^`]+(`)/,
+      `$1${s.version}$2`,
+    );
     return out;
   });
 }
@@ -100,7 +107,13 @@ function syncCitation(s: Stats): SyncResult {
     // effective, not total: `total` counts rule FILES, and src/engine.ts skips
     // status: draft | deprecated before the lane gate, so those rules fire in no
     // lane at all. Citing the file count overstates what the engine runs.
-    out = out.replace(/\b\d{2,4} rules across \d+ threat\b/, `${s.ruleCount.effective ?? s.ruleCount.total} rules across 10 threat`);
+    // `\s+`, not a space: the abstract is a folded YAML block, and once the
+    // sentence wrapped between "10" and "threat" this stopped matching and the
+    // count froze (825 at v4.1.0 while the corpus moved on).
+    out = out.replace(/\b\d{2,4} rules across \d+(\s+)threat\b/, (_m, ws: string) => `${s.ruleCount.effective ?? s.ruleCount.total} rules across 10${ws}threat`);
+    // The abstract names the version its count belongs to. Left unsynced, it
+    // read "At v4.1.0 it provides 825 rules" with the package at 4.1.4.
+    out = out.replace(/\bAt v\d+\.\d+\.\d+[\w.-]* it provides\b/, `At v${s.version} it provides`);
     out = out.replace(/\(\d+\.\d+% recall on the\b/, `(${s.benchmarks.garak.recall}% recall on the`);
     // The ATR version in this sentence was NOT synced, so the abstract cited
     // "91.5% ... ATR 3.5.0" — a recall from one version attributed to another.
@@ -141,7 +154,9 @@ function syncPackageJson(_s: Stats): SyncResult {
 
 function syncQuickStart(s: Stats): SyncResult {
   return syncFile('docs/quick-start.md', (text) => {
-    return text.replace(/Rules loaded: \d+/, `Rules loaded: ${s.ruleCount.total}`);
+    // `\s+`: the sample output is column-aligned ("Rules loaded:    71"), so a
+    // single-space pattern never matched and the number froze at 71.
+    return text.replace(/Rules loaded:(\s+)\d+/, (_m, ws: string) => `Rules loaded:${ws}${s.ruleCount.total}`);
   });
 }
 

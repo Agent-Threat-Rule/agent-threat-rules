@@ -29,7 +29,7 @@ ATR (Agent Threat Rules) is an open detection rule format for AI agent security 
 
 ## Status of This Document
 
-ATR is published as a **Working Draft** at version `3.0.0-alpha.1`. The rule format defined in `SPEC.md` is stable and merged into open-source repos at Microsoft, Cisco, and Gen Digital, and integrated by standards-body projects (MISP / CIRCL, OWASP Agent Security Regression Harness, SigmaHQ, FINOS Common Cloud Controls); full list with PR links in [§6 Adoption](#6-adoption). Governance is currently single-maintainer (BDFL) transitioning to a Technical Steering Committee per [GOVERNANCE.md](GOVERNANCE.md).
+ATR is published as a **Working Draft** at version `4.1.4`. The rule format defined in `SPEC.md` is stable and merged into open-source repos at Microsoft, Cisco, and Gen Digital, and integrated by standards-body projects (MISP / CIRCL, OWASP Agent Security Regression Harness, SigmaHQ, FINOS Common Cloud Controls); full list with PR links in [§6 Adoption](#6-adoption). Governance is currently single-maintainer (BDFL) transitioning to a Technical Steering Committee per [GOVERNANCE.md](GOVERNANCE.md).
 
 All numbers in this document are sourced from [`data/stats.json`](data/stats.json), which is the canonical record of the project's current state. Where this README and `stats.json` disagree, `stats.json` is authoritative.
 

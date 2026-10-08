@@ -25,11 +25,11 @@
 
 ## Positioning (one-liner)
 
-ATR is an open-source detection rule corpus for AI agent threats -- like Sigma rules for SIEM, but for AI agents. 825 rules across 10 categories (as of 2026-09-22), over 100,000 real-world agent skills and MCP definitions scanned, and rules merged upstream into open-source scanners including cisco-ai-defense/skill-scanner.
+ATR is an open-source detection rule corpus for AI agent threats -- like Sigma rules for SIEM, but for AI agents. 829 rules across 10 categories (as of 2026-10-07), over 100,000 real-world agent skills and MCP definitions scanned, and rules merged upstream into open-source scanners including cisco-ai-defense/skill-scanner.
 
 ## Key Facts
 
-- 825 detection rules across 10 attack categories (as of 2026-09-22; re-verify against `data/stats.json`)
+- 829 detection rules across 10 attack categories (as of 2026-10-07; re-verify against `data/stats.json`)
 - RFC-001: vendor-neutral quality standard (maturity levels, confidence scoring, community signals)
 - Framework coverage (OWASP Agentic Top 10, MITRE ATLAS and others): see `COVERAGE.md`, which is generated from the rule corpus rather than restated here
 - Wild scan: 101,280 real-world agent skills and MCP definitions scanned across five registries, 1,434 flagged (engine v2.0.0, as of 2026-04-13). Triage of the flagged set is documented in `docs/research/wild-scan-drift.md`; the confirmed-malicious share is reported there as a floor, not a precision figure
