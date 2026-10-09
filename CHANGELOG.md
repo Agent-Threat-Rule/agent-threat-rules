@@ -4,6 +4,31 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+## [4.1.5] - 2026-10-10
+
+4.1.4 was staged on npm and removed by publish-time scanning before it could be
+approved, like 4.1.1 to 4.1.3. 4.0.0 passed that scanning. What the 4.1 line
+added were rules whose test samples are complete attack snippets: a
+crypto-miner command line with a mining-pool URL, PHP, JSP and ASPX webshells,
+and a Node.js reverse shell. This release carries the 4.1.4 rules and engine,
+packaged without those samples.
+
+### Changed
+
+- **The npm package ships the rules without their test samples.** The release
+  workflow removes `test_cases` and `evasion_tests` from each rule just before
+  staging, after the tests have run on the full rules. The engine does not read
+  them, so detection is unchanged: the same rules load and the same rules fire.
+  The samples stay in the repository. With the package alone, `atr test` on a
+  bundled rule has no samples to run, and `atr stats` reports zero TP/TN
+  counts. DISCLOSURE says so.
+
+### Fixed
+
+- **ATR-2026-02600 no longer names a real public IP in its test samples.** Two
+  reverse-shell samples connected to 185.62.57.14 and 1.2.3.4; they now use the
+  documentation ranges 203.0.113.14 and 192.0.2.4. The detection is unchanged.
+
 ### Changed
 
 - **npm releases go only through the staged path in `publish.yml`.** The
@@ -20,6 +45,8 @@ All notable changes to ATR will be documented in this file.
   `publish.yml` gains a publish, stage or approve step.
 
 ## [4.1.4] - 2026-10-07
+
+> Not published to npm (see 4.1.5).
 
 The first release since 4.0.0 meant to reach npm. 4.1.1, 4.1.2 and 4.1.3 were
 each blocked by npm's publish-time malware scanning, which reads the attack

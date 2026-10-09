@@ -19,8 +19,14 @@ rules/ contain attack strings on purpose:
 - detection patterns (regular expressions and literal fragments) that match
   prompt-injection text, script and HTML injection payloads, shell commands,
   credential-exfiltration command lines and similar content;
-- test cases: sample attack inputs that each rule must detect, and benign
-  samples it must not.
+- descriptions and false-positive notes that name the techniques a rule
+  covers.
+
+The rules published here leave out each rule's test samples (test_cases and
+evasion_tests): the attack inputs a rule must detect and the benign inputs it
+must not. Some of those samples are complete attack snippets, and the engine
+does not use them. They remain in the source repository, where the project's
+own tests run them.
 
 These strings are data. The engine matches the patterns, as regular expressions
 or as literal strings, against text supplied by the caller. Rule content is

