@@ -7,6 +7,7 @@
  */
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
 import yaml from "js-yaml";
@@ -97,4 +98,24 @@ describe("publish.yml", () => {
     expect(at("Restore the full rules")).toBeGreaterThan(at("Wait for approval and the registry"));
     expect(at("Restore the full rules")).toBeLessThan(at("Count rules for release notes"));
   });
+});
+
+// With the samples pruned, `atr test` used to print "All tests passed" after
+// running zero cases: a green result for a test that tested nothing.
+describe("atr test on pruned rules", () => {
+  it("fails and says there were no test cases, instead of reporting a pass", () => {
+    const dir = mkdtempSync(join(tmpdir(), "atr-pruned-one-"));
+    try {
+      const src = ruleFiles(RULES).find((f: string) => f.includes("ATR-2026-02600"));
+      cpSync(src, join(dir, "rule.yaml"));
+      pruneRulesDir(dir);
+      const cli = new URL("../src/cli.ts", import.meta.url).pathname;
+      const r = spawnSync("npx", ["tsx", cli, "test", join(dir, "rule.yaml")], { encoding: "utf8" });
+      expect(r.status).toBe(1);
+      expect(`${r.stdout}${r.stderr}`).toMatch(/No test cases to run/);
+      expect(r.stdout).not.toMatch(/All tests passed/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 60_000);
 });

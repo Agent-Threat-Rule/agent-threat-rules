@@ -25,9 +25,12 @@ packaged without those samples.
 
 ### Fixed
 
-- **ATR-2026-02600 no longer names a real public IP in its test samples.** Two
-  reverse-shell samples connected to 185.62.57.14 and 1.2.3.4; they now use the
-  documentation ranges 203.0.113.14 and 192.0.2.4. The detection is unchanged.
+- **ATR-2026-02600 no longer names a real public IP in its test samples.** Its
+  two reverse-shell samples now connect to the documentation ranges 203.0.113.14
+  and 192.0.2.4. The detection is unchanged.
+- **ATR-2026-02627 describes the web shells it detects instead of quoting
+  them.** Its description and one false-positive note quoted a working one-line
+  PHP command shell; they now say what it is. The detection is unchanged.
 
 ### Changed
 
