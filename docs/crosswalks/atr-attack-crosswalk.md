@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 829
-- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 223
+- ATR rules total: 832
+- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 224
 - Distinct enterprise ATT&CK techniques referenced: 86
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 829
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 832
 - Distinct MITRE ATLAS techniques referenced: 45
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 829
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 832
 - ATR categories (distinct `tags.category` values): 10
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -122,7 +122,7 @@ against.
 | T1565.001 | Data Manipulation: Stored Data Manipulation | `ATR-2026-00075`, `ATR-2026-00200`, `ATR-2026-01155`, `ATR-2026-02143`, `ATR-2026-02144`, `ATR-2026-02303` | context-exfiltration, data-poisoning, skill-compromise |
 | T1566 | Phishing | `ATR-2026-00119`, `ATR-2026-00420`, `ATR-2026-02850` | agent-manipulation, context-exfiltration, prompt-injection |
 | T1566.002 | Phishing: Spearphishing Link | `ATR-2026-02401` | excessive-autonomy |
-| T1567 | Exfiltration Over Web Service | `ATR-2026-00420`, `ATR-2026-02304`, `ATR-2026-02570` | context-exfiltration, prompt-injection |
+| T1567 | Exfiltration Over Web Service | `ATR-2026-00420`, `ATR-2026-02304`, `ATR-2026-02570`, `ATR-2026-02852` | context-exfiltration, excessive-autonomy, prompt-injection |
 | T1573 | Encrypted Channel | `ATR-2026-01994` | excessive-autonomy |
 | T1574.002 | Hijack Execution Flow: DLL Side-Loading | `ATR-2026-02410` | skill-compromise |
 | T1574.006 | Hijack Execution Flow: Dynamic Linker Hijacking | `ATR-2026-02195`, `ATR-2026-02300` | privilege-escalation |
@@ -143,7 +143,7 @@ For each ATR category: the enterprise ATT&CK techniques its rules reference
 
 ### agent-manipulation
 
-Rules in category: 108
+Rules in category: 109
 
 ATT&CK techniques (join key):
 
@@ -169,7 +169,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### context-exfiltration
 
-Rules in category: 135
+Rules in category: 136
 
 ATT&CK techniques (join key):
 
@@ -231,7 +231,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI04:2026, ASI05:202
 
 ### excessive-autonomy
 
-Rules in category: 40
+Rules in category: 41
 
 ATT&CK techniques (join key):
 
@@ -248,6 +248,7 @@ ATT&CK techniques (join key):
 | T1562 | Impair Defenses | `ATR-2026-01993`, `ATR-2026-02400`, `ATR-2026-02401` |
 | T1562.001 | Disable or Modify Tools | `ATR-2026-02400`, `ATR-2026-02667` |
 | T1566.002 | Phishing: Spearphishing Link | `ATR-2026-02401` |
+| T1567 | Exfiltration Over Web Service | `ATR-2026-02852` |
 | T1573 | Encrypted Channel | `ATR-2026-01994` |
 | T1595 | Active Scanning | `ATR-2026-02409` |
 
