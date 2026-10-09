@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-07-12",
-  "atr_version": "v3.5.8",
+  "generated_at": "2026-10-08",
+  "atr_version": "v4.1.4",
   "owasp_agentic_version": "v1.0 (December 2025)",
-  "total_rules_in_repo": 747,
-  "total_tagged_rules": 747,
-  "total_mappings": 976,
+  "total_rules_in_repo": 829,
+  "total_tagged_rules": 829,
+  "total_mappings": 1094,
   "categories": [
     {
       "key": "ASI01",
@@ -13,7 +13,7 @@
       "official_description": "Attackers manipulate the agent's decision pathways or objectives so it pursues an adversary-controlled goal instead of its assigned task. Canonical instance: EchoLeak.",
       "reference_attack": "EchoLeak",
       "coverage_note": "Direct + indirect prompt injection, persona hijack, encoding evasion, jailbreak chains, multi-turn assembly, multilingual paraphrase.",
-      "rule_count": 480,
+      "rule_count": 487,
       "strength": "STRONG",
       "rules": [
         {
@@ -848,6 +848,20 @@
           "severity": "critical",
           "category": "model-abuse",
           "file": "rules/model-abuse/ATR-2026-02211-named-substance-synthesis-request-non-stepword.yaml"
+        },
+        {
+          "id": "ATR-2026-02374",
+          "title": "ROT13/Base64-Obfuscated Shell Payload Wrapped in a Fake-Sandbox Jailbreak Template",
+          "severity": "critical",
+          "category": "prompt-injection",
+          "file": "rules/prompt-injection/ATR-2026-02374-rot13-base64-obfuscated-shell-jailbreak.yaml"
+        },
+        {
+          "id": "ATR-2026-02570",
+          "title": "Wallet Secret Material (Seed Phrase / Private Key) Carried Inside an MCP Tool Payload",
+          "severity": "critical",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02570-wallet-secret-material-in-agent-tool-payload.yaml"
         },
         {
           "id": "ATR-2026-00001",
@@ -2866,6 +2880,41 @@
           "file": "rules/context-exfiltration/ATR-2026-02250-attachment-upload-tool-arbitrary-file-read.yaml"
         },
         {
+          "id": "ATR-2026-02304",
+          "title": "Base64-Encoded Path Segment in a WebFetch URL to a Pre-Approved Trusted Domain (Covert Exfiltration Channel)",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02304-preapproved-domain-encoded-path-exfil.yaml"
+        },
+        {
+          "id": "ATR-2026-02377",
+          "title": "Novel-Persona Jailbreak via Co-Signal (persona swap + explicit restriction removal)",
+          "severity": "high",
+          "category": "prompt-injection",
+          "file": "rules/prompt-injection/ATR-2026-02377-novel-persona-jailbreak-cosignal.yaml"
+        },
+        {
+          "id": "ATR-2026-02403",
+          "title": "MCP Tool Returns Untrusted External Content Carrying Hidden Agent Instructions Without Spotlighting",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02403-mcp-external-content-missing-spotlighting.yaml"
+        },
+        {
+          "id": "ATR-2026-02502",
+          "title": "Covert Remote-Script Injection into Agent-Generated Artifacts",
+          "severity": "high",
+          "category": "prompt-injection",
+          "file": "rules/prompt-injection/ATR-2026-02502-covert-remote-script-injection-into-generated-artifacts.yaml"
+        },
+        {
+          "id": "ATR-2026-02846",
+          "title": "Ignore-Previous-and-Following Instructions in User Input (PromptInject Goal Hijacking)",
+          "severity": "high",
+          "category": "prompt-injection",
+          "file": "rules/prompt-injection/ATR-2026-02846-semantic-ignore-previous-and-following-instructio.yaml"
+        },
+        {
           "id": "ATR-2026-00005",
           "title": "Multi-Turn Prompt Injection",
           "severity": "medium",
@@ -3385,7 +3434,7 @@
       "official_description": "Legitimate tools are used unsafely because the agent acts on ambiguous instructions or has over-privileged access. Canonical instance: Amazon Q assistant tool-misuse incident.",
       "reference_attack": "Amazon Q",
       "coverage_note": "Unauthorized tool calls, SSRF via tool, MCP malicious response, schema-description contradiction, consent bypass.",
-      "rule_count": 48,
+      "rule_count": 70,
       "strength": "STRONG",
       "rules": [
         {
@@ -3520,6 +3569,34 @@
           "severity": "critical",
           "category": "tool-poisoning",
           "file": "rules/tool-poisoning/ATR-2026-02194-go-init-func-process-exec-codegen-rce.yaml"
+        },
+        {
+          "id": "ATR-2026-02371",
+          "title": "Browser-Automation Tool Launch-Args Field Carries a Chromium Command-Replacing Switch",
+          "severity": "critical",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02371-chromium-launch-flag-argument-injection.yaml"
+        },
+        {
+          "id": "ATR-2026-02401",
+          "title": "Rogue Agent Provisioning: Mass Connector Grant with Approval Disabled and Recurring Schedule (AgentForger)",
+          "severity": "critical",
+          "category": "excessive-autonomy",
+          "file": "rules/excessive-autonomy/ATR-2026-02401-rogue-agent-mass-connector-grant.yaml"
+        },
+        {
+          "id": "ATR-2026-02406",
+          "title": "MCP Tool Sequential Integer ID Enumeration (Cross-Tenant IDOR, CVE-2026-54052)",
+          "severity": "critical",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02406-mcp-sequential-id-enumeration.yaml"
+        },
+        {
+          "id": "ATR-2026-02500",
+          "title": "Prompt-Layer Self-Replication (Agent Worm Propagation Directive)",
+          "severity": "critical",
+          "category": "prompt-injection",
+          "file": "rules/prompt-injection/ATR-2026-02500-prompt-layer-self-replication.yaml"
         },
         {
           "id": "ATR-2026-00011",
@@ -3718,6 +3795,132 @@
           "file": "rules/privilege-escalation/ATR-2026-02251-identifier-field-path-traversal-storage-write.yaml"
         },
         {
+          "id": "ATR-2026-02260",
+          "title": "Remediation-Framed Command Execution in Tool Response (Agentjacking)",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02260-agentjacking-remediation-framed-execution.yaml"
+        },
+        {
+          "id": "ATR-2026-02303",
+          "title": "KQL/Kusto Pipe-Chain Injection via Table-Name Parameter in a 'Safe' Metadata Tool",
+          "severity": "high",
+          "category": "data-poisoning",
+          "file": "rules/data-poisoning/ATR-2026-02303-kql-kusto-pipe-injection-metadata-tool.yaml"
+        },
+        {
+          "id": "ATR-2026-02350",
+          "title": "MCP JSON-RPC Message Carries Case-Duplicate name/arguments Keys to Smuggle an Unauthorized Tool Call",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02350-mcp-json-rpc-case-duplicate-key-tool-smuggling.yaml"
+        },
+        {
+          "id": "ATR-2026-02351",
+          "title": "SSRF to Cloud Metadata Endpoint via Wildcard-DNS Hostname-Encoded IP (nip.io/sslip.io/xip.io/traefik.me)",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02351-wildcard-dns-ssrf-hostname-ip-encoding-bypass.yaml"
+        },
+        {
+          "id": "ATR-2026-02352",
+          "title": "Email Search/Reply Tool Argument Breaks Out of IMAP SEARCH Quoted String to Inject IMAP Commands",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02352-imap-search-command-injection-email-tool-args.yaml"
+        },
+        {
+          "id": "ATR-2026-02353",
+          "title": "Agent-Runtime Identifier Field (run_id/agent_id/session_id/task_id) Carries Path Traversal Into a History/Log File Read",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02353-runtime-identifier-field-path-traversal-log-read.yaml"
+        },
+        {
+          "id": "ATR-2026-02370",
+          "title": "SSH/SCP MCP Tool hostAlias Argument Carries an OpenSSH Option-Injection Flag",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02370-ssh-scp-hostalias-option-injection.yaml"
+        },
+        {
+          "id": "ATR-2026-02402",
+          "title": "MCP Server Security Policy Fail-Open on Initialization Failure (CVE-2026-16584)",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02402-mcp-policy-engine-fail-open.yaml"
+        },
+        {
+          "id": "ATR-2026-02409",
+          "title": "MCP 2026-07-28 Stateless Spec: Async Task Abuse and OAuth 2.1 Misuse",
+          "severity": "high",
+          "category": "excessive-autonomy",
+          "file": "rules/excessive-autonomy/ATR-2026-02409-mcp-async-task-abuse.yaml"
+        },
+        {
+          "id": "ATR-2026-02525",
+          "title": "Shell Command-Word Reassembly via Parameter Expansion",
+          "severity": "high",
+          "category": "excessive-autonomy",
+          "file": "rules/excessive-autonomy/ATR-2026-02525-shell-command-word-reassembly-classifier-evasion.yaml"
+        },
+        {
+          "id": "ATR-2026-02528",
+          "title": "Option-Flag Smuggling in an LLM-Controlled Tool Parameter",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02528-tool-parameter-option-flag-smuggling.yaml"
+        },
+        {
+          "id": "ATR-2026-02531",
+          "title": "Kusto Pipeline Injection Through a Table Identifier Parameter",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02531-kusto-query-injection-outbound-reach.yaml"
+        },
+        {
+          "id": "ATR-2026-02557",
+          "title": "Shell Command Separator Inside a Path-Typed MCP Tool Argument",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02557-shell-separator-in-path-typed-tool-argument.yaml"
+        },
+        {
+          "id": "ATR-2026-02608",
+          "title": "LLM-Generated Graph Query Reaching a Remote Endpoint (APOC remote script, raw-IP load, remote export)",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02608-graph-query-remote-egress.yaml"
+        },
+        {
+          "id": "ATR-2026-02649",
+          "title": "Vendor API Hostname Used as a Label Prefix of Another Domain",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02649-vendor-fqdn-label-prefix-confusion.yaml"
+        },
+        {
+          "id": "ATR-2026-02667",
+          "title": "Submitted Job Payload Carries Its Own Pre-Approved Tool List",
+          "severity": "high",
+          "category": "excessive-autonomy",
+          "file": "rules/excessive-autonomy/ATR-2026-02667-preapproved-tool-list-in-job-payload.yaml"
+        },
+        {
+          "id": "ATR-2026-02683",
+          "title": "Agent Tool Data Argument Carries a Program-Executing CLI Option",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02683-tool-argument-option-injection-executor-flag.yaml"
+        },
+        {
+          "id": "ATR-2026-02700",
+          "title": "Percent-Encoded Path Traversal in an Agent File-Tool Argument",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02700-percent-encoded-path-traversal-tool-argument.yaml"
+        },
+        {
           "id": "ATR-2026-00127",
           "title": "Subcommand Overflow Bypass",
           "severity": "medium",
@@ -3733,7 +3936,7 @@
       "official_description": "Agents operate in an attribution gap; leaked credentials or escalated privileges let them act beyond intended scope.",
       "reference_attack": null,
       "coverage_note": "API key exposure, OAuth token abuse, env var harvesting, scope creep, credential file theft, privilege escalation.",
-      "rule_count": 115,
+      "rule_count": 125,
       "strength": "STRONG",
       "rules": [
         {
@@ -4192,6 +4395,20 @@
           "file": "rules/context-exfiltration/ATR-2026-02190-dns-exfiltration-ping-dig-encoded-subdomain.yaml"
         },
         {
+          "id": "ATR-2026-02406",
+          "title": "MCP Tool Sequential Integer ID Enumeration (Cross-Tenant IDOR, CVE-2026-54052)",
+          "severity": "critical",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02406-mcp-sequential-id-enumeration.yaml"
+        },
+        {
+          "id": "ATR-2026-02642",
+          "title": "Agent Configuration Tool Used to Disable the Agent's Own Guardrail",
+          "severity": "critical",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02642-agent-config-tool-disables-own-guardrail.yaml"
+        },
+        {
           "id": "ATR-2026-00012",
           "title": "Unauthorized Tool Call Detection",
           "severity": "high",
@@ -4528,6 +4745,55 @@
           "file": "rules/tool-poisoning/ATR-2026-02025-mcp-full-schema-poisoning-nondescription-field.yaml"
         },
         {
+          "id": "ATR-2026-02262",
+          "title": "Environment-Variable-Resolution Credential Exfiltration via Redirected Endpoint (CVE-2026-56259)",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02262-env-resolution-credential-exfil.yaml"
+        },
+        {
+          "id": "ATR-2026-02400",
+          "title": "Agent Human-Approval Gate Programmatically Disabled at Runtime (YOLO / auto-approve)",
+          "severity": "high",
+          "category": "excessive-autonomy",
+          "file": "rules/excessive-autonomy/ATR-2026-02400-agent-approval-gate-disabled-runtime.yaml"
+        },
+        {
+          "id": "ATR-2026-02409",
+          "title": "MCP 2026-07-28 Stateless Spec: Async Task Abuse and OAuth 2.1 Misuse",
+          "severity": "high",
+          "category": "excessive-autonomy",
+          "file": "rules/excessive-autonomy/ATR-2026-02409-mcp-async-task-abuse.yaml"
+        },
+        {
+          "id": "ATR-2026-02601",
+          "title": "Argument Injection: Execution-Bearing CLI Option Smuggled into a Tool Data Parameter",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02601-tool-argument-option-injection.yaml"
+        },
+        {
+          "id": "ATR-2026-02641",
+          "title": "Client-Supplied Approver Identity on an Approval Decision",
+          "severity": "high",
+          "category": "excessive-autonomy",
+          "file": "rules/excessive-autonomy/ATR-2026-02641-client-supplied-approver-identity.yaml"
+        },
+        {
+          "id": "ATR-2026-02644",
+          "title": "Image-Header Polyglot: Magic Bytes Adjacent to a Server-Side Script Payload",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02644-image-magic-polyglot-upload.yaml"
+        },
+        {
+          "id": "ATR-2026-02648",
+          "title": "Write or Fetch Procedure Called Through a Read-Only Graph Query Tool",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02648-readonly-graph-tool-write-procedure.yaml"
+        },
+        {
           "id": "ATR-2026-00041",
           "title": "Agent Scope Creep Detection",
           "severity": "medium",
@@ -4540,6 +4806,13 @@
           "severity": "medium",
           "category": "tool-poisoning",
           "file": "rules/tool-poisoning/ATR-2026-00720-tool-misuse-privilege-escalation-social.yaml"
+        },
+        {
+          "id": "ATR-2026-02682",
+          "title": "XML/SVG Entity Expansion Bomb in Content Returned to an Agent",
+          "severity": "medium",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02682-xml-entity-expansion-bomb.yaml"
         }
       ]
     },
@@ -4550,7 +4823,7 @@
       "official_description": "Runtime composition of third-party capabilities (MCP servers, plugins, skills, A2A endpoints) lets adversaries poison the call graph after deployment. Canonical instance: GitHub MCP exploit.",
       "reference_attack": "GitHub MCP exploit",
       "coverage_note": "Skill impersonation, hidden capability, polymorphic skill, registry poisoning, malicious skill code, parameter injection.",
-      "rule_count": 75,
+      "rule_count": 98,
       "strength": "STRONG",
       "rules": [
         {
@@ -4834,6 +5107,41 @@
           "file": "rules/privilege-escalation/ATR-2026-02195-dangerous-env-var-injection-config-tool.yaml"
         },
         {
+          "id": "ATR-2026-02401",
+          "title": "Rogue Agent Provisioning: Mass Connector Grant with Approval Disabled and Recurring Schedule (AgentForger)",
+          "severity": "critical",
+          "category": "excessive-autonomy",
+          "file": "rules/excessive-autonomy/ATR-2026-02401-rogue-agent-mass-connector-grant.yaml"
+        },
+        {
+          "id": "ATR-2026-02407",
+          "title": "Agent Workspace Boundary Escape via Host-Root Mount and Unprivileged Namespace Escalation (CVE-2026-46331)",
+          "severity": "critical",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02407-agent-workspace-boundary-escape.yaml"
+        },
+        {
+          "id": "ATR-2026-02627",
+          "title": "Web Shell Written Into a Web-Served Directory",
+          "severity": "critical",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02627-web-shell-written-to-served-path.yaml"
+        },
+        {
+          "id": "ATR-2026-02662",
+          "title": "Pickle Payload Reaches an Execution Primitive Through an Indirect Name Resolver",
+          "severity": "critical",
+          "category": "model-security",
+          "file": "rules/model-security/ATR-2026-02662-pickle-indirect-name-resolution-gadget.yaml"
+        },
+        {
+          "id": "ATR-2026-02681",
+          "title": "JavaScript Sandbox Escape by Acquiring the Function Constructor Reflectively",
+          "severity": "critical",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02681-reflective-function-constructor-sandbox-escape.yaml"
+        },
+        {
           "id": "ATR-2026-00060",
           "title": "MCP Skill Impersonation and Supply Chain Attack",
           "severity": "high",
@@ -5065,6 +5373,132 @@
           "file": "rules/tool-poisoning/ATR-2026-01932-shadow-undeclared-mcp-server-registration.yaml"
         },
         {
+          "id": "ATR-2026-01946",
+          "title": "Cloud-Metadata SSRF via Encoded Metadata-IP Bypass (CVE-2026-46678 / CVE-2026-25580 class)",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-01946-cloud-metadata-ssrf-ip-encoding-bypass.yaml"
+        },
+        {
+          "id": "ATR-2026-02262",
+          "title": "Environment-Variable-Resolution Credential Exfiltration via Redirected Endpoint (CVE-2026-56259)",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02262-env-resolution-credential-exfil.yaml"
+        },
+        {
+          "id": "ATR-2026-02300",
+          "title": "MCP Stdio Server Config env Block Sets Dangerous Process-Hijacking Environment Variable",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02300-mcp-stdio-config-dangerous-env-var.yaml"
+        },
+        {
+          "id": "ATR-2026-02372",
+          "title": "Unsigned Automated Task/Validation Feed Invokes npm install / npx -y (Lifecycle-Script RCE)",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02372-unsigned-task-feed-npm-npx-lifecycle-rce.yaml"
+        },
+        {
+          "id": "ATR-2026-02373",
+          "title": "Deserialized LangSmith Prompt Manifest Combines secrets_from_env With an Attacker base_url Override",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02373-langsmith-prompt-manifest-baseurl-exfil.yaml"
+        },
+        {
+          "id": "ATR-2026-02376",
+          "title": "MCP Tool Description Defines a Common-Phrase Trigger to Forward Full Conversation History",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02376-tool-description-conversational-trigger-history-exfil.yaml"
+        },
+        {
+          "id": "ATR-2026-02402",
+          "title": "MCP Server Security Policy Fail-Open on Initialization Failure (CVE-2026-16584)",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02402-mcp-policy-engine-fail-open.yaml"
+        },
+        {
+          "id": "ATR-2026-02408",
+          "title": "Dataset / Model Loader Remote-Code Execution via Poisoned Dataset Artifact",
+          "severity": "high",
+          "category": "data-poisoning",
+          "file": "rules/data-poisoning/ATR-2026-02408-dataset-loader-code-execution.yaml"
+        },
+        {
+          "id": "ATR-2026-02410",
+          "title": "Malicious Artifact Hosted on a Legitimate AI Vendor Domain (FakeAgent Delivery Chain)",
+          "severity": "high",
+          "category": "skill-compromise",
+          "file": "rules/skill-compromise/ATR-2026-02410-malicious-artifact-on-vendor-domain.yaml"
+        },
+        {
+          "id": "ATR-2026-02530",
+          "title": "Git Configuration Turned Into an Execution Hook by an Agent",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02530-git-config-execution-key-set-by-agent.yaml"
+        },
+        {
+          "id": "ATR-2026-02602",
+          "title": "Diagram Theme Config Used to Inject Page-Wide CSS (scope escape, overlay, selector exfil)",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02602-diagram-theme-css-injection.yaml"
+        },
+        {
+          "id": "ATR-2026-02620",
+          "title": "Code Execution via data: URI Module Specifier Handed to import()",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02620-dynamic-import-data-uri-module.yaml"
+        },
+        {
+          "id": "ATR-2026-02623",
+          "title": "Dangerous URI Scheme Obfuscated by Interstitial Characters",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02623-obfuscated-uri-scheme-sanitizer-bypass.yaml"
+        },
+        {
+          "id": "ATR-2026-02664",
+          "title": "Git Identifier Field Carries an Option or ext:: Transport Instead of a Revision",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02664-git-identifier-field-option-injection.yaml"
+        },
+        {
+          "id": "ATR-2026-02666",
+          "title": "Trusted Hostname Parked in the URL Userinfo So the Real Host Is Whatever Follows the At-Sign",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02666-url-userinfo-decoy-host-allowlist-bypass.yaml"
+        },
+        {
+          "id": "ATR-2026-02668",
+          "title": "Branch or Tag Ref Name Carrying Shell Command Substitution in Tool Output",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02668-vcs-ref-name-command-substitution.yaml"
+        },
+        {
+          "id": "ATR-2026-02684",
+          "title": "File-Tool Argument Targets a Modern Credential Store Outside the Classic Path List",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02684-modern-credential-store-file-argument.yaml"
+        },
+        {
+          "id": "ATR-2026-02707",
+          "title": "Mail or Attachment Tool Argument Splits into a New Header via Embedded CRLF",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02707-crlf-header-injection-mail-tool-argument.yaml"
+        },
+        {
           "id": "ATR-2026-00061",
           "title": "Skill Description-Behavior Mismatch",
           "severity": "medium",
@@ -5087,7 +5521,7 @@
       "official_description": "Agents generate and execute code (\"vibe coding\"), opening RCE paths through natural-language instructions. Canonical instance: AutoGPT RCE.",
       "reference_attack": "AutoGPT RCE",
       "coverage_note": "eval injection, shell metacharacter escape, dynamic import exploitation, indirect tool injection leading to code exec.",
-      "rule_count": 76,
+      "rule_count": 106,
       "strength": "STRONG",
       "rules": [
         {
@@ -5385,6 +5819,55 @@
           "file": "rules/tool-poisoning/ATR-2026-02145-python-sandbox-escape-generator-frame-introspection.yaml"
         },
         {
+          "id": "ATR-2026-02371",
+          "title": "Browser-Automation Tool Launch-Args Field Carries a Chromium Command-Replacing Switch",
+          "severity": "critical",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02371-chromium-launch-flag-argument-injection.yaml"
+        },
+        {
+          "id": "ATR-2026-02374",
+          "title": "ROT13/Base64-Obfuscated Shell Payload Wrapped in a Fake-Sandbox Jailbreak Template",
+          "severity": "critical",
+          "category": "prompt-injection",
+          "file": "rules/prompt-injection/ATR-2026-02374-rot13-base64-obfuscated-shell-jailbreak.yaml"
+        },
+        {
+          "id": "ATR-2026-02404",
+          "title": "Mobile GUI Agent Model Output Reaching Host Shell / ADB Unsanitized",
+          "severity": "critical",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02404-model-output-to-shell-unsanitized.yaml"
+        },
+        {
+          "id": "ATR-2026-02405",
+          "title": "Malicious AI Skill / MCP Server Package Structure (AgentBaiting / FakeGit)",
+          "severity": "critical",
+          "category": "skill-compromise",
+          "file": "rules/skill-compromise/ATR-2026-02405-malicious-skill-package-structure.yaml"
+        },
+        {
+          "id": "ATR-2026-02600",
+          "title": "Reverse Shell Assembled In-Source (socket bound to an interactive shell)",
+          "severity": "critical",
+          "category": "skill-compromise",
+          "file": "rules/skill-compromise/ATR-2026-02600-in-source-reverse-shell-assembly.yaml"
+        },
+        {
+          "id": "ATR-2026-02662",
+          "title": "Pickle Payload Reaches an Execution Primitive Through an Indirect Name Resolver",
+          "severity": "critical",
+          "category": "model-security",
+          "file": "rules/model-security/ATR-2026-02662-pickle-indirect-name-resolution-gadget.yaml"
+        },
+        {
+          "id": "ATR-2026-02681",
+          "title": "JavaScript Sandbox Escape by Acquiring the Function Constructor Reflectively",
+          "severity": "critical",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02681-reflective-function-constructor-sandbox-escape.yaml"
+        },
+        {
           "id": "ATR-2026-00050",
           "title": "Runaway Agent Loop Detection",
           "severity": "high",
@@ -5616,11 +6099,172 @@
           "file": "rules/tool-poisoning/ATR-2026-02193-ssrf-ipv6-noncanonical-loopback-bypass.yaml"
         },
         {
+          "id": "ATR-2026-02260",
+          "title": "Remediation-Framed Command Execution in Tool Response (Agentjacking)",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02260-agentjacking-remediation-framed-execution.yaml"
+        },
+        {
+          "id": "ATR-2026-02263",
+          "title": "SQL Injection via Unparameterized Template-Expression Value in Workflow-Automation SQL Node (CVE-2026-59257)",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02263-workflow-sql-template-expression-injection.yaml"
+        },
+        {
+          "id": "ATR-2026-02370",
+          "title": "SSH/SCP MCP Tool hostAlias Argument Carries an OpenSSH Option-Injection Flag",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02370-ssh-scp-hostalias-option-injection.yaml"
+        },
+        {
+          "id": "ATR-2026-02372",
+          "title": "Unsigned Automated Task/Validation Feed Invokes npm install / npx -y (Lifecycle-Script RCE)",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02372-unsigned-task-feed-npm-npx-lifecycle-rce.yaml"
+        },
+        {
+          "id": "ATR-2026-02400",
+          "title": "Agent Human-Approval Gate Programmatically Disabled at Runtime (YOLO / auto-approve)",
+          "severity": "high",
+          "category": "excessive-autonomy",
+          "file": "rules/excessive-autonomy/ATR-2026-02400-agent-approval-gate-disabled-runtime.yaml"
+        },
+        {
+          "id": "ATR-2026-02408",
+          "title": "Dataset / Model Loader Remote-Code Execution via Poisoned Dataset Artifact",
+          "severity": "high",
+          "category": "data-poisoning",
+          "file": "rules/data-poisoning/ATR-2026-02408-dataset-loader-code-execution.yaml"
+        },
+        {
+          "id": "ATR-2026-02410",
+          "title": "Malicious Artifact Hosted on a Legitimate AI Vendor Domain (FakeAgent Delivery Chain)",
+          "severity": "high",
+          "category": "skill-compromise",
+          "file": "rules/skill-compromise/ATR-2026-02410-malicious-artifact-on-vendor-domain.yaml"
+        },
+        {
+          "id": "ATR-2026-02557",
+          "title": "Shell Command Separator Inside a Path-Typed MCP Tool Argument",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02557-shell-separator-in-path-typed-tool-argument.yaml"
+        },
+        {
+          "id": "ATR-2026-02610",
+          "title": "Developer-Toolchain Config Evaluates a Command That Reads a Credential Store",
+          "severity": "high",
+          "category": "skill-compromise",
+          "file": "rules/skill-compromise/ATR-2026-02610-evaluated-config-credential-command.yaml"
+        },
+        {
+          "id": "ATR-2026-02621",
+          "title": "Prompt-Embedded Auto-Fetch Mention Pointed at an Internal Address",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02621-prompt-mention-autofetch-internal-target.yaml"
+        },
+        {
+          "id": "ATR-2026-02626",
+          "title": "Agent Writes a New MCP Server Into Its Own Trust Configuration",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02626-agent-self-registers-mcp-server.yaml"
+        },
+        {
+          "id": "ATR-2026-02664",
+          "title": "Git Identifier Field Carries an Option or ext:: Transport Instead of a Revision",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02664-git-identifier-field-option-injection.yaml"
+        },
+        {
+          "id": "ATR-2026-02666",
+          "title": "Trusted Hostname Parked in the URL Userinfo So the Real Host Is Whatever Follows the At-Sign",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02666-url-userinfo-decoy-host-allowlist-bypass.yaml"
+        },
+        {
+          "id": "ATR-2026-02668",
+          "title": "Branch or Tag Ref Name Carrying Shell Command Substitution in Tool Output",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02668-vcs-ref-name-command-substitution.yaml"
+        },
+        {
+          "id": "ATR-2026-02683",
+          "title": "Agent Tool Data Argument Carries a Program-Executing CLI Option",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02683-tool-argument-option-injection-executor-flag.yaml"
+        },
+        {
+          "id": "ATR-2026-02684",
+          "title": "File-Tool Argument Targets a Modern Credential Store Outside the Classic Path List",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02684-modern-credential-store-file-argument.yaml"
+        },
+        {
+          "id": "ATR-2026-02703",
+          "title": "Agent-Generated SQL Reaches Outside the Database via COPY TO PROGRAM or a Server-Side File Read",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02703-sql-server-side-file-and-program-primitive.yaml"
+        },
+        {
+          "id": "ATR-2026-02818",
+          "title": "Installable Skill Manifest Self-Declares an Attack or Jailbreak Purpose",
+          "severity": "high",
+          "category": "skill-compromise",
+          "file": "rules/skill-compromise/ATR-2026-02818-skill-manifest-declares-attack-purpose.yaml"
+        },
+        {
+          "id": "ATR-2026-02845",
+          "title": "Cryptomining Payload Deployed Through an Agent Skill or Tool Call",
+          "severity": "high",
+          "category": "skill-compromise",
+          "file": "rules/skill-compromise/ATR-2026-02845-agent-cryptomining-payload.yaml"
+        },
+        {
+          "id": "ATR-2026-02847",
+          "title": "Policy-Justified Email Exfiltration Pretext Detection",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02847-policy-justified-exfil-to-email.yaml"
+        },
+        {
+          "id": "ATR-2026-02851",
+          "title": "Fake User-Turn Injection: Send Email Directive",
+          "severity": "high",
+          "category": "prompt-injection",
+          "file": "rules/prompt-injection/ATR-2026-02851-fake-user-turn-send-email-instruction.yaml"
+        },
+        {
           "id": "ATR-2026-00397",
           "title": "Snowball Impossible Reasoning Injection",
           "severity": "medium",
           "category": "prompt-injection",
           "file": "rules/prompt-injection/ATR-2026-00397-snowball-impossible-reasoning-injection.yaml"
+        },
+        {
+          "id": "ATR-2026-02542",
+          "title": "Observability Query Tool Argument Appends a Pipeline Stage and Comments Out the Rest of the Query",
+          "severity": "medium",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02542-pipeline-query-stage-injection.yaml"
+        },
+        {
+          "id": "ATR-2026-02669",
+          "title": "Query-Language Pipeline Stage Smuggled Into an Identifier-Typed Tool Parameter",
+          "severity": "medium",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02669-query-pipeline-stage-in-identifier-parameter.yaml"
         }
       ]
     },
@@ -5631,7 +6275,7 @@
       "official_description": "Long-term memory, RAG stores, or shared context are corrupted so the agent's future behavior is shaped by attacker payloads. Canonical instance: Gemini Memory Attack.",
       "reference_attack": "Gemini Memory Attack",
       "coverage_note": "Agent memory manipulation, RAG poisoning, audit evasion, malicious finetuning data, consensus poisoning, persistent context drift.",
-      "rule_count": 87,
+      "rule_count": 104,
       "strength": "STRONG",
       "rules": [
         {
@@ -5992,6 +6636,48 @@
           "file": "rules/tool-poisoning/ATR-2026-01987-langroid-sqlchatagent-prompt-to-sql-rce.yaml"
         },
         {
+          "id": "ATR-2026-02027",
+          "title": "Diagnostic Content Remediation Command Injection (Agentjacking)",
+          "severity": "critical",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02027-diagnostic-content-remediation-command-injection.yaml"
+        },
+        {
+          "id": "ATR-2026-02261",
+          "title": "Language-Agnostic Credential Exfiltration Chain (secret read -> encode -> network send)",
+          "severity": "critical",
+          "category": "skill-compromise",
+          "file": "rules/skill-compromise/ATR-2026-02261-code-credential-exfil-chain.yaml"
+        },
+        {
+          "id": "ATR-2026-02401",
+          "title": "Rogue Agent Provisioning: Mass Connector Grant with Approval Disabled and Recurring Schedule (AgentForger)",
+          "severity": "critical",
+          "category": "excessive-autonomy",
+          "file": "rules/excessive-autonomy/ATR-2026-02401-rogue-agent-mass-connector-grant.yaml"
+        },
+        {
+          "id": "ATR-2026-02407",
+          "title": "Agent Workspace Boundary Escape via Host-Root Mount and Unprivileged Namespace Escalation (CVE-2026-46331)",
+          "severity": "critical",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02407-agent-workspace-boundary-escape.yaml"
+        },
+        {
+          "id": "ATR-2026-02627",
+          "title": "Web Shell Written Into a Web-Served Directory",
+          "severity": "critical",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02627-web-shell-written-to-served-path.yaml"
+        },
+        {
+          "id": "ATR-2026-02642",
+          "title": "Agent Configuration Tool Used to Disable the Agent's Own Guardrail",
+          "severity": "critical",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02642-agent-config-tool-disables-own-guardrail.yaml"
+        },
+        {
           "id": "ATR-2026-00002",
           "title": "Indirect Prompt Injection via External Content",
           "severity": "high",
@@ -6181,6 +6867,13 @@
           "file": "rules/prompt-injection/ATR-2026-01925-encoded-payload-decoding-coercion.yaml"
         },
         {
+          "id": "ATR-2026-01946",
+          "title": "Cloud-Metadata SSRF via Encoded Metadata-IP Bypass (CVE-2026-46678 / CVE-2026-25580 class)",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-01946-cloud-metadata-ssrf-ip-encoding-bypass.yaml"
+        },
+        {
           "id": "ATR-2026-01981",
           "title": "Network-AI ApprovalInbox Unauthenticated Cross-Origin Approval Bypass (GHSA-mxjx-28vx-xjjj)",
           "severity": "high",
@@ -6230,6 +6923,62 @@
           "file": "rules/context-exfiltration/ATR-2026-02107-ssrf-internal-hostname-domain-allowlist-bypass.yaml"
         },
         {
+          "id": "ATR-2026-02373",
+          "title": "Deserialized LangSmith Prompt Manifest Combines secrets_from_env With an Attacker base_url Override",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02373-langsmith-prompt-manifest-baseurl-exfil.yaml"
+        },
+        {
+          "id": "ATR-2026-02376",
+          "title": "MCP Tool Description Defines a Common-Phrase Trigger to Forward Full Conversation History",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02376-tool-description-conversational-trigger-history-exfil.yaml"
+        },
+        {
+          "id": "ATR-2026-02403",
+          "title": "MCP Tool Returns Untrusted External Content Carrying Hidden Agent Instructions Without Spotlighting",
+          "severity": "high",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02403-mcp-external-content-missing-spotlighting.yaml"
+        },
+        {
+          "id": "ATR-2026-02626",
+          "title": "Agent Writes a New MCP Server Into Its Own Trust Configuration",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02626-agent-self-registers-mcp-server.yaml"
+        },
+        {
+          "id": "ATR-2026-02641",
+          "title": "Client-Supplied Approver Identity on an Approval Decision",
+          "severity": "high",
+          "category": "excessive-autonomy",
+          "file": "rules/excessive-autonomy/ATR-2026-02641-client-supplied-approver-identity.yaml"
+        },
+        {
+          "id": "ATR-2026-02667",
+          "title": "Submitted Job Payload Carries Its Own Pre-Approved Tool List",
+          "severity": "high",
+          "category": "excessive-autonomy",
+          "file": "rules/excessive-autonomy/ATR-2026-02667-preapproved-tool-list-in-job-payload.yaml"
+        },
+        {
+          "id": "ATR-2026-02705",
+          "title": "Python Sandbox Escape by Recovering builtins from a Bound Method or Lambda",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02705-python-builtins-leak-and-prefix-check-override.yaml"
+        },
+        {
+          "id": "ATR-2026-02708",
+          "title": "Agent HTTP Request Claims a Loopback Origin While Targeting an External Host",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02708-loopback-spoofed-host-header-external-request.yaml"
+        },
+        {
           "id": "ATR-2026-01155",
           "title": "Direct Memory Plant Command — Persistent Fact or Code Storage Injection",
           "severity": "medium",
@@ -6242,6 +6991,20 @@
           "severity": "medium",
           "category": "tool-poisoning",
           "file": "rules/tool-poisoning/ATR-2026-01982-dbt-mcp-node-selection-argument-injection.yaml"
+        },
+        {
+          "id": "ATR-2026-02514",
+          "title": "MCP Server Descriptor URL Field Carries an HTML/Script Breakout Payload",
+          "severity": "medium",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02514-mcp-server-metadata-url-html-breakout.yaml"
+        },
+        {
+          "id": "ATR-2026-02682",
+          "title": "XML/SVG Entity Expansion Bomb in Content Returned to an Agent",
+          "severity": "medium",
+          "category": "tool-poisoning",
+          "file": "rules/tool-poisoning/ATR-2026-02682-xml-entity-expansion-bomb.yaml"
         }
       ]
     },
@@ -6252,7 +7015,7 @@
       "official_description": "Multi-agent systems exchange messages without authentication or integrity guarantees, letting adversaries spoof or replay messages between agents.",
       "reference_attack": null,
       "coverage_note": "A2A message spoofing, agent identity spoofing, consensus sybil attack, cross-agent attack vectors.",
-      "rule_count": 21,
+      "rule_count": 23,
       "strength": "STRONG",
       "rules": [
         {
@@ -6401,6 +7164,20 @@
           "severity": "high",
           "category": "context-exfiltration",
           "file": "rules/context-exfiltration/ATR-2026-01929-mcp-unauthenticated-transport-token-fallback.yaml"
+        },
+        {
+          "id": "ATR-2026-02301",
+          "title": "Symlink Command Targets Sensitive Credential Path Outside the Workspace (Sandbox Escape Primitive)",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02301-symlink-outside-workspace-sensitive-target.yaml"
+        },
+        {
+          "id": "ATR-2026-02302",
+          "title": "Git Worktree Created With Reserved Name .git (Directory-Confusion Sandbox Escape)",
+          "severity": "high",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02302-git-worktree-dotgit-sandbox-escape.yaml"
         }
       ]
     },
@@ -6411,7 +7188,7 @@
       "official_description": "A single fault in one agent, tool, or signal propagates system-wide because automated downstream consumers act on it without independent validation.",
       "reference_attack": null,
       "coverage_note": "Runaway agent loop, resource exhaustion, cascading failure detection, model behavior extraction triggering downstream cascade.",
-      "rule_count": 48,
+      "rule_count": 52,
       "strength": "STRONG",
       "rules": [
         {
@@ -6567,6 +7344,13 @@
           "severity": "critical",
           "category": "model-abuse",
           "file": "rules/model-abuse/ATR-2026-01851-bestiality-content-distribution.yaml"
+        },
+        {
+          "id": "ATR-2026-02404",
+          "title": "Mobile GUI Agent Model Output Reaching Host Shell / ADB Unsanitized",
+          "severity": "critical",
+          "category": "privilege-escalation",
+          "file": "rules/privilege-escalation/ATR-2026-02404-model-output-to-shell-unsanitized.yaml"
         },
         {
           "id": "ATR-2026-00052",
@@ -6744,6 +7528,27 @@
           "file": "rules/model-abuse/ATR-2026-01855-content-misappropriation-republish.yaml"
         },
         {
+          "id": "ATR-2026-02411",
+          "title": "Targeted Stripping of C2PA / IPTC AI-Provenance Metadata from Generated Media",
+          "severity": "medium",
+          "category": "model-abuse",
+          "file": "rules/model-abuse/ATR-2026-02411-ai-provenance-metadata-stripping.yaml"
+        },
+        {
+          "id": "ATR-2026-02412",
+          "title": "Generative Watermark Removal Tooling (SynthID / StableSignature / TreeRing / StegaStamp)",
+          "severity": "medium",
+          "category": "model-abuse",
+          "file": "rules/model-abuse/ATR-2026-02412-generative-watermark-removal-tooling.yaml"
+        },
+        {
+          "id": "ATR-2026-02413",
+          "title": "AI Text Detection Evasion via Humanizer Services and Watermark-Scrubbing Paraphrase",
+          "severity": "medium",
+          "category": "model-abuse",
+          "file": "rules/model-abuse/ATR-2026-02413-ai-text-detection-evasion-humanizer.yaml"
+        },
+        {
           "id": "ATR-2026-00099",
           "title": "High-Risk Tool Invocation Without Human Confirmation",
           "severity": "low",
@@ -6759,7 +7564,7 @@
       "official_description": "Adversaries exploit anthropomorphism and authority bias so humans approve harmful agent actions they would otherwise reject.",
       "reference_attack": null,
       "coverage_note": "Human trust exploitation, approval fatigue, social engineering via agent, unauthorized financial action, high-risk tool gate bypass.",
-      "rule_count": 18,
+      "rule_count": 21,
       "strength": "STRONG",
       "rules": [
         {
@@ -6873,6 +7678,27 @@
           "severity": "high",
           "category": "prompt-injection",
           "file": "rules/prompt-injection/ATR-2026-02009-bare-key-elicitation-trailing-colon.yaml"
+        },
+        {
+          "id": "ATR-2026-02409",
+          "title": "MCP 2026-07-28 Stateless Spec: Async Task Abuse and OAuth 2.1 Misuse",
+          "severity": "high",
+          "category": "excessive-autonomy",
+          "file": "rules/excessive-autonomy/ATR-2026-02409-mcp-async-task-abuse.yaml"
+        },
+        {
+          "id": "ATR-2026-02410",
+          "title": "Malicious Artifact Hosted on a Legitimate AI Vendor Domain (FakeAgent Delivery Chain)",
+          "severity": "high",
+          "category": "skill-compromise",
+          "file": "rules/skill-compromise/ATR-2026-02410-malicious-artifact-on-vendor-domain.yaml"
+        },
+        {
+          "id": "ATR-2026-02850",
+          "title": "Fake Documentation Pretext Data Exfiltration via Email",
+          "severity": "high",
+          "category": "context-exfiltration",
+          "file": "rules/context-exfiltration/ATR-2026-02850-fake-documentation-forward-request.yaml"
         },
         {
           "id": "ATR-2026-00118",

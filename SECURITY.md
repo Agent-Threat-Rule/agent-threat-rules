@@ -48,11 +48,13 @@ Check which version that is before reporting anything version-specific:
 npm view agent-threat-rules dist-tags
 ```
 
-As of 2026-09-22 the published `latest` is **4.0.0**, while this repository is
-tagged **v4.1.0** — 4.1.0 was never published to npm (see
-[CHANGELOG.md](CHANGELOG.md)). So if you installed from npm you are running
-4.0.0, and if you installed from git you are ahead of every published release.
-Please say which of the two you are on when you report.
+As of 2026-10-08 the published `latest` is still **4.0.0**, while this
+repository is tagged **v4.1.4**. 4.1.0 through 4.1.3 were never published to
+npm, and 4.1.4 is staged on npm awaiting maintainer approval (see
+[CHANGELOG.md](CHANGELOG.md)). Until `npm view agent-threat-rules dist-tags`
+shows 4.1.4, if you installed from npm you are running 4.0.0, and if you
+installed from git you are ahead of every published release. Please say which
+of the two you are on when you report.
 
 ## Scope
 
