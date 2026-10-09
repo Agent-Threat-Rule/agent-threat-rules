@@ -174,6 +174,15 @@ jobs:
       # Re-running this job after approving is safe: a version already on the
       # registry is not staged again, and a version an earlier run staged (E409
       # "previously staged") goes straight to the wait below.
+      # The tarball carries the detection rules without their test samples
+      # (test_cases, evasion_tests). The tests above ran on the full rules. Some
+      # samples are working malware snippets (a miner command line, webshells, a
+      # reverse shell) that npm's publish-time scanning reads as malware; the
+      # engine never reads them. The repository keeps them. This removes them;
+      # it does not encode or hide anything. See DISCLOSURE.
+      - name: Remove test samples from the published rules
+        run: node scripts/prune-published-rules.mjs rules
+
       - name: Stage the release on npm
         run: |
           if [ "$(npm view "agent-threat-rules@${VERSION}" version --prefer-online 2>/dev/null)" = "$VERSION" ]; then
@@ -226,6 +235,11 @@ jobs:
           done
           echo "::error::agent-threat-rules@${VERSION} is not on the registry after 60 minutes. Approve the staged version with 2FA, then re-run this workflow run. If npm emailed that the version did not pass automated review, it was blocked; appeal with the reference ID in that email."
           exit 1
+
+      # Later steps read the rules as the repository has them.
+      - name: Restore the full rules
+        if: always()
+        run: git checkout -- rules/
 
       - name: Count rules for release notes
         id: rules

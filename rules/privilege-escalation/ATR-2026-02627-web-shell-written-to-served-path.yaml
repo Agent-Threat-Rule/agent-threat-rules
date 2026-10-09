@@ -52,8 +52,9 @@ description: >
   alternative context-free, and that alternative is the one security writing
   actually contains. 16 of 20 fresh benign twins fired, all of them quoting a
   real command line rather than describing one: a blog reporting what the
-  attacker ran (echo '<?php system($_GET["c"]); ?>' > /var/www/html/uploads/
-  s.php), an IR runbook's own hunting command, a "Detection:" tip naming tee, a
+  attacker ran (an echo of a one-line PHP command shell redirected into a .php
+  file under /var/www/html/uploads/), an IR runbook's own hunting command, a
+  "Detection:" tip naming tee, a
   training-lab exercise, a GHSA reproduction step, a CHANGELOG announcing the
   fix, a forensic timeline, a pentest reproduction, an nginx hardening doc
   telling you to write a CANARY file to prove the mitigation works, Traditional
@@ -186,7 +187,7 @@ detection:
 
   condition: all
   false_positives:
-    - "A scanner or linter TEST FIXTURE that stores the attack verbatim, e.g. file_put_contents('/var/www/html/uploads/a.php', '<?php system($_GET[\"c\"]); ?>') in a SAST repository's positive-case file. This is the one benign twin of eighteen that still fires, and it is irreducible: the fixture is byte-for-byte the shape of true positive 4, so no single-event rule can separate them. Suppress by path for known fixture directories."
+    - "A scanner or linter TEST FIXTURE that stores the attack verbatim, e.g. a file_put_contents call that writes a one-line PHP command shell to /var/www/html/uploads/a.php, in a SAST repository's positive-case file. This is the one benign twin of eighteen that still fires, and it is irreducible: the fixture is byte-for-byte the shape of true positive 4, so no single-event rule can separate them. Suppress by path for known fixture directories."
     - "A rule file in a detection corpus (including this one) that carries the payload in its own test_cases. Two such files exist in this repository; both are rule YAML, not prose documentation."
     - "A penetration test or red-team exercise legitimately deploying a web shell against the operator's own estate. The rule fires by design."
     - "NOT a false positive any more: security writing, CWE-434 explainers, IR runbooks, advisories, changelogs, commit messages and hardening playbooks that merely describe the attack. Version 1 fired on all of these because its write-action condition matched the word \"upload\"; the v2 adjacency requirement removes them. Verified on 18 hand-written benign twins across all 7 event types and 75,040 corpus files."

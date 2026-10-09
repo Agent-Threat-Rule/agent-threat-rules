@@ -479,6 +479,17 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
   }
   console.log(`${DIM}${'─'.repeat(60)}${RESET}`);
 
+  // No case ran: rules from the npm package carry no test samples (they are
+  // removed at publish; see DISCLOSURE). Printing "All tests passed" here would
+  // be a green result for a test that tested nothing.
+  if (totalTests === 0) {
+    console.log(
+      `\n${YELLOW}No test cases to run.${RESET} ${DIM}The rules have no test_cases; the npm package ` +
+        `ships rules without them. Run atr test on the rules in the source repository.${RESET}\n`,
+    );
+    process.exit(1);
+  }
+
   if (failures.length > 0) {
     console.log(`\n${RED}Failures:${RESET}\n`);
     for (const f of failures) {
