@@ -4,6 +4,21 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- **npm releases go only through the staged path in `publish.yml`.** The
+  package is dual-use, so npm's policy lets CI stage a version but not publish
+  one; a maintainer promotes it with 2FA. Three workflows could still put a
+  version on the registry another way and have been removed:
+  `publish-current-version.yml` (direct `npm publish` through trusted
+  publishing), `publish-on-rules-merge.yml` (bumped and ran `npm publish` with
+  `NPM_TOKEN` on pushes to `main`) and `npm-stage.yml` (approved staged
+  versions from CI with `NPM_TOKEN`, skipping the maintainer's 2FA).
+  `scripts/release.sh` now stops at the tag push instead of also publishing
+  locally. No workflow references `NPM_TOKEN`, and
+  `tests/npm-release-path.test.ts` fails if any workflow other than
+  `publish.yml` gains a publish, stage or approve step.
+
 ## [4.1.4] - 2026-10-07
 
 The first release since 4.0.0 meant to reach npm. 4.1.1, 4.1.2 and 4.1.3 were

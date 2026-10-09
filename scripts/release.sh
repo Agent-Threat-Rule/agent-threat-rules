@@ -9,8 +9,13 @@
 #   2. Bumps version in package.json
 #   3. Builds
 #   4. Commits + tags + pushes
-#   5. Publishes to npm
-#   6. Verifies npm install
+#
+# It does not publish to npm. The pushed v* tag triggers
+# .github/workflows/publish.yml, which stages the release with
+# `npm stage publish`; a maintainer then approves it with 2FA. The package is
+# declared dual-use (package.json contentPolicy, DISCLOSURE), and every
+# publish attempt goes through npm's automated review, so a second, local
+# publish of the same version would only race the staged one.
 
 set -euo pipefail
 
@@ -25,8 +30,6 @@ if [ -n "$(git status --porcelain)" ]; then
   echo "ERROR: Working tree is dirty. Commit or stash changes first."
   exit 1
 fi
-
-npm whoami >/dev/null 2>&1 || { echo "ERROR: Not logged in to npm. Run: npm login"; exit 1; }
 
 echo "Running tests..."
 npm test || { echo "ERROR: Tests failed."; exit 1; }
@@ -70,28 +73,14 @@ git tag "v$NEW"
 git push origin main
 git push origin "v$NEW"
 
-# ── Publish to npm ────────────────────────────────────────
-echo "Publishing to npm..."
-npm publish --access public
-
-# ── Verify ────────────────────────────────────────────────
-echo ""
-echo "=== Verifying ==="
-sleep 5  # wait for npm registry to propagate
-
-PUBLISHED=$(npm info agent-threat-rules version 2>/dev/null || echo "unknown")
-if [ "$PUBLISHED" = "$NEW" ]; then
-  echo "npm registry: v$PUBLISHED"
-else
-  echo "WARNING: npm shows v$PUBLISHED, expected v$NEW (may need a few minutes to propagate)"
-fi
-
 echo ""
 echo "======================================="
-echo "  ATR v$NEW released!"
+echo "  v$NEW tagged and pushed"
 echo "======================================="
 echo ""
-echo "Verify install:"
-echo "  npm install -g agent-threat-rules && atr --version"
-echo ""
-echo ""
+echo "publish.yml is now staging agent-threat-rules@$NEW on npm. Next:"
+echo "  1. Approve the staged version with 2FA: npmjs.com -> Staged Packages,"
+echo "     or: npm stage list agent-threat-rules && npm stage approve <stage-id>"
+echo "  2. If the publish.yml run timed out waiting for the approval, re-run it"
+echo "     to create the GitHub release."
+echo "  3. Confirm on the registry: npm view agent-threat-rules@$NEW version"

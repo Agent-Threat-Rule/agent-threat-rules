@@ -100,10 +100,10 @@ Once your issue or PR lands:
 2. Maintainer reviews the regex. Usually one round of tightening. The benign
    corpus is the bar — the regex must not fire on clean content.
 
-3. PR merges. The `publish-on-rules-merge.yml` workflow runs automatically:
-   patch version bump, npm publish, GitHub release.
+3. PR merges. Nothing is published on merge: the rule ships in the next
+   release a maintainer cuts (see [How a release reaches npm](#how-a-release-reaches-npm-maintainers)).
 
-4. The new version is on npm. Open-source projects that vendor ATR — including
+4. Once that release is approved, the new version is on npm. Open-source projects that vendor ATR — including
    repos under Microsoft, Cisco, MISP and OWASP-community orgs — pick it up
    whenever they next sync. What ATR can promise is the publish; when and
    whether any downstream repo updates is theirs to decide, and merging a rule
@@ -111,6 +111,33 @@ Once your issue or PR lands:
 
 There is no set time from probe submission to npm publish; it depends on
 maintainer availability.
+
+### How a release reaches npm (maintainers)
+
+The npm package is declared dual-use (`contentPolicy` in `package.json`, plus
+the `DISCLOSURE` file). Under npm's
+[Dual-Use Content Policy](https://docs.npmjs.com/policies/dual-use/), CI may
+only *stage* a version; a maintainer promotes it with 2FA. Direct `npm publish`
+from CI, by token or by trusted publishing, is not allowed. Every attempt also
+goes through npm's automated review, and a blocked attempt uses up its version
+number, so there is exactly one release path:
+
+1. Bump `version` in `package.json` on `main`, then push a `v<version>` tag on
+   that commit (or run `scripts/release.sh`, or dispatch `publish.yml` with a
+   `bump_type`, which do both).
+2. The tag triggers `.github/workflows/publish.yml`. It validates, tests,
+   builds, and runs `npm stage publish` through trusted publishing (OIDC). No
+   npm token is involved.
+3. A maintainer approves the staged version with 2FA: npmjs.com → Staged
+   Packages, or `npm stage list agent-threat-rules` and
+   `npm stage approve <stage-id>`.
+4. `publish.yml` waits up to 60 minutes for the version to appear on the
+   registry and then creates the GitHub release. If it timed out, re-run the
+   job after approving; it skips the staging step and goes straight to the
+   wait and the release.
+
+No other workflow publishes, stages or approves, and none runs on a push to
+`main`. `tests/npm-release-path.test.ts` fails if one starts to.
 
 ---
 

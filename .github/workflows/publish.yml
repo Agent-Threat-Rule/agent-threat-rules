@@ -48,8 +48,8 @@ jobs:
       # Trusted publishing needs npm >= 11.5.1, and the Node 22 line still ships
       # npm 10.x. Without this the publish step falls back to looking for a token
       # and fails with ENEEDAUTH, which reads like a credential problem and is not.
-      # The same old client is also below the 11.15.0 staged-publishing floor that
-      # publish-current-version.yml pins and checks; npm@latest clears both.
+      # The same old client is also below the 11.15.0 floor for staged publishing
+      # (`npm stage publish`); npm@latest clears both.
       - name: Upgrade npm for OIDC
         run: |
           npm install -g npm@latest
@@ -157,6 +157,12 @@ jobs:
       # `Agent-Threat-Rule`, repository `agent-threat-rules`, workflow filename
       # `publish.yml`, all case-sensitive. Renaming this file breaks publishing
       # until the trusted publisher is recreated.
+      #
+      # This is the only place in the repository that sends a version to npm.
+      # publish-current-version.yml, publish-on-rules-merge.yml and npm-stage.yml
+      # were removed because each could put a version on the registry without a
+      # maintainer's 2FA approval; tests/npm-release-path.test.ts fails if any
+      # workflow other than this one gains a publish step again.
       #
       # Staged, not published, because the package is declared dual-use
       # (package.json contentPolicy, DISCLOSURE). npm's publish-time malware
