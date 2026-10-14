@@ -452,24 +452,24 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 
 | Source | Source version | Samples | Recall | Precision | FP rate | ATR version | Measured |
 |---|---|---:|---:|---:|---:|---|---|
-| AdvBench (LLM-attacks behaviors) | upstream-2026-06-16 | 520 | 2.1% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| atr-self-test | internal | 341 | 96.6% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
+| AdvBench (LLM-attacks behaviors) | upstream-2026-10-14 | 520 | 5.6% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
+| atr-self-test | internal | 341 | 96.6% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
-| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 92.3% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
-| garak-full (all probe families) | 23-families | 3,475 | 57.2% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
+| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 92.3% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
+| garak-full (all probe families) | 23-families | 3,475 | 57.2% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
 | hackaprompt | v1 | 4,780 | 69.6% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| HarmBench (CAIS behaviors) | upstream-2026-06-16 | 400 | 2.8% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| hh-rlhf (Anthropic red-team-attempts) [^stdcorpora] | snapshot-2026-04 | 4,957 | 1.5% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| JailbreakBench (JBB-Behaviors) | upstream-2026-06-16 | 100 | 6.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| llm-guard (Protect AI test fixtures) | corpus-2026-05-12 | 44 | 77.3% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| MITRE ATLAS [^stdcorpora] | snapshot-2026-04 | 182 | 39.0% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| OWASP LLM Top 10 [^stdcorpora] | snapshot-2026-04 | 56 | 16.1% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| PINT-format (deepset + Lakera Gandalf) [^pint] | v1 | 850 | 65.4% | 100.0% | 0.0% | 3.5.12 | 2026-08-15 |
-| PromptBench (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 3,280 | 15.7% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 97.7% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
-| PromptInject (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 1,080 | 100.0% | 100.0% | 0.0% | 3.5.11 | 2026-08-05 |
-| SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) | 97.0% | 0.20% | 3.5.12 | 2026-08-15 |
+| HarmBench (CAIS behaviors) | upstream-2026-10-14 | 400 | 6.0% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
+| hh-rlhf (Anthropic red-team-attempts) [^stdcorpora] | snapshot-2026-04 | 4,957 | 1.4% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
+| JailbreakBench (JBB-Behaviors) | upstream-2026-10-14 | 100 | 3.0% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
+| llm-guard (Protect AI test fixtures) | corpus-2026-05-12 | 44 | 63.6% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
+| MITRE ATLAS [^stdcorpora] | snapshot-2026-04 | 182 | 37.4% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
+| NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
+| OWASP LLM Top 10 [^stdcorpora] | snapshot-2026-04 | 56 | 16.1% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
+| PINT-format (deepset + Lakera Gandalf) [^pint] | v1 | 850 | 65.4% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
+| PromptBench (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 3,280 | 15.7% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
+| promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 90.9% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
+| PromptInject (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 1,080 | 100.0% | 100.0% | 0.0% | 4.1.5 | 2026-10-14 |
+| SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) | 97.0% | 0.20% | 4.1.5 | 2026-10-14 |
 | Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) [^wildscan] | full-scan-v2-2026-04-13 | 101,280 | — | not measured | 1.42% flag rate | 2.0.0 | 2026-04-13 |
 
 All detection corpora were (re-)measured against ATR 3.5.0 on 2026-06-16,
