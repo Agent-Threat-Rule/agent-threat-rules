@@ -104,6 +104,17 @@ function fixtureEntries(): BenchmarkEntry[] {
 const pctOf = (n: number) => `${(n * 100).toFixed(1)}%`;
 const fixtureEntry = (source: string) => fixtureEntries().find((e) => e.source === source)!;
 
+/**
+ * Honesty disclosures outward material relies on. They describe the corpus or
+ * the method, not a run, so no render may drop or reword them. The em dash and
+ * quotes make a byte-level change visible.
+ */
+const PINT_DISCLAIMER =
+  "NOT a run of Lakera's official PINT benchmark, whose corpus is private and roughly 5x larger.";
+const PINT_CAVEAT = "This corpus exercises only the prompt-injection rule family. It is not a measure of overall coverage.";
+const SKILL_CAVEAT =
+  "The enforce (auto-block) lane loads only maturity: stable. Quoting this recall without the lane sets a wrong expectation for enforce deployments — \"hunt\" is the default.";
+
 /** Root stats.json as it stood at 3.5.12, with the fields that cannot be re-measured. */
 const ROOT_STATS = {
   version: "4.1.5",
@@ -125,6 +136,7 @@ const ROOT_STATS = {
       samples: 498,
       source: "Internal labeled SKILL.md corpus",
       lane: "hunt",
+      caveat: SKILL_CAVEAT,
       enforceLaneRecall: 0,
       enforceLaneNote: "detects 0 of 32 malicious samples",
       atr_version: "3.5.12",
@@ -142,6 +154,8 @@ const ROOT_STATS = {
       tiers: ["tier2-regex", "tier2.5-embedding"],
       source: "Self-built 850-sample PINT-FORMAT corpus",
       notOfficialPint: true,
+      disclaimer: PINT_DISCLAIMER,
+      caveat: PINT_CAVEAT,
       comment: "62 of 784 rules fire on it and ATR-2026-00001 accounts for 226 of the 295 detections.",
     },
     hackaprompt: { recall: 69.6, samples: 4780 },
@@ -265,6 +279,7 @@ describe("lane figures no measurement backs", () => {
       samples: e.samples,
       source: ROOT_STATS.benchmarks.skill.source,
       lane: "hunt",
+      caveat: SKILL_CAVEAT,
       atr_version: "4.1.5",
       measured: "2026-10-12",
     });
@@ -305,6 +320,51 @@ describe("renderRootStats", () => {
     expect(pint).toMatchObject({ detected: 271, missed: 180, atr_version: "4.1.5", measured: "2026-10-12" });
     const { comment: _comment, ...rest } = ROOT_STATS.benchmarks.pint;
     expect(Object.keys(pint)).toEqual(Object.keys(rest));
+  });
+
+  it("keeps every block's disclaimer and caveat byte-for-byte through a re-stamp", () => {
+    const { stats, dropped } = renderRootStats(ROOT_STATS, fixtureEntries(), GARAK_FULL_DETAIL);
+    expect(blocksOf(stats).pint.disclaimer).toBe(PINT_DISCLAIMER);
+    expect(blocksOf(stats).pint.caveat).toBe(PINT_CAVEAT);
+    expect(blocksOf(stats).pint.notOfficialPint).toBe(true);
+    expect(blocksOf(stats).skill.caveat).toBe(SKILL_CAVEAT);
+    expect(blocksOf(stats).pint.atr_version).toBe("4.1.5");
+    expect(dropped.filter((d) => /\.(disclaimer|caveat|notOfficialPint)$/.test(d))).toEqual([]);
+  });
+
+  it("keeps a disclaimer on any rendered block, even one it was never written for", () => {
+    const garak = { ...ROOT_STATS.benchmarks.garak, disclaimer: "Not NVIDIA's own garak scoring." };
+    const withGarak = { ...ROOT_STATS, benchmarks: { ...ROOT_STATS.benchmarks, garak } };
+    const { stats, held } = renderRootStats(withGarak, fixtureEntries(), GARAK_FULL_DETAIL);
+    expect(held).toEqual([]);
+    expect((blocksOf(stats).garak as typeof garak).disclaimer).toBe("Not NVIDIA's own garak scoring.");
+    expect(blocksOf(stats).garak.atr_version).toBe("4.1.5");
+  });
+
+  it("keeps the committed PINT disclaimer and the skill lane caveat when the next run re-stamps them", () => {
+    const committed = JSON.parse(readFileSync(resolve(REPO, "stats.json"), "utf8")) as Record<string, unknown>;
+    const pint = blocksOf(committed).pint;
+    expect(pint.disclaimer).toBe(PINT_DISCLAIMER);
+    expect(pint.notOfficialPint).toBe(true);
+    const next = (source: string, samples: number, recall: number): BenchmarkEntry => ({
+      source,
+      source_version: "next",
+      atr_version: "99.0.0",
+      measured_at: "2099-01-01",
+      samples,
+      recall,
+      precision: 1,
+      fp_rate: 0,
+    });
+    const { stats } = renderRootStats(committed, [next("pint", 850, 0.6), next("skill-benchmark", 498, 1)]);
+    expect(blocksOf(stats).pint.disclaimer).toBe(pint.disclaimer);
+    expect(blocksOf(stats).pint.caveat).toBe(pint.caveat);
+    expect(blocksOf(stats).pint.notOfficialPint).toBe(true);
+    expect(blocksOf(stats).pint).not.toHaveProperty("comment");
+    expect(blocksOf(stats).skill.caveat).toBe(blocksOf(committed).skill.caveat);
+    expect(typeof blocksOf(stats).skill.caveat).toBe("string");
+    expect(blocksOf(stats).skill).not.toHaveProperty("enforceLaneNote");
+    expect(blocksOf(stats).skill).not.toHaveProperty("enforceLaneRecall");
   });
 
   it("keeps every field while the stamp does not move", () => {
@@ -507,6 +567,17 @@ describe("CLI", () => {
       atr_version: "4.1.5",
       measured: "2026-10-12",
     });
+  });
+
+  it("writes the disclaimer's stats.json line back byte-for-byte", () => {
+    const root = fixtureCheckout();
+    const before = readFileSync(join(root, "stats.json"), "utf8");
+    const line = before.split("\n").find((l) => l.includes('"disclaimer"'));
+    expect(line).toBeDefined();
+    expect(cli(root).status).toBe(0);
+    const after = readFileSync(join(root, "stats.json"), "utf8");
+    expect(after).not.toBe(before);
+    expect(after.split("\n")).toContain(line);
   });
 
   it("writes review notes when it changed README, and an empty file when it did not", () => {

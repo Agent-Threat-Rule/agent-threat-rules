@@ -36,7 +36,9 @@
  *                 fpRate / detected / missed are recomputed; garak.perFamily
  *                 is recomputed from garak-full's by_family when garak-full was
  *                 measured at the same ATR version. Descriptors of the corpus
- *                 or method (source, lane, tiers, notOfficialPint) are kept.
+ *                 or method — source, disclaimer, caveat on every block; lane,
+ *                 tiers, notOfficialPint where they apply — are kept
+ *                 byte-for-byte and never re-stamped or dropped.
  *                 On re-stamp, DROPPABLE_FIELDS this run cannot derive
  *                 (pint.comment, skill.enforceLane*, a perFamily without a
  *                 same-version garak-full) are dropped. A block holding any
@@ -236,10 +238,20 @@ export function renderReadme(readme: string, entries: readonly BenchmarkEntry[])
 
 // ── root stats.json ───────────────────────────────────────────────────────────
 
+/**
+ * Fields on every rendered block that describe the corpus or the method, never
+ * a run: kept byte-for-byte across stamps, never recomputed, never dropped.
+ * `disclaimer` and `caveat` hold honesty disclosures outward material quotes
+ * ("NOT a run of Lakera's official PINT benchmark ..."); a limitation that
+ * depends on a rule count or a measured number belongs in a field a
+ * measurement re-derives, not here.
+ */
+const STABLE_FIELDS: readonly string[] = ["source", "disclaimer", "caveat"];
+
 /** A root stats.json block: which source it cites and which of its fields outlive a stamp. */
 interface RootBlockRule {
   readonly source: string;
-  /** Describe the corpus or the method, not a run: kept across stamps. */
+  /** Block-specific STABLE_FIELDS: describe the corpus or the method, not a run. */
   readonly descriptors: readonly string[];
   /** perFamily is copied from this source's by_family, measured at the same ATR version. */
   readonly perFamilyFrom?: string;
@@ -247,15 +259,17 @@ interface RootBlockRule {
 
 const ROOT_BLOCKS: ReadonlyMap<string, RootBlockRule> = new Map([
   // perFamily has always been garak-full's per-family recall (34.4 / 96.4 / 92.5 at 3.5.12).
-  ["garak", { source: "garak", descriptors: ["source"], perFamilyFrom: "garak-full" }],
-  ["pint", { source: "pint", descriptors: ["source", "tiers", "notOfficialPint"] }],
-  ["skill", { source: "skill-benchmark", descriptors: ["source", "lane"] }],
+  ["garak", { source: "garak", descriptors: [], perFamilyFrom: "garak-full" }],
+  ["pint", { source: "pint", descriptors: ["tiers", "notOfficialPint"] }],
+  ["skill", { source: "skill-benchmark", descriptors: ["lane"] }],
 ]);
 
 /**
  * Version-bound fields no measurement file carries: pint.comment counts rules
  * and per-rule detections, and skill.enforceLane* is an enforce-lane run the
- * harness does not make. Dropped when their block is re-stamped.
+ * harness does not make. Dropped when their block is re-stamped. The
+ * limitations they stated outside those numbers live on in the blocks'
+ * `disclaimer` / `caveat` (STABLE_FIELDS).
  */
 const UNMEASURED_FIELDS: ReadonlyMap<string, readonly string[]> = new Map([
   ["pint", ["comment"]],
@@ -370,7 +384,8 @@ function renderBlock(
   if (!restamp) return { cite: Object.fromEntries(Object.entries(cite).map(recompute)), dropped: [], held: [] };
 
   const droppable = DROPPABLE_FIELDS.get(key) ?? [];
-  const keys = Object.keys(cite).filter((k) => !(k in computed) && !rule.descriptors.includes(k));
+  const stable = (k: string) => STABLE_FIELDS.includes(k) || rule.descriptors.includes(k);
+  const keys = Object.keys(cite).filter((k) => !(k in computed) && !stable(k));
   const unknown = keys.filter((k) => !droppable.includes(k));
   if (unknown.length > 0) {
     return {
