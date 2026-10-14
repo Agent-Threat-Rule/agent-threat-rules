@@ -175,9 +175,13 @@ jobs:
           # Reuse the open rolling PR if there is one; only open a new PR when none exists.
           EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
           if [ -n "$EXISTING" ]; then
-            gh pr edit "$EXISTING" \
-              --title "atd: CVE ingest (rolling, latest $DATE) — ${{ steps.ingest.outputs.summary }}" \
-              --body-file /tmp/atd-pr-body.md
+            # REST, not `gh pr edit`, which reads review requests and fails with the
+            # repository PAT once a PR has a team review request (measure-all.yml,
+            # 2026-10-14). This PR only touches paths with no code owner today.
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/pulls/$EXISTING" \
+              -f "title=atd: CVE ingest (rolling, latest $DATE) — ${{ steps.ingest.outputs.summary }}" \
+              -F "body=@/tmp/atd-pr-body.md" \
+              --silent
             echo "Updated rolling PR #$EXISTING (force-pushed $BRANCH); no new PR opened."
           else
             gh pr create \
