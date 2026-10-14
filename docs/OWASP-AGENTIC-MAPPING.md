@@ -1,15 +1,15 @@
 # ATR -> OWASP Agentic Top 10 (2026) Mapping
 
-Last updated: 2026-07-12
-ATR version: v3.5.8 (829 rules with OWASP Agentic tags)
+Last updated: 2026-10-08
+ATR version: v4.1.4 (829 rules with OWASP Agentic tags)
 OWASP framework: Agentic Top 10 v1.0 (December 2025)
 
 ## Summary
 
 - Categories covered: **10/10**
-- Total rule -> category mappings: **976**
-- Tagged ATR rules: **747** of 747 total rules in repo
-- ATR version: `v3.5.8` -- OWASP Agentic Top 10: `v1.0 (December 2025)`
+- Total rule -> category mappings: **1094**
+- Tagged ATR rules: **829** of 829 total rules in repo
+- ATR version: `v4.1.4` -- OWASP Agentic Top 10: `v1.0 (December 2025)`
 
 Strength tiers: **STRONG** >= 8 rules · **MODERATE** 4-7 rules · **LIMITED** 1-3 rules.
 
@@ -17,22 +17,22 @@ Strength tiers: **STRONG** >= 8 rules · **MODERATE** 4-7 rules · **LIMITED** 1
 
 | ASI | Title | Rule count | Strength | Reference attack |
 |---|---|---|---|---|
-| ASI01 | Agent Goal Hijack | 480 | STRONG | EchoLeak |
-| ASI02 | Tool Misuse and Exploitation | 48 | STRONG | Amazon Q |
-| ASI03 | Identity and Privilege Abuse | 115 | STRONG | n/a |
-| ASI04 | Agentic Supply Chain Vulnerabilities | 75 | STRONG | GitHub MCP exploit |
-| ASI05 | Unexpected Code Execution (RCE) | 76 | STRONG | AutoGPT RCE |
-| ASI06 | Memory & Context Poisoning | 87 | STRONG | Gemini Memory Attack |
-| ASI07 | Insecure Inter-Agent Communication | 21 | STRONG | n/a |
-| ASI08 | Cascading Failures | 48 | STRONG | n/a |
-| ASI09 | Human-Agent Trust Exploitation | 18 | STRONG | n/a |
+| ASI01 | Agent Goal Hijack | 487 | STRONG | EchoLeak |
+| ASI02 | Tool Misuse and Exploitation | 70 | STRONG | Amazon Q |
+| ASI03 | Identity and Privilege Abuse | 125 | STRONG | n/a |
+| ASI04 | Agentic Supply Chain Vulnerabilities | 98 | STRONG | GitHub MCP exploit |
+| ASI05 | Unexpected Code Execution (RCE) | 106 | STRONG | AutoGPT RCE |
+| ASI06 | Memory & Context Poisoning | 104 | STRONG | Gemini Memory Attack |
+| ASI07 | Insecure Inter-Agent Communication | 23 | STRONG | n/a |
+| ASI08 | Cascading Failures | 52 | STRONG | n/a |
+| ASI09 | Human-Agent Trust Exploitation | 21 | STRONG | n/a |
 | ASI10 | Rogue Agents | 8 | STRONG | Replit meltdown |
 
 ---
 
 ## Per-category detail
 
-### ASI01: Agent Goal Hijack (480 rules) -- STRONG
+### ASI01: Agent Goal Hijack (487 rules) -- STRONG
 
 **OWASP description.** Attackers manipulate the agent's decision pathways or objectives so it pursues an adversary-controlled goal instead of its assigned task. Canonical instance: EchoLeak.
 
@@ -50,9 +50,9 @@ Top rules by severity:
 | ATR-2026-00091 | Advanced Structured Data Injection with Nested Payloads | critical | Detects advanced structured data injection where malicious prompts are deeply nested with… |
 | ATR-2026-00092 | Multi-Agent Consensus Poisoning and Sybil Attack | critical | Detects attacks targeting multi-agent consensus systems through coordinated fake proposal… |
 
-Plus 475 additional rules tagged ASI01 -- see `docs/owasp-agentic-mapping.json` for the complete list.
+Plus 482 additional rules tagged ASI01 -- see `docs/owasp-agentic-mapping.json` for the complete list.
 
-### ASI02: Tool Misuse and Exploitation (48 rules) -- STRONG
+### ASI02: Tool Misuse and Exploitation (70 rules) -- STRONG
 
 **OWASP description.** Legitimate tools are used unsafely because the agent acts on ambiguous instructions or has over-privileged access. Canonical instance: Amazon Q assistant tool-misuse incident.
 
@@ -70,9 +70,9 @@ Top rules by severity:
 | ATR-2026-00063 | Multi-Skill Chain Attack | critical | Detects attack sequences where multiple MCP skills are chained together to achieve a mali… |
 | ATR-2026-00066 | Parameter Injection via Tool Arguments | critical | Detects injection attacks delivered through MCP tool arguments. An attacker crafts tool a… |
 
-Plus 43 additional rules tagged ASI02 -- see `docs/owasp-agentic-mapping.json` for the complete list.
+Plus 65 additional rules tagged ASI02 -- see `docs/owasp-agentic-mapping.json` for the complete list.
 
-### ASI03: Identity and Privilege Abuse (115 rules) -- STRONG
+### ASI03: Identity and Privilege Abuse (125 rules) -- STRONG
 
 **OWASP description.** Agents operate in an attribution gap; leaked credentials or escalated privileges let them act beyond intended scope.
 
@@ -88,9 +88,9 @@ Top rules by severity:
 | ATR-2026-00113 | Credential File Theft from Agent Environment | critical | Detects tools or agent instructions that access well-known credential files from the host… |
 | ATR-2026-00115 | Bulk Environment Variable Harvesting and Exfiltration | critical | Detects tools or agent instructions that perform bulk extraction of environment variables… |
 
-Plus 110 additional rules tagged ASI03 -- see `docs/owasp-agentic-mapping.json` for the complete list.
+Plus 120 additional rules tagged ASI03 -- see `docs/owasp-agentic-mapping.json` for the complete list.
 
-### ASI04: Agentic Supply Chain Vulnerabilities (75 rules) -- STRONG
+### ASI04: Agentic Supply Chain Vulnerabilities (98 rules) -- STRONG
 
 **OWASP description.** Runtime composition of third-party capabilities (MCP servers, plugins, skills, A2A endpoints) lets adversaries poison the call graph after deployment. Canonical instance: GitHub MCP exploit.
 
@@ -108,9 +108,9 @@ Top rules by severity:
 | ATR-2026-00149 | Skill Data Exfiltration via Compound Patterns | critical | Detects compound exfiltration patterns in SKILL.md files where sensitive data (credential… |
 | ATR-2026-00200 | Agent Memory and Configuration File Tampering | critical | Detects attempts to write, append, or modify agent memory files (MEMORY.md, SOUL.md, CLAU… |
 
-Plus 70 additional rules tagged ASI04 -- see `docs/owasp-agentic-mapping.json` for the complete list.
+Plus 93 additional rules tagged ASI04 -- see `docs/owasp-agentic-mapping.json` for the complete list.
 
-### ASI05: Unexpected Code Execution (RCE) (76 rules) -- STRONG
+### ASI05: Unexpected Code Execution (RCE) (106 rules) -- STRONG
 
 **OWASP description.** Agents generate and execute code ("vibe coding"), opening RCE paths through natural-language instructions. Canonical instance: AutoGPT RCE.
 
@@ -128,9 +128,9 @@ Top rules by severity:
 | ATR-2026-00096 | Skill Registry Poisoning and Compromised Tool Distribution | critical | Detects supply chain attacks that target skill/tool registries and distribution channels.… |
 | ATR-2026-00110 | Remote Code Execution via eval() and Dynamic Code Injection | critical | Detects tools or agent instructions that invoke eval(), Function(), vm.runInNewContext(),… |
 
-Plus 71 additional rules tagged ASI05 -- see `docs/owasp-agentic-mapping.json` for the complete list.
+Plus 101 additional rules tagged ASI05 -- see `docs/owasp-agentic-mapping.json` for the complete list.
 
-### ASI06: Memory & Context Poisoning (87 rules) -- STRONG
+### ASI06: Memory & Context Poisoning (104 rules) -- STRONG
 
 **OWASP description.** Long-term memory, RAG stores, or shared context are corrupted so the agent's future behavior is shaped by attacker payloads. Canonical instance: Gemini Memory Attack.
 
@@ -148,9 +148,9 @@ Top rules by severity:
 | ATR-2026-00201 | Credential Exfiltration via Shell Pipe | critical | Detects credential theft patterns where environment variables containing API keys, secret… |
 | ATR-2026-00212 | mcp-atlassian Credential Leak via Hint Parameter Injection (CVE-2026-27825/27826) | critical | Detects the mcp-atlassian credential-leak attack pattern (CVE-2026-27825 and CVE-2026-278… |
 
-Plus 82 additional rules tagged ASI06 -- see `docs/owasp-agentic-mapping.json` for the complete list.
+Plus 99 additional rules tagged ASI06 -- see `docs/owasp-agentic-mapping.json` for the complete list.
 
-### ASI07: Insecure Inter-Agent Communication (21 rules) -- STRONG
+### ASI07: Insecure Inter-Agent Communication (23 rules) -- STRONG
 
 **OWASP description.** Multi-agent systems exchange messages without authentication or integrity guarantees, letting adversaries spoof or replay messages between agents.
 
@@ -166,9 +166,9 @@ Top rules by severity:
 | ATR-2026-00161 | MCP Tool Description — IMPORTANT Tag Cross-Tool Shadowing Attack | critical | Detects MCP tool poisoning attacks that embed hidden instructions inside an <IMPORTANT> X… |
 | ATR-2026-00162 | Credential Access with Exfiltration in Skill Instructions | critical | Detects SKILL.md files that combine credential file access (SSH keys, AWS credentials, AP… |
 
-Plus 16 additional rules tagged ASI07 -- see `docs/owasp-agentic-mapping.json` for the complete list.
+Plus 18 additional rules tagged ASI07 -- see `docs/owasp-agentic-mapping.json` for the complete list.
 
-### ASI08: Cascading Failures (48 rules) -- STRONG
+### ASI08: Cascading Failures (52 rules) -- STRONG
 
 **OWASP description.** A single fault in one agent, tool, or signal propagates system-wide because automated downstream consumers act on it without independent validation.
 
@@ -184,9 +184,9 @@ Top rules by severity:
 | ATR-2026-00141 | API Key Leakage via Example Format | critical | Detects attempts to leak API keys by providing example formats with real key prefixes, ho… |
 | ATR-2026-00142 | Data Piggybacking via Casual Transition Words | critical | Detects tool response piggybacking using casual transition words (oh and, P.S., BTW, inte… |
 
-Plus 43 additional rules tagged ASI08 -- see `docs/owasp-agentic-mapping.json` for the complete list.
+Plus 47 additional rules tagged ASI08 -- see `docs/owasp-agentic-mapping.json` for the complete list.
 
-### ASI09: Human-Agent Trust Exploitation (18 rules) -- STRONG
+### ASI09: Human-Agent Trust Exploitation (21 rules) -- STRONG
 
 **OWASP description.** Adversaries exploit anthropomorphism and authority bias so humans approve harmful agent actions they would otherwise reject.
 
@@ -202,7 +202,7 @@ Top rules by severity:
 | ATR-2026-00524 | Claude Code ANTHROPIC_BASE_URL Credential Exfiltration (CVE-2026-21852) | critical | Detects exploitation of CVE-2026-21852 (Moderate, CVSS 5.3), credential exfiltration in C… |
 | ATR-2026-00858 | Indirect PI — Data Exfiltration with Evidence Destruction (Exfil-and-Delete) | critical | Detects indirect prompt injection payloads instructing an agent to exfiltrate sensitive d… |
 
-Plus 13 additional rules tagged ASI09 -- see `docs/owasp-agentic-mapping.json` for the complete list.
+Plus 16 additional rules tagged ASI09 -- see `docs/owasp-agentic-mapping.json` for the complete list.
 
 ### ASI10: Rogue Agents (8 rules) -- STRONG
 
@@ -230,7 +230,7 @@ Plus 3 additional rules tagged ASI10 -- see `docs/owasp-agentic-mapping.json` fo
 
 Each YAML file under `rules/` is scanned for OWASP Agentic Top 10 tags in two locations:
 
-1. `references.owasp_agentic` -- string list (e.g. `"ASI01:2026"`)
+1. `references.owasp_agentic` -- string list of bare ids (e.g. `"ASI01:2026"`)
 2. `compliance.owasp_agentic[].id` -- structured form (e.g. `id: ASI01:2026`)
 
 Bucketing is done on the `ASI[0-9]{2}` prefix to absorb legacy taxonomy suffixes. A rule mapping to multiple ASI categories counts in each. Strength tiers: **STRONG** >= 8 · **MODERATE** 4-7 · **LIMITED** 1-3.

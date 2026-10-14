@@ -48,8 +48,8 @@ jobs:
       # Trusted publishing needs npm >= 11.5.1, and the Node 22 line still ships
       # npm 10.x. Without this the publish step falls back to looking for a token
       # and fails with ENEEDAUTH, which reads like a credential problem and is not.
-      # The same old client is also below the 11.15.0 staged-publishing floor that
-      # publish-current-version.yml pins and checks; npm@latest clears both.
+      # The same old client is also below the 11.15.0 floor for staged publishing
+      # (`npm stage publish`); npm@latest clears both.
       - name: Upgrade npm for OIDC
         run: |
           npm install -g npm@latest
@@ -158,6 +158,12 @@ jobs:
       # `publish.yml`, all case-sensitive. Renaming this file breaks publishing
       # until the trusted publisher is recreated.
       #
+      # This is the only place in the repository that sends a version to npm.
+      # publish-current-version.yml, publish-on-rules-merge.yml and npm-stage.yml
+      # were removed because each could put a version on the registry without a
+      # maintainer's 2FA approval; tests/npm-release-path.test.ts fails if any
+      # workflow other than this one gains a publish step again.
+      #
       # Staged, not published, because the package is declared dual-use
       # (package.json contentPolicy, DISCLOSURE). npm's publish-time malware
       # scanning blocked 4.1.1, 4.1.2 and 4.1.3, whose rule files carry attack
@@ -168,6 +174,15 @@ jobs:
       # Re-running this job after approving is safe: a version already on the
       # registry is not staged again, and a version an earlier run staged (E409
       # "previously staged") goes straight to the wait below.
+      # The tarball carries the detection rules without their test samples
+      # (test_cases, evasion_tests). The tests above ran on the full rules. Some
+      # samples are working malware snippets (a miner command line, webshells, a
+      # reverse shell) that npm's publish-time scanning reads as malware; the
+      # engine never reads them. The repository keeps them. This removes them;
+      # it does not encode or hide anything. See DISCLOSURE.
+      - name: Remove test samples from the published rules
+        run: node scripts/prune-published-rules.mjs rules
+
       - name: Stage the release on npm
         run: |
           if [ "$(npm view "agent-threat-rules@${VERSION}" version --prefer-online 2>/dev/null)" = "$VERSION" ]; then
@@ -220,6 +235,11 @@ jobs:
           done
           echo "::error::agent-threat-rules@${VERSION} is not on the registry after 60 minutes. Approve the staged version with 2FA, then re-run this workflow run. If npm emailed that the version did not pass automated review, it was blocked; appeal with the reference ID in that email."
           exit 1
+
+      # Later steps read the rules as the repository has them.
+      - name: Restore the full rules
+        if: always()
+        run: git checkout -- rules/
 
       - name: Count rules for release notes
         id: rules

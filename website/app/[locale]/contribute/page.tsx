@@ -196,7 +196,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
                 : "A maintainer or community member writes the detection regex and runs the safety gate — true- and false-positive samples, schema compliance, no conflict with existing rules, and zero false positives on the benign corpus as a hard requirement. The gate actually blocks; it is not decorative."}
             </li>
             <li>
-              {zh ? "規則 merge 進主 branch,自動 npm publish + GitHub release——從這一刻起,它屬於每一個讀 ATR 的引擎,跨廠商、跨國界。" : "Rule merges to main, auto-publishes to npm + GitHub release — from that moment it belongs to every engine that reads ATR, across vendors and across borders."}
+              {zh ? "規則 merge 進主 branch,隨下一個版本發布:CI 在 npm 上 stage,維護者以 2FA 核准後上線並建立 GitHub release——從這一刻起,它屬於每一個讀 ATR 的引擎,跨廠商、跨國界。" : "Rule merges to main and ships in the next release: CI stages it on npm, a maintainer approves it with 2FA, and the GitHub release follows — from that moment it belongs to every engine that reads ATR, across vendors and across borders."}
             </li>
             <li>
               {zh
