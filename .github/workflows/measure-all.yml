@@ -107,10 +107,8 @@ jobs:
           echo "Carried from rolling PR #$OPEN:"
           printf '%s\n' "$CARRIED" | sed 's/^/  /'
 
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 20
-          cache: npm
+      # measure-all writes data/measurements/, so it reads the pinned Node too.
+      - uses: ./.github/actions/atr-node
 
       - run: npm ci
 

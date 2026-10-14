@@ -4,6 +4,86 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+## [4.1.5] - 2026-10-10
+
+4.1.4 was staged on npm and removed by publish-time scanning before it could be
+approved, like 4.1.1 to 4.1.3. 4.0.0 passed that scanning. What the 4.1 line
+added were rules whose test samples are complete attack snippets: a
+crypto-miner command line with a mining-pool URL, PHP, JSP and ASPX webshells,
+and a Node.js reverse shell. This release carries the 4.1.4 rules and engine,
+packaged without those samples.
+
+### Changed
+
+- **The npm package ships the rules without their test samples.** The release
+  workflow removes `test_cases` and `evasion_tests` from each rule just before
+  staging, after the tests have run on the full rules. The engine does not read
+  them, so detection is unchanged: the same rules load and the same rules fire.
+  The samples stay in the repository. With the package alone, `atr test` on a
+  bundled rule has no samples to run, and `atr stats` reports zero TP/TN
+  counts. DISCLOSURE says so.
+
+### Fixed
+
+- **ATR-2026-02600 no longer names a real public IP in its test samples.** Its
+  two reverse-shell samples now connect to the documentation ranges 203.0.113.14
+  and 192.0.2.4. The detection is unchanged.
+- **ATR-2026-02627 describes the web shells it detects instead of quoting
+  them.** Its description and one false-positive note quoted a working one-line
+  PHP command shell; they now say what it is. The detection is unchanged.
+
+### Changed
+
+- **npm releases go only through the staged path in `publish.yml`.** The
+  package is dual-use, so npm's policy lets CI stage a version but not publish
+  one; a maintainer promotes it with 2FA. Three workflows could still put a
+  version on the registry another way and have been removed:
+  `publish-current-version.yml` (direct `npm publish` through trusted
+  publishing), `publish-on-rules-merge.yml` (bumped and ran `npm publish` with
+  `NPM_TOKEN` on pushes to `main`) and `npm-stage.yml` (approved staged
+  versions from CI with `NPM_TOKEN`, skipping the maintainer's 2FA).
+  `scripts/release.sh` now stops at the tag push instead of also publishing
+  locally. No workflow references `NPM_TOKEN`, and
+  `tests/npm-release-path.test.ts` fails if any workflow other than
+  `publish.yml` gains a publish, stage or approve step.
+
+## [4.1.4] - 2026-10-07
+
+> Not published to npm (see 4.1.5).
+
+The first release since 4.0.0 meant to reach npm. 4.1.1, 4.1.2 and 4.1.3 were
+each blocked by npm's publish-time malware scanning, which reads the attack
+strings in rule files as malware, so `npm install agent-threat-rules` still
+returns 4.0.0. This release declares the package dual-use (see Changed below)
+and goes through npm's staged publishing, approved by a maintainer with 2FA. It
+carries everything listed under 4.1.3, 4.1.2, 4.1.1 and 4.1.0 below.
+
+### Added
+
+- **Four rules.** Each one passed the repository's PR checks, and is
+  experimental, maturity `test`, with alert-level response actions only:
+  - ATR-2026-02846: ignore-previous-and-following instructions (PromptInject
+    goal hijacking), a semantic rule with a narrow regex fallback.
+  - ATR-2026-02847: email exfiltration under a policy, audit or compliance
+    pretext.
+  - ATR-2026-02850: data exfiltration by email under a documentation pretext,
+    including French phrasings.
+  - ATR-2026-02851: a fake user turn inside content that instructs the agent to
+    send an email.
+  ATR-2026-02847, 02850 and 02851 come from human-written attack emails
+  (LLMail-Inject). They fire on none of 526 real emails or 694 benign web pages
+  presented as tool output, and each catches attack emails that were held out
+  while the rule was written.
+
+### Fixed
+
+- **pyATR falls back for regex conditions Python's `re` cannot compile** (such
+  as variable-width lookbehind) instead of dropping the condition (#554, thanks
+  @dc-tw).
+- **The test-case validator reads every key a test case can use.** It read four
+  of nine and misjudged rules whose cases use the others. Its failure count on
+  the current rules drops from 40 to 11, with no new failures (#607).
+
 ### Security
 
 - **`atr tc pull` checks the rules a Threat Cloud endpoint returns before
@@ -35,6 +115,8 @@ All notable changes to ATR will be documented in this file.
   before creating the GitHub release.
 
 ## [4.1.3] - 2026-10-06
+
+> Not published to npm (see 4.1.4).
 
 The first release of the 4.1 line to reach npm; 4.1.2 did not either. Its
 publish on 2026-10-01 went through trusted publishing (OIDC), printed

@@ -1,14 +1,14 @@
 {
-  "$comment": "Single source of truth for ATR project numbers. Any user-facing surface (README, CITATION.cff, panguard.ai, docs site, schema.org JSON-LD, Zenodo metadata) MUST read from this file via scripts/sync-stats.ts. Hand-edits to derived files will be overwritten on next sync. Bump version + ruleCount here, then run `npm run sync:stats`. CI does this automatically on rules-merge release. ruleCount.total counts files matching `^id: ATR-` (excludes drafts/templates); CI in publish-on-rules-merge.yml uses the identical method to avoid drift.",
-  "version": "4.1.3",
+  "$comment": "Single source of truth for ATR project numbers. Any user-facing surface (README, CITATION.cff, panguard.ai, docs site, schema.org JSON-LD, Zenodo metadata) MUST read from this file via scripts/sync-stats.ts. Hand-edits to derived files will be overwritten on next sync. Bump version + ruleCount here, then run `npm run sync:stats`. On every rules merge, reconcile-stats.yml recomputes ruleCount from disk with scripts/reconcile-rule-count.mjs and runs sync-stats. ruleCount.total counts files matching `^id: ATR-` (excludes drafts/templates).",
+  "version": "4.1.5",
   "previousVersion": "4.0.0",
-  "lastUpdated": "2026-09-14",
+  "lastUpdated": "2026-10-07",
   "ruleCount": {
-    "total": 826,
-    "effective": 819,
+    "total": 829,
+    "effective": 822,
     "inert": 7,
     "stable": 59,
-    "experimental": 760,
+    "experimental": 763,
     "draft": 5,
     "deprecated": 2,
     "comment": "total = stable + experimental + draft + deprecated. Validated by `find rules -name '*.yaml' -type f -exec grep -l '^id: ATR-' {} \\;` in scripts/sync-stats.ts. Status breakdown counted via `grep -rh '^status:' rules/ --include='*.yaml' | sort | uniq -c` (handles both quoted and unquoted YAML strings)."
