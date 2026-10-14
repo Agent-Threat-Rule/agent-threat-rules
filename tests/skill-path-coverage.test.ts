@@ -54,11 +54,17 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
  * They are a RATCHET, not a specification: the corpus grows daily, so the
  * assertions below are bounds and invariants, and this block exists so a reader
  * can tell whether a change moved the number and by how much.
+ *
+ * unreachableInEnforceLane went 102 -> 100 in #625, which demoted
+ * ATR-2026-01606 and ATR-2026-00080 from stable to test after they
+ * false-positived on the benign corpus. Both are skill-path unreachable, so they
+ * left the enforce-lane subset; the skill path itself did not change
+ * (skillPathUnreachable still holds).
  */
 const MEASURED_ON_MAIN = Object.freeze({
   rules: 780,
   skillPathUnreachable: 645,
-  unreachableInEnforceLane: 102,
+  unreachableInEnforceLane: 100,
   reachable: 128,
   inertStatus: 7,
 });
