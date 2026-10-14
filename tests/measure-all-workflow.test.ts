@@ -201,7 +201,7 @@ describe.skipIf(!HAS_JQ)("push step", () => {
     expect(res.status, res.stderr).toBe(0);
     expect(originSha(sb, BRANCH)).not.toBe(before);
     expect(ghCalls(sb)).not.toMatch(/^pr create /m);
-    expect(ghCalls(sb)).toMatch(/^pr edit 700 --body-file /m);
+    expect(ghCalls(sb)).toMatch(/^api -X PATCH repos\/fixture-owner\/fixture-repo\/pulls\/700 -F body=@/m);
   });
 
   it("measures but does not push a dispatch on a ref that is not on main", () => {
@@ -344,7 +344,7 @@ describe("README benchmark table", () => {
     expect(runStep(sb, runBlock(WORKFLOW, JOB, DETECT)).status).toBe(0);
     const res = runStep(sb, runBlock(WORKFLOW, JOB, PUSH), { ROLLING_OLD_SHA: "" });
     expect(res.status, res.stderr).toBe(0);
-    expect(ghCalls(sb)).toMatch(/^pr edit 700 --body-file /m);
+    expect(ghCalls(sb)).toMatch(/^api -X PATCH repos\/fixture-owner\/fixture-repo\/pulls\/700 -F body=@/m);
     expect(ghCalls(sb)).not.toMatch(/^pr create /m);
     expect(prBody(sb)).toMatch(/README\.md:7 — Prose after the table/);
   });
