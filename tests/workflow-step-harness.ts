@@ -38,8 +38,10 @@ export function runBlock(path: string, job: string, name: string): string {
 }
 
 // Answers `pr list` from a canned JSON array through jq and records `pr create`
-// instead of opening anything. FAKE_GH_CREATE_FAIL makes `pr create` fail the
-// way a token without PR rights does.
+// and `pr edit` instead of touching anything; the body either reads (stdin for
+// `--body-file -`, else the named file) lands in $FAKE_GH_LOG.body.
+// FAKE_GH_CREATE_FAIL makes `pr create` fail the way a token without PR rights
+// does.
 const FAKE_GH = `#!/usr/bin/env bash
 set -euo pipefail
 printf '%s\\n' "$*" >> "$FAKE_GH_LOG"
@@ -55,10 +57,16 @@ if [ "\${1:-} \${2:-}" = "pr list" ]; then
   jq -r --arg s "$state" "map(select(\\$s == \\"all\\" or (.state | ascii_downcase) == \\$s)) | $expr" "$FAKE_GH_PRS"
   exit 0
 fi
-if [ "\${1:-} \${2:-}" = "pr create" ]; then
-  if [ -n "\${FAKE_GH_CREATE_FAIL:-}" ]; then echo "pull request create failed: HTTP 403" >&2; exit 1; fi
-  cat > "$FAKE_GH_LOG.body" || true
-  echo "https://example.invalid/pull/999"
+if [ "\${1:-} \${2:-}" = "pr create" ] || [ "\${1:-} \${2:-}" = "pr edit" ]; then
+  if [ "$2" = "create" ] && [ -n "\${FAKE_GH_CREATE_FAIL:-}" ]; then echo "pull request create failed: HTTP 403" >&2; exit 1; fi
+  body=-
+  prev=
+  for a in "$@"; do
+    if [ "$prev" = "--body-file" ]; then body=$a; fi
+    prev=$a
+  done
+  if [ "$body" = "-" ]; then cat > "$FAKE_GH_LOG.body" || true; else cp "$body" "$FAKE_GH_LOG.body"; fi
+  if [ "$2" = "create" ]; then echo "https://example.invalid/pull/999"; fi
   exit 0
 fi
 echo "fake gh: unexpected call: $*" >&2
