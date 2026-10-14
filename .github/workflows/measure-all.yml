@@ -325,7 +325,11 @@ jobs:
           OPEN=$(gh pr list --head "$BRANCH" --state open --json number,isCrossRepository \
             --jq '[.[] | select(.isCrossRepository | not)][0].number // empty')
           if [ -n "$OPEN" ]; then
-            gh pr edit "$OPEN" --body-file "$BODY_FILE"
+            # REST, not `gh pr edit`: gh's edit reads the PR's review requests, and this
+            # PR touches stats.json, which CODEOWNERS gives to the tsc team. The PAT
+            # cannot read teams, so `gh pr edit` failed here on 2026-10-14 after the
+            # push, and the body kept last week's review notes.
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/pulls/$OPEN" -F "body=@$BODY_FILE" --silent
             echo "Pushed this run's measurements to the open rolling PR #${OPEN}."
             exit 0
           fi
