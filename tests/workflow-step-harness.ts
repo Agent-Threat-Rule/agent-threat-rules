@@ -38,8 +38,17 @@ export function runBlock(path: string, job: string, name: string): string {
 }
 
 // Answers `pr list` from a canned JSON array through jq and records `pr create`
-// instead of opening anything. FAKE_GH_CREATE_FAIL makes `pr create` fail the
-// way a token without PR rights does.
+// instead of touching anything; the body either reads (stdin for `--body-file -`,
+// else the named file) lands in $FAKE_GH_LOG.body. FAKE_GH_CREATE_FAIL makes
+// `pr create` fail the way a token without PR rights does.
+//
+// `pr edit` always fails, the way it fails on GitHub for a rolling PR. gh's edit
+// reads the PR's review requests; a PR touching a path CODEOWNERS gives to a team
+// (stats.json -> @Agent-Threat-Rule/tsc) carries a team request, and the
+// repository PAT cannot read teams. measure-all.yml failed exactly so on
+// 2026-10-14, after it had already pushed. Bodies are updated over REST instead:
+// `api -X PATCH repos/<owner>/<repo>/pulls/<n>` with `-F body=@<file>` or
+// `-f body=<text>`, recorded here like `pr create`.
 const FAKE_GH = `#!/usr/bin/env bash
 set -euo pipefail
 printf '%s\\n' "$*" >> "$FAKE_GH_LOG"
@@ -55,11 +64,49 @@ if [ "\${1:-} \${2:-}" = "pr list" ]; then
   jq -r --arg s "$state" "map(select(\\$s == \\"all\\" or (.state | ascii_downcase) == \\$s)) | $expr" "$FAKE_GH_PRS"
   exit 0
 fi
+if [ "\${1:-} \${2:-}" = "pr edit" ]; then
+  echo "GraphQL: Resource not accessible by personal access token (repository.pullRequest.reviewRequests.nodes.0.requestedReviewer)" >&2
+  exit 1
+fi
 if [ "\${1:-} \${2:-}" = "pr create" ]; then
   if [ -n "\${FAKE_GH_CREATE_FAIL:-}" ]; then echo "pull request create failed: HTTP 403" >&2; exit 1; fi
-  cat > "$FAKE_GH_LOG.body" || true
+  body=-
+  prev=
+  for a in "$@"; do
+    if [ "$prev" = "--body-file" ]; then body=$a; fi
+    prev=$a
+  done
+  if [ "$body" = "-" ]; then cat > "$FAKE_GH_LOG.body" || true; else cp "$body" "$FAKE_GH_LOG.body"; fi
   echo "https://example.invalid/pull/999"
   exit 0
+fi
+if [ "\${1:-}" = "api" ]; then
+  shift
+  method=GET
+  endpoint=
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -X|--method) method=$2; shift ;;
+      -F|--field|-f|--raw-field)
+        key=\${2%%=*}
+        val=\${2#*=}
+        if [ "$key" = "body" ]; then
+          if { [ "$1" = "-F" ] || [ "$1" = "--field" ]; } && [ "\${val:0:1}" = "@" ]; then
+            cp "\${val:1}" "$FAKE_GH_LOG.body"
+          else
+            printf '%s' "$val" > "$FAKE_GH_LOG.body"
+          fi
+        fi
+        shift ;;
+      --silent) ;;
+      -*) echo "fake gh: unexpected api flag: $1" >&2; exit 1 ;;
+      *) endpoint=$1 ;;
+    esac
+    shift
+  done
+  if [ "$method" = "PATCH" ] && printf '%s' "$endpoint" | grep -Eq '^repos/[^/]+/[^/]+/pulls/[0-9]+$'; then exit 0; fi
+  echo "fake gh: unexpected api call: $method $endpoint" >&2
+  exit 1
 fi
 echo "fake gh: unexpected call: $*" >&2
 exit 1
@@ -117,6 +164,7 @@ export function sandbox(prefix: string, files: Readonly<Record<string, string>>)
     GITHUB_OUTPUT: join(root, "github_output"),
     GITHUB_STEP_SUMMARY: join(root, "step_summary"),
     RUNNER_TEMP: root,
+    GITHUB_REPOSITORY: "fixture-owner/fixture-repo",
     FAKE_GH_LOG: join(root, "gh.log"),
     FAKE_GH_PRS: join(root, "prs.json"),
   };

@@ -34,7 +34,7 @@
  * checker that silently checks nothing is the bug it is here to prevent).
  */
 
-import { readFileSync } from "node:fs";
+import { readFileSync, realpathSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -50,7 +50,7 @@ const DATA_STATS_PATH = resolve(REPO_ROOT, "data", "stats.json");
  * recognise this row" and "this row is fine" must never produce the same
  * output.
  */
-const LABEL_TO_SOURCE: ReadonlyMap<string, string> = new Map([
+export const LABEL_TO_SOURCE: ReadonlyMap<string, string> = new Map([
   ["AdvBench (LLM-attacks behaviors)", "advbench"],
   ["atr-self-test", "atr-self-test"],
   ["autoresearch", "autoresearch"],
@@ -78,9 +78,9 @@ const LABEL_TO_SOURCE: ReadonlyMap<string, string> = new Map([
  * corpus; there is no recall to compare because nothing labelled the negatives.
  * Listed by source so the exemption is visible instead of implicit.
  */
-const EXEMPT_SOURCES: ReadonlySet<string> = new Set(["wild-scan"]);
+export const EXEMPT_SOURCES: ReadonlySet<string> = new Set(["wild-scan"]);
 
-interface BenchmarkEntry {
+export interface BenchmarkEntry {
   source: string;
   source_version: string;
   atr_version: string;
@@ -91,7 +91,7 @@ interface BenchmarkEntry {
   fp_rate: number | null;
 }
 
-interface TableRow {
+export interface TableRow {
   label: string;
   sourceVersion: string;
   samples: string;
@@ -126,7 +126,7 @@ function readJson(path: string): unknown {
  *      becomes a way to launder a wrong figure past this check — which is the
  *      exact failure mode the script exists to prevent.
  */
-function checkRecallCell(cell: string, measured: number): string | null {
+export function checkRecallCell(cell: string, measured: number): string | null {
   const want = pct1(measured);
   const values = [...cell.matchAll(/(\d+(?:\.\d+)?%)(\s*\(([a-z-]+)\))?/g)];
   if (values.length === 0) return `recall ${cell} is not a percentage`;
@@ -148,7 +148,7 @@ function checkRecallCell(cell: string, measured: number): string | null {
 }
 
 /** `0.915` -> `"91.5%"`, matching how the README table renders a recall. */
-function pct1(n: number): string {
+export function pct1(n: number): string {
   return `${(n * 100).toFixed(1)}%`;
 }
 
@@ -166,11 +166,11 @@ function pct1(n: number): string {
  * un-mapped row is a number nothing checks, which is the failure this script
  * exists to prevent.
  */
-function stripFootnoteRefs(cell: string): string {
+export function stripFootnoteRefs(cell: string): string {
   return cell.replace(/\s*\[\^[^\]]+\]/g, "").trim();
 }
 
-function parseBenchmarkTable(readme: string): TableRow[] {
+export function parseBenchmarkTable(readme: string): TableRow[] {
   const lines = readme.split("\n");
   const headerIdx = lines.findIndex((l) =>
     /^\|\s*Source\s*\|\s*Source version\s*\|\s*Samples\s*\|\s*Recall\s*\|/.test(l),
@@ -205,27 +205,48 @@ function parseBenchmarkTable(readme: string): TableRow[] {
   return rows;
 }
 
-function main(): number {
+/** The slice of root `stats.json` this check reads. */
+export interface RootStats {
+  benchmarks?: Record<string, { recall?: number; samples?: number; atr_version?: string; measured?: string }>;
+}
+
+export interface CitationCheck {
+  /** Set when the check could not run at all; a failure, never a pass. */
+  fatal: string | null;
+  /** README benchmark rows parsed. */
+  rowCount: number;
+  problems: string[];
+}
+
+/**
+ * The whole check over in-memory documents, so a caller that renders the table
+ * (scripts/render-benchmark-table.ts) can prove its output against the exact
+ * rules this script enforces instead of a copy of them.
+ */
+export function findCitationProblems(
+  readme: string,
+  dataStats: { benchmarks?: BenchmarkEntry[] },
+  rootStats: RootStats,
+): CitationCheck {
   const problems: string[] = [];
 
-  const dataStats = readJson(DATA_STATS_PATH) as { benchmarks?: BenchmarkEntry[] };
   const entries = dataStats.benchmarks ?? [];
   if (entries.length === 0) {
-    console.error("FAIL: data/stats.json has no benchmarks[] — nothing to check against.");
-    return 1;
+    return { fatal: "FAIL: data/stats.json has no benchmarks[] — nothing to check against.", rowCount: 0, problems };
   }
   const bySource = new Map(entries.map((e) => [e.source, e]));
 
   // ── README benchmark table ────────────────────────────────────────────────
-  const readme = readFileSync(README_PATH, "utf-8");
   const rows = parseBenchmarkTable(readme);
   if (rows.length === 0) {
-    console.error(
-      "FAIL: could not find the benchmark table in README.md. Either the table " +
+    return {
+      fatal:
+        "FAIL: could not find the benchmark table in README.md. Either the table " +
         "was removed or its header changed — fix this parser rather than " +
         "letting the check pass on zero rows.",
-    );
-    return 1;
+      rowCount: 0,
+      problems,
+    };
   }
 
   for (const row of rows) {
@@ -296,9 +317,6 @@ function main(): number {
   }
 
   // ── root stats.json (the file sync-stats.ts propagates everywhere) ─────────
-  const rootStats = readJson(ROOT_STATS_PATH) as {
-    benchmarks?: Record<string, { recall?: number; samples?: number; atr_version?: string; measured?: string }>;
-  };
   const garakCite = rootStats.benchmarks?.garak;
   const garakMeasured = bySource.get("garak");
   if (garakCite === undefined) {
@@ -354,6 +372,20 @@ function main(): number {
     }
   }
 
+  return { fatal: null, rowCount: rows.length, problems };
+}
+
+function main(): number {
+  const { fatal, rowCount, problems } = findCitationProblems(
+    readFileSync(README_PATH, "utf-8"),
+    readJson(DATA_STATS_PATH) as { benchmarks?: BenchmarkEntry[] },
+    readJson(ROOT_STATS_PATH) as RootStats,
+  );
+  if (fatal !== null) {
+    console.error(fatal);
+    return 1;
+  }
+
   if (problems.length > 0) {
     console.error(`FAIL: ${problems.length} benchmark citation(s) not backed by a measurement file:\n`);
     for (const p of problems) console.error(`  - ${p}`);
@@ -367,10 +399,20 @@ function main(): number {
   }
 
   console.log(
-    `benchmark citations OK: ${rows.length} README rows + stats.json all match ` +
+    `benchmark citations OK: ${rowCount} README rows + stats.json all match ` +
       `data/measurements/`,
   );
   return 0;
 }
 
-process.exitCode = main();
+// Imported by scripts/render-benchmark-table.ts and its tests; only a direct
+// run checks the repo.
+// Real paths on both sides: a script run through a symlink (or macOS's /tmp)
+// sees its own URL resolved while argv keeps the path it was called by.
+const INVOKED_DIRECTLY =
+  process.argv[1] !== undefined &&
+  realpathSync(resolve(process.argv[1])) === realpathSync(fileURLToPath(import.meta.url));
+
+if (INVOKED_DIRECTLY) {
+  process.exitCode = main();
+}

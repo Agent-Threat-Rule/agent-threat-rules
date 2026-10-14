@@ -79,7 +79,10 @@ jobs:
           This PR is force-pushed on each run and always reflects the current demote list. It changes production rule maturity, so it is never auto-merged: a human reads the list."
           EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
           if [ -n "$EXISTING" ]; then
-            gh pr edit "$EXISTING" --body "$BODY"
+            # REST, not `gh pr edit`, which reads review requests and fails with the
+            # repository PAT once a PR has a team review request (measure-all.yml,
+            # 2026-10-14). This PR only touches rules/, which has no code owner today.
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/pulls/$EXISTING" -f "body=$BODY" --silent
             echo "Updated rolling PR #$EXISTING; no second PR opened."
           else
             gh pr create --base main --head "$BRANCH" \

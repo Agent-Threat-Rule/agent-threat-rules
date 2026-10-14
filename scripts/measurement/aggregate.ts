@@ -38,8 +38,11 @@ export interface MeasurementsAggregate {
  * Throws on filesystem I/O errors. Schema-violating pointers are reported in
  * `sources_broken` rather than throwing; this lets callers proceed with
  * partial data and surface broken sources for human triage.
+ *
+ * `measurementsDir` defaults to this repo's `data/measurements/`; tests point
+ * it at a fixture tree.
  */
-export function aggregateMeasurements(): MeasurementsAggregate {
+export function aggregateMeasurements(measurementsDir: string = MEASUREMENTS_DIR): MeasurementsAggregate {
   const out: MeasurementsAggregate = {
     generated_at: new Date().toISOString(),
     sources: {},
@@ -47,10 +50,10 @@ export function aggregateMeasurements(): MeasurementsAggregate {
     sources_broken: [],
   };
 
-  if (!existsSync(MEASUREMENTS_DIR)) return out;
+  if (!existsSync(measurementsDir)) return out;
 
-  for (const entry of readdirSync(MEASUREMENTS_DIR)) {
-    const sourceDir = join(MEASUREMENTS_DIR, entry);
+  for (const entry of readdirSync(measurementsDir)) {
+    const sourceDir = join(measurementsDir, entry);
     if (!statSync(sourceDir).isDirectory()) continue;
     const latest = join(sourceDir, "latest.json");
     if (!existsSync(latest)) {
