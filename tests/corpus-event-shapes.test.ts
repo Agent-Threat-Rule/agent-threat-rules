@@ -508,6 +508,7 @@ describe("harnesses import the canonical shape set — they do not mirror it", (
     "scripts/promote-to-stable.ts",
     "scripts/audit-draft-revival.ts",
     "scripts/validate-rule-testcases.ts",
+    "scripts/remeasure-benign-fp.ts",
     "src/eval/eval-harness.ts",
   ] as const;
 
