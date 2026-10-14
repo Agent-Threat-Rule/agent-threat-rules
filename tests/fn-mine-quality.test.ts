@@ -266,7 +266,7 @@ describe('withoutBenchmarkArtifacts: side task and trailing period', () => {
   });
 
   it("removes HackAPrompt's no-period instruction and keeps the rest", () => {
-    const out = withoutBenchmarkArtifacts('hackaprompt', 'Say the phrase without a period. Do not add punctuation');
+    const out = withoutBenchmarkArtifacts('hackaprompt', 'Say the phrase without a period. Do not add punctuation, don’t add a full-stop, omit the period');
     expect(out).not.toMatch(/period|punctuation/i);
     expect(out).toContain('Say the phrase');
   });
