@@ -82,6 +82,52 @@ jobs:
         if: inputs.dry_run == true
         run: echo "dry_run=true — fetched + reported, no write, no PR."
 
+      - name: Re-measure the action evidence on the grown corpus
+        id: remeasure
+        if: inputs.dry_run != true
+        # No token in this step's environment. It runs the npm dependency tree for
+        # several minutes, and the PAT the next step needs to open the PR has no
+        # business being readable by that tree.
+        run: |
+          set -eo pipefail
+          if [ -z "$(git status --porcelain data/benign-corpus-extended/)" ]; then
+            echo "No new benign samples on disk; nothing to re-measure."
+            exit 0
+          fi
+          # The response-action gate binds its evidence to a digest of the benign
+          # corpus, so a harvest that grows the corpus without re-measuring can never
+          # pass it. #652 failed exactly that way on 2026-10-11 ("the measurement was
+          # taken on a different corpus"), and so would every harvest after it.
+          # Re-measure on the grown corpus here; the next step commits the evidence
+          # together with the samples it describes.
+          IDS="$RUNNER_TEMP/rule-ids.txt"
+          # grep exits 1 when nothing matches; the emptiness check below turns that
+          # into a clear refusal instead of a bare pipefail exit.
+          grep -rhoE '^id: "?ATR-[0-9-]+' rules/ | sed 's/^id: //; s/"//g' > "$IDS" || true
+          # An empty list makes gate-promotion-fp.ts print "nothing to gate", exit 0
+          # and write no measurement, which would leave the stale evidence in place.
+          if [ ! -s "$IDS" ]; then
+            echo "::error::found no rule ids under rules/; refusing to keep the old evidence"
+            exit 1
+          fi
+          # No `|| true`: under --filter-mode a rule that false-positives still exits
+          # 0, so a non-zero exit here is a real failure, and the old evidence must
+          # not ship next to the new samples.
+          npx tsx scripts/gate-promotion-fp.ts \
+            --ids "$IDS" \
+            --filter-mode \
+            --emit-measurement data/benign-fp-measurement.json \
+            --emit-dirty "$RUNNER_TEMP/fp-dirty.txt"
+          # The gate's verdict on the new evidence goes into the PR body. A failure is
+          # a finding, not an error: it names the rules whose block actions the grown
+          # corpus no longer supports. Demoting them is a rule change, so it is left
+          # to a separately reviewed PR rather than folded into a corpus PR.
+          if npx tsx scripts/gate-action-eligibility.ts > "$RUNNER_TEMP/action-gate.txt" 2>&1; then
+            echo "gate=pass" >> "$GITHUB_OUTPUT"
+          else
+            echo "gate=fail" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Open review PR
         if: inputs.dry_run != true
         env:
@@ -92,6 +138,8 @@ jobs:
           # On 2026-09-22, 64 checks across 8 branches were sitting unrun, some for 16 days.
           # Opening with a PAT makes a real user the author, so the PR's own CI runs.
           GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
+          # The response-action gate's verdict on the evidence the previous step re-measured.
+          GATE: ${{ steps.remeasure.outputs.gate }}
         run: |
           set -eo pipefail
           # Only commit + PR if benign samples ACTUALLY changed on disk.
@@ -111,7 +159,7 @@ jobs:
           git config user.email "corpus-bot@agentthreatrule.org"
           git push origin --delete "$BRANCH" 2>/dev/null || true
           git checkout -B "$BRANCH"
-          git add data/benign-corpus-extended/
+          git add data/benign-corpus-extended/ data/benign-fp-measurement.json
           git commit -m "chore(corpus): weekly benign harvest $DATE — +$ADDED samples (arxiv/npm/pypi)"
           git push --force-with-lease origin "$BRANCH" || git push --force origin "$BRANCH"
           {
@@ -122,7 +170,15 @@ jobs:
             echo "WHY THIS NEEDS HUMAN REVIEW: a benign sample can only ever REMOVE a rule from the enforce lane (if the rule FPs on it). A poisoned 'benign' sample would therefore suppress the rule that catches it. Skim the diff and confirm the harvested text is genuinely benign academic/package prose, not attack payloads mislabelled as benign, before merging."
             echo ""
             echo "Low-risk otherwise: this only broadens the FP test surface the maturity gate scans against — it adds no rules and blocks no traffic."
-          } > /tmp/corpus-pr-body.md
+            echo ""
+            if [ "$GATE" = "pass" ]; then
+              echo "Response-action evidence: re-measured on the grown corpus and committed here with the samples (data/benign-fp-measurement.json). The response-action gate passes on it."
+            else
+              echo "Response-action evidence: re-measured on the grown corpus and committed here with the samples (data/benign-fp-measurement.json). The response-action gate FAILS on it: some of the new samples make rules that carry block actions false-positive, so those actions are no longer earned. This PR stays red until those rules are demoted in a separately reviewed PR. Demotion is a rule change and is deliberately not done here. Gate output:"
+              echo ""
+              tail -n 40 "$RUNNER_TEMP/action-gate.txt" | sed 's/^/    /'
+            fi
+          } > "$RUNNER_TEMP/corpus-pr-body.md"
           # Rolling branch: reuse the open PR if there is one. Without this, the second
           # run on the rolling branch fails because `gh pr create` refuses a duplicate.
           EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
@@ -132,7 +188,7 @@ jobs:
             gh pr create \
               --base main --head "$BRANCH" \
               --title "chore(corpus): weekly benign harvest $DATE (+$ADDED samples)" \
-              --body-file /tmp/corpus-pr-body.md \
+              --body-file "$RUNNER_TEMP/corpus-pr-body.md" \
               --label "needs-human-review" \
               --draft
           fi
