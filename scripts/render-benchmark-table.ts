@@ -3,7 +3,7 @@
  * scripts/render-benchmark-table.ts
  *
  * Rewrite the measured cells of README.md's benchmark table, and the
- * `benchmarks.garak` / `benchmarks.pint` citations in root `stats.json`, from
+ * `benchmarks.garak` / `.pint` / `.skill` blocks of root `stats.json`, from
  * each source's `data/measurements/<source>/latest.json`.
  *
  * WHY THIS EXISTS
@@ -16,23 +16,39 @@
  * check. It projects measurements into the citing surfaces; it never decides
  * what a number should be.
  *
- * What it touches, and nothing else:
- *   README.md   — for each benchmark-table row whose label the checker maps to
- *                 a source with a latest.json: Source version, Samples, Recall
- *                 (the leading percentage only — lane annotations and any
- *                 second-lane figure are kept), Precision, FP rate, ATR version
- *                 and Measured. Row order, labels, footnote markers, padding of
- *                 unchanged cells and every other line stay byte-identical.
- *                 Rows without a measurement, and checker-exempt rows
- *                 (wild-scan), are left as they are.
- *   stats.json  — the keys the checker reads (recall, samples, atr_version,
- *                 measured) plus the siblings derived from the same run
- *                 (detected, missed, precision, fpRate), for garak and pint,
- *                 and only keys that already exist.
+ * THE RULE: A NEW STAMP ONLY OVER NUMBERS FROM THAT RUN
+ *
+ * A row or block whose ATR version / measured date moves is "re-stamped", and
+ * everything under the new stamp must come from the new measurement. So on
+ * re-stamp each version-bound value is either recomputed from latest.json (and
+ * the measurement file it points at) or removed. Nothing is carried over:
+ * a 3.5.12 figure under a 4.1.5 stamp reads as a 4.1.5 measurement.
+ *
+ *   README.md   — for each benchmark-table row the checker maps to a measured,
+ *                 non-exempt source: Source version, Samples, Recall,
+ *                 Precision, FP rate, ATR version and Measured. Recall keeps
+ *                 the first figure's lane annotation; any further lane figure
+ *                 (`/ 0.0% (enforce)`) is dropped on re-stamp, because the
+ *                 measurement is a single (hunt-lane) run. Labels, footnotes,
+ *                 row order, padding of unchanged cells and every other line
+ *                 stay byte-identical. Unmeasured and exempt rows are untouched.
+ *   stats.json  — recall / samples / atr_version / measured / precision /
+ *                 fpRate / detected / missed are recomputed; garak.perFamily
+ *                 is recomputed from garak-full's by_family when garak-full was
+ *                 measured at the same ATR version. Descriptors of the corpus
+ *                 or method (source, lane, tiers, notOfficialPint) are kept.
+ *                 On re-stamp, DROPPABLE_FIELDS this run cannot derive
+ *                 (pint.comment, skill.enforceLane*, a perFamily without a
+ *                 same-version garak-full) are dropped. A block holding any
+ *                 other field is left on its old stamp, for the checker to
+ *                 fail and a human to classify.
+ *
+ * A rate is never rounded to 0% when it is not zero, nor to 100% when it is
+ * not one. (Recall keeps the checker's one-decimal form, which CI enforces.)
  *
  * Row -> source mapping, percentage formatting and the table parser are
- * imported from the checker, and --check re-runs the checker over the
- * rendered text, so the output is by construction what CI accepts.
+ * imported from the checker, and the rendered documents are re-checked with
+ * it, so the output is by construction what CI accepts.
  *
  * Input is projected from latest.json exactly as sync-stats-from-measurements.ts
  * projects it into data/stats.json — the file the checker compares against. If
@@ -40,9 +56,15 @@
  * from one and checking against the other would guarantee nothing.
  *
  * Usage:
- *   npx tsx scripts/render-benchmark-table.ts                # rewrite in place
- *   npx tsx scripts/render-benchmark-table.ts --check        # exit 1 if a file would change
- *   npx tsx scripts/render-benchmark-table.ts --root <dir>   # another checkout (tests)
+ *   npx tsx scripts/render-benchmark-table.ts                       # rewrite in place
+ *   npx tsx scripts/render-benchmark-table.ts --check               # exit 1 if a file would change
+ *   npx tsx scripts/render-benchmark-table.ts --root <dir>          # another checkout (tests, CI)
+ *   npx tsx scripts/render-benchmark-table.ts --review-notes <file> # what a human should re-read
+ *
+ * --review-notes writes Markdown for the rolling PR body (empty when there is
+ * nothing to check): the README prose and footnote lines near the table that
+ * cite a version or percentage, the stats.json fields dropped, and any block
+ * left unstamped. See scripts/lib/benchmark-review-notes.ts.
  *
  * Exit codes: 0 = files current (or rewritten). 1 = --check found a file that
  * would change. 2 = cannot render: data/stats.json stale or unreadable input.
@@ -63,6 +85,7 @@ import {
   parseBenchmarkTable,
   pct1,
 } from "./check-benchmark-citations.js";
+import { citedTokens, findProseToReview, formatReviewNotes } from "./lib/benchmark-review-notes.js";
 import { aggregateMeasurements, projectForStats, type StatsBenchmarkEntry } from "./measurement/aggregate.js";
 
 const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -78,135 +101,340 @@ const COL = {
   measured: 7,
 } as const;
 
-/** Root stats.json keys the checker reads, and the source each one cites. */
-const ROOT_STATS_SOURCES: ReadonlyMap<string, string> = new Map([
-  ["garak", "garak"],
-  ["pint", "pint"],
-]);
+// ── numbers ───────────────────────────────────────────────────────────────────
 
-/** True-positive / false-negative counts, from the measurement file's confusion matrix. */
-export interface DetectionCounts {
-  detected: number;
-  missed: number;
-}
-
-/** `95.2%` stays two-decimal-free, `0.20%` keeps two decimals: the cell's own precision. */
-function formatLikeCell(cellPct: string, value: number): string {
-  const decimals = /\.(\d+)%$/.exec(cellPct)?.[1].length ?? 0;
-  return `${(value * 100).toFixed(decimals)}%`;
-}
+const MAX_DECIMALS = 8;
 
 /**
- * Replace the leading percentage of a cell, keeping lane annotations, a second
- * lane's figure and footnote markers. A cell with no percentage (`—`,
- * `not measured`) is returned unchanged.
+ * Decimals needed so a non-zero rate never reads 0% and a rate below one never
+ * reads 100%: a 0.04% FP rate written as "0.0%" is a claim of none.
  */
+export function decimalsFor(value: number, min: number): number {
+  const shown = (d: number) => Number((value * 100).toFixed(d));
+  let d = min;
+  while (d < MAX_DECIMALS && ((value !== 0 && shown(d) === 0) || (value !== 1 && shown(d) === 100))) d += 1;
+  return d;
+}
+
+/** A README rate cell, at the cell's own precision or finer. `0.20%` keeps two decimals. */
+function pctCell(cellPct: string, value: number): string {
+  const min = /\.(\d+)%$/.exec(cellPct)?.[1].length ?? 0;
+  return `${(value * 100).toFixed(decimalsFor(value, min))}%`;
+}
+
+/** A stats.json rate, in percent. */
+const pctNumber = (value: number, min: number): number => Number((value * 100).toFixed(decimalsFor(value, min)));
+
+// ── README ────────────────────────────────────────────────────────────────────
+
+/** The checker's figure shape: `91.5%`, optionally `91.5% (hunt)`. */
+const FIGURE = /(\d+(?:\.\d+)?%)(\s*\([a-z-]+\))?/g;
+const FOOTNOTE_REF = /\[\^[^\]]+\]/g;
+
+/** Replace the leading percentage of a cell, keeping whatever surrounds it. */
 function replaceLeadingPct(cell: string, render: (old: string) => string): string {
   return cell.replace(/\d+(?:\.\d+)?%/, (old) => render(old));
 }
 
+/**
+ * The recall cell: the leading figure becomes the measurement (the checker's
+ * one-decimal form). On re-stamp, figures after it go — the measurement has no
+ * second lane — while the first figure's lane annotation and any footnote
+ * markers stay. `100.0% (hunt) / 0.0% (enforce)` -> `95.0% (hunt)`.
+ */
+function recallCell(cell: string, recall: number, restamp: boolean): string {
+  const figures = [...cell.matchAll(FIGURE)];
+  if (figures.length === 0) return cell;
+  if (!restamp || figures.length === 1) return replaceLeadingPct(cell, () => pct1(recall));
+  const first = figures[0];
+  const firstEnd = (first.index ?? 0) + first[0].length;
+  const notes = cell.slice(firstEnd).match(FOOTNOTE_REF) ?? [];
+  const head = cell.slice(0, first.index) + pct1(recall) + (first[2] ?? "");
+  return [head, ...notes].join(" ");
+}
+
 /** The new text of each measured cell for one row, keyed by column index. */
 function cellsFor(cells: readonly string[], entry: BenchmarkEntry): Map<number, string> {
+  const measured = entry.measured_at.slice(0, 10);
+  const restamp = cells[COL.atrVersion] !== entry.atr_version || cells[COL.measured] !== measured;
   const next = new Map<number, string>([
     [COL.sourceVersion, entry.source_version],
     [COL.samples, entry.samples.toLocaleString("en-US")],
     [COL.atrVersion, entry.atr_version],
-    [COL.measured, entry.measured_at.slice(0, 10)],
+    [COL.measured, measured],
   ]);
   const recall = entry.recall;
   // The checker skips a `—` recall cell; so does this.
   if (recall !== null && cells[COL.recall] !== "—") {
-    next.set(COL.recall, replaceLeadingPct(cells[COL.recall], () => pct1(recall)));
+    next.set(COL.recall, recallCell(cells[COL.recall], recall, restamp));
   }
   const precision = entry.precision;
   if (precision !== null) {
-    next.set(COL.precision, replaceLeadingPct(cells[COL.precision], (old) => formatLikeCell(old, precision)));
+    next.set(COL.precision, replaceLeadingPct(cells[COL.precision], (old) => pctCell(old, precision)));
   }
   const fpRate = entry.fp_rate;
   if (fpRate !== null) {
-    next.set(COL.fpRate, replaceLeadingPct(cells[COL.fpRate], (old) => formatLikeCell(old, fpRate)));
+    next.set(COL.fpRate, replaceLeadingPct(cells[COL.fpRate], (old) => pctCell(old, fpRate)));
   }
   return next;
 }
 
+/** Tokens a cell cited before and no longer does. */
+function replacedTokens(before: string, after: string): string[] {
+  const kept = new Set(citedTokens(after));
+  return citedTokens(before).filter((t) => !kept.has(t));
+}
+
 /** Rewrite one table line, touching only cells whose trimmed text changes. */
-function renderRow(line: string, entry: BenchmarkEntry): string {
+function renderRow(line: string, entry: BenchmarkEntry): { line: string; replaced: string[] } {
   // Same split the checker uses; segment i + 1 holds cell i with its padding.
   const segments = line.split("|");
   const cells = segments.slice(1, -1).map((c) => c.trim());
   const next = cellsFor(cells, entry);
+  const replaced: string[] = [];
   const out = segments.map((seg, i) => {
     const value = next.get(i - 1);
-    return value === undefined || value === seg.trim() ? seg : ` ${value} `;
+    if (value === undefined || value === seg.trim()) return seg;
+    replaced.push(...replacedTokens(seg, value));
+    return ` ${value} `;
   });
-  return out.join("|");
+  return { line: out.join("|"), replaced };
+}
+
+export interface ReadmeRender {
+  text: string;
+  /** Versions, percentages and dates the table cited before this render and no longer does. */
+  replaced: string[];
 }
 
 /**
- * Pure: README text in, README text out. Only lines the checker parses as
- * benchmark rows with a mapped, non-exempt, measured source can change.
+ * Pure: README text in, README text out, plus what the table stopped citing.
+ * Only lines the checker parses as benchmark rows with a mapped, non-exempt,
+ * measured source can change.
  */
-export function renderReadme(readme: string, entries: readonly BenchmarkEntry[]): string {
+export function renderReadmeDetailed(readme: string, entries: readonly BenchmarkEntry[]): ReadmeRender {
   const bySource = new Map(entries.map((e) => [e.source, e]));
   const lines = readme.split("\n");
-  const replaced = new Map<number, string>();
+  const rendered = new Map<number, string>();
+  const replaced = new Set<string>();
   for (const row of parseBenchmarkTable(readme)) {
     const source = LABEL_TO_SOURCE.get(row.label);
     if (source === undefined || EXEMPT_SOURCES.has(source)) continue;
     const entry = bySource.get(source);
     if (entry === undefined) continue;
     const idx = row.lineNo - 1;
-    replaced.set(idx, renderRow(lines[idx], entry));
+    const result = renderRow(lines[idx], entry);
+    rendered.set(idx, result.line);
+    for (const t of result.replaced) replaced.add(t);
   }
-  return lines.map((l, i) => replaced.get(i) ?? l).join("\n");
+  return { text: lines.map((l, i) => rendered.get(i) ?? l).join("\n"), replaced: [...replaced] };
 }
 
-type RootCite = Record<string, unknown>;
+export function renderReadme(readme: string, entries: readonly BenchmarkEntry[]): string {
+  return renderReadmeDetailed(readme, entries).text;
+}
 
-function updateExisting(cite: RootCite, updates: Readonly<Record<string, unknown>>): RootCite {
-  const present = Object.entries(updates).filter(([k]) => k in cite);
-  return { ...cite, ...Object.fromEntries(present) };
+// ── root stats.json ───────────────────────────────────────────────────────────
+
+/** A root stats.json block: which source it cites and which of its fields outlive a stamp. */
+interface RootBlockRule {
+  readonly source: string;
+  /** Describe the corpus or the method, not a run: kept across stamps. */
+  readonly descriptors: readonly string[];
+  /** perFamily is copied from this source's by_family, measured at the same ATR version. */
+  readonly perFamilyFrom?: string;
+}
+
+const ROOT_BLOCKS: ReadonlyMap<string, RootBlockRule> = new Map([
+  // perFamily has always been garak-full's per-family recall (34.4 / 96.4 / 92.5 at 3.5.12).
+  ["garak", { source: "garak", descriptors: ["source"], perFamilyFrom: "garak-full" }],
+  ["pint", { source: "pint", descriptors: ["source", "tiers", "notOfficialPint"] }],
+  ["skill", { source: "skill-benchmark", descriptors: ["source", "lane"] }],
+]);
+
+/**
+ * Version-bound fields no measurement file carries: pint.comment counts rules
+ * and per-rule detections, and skill.enforceLane* is an enforce-lane run the
+ * harness does not make. Dropped when their block is re-stamped.
+ */
+const UNMEASURED_FIELDS: ReadonlyMap<string, readonly string[]> = new Map([
+  ["pint", ["comment"]],
+  ["skill", ["enforceLaneRecall", "enforceLaneNote"]],
+]);
+
+/**
+ * Fields a measurement can re-derive but not every run does: detected/missed
+ * need a confusion matrix, perFamily needs garak-full at the same version. On
+ * re-stamp, one this run could not derive is dropped, never carried over.
+ */
+const OPTIONAL_DERIVED = ["precision", "fpRate", "detected", "missed", "perFamily"] as const;
+
+/**
+ * Every field a re-stamp may remove, per block. Dropping is safe only while
+ * nothing reads them — README badges, sync-stats.ts, the website and the
+ * checker read recall / samples / atr_version / measured / rules /
+ * lastUpdated — and tests/render-benchmark-table.test.ts fails if a reader
+ * appears.
+ */
+export const DROPPABLE_FIELDS: ReadonlyMap<string, readonly string[]> = new Map(
+  [...ROOT_BLOCKS].map(([key, rule]) => [
+    key,
+    [
+      ...(UNMEASURED_FIELDS.get(key) ?? []),
+      ...OPTIONAL_DERIVED.filter((f) => f !== "perFamily" || rule.perFamilyFrom !== undefined),
+    ],
+  ]),
+);
+
+/** What a measurement file adds to its latest.json pointer. */
+export interface MeasurementDetail {
+  /** Confusion-matrix true positives / false negatives. */
+  detected?: number;
+  missed?: number;
+  /** Recall per probe family, 0-1, keyed as the measurement keys it. */
+  byFamily?: Readonly<Record<string, number>>;
+}
+
+type Block = Readonly<Record<string, unknown>>;
+
+const snakeCase = (key: string) => key.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+
+/** The block's perFamily, re-derived for its existing keys, or undefined when it cannot be. */
+function perFamilyFor(
+  existing: unknown,
+  entry: BenchmarkEntry,
+  family: BenchmarkEntry | undefined,
+  detail: MeasurementDetail | undefined,
+): Record<string, number> | undefined {
+  const byFamily = detail?.byFamily;
+  if (!isRecord(existing) || family === undefined || byFamily === undefined) return undefined;
+  if (family.atr_version !== entry.atr_version) return undefined;
+  const out: Record<string, number> = {};
+  for (const key of Object.keys(existing)) {
+    const recall = byFamily[key] ?? byFamily[snakeCase(key)];
+    if (recall === undefined) return undefined;
+    out[key] = pctNumber(recall, 1);
+  }
+  return out;
+}
+
+/** Every field this run's measurements can re-derive for a block. */
+function computedFields(
+  cite: Block,
+  entry: BenchmarkEntry & { recall: number },
+  rule: RootBlockRule,
+  bySource: ReadonlyMap<string, BenchmarkEntry>,
+  details: ReadonlyMap<string, MeasurementDetail>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {
+    // The checker's own projection of a recall.
+    recall: Number((entry.recall * 100).toFixed(1)),
+    samples: entry.samples,
+    atr_version: entry.atr_version,
+    measured: entry.measured_at.slice(0, 10),
+  };
+  if (entry.precision !== null) out.precision = pctNumber(entry.precision, 1);
+  if (entry.fp_rate !== null) out.fpRate = pctNumber(entry.fp_rate, 2);
+  const detail = details.get(entry.source);
+  if (detail?.detected !== undefined) out.detected = detail.detected;
+  if (detail?.missed !== undefined) out.missed = detail.missed;
+  if (rule.perFamilyFrom !== undefined) {
+    const from = rule.perFamilyFrom;
+    const perFamily = perFamilyFor(cite.perFamily, entry, bySource.get(from), details.get(from));
+    if (perFamily !== undefined) out.perFamily = perFamily;
+  }
+  return out;
+}
+
+interface BlockRender {
+  cite: Block;
+  dropped: string[];
+  held: string[];
+}
+
+function renderBlock(
+  key: string,
+  cite: Block,
+  rule: RootBlockRule,
+  bySource: ReadonlyMap<string, BenchmarkEntry>,
+  details: ReadonlyMap<string, MeasurementDetail>,
+): BlockRender {
+  const entry = bySource.get(rule.source);
+  if (entry === undefined || entry.recall === null) return { cite, dropped: [], held: [] };
+  const computed = computedFields(cite, { ...entry, recall: entry.recall }, rule, bySource, details);
+  const restamp =
+    (cite.atr_version !== undefined && cite.atr_version !== computed.atr_version) ||
+    (cite.measured !== undefined && cite.measured !== computed.measured);
+  const recompute = ([k, v]: [string, unknown]): [string, unknown] => [k, k in computed ? computed[k] : v];
+  if (!restamp) return { cite: Object.fromEntries(Object.entries(cite).map(recompute)), dropped: [], held: [] };
+
+  const droppable = DROPPABLE_FIELDS.get(key) ?? [];
+  const keys = Object.keys(cite).filter((k) => !(k in computed) && !rule.descriptors.includes(k));
+  const unknown = keys.filter((k) => !droppable.includes(k));
+  if (unknown.length > 0) {
+    return {
+      cite,
+      dropped: [],
+      held: [
+        `benchmarks.${key} kept its ${String(cite.atr_version ?? cite.measured)} stamp: no rule for ` +
+          `${unknown.join(", ")}. Recompute or classify it in scripts/render-benchmark-table.ts.`,
+      ],
+    };
+  }
+  const next = Object.entries(cite)
+    .filter(([k]) => !keys.includes(k))
+    .map(recompute);
+  return { cite: Object.fromEntries(next), dropped: keys.map((k) => `benchmarks.${key}.${k}`), held: [] };
+}
+
+export interface RootStatsRender {
+  stats: Record<string, unknown>;
+  /** Fields removed on re-stamp, as `benchmarks.<block>.<field>`. */
+  dropped: string[];
+  /** Blocks left on their old stamp, with the reason. */
+  held: string[];
 }
 
 /**
- * Pure: root stats.json object in, new object out. Only keys that already
- * exist under benchmarks.garak / benchmarks.pint are rewritten; key order is
- * preserved, so the file diff is the changed values.
+ * Pure: root stats.json object in, new object out. Only the blocks in
+ * ROOT_BLOCKS change, only keys they already have are written, and key order
+ * is preserved, so the file diff is the changed values and removed fields.
  */
 export function renderRootStats(
   rootStats: Readonly<Record<string, unknown>>,
   entries: readonly BenchmarkEntry[],
-  counts: ReadonlyMap<string, DetectionCounts> = new Map(),
-): Record<string, unknown> {
-  const benchmarks = rootStats.benchmarks as Record<string, RootCite> | undefined;
-  if (benchmarks === undefined) return { ...rootStats };
+  details: ReadonlyMap<string, MeasurementDetail> = new Map(),
+): RootStatsRender {
+  const benchmarks = rootStats.benchmarks;
+  if (!isRecord(benchmarks)) return { stats: { ...rootStats }, dropped: [], held: [] };
   const bySource = new Map(entries.map((e) => [e.source, e]));
+  const dropped: string[] = [];
+  const held: string[] = [];
   const nextBenchmarks = Object.fromEntries(
     Object.entries(benchmarks).map(([key, cite]) => {
-      const source = ROOT_STATS_SOURCES.get(key);
-      const entry = source === undefined ? undefined : bySource.get(source);
-      if (entry === undefined || entry.recall === null) return [key, cite];
-      const updates: Record<string, unknown> = {
-        // The checker's own projection: Number((recall * 100).toFixed(1)).
-        recall: Number((entry.recall * 100).toFixed(1)),
-        samples: entry.samples,
-        atr_version: entry.atr_version,
-        measured: entry.measured_at.slice(0, 10),
-        ...(entry.precision === null ? {} : { precision: Number((entry.precision * 100).toFixed(1)) }),
-        ...(entry.fp_rate === null ? {} : { fpRate: Number((entry.fp_rate * 100).toFixed(2)) }),
-        ...(counts.get(entry.source) ?? {}),
-      };
-      return [key, updateExisting(cite, updates)];
+      const rule = ROOT_BLOCKS.get(key);
+      if (rule === undefined || !isRecord(cite)) return [key, cite];
+      const result = renderBlock(key, cite, rule, bySource, details);
+      dropped.push(...result.dropped);
+      held.push(...result.held);
+      return [key, result.cite];
     }),
   );
-  return { ...rootStats, benchmarks: nextBenchmarks };
+  return { stats: { ...rootStats, benchmarks: nextBenchmarks }, dropped, held };
 }
+
+// ── the checkout ──────────────────────────────────────────────────────────────
 
 export interface RepoRender {
   readme: { path: string; before: string; after: string };
   rootStats: { path: string; before: string; after: string };
   /** What the citation check still reports on the rendered documents (normally none). */
   residual: string[];
+  /** stats.json blocks left on their old stamp. */
+  held: string[];
+  /** Markdown for the rolling PR body; "" when nothing needs a human. */
+  notes: string;
 }
 
 function readText(path: string): string {
@@ -214,14 +442,30 @@ function readText(path: string): string {
   return readFileSync(path, "utf-8");
 }
 
-/** tp / fn from each measurement file, for the root stats.json detected / missed. */
-function detectionCounts(root: string, entries: readonly StatsBenchmarkEntry[]): Map<string, DetectionCounts> {
-  const out = new Map<string, DetectionCounts>();
+/** Confusion counts and per-family recall from the measurement files the root blocks cite. */
+function measurementDetails(root: string, entries: readonly StatsBenchmarkEntry[]): Map<string, MeasurementDetail> {
+  const wanted = new Set(
+    [...ROOT_BLOCKS.values()].flatMap((r) => (r.perFamilyFrom === undefined ? [r.source] : [r.source, r.perFamilyFrom])),
+  );
+  const out = new Map<string, MeasurementDetail>();
   for (const e of entries) {
-    if (![...ROOT_STATS_SOURCES.values()].includes(e.source)) continue;
-    const m = JSON.parse(readText(resolve(root, e.measurement_file))) as { confusion?: { tp?: unknown; fn?: unknown } };
+    if (!wanted.has(e.source)) continue;
+    const m = JSON.parse(readText(resolve(root, e.measurement_file))) as {
+      confusion?: { tp?: unknown; fn?: unknown };
+      breakdown?: { by_family?: unknown };
+    };
     const { tp, fn } = m.confusion ?? {};
-    if (typeof tp === "number" && typeof fn === "number") out.set(e.source, { detected: tp, missed: fn });
+    const rawFamilies = m.breakdown?.by_family;
+    const families = isRecord(rawFamilies) ? Object.entries(rawFamilies) : [];
+    const byFamily = Object.fromEntries(
+      families.flatMap(([k, v]): [string, number][] =>
+        isRecord(v) && typeof v.recall === "number" ? [[k, v.recall]] : [],
+      ),
+    );
+    out.set(e.source, {
+      ...(typeof tp === "number" && typeof fn === "number" ? { detected: tp, missed: fn } : {}),
+      ...(families.length > 0 ? { byFamily } : {}),
+    });
   }
   return out;
 }
@@ -254,39 +498,49 @@ export function renderRepo(root: string): RepoRender {
   const rootStatsPath = resolve(root, "stats.json");
   const readmeBefore = readText(readmePath);
   const rootStatsBefore = readText(rootStatsPath);
-  const readmeAfter = renderReadme(readmeBefore, entries);
-  const rootStatsObj = renderRootStats(
+  const readme = renderReadmeDetailed(readmeBefore, entries);
+  const rootStats = renderRootStats(
     JSON.parse(rootStatsBefore) as Record<string, unknown>,
     entries,
-    detectionCounts(root, entries),
+    measurementDetails(root, entries),
   );
-  const rootStatsAfter = JSON.stringify(rootStatsObj, null, 2) + "\n";
   // An unchanged object keeps the file's own bytes, whatever its formatting.
-  const rootStatsOut =
-    JSON.stringify(JSON.parse(rootStatsBefore)) === JSON.stringify(rootStatsObj) ? rootStatsBefore : rootStatsAfter;
+  const rootStatsAfter =
+    JSON.stringify(JSON.parse(rootStatsBefore)) === JSON.stringify(rootStats.stats)
+      ? rootStatsBefore
+      : JSON.stringify(rootStats.stats, null, 2) + "\n";
 
-  const check = findCitationProblems(readmeAfter, dataStats, rootStatsObj);
+  const check = findCitationProblems(readme.text, dataStats, rootStats.stats);
+  const notes = formatReviewNotes({
+    prose: readme.text === readmeBefore ? [] : findProseToReview(readme.text, readme.replaced),
+    dropped: rootStats.dropped,
+    held: rootStats.held,
+  });
 
   return {
-    readme: { path: readmePath, before: readmeBefore, after: readmeAfter },
-    rootStats: { path: rootStatsPath, before: rootStatsBefore, after: rootStatsOut },
+    readme: { path: readmePath, before: readmeBefore, after: readme.text },
+    rootStats: { path: rootStatsPath, before: rootStatsBefore, after: rootStatsAfter },
     residual: check.fatal !== null ? [check.fatal] : check.problems,
+    held: rootStats.held,
+    notes,
   };
 }
 
-function parseRoot(argv: readonly string[]): string {
-  const i = argv.indexOf("--root");
-  if (i === -1) return DEFAULT_ROOT;
-  const dir = argv[i + 1];
-  if (dir === undefined || dir.startsWith("--")) throw new Error("--root needs a directory");
-  return resolve(dir);
+function flagValue(argv: readonly string[], flag: string): string | undefined {
+  const i = argv.indexOf(flag);
+  if (i === -1) return undefined;
+  const value = argv[i + 1];
+  if (value === undefined || value.startsWith("--")) throw new Error(`${flag} needs a value`);
+  return value;
 }
 
 function main(argv: readonly string[]): number {
   const check = argv.includes("--check");
   let result: RepoRender;
+  let notesPath: string | undefined;
   try {
-    result = renderRepo(parseRoot(argv));
+    notesPath = flagValue(argv, "--review-notes");
+    result = renderRepo(resolve(flagValue(argv, "--root") ?? DEFAULT_ROOT));
   } catch (err) {
     console.error(`FAIL: ${err instanceof Error ? err.message : String(err)}`);
     return 2;
@@ -294,9 +548,11 @@ function main(argv: readonly string[]): number {
   // Not fatal in either mode: they are the citation check's to fail, not this
   // script's. The measure-all run must still push its measurements, and the
   // PR's citation check then fails where a human sees it.
-  for (const p of result.residual) {
-    console.error(`::warning::rendered, but scripts/check-benchmark-citations.ts still reports: ${p}`);
+  for (const p of [...result.residual, ...result.held]) {
+    console.error(`::warning::rendered, but needs a human: ${p}`);
   }
+  if (notesPath !== undefined) writeFileSync(notesPath, result.notes);
+
   const changed = [result.readme, result.rootStats].filter((f) => f.before !== f.after);
   if (check) {
     for (const f of changed) console.error(`STALE: ${f.path} differs from data/measurements/`);
