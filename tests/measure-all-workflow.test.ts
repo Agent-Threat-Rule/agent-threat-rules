@@ -13,15 +13,22 @@
  *   does not measure again keeps its newer pointer, and the stats built from
  *   the pointers with it.
  * - A PR that fails to open fails the job.
+ * - README's benchmark table and root stats.json are re-rendered from the
+ *   pointers after Sync stats and committed with the measurements; otherwise
+ *   check-benchmark-citations.ts rejects the PR (#656: 45 mismatches). What
+ *   the renderer leaves to a human — prose near the table citing a version or
+ *   a percentage, stats.json fields it dropped — is listed in the PR body,
+ *   which every push rewrites.
  */
 import { describe, it, expect, afterEach } from "vitest";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, symlinkSync } from "node:fs";
+import { join, resolve } from "node:path";
 import {
   HAS_JQ,
   cleanSandboxes,
   ghCalls,
   git,
+  jobSteps,
   originSha,
   pushBranch,
   put,
@@ -36,6 +43,8 @@ import {
 const WORKFLOW = resolve(__dirname, "..", ".github", "workflows", "measure-all.yml");
 const JOB = "measure";
 const CARRY = "Carry the rolling PR's measurements";
+const SYNC = "Sync stats.json benchmarks";
+const RENDER = "Render README benchmark table";
 const DETECT = "Detect changes";
 const PUSH = "Push to the rolling branch and open or update its PR";
 const BRANCH = "measure-all/rolling";
@@ -61,6 +70,8 @@ function measureSandbox(): Sandbox {
     [GARAK_MERGED]: "{}\n",
     [GARAK_LATEST]: pointer(GARAK_MERGED, "2026-08-15T05:10:00.000Z"),
     "data/stats.json": '{ "benchmarks": [] }\n',
+    "README.md": "# ATR\n",
+    "stats.json": '{ "benchmarks": {} }\n',
   });
 }
 
@@ -79,6 +90,7 @@ const readPointer = (sb: Sandbox, rel: string) => JSON.parse(readFileSync(resolv
 const githubEnv = (sb: Sandbox) => readFileSync(sb.env.GITHUB_ENV, "utf8");
 const leaseEnv = (sb: Sandbox) => ({ ROLLING_OLD_SHA: /^ROLLING_OLD_SHA=(.*)$/m.exec(githubEnv(sb))?.[1] ?? "" });
 const staged = (sb: Sandbox) => git(sb, sb.work, "diff", "--cached", "--name-only");
+const prBody = (sb: Sandbox) => readFileSync(`${sb.env.FAKE_GH_LOG}.body`, "utf8");
 
 /** Carry, then this run's measurement, then the detect step: the tree the push step sees. */
 function measuredRun(sb: Sandbox): Record<string, string> {
@@ -176,6 +188,8 @@ describe.skipIf(!HAS_JQ)("push step", () => {
     const files = git(sb, sb.origin, "diff", "--name-only", "main", originSha(sb, BRANCH));
     expect(files.split("\n").sort()).toEqual([GARAK_LATEST, GARAK_UNMERGED, LATEST, UNMERGED, TODAY].sort());
     expect(ghCalls(sb)).toMatch(/^pr create --base main --head measure-all\/rolling /m);
+    expect(prBody(sb)).toMatch(/^Auto-generated measurement refresh/);
+    expect(prBody(sb)).not.toMatch(/README prose to check/);
     expect(originSha(sb, "main")).toBe(git(sb, sb.work, "rev-parse", "origin/main"));
   });
 
@@ -187,6 +201,7 @@ describe.skipIf(!HAS_JQ)("push step", () => {
     expect(res.status, res.stderr).toBe(0);
     expect(originSha(sb, BRANCH)).not.toBe(before);
     expect(ghCalls(sb)).not.toMatch(/^pr create /m);
+    expect(ghCalls(sb)).toMatch(/^api -X PATCH repos\/fixture-owner\/fixture-repo\/pulls\/700 -F body=@/m);
   });
 
   it("measures but does not push a dispatch on a ref that is not on main", () => {
@@ -215,5 +230,132 @@ describe.skipIf(!HAS_JQ)("push step", () => {
     const res = runStep(sb, runBlock(WORKFLOW, JOB, PUSH), lease);
     expect(res.status).not.toBe(0);
     expect(originSha(sb, BRANCH)).toBe(moved);
+  });
+});
+
+const REPO = resolve(__dirname, "..");
+const PINT_FILE = "2026-10-05_pint-v1_atr-4-1-5.json";
+const PINT_ROW = (cells: string) => `| PINT-format (deepset + Lakera Gandalf) [^pint] | ${cells} |`;
+const README_TABLE = (pintCells: string) =>
+  [
+    "# ATR",
+    "",
+    "| Source | Source version | Samples | Recall | Precision | FP rate | ATR version | Measured |",
+    "|---|---|---:|---:|---:|---:|---|---|",
+    PINT_ROW(pintCells),
+    "",
+    "Prose after the table, citing ATR 3.5.12.",
+    "",
+  ].join("\n");
+
+/**
+ * main as Sync stats leaves it after a pint run: a schema-valid pointer and
+ * data/stats.json projected from it, while README and stats.json still cite
+ * the last run. The renderer and its imports are linked in from this checkout;
+ * --root keeps every read and write inside the sandbox.
+ */
+function renderSandbox(): Sandbox {
+  const base = { source: "pint", source_version: "v1", atr_version: "4.1.5", measured_at: "2026-10-05T05:00:00.000Z", samples: 850 };
+  const metrics = { recall: 0.6, precision: 1, f1: 0.75, fp_rate: 0 };
+  const sb = sandbox("measure-render-", {
+    [`data/measurements/pint/${PINT_FILE}`]: JSON.stringify({ ...base, metrics, confusion: { tp: 271, fp: 0, tn: 399, fn: 180 } }),
+    [LATEST]: JSON.stringify({ ...base, file: PINT_FILE, metrics }, null, 2) + "\n",
+    "data/stats.json":
+      JSON.stringify(
+        {
+          benchmarks: [
+            {
+              source: "pint",
+              source_version: "v1",
+              atr_version: "4.1.5",
+              measured_at: "2026-10-05",
+              samples: 850,
+              recall: 0.6,
+              precision: 1,
+              f1: 0.75,
+              fp_rate: 0,
+              measurement_file: `data/measurements/pint/${PINT_FILE}`,
+            },
+          ],
+        },
+        null,
+        2,
+      ) + "\n",
+    "README.md": README_TABLE("v1 | 850 | 65.4% | 100.0% | 0.0% | 3.5.12 | 2026-08-15"),
+    "stats.json":
+      JSON.stringify(
+        { benchmarks: { pint: { recall: 65.4, atr_version: "3.5.12", measured: "2026-08-15", comment: "62 of 784 rules fire." } } },
+        null,
+        2,
+      ) + "\n",
+  });
+  for (const dir of ["scripts", "node_modules"]) symlinkSync(join(REPO, dir), join(sb.work, dir));
+  return sb;
+}
+
+describe("README benchmark table", () => {
+  it("is rendered after Sync stats and before changes are detected", () => {
+    const names = jobSteps(WORKFLOW, JOB).map((s) => s.name);
+    const at = (n: string) => names.indexOf(n);
+    expect(at(RENDER)).toBeGreaterThan(at(SYNC));
+    expect(at(DETECT)).toBeGreaterThan(at(RENDER));
+    expect(runBlock(WORKFLOW, JOB, RENDER)).toMatch(
+      /scripts\/render-benchmark-table\.ts --root \. --review-notes "\$RUNNER_TEMP\/benchmark-review\.md"$/m,
+    );
+  });
+
+  it.skipIf(!HAS_JQ)("is rendered from the measurements and pushed with them to the rolling branch", () => {
+    const sb = renderSandbox();
+    const render = runStep(sb, runBlock(WORKFLOW, JOB, RENDER));
+    expect(render.status, render.stderr).toBe(0);
+    expect(readFileSync(resolve(sb.work, "README.md"), "utf8")).toBe(
+      README_TABLE("v1 | 850 | 60.0% | 100.0% | 0.0% | 4.1.5 | 2026-10-05"),
+    );
+
+    const detect = runStep(sb, runBlock(WORKFLOW, JOB, DETECT));
+    expect(detect.status, detect.stderr).toBe(0);
+    expect(staged(sb).split("\n").sort()).toEqual(["README.md", "stats.json"]);
+
+    const res = runStep(sb, runBlock(WORKFLOW, JOB, PUSH), { ROLLING_OLD_SHA: "" });
+    expect(res.status, res.stderr).toBe(0);
+    const pushed = git(sb, sb.origin, "diff", "--name-only", "main", originSha(sb, BRANCH));
+    expect(pushed.split("\n").sort()).toEqual(["README.md", "stats.json"]);
+    const rootStats = JSON.parse(git(sb, sb.origin, "show", `${BRANCH}:stats.json`));
+    expect(rootStats.benchmarks.pint).toEqual({ recall: 60, atr_version: "4.1.5", measured: "2026-10-05" });
+  });
+
+  it.skipIf(!HAS_JQ)("lists what it could not re-render in the body of the PR it opens", () => {
+    const sb = renderSandbox();
+    expect(runStep(sb, runBlock(WORKFLOW, JOB, RENDER)).status).toBe(0);
+    expect(runStep(sb, runBlock(WORKFLOW, JOB, DETECT)).status).toBe(0);
+    const res = runStep(sb, runBlock(WORKFLOW, JOB, PUSH), { ROLLING_OLD_SHA: "" });
+    expect(res.status, res.stderr).toBe(0);
+    expect(ghCalls(sb)).toMatch(/^pr create .*--body-file /m);
+    const body = prBody(sb);
+    expect(body).toMatch(/^Auto-generated measurement refresh/);
+    expect(body).toMatch(/^- README\.md:7 — Prose after the table, citing ATR 3\.5\.12\.$/m);
+    expect(body).toMatch(/^- `benchmarks\.pint\.comment`$/m);
+  });
+
+  it.skipIf(!HAS_JQ)("rewrites the body of the open rolling PR with this run's notes", () => {
+    const sb = renderSandbox();
+    setPrs(sb, [{ number: 700, state: "OPEN", isCrossRepository: false }]);
+    expect(runStep(sb, runBlock(WORKFLOW, JOB, RENDER)).status).toBe(0);
+    expect(runStep(sb, runBlock(WORKFLOW, JOB, DETECT)).status).toBe(0);
+    const res = runStep(sb, runBlock(WORKFLOW, JOB, PUSH), { ROLLING_OLD_SHA: "" });
+    expect(res.status, res.stderr).toBe(0);
+    expect(ghCalls(sb)).toMatch(/^api -X PATCH repos\/fixture-owner\/fixture-repo\/pulls\/700 -F body=@/m);
+    expect(ghCalls(sb)).not.toMatch(/^pr create /m);
+    expect(prBody(sb)).toMatch(/README\.md:7 — Prose after the table/);
+  });
+
+  it("leaves README and stats.json alone when they already match", () => {
+    const sb = renderSandbox();
+    expect(runStep(sb, runBlock(WORKFLOW, JOB, RENDER)).status).toBe(0);
+    git(sb, sb.work, "add", "README.md", "stats.json");
+    git(sb, sb.work, "commit", "--quiet", "-m", "rendered");
+    const again = runStep(sb, runBlock(WORKFLOW, JOB, RENDER));
+    expect(again.status, again.stderr).toBe(0);
+    expect(git(sb, sb.work, "status", "--porcelain", "--", "README.md", "stats.json")).toBe("");
   });
 });
