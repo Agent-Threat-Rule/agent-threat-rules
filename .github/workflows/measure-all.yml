@@ -230,10 +230,19 @@ jobs:
       - name: Sync stats.json benchmarks
         run: npx tsx scripts/sync-stats-from-measurements.ts
 
+      # README's benchmark table and root stats.json quote these numbers, and
+      # check-benchmark-citations.ts fails the rolling PR when they disagree with
+      # data/stats.json. They were edited by hand, so every weekly run produced a
+      # PR that check rejected (#656: 45 mismatches). Re-render their measured
+      # cells from the pointers Sync stats just projected; labels, footnotes and
+      # prose are left alone. --root is the checkout this run measured.
+      - name: Render README benchmark table
+        run: npx tsx scripts/render-benchmark-table.ts --root .
+
       - name: Detect changes
         id: changes
         run: |
-          git add -A data/measurements/ data/stats.json
+          git add -A data/measurements/ data/stats.json README.md stats.json
           if git diff --cached --quiet; then
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
             echo "No measurement changes this run."
@@ -301,12 +310,14 @@ jobs:
           Auto-generated measurement refresh from .github/workflows/measure-all.yml.
 
           See `data/measurements/<source>/latest.json` for each updated source and
-          `data/stats.json` for the aggregated benchmarks array. Each measurement file is
+          `data/stats.json` for the aggregated benchmarks array. README.md's benchmark
+          table and the garak / pint citations in stats.json are re-rendered from the
+          same pointers by scripts/render-benchmark-table.ts. Each measurement file is
           named for the day it was taken, so the files this PR adds are the recall trend
           since the last merge.
 
           This is a rolling PR. Each weekly run carries the measurement files already
-          waiting here, adds its own, regenerates latest.json and data/stats.json, and
+          waiting here, adds its own, regenerates latest.json, data/stats.json and the README table, and
           pushes to measure-all/rolling. Merge it when ready; the next run starts a new one.
           Closing it without merging drops the measurements it holds.
           BODY
