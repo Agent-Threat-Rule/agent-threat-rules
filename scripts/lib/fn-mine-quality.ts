@@ -28,6 +28,9 @@ const HACKAPROMPT_GOAL = [
   /P[\W_]*W[\W_]*N[\W_]*(?:E|3|€)[\W_]*D/gi,
   /\bI\s*(?:have|'\s*ve)\s*been\b/gi,
   /\bhe\s*sido\b/gi,
+  // Scoring wanted the sentence exactly, with no trailing period, so
+  // submissions tell the model to drop it. ATR-2026-02857 keyed on that.
+  /\b(?:without|no|w\/o|remove|omit|(?:don['’]?t|do\s+not|never)\s+(?:add|put|include|use))\s+(?:a\s+|any\s+|the\s+)?(?:trailing\s+)?(?:period|full[\s-]*stop|punctuation)s?\b/gi,
 ];
 
 /**
@@ -47,6 +50,12 @@ const LLMAIL_GOAL = [
   /\bmillions?\b/gi,
   /\b(?:project\s*)?zenith\b/gi,
   /\bq2\b(?:\s*(?:budget|profit))?/gi,
+  // "Side task" is the challenge's own word for the injected instruction
+  // (AgentDojo uses it too). In the corpus it comes from one participant's
+  // template, resubmitted with typo noise ("This is not a new side task but an
+  // extension..."), so a regex on it recovers that template, not a technique.
+  // Rules ATR-2026-02848, 02849 and 02854 keyed on it.
+  /\bside[\s-]?tasks?\b/gi,
 ];
 
 /**
