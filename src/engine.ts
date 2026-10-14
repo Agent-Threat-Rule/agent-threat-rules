@@ -240,6 +240,18 @@ export interface ATREngineConfig {
 
 export class ATREngine {
   private rules: ATRRule[] = [];
+  /**
+   * id -> the FIRST loaded rule carrying that id, i.e. exactly what
+   * `this.rules.find(r => r.id === id)` returns.
+   *
+   * The per-condition paths below used to run that find() on every regex
+   * condition they evaluated: a linear walk over every loaded rule, repeated
+   * thousands of times per event. Measured 2026-10-15 on the benign-corpus FP
+   * scan (scripts/gate-promotion-fp.ts, 829 rules, 13,848 samples), that walk
+   * was ~11% of all CPU and replacing it was a 1.18x speed-up on its own, with
+   * the matched-rule set identical for every sample.
+   */
+  private readonly ruleById = new Map<string, ATRRule>();
   private readonly compiledPatterns = new Map<string, Map<string, RegExp[]>>();
   private readonly semanticModuleInstance: SemanticModule | null;
   /**
@@ -287,6 +299,7 @@ export class ATREngine {
    */
   async loadRules(): Promise<number> {
     this.rules = [];
+    this.ruleById.clear();
     this.compiledPatterns.clear();
 
     if (this.config.rules) {
@@ -306,10 +319,16 @@ export class ATREngine {
 
     // Pre-compile regex patterns for performance
     for (const rule of this.rules) {
+      this.indexRule(rule);
       this.compilePatterns(rule);
     }
 
     return this.rules.length;
+  }
+
+  /** First rule wins, so the index answers what Array.find() would. */
+  private indexRule(rule: ATRRule): void {
+    if (!this.ruleById.has(rule.id)) this.ruleById.set(rule.id, rule);
   }
 
   /**
@@ -334,6 +353,7 @@ export class ATREngine {
   addRuleFile(filePath: string): void {
     const rule = loadRuleFile(filePath);
     this.rules.push(rule);
+    this.indexRule(rule);
     this.compilePatterns(rule);
   }
 
@@ -342,6 +362,7 @@ export class ATREngine {
    */
   addRule(rule: ATRRule): void {
     this.rules.push(rule);
+    this.indexRule(rule);
     this.compilePatterns(rule);
   }
 
@@ -434,6 +455,14 @@ export class ATREngine {
         }
       }
 
+      // Whether the skill compound gate below applies to this rule. Hoisted so
+      // the pre-check and the gate itself read one expression.
+      const skillGated =
+        isSkillContext && rule.tags.scan_target !== 'skill' && rule.tags.scan_target !== 'both';
+      // The gate's verdict is already known for most rules — see
+      // skillGateAlwaysRejects(). Skip the evaluation, not the verdict.
+      if (skillGated && skillGateAlwaysRejects(rule)) continue;
+
       const matchResult = this.evaluateRule(rule, event);
       if (matchResult) {
         // Skill context compound gating: rules not designed for SKILL.md must
@@ -463,7 +492,7 @@ export class ATREngine {
         // shapes has NOT measured those 645 rules on it) is named by
         // skillPathCoverage() in scripts/lib/corpus-event.ts and pinned by
         // tests/skill-path-coverage.test.ts.
-        if (isSkillContext && rule.tags.scan_target !== 'skill' && rule.tags.scan_target !== 'both') {
+        if (skillGated) {
           const totalConds: number = Number(rule.detection?.conditions?.length ?? 1);
           const minRequired = Math.max(2, Math.ceil(totalConds * 0.3));
           if ((matchResult.matchedConditions?.length ?? 0) < minRequired) {
@@ -586,12 +615,17 @@ export class ATREngine {
         }
       }
 
+      // Same hoisted predicate and pre-check as evaluateRaw().
+      const skillGated =
+        isSkillContext && rule.tags.scan_target !== 'skill' && rule.tags.scan_target !== 'both';
+      if (skillGated && skillGateAlwaysRejects(rule)) continue;
+
       const matchResult = await this.evaluateRuleAsync(rule, event, this.config.semanticJudge);
       if (matchResult) {
         // Skill compound gate — see the long note in evaluateRaw(). For
         // `condition: any` rules this rejects unconditionally, which is why the
         // SKILL.md path effectively runs only scan_target: skill|both rules.
-        if (isSkillContext && rule.tags.scan_target !== 'skill' && rule.tags.scan_target !== 'both') {
+        if (skillGated) {
           const totalConds: number = Number(rule.detection?.conditions?.length ?? 1);
           const minRequired = Math.max(2, Math.ceil(totalConds * 0.3));
           if ((matchResult.matchedConditions?.length ?? 0) < minRequired) {
@@ -908,7 +942,7 @@ export class ATREngine {
         // NL-style rules set tags.suppress_in_code_blocks: true so that matches
         // landing inside ```...``` fenced blocks (e.g. pentest example payloads)
         // do not fire. Built lazily so non-opt-in rules pay no cost.
-        const ruleForSuppress = this.rules.find(r => r.id === ruleId);
+        const ruleForSuppress = this.ruleById.get(ruleId);
         const suppressInCodeBlocks = (ruleForSuppress?.tags as { suppress_in_code_blocks?: boolean } | undefined)?.suppress_in_code_blocks === true;
         const codeRanges = suppressInCodeBlocks ? buildCodeBlockRanges(fieldValue) : [];
 
@@ -1068,7 +1102,7 @@ export class ATREngine {
     //   skills)
     // - Other rules → suppressed (their patterns FP on code examples)
     const isSkillCtx = event.scanContext === 'skill';
-    const matchedRule = this.rules.find(r => r.id === ruleId);
+    const matchedRule = this.ruleById.get(ruleId);
     const isSkillRule = matchedRule?.tags?.scan_target === 'skill';
     const explicitSuppress = (matchedRule?.tags as { suppress_in_code_blocks?: boolean } | undefined)?.suppress_in_code_blocks === true;
     const suppressInCodeBlocks = explicitSuppress
@@ -1143,7 +1177,7 @@ export class ATREngine {
    * because attackers deliberately hide payloads in code blocks.
    */
   private shouldSuppressInCodeBlocks(ruleId: string): boolean {
-    const rule = this.rules.find(r => r.id === ruleId);
+    const rule = this.ruleById.get(ruleId);
     if (!rule) return false;
     const category = rule.tags?.category ?? '';
     const subcategory = rule.tags?.subcategory ?? '';
@@ -1854,6 +1888,34 @@ export class ATREngine {
   }
 }
 
+/**
+ * True when the skill compound gate is certain to reject this rule's match
+ * whatever the input, so evaluating the rule on the SKILL.md path is wasted work.
+ *
+ * Deliberately the narrowest provable case, and deliberately NOT
+ * skillPathBlocker() from src/corpus-event.ts: that predicate exists to be
+ * CHECKED against this engine (tests/skill-path-coverage.test.ts), and an engine
+ * that consulted it would turn those tests into the predicate checking itself.
+ *
+ * The case: a pattern rule with array conditions and `condition: any|or`.
+ * evaluateArrayConditions() breaks on the first matching condition for those,
+ * so matchedConditions holds at most one entry while the gate demands
+ * max(2, ...). The verdict is "reject" before a single regex runs. If that
+ * short-circuit is ever removed, this function has to go with it — the test
+ * "evaluateArrayConditions still short-circuits" in
+ * tests/skill-path-coverage.test.ts fails first and says why.
+ *
+ * Measured 2026-10-15 on the benign-corpus FP scan: 645 of 829 rules qualify,
+ * and skipping them took the skill pass from 16.8% to ~3% of all CPU with the
+ * matched-rule set identical for every one of 13,848 samples.
+ */
+function skillGateAlwaysRejects(rule: ATRRule): boolean {
+  const { detection } = rule;
+  if ((detection.method ?? 'pattern') !== 'pattern') return false;
+  if (!Array.isArray(detection.conditions)) return false;
+  return detection.condition === 'any' || detection.condition === 'or';
+}
+
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -1874,11 +1936,23 @@ function normalizeRegex(pattern: string): string {
  * (\uFF21\uFF22\uFF23 vs ABC) remain distinct so rules that explicitly target full-width
  * evasion can still match. For aggressive normalization use
  * `normalizeUnicodeAggressive()`.
+ *
+ * Hot path, memoised the same way as foldConfusables() below: every condition
+ * normalises the field it reads, and consecutive conditions almost always read
+ * the same string, so a single-entry memo turns per-condition work into
+ * per-distinct-input work. Measured 2026-10-15 on the benign-corpus FP scan,
+ * the repeated NFKC pass plus its zero-width strip were ~9% of all CPU.
  */
+let _normKey: string | null = null;
+let _normVal = '';
 export function normalizeUnicode(text: string): string {
-  return text
+  if (text === _normKey) return _normVal;
+  const out = text
     .normalize('NFKC')
     .replace(/[\u200B\u200C\u200D\uFEFF\u2060\u180E\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '');
+  _normKey = text;
+  _normVal = out;
+  return out;
 }
 
 /**
