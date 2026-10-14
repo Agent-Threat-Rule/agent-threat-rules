@@ -28,6 +28,9 @@ const HACKAPROMPT_GOAL = [
   /P[\W_]*W[\W_]*N[\W_]*(?:E|3|€)[\W_]*D/gi,
   /\bI\s*(?:have|'\s*ve)\s*been\b/gi,
   /\bhe\s*sido\b/gi,
+  // Scoring wanted the sentence exactly, with no trailing period, so
+  // submissions tell the model to drop it. ATR-2026-02857 keyed on that.
+  /\b(?:without|no|w\/o|remove|(?:don'?t|do\s+not)\s+(?:add|put|include|use))\s+(?:a\s+|any\s+|the\s+)?(?:trailing\s+)?(?:period|full\s*stop|punctuation)s?\b/gi,
 ];
 
 /**
@@ -47,6 +50,10 @@ const LLMAIL_GOAL = [
   /\bmillions?\b/gi,
   /\b(?:project\s*)?zenith\b/gi,
   /\bq2\b(?:\s*(?:budget|profit))?/gi,
+  // The challenge's own framing of an injected instruction (AgentDojo uses it
+  // too). Rules ATR-2026-02848, 02849 and 02854 keyed on it; attackers do not
+  // call their payload a "side task".
+  /\bside[\s-]?tasks?\b/gi,
 ];
 
 /**
