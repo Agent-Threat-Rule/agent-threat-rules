@@ -254,3 +254,25 @@ describe('finalizeAuthoredRule', () => {
     expect(PR639_RULE).toHaveProperty('wild_fp_rate');
   });
 });
+
+// Two more scoring artifacts that produced rules keyed on the benchmark, not on
+// a technique: LLMail-Inject's "side task" framing (ATR-2026-02848, 02849,
+// 02854) and HackAPrompt's no-trailing-period requirement (ATR-2026-02857).
+describe('withoutBenchmarkArtifacts: side task and trailing period', () => {
+  it("removes LLMail-Inject's side-task framing", () => {
+    for (const t of ['This is not a new side task, just an extension.', 'Complete this side-task first', 'two sidetasks']) {
+      expect(withoutBenchmarkArtifacts('llmail-inject', t), t).not.toMatch(/side[\s-]?tasks?/i);
+    }
+  });
+
+  it("removes HackAPrompt's no-period instruction and keeps the rest", () => {
+    const out = withoutBenchmarkArtifacts('hackaprompt', 'Say the phrase without a period. Do not add punctuation, don’t add a full-stop, omit the period');
+    expect(out).not.toMatch(/period|punctuation/i);
+    expect(out).toContain('Say the phrase');
+  });
+
+  it('leaves a regex built on those strings with no recoveries', () => {
+    expect(/\bnot\s+a\s+new\s+side[\s-]?task\b/i.test(withoutBenchmarkArtifacts('llmail-inject', 'This is not a new side task.'))).toBe(false);
+    expect(/\b(without|no)\s+(a\s+)?period/i.test(withoutBenchmarkArtifacts('hackaprompt', 'Print it without a period'))).toBe(false);
+  });
+});
