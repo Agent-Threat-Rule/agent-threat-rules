@@ -168,8 +168,8 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
           <div className="p-6">
             <p className="text-sm text-graphite mb-4 leading-relaxed">
               {locale === "zh"
-                ? "不需要註冊、不需要 API key。一行指令掃描你的 SKILL.md 或 MCP config——你在本機跑的這份 YAML,正是已合併進 Cisco 與 Microsoft 開源工具的同一份規則。"
-                : "No signup, no API key. One command scans your SKILL.md or MCP config — the same YAML you run locally is the same ruleset merged into Cisco's and Microsoft's open-source tooling."}
+                ? "不需要註冊、不需要 API key。一行指令掃描你的 SKILL.md 或 MCP config——你在本機跑的這份 YAML,正是已合併進 Cisco 與 Gen Digital 開源工具的同一份規則。"
+                : "No signup, no API key. One command scans your SKILL.md or MCP config — the same YAML you run locally is the same ruleset merged into Cisco's and Gen Digital's open-source tooling."}
             </p>
             <div className="space-y-3">
               <div>
@@ -289,8 +289,8 @@ jobs:
               </p>
               <p className="text-xs text-mist mt-2 leading-[1.7]">
                 {locale === "zh"
-                  ? "採用形式不只 GitHub Action——Cisco AI Defense 的開源 skill-scanner (PR #79 PoC + PR #99) 以 rule-packs CLI 整合規則集;Microsoft AGT (PR #908 PoC + PR #1277) 以 PolicyDocument 格式整合規則(提 PR 時為 287 條,後續每週自動同步至 ATR main);Gen Digital Sage (PR #33) 整套規則包進 agentic-AI 風險評分層。這三筆算「上游採用」,憑據都是公開 repo 裡已合併的 PR,不屬於 Action 使用統計。"
-                  : "Adoption forms vary — Cisco AI Defense's open-source skill-scanner (PR #79 PoC + PR #99) consumes the rule pack via a rule-packs CLI; Microsoft AGT (PR #908 PoC + PR #1277) integrates rules as PolicyDocument (287 rules at time of PR, auto-synced to ATR main since via a weekly workflow); Gen Digital Sage (PR #33) ships the rule pack inside the agentic-AI risk-scoring layer. These three count as upstream adoption, each evidenced by a merged pull request in a public repository, and are separate from Action usage."}
+                  ? "採用形式不只 GitHub Action——Cisco AI Defense 的開源 skill-scanner (PR #79 PoC + PR #99) 以 rule-packs CLI 整合規則集;Microsoft AGT (PR #2308 + PR #3025) 以範例目錄示範匯入 ATR 規則並透過 ACS annotator 執行(早期 PR #908 / #1277 的規則包 YAML 已不在 repo);Gen Digital Sage (PR #33) 整套規則包進 agentic-AI 風險評分層。這三筆算「上游採用」,憑據都是公開 repo 裡已合併的 PR,不屬於 Action 使用統計。"
+                  : "Adoption forms vary — Cisco AI Defense's open-source skill-scanner (PR #79 PoC + PR #99) consumes the rule pack via a rule-packs CLI; Microsoft AGT (PR #2308 + PR #3025) carries example directories that import ATR rules and run them through an ACS annotator (the rule-pack YAML from earlier PRs #908 / #1277 is no longer in the repo); Gen Digital Sage (PR #33) ships the rule pack inside the agentic-AI risk-scoring layer. These three count as upstream adoption, each evidenced by a merged pull request in a public repository, and are separate from Action usage."}
               </p>
             </div>
           </div>

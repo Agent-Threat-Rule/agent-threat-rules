@@ -105,14 +105,14 @@ export default async function SovereignAIDefensePage({
             <>
               ATR 是這個語境裡的<strong className="text-ink">中立基礎建設</strong>:MIT 授權、{ruleCount} 條機器可讀的偵測規則、
               社群維護,任何國家或組織都能採用、稽核、擴充、或 fork——不依賴任何單一廠商。
-              目前的外部採用已包含 Microsoft AGT、Cisco AI Defense 的開源 skill-scanner 與 Gen Digital Sage 的已合併規則集,以及 MISP、OWASP 的引用——每一筆的憑據都是公開 repo 裡一個已合併的 PR。
+              目前的外部採用已包含 Cisco AI Defense 的開源 skill-scanner 與 Gen Digital Sage 的已合併規則集、Microsoft AGT 的 ATR 範例目錄,以及 MISP、OWASP 的引用——每一筆的憑據都是公開 repo 裡一個已合併的 PR。
             </>
           ) : (
             <>
               ATR is the <strong className="text-ink">neutral infrastructure</strong> for that context: MIT-licensed,
               {" "}{ruleCount} machine-readable detection rules, community-maintained — adoptable, auditable, extensible, or forkable
               by any country or organization, dependent on no single vendor.
-              Adoption to date includes rule packs merged into Microsoft AGT, Cisco AI Defense&apos;s open-source skill-scanner, and Gen Digital Sage, plus references from MISP and OWASP — each evidenced by a merged pull request in a public repository.
+              Adoption to date includes rule packs merged into Cisco AI Defense&apos;s open-source skill-scanner and Gen Digital Sage, ATR example directories merged into Microsoft AGT, plus references from MISP and OWASP — each evidenced by a merged pull request in a public repository.
             </>
           )}
         </p>
@@ -409,13 +409,7 @@ atr convert splunk --output ./atr-rules.spl`}</code>
             org="Microsoft"
             status={zh ? "PR 已合併" : "PR Merged"}
             statusClass="bg-blue/10 text-blue"
-            desc={zh ? "agent-governance-toolkit · PR #1277 · 287 條規則（PR 當時）+ 每週自動同步 ATR 上游釋出" : "agent-governance-toolkit · PR #1277 · 287 rules at time of PR + weekly auto-sync of ATR upstream releases"}
-          />
-          <TractionRow
-            org="NVIDIA garak"
-            status={zh ? "整合中" : "Integrating"}
-            statusClass="bg-medium/10 text-medium"
-            desc={zh ? "PR #1676 · 完整 ATR 規則集 · 兩輪 review 通過,等待 maintainer 終審" : "PR #1676 · Full ATR rule pack · Two review rounds passed, awaiting maintainer final review"}
+            desc={zh ? "agent-governance-toolkit · PR #2308 + #3025 · ATR 匯入範例與 ACS annotator 範例（早期規則包 YAML 已不在 repo）" : "agent-governance-toolkit · PR #2308 + #3025 · ATR import and ACS annotator examples (earlier rule-pack YAML no longer in the repo)"}
           />
           <TractionRow
             org="Gen Digital Sage"
@@ -423,17 +417,11 @@ atr convert splunk --output ./atr-rules.spl`}</code>
             statusClass="bg-green/10 text-green"
             desc={zh ? "PR #33 已合併（2026-05-11）· 完整 ATR 規則集於 Norton/Avast/LifeLock 母集團的 Sage 風險評分層" : "PR #33 merged (2026-05-11) · Full ATR rule pack in the Sage risk-scoring layer under the Norton/Avast/LifeLock parent"}
           />
-          <TractionRow
-            org="OWASP"
-            status={zh ? "Review 中" : "Under Review"}
-            statusClass="bg-ash text-stone"
-            desc={zh ? "LLM Top 10 專案 PR · 審查中" : "PR to the LLM Top 10 project · under review"}
-          />
         </div>
         <p className="text-xs md:text-sm text-stone mt-5">
           {zh
-            ? `0 → ${ruleCount} 條規則 · 三筆已合併的上游整合（Microsoft、Cisco 開源 skill-scanner、Gen Digital Sage）· 標準同儕引用 · 完整採用者清單見 ADOPTERS.md · MIT 永久授權 · `
-            : `0 → ${ruleCount} rules · three merged upstream integrations (Microsoft, Cisco's open-source skill-scanner, Gen Digital Sage) · peer-standard references · full adopter list in ADOPTERS.md · MIT licensed · `}
+            ? `0 → ${ruleCount} 條規則 · 三筆已合併的上游整合（Cisco 開源 skill-scanner、Gen Digital Sage、Microsoft AGT 範例目錄）· 標準同儕引用 · 完整採用者清單見 ADOPTERS.md · MIT 永久授權 · `
+            : `0 → ${ruleCount} rules · three merged upstream integrations (Cisco's open-source skill-scanner, Gen Digital Sage, Microsoft AGT example directories) · peer-standard references · full adopter list in ADOPTERS.md · MIT licensed · `}
           <a href="https://doi.org/10.5281/zenodo.19178002" className="text-blue hover:underline">
             DOI 10.5281/zenodo.19178002
           </a>
