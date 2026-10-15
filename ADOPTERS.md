@@ -65,14 +65,6 @@ Adopters whose adoption is itself a public-good interoperability artefact
 - **Since**: 2026-05-11
 - **Status**: shipped
 
-### NIST AI RMF — community OSCAL catalog (submission in review)
-- **Org**: ATR maintainers (community contribution; NOT a NIST publication)
-- **Type**: reference
-- **Integration**: Community-authored OSCAL catalog covering NIST AI RMF (72 controls + 31 cross-reference links), CC0-licensed, self-published at Agent-Threat-Rule/ai-rmf-oscal-catalog. The catalog was submitted to the NIST OSCAL team; the initial PR usnistgov/oscal-content#333 was closed and reopened as a scope-aligned rework, usnistgov/oscal-content#338 (currently OPEN, in review). The ATR maintainers are awaiting NIST direction. Listed here for transparency about the submission, NOT as evidence of NIST endorsement.
-- **Evidence**: <https://github.com/usnistgov/oscal-content/pull/338>
-- **Since**: 2026-05-10 (community catalog published; PR opened 2026-05-21)
-- **Status**: in-review
-
 ### OpenTelemetry — semantic-conventions-genai
 - **Org**: CNCF / OpenTelemetry GenAI SIG
 - **Type**: reference
@@ -109,17 +101,9 @@ deployment publicly (merged PR, public docs, conference talk, etc.).
 ### Cisco AI Defense
 - **Org**: Cisco
 - **Type**: rule-import
-- **Integration**: ATR rule corpus consumed by the AI Defense skill-scanner; matches surface in the Cisco product UI as detection findings
+- **Integration**: ATR rule pack merged into the open-source cisco-ai-defense/skill-scanner repository. This describes that repository, not any Cisco product
 - **Evidence**: <https://github.com/cisco-ai-defense/skill-scanner/pull/99> (and predecessor PoC #79)
 - **Since**: 2026-04-22
-- **Status**: shipped
-
-### Microsoft Agent Governance Toolkit
-- **Org**: Microsoft
-- **Type**: rule-import
-- **Integration**: ATR rule pack, auto-synced weekly auto-synced weekly into the Agent Governance Toolkit detection layer
-- **Evidence**: <https://github.com/microsoft/agent-governance-toolkit/pull/1277>
-- **Since**: 2026-04-26
 - **Status**: shipped
 
 ### Gen Digital Sage
@@ -194,6 +178,15 @@ Listed when the integration code has been merged or released.
 - **Since**: 2026-06-16
 - **Status**: shipped
 
+### Microsoft Agent Governance Toolkit
+- **Org**: Microsoft
+- **Type**: adapter
+- **Integration**: Example directories in the AGT repository: examples/acs-atr-annotator (an ACS annotator adapter) and examples/atr-import (compiles ATR YAML into ACS manifests and Rego bundles). The rule-pack YAML that earlier example PRs added under examples/atr-community-rules was removed upstream on 2026-07-30, and that directory's weekly sync workflow is pinned to an old ATR release. Contributed by the ATR maintainer and merged by an AGT maintainer; AGT maintainers have since updated these examples in their own refactors (2026-07, 2026-09)
+- **Evidence**: <https://github.com/microsoft/agent-governance-toolkit/pull/3025> (and #2308)
+- **Since**: 2026-05-18
+- **Still-present**: examples/acs-atr-annotator/README.md contains "Agent Threat Rules"
+- **Status**: shipped
+
 ### Cisco AI BOM
 - **Org**: Cisco
 - **Type**: adapter
@@ -244,14 +237,6 @@ Listed when the integration code has been merged or released.
 - **Since**: 2026-06-04
 - **Status**: in-review
 
-### Cisco a2a-scanner
-- **Org**: Cisco
-- **Type**: rule-import
-- **Integration**: ATR detection pack for scanning agent-to-agent (A2A) protocol traffic
-- **Evidence**: <https://github.com/cisco-ai-defense/a2a-scanner/pull/14>
-- **Since**: 2026-06-26
-- **Status**: in-review
-
 ### atr-to-yaral
 - **Org**: Ajay Nyayapathi
 - **Type**: adapter
@@ -294,22 +279,6 @@ discoverability.
 - **Since**: 2026-05-20
 - **Still-present**: README.md contains "agent-threat-rules"
 - **Status**: shipped
-
-### e2b-dev/awesome-ai-agents
-- **Org**: E2B
-- **Type**: reference
-- **Integration**: ATR listed in the AI agents awesome-list
-- **Evidence**: <https://github.com/e2b-dev/awesome-ai-agents/pull/959>
-- **Since**: 2026-05-16
-- **Status**: in-review
-
-### e2b-dev/awesome-ai-sdks
-- **Org**: E2B
-- **Type**: reference
-- **Integration**: ATR listed in the AI SDKs awesome-list
-- **Evidence**: <https://github.com/e2b-dev/awesome-ai-sdks/pull/194>
-- **Since**: 2026-05-16
-- **Status**: in-review
 
 ### CryptoAILab/Awesome-LM-SSP
 - **Org**: CryptoAILab (independent)
@@ -419,3 +388,8 @@ noted here with the reason and the original "Since" date preserved.
 - **NVIDIA garak** (was Tier 2 · since 2026-05-20) — evidence PR NVIDIA/garak#1676 was closed without merge on 2026-08-04, withdrawn by its author after four months in changes-requested. Removed 2026-08-23.
 - **OpenAI Guardrails** (was Tier 2 · since 2026-06-16) — evidence PR openai/openai-guardrails-python#77 was closed without merge by an OpenAI maintainer on 2026-08-18, who recommended a separately maintained integration instead. Removed 2026-08-23.
 - **TalEliyahu/Awesome-AI-Security** (was Tier 3 · since 2026-04-10) — the listing was merged but is no longer present in the project README; it was removed upstream some time before 2026-05-09. Removed 2026-08-23.
+- **Microsoft Agent Governance Toolkit** (was Tier 1 · since 2026-04-26) — the rule-pack YAML that evidence PR microsoft/agent-governance-toolkit#1277 added under examples/atr-community-rules was removed upstream on 2026-07-30 in AGT's v4-removal refactor (microsoft/agent-governance-toolkit#3451), and the weekly sync workflow for that directory is pinned to an old ATR release and opens no sync PRs. Removed from Tier 1 2026-10-15; the merged example directories (microsoft/agent-governance-toolkit#2308 and #3025) are listed under Tier 2 from that evidence.
+- **Cisco a2a-scanner** (was Tier 2 · since 2026-06-26) — evidence PR cisco-ai-defense/a2a-scanner#14 was withdrawn and closed by its ATR author on 2026-10-14 after no maintainer response. Removed 2026-10-15.
+- **e2b-dev/awesome-ai-agents** (was Tier 3 · since 2026-05-16) — evidence PR e2b-dev/awesome-ai-agents#959 was withdrawn and closed by its ATR author on 2026-10-15 after no maintainer response. Removed 2026-10-15.
+- **e2b-dev/awesome-ai-sdks** (was Tier 3 · since 2026-05-16) — evidence PR e2b-dev/awesome-ai-sdks#194 was withdrawn and closed by its ATR author on 2026-10-15 after no maintainer response. Removed 2026-10-15.
+- **NIST AI RMF — community OSCAL catalog** (was Tier S · since 2026-05-10) — not an adoption. ATR self-published a community OSCAL catalog of the AI RMF and offered AI RMF profile examples to NIST's OSCAL content repository (usnistgov/oscal-content#338), which is open and awaiting NIST review. Listing it under standards bodies read as NIST involvement, which it is not. Removed 2026-10-16.

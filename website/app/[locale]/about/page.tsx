@@ -59,12 +59,12 @@ const MILESTONES: Milestone[] = [
   {
     date: "2026-04-13",
     title: {
-      en: "Microsoft AGT merges 15 rules (PR #908)",
-      zh: "Microsoft AGT 合併 15 條規則（PR #908）",
+      en: "Microsoft AGT merges a 15-rule ATR example (PR #908)",
+      zh: "Microsoft AGT 合併 15 條規則的 ATR 範例（PR #908）",
     },
     detail: {
-      en: "Second enterprise adoption. 554 additions, adapted as PolicyDocument.",
-      zh: "第二個企業級採用。新增 554 行，改寫為 PolicyDocument 格式。",
+      en: "Merged as an example directory: 554 additions, adapted as PolicyDocument. The rule YAML is no longer in the AGT repository.",
+      zh: "以範例目錄合併:新增 554 行,改寫為 PolicyDocument 格式。規則 YAML 現已不在 AGT repo。",
     },
   },
   {
@@ -114,12 +114,12 @@ const MILESTONES: Milestone[] = [
   {
     date: "2026-04-26",
     title: {
-      en: "Microsoft AGT 287-rule expansion + weekly auto-sync (PR #1277)",
-      zh: "Microsoft AGT 287 條規則擴張 + 每週自動同步 (PR #1277)",
+      en: "Microsoft AGT example expanded to 287 rules + weekly sync workflow (PR #1277)",
+      zh: "Microsoft AGT 範例擴充至 287 條規則 + 每週同步 workflow (PR #1277)",
     },
     detail: {
-      en: "Follow-up to PR #908's 15-rule PoC. Adds 272 more rules (287 total) and a workflow that auto-syncs ATR upstream releases every week. First standards-grade auto-sync pipeline.",
-      zh: "PR #908 (15 條 PoC) 的 production 跟進。新增 272 條規則 (合計 287 條),並加上每週自動同步 ATR 上游釋出版本的 workflow。第一條標準級自動同步管線。",
+      en: "Follow-up to PR #908's 15-rule example. Adds 272 more rules (287 total) and a weekly sync workflow. The rule YAML has since left the AGT repository, and the workflow is pinned to an old ATR release.",
+      zh: "PR #908 (15 條範例) 的跟進。新增 272 條規則 (合計 287 條) 與每週同步 workflow。規則 YAML 之後已不在 AGT repo,workflow 釘在舊版 ATR。",
     },
   },
   {
@@ -296,8 +296,8 @@ export default async function AboutPage({
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "目前的外部採用包含三筆已合併的上游整合(Cisco AI Defense 的開源 skill-scanner、Microsoft AGT 287 條規則加每週自動同步、Gen Digital Sage 已合併的規則包 —— 憑據都是公開 repo 裡已合併的 PR),兩個標準機構已合併(MISP/CIRCL 的 taxonomies #323 + galaxy #1207、OWASP A-S-R-H #74),以及兩條送審中的 standards-body 提案(NIST AI RMF 社群 OSCAL catalog 已自 publish · usnistgov/oscal-content#338 協作分支審查中,非 NIST 背書;OpenTelemetry GenAI SIG 的 agent.threat.detection.* PR #165 review 中)——這種「企業把鞋帶綁緊就提 PR」的採用模式,是 ATR 想要的治理質感。"
-            : "External adoption to date includes three merged upstream integrations (the ATR rule pack in Cisco AI Defense's open-source skill-scanner, Microsoft AGT's 287 rules plus weekly auto-sync, and Gen Digital's merged Sage pack — each evidenced by a merged pull request in a public repository); two standards-body integrations actually merged (MISP / CIRCL taxonomies #323 + galaxy #1207, and OWASP A-S-R-H #74); and two standards-body submissions in review (a community-authored OSCAL catalog for NIST AI RMF self-published by the ATR maintainers, with usnistgov/oscal-content#338 collaboration branch in review — not a NIST endorsement; and the agent.threat.detection.* semantic-conventions PR #165 in OpenTelemetry GenAI SIG review). This pattern — enterprises integrating via pull request instead of private forks — is the governance texture ATR is built for."}
+            ? "目前的外部採用包含三筆已合併的上游整合(Cisco AI Defense 的開源 skill-scanner、Microsoft AGT 的 ATR 範例目錄、Gen Digital Sage 已合併的規則包 —— 憑據都是公開 repo 裡已合併的 PR),兩個標準機構已合併(MISP/CIRCL 的 taxonomies #323 + galaxy #1207、OWASP A-S-R-H #74),以及兩個仍開著、尚未合併的提案(提交給 NIST OSCAL 內容倉庫的 usnistgov/oscal-content#338,提供 AI RMF profile 範例,等待 NIST 審查,非 NIST 背書;OpenTelemetry GenAI SIG 的 agent.threat.detection.* PR #165)——這種「企業把鞋帶綁緊就提 PR」的採用模式,是 ATR 想要的治理質感。"
+            : "External adoption to date includes three merged upstream integrations (the ATR rule pack in Cisco AI Defense's open-source skill-scanner, ATR example directories in Microsoft AGT, and Gen Digital's merged Sage pack — each evidenced by a merged pull request in a public repository); two standards-body integrations actually merged (MISP / CIRCL taxonomies #323 + galaxy #1207, and OWASP A-S-R-H #74); and two open, unmerged proposals (usnistgov/oscal-content#338, offering AI RMF profile examples to NIST's OSCAL content repository and awaiting NIST review, not a NIST endorsement; and the agent.threat.detection.* semantic-conventions PR #165 in OpenTelemetry's GenAI SIG). This pattern — enterprises integrating via pull request instead of private forks — is the governance texture ATR is built for."}
         </p>
         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
           <a

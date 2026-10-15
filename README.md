@@ -28,7 +28,7 @@ ATR (Agent Threat Rules) is an open detection rule format for AI agent security 
 
 ## Status of This Document
 
-ATR is published as a **Working Draft** at version `4.1.5`. The rule format defined in `SPEC.md` is stable and merged into open-source repos at Microsoft, Cisco, and Gen Digital, and integrated by standards-body projects (MISP / CIRCL, OWASP Agent Security Regression Harness, SigmaHQ, FINOS Common Cloud Controls); full list with PR links in [§6 Adoption](#6-adoption). Governance is currently single-maintainer (BDFL) transitioning to a Technical Steering Committee per [GOVERNANCE.md](GOVERNANCE.md).
+ATR is published as a **Working Draft** at version `4.1.5`. The rule format defined in `SPEC.md` is stable and merged into open-source repos at Microsoft, Cisco, and Gen Digital, and integrated by community projects (MISP / CIRCL, OWASP Agent Security Regression Harness, SigmaHQ, FINOS Common Cloud Controls); full list with PR links in [§6 Adoption](#6-adoption). Governance is currently single-maintainer (BDFL) transitioning to a Technical Steering Committee per [GOVERNANCE.md](GOVERNANCE.md).
 
 All numbers in this document are sourced from [`data/stats.json`](data/stats.json), which is the canonical record of the project's current state. Where this README and `stats.json` disagree, `stats.json` is authoritative.
 
@@ -361,11 +361,11 @@ test_cases:
 
 ## 6. Adoption
 
-Production deployments and standards-body integrations, as of 2026-07-05 (every PR state re-verified against GitHub on that date):
+Merged integrations, as of 2026-07-05 (every PR state re-verified against GitHub on that date):
 
 | Organization | Integration | Reference |
 |---|---|---|
-| Microsoft Agent Governance Toolkit | 287-rule expansion + weekly auto-sync (merged 2026-04-26); 15-rule PoC (merged 2026-04-13) | [PR #1277](https://github.com/microsoft/agent-governance-toolkit/pull/1277) · [PR #908](https://github.com/microsoft/agent-governance-toolkit/pull/908) |
+| Microsoft Agent Governance Toolkit | Example directories in the AGT repository (ATR import example, merged 2026-05-18; ACS annotator adapter example, merged 2026-06-15). The rule-pack YAML from the earlier example PRs (#908, #1277) was removed upstream on 2026-07-30 (AGT PR #3451). | [PR #3025](https://github.com/microsoft/agent-governance-toolkit/pull/3025) · [PR #2308](https://github.com/microsoft/agent-governance-toolkit/pull/2308) |
 | Cisco AI Defense (skill-scanner) | Full rule pack merged into the open-source scanner repository (2026-04-22); original PoC (merged 2026-04-03). This is a merge into that repository, not a statement about any vendor product. | [PR #99](https://github.com/cisco-ai-defense/skill-scanner/pull/99) · [PR #79](https://github.com/cisco-ai-defense/skill-scanner/pull/79) |
 | MISP (CIRCL) | Threat-intel cluster (galaxy, merged 2026-05-10) + rule-ID tagging vocabulary (taxonomies, merged 2026-05-10) | [galaxy #1207](https://github.com/MISP/misp-galaxy/pull/1207) · [taxonomies #323](https://github.com/MISP/misp-taxonomies/pull/323) |
 | Gen Digital Sage (Norton / Avast / AVG parent) | Rule pack merged 2026-05-11 | [PR #33](https://github.com/gendigitalinc/sage/pull/33) |
@@ -378,13 +378,13 @@ Production deployments and standards-body integrations, as of 2026-07-05 (every 
 
 ### Featured loop — Microsoft Copilot SWE Agent → ATR (2026-05-11)
 
-On 2026-05-07 MSRC published two Semantic Kernel CVEs (CVE-2026-26030 lambda+eval RCE, CVE-2026-25592 autostart file write). On 2026-05-11 06:07 UTC, Microsoft Copilot SWE Agent opened [microsoft/agent-governance-toolkit#1981](https://github.com/microsoft/agent-governance-toolkit/pull/1981) with regression-test fixtures *presuming ATR detection*. At 08:24 UTC the same day, ATR v2.1.2 (rules ATR-2026-00440 + ATR-2026-00441) was merged, npm-published, and GitHub-released. End-to-end: 2h 16m.
+On 2026-05-07 MSRC published two Semantic Kernel CVEs (CVE-2026-26030 lambda+eval RCE, CVE-2026-25592 autostart file write). On 2026-05-10 the ATR maintainer filed [microsoft/agent-governance-toolkit#1937](https://github.com/microsoft/agent-governance-toolkit/issues/1937) mapping both CVEs to ATR rules. On 2026-05-11 06:07 UTC, after an AGT maintainer assigned that issue to it, Microsoft Copilot SWE Agent opened [microsoft/agent-governance-toolkit#1981](https://github.com/microsoft/agent-governance-toolkit/pull/1981), adding regression-test fixtures *presuming ATR detection* to the ATR community-rules example's test suite. By 08:24 UTC the same day, ATR v2.1.2 (rules ATR-2026-00440 + ATR-2026-00441) was merged, npm-published, and GitHub-released. PR open to rule merge: 2h 16m.
 
 This is Microsoft Copilot operating inside AGT, not an MSRC endorsement. Coverage is partial: 2 of 4 Copilot fixtures match the v2.1.2 canonical regex shape.
 
 ### Under maintainer review (open PRs)
 
-[NVIDIA garak #1676](https://github.com/NVIDIA/garak/pull/1676) · [NVIDIA NeMo Guardrails #1992](https://github.com/NVIDIA-NeMo/Guardrails/pull/1992) · [OWASP LLM Top 10 #814](https://github.com/OWASP/www-project-top-10-for-large-language-model-applications/pull/814) · [OWASP AI Exchange #181](https://github.com/OWASP/www-project-ai-security-and-privacy-guide/pull/181) · [Meta PurpleLlama #206](https://github.com/meta-llama/PurpleLlama/pull/206) · [BerriAI LiteLLM #28050](https://github.com/BerriAI/litellm/pull/28050) · [promptfoo #8529](https://github.com/promptfoo/promptfoo/pull/8529) · [Microsoft agent-framework #6528](https://github.com/microsoft/agent-framework/pull/6528) · [OpenAI guardrails-python #77](https://github.com/openai/openai-guardrails-python/pull/77) · [Cisco mcp-scanner #194](https://github.com/cisco-ai-defense/mcp-scanner/pull/194) · [Cisco a2a-scanner #14](https://github.com/cisco-ai-defense/a2a-scanner/pull/14) · [Splunk security_content #4128](https://github.com/splunk/security_content/pull/4128) · [NIST OSCAL oscal-content #338](https://github.com/usnistgov/oscal-content/pull/338) · [OpenTelemetry semantic-conventions-genai #165](https://github.com/open-telemetry/semantic-conventions-genai/pull/165)
+[NVIDIA NeMo Guardrails #2251](https://github.com/NVIDIA-NeMo/Guardrails/pull/2251) · [BerriAI LiteLLM #28050](https://github.com/BerriAI/litellm/pull/28050) · [promptfoo #8529](https://github.com/promptfoo/promptfoo/pull/8529) · [Cisco mcp-scanner #194](https://github.com/cisco-ai-defense/mcp-scanner/pull/194) · [Splunk security_content #4128](https://github.com/splunk/security_content/pull/4128) · [NIST OSCAL oscal-content #338](https://github.com/usnistgov/oscal-content/pull/338) (awaiting NIST review) · [OpenTelemetry semantic-conventions-genai #165](https://github.com/open-telemetry/semantic-conventions-genai/pull/165)
 
 ### Integrating ATR into your project
 
@@ -410,7 +410,7 @@ ATR maps its rules onto established frameworks so adopters can answer "we deploy
 | [SAF-MCP](https://github.com/secure-agentic-framework/saf-mcp) (Framework Model v2) | 55 of 78 active techniques have at least one reviewed ATR rule (partial or adjacent); candidate mappings, not validated by SAF | [docs/SAFE-MCP-MAPPING.md](docs/SAFE-MCP-MAPPING.md) |
 | [OWASP LLM Top 10 (2025)](https://owasp.org/www-project-top-10-for-large-language-model-applications/) | Per-rule references | Per-rule `references.owasp_llm` field |
 | [MITRE ATLAS](https://atlas.mitre.org/) | Per-rule references | Per-rule `references.mitre_atlas` field |
-| NIST AI RMF (community OSCAL catalog) | 4/4 functions covered, community catalog (NIST not endorsing) | [Agent-Threat-Rule/ai-rmf-oscal-catalog](https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog) |
+| NIST AI RMF (community OSCAL catalog) | Per-rule subcategory mappings; community catalog, not endorsed by NIST | [Agent-Threat-Rule/ai-rmf-oscal-catalog](https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog) |
 | Five Eyes joint guidance (2026-05-01) | 5-category Careful-Adoption guidance → ATR's 10 categories | [docs/FIVE-EYES-MAPPING.md](docs/FIVE-EYES-MAPPING.md) |
 
 ### Detection categories
@@ -850,7 +850,7 @@ ATR is currently single-maintainer (BDFL) under Adam Lin, transitioning to a Tec
 |---|---|
 | Phase 0 — Core spec, reference engine, initial rule corpus | Done |
 | Phase 1 — Distribution surfaces (npm, PyPI, GitHub Action, SARIF, MCP server) | Done |
-| Phase 2 — Production adoption (Microsoft AGT, Cisco AI Defense, MISP, Gen Digital Sage) | In progress |
+| Phase 2 — Downstream integrations (Cisco skill-scanner, MISP, Gen Digital Sage, Microsoft AGT examples) | In progress |
 | Phase 3 — Community contribution flywheel (issue-to-proposal automation, CVE-collector pipeline) | In progress |
 | Phase 4 — TSC seating; second-engine implementation; submission to a standards body | Planned |
 

@@ -14,50 +14,58 @@ export const metadata: Metadata = {
     "Regulation says you must manage AI agent risk. ATR maps every rule to the framework it answers to — OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, ISO 42001, plus candidate SAF-MCP technique mappings — so compliance becomes a detection that runs, not a document that asserts.",
 };
 
-// Per-rule coverage figures are enforced in CI by
-// `npm run audit:mappings -- --require-full=...` (validate.yml), so the "100%"
-// / "every rule" claims below cannot silently drift. SAFE-MCP is technique-level
-// (not per-rule) and is labelled as such. Update copy only alongside the gate.
+// Per-rule mapping completeness is enforced in CI by
+// `npm run audit:mappings -- --require-full=...` (validate.yml), so the
+// "every rule" claims below cannot silently drift. They say every rule carries
+// a mapping, not that ATR covers the whole framework, so the cards read
+// "Every rule" rather than "100%". SAFE-MCP is technique-level (not
+// per-rule) and is labelled as such. Update copy only alongside the gate.
 function buildFrameworks(ruleCount: number) {
   return [
     {
       id: "OWASP LLM Top 10 (2025)",
-      coverage: "100%",
+      coverage: "Every rule",
+      coverage_zh: "每條規則",
       desc_en: `All ${ruleCount} rules carry an OWASP LLM Top 10 (2025) reference.`,
       desc_zh: `全部 ${ruleCount} 條規則皆帶有 OWASP LLM Top 10 (2025) 參照。`,
       link: null,
     },
     {
       id: "OWASP Agentic Top 10",
-      coverage: "100%",
+      coverage: "Every rule",
+      coverage_zh: "每條規則",
       desc_en: `All ${ruleCount} rules carry an OWASP Agentic Top 10 reference; all 10 ASI risk categories are covered.`,
       desc_zh: `全部 ${ruleCount} 條規則皆帶有 OWASP Agentic Top 10 參照；10 個 ASI 風險類別全覆蓋。`,
       link: null,
     },
     {
       id: "MITRE ATLAS",
-      coverage: "100%",
+      coverage: "Every rule",
+      coverage_zh: "每條規則",
       desc_en: `All ${ruleCount} rules carry a MITRE ATLAS technique reference, grouped by tactic in the rule explorer. (ATR's own ATLAS crosswalk.)`,
       desc_zh: `全部 ${ruleCount} 條規則皆帶有 MITRE ATLAS 技術參照，在規則瀏覽器中依戰術分組。（ATR 自行整理的 ATLAS 交叉對照。）`,
       link: null,
     },
     {
       id: "NIST AI RMF",
-      coverage: "100%",
-      desc_en: `All ${ruleCount} rules carry NIST AI RMF subcategory mappings across the GV/MP/MS/MG functions. A community-authored OSCAL catalog (CC0) is self-published, with the NIST OSCAL collaboration branch #338 in review — collaboration, not a NIST endorsement or adoption.`,
-      desc_zh: `全部 ${ruleCount} 條規則皆帶有 NIST AI RMF subcategory 對應,涵蓋 GV/MP/MS/MG 四大 function。社群撰寫的 OSCAL catalog 已自行 publish(CC0),NIST OSCAL collaboration branch #338 審查中——是協作,不是 NIST 背書或採用。`,
+      coverage: "Every rule",
+      coverage_zh: "每條規則",
+      desc_en: `All ${ruleCount} rules carry NIST AI RMF subcategory mappings across the GV/MP/MS/MG functions. A community-authored OSCAL catalog (CC0) is self-published, and two example AI RMF profiles are in an open pull request to NIST's OSCAL content repository (#338), awaiting NIST review. Not a NIST endorsement or adoption.`,
+      desc_zh: `全部 ${ruleCount} 條規則皆帶有 NIST AI RMF subcategory 對應,涵蓋 GV/MP/MS/MG 四大 function。社群撰寫的 OSCAL catalog 已自行 publish(CC0),兩份 AI RMF profile 範例在提交給 NIST OSCAL 內容倉庫的 PR #338 中,仍開著、等待 NIST 審查。這不是 NIST 背書或採用。`,
       link: "nist-ai-rmf",
     },
     {
       id: "EU AI Act",
-      coverage: "100%",
+      coverage: "Every rule",
+      coverage_zh: "每條規則",
       desc_en: `All ${ruleCount} rules map to high-risk-AI obligations (Articles 9, 10, 12, 13, 14, 15). The Act names the duty; ATR supplies the runtime detection that produces evidence against the named article. It is detection evidence, not a compliance guarantee by itself.`,
       desc_zh: `全部 ${ruleCount} 條規則皆對應到高風險 AI 義務（第 9、10、12、13、14、15 條）。法案說的是義務,ATR 給的是能對著該條文跑出證據的執行期偵測。是偵測證據,本身並非合規保證。`,
       link: null,
     },
     {
       id: "ISO 42001",
-      coverage: "100%",
+      coverage: "Every rule",
+      coverage_zh: "每條規則",
       desc_en: `All ${ruleCount} rules map to AI management system clauses (6.2, 8.1–8.4, 9.1).`,
       desc_zh: `全部 ${ruleCount} 條規則皆對應到 AI 管理系統條款（6.2、8.1–8.4、9.1）。`,
       link: null,
@@ -65,6 +73,7 @@ function buildFrameworks(ruleCount: number) {
     {
       id: "SAF-MCP",
       coverage: "55/78 techniques",
+      coverage_zh: "55/78 個 technique",
       desc_en: "Technique-level inventory: 55 of 78 active SAF Framework Model v2 techniques have at least one reviewed ATR rule (partial or adjacent). These are candidate mappings and have not been validated by SAF; SAF validates external mappings in its own registry.",
       desc_zh: "技術層級清單：SAF Framework Model v2 的 78 項有效技術中，55 項至少有一條經審查的 ATR 規則對應（partial 或 adjacent）。屬候選對照，尚未經 SAF 驗證；是否驗證由 SAF 在自己的 registry 決定。",
       link: null,
@@ -98,8 +107,8 @@ export default async function CompliancePage({
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-4">
           {zh
-            ? `每一條法規都說同一句話:你必須管理 AI agent 風險。它們沒說的是怎麼在真實成品上證明你做到了。ATR 的 ${stats.ruleCount} 條規則,每一條都帶有六個框架對應——OWASP LLM、OWASP Agentic、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001——合法性與 100% 覆蓋由 CI 強制。一條義務於是接上一個能在 SKILL.md、MCP tool 描述、agent config 上跑的偵測。SAF-MCP 為技術層級候選對照(${stats.safeMcp},未經 SAF 驗證)。所有 metadata 皆 MIT 授權、可下載、可審核。`
-            : `Every regulation says the same thing: you must manage AI agent risk. None of them say how to prove it on a real artifact. Each of ATR's ${stats.ruleCount} rules carries six framework mappings — OWASP LLM, OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, and ISO 42001 — with validity and 100% coverage enforced in CI. Each obligation thus connects to a detection that runs on a SKILL.md file, an MCP tool description, an agent config. SAF-MCP is mapped at the technique level as candidate mappings (${stats.safeMcp}, not validated by SAF). All metadata is MIT-licensed, downloadable, and auditable.`}
+            ? `每一條法規都說同一句話:你必須管理 AI agent 風險。它們沒說的是怎麼在真實成品上證明你做到了。ATR 的 ${stats.ruleCount} 條規則,每一條都帶有六個框架對應——OWASP LLM、OWASP Agentic、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001——CI 會檢查每個對應都合法、每條規則都有對應。一條義務於是接上一個能在 SKILL.md、MCP tool 描述、agent config 上跑的偵測。SAF-MCP 為技術層級候選對照(${stats.safeMcp},未經 SAF 驗證)。所有 metadata 皆 MIT 授權、可下載、可審核。`
+            : `Every regulation says the same thing: you must manage AI agent risk. None of them say how to prove it on a real artifact. Each of ATR's ${stats.ruleCount} rules carries six framework mappings — OWASP LLM, OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, and ISO 42001 — with CI checking that every mapping is valid and that every rule has one. Each obligation thus connects to a detection that runs on a SKILL.md file, an MCP tool description, an agent config. SAF-MCP is mapped at the technique level as candidate mappings (${stats.safeMcp}, not validated by SAF). All metadata is MIT-licensed, downloadable, and auditable.`}
         </p>
       </Reveal>
 
@@ -154,7 +163,7 @@ export default async function CompliancePage({
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
                 <div className="md:col-span-3">
                   <div className="font-display text-base font-bold text-ink mb-1">{fw.id}</div>
-                  <div className="font-data text-xl font-bold text-blue">{fw.coverage}</div>
+                  <div className="font-data text-xl font-bold text-blue">{zh ? fw.coverage_zh : fw.coverage}</div>
                 </div>
                 <div className="md:col-span-7">
                   <p className="text-sm text-graphite leading-[1.7]">

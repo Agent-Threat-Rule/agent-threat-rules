@@ -1,6 +1,6 @@
 # Downstream Sync Contract
 
-> For maintainers of projects that auto-sync from ATR — Microsoft Agent
+> For maintainers of projects that consume ATR releases — Microsoft Agent
 > Governance Toolkit, Cisco AI Defense skill-scanner, MISP taxonomies +
 > galaxy, OWASP Agent-Security-Regression-Harness, FINOS Common Cloud
 > Controls, and any future consumer.
@@ -133,7 +133,7 @@ sensitive FP samples (customer-specific patterns), email
 
 | Consumer                       | Sync method                                            | Filter                                                         | Frequency            |
 | ------------------------------ | ------------------------------------------------------ | -------------------------------------------------------------- | -------------------- |
-| Microsoft AGT                  | Weekly workflow (`microsoft/agent-governance-toolkit`) | currently: all rules. Recommended: `maturity != experimental`. | Weekly Mondays       |
+| Microsoft AGT                  | Weekly workflow (`.github/workflows/sync-atr-community-rules.yml` in `microsoft/agent-governance-toolkit`) that regenerates an example directory | Pinned to an old ATR release; the generated files are untracked, so no sync PR is opened. Recommended if revived: `maturity != experimental`. | Weekly Mondays (no PR opened) |
 | Cisco AI Defense skill-scanner | PR-driven manual sync                                  | 314 rule pack as of v2.1.0                                     | On release tags      |
 | MISP taxonomies                | Tag-mapped, snapshot via PR                            | All published rule IDs                                         | On release tags      |
 | MISP galaxy                    | Cluster mapping                                        | All categories + severity                                      | On release tags      |
