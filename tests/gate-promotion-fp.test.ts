@@ -174,7 +174,15 @@ describe("parseCliOptions", () => {
       emitDirty: null,
       emitMeasurement: null,
       filterMode: false,
+      workers: null,
     });
+  });
+
+  it("parses --workers as a positive integer and refuses anything else", () => {
+    expect(parseCliOptions(["--workers", "4"]).workers).toBe(4);
+    for (const bad of [["--workers"], ["--workers", "0"], ["--workers", "-2"], ["--workers", "two"], ["--workers", "--filter-mode"]]) {
+      expect(() => parseCliOptions(bad), bad.join(" ")).toThrow(GateUsageError);
+    }
   });
 
   it("keeps the existing --ids / --base parsing", () => {
@@ -308,6 +316,30 @@ describe("runGate against a fixture corpus", () => {
     expect(readIds(clean)).toEqual([CLEAN_ID]);
     expect(readIds(dirty)).toEqual([DIRTY_ID]);
   });
+
+  it("writes the same measurement with worker processes as in-process", async () => {
+    const run = async (workers: number): Promise<Record<string, unknown>> => {
+      const path = join(fixture.out, `measurement-w${workers}.json`);
+      const dirty = join(fixture.out, `measurement-w${workers}-dirty.txt`);
+      const code = await runGate(
+        {
+          ...BASE_OPTIONS,
+          idsFile: mixedIds,
+          emitDirty: dirty,
+          emitMeasurement: path,
+          filterMode: true,
+          workers,
+        },
+        fixture.deps,
+      );
+      expect(code).toBe(EXIT_OK);
+      const doc = JSON.parse(readFileSync(path, "utf-8")) as Record<string, unknown>;
+      return { rules: doc.rules, sample_count: doc.sample_count, corpus_digest: doc.corpus_digest };
+    };
+    const inProcess = await run(1);
+    expect(inProcess.rules).toHaveProperty([DIRTY_ID, "fp_count"], 1);
+    expect(await run(2)).toEqual(inProcess);
+  }, 120_000);
 
   it("emits empty lists (not missing files) when the id list is empty", async () => {
     const empty = writeIdsFile(fixture, "empty.txt", []);
