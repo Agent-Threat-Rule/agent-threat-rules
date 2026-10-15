@@ -18,7 +18,7 @@
 
 import { resolve, join } from 'node:path';
 import { loadHackaPromptCorpus, getHackaPromptCorpusStats } from './hackaprompt-corpus.js';
-import { runEval } from './eval-harness.js';
+import { enforceLaneFromEval, runEval } from './eval-harness.js';
 import { writeMeasurementFromEvalReport } from '../measurement/from-eval-harness.js';
 
 function formatPercent(n: number): string {
@@ -94,9 +94,22 @@ async function main(): Promise<void> {
 
   console.log(`\nReport saved to: ${outputPath}`);
 
+  // The same corpus, event shape and tiers on an enforce-lane engine, recorded
+  // beside the headline as breakdown.enforce_lane (never instead of it).
+  const enforceLane = enforceLaneFromEval(await runEval({ rulesDir, corpus, lane: 'enforce' }), {
+    report,
+    eventShape,
+    tiersUsed,
+  });
+  console.log(
+    `Enforce lane: ${enforceLane.detected}/${enforceLane.attacks} attacks = ${formatPercent(enforceLane.recall)} ` +
+      `(${enforceLane.rules_in_lane} rules in lane)`
+  );
+
   // Standardized Measurement file (version-pinned, immutable).
   const { measurementPath } = writeMeasurementFromEvalReport(report, {
     source: 'hackaprompt',
+    enforceLane,
     source_version: 'v1',
     source_url: 'https://huggingface.co/datasets/hackaprompt/hackaprompt-dataset',
     notes:

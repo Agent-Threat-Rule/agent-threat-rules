@@ -210,15 +210,15 @@ python3 garak-to-tc.py \\
                 通過 canary → 安全閘門(良性 skill 語料 0 FP、test_cases 齊備、每個 PR ≤10 條規則;
                 語料以 <code>data/skill-benchmark/benign/</code> 為準,閘會遞迴讀取其下所有 .md)→
                 自動 merge 進 <code>agent-threat-rules</code> main →{' '}
-                <code>npm publish</code> 數分鐘內觸發 → 每個下游消費者在下次安裝時升級。
+                隨下一個版本發布(CI 在 npm 上 stage,維護者以 2FA 核准)→ 每個下游消費者在下次安裝時升級。
               </>
             ) : (
               <>
                 Survives canary → safety gate (0 FP on the benign skill corpus, test_cases present,
                 ≤ 10 rules per PR; the gate reads every `.md` under
                 <code>data/skill-benchmark/benign/</code>, subdirectories included) → auto-merged into <code>agent-threat-rules</code> main →
-                <code>npm publish</code> fires within minutes → every downstream consumer upgrades on
-                next install.
+                ships in the next release, which CI stages on npm and a maintainer approves with 2FA →
+                every downstream consumer upgrades on next install.
               </>
             )}
           </li>

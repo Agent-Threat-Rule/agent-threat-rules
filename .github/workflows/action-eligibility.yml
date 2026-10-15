@@ -5,14 +5,22 @@ name: Response Action Eligibility
 # `gate` is cheap — it reads rule files and one JSON — so it runs on every PR.
 # It catches a rule declaring an action its recorded evidence does not earn.
 #
-# `reverify` is expensive (~45 min: every rule against 5,352 benign samples on
-# five event shapes) so it runs on a schedule. It exists because the gate reads
-# a measurement file that is committed to the repo, and a committed number is a
+# `reverify` is expensive (every rule against every benign sample on five event
+# shapes) so it runs on a schedule. It exists because the gate reads a
+# measurement file that is committed to the repo, and a committed number is a
 # claim until something recomputes it. Editing one integer there was enough, in
 # review, to hand a rule that false-positives on 52.58% of the corpus a
 # kill_agent — with the corpus digest still matching, because editing a count
 # does not touch the corpus. The digest closes corpus drift. Only regeneration
 # closes number drift.
+#
+# It fails when a record the gate trusts does not reproduce, and on any doubt
+# about the corpus the evidence describes (scripts/reverify-evidence.ts says
+# exactly which differences count). Records that are merely missing or stale —
+# new rules, changed detections, deleted rules — are coverage, not forgery: the
+# gate already caps those rules at observe. For them a second job, `refresh`,
+# commits the regenerated file to a rolling PR, evidence-refresh/rolling, for a
+# person to merge. Nothing is pushed to main directly.
 
 on:
   pull_request:
@@ -39,10 +47,17 @@ jobs:
 
   reverify:
     name: Re-measure and diff the evidence
-    # Not on PRs: 45 minutes per PR buys nothing a scheduled run does not,
+    # Not on PRs: a full re-measure per PR buys nothing a scheduled run does not,
     # and a contributor cannot forge the measurement without the diff showing.
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    # Read-only. This job runs npm ci and the repository's own scripts for as
+    # long as the scan takes, so it holds no write token; the refresh job below
+    # is the only one that can push, and it runs nothing but git and gh.
+    permissions:
+      contents: read
+    outputs:
+      needs-refresh: ${{ steps.diff.outputs.needs-refresh }}
     # Was 90. The re-measure job hit it every single scheduled run from 2026-09-07
     # to 2026-09-21 — 15 consecutive days at 90m00s, cancelled. A cancelled run is
     # not a failed run, so nothing went red and nobody noticed that the only check
@@ -51,6 +66,8 @@ jobs:
     timeout-minutes: 240
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -58,42 +75,137 @@ jobs:
 
       - name: Regenerate the measurement from the corpus
         run: |
+          set -euo pipefail
+          IDS="$RUNNER_TEMP/rule-ids.txt"
+          # The ids the action gate itself reads (js-yaml over every file under
+          # rules/), not a grep: a record the gate trusts must belong to a rule this
+          # run measures, or the diff below cannot check it.
+          npx tsx scripts/reverify-evidence.ts --list-ids > "$IDS"
+          # An empty list makes gate-promotion-fp.ts print "nothing to gate", exit 0
+          # and write no measurement, which the diff would then read as missing.
+          test -s "$IDS"
+          # No `|| true`: under --filter-mode a rule that false-positives still exits
+          # 0, so a non-zero exit is a real failure and the diff must not run.
           npx tsx scripts/gate-promotion-fp.ts \
-            --ids <(grep -rhoE '^id: "?ATR-[0-9-]+' rules/ | sed 's/^id: //; s/"//g') \
+            --ids "$IDS" \
             --filter-mode \
-            --emit-measurement /tmp/fresh-measurement.json \
-            --emit-dirty /tmp/dirty.txt || true
+            --emit-measurement "$RUNNER_TEMP/evidence/fresh-measurement.json" \
+            --emit-dirty "$RUNNER_TEMP/dirty.txt"
 
       - name: Diff against the committed evidence
+        id: diff
         run: |
+          npx tsx scripts/reverify-evidence.ts \
+            --committed data/benign-fp-measurement.json \
+            --fresh "$RUNNER_TEMP/evidence/fresh-measurement.json" \
+            --pr-body "$RUNNER_TEMP/evidence/evidence-report.md"
+
+      # Set only when the diff passed: reverify-evidence.ts never asks for a
+      # refresh after a failure, so a failed run hands nothing to the next job.
+      - name: Hand the regenerated evidence to the refresh job
+        if: steps.diff.outputs.needs-refresh == 'true'
+        uses: actions/upload-artifact@v5
+        with:
+          name: regenerated-evidence
+          path: ${{ runner.temp }}/evidence/
+          retention-days: 7
+
+  refresh:
+    name: Open or update the evidence refresh PR
+    needs: reverify
+    if: needs.reverify.outputs.needs-refresh == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+    # Two runs at once would both lease the same rolling sha; the second push fails.
+    concurrency:
+      group: evidence-refresh
+      cancel-in-progress: false
+    steps:
+      # The commit the reverify job measured. The push authenticates explicitly;
+      # nothing is left in .git/config.
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@v5
+        with:
+          name: regenerated-evidence
+          path: ${{ runner.temp }}/evidence
+
+      - name: Open or update the evidence refresh PR
+        env:
+          # A PR opened with the default GITHUB_TOKEN never runs its checks, and a
+          # push made with it does not trigger them either; see measure-all.yml.
+          PUSH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          BRANCH="evidence-refresh/rolling"
+          EVIDENCE_DIR="$RUNNER_TEMP/evidence"
+          # A dispatch on another branch measured that branch's rules, not main's.
+          git fetch --quiet origin main
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::warning::$(git rev-parse --short HEAD) is not on main: measured, not pushed."
+            exit 0
+          fi
+          cp "$EVIDENCE_DIR/fresh-measurement.json" data/benign-fp-measurement.json
+          git add data/benign-fp-measurement.json
+          if git diff --cached --quiet; then
+            echo "The regenerated file is identical to the committed one; nothing to refresh."
+            exit 0
+          fi
+          # The bot identity, set through the environment so nothing the runner or a
+          # caller configured can take precedence over it.
+          GIT_AUTHOR_NAME="ATR Measurement Bot" GIT_AUTHOR_EMAIL="measurement-bot@agentthreatrule.org" \
+          GIT_COMMITTER_NAME="ATR Measurement Bot" GIT_COMMITTER_EMAIL="measurement-bot@agentthreatrule.org" \
+            git commit --quiet -m "chore(evidence): regenerate the benign-FP measurement ($(date -u +%Y-%m-%d))"
+
+          # Rebuilt from the measured commit on every run, so the branch is always
+          # main plus one regenerated file. The lease is the sha the branch had when
+          # this run looked: a branch someone else moved since is not overwritten.
+          # An empty lease requires the branch not to exist.
+          OLD=$(git ls-remote origin "refs/heads/$BRANCH" | cut -f1)
           # shellcheck disable=SC2016
-          # The single-quoted block below is a node -e program, not shell. Its $ and
-          # ?? are JavaScript; expanding them would corrupt the script.
-          #
-          # Compare only the per-rule records. generated_at and commit differ by
-          # construction; a diff there is not evidence of tampering.
-          node -e '
-            const fs = require("node:fs");
-            const pick = p => {
-              const d = JSON.parse(fs.readFileSync(p, "utf-8"));
-              return Object.fromEntries(
-                Object.entries(d.rules ?? {}).map(([k, v]) => [k, v.fp_count ?? null]),
-              );
-            };
-            const committed = pick("data/benign-fp-measurement.json");
-            const fresh = pick("/tmp/fresh-measurement.json");
-            const ids = [...new Set([...Object.keys(committed), ...Object.keys(fresh)])].sort();
-            const drift = ids.filter(id => committed[id] !== fresh[id]);
-            if (drift.length === 0) {
-              console.log(`evidence matches: ${ids.length} rule(s)`);
-              process.exit(0);
-            }
-            console.error(`FAIL — ${drift.length} rule(s) whose committed false-positive count`);
-            console.error("does not reproduce. Either the corpus moved and the file was not");
-            console.error("re-emitted, or the numbers were edited by hand.\n");
-            for (const id of drift.slice(0, 40)) {
-              console.error(`  ${id}  committed=${committed[id]}  measured=${fresh[id]}`);
-            }
-            if (drift.length > 40) console.error(`  ... and ${drift.length - 40} more`);
-            process.exit(1);
-          '
+          git -c credential.helper= \
+              -c 'credential.helper=!f() { test "$1" = get || exit 0; echo username=x-access-token; echo "password=$PUSH_TOKEN"; }; f' \
+              push --force-with-lease="refs/heads/$BRANCH:$OLD" origin "HEAD:refs/heads/$BRANCH"
+
+          BODY_FILE="$RUNNER_TEMP/evidence-pr-body.md"
+          {
+            cat <<'BODY'
+          Auto-generated from the scheduled reverify job in .github/workflows/action-eligibility.yml.
+
+          data/benign-fp-measurement.json is regenerated from the corpus by
+          scripts/gate-promotion-fp.ts, the same command the job runs every day. The
+          job opens this PR only when every record the action gate trusts reproduced
+          and what changed is coverage: rules without a record, changed detections,
+          deleted rules, stale metadata. Its report is below. Merging this gives the
+          listed rules a measured FP rate, which can raise the response-action tier
+          the gate allows them, so read the list before merging.
+
+          This is a rolling PR: each run rebuilds evidence-refresh/rolling from main.
+          BODY
+            echo
+            echo "Measured at $(git rev-parse HEAD~1), the commit this branch is built on."
+            echo
+            cat "$EVIDENCE_DIR/evidence-report.md"
+          } > "$BODY_FILE"
+
+          OPEN=$(gh pr list --head "$BRANCH" --state open --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository | not)][0].number // empty')
+          if [ -n "$OPEN" ]; then
+            # REST, not `gh pr edit` (see tests/workflow-no-gh-pr-edit.test.ts).
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/pulls/$OPEN" -F "body=@$BODY_FILE" --silent
+            echo "Updated the open evidence refresh PR #${OPEN}."
+            exit 0
+          fi
+          # No `|| echo` here: a PR that fails to open must fail the job.
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore(evidence): regenerate the benign-FP measurement (rolling)" \
+            --body-file "$BODY_FILE"

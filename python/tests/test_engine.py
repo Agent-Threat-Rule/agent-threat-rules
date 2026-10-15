@@ -4,13 +4,24 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import Any
 
 import pytest
+import yaml
 
-from pyatr.engine import ATREngine
+import pyatr.engine as engine_module
+from pyatr.engine import ATREngine, _parse_rule
 from pyatr.types import AgentEvent
 
 RULES_DIR = Path(__file__).resolve().parent.parent.parent / "rules"
+
+
+def _load_rule_data(rule_id: str) -> dict[str, Any]:
+    paths = list(RULES_DIR.rglob(f"{rule_id}-*.yaml"))
+    assert len(paths) == 1, f"Expected one file for {rule_id}, found {paths}"
+    data = yaml.safe_load(paths[0].read_text(encoding="utf-8"))
+    assert data["id"] == rule_id, paths[0]
+    return data
 
 
 @pytest.fixture(scope="module")
@@ -35,6 +46,46 @@ class TestRuleLoading:
                 f"Rule {rule.id} has unexpected severity: {rule.severity}"
             )
             assert len(rule.conditions) > 0, f"Rule {rule.id} has no conditions"
+
+
+@pytest.mark.parametrize(
+    "rule_id", ("ATR-2026-00442", "ATR-2026-02100", "ATR-2026-02300", "ATR-2026-02304"),
+)
+def test_variable_lookbehind_rule_vectors(rule_id: str) -> None:
+    data = _load_rule_data(rule_id)
+    engine = ATREngine()
+    engine.load_rule(_parse_rule(data))
+    for label, expected in (("true_positives", True), ("true_negatives", False)):
+        for case in data["test_cases"][label]:
+            assert bool(engine.evaluate(AgentEvent(case["input"]))) is expected, case["input"]
+
+
+def test_invalid_regex_warns_once_and_is_not_retried(caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch) -> None:
+    rule = _parse_rule({
+        "id": "ATR-TEST-INVALID-REGEX", "title": "Invalid regex test fixture", "status": "test",
+        "detection": {"conditions": [{"field": "content", "operator": "regex", "value": "(?P<"}]},
+    })
+    engine = ATREngine()
+    compile_calls = 0
+    original_compile = engine_module._compile_regex
+
+    def counting_compile(pattern: str) -> Any:
+        nonlocal compile_calls
+        compile_calls += 1
+        return original_compile(pattern)
+
+    monkeypatch.setattr(engine_module, "_compile_regex", counting_compile)
+
+    with caplog.at_level("WARNING", logger="pyatr.engine"):
+        engine.load_rule(rule)
+        engine.evaluate(AgentEvent("anything"))
+        engine.evaluate(AgentEvent("anything"))
+
+    assert len(caplog.records) == 1
+    message = caplog.records[0].getMessage()
+    assert "ATR-TEST-INVALID-REGEX condition 0" in message
+    assert "with re (" in message and "or the regex fallback (" in message
+    assert compile_calls == 1
 
 
 class TestATR2026001DirectPromptInjection:

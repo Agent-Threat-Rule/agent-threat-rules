@@ -37,11 +37,11 @@ export async function generateMetadata({
 const IMPLEMENTERS = [
   {
     org: "Microsoft Agent Governance Toolkit",
-    role: "L1 Engine",
+    role: "L1 Citation",
     version: "3.0.0-alpha",
-    date: "2026-04-26",
-    refLabel: "PR #1277",
-    refUrl: "https://github.com/microsoft/agent-governance-toolkit/pull/1277",
+    date: "2026-06-15",
+    refLabel: "PR #3025",
+    refUrl: "https://github.com/microsoft/agent-governance-toolkit/pull/3025",
   },
   {
     org: "Cisco AI Defense (skill-scanner)",
@@ -258,12 +258,12 @@ export default async function ImplementersPage({
         {/* Separate aside: standards-body submissions in review — NOT adoptions */}
         <div className="border border-fog rounded-sm p-4 mt-6 bg-paper" style={{ maxWidth: "42em" }}>
           <p className="text-xs uppercase tracking-[0.18em] text-stone mb-2" style={{ fontFamily: "var(--font-data)" }}>
-            {zh ? "標準機構 submission(審查中,非採用)" : "Standards-body submissions (in review, not adoptions)"}
+            {zh ? "標準機構 submission(仍開著,非採用)" : "Standards-body submissions (open, not adoptions)"}
           </p>
           <p className="text-sm text-graphite" style={{ fontFamily: "var(--font-body)" }}>
             {zh
-              ? "ATR 把 AI RMF 社群版 OSCAL catalog 提交給 NIST 官方 usnistgov/oscal-content,目前 submission 審查中(NIST OSCAL maintainer 開了 collaboration branch #338)。這不是 NIST 採用、不是 NIST 背書,因此不列入上方生產實作者表。"
-              : "ATR submitted its community AI RMF OSCAL catalog to NIST's official usnistgov/oscal-content repo; the submission is in review (the NIST OSCAL maintainer opened collaboration branch #338). This is not a NIST adoption or endorsement, so it is not listed in the implementers table above."}
+              ? "ATR 把兩份 AI RMF profile 範例以 PR #338 提交給 NIST 的 usnistgov/oscal-content。NIST 在 7 月把自己的 AI RMF catalog 加進 develop 分支,8 月這個 PR 依它重做,目前仍開著、等待 NIST 審查。這不是 NIST 採用、不是 NIST 背書,因此不列入上方實作者表。"
+              : "ATR offered two AI RMF profile examples to NIST's usnistgov/oscal-content repo as PR #338. NIST added its own AI RMF catalog to the develop branch in July, and the PR was reworked against it in August; it is open and awaiting NIST review. This is not a NIST adoption or endorsement, so it is not listed in the implementers table above."}
             {" "}
             <a
               href="https://github.com/usnistgov/oscal-content/pull/338"

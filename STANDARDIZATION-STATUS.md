@@ -10,8 +10,9 @@
 
 ATR is adding a formal standards-layer alongside its existing rule corpus
 and TypeScript engine. The new layer is **proposal-stage**, NOT operating
-governance. It exists so that OASIS, NIST CAISI, IETF, and ecosystem
-partners can review what the standard will look like before it is ratified.
+governance. It exists so that standards bodies such as OASIS and the IETF,
+and ecosystem partners, can review what the standard will look like before
+it is ratified.
 
 **Nothing about how you integrate with ATR has changed.** If your project
 consumes the rule YAML files, the `atr-schema.yaml` rule format, the
@@ -52,22 +53,30 @@ of those interfaces have changed**. Continue as before.
 
 ## Why this scaffolding was added now
 
-Three external pressures converged in 2026-Q2:
+Two external pressures converged in 2026-Q2:
 
 1. **OASIS Open Project submission opportunity.** OASIS is the natural
    venue for ATR (precedent: SAML, KMIP, OData). Their proposal template
    requires governance + threat model + spec + IPR + conformance documented
    up front. Phases 0-5 of this work produced those documents.
 
-2. **NIST CAISI dialogue (OSCAL Path 1).** Open since 2026-05-10. CAISI's
-   feedback consistently asked for a formal spec layer rather than just
-   the rule corpus. Phase 1-3 of this work answers that ask.
-
-3. **F500 procurement questionnaires.** Microsoft AGT integration matured
+2. **F500 procurement questionnaires.** Microsoft AGT integration matured
    to the point that F500 procurement teams started asking "what does
    the governance look like, what does the conformance test look like,
    what does the audit evidence look like?" — questions that a
    YAML rule corpus alone cannot answer, at any size.
+
+> **Correction (2026-10-16).** An earlier version of this page listed a
+> third pressure, a "NIST CAISI dialogue (OSCAL Path 1)" in which CAISI's
+> feedback had asked for a formal spec layer. That was inaccurate: NIST
+> CAISI has not reviewed or commented on ATR's specification. The NIST
+> exchange relevant here was with NIST's OSCAL maintainers, about example
+> AI RMF profiles: an issue in usnistgov/OSCAL (#2234), then
+> [usnistgov/oscal-content#338](https://github.com/usnistgov/oscal-content/pull/338) (a rework of #333).
+> In June NIST asked that #338 wait for NIST's own AI RMF catalog; NIST
+> added that catalog to its develop branch in July, and #338 was reworked
+> against it in August. It is open, awaits NIST review, concerns OSCAL
+> content rather than ATR's rule format, and is not a NIST endorsement.
 
 The work was done as **proposal scaffolding** because:
 
@@ -121,15 +130,15 @@ Sage, OpenHands, garak (in review), and others:**
 - If you want to participate in the proposal review, contact
   adam@agentthreatrule.org.
 
-### If you are a regulator (NIST, EU AI Office, UK ICO, etc.)
+### If you are a regulator or standards body (EU AI Office, UK ICO, NIST, etc.)
 
 - The proposed mapping documents (NIST AI RMF Measure 2.x, EU AI Act
   Art 50, ISO 42001 Annex A.6.2.4) are referenced from
   `spec/atr-profile-v1.0.md`.
 - No formal regulatory mapping is claimed yet; the mapping is in
   proposal stage pending TSC ratification.
-- A NIST CAISI position paper has been prepared for submission
-  via OSCAL Path 1.
+- The NIST OSCAL pull request described in the correction above is open
+  and awaiting NIST review. It is not a NIST endorsement.
 
 ### If you are a researcher / red team contributor
 
@@ -153,7 +162,9 @@ Sage, OpenHands, garak (in review), and others:**
 
 ### 2026-06-21+
 
-- NIST CAISI position paper submitted via OSCAL Path 1.
+- (Corrected 2026-10-16: this item said a NIST CAISI position paper would
+  be submitted via "OSCAL Path 1". No such paper was submitted; see the
+  correction above.)
 
 ### 2026-Q3
 

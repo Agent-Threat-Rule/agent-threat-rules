@@ -371,7 +371,7 @@ Below: narrative paragraph about the attack surface.
 6-cell grid. Each cell: one big monospace number + one description line.
 All six values are pulled live from stats.ts — never hardcoded. The cells are:
 rule count, SKILL.md benchmark recall, skills scanned, OWASP Agentic coverage
-(10/10), SAFE-MCP coverage (78/85), and one benchmark recall figure from the
+(10/10), SAF-MCP candidate mappings (stats.safeMcp), and one benchmark recall figure from the
 README evaluation table. Do not put a false-positive or precision rate in this
 grid: the lane FP rates are withdrawn and not citable, and a bare "precision"
 number with no corpus attached is exactly the kind of claim this project has had
@@ -400,7 +400,7 @@ endorsement or partnership. Write what is verifiable: we sent a PR, they merged
 it. Same discipline for every other org in the prove-points table.
 
 **Scene 6 — The Standards:**
-4-column row: OWASP Agentic 10/10 · SAFE-MCP 78/85 · AST10 7/10 · one
+4-column row: OWASP Agentic 10/10 · SAF-MCP candidate count (stats.safeMcp) · AST10 7/10 · one
 version-pinned benchmark figure pulled from stats.ts. Whatever benchmark cell is
 shown must carry its ATR version and measurement date, as the README table does
 — an unpinned benchmark number is not publishable.
@@ -429,7 +429,7 @@ adopted ATR, with PR evidence), or the README evaluation table. Counts marked
 | `cisco-ai-defense/skill-scanner` merge | Scene 5 (hero proof) + /integrate | PR #79 merged. Describe as an open-source repo merge, never as a Cisco product shipment. |
 | Cisco rule-packs CLI | Scene 5 | PR #80 |
 | OWASP Agentic Top 10 coverage | Scene 6 + /coverage | 10/10 categories — a *mapping* ATR maintains, not an OWASP endorsement or an official OWASP merge. Do not imply either. |
-| SAFE-MCP coverage | Scene 6 + /coverage | 78/85 techniques (conservative lower bound) |
+| SAF-MCP candidate mappings | Scene 6 + /coverage | Count from stats.safeMcp (active SAF Framework Model v2 techniques with a reviewed partial or adjacent rule). Always label as candidate mappings not validated by SAF; never show as a percentage. |
 | OWASP AST10 coverage | Scene 6 + /coverage | 7/10, 3 are process-level |
 | PINT-format corpus (self-built) | Scene 3 + /research | 850 samples. Pull recall/precision/F1 live from the README table with the ATR version and measurement date attached. Not a run of Lakera's official private PINT benchmark — say so. |
 | Wild scan | Scene 2 + /research | 101,280 skills scanned, 1,434 flagged. These two are the only citable wild-scan figures; earlier scan totals and "confirmed malware" counts are frozen and must not be used. |
@@ -446,7 +446,7 @@ adopted ATR, with PR evidence), or the README evaluation table. Counts marked
 "Create a full-viewport hero on Paper White (#FAFAF8). Center the ATR logo mark at top (the geometric A with speed lines, 80px height). Below: 'We used to protect people.' in Inter Tight 80px weight 900 color Stone (#6B6B76). Next line: 'Now we protect agents.' in Inter Tight 80px weight 900 color Ink Black (#0B0B0F). Below: three stats in JetBrains Mono — pull live values from stats.ts (rule count, category count, and one version-pinned coverage figure such as '10/10 OWASP Agentic') separated by centered dots. Do not hardcode these and do not use a bare precision or false-positive percentage here. Two buttons: primary Signal Blue 'Integrate ATR' and secondary bordered 'Explore Rules'. Both 2px border-radius."
 
 **Numbers Grid:**
-"Build a 3-column grid on Ash (#F3F3F0) background with 2px Paper White gaps between cells. Each cell: big number in JetBrains Mono 64px weight 700 Ink Black, unit text in JetBrains Mono 24px weight 400 Stone, description in Inter 14px weight 400 Stone below. Pull live values from stats.ts — the six cells are those listed in Scene 3 above: rule count, SKILL.md benchmark recall, skills scanned, OWASP Agentic 10/10, SAFE-MCP 78/85, and one version-pinned benchmark recall figure. No precision or false-positive percentage in this grid, per the Scene 3 boundary."
+"Build a 3-column grid on Ash (#F3F3F0) background with 2px Paper White gaps between cells. Each cell: big number in JetBrains Mono 64px weight 700 Ink Black, unit text in JetBrains Mono 24px weight 400 Stone, description in Inter 14px weight 400 Stone below. Pull live values from stats.ts — the six cells are those listed in Scene 3 above: rule count, SKILL.md benchmark recall, skills scanned, OWASP Agentic 10/10, SAF-MCP candidate count from stats.safeMcp, and one version-pinned benchmark recall figure. No precision or false-positive percentage in this grid, per the Scene 3 boundary."
 
 **Category Grid:**
 "Create a 3-column grid with 1px Fog (#E8E8E5) borders between cells, on Paper White. Each cell: category name in Inter Tight 15px weight 600 Ink Black, rule count in JetBrains Mono 12px Signal Blue (#2563EB), one-line description in Inter 13px Stone. One cell per category directory under `rules/` (ten as of 2026-09-22 — bind the list to stats.ts rather than hardcoding a cell count). Hover: border-color transitions to Stone. Sharp corners everywhere."
