@@ -4,6 +4,28 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **Every benchmark measurement records the enforce lane beside its
+  headline.** A measurement's `metrics.recall` is the `hunt` lane (the engine
+  default, every maturity). Each runner the weekly measurement calls now also
+  runs the same samples through its own detection loop on an engine
+  constructed with `lane: 'enforce'` (only `maturity: stable` rules, the lane
+  for blocking) and records the result as `breakdown.enforce_lane`. README's
+  Recall column cites both lanes, root `stats.json` cites the enforce figure as
+  `enforceLaneRecall`, and `scripts/check-benchmark-citations.ts` fails CI when
+  either disagrees with the measurement or leaves the enforce figure out.
+  Before this, the enforce figures in README were one-off replays.
+
+### Changed
+
+- **README §8 discloses that the headline `garak` figure is partly
+  closed-book.** A replay without the rules written from the in-the-wild
+  corpus, by their own metadata or test cases, is given in the new
+  `[^garakcorpus]` footnote.
+- `data/stats.json` no longer carries the orphaned `benchmark.pintRecall`
+  block, a 3.5.11 figure nothing wrote or read.
+
 ## [4.1.5] - 2026-10-10
 
 4.1.4 was staged on npm and removed by publish-time scanning before it could be

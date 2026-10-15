@@ -279,7 +279,9 @@ ATR_LANE=enforce ATR_BLOCKING=1 atr guard # the same, via the environment
 `maturity: stable` rules: **106 of the 777 live rules** in this repository at the
 commit this paragraph was written against. That is the trade being made every
 time enforcement is recommended alongside it — narrower firing set, lower
-false-positive rate, fewer attacks caught. Rule counts move daily, and a
+false-positive rate, fewer attacks caught. How many fewer, per corpus, is the
+second (`enforce`) figure in each `Recall` cell of
+[§8 Evaluation](#8-evaluation), re-measured weekly. Rule counts move daily, and a
 `grep`-based count is wrong here (eight rules quote the value as
 `maturity: "stable"`), so re-derive by parsing before quoting the figure
 anywhere:
@@ -457,7 +459,7 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | AdvBench (LLM-attacks behaviors) | upstream-2026-10-15 | 520 | 5.6% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | atr-self-test | internal | 341 | 96.6% (hunt) / 3.4% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
-| garak (in-the-wild jailbreaks) | inthewild-jailbreak-corpus-650 | 650 | 92.3% (hunt) / 0.9% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
+| garak (in-the-wild jailbreaks) [^garakcorpus] | inthewild-jailbreak-corpus-650 | 650 | 92.3% (hunt) / 0.9% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | garak-full (all probe families) | 23-families | 3,475 | 57.2% (hunt) / 0.5% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | hackaprompt | v1 | 4,780 | 69.6% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
 | HarmBench (CAIS behaviors) | upstream-2026-10-15 | 400 | 6.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
@@ -474,12 +476,18 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) | 97.0% (hunt) | 0.20% (hunt) | 4.1.5 | 2026-10-15 |
 | Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) [^wildscan] | full-scan-v2-2026-04-13 | 101,280 | — | not measured | 1.42% flag rate | 2.0.0 | 2026-04-13 |
 
-Every `Recall` cell is a `hunt`-lane figure: the engine default, which loads
-every maturity. The `enforce` lane loads only `stable` rules and recalls far
-less; see [^skilllane]. `Precision` and `FP rate` are measured only on the rows
-that contain benign samples (`atr-self-test`, `PINT-format` and `SKILL.md
-benchmark`); elsewhere they are convention values or, for `Wild scan`, a flag
-rate, not results (see Conventions below).
+Each `Recall` cell gives two figures from the same measurement file. The first
+is the `hunt` lane: the engine default, which loads every maturity, and the
+figure `latest.json` and `data/stats.json` carry. The second is the `enforce`
+lane, the one to run when blocking is on, which loads only `stable` rules: the
+same samples through the same detection loop, recorded as
+`breakdown.enforce_lane`. Read the second before deploying with blocking on; see
+[^skilllane]. `autoresearch` and `hackaprompt` have no second figure, because
+their last measurements predate its recording. `Precision` and `FP rate` are
+`hunt`-lane figures, measured only on the rows that contain benign samples
+(`atr-self-test`, `PINT-format` and `SKILL.md benchmark`); elsewhere they are
+convention values or, for `Wild scan`, a flag rate, not results (see
+Conventions below).
 
 A weekly run re-measures every row except three, which keep their earlier
 measurements: `hackaprompt`, whose corpus is not provisioned in CI, so the run
@@ -536,11 +544,16 @@ after they fired on ordinary English. ATLAS lost three samples, two held only by
 which matched `oast` inside "roast" and "coast", and two held only by `00061`,
 which matched `curl` inside "curls" and "curly". Neither row gained a sample.
 
+The 2026-10-15 run, the first to record the `enforce` lane, left every `hunt`
+figure where the 2026-10-14 run had put it.
+
 The per-row `ATR version` column above is the version each cell was actually
 measured against, mirroring the `atr_version` field in each
 `data/measurements/<source>/latest.json`. The headline `garak` recall moved
 98.0% (3.0.0) → 97.2% (3.5.0) → 95.7% (3.5.8) → 92.5% (3.5.11) → 92.3%
-(3.5.12); the 2026-10-14 run at 4.1.5 also gave 600/650. The 3.5.8 →
+(3.5.12); the 2026-10-14 and 2026-10-15 runs at 4.1.5 also gave 600/650. Read
+that figure as partly closed-book: [^garakcorpus] replays it without the rules
+written from this corpus. The 3.5.8 →
 3.5.11 step is a real loss of detections, not a change in how they are counted:
 PR #327 tightened an over-broad persona regex in `ATR-2026-00001` that had been
 false-positiving on benign "you are now an expert …" prose, and tightening it
@@ -580,24 +593,25 @@ production as a SKILL.md. `.github/workflows/eval.yml` now runs
 `stats.json` cites a number no measurement file backs.
 See [CHANGELOG.md](CHANGELOG.md).
 
-[^skilllane]: **Every recall figure in this table is a `hunt`-lane figure, and
+[^skilllane]: **The first figure in each `Recall` cell is the `hunt` lane, and
     the lane can change the answer completely.** `hunt` is the engine default
     and loads every maturity. The `enforce` lane — the one to run when blocking
     is on, where a detection can stop the agent with no human in the loop —
-    loads only `stable` rules. On ATR 4.1.5 (2026-10-14) this corpus scored
-    **0 of 32** malicious samples there, with nothing firing on any of the 498
-    samples, and the headline `garak` corpus scored 6 of 650 there against 600
-    of 650 in `hunt`. For SKILL.md the reason is structural rather than a
-    tuning problem: at ATR 4.1.5 all 39 rules carrying `scan_target: skill` are
-    `maturity: test` and none is `stable`, and none of the `stable` rules
-    `engine.scanSkill()` does run in that lane fires on these samples. Anyone
-    reading "100% recall on SKILL.md" and deploying with blocking on would be
-    forming a completely wrong expectation. The weekly run measures only the
-    `hunt` lane and `runSkillBenchmark` has no lane option, so these enforce
-    figures are in neither the table nor `data/measurements/`: they are one-off
-    runs of each benchmark's own detection loop (`engine.scanSkill()` for
-    SKILL.md, `detectedOnPromptChannels` for `garak`) with
-    `new ATREngine({ lane: 'enforce' })`, and nothing refreshes them.
+    loads only `stable` rules, and its figure is the second one in the cell.
+    The weekly run records it as `breakdown.enforce_lane` in the same
+    measurement file as the headline: the same samples through the benchmark's
+    own detection loop (`engine.scanSkill()` for SKILL.md, the two prompt
+    channels for `garak`), on `new ATREngine({ lane: 'enforce' })`, with
+    `rules_in_lane` giving how many rules that lane loaded.
+    `scripts/check-benchmark-citations.ts` fails CI when a cell's enforce
+    figure differs from that record or is left out. For SKILL.md the low figure
+    is structural rather than a tuning problem: at ATR 4.1.5 all 39 rules
+    carrying `scan_target: skill` are `maturity: test` and none is `stable`, so
+    the enforce lane loads none of the rules written specifically for SKILL.md
+    files. Anyone reading "100% recall on SKILL.md" and deploying with
+    blocking on would be forming a completely wrong expectation. Until
+    2026-10-15 the weekly run measured only the `hunt` lane, and the enforce
+    figures this footnote quoted were one-off replays.
 
 [^pint]: The `PINT-format` row is **not** a run of Lakera's official PINT
     benchmark. That corpus is private and roughly 5x larger; this row is a
@@ -623,6 +637,29 @@ See [CHANGELOG.md](CHANGELOG.md).
     between 3.5.11 and 3.5.12 lost five detections on this corpus, while
     `ATR-2026-00001`'s own contribution stayed at 226. Precision on the
     canonical shape at 3.5.12 was 100% (0 FP on the 399 benign samples).
+
+[^garakcorpus]: **Read this row as partly closed-book.** Many of the rules that
+    fire on this corpus were written from it, so its `hunt` figure is not an
+    out-of-sample result. A rule counts as written from the corpus when its own
+    YAML shows it, in either of two ways. 102 rules name the corpus in their
+    metadata: `author: ATR Community (via NVIDIA garak in-the-wild corpus)`, or
+    `(via NVIDIA garak dan.DanInTheWild probe)` — `dan.DanInTheWild` is the
+    garak probe that serves this corpus — or a title, description or reference
+    naming it (`ATR-2026-00307` cites `inthewild_jailbreak_llms.json`). 27 more
+    quote one of these 650 prompts in their own true-positive test cases: 60 or
+    more consecutive characters, compared after lower-casing and collapsing
+    whitespace. 21 of the 27 are `author: ATR Community (garak-import)`, and
+    wherever their authors took the text from, those rules were written to
+    match it. Of the 129, 127 fire here, and 263 of the 600 detected prompts are
+    detected by them alone. **Without them, recall on the same 650 prompts is
+    51.8% (337 of 650).** The 102 that name the corpus are the only detectors of
+    70 prompts; without just those, recall is 81.5% (530 of 650). These are
+    **replays**, not measurements: run once on 2026-10-15 against the rules on
+    `main` at `32bd48966` (ATR 4.1.5, 830 rule files), with the rule files
+    removed from a copy of `rules/` and every prompt sent through the two
+    channels the published figure uses (`llm_input` and `tool_response`, as
+    `scripts/eval-garak-inthewild.ts` does). Nothing in `data/measurements/`
+    records them, and nothing refreshes them.
 
 [^promptcorpora]: **Read both of these as closed-book scores.** Both rows are
     measured on a legacy event, `{ type: 'llm_io', content,
@@ -703,7 +740,8 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 Two `garak` rows are deliberate: the headline `garak` source tracks NVIDIA's
 in-the-wild jailbreak corpus (narrow; this is the number ATR cites publicly,
-and the table gives its current value and the run that produced it), while
+and the table gives its current value and the run that produced it;
+[^garakcorpus] gives how much of it rests on rules written from that corpus), while
 `garak-full` tracks every probe family in upstream garak (broad, includes
 families like `badchars`, `dra`, `encoding` that ATR's regex layer
 intentionally does not target). Both are valid measurements against different
