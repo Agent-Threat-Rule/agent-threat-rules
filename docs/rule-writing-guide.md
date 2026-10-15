@@ -95,10 +95,10 @@ detection:
 
 | Operator | Behavior |
 |----------|----------|
-| `regex` | Regex match against the field value. Use `(?i)` for case-insensitive |
-| `contains` | Substring match (case-insensitive by default) |
-| `exact` | Exact string equality |
-| `starts_with` | String prefix match |
+| `regex` | Regex match against the field value. Always case-insensitive, with or without `(?i)`: see [Regex conditions ignore letter case](#regex-conditions-ignore-letter-case) |
+| `contains` | Substring match, always case-insensitive |
+| `exact` | Exact string equality, case-sensitive |
+| `starts_with` | String prefix match, always case-insensitive |
 
 **Condition combinators**:
 
@@ -183,15 +183,41 @@ Is the threat in user/LLM text?
 
 ## Regex Best Practices
 
-### Use case-insensitive flag
+### Regex conditions ignore letter case
+
+The engine matches every `operator: regex` condition case-insensitively. It
+strips a leading inline flag group such as `(?i)`, `(?is)` or `(?im)` and
+compiles the rest with the `i` flag (plus `u` when the pattern needs it),
+whether the group was there or not. So a pattern without `(?i)` still matches
+every capitalisation, and letter case cannot tell two inputs apart:
 
 ```yaml
-# GOOD: Catches "Ignore", "IGNORE", "ignore"
+# Catches "Ignore", "IGNORE", "ignore" -- and says so
 value: "(?i)\\bignore\\b"
 
-# BAD: Only catches lowercase
+# Catches exactly the same inputs, but reads as if it only caught lowercase
 value: "\\bignore\\b"
+
+# Does NOT keep lowercase out: under the engine [A-Z] also matches a-z,
+# so this matches "akia..." as well as "AKIA..."
+value: "\\bAKIA[0-9A-Z]{16}\\b"
 ```
+
+- Start every regex with `(?i)`. It changes nothing in this engine, but the
+  pattern then says what it does, and a consumer that compiles the pattern as
+  written is case-insensitive too.
+- If letter case is what separates an attack from a benign input, express the
+  difference another way: surrounding syntax, a delimiter, or a second
+  condition. Array-format conditions have no case-sensitive mode. A
+  `case_sensitive` key on one is ignored; only the named-map format's
+  `patterns` conditions honour it.
+- The other flags in that leading group are stripped and not applied: `(?s)`
+  does not make `.` match a newline, `(?m)` does not make `^` and `$` match at
+  line breaks, and `(?x)` does not ignore whitespace. Write `[\s\S]` for a dot
+  that crosses lines, and `(?:^|\n)` / `(?:\n|$)` for line anchors.
+- `scripts/gate-case-sensitivity.ts` runs on rule pull requests and fails a
+  condition that, read as written, keeps one of the rule's own `true_negatives`
+  out only by letter case.
 
 ### Use word boundaries
 
