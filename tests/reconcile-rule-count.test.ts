@@ -26,6 +26,9 @@ import {
   isEffective,
   computeCounts,
   setBlockNumber,
+  setBlockObject,
+  setTopLevelString,
+  verifyWritten,
 } from "../scripts/reconcile-rule-count.mjs";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -108,6 +111,46 @@ describe("computeCounts", () => {
     expect(counts.effective + counts.inert).toBe(counts.total);
     expect(counts.effective).toBeLessThanOrEqual(counts.total);
   });
+
+  // byCategory froze on 2026-07-02 and summed to 675 under total: 825 for
+  // almost three months, because nothing asserted the sum. These do.
+  it("keys byCategory by directory and always sums to total", () => {
+    const counts = computeCounts(join(REPO_ROOT, "rules"));
+    const sum = Object.values(counts.byCategory).reduce((a: number, b) => a + (b as number), 0);
+    expect(sum).toBe(counts.total);
+    expect(Object.keys(counts.byCategory).length).toBe(counts.categories);
+    expect(Object.keys(counts.byCategory)).toEqual([...Object.keys(counts.byCategory)].sort());
+  });
+
+  it("reports an empty category directory as 0 instead of dropping it", () => {
+    const root = mkdtempSync(join(tmpdir(), "atr-cats-"));
+    mkdirSync(join(root, "prompt-injection"), { recursive: true });
+    mkdirSync(join(root, "data-poisoning"), { recursive: true });
+    writeFileSync(
+      join(root, "prompt-injection", "a.yaml"),
+      rule("ATR-2026-00001", "experimental", "test"),
+      "utf-8",
+    );
+
+    const counts = computeCounts(root);
+    rmSync(root, { recursive: true, force: true });
+
+    expect(counts.byCategory).toEqual({ "data-poisoning": 0, "prompt-injection": 1 });
+    expect(counts.categories).toBe(2);
+  });
+
+  it("gives a rule outside any category directory a visible bucket, not silent loss", () => {
+    const root = mkdtempSync(join(tmpdir(), "atr-stray-"));
+    mkdirSync(join(root, "prompt-injection"), { recursive: true });
+    writeFileSync(join(root, "stray.yaml"), rule("ATR-2026-00009", "experimental", "test"), "utf-8");
+
+    const counts = computeCounts(root);
+    rmSync(root, { recursive: true, force: true });
+
+    expect(counts.byCategory).toEqual({ "prompt-injection": 0, uncategorized: 1 });
+    const sum = Object.values(counts.byCategory).reduce((a: number, b) => a + (b as number), 0);
+    expect(sum).toBe(counts.total);
+  });
 });
 
 describe("setBlockNumber", () => {
@@ -152,6 +195,128 @@ describe("setBlockNumber", () => {
     const twice = setBlockNumber(once, "rules", "effective", 8);
     expect(twice.changed).toBe(false);
     expect(twice.text).toBe(once);
+  });
+});
+
+describe("setBlockObject", () => {
+  const doc = [
+    "{",
+    '  "rules": {',
+    '    "total": 10,',
+    '    "byCategory": {',
+    '      "a": 4,',
+    '      "b": 6',
+    "    }",
+    "  }",
+    "}",
+  ].join("\n");
+
+  it("replaces the object and keeps the file parseable", () => {
+    const out = setBlockObject(doc, "rules", "byCategory", { a: 1, c: 9 });
+    expect(out.changed).toBe(true);
+    expect(out.before).toEqual({ a: 4, b: 6 });
+    expect(JSON.parse(out.text).rules.byCategory).toEqual({ a: 1, c: 9 });
+  });
+
+  it("re-renders at the file's own indentation", () => {
+    const out = setBlockObject(doc, "rules", "byCategory", { a: 1, c: 9 });
+    expect(out.text).toContain('\n    "byCategory": {\n      "a": 1,\n      "c": 9\n    }');
+  });
+
+  it("reports no change when the object already matches", () => {
+    const out = setBlockObject(doc, "rules", "byCategory", { a: 4, b: 6 });
+    expect(out.changed).toBe(false);
+    expect(out.text).toBe(doc);
+  });
+
+  it("is idempotent", () => {
+    const once = setBlockObject(doc, "rules", "byCategory", { a: 1, c: 9 }).text;
+    const twice = setBlockObject(once, "rules", "byCategory", { a: 1, c: 9 });
+    expect(twice.changed).toBe(false);
+    expect(twice.text).toBe(once);
+  });
+
+  it("returns null for an absent block or field instead of silently doing nothing", () => {
+    expect(setBlockObject(doc, "noSuchBlock", "byCategory", {})).toBeNull();
+    expect(setBlockObject(doc, "rules", "noSuchField", {})).toBeNull();
+  });
+});
+
+describe("setTopLevelString", () => {
+  const doc = ['{', '  "version": "3.5.0",', '  "benchmarks": [', '    { "atr_version": "1.0.0" }', "  ]", "}"].join(
+    "\n",
+  );
+
+  it("sets the top-level field", () => {
+    const out = setTopLevelString(doc, "version", "4.1.0");
+    expect(out.changed).toBe(true);
+    expect(out.before).toBe("3.5.0");
+    expect(JSON.parse(out.text).version).toBe("4.1.0");
+  });
+
+  it("does not hit a nested key that merely ends in the same word", () => {
+    const out = setTopLevelString(doc, "version", "4.1.0");
+    expect(JSON.parse(out.text).benchmarks[0].atr_version).toBe("1.0.0");
+  });
+
+  it("reports no change when already correct, and null when absent", () => {
+    expect(setTopLevelString(doc, "version", "3.5.0").changed).toBe(false);
+    expect(setTopLevelString(doc, "noSuchField", "x")).toBeNull();
+  });
+});
+
+describe("verifyWritten (the invariant that was missing)", () => {
+  it("passes against the committed stats files", () => {
+    expect(verifyWritten(computeCounts(join(REPO_ROOT, "rules")))).toEqual([]);
+  });
+
+  it("flags a total that no longer matches disk", () => {
+    const counts = computeCounts(join(REPO_ROOT, "rules"));
+    const problems = verifyWritten({ ...counts, total: counts.total + 1 });
+    expect(problems.join(" ")).toMatch(/rules\.total/);
+  });
+
+  // The branches below are the reason this function exists, so they are driven
+  // against fabricated caches rather than the real (healthy) files — otherwise
+  // the invariant's failing path never runs and we are only asserting that a
+  // correct repo is correct.
+  const fake = (rules: Record<string, unknown>, version = "9.9.9") => (rel: string) => {
+    if (rel === "package.json") return { version };
+    if (rel === "stats.json") return { ruleCount: { total: 3 } };
+    return { version, rules };
+  };
+  const counts3 = {
+    total: 3,
+    byCategory: { alpha: 2, beta: 1 },
+    categories: 2,
+  } as ReturnType<typeof computeCounts>;
+
+  it("passes on a consistent fabricated cache (control)", () => {
+    const read = fake({ total: 3, categories: 2, byCategory: { alpha: 2, beta: 1 } });
+    expect(verifyWritten(counts3, read)).toEqual([]);
+  });
+
+  it("catches byCategory no longer summing to total — the 675-vs-825 regression", () => {
+    const read = fake({ total: 3, categories: 2, byCategory: { alpha: 1, beta: 1 } });
+    const problems = verifyWritten(counts3, read);
+    expect(problems.join(" ")).toMatch(/byCategory sums to 2 but rules\.total=3/);
+  });
+
+  it("catches a categories count that disagrees with the number of keys", () => {
+    const read = fake({ total: 3, categories: 9, byCategory: { alpha: 2, beta: 1 } });
+    const problems = verifyWritten(counts3, read);
+    expect(problems.join(" ")).toMatch(/categories=9 but byCategory has 2 keys/);
+  });
+
+  it("catches a cache version that has drifted from package.json", () => {
+    const read = (rel: string) =>
+      rel === "package.json"
+        ? { version: "4.1.0" }
+        : rel === "stats.json"
+          ? { ruleCount: { total: 3 } }
+          : { version: "3.5.0", rules: { total: 3, categories: 2, byCategory: { alpha: 2, beta: 1 } } };
+    const problems = verifyWritten(counts3, read);
+    expect(problems.join(" ")).toMatch(/version=3\.5\.0 but package\.json is 4\.1\.0/);
   });
 });
 

@@ -11,7 +11,8 @@
  *      match every entry in test_cases.true_positives. A rule that
  *      doesn't catch its own declared TPs is broken.
  *   3. Benign skill corpus: 0 FP across data/skill-benchmark/benign/*.md
- *      (currently 432 known-clean SKILL.md samples).
+ *      (known-clean SKILL.md samples; the corpus grows, so the count is
+ *      counted at run time and printed, never written down here).
  *   4. Research-mention corpus: 0 FP across data/research-mentions/
  *      corpus.jsonl (curated samples of text that MENTIONS attacks
  *      without being attacks — papers, blogs, READMEs, course material).
@@ -22,12 +23,26 @@
  *
  * Exit 0 = safe to auto-merge
  * Exit 1 = any check failed → PR stays in human-review queue
+ * Exit 2 = the gate could not run as asked (bad usage / bad environment).
+ *          Never reported as safe: a gate that did not run is not a pass.
  *
  * Usage (in tc-pr-back workflow):
  *   npx tsx scripts/check-rules-safety.ts --base origin/main
  *
- * Single-proposal mode (for /red-team and /cve-collector flows):
+ * Explicit-target mode (for /red-team, /cve-collector and CONTRIBUTING's
+ * "check my rule before I open the PR" flow). Positional paths and --file
+ * mean the same thing, and either may be repeated:
+ *   npx tsx scripts/check-rules-safety.ts rules/x/ATR-2026-00001-foo.yaml
  *   npx tsx scripts/check-rules-safety.ts --file proposals/path.proposal.yaml
+ *
+ * A NAMED TARGET IS NEVER "NOTHING TO CHECK" (this was a false green).
+ *   Positional arguments were parsed by nobody: argv was scanned for --base and
+ *   --file and everything else was dropped. CONTRIBUTING.md Path 2 step 4 and
+ *   .github/workflows/issue-to-proposal.yml both teach the positional form, so
+ *   every contributor who followed the docs got "0 new rule file(s) detected /
+ *   nothing to check, treating as safe" and exit 0 in under a second, for a
+ *   rule that was never read. The "nothing to check → safe" answer is now only
+ *   reachable from diff mode with no target named by anyone.
  *
  * NEW-RULE DISCOVERY IS NOT DIFF-ONLY (this was a false green).
  *   `git diff --diff-filter=A base...HEAD` only sees committed files. Rules are
@@ -51,7 +66,15 @@ import {
   writeFileSync,
   rmSync,
 } from "node:fs";
-import { join, resolve, dirname, basename } from "node:path";
+import type { Dirent } from "node:fs";
+import {
+  join,
+  resolve,
+  dirname,
+  basename,
+  isAbsolute,
+  relative,
+} from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { load as yamlLoad } from "js-yaml";
@@ -59,7 +82,14 @@ import { ATREngine } from "../src/engine.js";
 import { matchedRuleIds } from "./lib/corpus-event.js";
 import { lintRuleDoc } from "./lint-rule-patterns.js";
 
-const MAX_NEW_PER_PR = Number(process.env.MAX_NEW_PER_PR ?? 10);
+/**
+ * Validated in main(). Read as a raw string on purpose: `Number("ten")` is NaN,
+ * and `count > NaN` is false, so a typo'd override used to disable the per-PR
+ * cap silently — an unbounded batch would have sailed through reporting PASS.
+ */
+const MAX_NEW_PER_PR_RAW = process.env.MAX_NEW_PER_PR ?? "10";
+/** Usage / environment failure. Distinct from exit 1, "a check found something". */
+const EXIT_USAGE = 2;
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const BENIGN_DIR = join(REPO_ROOT, "data/skill-benchmark/benign");
 const RESEARCH_MENTIONS_FILE = join(
@@ -81,14 +111,124 @@ interface Failure {
   reason: string;
 }
 
-function parseArgs(): { base: string; file: string | null } {
-  const argv = process.argv.slice(2);
-  const baseIdx = argv.indexOf("--base");
-  const base =
-    baseIdx >= 0 ? (argv[baseIdx + 1] ?? "origin/main") : "origin/main";
-  const fileIdx = argv.indexOf("--file");
-  const file = fileIdx >= 0 ? (argv[fileIdx + 1] ?? null) : null;
-  return { base, file };
+export const USAGE = [
+  "Usage:",
+  "  check-rules-safety.ts <rule.yaml> [<rule.yaml> ...]   explicit targets",
+  "  check-rules-safety.ts --file <path> [--file <path>]   same, flag form",
+  "  check-rules-safety.ts [--base <git-ref>]              diff mode (CI)",
+  "",
+  "Exit: 0 = safe, 1 = a check failed, 2 = usage or environment error.",
+].join("\n");
+
+export interface ParsedArgs {
+  readonly base: string;
+  /** Targets the caller named, positionally or with --file. Verbatim, unresolved. */
+  readonly files: readonly string[];
+  readonly errors: readonly string[];
+}
+
+/**
+ * Parse argv. Positional paths are accepted and mean exactly what --file means;
+ * anything unrecognised is an error rather than a silent drop, because a
+ * dropped argument here reads as "the caller asked for nothing" and the gate's
+ * answer to that used to be "safe".
+ */
+export function parseArgs(argv: readonly string[]): ParsedArgs {
+  const files: string[] = [];
+  const errors: string[] = [];
+  let base = "origin/main";
+  let sawBase = false;
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]!;
+    if (arg === "--base") {
+      const value = argv[i + 1];
+      i++;
+      if (value === undefined || value.startsWith("-")) {
+        errors.push("--base needs a git ref, e.g. --base origin/main");
+      } else if (sawBase) {
+        errors.push(`--base given twice ("${base}" then "${value}")`);
+      } else {
+        base = value;
+        sawBase = true;
+      }
+      continue;
+    }
+    if (arg === "--file") {
+      const value = argv[i + 1];
+      i++;
+      if (value === undefined || value.startsWith("-")) {
+        errors.push("--file needs a path, e.g. --file rules/<cat>/<rule>.yaml");
+      } else {
+        files.push(value);
+      }
+      continue;
+    }
+    if (arg === "--help" || arg === "-h") {
+      errors.push("help requested");
+      continue;
+    }
+    if (arg.startsWith("-")) {
+      errors.push(`unknown option "${arg}"`);
+      continue;
+    }
+    files.push(arg);
+  }
+  return { base, files, errors };
+}
+
+export interface ResolvedTargets {
+  /** Repo-relative paths, de-duplicated, in the order the caller named them. */
+  readonly files: readonly string[];
+  readonly errors: readonly string[];
+}
+
+const isReadableFile = (p: string): boolean => {
+  try {
+    return existsSync(p) && statSync(p).isFile();
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Turn caller-named paths into repo-relative rule paths. A path that cannot be
+ * resolved is an ERROR, never an empty work list — "the caller named something
+ * specific" and "there is nothing to check" must not be able to produce the
+ * same outcome. Relative paths resolve against the working directory first and
+ * the repo root second, so both `check-rules-safety.ts rules/x/y.yaml` from the
+ * repo root and a path relative to a subdirectory work.
+ */
+export function resolveTargets(
+  raw: readonly string[],
+  repoRoot: string = REPO_ROOT,
+  cwd: string = process.cwd(),
+): ResolvedTargets {
+  const files: string[] = [];
+  const errors: string[] = [];
+  for (const p of raw) {
+    const candidates = isAbsolute(p)
+      ? [p]
+      : [...new Set([resolve(cwd, p), resolve(repoRoot, p)])];
+    const hit = candidates.find(isReadableFile);
+    if (!hit) {
+      errors.push(`no such file: ${p}`);
+      continue;
+    }
+    const rel = relative(repoRoot, hit);
+    if (rel.startsWith("..") || isAbsolute(rel)) {
+      // Downstream (loadDoc, the scoped-engine copy) joins against REPO_ROOT,
+      // so a path outside the repo would silently resolve to something else.
+      errors.push(`outside the repository, cannot be checked: ${p}`);
+      continue;
+    }
+    if (!isRuleFile(rel)) {
+      errors.push(`not a YAML rule file: ${p}`);
+      continue;
+    }
+    if (!files.includes(rel)) files.push(rel);
+  }
+  return { files, errors };
 }
 
 /** Runs a git command and returns stdout. Injected so discovery is testable. */
@@ -120,14 +260,16 @@ export function getNewRuleFiles(
   base: string,
   repoRoot: string = REPO_ROOT,
   run: GitRunner = execGit(repoRoot),
+  onError: DiscoveryErrorSink = () => {},
 ): string[] {
   const added = tryGit(
     run,
     ["diff", "--name-only", "--diff-filter=A", `${base}...HEAD`, "--", "rules/"],
     "git diff",
+    onError,
   );
   return [
-    ...new Set([...added, ...getUntrackedRuleFiles(repoRoot, run)]),
+    ...new Set([...added, ...getUntrackedRuleFiles(repoRoot, run, onError)]),
   ].sort();
 }
 
@@ -135,31 +277,39 @@ export function getNewRuleFiles(
 export function getUntrackedRuleFiles(
   repoRoot: string = REPO_ROOT,
   run: GitRunner = execGit(repoRoot),
+  onError: DiscoveryErrorSink = () => {},
 ): string[] {
   return tryGit(
     run,
     ["ls-files", "--others", "--exclude-standard", "--", "rules/"],
     "git ls-files --others",
+    onError,
   );
 }
 
+/** Told about a discovery source that could not answer. See tryGit. */
+export type DiscoveryErrorSink = (message: string) => void;
+
 /**
- * Run one git command, returning the rule files it named. A git failure is
- * reported and treated as "this source found nothing" — never as a reason to
- * abandon the other source, because losing a discovery source silently is the
- * exact failure this gate is being hardened against.
+ * Run one git command, returning the rule files it named. A git failure never
+ * aborts the other source — a shallow clone can lose the diff and still have a
+ * truthful untracked listing — but it is reported to the sink, and main() will
+ * not let the run finish green on a partial discovery. An unanswered source
+ * means the gate cannot prove that nothing needs checking, and "cannot prove"
+ * is not "safe".
  */
 function tryGit(
   run: GitRunner,
   args: readonly string[],
   label: string,
+  onError: DiscoveryErrorSink = () => {},
 ): string[] {
   try {
     return run(args).trim().split("\n").filter(Boolean).filter(isRuleFile);
   } catch (err) {
-    console.error(
-      `[safety-gate] ${label} failed: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    const message = `${label} failed: ${err instanceof Error ? err.message : String(err)}`;
+    console.error(`[safety-gate] ${message}`);
+    onError(message);
     return [];
   }
 }
@@ -174,11 +324,13 @@ export function getModifiedRuleFiles(
   base: string,
   repoRoot: string = REPO_ROOT,
   run: GitRunner = execGit(repoRoot),
+  onError: DiscoveryErrorSink = () => {},
 ): string[] {
   return tryGit(
     run,
     ["diff", "--name-only", "--diff-filter=M", `${base}...HEAD`, "--", "rules/"],
     "git diff (modified)",
+    onError,
   );
 }
 
@@ -214,59 +366,202 @@ function walkYamlFiles(dir: string): string[] {
   return out;
 }
 
-interface JsonlSample {
-  text: string;
+/** One benign sample, already labelled for the failure message. */
+export interface LabelledSample {
+  readonly label: string;
+  readonly text: string;
+}
+
+/** A loaded corpus plus everything that went wrong while loading it. */
+interface LoadedCorpus {
+  readonly samples: readonly LabelledSample[];
+  readonly errors: readonly string[];
+}
+
+interface JsonlRecord {
+  text?: string;
+  source?: string;
+  source_id?: string;
   category?: string;
   source_type?: string;
 }
 
-function loadResearchMentions(): JsonlSample[] {
-  if (!existsSync(RESEARCH_MENTIONS_FILE)) return [];
-  const raw = readFileSync(RESEARCH_MENTIONS_FILE, "utf-8");
-  const out: JsonlSample[] = [];
-  for (const line of raw.split("\n")) {
-    const t = line.trim();
-    if (!t) continue;
+/**
+ * Read JSONL samples from a file or a directory of .jsonl files.
+ *
+ * Unreadable files and unparseable lines are COUNTED AND REPORTED, not skipped
+ * in silence. A corpus that quietly shrinks is a gate that quietly weakens: the
+ * rule still gets its "0 FP" verdict, just over fewer samples than anyone
+ * thinks. Errors are returned to the caller, which turns them into findings.
+ */
+function loadJsonl(
+  path: string,
+  toLabel: (record: JsonlRecord, index: number, file: string) => string,
+): LoadedCorpus {
+  if (!existsSync(path)) return { samples: [], errors: [] };
+  let files: string[];
+  try {
+    files = statSync(path).isDirectory()
+      ? readdirSync(path)
+          .filter((e) => e.endsWith(".jsonl"))
+          .map((e) => join(path, e))
+      : [path];
+  } catch (err) {
+    return { samples: [], errors: [`cannot list ${path}: ${asMessage(err)}`] };
+  }
+
+  const samples: LabelledSample[] = [];
+  const errors: string[] = [];
+  for (const file of files) {
+    let raw: string;
     try {
-      out.push(JSON.parse(t) as JsonlSample);
-    } catch {
+      raw = readFileSync(file, "utf-8");
+    } catch (err) {
+      errors.push(`cannot read ${file}: ${asMessage(err)}`);
       continue;
     }
+    const lines = raw.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const t = lines[i]!.trim();
+      if (!t) continue;
+      let record: JsonlRecord;
+      try {
+        record = JSON.parse(t) as JsonlRecord;
+      } catch (err) {
+        errors.push(`malformed JSON at ${file}:${i + 1}: ${asMessage(err)}`);
+        continue;
+      }
+      const text = typeof record.text === "string" ? record.text : "";
+      if (text.length === 0) {
+        errors.push(`empty or missing "text" at ${file}:${i + 1}`);
+        continue;
+      }
+      samples.push({ label: toLabel(record, samples.length, file), text });
+    }
   }
-  return out;
+  return { samples, errors };
 }
 
-interface ExtendedBenignSample {
-  text: string;
-  source: string;
-  source_id: string;
+const asMessage = (err: unknown): string =>
+  err instanceof Error ? err.message : String(err);
+
+/**
+ * Benign SKILL.md files. Counted at run time — the corpus grows.
+ *
+ * This walks subdirectories. It used to read only the top level, which quietly
+ * excluded every sample filed under one: 35 files in `benign/ninja-legit/` were
+ * in the corpus on disk but were never charged against any rule, so the gate
+ * enforced 432 samples while the repository documented 467. A benign sample that
+ * the gate does not read is a benign sample that cannot catch a false positive.
+ */
+function loadBenignSkills(): LoadedCorpus {
+  if (!existsSync(BENIGN_DIR)) return { samples: [], errors: [] };
+  const samples: LabelledSample[] = [];
+  const errors: string[] = [];
+
+  const walk = (dir: string, prefix: string): void => {
+    let entries: Dirent[];
+    try {
+      entries = readdirSync(dir, { withFileTypes: true });
+    } catch (err) {
+      errors.push(`cannot list ${dir}: ${asMessage(err)}`);
+      return;
+    }
+    // Sorted so the sample order does not depend on filesystem enumeration.
+    for (const entry of [...entries].sort((a, b) => a.name.localeCompare(b.name))) {
+      const full = join(dir, entry.name);
+      const label = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) {
+        walk(full, label);
+        continue;
+      }
+      if (!entry.isFile() || !entry.name.endsWith(".md")) continue;
+      try {
+        samples.push({ label, text: readFileSync(full, "utf-8") });
+      } catch (err) {
+        errors.push(`cannot read ${full}: ${asMessage(err)}`);
+      }
+    }
+  };
+
+  walk(BENIGN_DIR, "");
+  return { samples, errors };
 }
 
 /**
- * Load the extended benign corpus (arxiv abstracts, npm / pypi package
- * descriptions). One JSONL file per source under
- * data/benign-corpus-extended/.
+ * Every benign corpus the gate charges a rule against, loaded exactly once.
+ *
+ *  - skills:   known-clean SKILL.md samples (data/skill-benchmark/benign).
+ *  - extended: arxiv abstracts, npm / pypi package descriptions and READMEs —
+ *              larger and more varied prose than the skill corpus.
+ *  - code:     real source code. The prose corpora contain none, so a rule whose
+ *              pattern is a benign code line (`import random`) passes all of
+ *              them and false-positives on the first repository it meets.
+ *  - mentions: text that MENTIONS attacks without being one — papers, security
+ *              blogs, READMEs, course material. A FP here means the rule cannot
+ *              tell an attack from a sentence about the attack.
  */
-function loadExtendedBenign(): ExtendedBenignSample[] {
-  if (!existsSync(BENIGN_EXTENDED_DIR)) return [];
-  const out: ExtendedBenignSample[] = [];
-  for (const entry of readdirSync(BENIGN_EXTENDED_DIR)) {
-    if (!entry.endsWith(".jsonl")) continue;
-    const f = join(BENIGN_EXTENDED_DIR, entry);
-    let raw: string;
-    try {
-      raw = readFileSync(f, "utf-8");
-    } catch {
-      continue;
+interface BenignCorpora {
+  readonly skills: LoadedCorpus;
+  readonly extended: LoadedCorpus;
+  readonly code: LoadedCorpus;
+  readonly mentions: LoadedCorpus;
+}
+
+function loadBenignCorpora(): BenignCorpora {
+  const sourceLabel = (r: JsonlRecord): string =>
+    `${r.source ?? "?"}:${(r.source_id ?? "?").slice(0, 40)}`;
+  return {
+    skills: loadBenignSkills(),
+    extended: loadJsonl(BENIGN_EXTENDED_DIR, sourceLabel),
+    code: loadJsonl(BENIGN_CODE_DIR, sourceLabel),
+    mentions: loadJsonl(
+      RESEARCH_MENTIONS_FILE,
+      (r, i) =>
+        `mention#${i}:${r.category ?? "uncategorised"}:${r.source_type ?? "unknown"}`,
+    ),
+  };
+}
+
+/** Every benign sample, flattened, for the differential modified-rule check. */
+function flattenCorpora(c: BenignCorpora): readonly LabelledSample[] {
+  return [
+    ...c.skills.samples,
+    ...c.extended.samples,
+    ...c.code.samples,
+    ...c.mentions.samples,
+  ];
+}
+
+/**
+ * Fail-closed census. An absent or empty corpus used to print "skipping ..."
+ * and return no false positives, which the gate then reported as a PASS — the
+ * rule was cleared by a check that never ran. Missing corpora and load errors
+ * are findings now, and a rule waits for a human instead.
+ */
+function censusFailures(c: BenignCorpora): Failure[] {
+  const out: Failure[] = [];
+  const corpora: Array<[string, string, LoadedCorpus]> = [
+    ["benign-skills", BENIGN_DIR, c.skills],
+    ["benign-extended", BENIGN_EXTENDED_DIR, c.extended],
+    ["benign-code", BENIGN_CODE_DIR, c.code],
+    ["research-mentions", RESEARCH_MENTIONS_FILE, c.mentions],
+  ];
+  for (const [name, where, corpus] of corpora) {
+    if (corpus.samples.length === 0) {
+      out.push({
+        file: where,
+        reason: `${name} corpus is missing or empty — the gate cannot clear a rule on a corpus it could not read`,
+      });
     }
-    for (const line of raw.split("\n")) {
-      const t = line.trim();
-      if (!t) continue;
-      try {
-        out.push(JSON.parse(t) as ExtendedBenignSample);
-      } catch {
-        continue;
-      }
+    for (const err of corpus.errors.slice(0, 3)) {
+      out.push({ file: where, reason: `${name} corpus load error: ${err}` });
+    }
+    if (corpus.errors.length > 3) {
+      out.push({
+        file: where,
+        reason: `${name} corpus: +${corpus.errors.length - 3} more load error(s) suppressed`,
+      });
     }
   }
   return out;
@@ -283,7 +578,7 @@ export interface RuleTNSample {
  * them. This includes new rules so peers added by the same PR are checked in
  * both directions; self-conflicts are excluded by owner id at evaluation time.
  */
-function loadAllTrueNegatives(): RuleTNSample[] {
+function loadAllTrueNegatives(errors: string[] = []): RuleTNSample[] {
   const out: RuleTNSample[] = [];
   for (const f of walkYamlFiles(RULES_DIR)) {
     const rel = f.startsWith(REPO_ROOT + "/")
@@ -292,7 +587,11 @@ function loadAllTrueNegatives(): RuleTNSample[] {
     let doc: unknown;
     try {
       doc = yamlLoad(readFileSync(f, "utf-8"));
-    } catch {
+    } catch (err) {
+      // Not skipped in silence: an unreadable rule contributes no
+      // true-negatives, so the cross-rule check would clear a new rule of a
+      // conflict it was never tested for.
+      errors.push(`cannot load ${rel} for cross-rule check: ${asMessage(err)}`);
       continue;
     }
     const d = doc as {
@@ -367,150 +666,25 @@ function matchAllRuleIds(engine: ATREngine, content: string): ReadonlySet<string
 }
 
 /**
- * Check 3: scan the benign-skill corpus. For each sample, collect all
- * matching rule IDs; if any new rule ID appears, that rule FP'd.
+ * Checks 3 / 3b / 3c / 4: scan one benign corpus. For each sample, collect the
+ * matching rule IDs; any new rule ID that appears is a false positive.
+ *
+ * One implementation for all four corpora on purpose. Each used to carry its
+ * own copy, and each copy carried its own "corpus empty — skipping" branch that
+ * returned zero false positives and let the run report PASS. Emptiness is now
+ * decided once, by censusFailures(), before any rule is measured.
  */
-async function checkBenignCorpusFP(
+async function checkCorpusFP(
   engine: ATREngine,
-  newRuleIds: Set<string>,
+  newRuleIds: ReadonlySet<string>,
+  samples: readonly LabelledSample[],
 ): Promise<Map<string, string[]>> {
   const fps = new Map<string, string[]>();
-  if (!existsSync(BENIGN_DIR)) {
-    console.error(
-      `[safety-gate] benign corpus not found at ${BENIGN_DIR} — skipping FP check`,
-    );
-    return fps;
-  }
-  const samples = readdirSync(BENIGN_DIR).filter((f) => f.endsWith(".md"));
-  for (const sample of samples) {
-    const content = readFileSync(join(BENIGN_DIR, sample), "utf-8");
-    for (const id of matchAllRuleIds(engine, content)) {
-      if (newRuleIds.has(id)) {
-        if (!fps.has(id)) fps.set(id, []);
-        fps.get(id)!.push(sample);
-      }
-    }
-  }
-  return fps;
-}
-
-/**
- * Check 3b: scan the extended benign corpus. Larger and more diverse
- * than the original 432-skill set — arxiv abstracts (cs.AI / cs.CR /
- * cs.LG / cs.CL), plus npm and pypi package descriptions + READMEs.
- * Same FP semantics: a new rule must produce 0 matches across the
- * extended corpus.
- */
-async function checkExtendedBenignFP(
-  engine: ATREngine,
-  newRuleIds: Set<string>,
-): Promise<Map<string, string[]>> {
-  const fps = new Map<string, string[]>();
-  const samples = loadExtendedBenign();
-  if (samples.length === 0) {
-    console.error(
-      `[safety-gate] extended-benign corpus empty (${BENIGN_EXTENDED_DIR}) — skipping extended-FP check`,
-    );
-    return fps;
-  }
   for (const s of samples) {
-    const label = `${s.source ?? "?"}:${(s.source_id ?? "?").slice(0, 40)}`;
     for (const id of matchAllRuleIds(engine, s.text)) {
       if (newRuleIds.has(id)) {
         if (!fps.has(id)) fps.set(id, []);
-        fps.get(id)!.push(label);
-      }
-    }
-  }
-  return fps;
-}
-
-/**
- * Load the benign-code corpus from data/benign-code/*.jsonl. Same
- * {source, source_id, text} shape as the extended benign corpus, but each
- * `text` is real source code (imports + normal library usage).
- */
-function loadBenignCode(): ExtendedBenignSample[] {
-  if (!existsSync(BENIGN_CODE_DIR)) return [];
-  const out: ExtendedBenignSample[] = [];
-  for (const entry of readdirSync(BENIGN_CODE_DIR)) {
-    if (!entry.endsWith(".jsonl")) continue;
-    let raw: string;
-    try {
-      raw = readFileSync(join(BENIGN_CODE_DIR, entry), "utf-8");
-    } catch {
-      continue;
-    }
-    for (const line of raw.split("\n")) {
-      const t = line.trim();
-      if (!t) continue;
-      try {
-        out.push(JSON.parse(t) as ExtendedBenignSample);
-      } catch {
-        continue;
-      }
-    }
-  }
-  return out;
-}
-
-/**
- * Check 3c: scan the benign-CODE corpus. This is the hard gate that the
- * import-FP class (e.g. a rule whose pattern is `import random`) failed —
- * the prose corpora never contained source code. A new rule matching ANY
- * benign-code sample is a false positive and the rule is rejected, routing
- * the proposal back to human review instead of letting it reach main.
- */
-async function checkBenignCodeFP(
-  engine: ATREngine,
-  newRuleIds: Set<string>,
-): Promise<Map<string, string[]>> {
-  const fps = new Map<string, string[]>();
-  const samples = loadBenignCode();
-  if (samples.length === 0) {
-    console.error(
-      `[safety-gate] benign-code corpus empty (${BENIGN_CODE_DIR}) — skipping benign-code FP check`,
-    );
-    return fps;
-  }
-  for (const s of samples) {
-    const label = `${s.source ?? "?"}:${(s.source_id ?? "?").slice(0, 40)}`;
-    for (const id of matchAllRuleIds(engine, s.text)) {
-      if (newRuleIds.has(id)) {
-        if (!fps.has(id)) fps.set(id, []);
-        fps.get(id)!.push(label);
-      }
-    }
-  }
-  return fps;
-}
-
-/**
- * Check 4: scan the research-mention corpus. Same shape as Check 3,
- * but each sample is a curated piece of text that MENTIONS attacks
- * without being them — academic abstracts, security blogs, READMEs,
- * course descriptions. A FP here means a rule cannot tell "this is
- * an attack" from "this is a sentence about the attack."
- */
-async function checkResearchMentionFP(
-  engine: ATREngine,
-  newRuleIds: Set<string>,
-): Promise<Map<string, string[]>> {
-  const fps = new Map<string, string[]>();
-  const samples = loadResearchMentions();
-  if (samples.length === 0) {
-    console.error(
-      `[safety-gate] research-mention corpus empty (${RESEARCH_MENTIONS_FILE}) — skipping mention-FP check`,
-    );
-    return fps;
-  }
-  for (let i = 0; i < samples.length; i++) {
-    const s = samples[i];
-    const label = `mention#${i}:${s.category ?? "uncategorised"}:${s.source_type ?? "unknown"}`;
-    for (const id of matchAllRuleIds(engine, s.text)) {
-      if (newRuleIds.has(id)) {
-        if (!fps.has(id)) fps.set(id, []);
-        fps.get(id)!.push(label);
+        fps.get(id)!.push(s.label);
       }
     }
   }
@@ -550,10 +724,11 @@ export function findCrossRuleConflicts(
 async function checkCrossRuleConflict(
   engine: ATREngine,
   newRuleIds: Set<string>,
+  loadErrors: string[] = [],
 ): Promise<Map<string, string[]>> {
   return findCrossRuleConflicts(
     newRuleIds,
-    loadAllTrueNegatives(),
+    loadAllTrueNegatives(loadErrors),
     (text) => matchAllRuleIds(engine, text),
   );
 }
@@ -569,9 +744,16 @@ async function checkCrossRuleConflict(
  * 'active' in the in-memory engine object before testing, then restore it.
  * This only affects the in-memory engine used for validation — it never
  * modifies the rule files on disk.
+ *
+ * The engine is chosen per rule by the caller: the full rulebase for a rule
+ * that lives under rules/, the scoped engine for a target that does not (a
+ * proposal file). Asking the full engine about a rule it never loaded would
+ * report every declared TP as unmatched — a finding about the harness, not the
+ * rule. Suppression is decided from a rule's own tags, so the scoped engine
+ * returns the same verdict for the rule as the full one.
  */
 async function checkOwnTruePositivesMatch(
-  engine: ATREngine,
+  engineFor: (ruleId: string) => ATREngine,
   newRuleEntries: Array<{ id: string; file: string; tps: string[] }>,
 ): Promise<Map<string, string[]>> {
   // NOTE: caller is responsible for promoting draft/test rules to 'active'
@@ -580,7 +762,7 @@ async function checkOwnTruePositivesMatch(
   for (const r of newRuleEntries) {
     const misses: string[] = [];
     for (const tp of r.tps) {
-      const matchedIds = matchAllRuleIds(engine, tp);
+      const matchedIds = matchAllRuleIds(engineFor(r.id), tp);
       if (!matchedIds.has(r.id)) {
         misses.push(tp.slice(0, 60).replace(/\s+/g, " "));
       }
@@ -603,23 +785,6 @@ function extractTruePositives(doc: Record<string, unknown>): string[] {
   return tps
     .map((t) => (typeof t === "string" ? t : (t?.input ?? "")))
     .filter((s): s is string => typeof s === "string" && s.length > 0);
-}
-
-/** Every benign sample the gate knows about, flattened to labelled text. */
-function collectBenignCorpus(): Array<{ label: string; text: string }> {
-  const out: Array<{ label: string; text: string }> = [];
-  if (existsSync(BENIGN_DIR)) {
-    for (const f of readdirSync(BENIGN_DIR).filter((x) => x.endsWith(".md"))) {
-      out.push({ label: f, text: readFileSync(join(BENIGN_DIR, f), "utf-8") });
-    }
-  }
-  for (const s of loadExtendedBenign())
-    out.push({ label: `${s.source}/${s.source_id}`, text: s.text });
-  for (const s of loadBenignCode())
-    out.push({ label: `benign-code/${s.source_id}`, text: s.text });
-  for (const s of loadResearchMentions())
-    out.push({ label: "research-mention", text: s.text });
-  return out;
 }
 
 /**
@@ -662,20 +827,29 @@ async function buildScopedEngine(
 async function checkModifiedRulesNoNewFP(
   base: string,
   files: string[],
+  corpus: readonly LabelledSample[],
 ): Promise<Failure[]> {
   const failures: Failure[] = [];
-  const corpus = collectBenignCorpus();
-  if (corpus.length === 0) {
-    console.error(
-      "[safety-gate] benign corpora empty — skipping modified-rule FP check",
-    );
-    return failures;
-  }
 
   for (const file of files) {
     const baseContent = readFileAtRef(base, file);
     const headPath = join(REPO_ROOT, file);
-    if (!baseContent || !existsSync(headPath)) continue;
+    // Neither half of the comparison may be missing. Skipping here would clear
+    // a modified rule without comparing anything.
+    if (baseContent === null) {
+      failures.push({
+        file,
+        reason: `cannot read the base version at ${base} — the modified-rule FP comparison cannot run`,
+      });
+      continue;
+    }
+    if (!existsSync(headPath)) {
+      failures.push({
+        file,
+        reason: "reported as modified but not present on disk",
+      });
+      continue;
+    }
     const headContent = readFileSync(headPath, "utf-8");
     if (baseContent === headContent) continue;
 
@@ -686,11 +860,14 @@ async function checkModifiedRulesNoNewFP(
       baseBuilt = await buildScopedEngine(name, baseContent);
       headBuilt = await buildScopedEngine(name, headContent);
     } catch (err) {
-      // A rule that no longer loads is a real problem, but it is the schema
-      // validator's to report, not this gate's.
-      console.error(
-        `[safety-gate] could not build scoped engines for ${file}: ${err instanceof Error ? err.message : String(err)}`,
-      );
+      // The schema validator reports WHY the rule no longer loads. This gate
+      // still has to report that it could not measure the change: a rule the
+      // engine cannot load matches nothing, which reads as "introduces no new
+      // false positives" and would otherwise pass.
+      failures.push({
+        file,
+        reason: `could not build scoped engines to compare against ${base}: ${asMessage(err)}`,
+      });
       if (baseBuilt) rmSync(baseBuilt.dir, { recursive: true, force: true });
       if (headBuilt) rmSync(headBuilt.dir, { recursive: true, force: true });
       continue;
@@ -726,20 +903,67 @@ async function checkModifiedRulesNoNewFP(
   return failures;
 }
 
-async function main(): Promise<void> {
-  const { base, file: singleFile } = parseArgs();
-  const newFiles = singleFile ? [singleFile] : getNewRuleFiles(base);
+/** Print usage / environment problems and leave. Never exits 0. */
+function exitUsage(problems: readonly string[]): never {
+  console.error(
+    `[safety-gate] cannot run as asked — ${problems.length} problem(s):`,
+  );
+  problems.forEach((p) => console.error(`  ✗ ${p}`));
+  console.error("");
+  console.error(USAGE);
+  process.exit(EXIT_USAGE);
+}
 
-  if (singleFile) {
-    console.log(`[safety-gate] single-file mode: ${singleFile}`);
+async function main(): Promise<void> {
+  const parsed = parseArgs(process.argv.slice(2));
+  const base = parsed.base;
+
+  const maxNewPerPr = Number(MAX_NEW_PER_PR_RAW);
+  const setupProblems = [...parsed.errors];
+  if (!Number.isInteger(maxNewPerPr) || maxNewPerPr <= 0) {
+    setupProblems.push(
+      `MAX_NEW_PER_PR must be a positive integer, got "${MAX_NEW_PER_PR_RAW}"`,
+    );
+  }
+
+  // A named target that cannot be resolved is a usage error, not an empty work
+  // list. This is the whole point: "you asked me to check X" and "there is
+  // nothing to check" must never produce the same answer.
+  const targets = resolveTargets(parsed.files);
+  setupProblems.push(...targets.errors);
+  if (setupProblems.length > 0) exitUsage(setupProblems);
+
+  const explicit = targets.files.length > 0;
+
+  // Discovery errors are collected rather than shrugged off: if a source could
+  // not answer, "0 new rule files" is an unproven claim, and this gate does not
+  // get to report unproven claims as safe.
+  const discoveryErrors: string[] = [];
+  const noteDiscoveryError: DiscoveryErrorSink = (m) => {
+    discoveryErrors.push(m);
+  };
+
+  const newFiles = explicit
+    ? [...targets.files]
+    : getNewRuleFiles(base, REPO_ROOT, execGit(REPO_ROOT), noteDiscoveryError);
+
+  if (explicit) {
+    console.log(
+      `[safety-gate] explicit-target mode: ${newFiles.length} file(s) named by the caller`,
+    );
+    newFiles.forEach((f) => console.log(`  • ${f}`));
   } else {
     console.log(`[safety-gate] base=${base}`);
   }
-  const modifiedFiles = singleFile ? [] : getModifiedRuleFiles(base);
+  const modifiedFiles = explicit
+    ? []
+    : getModifiedRuleFiles(base, REPO_ROOT, execGit(REPO_ROOT), noteDiscoveryError);
   // Say where they came from. "0 new rule file(s)" was the sound this gate made
   // while skipping a whole batch of uncommitted rules, so the split between
   // committed and on-disk-only is worth a line of CI log.
-  const untracked = singleFile ? [] : getUntrackedRuleFiles();
+  const untracked = explicit
+    ? []
+    : getUntrackedRuleFiles(REPO_ROOT, execGit(REPO_ROOT), noteDiscoveryError);
   console.log(
     `[safety-gate] ${newFiles.length} new rule file(s) detected` +
       (untracked.length > 0
@@ -752,20 +976,51 @@ async function main(): Promise<void> {
     );
   }
 
+  if (discoveryErrors.length > 0) {
+    console.log(
+      "[safety-gate] FAIL — rule discovery was incomplete, so nothing can be cleared:",
+    );
+    [...new Set(discoveryErrors)].forEach((m) => console.log(`  ✗ ${m}`));
+    process.exit(1);
+  }
+
+  // Corpora are loaded once, counted, and printed. The counts are measured at
+  // run time on purpose — they grow, and a number written into a comment or a
+  // doc goes stale without anyone noticing.
+  const corpora = loadBenignCorpora();
+  console.log(
+    `[safety-gate] benign corpora: ${corpora.skills.samples.length} skill file(s), ` +
+      `${corpora.extended.samples.length} extended sample(s), ` +
+      `${corpora.code.samples.length} code sample(s), ` +
+      `${corpora.mentions.samples.length} research-mention sample(s)`,
+  );
+  const corpusFailures =
+    newFiles.length > 0 || modifiedFiles.length > 0 ? censusFailures(corpora) : [];
+  const benignCorpus = flattenCorpora(corpora);
+
   // Modified rules are checked differentially — a change may not introduce
   // benign FPs the rule did not already have. Runs even when no rule is added,
   // which is the case this gate previously ignored entirely.
-  const modifiedFailures =
-    modifiedFiles.length > 0
-      ? await checkModifiedRulesNoNewFP(base, modifiedFiles)
-      : [];
+  const modifiedFailures = [
+    ...corpusFailures,
+    ...(modifiedFiles.length > 0 && corpusFailures.length === 0
+      ? await checkModifiedRulesNoNewFP(base, modifiedFiles, benignCorpus)
+      : []),
+  ];
 
   if (newFiles.length === 0) {
+    if (explicit) {
+      // Unreachable via resolveTargets, kept because the cost of being wrong
+      // here is a false green.
+      exitUsage([
+        "targets were named but none survived resolution — refusing to report safe",
+      ]);
+    }
     if (modifiedFailures.length === 0) {
       console.log(
         modifiedFiles.length > 0
           ? `[safety-gate] PASS — ${modifiedFiles.length} modified rule(s) introduce no new benign FPs`
-          : "[safety-gate] No new or modified rule files — nothing to check, treating as safe.",
+          : "[safety-gate] No new or modified rule files, and no target was named — nothing to check, treating as safe.",
       );
       process.exit(0);
     }
@@ -776,9 +1031,9 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  if (!singleFile && newFiles.length > MAX_NEW_PER_PR) {
+  if (!explicit && newFiles.length > maxNewPerPr) {
     console.log(
-      `[safety-gate] FAIL — ${newFiles.length} new rules exceeds MAX_NEW_PER_PR=${MAX_NEW_PER_PR}. Human review required.`,
+      `[safety-gate] FAIL — ${newFiles.length} new rules exceeds MAX_NEW_PER_PR=${maxNewPerPr}. Human review required.`,
     );
     process.exit(1);
   }
@@ -874,17 +1129,39 @@ async function main(): Promise<void> {
     }
     const scopedEngine = new ATREngine({ rulesDir: scopedDir });
     await scopedEngine.loadRules();
+    const loadedInScope = new Set<string>();
     for (const id of newRuleIds) {
       const rule = scopedEngine.getRuleById(id) as
         | Record<string, unknown>
         | undefined;
-      if (rule && (rule['status'] === 'draft' || rule['status'] === 'test')) {
+      if (!rule) continue;
+      loadedInScope.add(id);
+      if (rule['status'] === 'draft' || rule['status'] === 'test') {
         rule['status'] = 'active';
       }
     }
 
-    // Check 2 — own TPs must actually match.
-    const tpMisses = await checkOwnTruePositivesMatch(engine, ruleEntries);
+    // A rule the engine did not load matches nothing, and "matched nothing"
+    // is exactly what a clean FP scan looks like. Every corpus check below
+    // would pass vacuously, so refuse instead of clearing it.
+    for (const id of newRuleIds) {
+      if (!loadedInScope.has(id)) {
+        failures.push({
+          file: fileToId.get(id) ?? id,
+          reason: `rule id ${id} did not load into the engine (schema rejected, or the file's id does not match) — its FP checks would be vacuous`,
+        });
+      }
+    }
+
+    // Check 2 — own TPs must actually match. Measured on the engine that
+    // actually holds the rule: rules/ files come from the full rulebase, a
+    // target outside rules/ (a proposal) from the scoped engine.
+    const engineFor = (id: string): ATREngine =>
+      engine.getRuleById(id) ? engine : scopedEngine;
+    const tpMisses = await checkOwnTruePositivesMatch(
+      engineFor,
+      ruleEntries.filter((r) => loadedInScope.has(r.id)),
+    );
     for (const [id, reasons] of tpMisses) {
       for (const r of reasons.slice(0, 3))
         failures.push({ file: fileToId.get(id) ?? id, reason: r });
@@ -895,8 +1172,12 @@ async function main(): Promise<void> {
         });
     }
 
-    // Check 3 — benign skill corpus FP (432 SKILL.md samples).
-    const benignFps = await checkBenignCorpusFP(scopedEngine, newRuleIds);
+    // Check 3 — benign skill corpus FP (count printed above, counted on disk).
+    const benignFps = await checkCorpusFP(
+      scopedEngine,
+      newRuleIds,
+      corpora.skills.samples,
+    );
     for (const [id, samples] of benignFps) {
       failures.push({
         file: fileToId.get(id) ?? id,
@@ -905,7 +1186,11 @@ async function main(): Promise<void> {
     }
 
     // Check 3b — extended benign corpus FP (arxiv + npm + pypi).
-    const extendedFps = await checkExtendedBenignFP(scopedEngine, newRuleIds);
+    const extendedFps = await checkCorpusFP(
+      scopedEngine,
+      newRuleIds,
+      corpora.extended.samples,
+    );
     for (const [id, samples] of extendedFps) {
       failures.push({
         file: fileToId.get(id) ?? id,
@@ -915,7 +1200,11 @@ async function main(): Promise<void> {
 
     // Check 3c — benign-CODE corpus FP (imports + normal library usage).
     // Hard gate against the import-FP class that slipped through before.
-    const codeFps = await checkBenignCodeFP(scopedEngine, newRuleIds);
+    const codeFps = await checkCorpusFP(
+      scopedEngine,
+      newRuleIds,
+      corpora.code.samples,
+    );
     for (const [id, samples] of codeFps) {
       failures.push({
         file: fileToId.get(id) ?? id,
@@ -924,7 +1213,11 @@ async function main(): Promise<void> {
     }
 
     // Check 4 — research-mention corpus FP.
-    const mentionFps = await checkResearchMentionFP(scopedEngine, newRuleIds);
+    const mentionFps = await checkCorpusFP(
+      scopedEngine,
+      newRuleIds,
+      corpora.mentions.samples,
+    );
     for (const [id, samples] of mentionFps) {
       failures.push({
         file: fileToId.get(id) ?? id,
@@ -933,7 +1226,23 @@ async function main(): Promise<void> {
     }
 
     // Check 5 — directed cross-rule conflict against existing and peer TNs.
-    const conflictFps = await checkCrossRuleConflict(engine, newRuleIds);
+    // A rule file that cannot be read contributes no true-negatives, so the
+    // conflict it might have caused would never be looked for: report it.
+    const tnLoadErrors: string[] = [];
+    const conflictFps = await checkCrossRuleConflict(
+      engine,
+      newRuleIds,
+      tnLoadErrors,
+    );
+    for (const err of tnLoadErrors.slice(0, 3)) {
+      failures.push({ file: RULES_DIR, reason: err });
+    }
+    if (tnLoadErrors.length > 3) {
+      failures.push({
+        file: RULES_DIR,
+        reason: `(+${tnLoadErrors.length - 3} more cross-rule corpus load error(s) suppressed)`,
+      });
+    }
     for (const [id, conflicts] of conflictFps) {
       failures.push({
         file: fileToId.get(id) ?? id,
@@ -948,7 +1257,9 @@ async function main(): Promise<void> {
 
   if (failures.length === 0) {
     console.log(
-      `[safety-gate] PASS — ${newFiles.length} rule(s) safe to auto-merge`,
+      explicit
+        ? `[safety-gate] PASS — ${newFiles.length} named rule(s) cleared every check`
+        : `[safety-gate] PASS — ${newFiles.length} rule(s) safe to auto-merge`,
     );
     newFiles.forEach((f) => console.log(`  ✓ ${f}`));
     process.exit(0);

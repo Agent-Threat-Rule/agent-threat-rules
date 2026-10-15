@@ -105,14 +105,14 @@ export default async function SovereignAIDefensePage({
             <>
               ATR 是這個語境裡的<strong className="text-ink">中立基礎建設</strong>:MIT 授權、{ruleCount} 條機器可讀的偵測規則、
               社群維護,任何國家或組織都能採用、稽核、擴充、或 fork——不依賴任何單一廠商。
-              目前的外部採用已包含 Microsoft AGT、Cisco AI Defense 與 Gen Digital Sage 的已合併規則集,以及 MISP、OWASP 的引用。
+              目前的外部採用已包含 Cisco AI Defense 的開源 skill-scanner 與 Gen Digital Sage 的已合併規則集、Microsoft AGT 的 ATR 範例目錄,以及 MISP、OWASP 的引用——每一筆的憑據都是公開 repo 裡一個已合併的 PR。
             </>
           ) : (
             <>
               ATR is the <strong className="text-ink">neutral infrastructure</strong> for that context: MIT-licensed,
               {" "}{ruleCount} machine-readable detection rules, community-maintained — adoptable, auditable, extensible, or forkable
               by any country or organization, dependent on no single vendor.
-              Adoption to date includes merged rule packs in Microsoft AGT, Cisco AI Defense, and Gen Digital Sage, plus references from MISP and OWASP.
+              Adoption to date includes rule packs merged into Cisco AI Defense&apos;s open-source skill-scanner and Gen Digital Sage, ATR example directories merged into Microsoft AGT, plus references from MISP and OWASP — each evidenced by a merged pull request in a public repository.
             </>
           )}
         </p>
@@ -122,22 +122,22 @@ export default async function SovereignAIDefensePage({
       <Reveal delay={0.2}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-[2px] bg-fog border border-fog mt-9">
           <StatCell
-            label="SHIPPING"
+            label="RULES"
             value={String(ruleCount)}
             unit={zh ? " 條" : ""}
-            note={zh ? "完整 ATR 規則集於 Cisco AI Defense" : "full ATR rule pack in Cisco AI Defense"}
+            note={zh ? "MIT 授權 · 規則數即時讀自 rules/" : "MIT licensed · count read live from rules/"}
           />
           <StatCell
             label="GARAK RECALL"
-            value="98.0"
+            value="92.3"
             unit="%"
-            note={zh ? "650 in-the-wild · 全 3,475 樣本 38.5%" : "650 in-the-wild · 38.5% on full 3,475"}
+            note={zh ? "650 in-the-wild · 全 3,475 樣本 57.2% · ATR 3.5.12,2026-08-15" : "650 in-the-wild · 57.2% on full 3,475 · ATR 3.5.12, 2026-08-15"}
           />
           <StatCell
             label="FALSE POSITIVE"
-            value="0.24"
-            unit="%"
-            note={zh ? "enforce 車道 · 65,000 筆良性語料 · 逐車道揭露" : "enforce lane · 65k benign corpus · reported per lane"}
+            value={zh ? "待重測" : "withdrawn"}
+            unit=""
+            note={zh ? "各車道誤報率已撤回 · 等待重新量測" : "per-lane FP rates withdrawn · awaiting re-measurement"}
           />
           <StatCell
             label="GARAK MAPPING"
@@ -251,16 +251,16 @@ export default async function SovereignAIDefensePage({
           {zh ? (
             <>
               監管者自己也清楚。EU AI Act 是在 agentic AI 出現之前談定的——它的風險分級假設的是
-              「輔助人類決策」的系統,而不是自己決策、自己行動的系統。NIST 的 AI Agent Standards
-              Initiative 在 2026 年 2 月啟動,正是為了補上這個缺口。框架正在追趕;它們底下仍然缺的,
+              「輔助人類決策」的系統,而不是自己決策、自己行動的系統。NIST 在 2026 年 2 月啟動
+              AI Agent Standards Initiative。框架正在追趕;ATR 認為,它們底下仍然缺的,
               是一個<strong className="text-ink">可執行的偵測層</strong>。
             </>
           ) : (
             <>
               The regulators know it. The EU AI Act was negotiated before agentic AI arrived — its risk tiers
               assume systems that <strong className="text-ink">assist</strong> a human decision, not systems that decide and act on their
-              own. NIST&rsquo;s AI Agent Standards Initiative opened in February 2026 precisely to close that gap.
-              The frameworks are catching up; what they still need underneath them is an
+              own. NIST launched its AI Agent Standards Initiative in February 2026.
+              The frameworks are catching up; in ATR&rsquo;s view, what they still need underneath them is an
               {" "}<strong className="text-ink">executable detection layer</strong>.
             </>
           )}
@@ -282,10 +282,15 @@ export default async function SovereignAIDefensePage({
           )}
         </p>
         <Callout borderColor="critical">
-          &ldquo;Conventional cybersecurity approaches do not translate cleanly to autonomous agent deployments.&rdquo;
-          <span className="block font-data text-[10px] tracking-[0.1em] text-stone mt-3 uppercase">
-            NIST CAISI · {zh ? "2026 年 1 月 · 官方承認 AI Agent 防禦標準空白" : "January 2026 · Official acknowledgment of the standards gap"}
-          </span>
+          &ldquo;While these systems promise significant benefits for productivity and innovation, they present unique security challenges.&rdquo;
+          <a
+            href="https://www.nist.gov/news-events/news/2026/01/caisi-issues-request-information-about-securing-ai-agent-systems"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block font-data text-[10px] tracking-[0.1em] text-stone mt-3 uppercase hover:underline"
+          >
+            NIST · {zh ? "2026-01-12 新聞稿:CAISI 發布 AI agent 系統安全 RFI" : "News release, 2026-01-12: CAISI's RFI on securing AI agent systems"}
+          </a>
         </Callout>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-fog border border-fog mt-7">
           <StatCell
@@ -401,21 +406,15 @@ atr convert splunk --output ./atr-rules.spl`}</code>
         <div className="border-t border-fog">
           <TractionRow
             org="Cisco AI Defense"
-            status={zh ? "已出貨" : "Shipping"}
+            status={zh ? "已合併" : "Merged"}
             statusClass="bg-green/10 text-green"
-            desc={zh ? "PR #99 已合併 · 完整 ATR 規則集於 skill-scanner 生產環境（2026-04-22）" : "PR #99 merged · Full ATR rule pack shipping in skill-scanner (2026-04-22)"}
+            desc={zh ? "PR #99 已合併（2026-04-22）· ATR 規則集進入開源 repo cisco-ai-defense/skill-scanner" : "PR #99 merged (2026-04-22) · ATR rule pack in the open-source repo cisco-ai-defense/skill-scanner"}
           />
           <TractionRow
             org="Microsoft"
             status={zh ? "PR 已合併" : "PR Merged"}
             statusClass="bg-blue/10 text-blue"
-            desc={zh ? "agent-governance-toolkit · PR #1277 · 287 條規則（PR 當時）+ 每週自動同步 ATR 上游釋出" : "agent-governance-toolkit · PR #1277 · 287 rules at time of PR + weekly auto-sync of ATR upstream releases"}
-          />
-          <TractionRow
-            org="NVIDIA garak"
-            status={zh ? "整合中" : "Integrating"}
-            statusClass="bg-medium/10 text-medium"
-            desc={zh ? "PR #1676 · 完整 ATR 規則集 · 兩輪 review 通過,等待 maintainer 終審" : "PR #1676 · Full ATR rule pack · Two review rounds passed, awaiting maintainer final review"}
+            desc={zh ? "agent-governance-toolkit · PR #2308 + #3025 · ATR 匯入範例與 ACS annotator 範例（早期規則包 YAML 已不在 repo）" : "agent-governance-toolkit · PR #2308 + #3025 · ATR import and ACS annotator examples (earlier rule-pack YAML no longer in the repo)"}
           />
           <TractionRow
             org="Gen Digital Sage"
@@ -423,17 +422,11 @@ atr convert splunk --output ./atr-rules.spl`}</code>
             statusClass="bg-green/10 text-green"
             desc={zh ? "PR #33 已合併（2026-05-11）· 完整 ATR 規則集於 Norton/Avast/LifeLock 母集團的 Sage 風險評分層" : "PR #33 merged (2026-05-11) · Full ATR rule pack in the Sage risk-scoring layer under the Norton/Avast/LifeLock parent"}
           />
-          <TractionRow
-            org="OWASP"
-            status={zh ? "Review 中" : "Under Review"}
-            statusClass="bg-ash text-stone"
-            desc={zh ? "LLM Top 10 專案 PR · 審查中" : "PR to the LLM Top 10 project · under review"}
-          />
         </div>
         <p className="text-xs md:text-sm text-stone mt-5">
           {zh
-            ? `0 → ${ruleCount} 條規則 · 2 個生產環境（Microsoft、Cisco）外加 Gen Digital Sage（已合併）· 標準同儕引用 · 完整採用者清單見 ADOPTERS.md · MIT 永久授權 · `
-            : `0 → ${ruleCount} rules · 2 in production (Microsoft, Cisco) plus Gen Digital Sage (merged) · peer-standard references · full adopter list in ADOPTERS.md · MIT licensed · `}
+            ? `0 → ${ruleCount} 條規則 · 三筆已合併的上游整合（Cisco 開源 skill-scanner、Gen Digital Sage、Microsoft AGT 範例目錄）· 標準同儕引用 · 完整採用者清單見 ADOPTERS.md · MIT 永久授權 · `
+            : `0 → ${ruleCount} rules · three merged upstream integrations (Cisco's open-source skill-scanner, Gen Digital Sage, Microsoft AGT example directories) · peer-standard references · full adopter list in ADOPTERS.md · MIT licensed · `}
           <a href="https://doi.org/10.5281/zenodo.19178002" className="text-blue hover:underline">
             DOI 10.5281/zenodo.19178002
           </a>

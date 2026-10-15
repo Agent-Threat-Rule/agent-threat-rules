@@ -17,7 +17,12 @@
       "properties": {
         "total": { "type": "integer", "minimum": 0 },
         "passed": { "type": "integer", "minimum": 0 },
-        "failed": { "type": "integer", "minimum": 0 }
+        "failed": { "type": "integer", "minimum": 0 },
+        "harness_errors": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Fixtures the runner itself could not execute. Non-zero means the run is inconclusive and the runner exited 2."
+        }
       }
     },
     "results": {
@@ -30,7 +35,11 @@
           "category": { "type": "string", "enum": ["tp", "tn", "edge"] },
           "rule_id": { "type": "string" },
           "expected": { "type": "string" },
-          "observed": { "type": "string" },
+          "observed": {
+            "type": "string",
+            "enum": ["match", "no_match", "graceful_error", "engine_error", "harness_error"],
+            "description": "engine_error = the engine ran but exited non-zero, was killed, or emitted non-JSON. harness_error = the runner could not execute the fixture at all."
+          },
           "passed": { "type": "boolean" },
           "runtime_ms": { "type": "integer", "minimum": 0 },
           "failure_reason": { "type": "string" }

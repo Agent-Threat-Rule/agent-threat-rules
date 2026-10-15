@@ -49,7 +49,7 @@ Per `engines/README.md`:
 
 - Covers SOC / SecOps ecosystem (Splunk SOAR, Sumo Logic, Datadog)
 - Covers Python-first ML platforms (Anthropic SDK ecosystem dual-runtime)
-- Covers NIST CAISI evaluation tooling
+- Covers Python-based evaluation tooling
 - F500 SOC teams cannot run TS-only engines
 
 ---

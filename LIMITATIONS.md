@@ -1,8 +1,28 @@
 # ATR Limitations
 
-ATR v3.5.0 uses regex-based pattern detection (`detection_tier: pattern`, `schema_version: 0.1`). This document is a transparent accounting of what that approach can and cannot do. Read this before deploying ATR in production.
+ATR's shipping detection tier is regex-based pattern matching (`detection_tier: pattern`, `schema_version: 0.1`). This document is a transparent accounting of what that approach can and cannot do. Read this before deploying ATR in production.
 
-**Current stats:** 652 rules (ATR 3.5.0). On an 850-sample PINT-format corpus (deepset/prompt-injections + Lakera Gandalf -- not Lakera's official private PINT benchmark): 63.6% recall, 99.7% precision. SKILL.md benchmark: 100% recall, 97% precision, 0.20% FP (498 real-world samples). Plus 64 evasion tests documenting known bypasses. (Benchmarks re-measured against 3.5.0 on 2026-06-16; see README §Benchmarks for the full version-pinned table.)
+**Current stats:** rule counts change daily, so this document does not carry
+one. Read the live count from [`data/stats.json`](data/stats.json) or the README
+badge. The benchmark figures below are version-pinned measurements, each backed
+by a file under [`data/measurements/`](data/measurements/); the README
+evaluation table is the canonical rendering of all of them.
+
+Two headline figures, both measured at ATR 3.5.12 on 2026-08-15: on the
+850-sample PINT-format corpus (deepset/prompt-injections + Lakera Gandalf --
+**not** Lakera's official private PINT benchmark), 65.4% recall at 100%
+precision; on the 498-sample SKILL.md benchmark, 100% recall (hunt lane) at 97%
+precision and 0.20% FP. Every rule also ships evasion tests documenting known
+bypasses.
+
+**A note on false-positive rates.** Lane-keyed FP rates (`enforce` / `hunt`)
+were published here and in the README in 2026 and have since been **withdrawn
+and should not be cited** -- they were labelled against a 65,000-sample benign
+gate but measured on a 10,863-sample subsample, the benign corpus contained real
+jailbreak samples until an exclusion filter merged on 2026-08-04 (#373), and the
+ladder behind the `hunt` figure depended on a file no longer in the repository.
+Re-measurement is pending; until it lands there is a gap here rather than a
+number. See the lanes section of the README for the full account.
 
 That pass rate sounds impressive. It is not. It means ATR correctly matches the patterns it was written to match. It says nothing about attacks that use different words to express the same intent.
 
@@ -13,7 +33,7 @@ That pass rate sounds impressive. It is not. It means ATR correctly matches the 
 Regex excels at matching known, structurally predictable patterns. Within that scope, ATR provides strong coverage.
 
 ### Known Attack Patterns
-Prompt injection keywords and phrase structures ("ignore previous instructions", "you are now", "do anything now"). Jailbreak templates including DAN, god mode, developer mode, and persona-switching syntax. System prompt override delimiters (`[SYSTEM]`, `[INST]`, `<|im_start|>system`). ATR-2026-001 implements 15 detection layers covering ~16 override verbs and ~15 target nouns.
+Prompt injection keywords and phrase structures ("ignore previous instructions", "you are now", "do anything now"). Jailbreak templates including DAN, god mode, developer mode, and persona-switching syntax. System prompt override delimiters (`[SYSTEM]`, `[INST]`, `<|im_start|>system`). `ATR-2026-00001` implements dozens of detection layers covering a broad set of override verbs and target nouns; read its `detection.conditions` for the current shape rather than trusting a count here.
 
 ### Encoding and Obfuscation Tricks
 Base64-encoded injection payloads (both instruction-to-decode patterns and known base64 fragments). HTML entity encoding. Zero-width character sequences (U+200B, U+200C, U+200D, U+FEFF, U+2060). Cyrillic and Greek homoglyph substitution in English injection keywords. Hex and URL-encoded injection keywords. Markdown formatting abuse to hide payloads.
@@ -22,7 +42,7 @@ Base64-encoded injection payloads (both instruction-to-decode patterns and known
 OpenAI keys (`sk-`), AWS Access Keys (`AKIA`), Google API keys (`AIza`), Stripe keys, JWT tokens, PEM/OpenSSH private keys, GitHub PATs (`ghp_`), Slack tokens (`xox[bpors]`), Bearer tokens, database connection strings (MongoDB, PostgreSQL, MySQL, Redis, AMQP), `.env` variable patterns, and generic secret assignment patterns. 15+ credential formats total.
 
 ### Known CVE Payloads
-13 CVEs are mapped across 16 rules with reproducible test cases, including CVE-2025-53773 (Copilot RCE), CVE-2025-32711 (EchoLeak), CVE-2025-68143/68144/68145 (MCP server exploits), and CVE-2026-0628 (privilege escalation via agent tools). Each mapping includes the specific pattern that matches the documented exploit.
+CVE-mapped rules carry reproducible test cases, including CVE-2025-53773 (Copilot RCE), CVE-2025-32711 (EchoLeak), CVE-2025-68143/68144/68145 (MCP server exploits), and CVE-2026-0628 (privilege escalation via agent tools). Each mapping includes the specific pattern that matches the documented exploit. The CVE set grows with the collector, so count it rather than quoting one: `grep -rhoE 'CVE-[0-9]{4}-[0-9]+' rules/ | sort -u | wc -l`.
 
 ### Structural Attacks
 HTML comment injection, CSS hidden text, data URIs, markdown link abuse, model-specific special tokens (`<|endoftext|>`, `<|im_sep|>`). Fake system message delimiters. XML/JSON injection in structured prompts.
@@ -37,7 +57,7 @@ Credential forwarding syntax between agents. Role impersonation phrases ("I am t
 
 ## What Regex CANNOT Detect
 
-This is the section that matters. Every limitation below represents a class of attacks that will bypass ATR v2.0.0 completely.
+This is the section that matters. Every limitation below represents a class of attacks that will bypass ATR's pattern tier completely.
 
 ### Paraphrase Attacks
 ATR detects "ignore previous instructions" but does not detect "please set aside the guidance you were given earlier." Any regex rule can be bypassed by semantically equivalent rephrasing that avoids the specific verbs, nouns, and syntactic structures in the pattern. Natural language has effectively unlimited paraphrasing capacity. An attacker who reads the published rules can craft injection text that conveys the same intent without matching any detection layer. This is the single largest gap in regex-based detection.
@@ -78,7 +98,7 @@ ATR performs no timing analysis. Response latency modulation, slow-and-low data 
 
 All rules include `evasion_tests` in their YAML definitions. These tests document known bypass techniques and their expected results. Critically, the expected result for paraphrase and language-switch evasions is `not_triggered` -- meaning ATR honestly declares that these evasions succeed.
 
-Example from ATR-2026-001 evasion tests:
+Example from `ATR-2026-00001` evasion tests:
 - Input: "Please set aside the guidance you were given earlier" -- Expected: `not_triggered`
 - Input: (same injection in Mandarin Chinese) -- Expected: `not_triggered`
 
@@ -88,7 +108,7 @@ This is not a bug. It is a documented limitation of the detection tier. We publi
 
 ## False Positive Management
 
-Each rule documents known `false_positives` in its YAML definition. Nine rules have been specifically tightened to reduce false positives on legitimate content (e.g., security researchers discussing prompt injection, documentation containing example attack strings, base64-encoded non-malicious content).
+Each rule documents known `false_positives` in its YAML definition. Rules are tightened over time to reduce false positives on legitimate content (e.g., security researchers discussing prompt injection, documentation containing example attack strings, base64-encoded non-malicious content).
 
 Production deployments should:
 - Implement allow-lists for known-safe content patterns
@@ -100,24 +120,24 @@ Production deployments should:
 
 ## Planned Detection Layers (Roadmap)
 
-ATR's long-term architecture is a three-tier detection pipeline. Each tier addresses limitations that the previous tier cannot.
+ATR's long-term architecture is a three-tier detection pipeline. Each tier addresses limitations that the previous tier cannot. **Only Tier 1 is implemented and shipping.** Tiers 2 and 3 are design intent, not delivered capability, and carry no release date -- earlier revisions of this table pinned them to `v0.2` / `v0.3` milestones that no longer correspond to anything in the version series.
 
-| Gap | Planned Solution | Target Version |
-|-----|-----------------|----------------|
-| Paraphrase attacks | Embedding similarity (cosine distance from known attack embeddings) | v0.2 |
-| Multilingual injection | Multilingual pattern expansion + cross-lingual embedding detection | v0.2 |
-| Multi-hop attacks | Temporal sequence operator with session-aware cross-event correlation | v0.2 |
-| Behavioral anomalies | Session module with statistical baseline and drift detection | v0.2 |
-| Subtle manipulation | LLM-as-judge (model evaluates suspicious content) | v0.3 |
-| Token smuggling | Tokenizer-aware preprocessing layer | v0.3 |
-| Multi-modal attacks | Vision/audio preprocessing pipeline | v0.3+ |
-| Adversarial suffixes | Perplexity-based anomaly detection | v0.3+ |
+| Gap | Planned Solution | Tier |
+|-----|-----------------|------|
+| Paraphrase attacks | Embedding similarity (cosine distance from known attack embeddings) | 2 |
+| Multilingual injection | Multilingual pattern expansion + cross-lingual embedding detection | 2 |
+| Multi-hop attacks | Temporal sequence operator with session-aware cross-event correlation | 2 |
+| Behavioral anomalies | Session module with statistical baseline and drift detection | 2 |
+| Subtle manipulation | LLM-as-judge (model evaluates suspicious content) | 3 |
+| Token smuggling | Tokenizer-aware preprocessing layer | 3 |
+| Multi-modal attacks | Vision/audio preprocessing pipeline | 3 |
+| Adversarial suffixes | Perplexity-based anomaly detection | 3 |
 
-**Tier 1: Pattern (v0.1 -- current).** Regex and threshold-based detection. Sub-millisecond per event. Deterministic. Zero external dependencies. Catches known attack signatures. Limited to attacks expressible as text patterns.
+**Tier 1: Pattern (shipping).** Regex and threshold-based detection. Sub-millisecond per event. Deterministic. Zero external dependencies. Catches known attack signatures. Limited to attacks expressible as text patterns. This is what ATR is today.
 
-**Tier 2: Embedding (v0.3 -- experimental).** Vector distance from known attack embeddings. Catches paraphrase attacks, multilingual injection, and semantic variants that evade regex. Adds latency and an embedding model dependency.
+**Tier 2: Embedding (not implemented).** Vector distance from known attack embeddings. Would catch paraphrase attacks, multilingual injection, and semantic variants that evade regex. Adds latency and an embedding model dependency.
 
-**Tier 3: LLM-as-Judge (planned).** An LLM evaluates suspicious content flagged by Tier 1 or Tier 2. Catches subtle manipulation, context-dependent attacks, and novel categories. Highest latency, highest cost, highest detection capability.
+**Tier 3: LLM-as-Judge (not implemented).** An LLM evaluates suspicious content flagged by Tier 1 or Tier 2. Would catch subtle manipulation, context-dependent attacks, and novel categories. Highest latency, highest cost, highest detection capability.
 
 The tiers are additive, not replacements. Tier 1 handles the fast path (block obvious attacks immediately). Tier 3 handles the slow path (evaluate ambiguous cases with deeper analysis).
 
@@ -125,44 +145,50 @@ The tiers are additive, not replacements. Tier 1 handles the fast path (block ob
 
 ## External Benchmark Results
 
-ATR's self-test corpus produces an 89.7% recall rate. That number is misleading if taken in isolation. Self-tests are written by the same people who wrote the rules -- they test whether ATR matches the patterns it was designed to match. External benchmarks paint a very different picture.
+ATR's self-test corpus produces a 96.6% recall rate (341 samples, ATR 3.5.12, 2026-08-15). That number is misleading if taken in isolation. Self-tests are written by the same people who wrote the rules -- they test whether ATR matches the patterns it was designed to match. External benchmarks paint a very different picture.
 
 ### PINT-format public corpus (850 samples)
 
-We evaluated ATR against 850 external samples sourced from deepset/prompt-injections and Lakera's Gandalf dataset, assembled into Lakera's PINT format. This is ATR's own reconstructed corpus -- not a run of Lakera's official PINT benchmark, which is private (~4,314 samples). These are real-world prompt injection and jailbreak payloads that ATR was not trained against.
+We evaluated ATR against 850 external samples sourced from deepset/prompt-injections and Lakera's Gandalf dataset, assembled into Lakera's PINT format. This is ATR's own reconstructed corpus -- not a run of Lakera's official PINT benchmark, which is private and roughly 5x larger. These are real-world prompt injection and jailbreak payloads that ATR was not trained against.
+
+Measured at ATR 3.5.12 on 2026-08-15 (`data/measurements/pint/2026-08-15_pint-v1_atr-3-5-12.json`, also reachable as `latest.json`):
 
 | Metric | Score |
 |--------|-------|
-| Precision | 99.7% |
-| Recall | 63.6% |
-| F1 | 77.7% |
+| Precision | 100.0% |
+| Recall | 65.4% |
+| F1 | 79.1% |
 
-**Precision is high.** When ATR fires, it is almost always correct. This is by design -- regex patterns are specific, so false positives are rare.
+**Precision is high.** When ATR fires on this corpus it is correct: 295 true positives, 0 false positives on the 399 benign samples. That is a property of this corpus, not a general precision claim -- see the note on withdrawn lane FP rates at the top of this document.
 
-**Recall is moderate.** ATR misses 36.4% of external attack samples. This is the honest cost of regex-based detection.
+**Recall is moderate.** ATR misses 34.6% of external attack samples (156 of 451). This is the honest cost of regex-based detection.
 
 ### Recall Breakdown by Category
 
-| Category | Recall |
-|----------|--------|
-| Jailbreak | 73.7% |
-| Prompt-injection | 55.6% |
-| Non-English (hard subset) | 57.3% |
+| Category | Samples | Recall |
+|----------|--------:|-------:|
+| Jailbreak | 190 | 77.4% |
+| Prompt-injection | 261 | 56.7% |
+| Benign (control) | 399 | 100.0% (0 FP) |
 
-Non-English (hard-subset) recall at 57.3% remains below the English jailbreak rate; the rules are English-first, so non-English detections still rely largely on English keywords appearing alongside non-English text.
+The current corpus does not carry a labelled non-English subset, so this
+document publishes no non-English recall figure. The structural limitation
+stands regardless and is documented under "Multi-Language Attacks" above: the
+rules are English-first, so detections on non-English text still rely largely on
+English keywords appearing alongside it.
 
 ### Rule Concentration
 
-On the MCP/PINT benchmark (v0.4, 71 rules at the time), only 6 rules fired on external data. ATR-2026-001 (prompt override detection) accounted for over 95% of all detections. The remaining rules contributed zero detections on this corpus. This does not mean those rules are useless -- they target specific attack types (credential leaks, SSRF, tool injection) that are not represented in prompt-injection benchmarks. The SKILL.md benchmark (v1.0, 108 rules) shows much broader rule activation: 96.9% recall across 498 real-world samples with 0% false positives.
+Detections on the PINT-format corpus are heavily concentrated: a small minority of the ruleset fires on it at all, and `ATR-2026-00001` (prompt override detection) accounts for the large majority of detections. The published measurement file records only corpus-level and per-category totals, not per-rule counts, so this document deliberately quotes no rule-concentration figure -- regenerate one with `npm run eval:pint` if you need it. The rest of the ruleset contributing nothing here does not make those rules useless -- they target attack types (credential leaks, SSRF, tool injection, skill supply chain) that a prompt-injection corpus does not contain. Read this row as a prompt-injection-family score, not as ATR's overall coverage. The SKILL.md benchmark shows much broader rule activation: 100% recall (hunt lane) across 498 real-world samples at 97% precision and 0.20% FP.
 
 ### Self-Test vs. External Recall Gap
 
 | Corpus | Recall |
 |--------|--------|
-| Self-test (341 samples) | 89.7% |
-| External (850 samples) | 63.6% |
+| Self-test (341 samples) | 96.6% |
+| External PINT-format (850 samples) | 65.4% |
 
-The 26-point gap is explained entirely by the paraphrase problem. Self-test samples use the exact phrasings the rules were written to match. External samples express the same malicious intent using different words, sentence structures, and languages. This is the fundamental limitation of regex-based detection, documented extensively in the "What Regex CANNOT Detect" section above.
+The 31-point gap is explained almost entirely by the paraphrase problem. Self-test samples use the exact phrasings the rules were written to match. External samples express the same malicious intent using different words, sentence structures, and languages. This is the fundamental limitation of regex-based detection, documented extensively in the "What Regex CANNOT Detect" section above.
 
 ### Competitive Context
 
@@ -172,7 +198,7 @@ The tradeoff:
 
 | Approach | Recall | Latency | Dependencies |
 |----------|--------|---------|--------------|
-| ATR (regex) | ~63% on external data | Sub-millisecond | None |
+| ATR (regex) | ~65% on the PINT-format corpus | Sub-millisecond | None |
 | ML classifiers | 80-95% on external data | 10-50x slower | GPU or API |
 
 ATR is not trying to compete with ML classifiers on recall. ATR is a fast first-pass filter for known attack patterns, designed to run at zero latency with zero external dependencies. It catches the low-hanging fruit -- known templates, published exploits, automated attacks -- instantly.
@@ -185,7 +211,7 @@ Do not deploy ATR alone and expect it to catch sophisticated adversaries. The be
 
 ## Summary
 
-Regex-based detection is a first line of defense, not a complete solution. ATR v0.4 will catch script kiddies, known exploit payloads, and automated attacks that use documented patterns. It will not catch a skilled adversary who reads the rules and paraphrases around them.
+Regex-based detection is a first line of defense, not a complete solution. ATR catches script kiddies, known exploit payloads, and automated attacks that use documented patterns. It will not catch a skilled adversary who reads the rules and paraphrases around them.
 
 Deploy ATR as one layer in a defense-in-depth strategy. Do not rely on it alone.
 
