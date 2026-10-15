@@ -1,60 +1,61 @@
 #!/usr/bin/env node
 /**
  * reverify-evidence.ts — compare a freshly regenerated benign-FP measurement
- * with the committed one (data/benign-fp-measurement.json), and fail only on a
+ * with the committed one (data/benign-fp-measurement.json), and fail on every
  * difference that means the committed evidence is not true.
  *
  * WHY THIS REPLACED THE INLINE DIFF IN action-eligibility.yml
  *
  * The old step failed on any rule whose committed fp_count !== the fresh one.
- * That folded four different states into one red:
+ * That folded four different states into one red: a rule added after the
+ * evidence was generated, a rule whose detection changed since, a rule deleted
+ * since, and the same detection on the same corpus producing a different
+ * number. Every completed run (2026-09-25, 10-01, 10-11, 10-13) failed on new
+ * rules alone, 32 to 36 of them, all `committed=undefined measured=0`.
  *
- *   - a rule added after the evidence was generated (committed: undefined)
- *   - a rule whose detection changed since (its record describes old regexes)
- *   - a rule deleted since (the record outlives the rule)
- *   - the same detection on the same corpus producing a different number
+ * It also compared fp_count only, which is not all the action gate reads:
+ * eligibility uses a record's partial_measurement flag (a 0-FP partial record is
+ * unmeasured) and the file's sample_count (the denominator of every rate).
  *
- * Only the last one is evidence that the file was edited by hand or that the
- * measurement is not deterministic. The first three are coverage: the action
- * gate (scripts/gate-action-eligibility.ts) already treats a missing record and a
- * fingerprint mismatch as UNMEASURED and caps the rule at the observe tier, on
- * every PR. Every completed run of the old step (2026-09-25, 10-01, 10-11, 10-13)
- * failed on new rules alone — 32 to 36 of them, all `committed=undefined
- * measured=0` — so the check red-flagged every day and said nothing.
+ * THE RULE: A RECORD THE GATE TRUSTS MUST REPRODUCE
  *
- * It also compared fp_count only, which is not all the action gate reads.
- * Eligibility uses the record's partial_measurement flag (a 0-FP partial
- * measurement counts as unmeasured) and the file's sample_count (the denominator
- * of every FP rate). Flipping the flag, or inflating the denominator to dilute a
- * rate below the 0.5% ceiling, raised a rule's permitted tier without touching a
- * single fp_count, and the old diff could not see either.
+ * scripts/gate-action-eligibility.ts trusts a record when its rule is live on
+ * disk and the record's detection_fingerprint equals the rule's. Which rules are
+ * on disk, and their fingerprints, come from that gate's own reader
+ * (readRules), never from a looser listing: an earlier version took "the rule
+ * is gone" from the record's absence in the fresh file, and a rule written so
+ * a grep for `^id: ATR-` missed it (single quotes, two spaces, a symlink) was
+ * both trusted by the gate and never re-measured — its forged record would
+ * have been reported as a removed rule forever.
  *
- * WHAT FAILS
- *   - corpus_digest differs: the evidence does not describe this corpus
- *   - sample_count differs on the same corpus
- *   - same corpus, same detection fingerprint, different fp_count or
- *     partial_measurement
+ * FAILS (and never asks for a refresh: a person finds out why first)
+ *   - the evidence names a corpus list other than MEASUREMENT_CORPORA
+ *   - corpus_digest differs from the fresh one
+ *   - sample_count differs
+ *   - a trusted record has no fresh counterpart, or the fresh one has another
+ *     fingerprint, another fp_count or another partial_measurement
  *
- * WHAT IS REPORTED (and makes the job open a refresh PR, never fail)
- *   - not covered: rules the evidence has no record for
- *   - detection changed: the record's fingerprint is not the rule's
- *   - removed: records for rules no longer on disk
- *   - metadata: same detection and numbers, but a field nothing gates on
- *     (the record's maturity, skill_path_unmeasured) is stale
- *
- * A moved corpus fails AND asks for a refresh: regenerating is the fix, and the
- * refresh PR is reviewed like any other.
+ * REPORTED (and turned into a refresh PR the job opens for review)
+ *   - not covered: a fresh record for a rule the evidence has no record of
+ *   - detection changed: the record's fingerprint is not the rule's on disk
+ *   - removed: a record for a rule id no file on disk carries
+ *   - inert: a changed record for a draft/deprecated rule (the gate skips those)
+ *   - metadata: same detection and numbers, stale maturity/skill_path_unmeasured
  *
  * Usage:
- *   reverify-evidence.ts --committed <path> --fresh <path> [--pr-body <path>]
- * Exit 0 when nothing fails (whether or not a refresh is needed), 1 when the
- * evidence does not reproduce, 2 on a usage or input error. With $GITHUB_OUTPUT
- * set it writes `fail` and `needs-refresh`; with $GITHUB_STEP_SUMMARY set it
- * appends the report there.
+ *   reverify-evidence.ts --committed <path> --fresh <path> [--rules <dir>] [--pr-body <path>]
+ *   reverify-evidence.ts --list-ids [--rules <dir>]
+ * Exit 0 when nothing fails, 1 when the evidence does not reproduce, 2 on a
+ * usage or input error. With $GITHUB_OUTPUT set it writes `fail` and
+ * `needs-refresh`; with $GITHUB_STEP_SUMMARY set it appends the report.
  */
 import { appendFileSync, readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { MEASUREMENT_CORPORA } from "../src/quality/action-eligibility.js";
+import { isInert, readRules } from "./gate-action-eligibility.js";
+
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 export interface RuleRecord {
   readonly fp_count: number;
@@ -65,58 +66,76 @@ export interface RuleRecord {
 }
 
 export interface Measurement {
+  readonly corpora?: readonly string[];
   readonly corpus_digest?: string;
   readonly sample_count?: number;
   readonly rules: Readonly<Record<string, RuleRecord>>;
 }
 
-export interface CountChange {
+/** What the classification needs to know about a rule file on disk. */
+export interface DiskRule {
   readonly id: string;
-  readonly committed: RuleRecord;
-  readonly fresh: RuleRecord;
+  readonly status: string | null;
+  readonly maturity: string | null;
+  readonly fingerprint: string;
+}
+
+export interface RecordChange {
+  readonly id: string;
+  readonly committed?: RuleRecord;
+  readonly fresh?: RuleRecord;
 }
 
 export interface EvidenceDiff {
+  readonly corporaChanged: boolean;
   readonly corpusMoved: boolean;
   readonly sampleCountChanged: boolean;
-  /** Same corpus, same detection, different fp_count / partial_measurement. */
-  readonly drift: readonly CountChange[];
-  readonly notCovered: readonly { readonly id: string; readonly fresh: RuleRecord }[];
-  readonly detectionChanged: readonly CountChange[];
-  readonly removed: readonly { readonly id: string; readonly committed: RuleRecord }[];
-  readonly metadata: readonly CountChange[];
+  /** Trusted records that did not reproduce. Any entry fails the job. */
+  readonly drift: readonly RecordChange[];
+  readonly notCovered: readonly RecordChange[];
+  readonly detectionChanged: readonly RecordChange[];
+  readonly removed: readonly RecordChange[];
+  readonly inert: readonly RecordChange[];
+  readonly metadata: readonly RecordChange[];
 }
 
 /** Thrown when an input file is not a measurement this script can read. */
 export class EvidenceInputError extends Error {}
 
-/** The only shape a rule id on disk takes (`grep '^id:'` over rules/, 2026-10-15: 830/830). */
+/** The only shape a rule id on disk takes (2026-10-15: 830 of 830). */
 const RULE_ID = /^ATR-\d{4}-\d{5}$/;
 const HEX = /^[0-9a-f]+$/;
 
 /**
  * Parse and shape-check a measurement file's contents.
  *
- * Strict on purpose. Every string that reaches the report — rule ids, the corpus
- * digest — is printed to the job log, where GitHub Actions executes lines that
- * start with `::` as workflow commands, and is written into the refresh PR's
- * body. The committed file is the untrusted side: a key like
- * "ATR-2026-00001\n::warning::..." or a body line addressed to a reviewer would
- * otherwise travel through verbatim. Anything that is not a rule id, a hex
- * digest or a count is an input error, so the step fails before it prints.
+ * Strict on purpose. Every string that reaches the report is printed to the job
+ * log, where GitHub Actions executes lines that start with `::` as workflow
+ * commands, and is written into the refresh PR's body. The committed file is the
+ * untrusted side: a key like "ATR-2026-00001\n::warning::..." or a line
+ * addressed to a reviewer would otherwise travel through verbatim. Anything that
+ * is not a rule id, a hex digest or a count is an input error, so the step fails
+ * before it prints. The parse error itself is quoted with JSON.stringify for the
+ * same reason: V8 echoes the characters around the error position.
  */
 export function parseMeasurement(text: string, label: string): Measurement {
   let doc: unknown;
   try {
     doc = JSON.parse(text);
   } catch (e) {
-    throw new EvidenceInputError(`${label}: not JSON (${(e as Error).message})`);
+    throw new EvidenceInputError(`${label}: not JSON (${JSON.stringify((e as Error).message)})`);
   }
   const rules = (doc as { rules?: unknown } | null)?.rules;
   if (rules === null || typeof rules !== "object" || Array.isArray(rules)) {
     throw new EvidenceInputError(`${label}: no "rules" object`);
   }
-  const top = doc as { corpus_digest?: unknown; sample_count?: unknown };
+  const top = doc as { corpora?: unknown; corpus_digest?: unknown; sample_count?: unknown };
+  if (
+    top.corpora !== undefined &&
+    (!Array.isArray(top.corpora) || !top.corpora.every((c) => typeof c === "string"))
+  ) {
+    throw new EvidenceInputError(`${label}: corpora is not a list of paths`);
+  }
   if (top.corpus_digest !== undefined && (typeof top.corpus_digest !== "string" || !HEX.test(top.corpus_digest))) {
     throw new EvidenceInputError(`${label}: corpus_digest is not a hex digest`);
   }
@@ -145,6 +164,16 @@ export function parseMeasurement(text: string, label: string): Measurement {
   return doc as Measurement;
 }
 
+/** The rule files on disk, as the action gate reads them. */
+export function diskRules(rulesDir: string): readonly DiskRule[] {
+  return readRules(rulesDir).map(({ id, status, maturity, fingerprint }) => ({
+    id,
+    status,
+    maturity,
+    fingerprint,
+  }));
+}
+
 const sameNumbers = (a: RuleRecord, b: RuleRecord): boolean =>
   a.fp_count === b.fp_count &&
   (a.partial_measurement === true) === (b.partial_measurement === true);
@@ -153,61 +182,103 @@ const sameMetadata = (a: RuleRecord, b: RuleRecord): boolean =>
   (a.maturity ?? null) === (b.maturity ?? null) &&
   (a.skill_path_unmeasured === true) === (b.skill_path_unmeasured === true);
 
-/** Sort every committed/fresh record into exactly one bucket (or none, if equal). */
-export function classifyEvidence(committed: Measurement, fresh: Measurement): EvidenceDiff {
-  const drift: CountChange[] = [];
-  const notCovered: { id: string; fresh: RuleRecord }[] = [];
-  const detectionChanged: CountChange[] = [];
-  const removed: { id: string; committed: RuleRecord }[] = [];
-  const metadata: CountChange[] = [];
+const sameRecord = (a: RuleRecord, b: RuleRecord): boolean =>
+  sameNumbers(a, b) &&
+  sameMetadata(a, b) &&
+  (a.detection_fingerprint ?? null) === (b.detection_fingerprint ?? null);
+
+/** Sort every committed and fresh record into at most one bucket. */
+export function classifyEvidence(
+  committed: Measurement,
+  fresh: Measurement,
+  disk: readonly DiskRule[],
+  canonicalCorpora: readonly string[] = MEASUREMENT_CORPORA,
+): EvidenceDiff {
+  const onDisk = new Set(disk.map((r) => r.id));
+  const live = new Map<string, DiskRule[]>();
+  for (const r of disk) {
+    if (isInert(r.status, r.maturity)) continue;
+    live.set(r.id, [...(live.get(r.id) ?? []), r]);
+  }
+
+  const drift: RecordChange[] = [];
+  const notCovered: RecordChange[] = [];
+  const detectionChanged: RecordChange[] = [];
+  const removed: RecordChange[] = [];
+  const inert: RecordChange[] = [];
+  const metadata: RecordChange[] = [];
+
   const ids = [...new Set([...Object.keys(committed.rules), ...Object.keys(fresh.rules)])].sort();
   for (const id of ids) {
-    const c = committed.rules[id];
-    const f = fresh.rules[id];
-    if (c === undefined && f !== undefined) notCovered.push({ id, fresh: f });
-    else if (f === undefined && c !== undefined) removed.push({ id, committed: c });
-    else if (c !== undefined && f !== undefined) {
-      if ((c.detection_fingerprint ?? null) !== (f.detection_fingerprint ?? null)) {
-        detectionChanged.push({ id, committed: c, fresh: f });
-      } else if (!sameNumbers(c, f)) {
-        drift.push({ id, committed: c, fresh: f });
-      } else if (!sameMetadata(c, f)) {
-        metadata.push({ id, committed: c, fresh: f });
-      }
+    const c = Object.hasOwn(committed.rules, id) ? committed.rules[id] : undefined;
+    const f = Object.hasOwn(fresh.rules, id) ? fresh.rules[id] : undefined;
+    if (c === undefined) {
+      if (f !== undefined) notCovered.push({ id, fresh: f });
+      continue;
+    }
+    if (!onDisk.has(id)) {
+      removed.push({ id, committed: c, fresh: f });
+      continue;
+    }
+    const liveRules = live.get(id);
+    if (liveRules === undefined) {
+      // Only inert rules carry this id: the gate skips them, so the record grants nothing today.
+      if (f === undefined || !sameRecord(c, f)) inert.push({ id, committed: c, fresh: f });
+      continue;
+    }
+    const trusted = liveRules.some((r) => r.fingerprint === (c.detection_fingerprint ?? null));
+    if (!trusted) {
+      detectionChanged.push({ id, committed: c, fresh: f });
+      continue;
+    }
+    if (
+      f === undefined ||
+      (f.detection_fingerprint ?? null) !== (c.detection_fingerprint ?? null) ||
+      !sameNumbers(c, f)
+    ) {
+      drift.push({ id, committed: c, fresh: f });
+    } else if (!sameMetadata(c, f)) {
+      metadata.push({ id, committed: c, fresh: f });
     }
   }
+
   return {
+    corporaChanged: JSON.stringify(committed.corpora ?? null) !== JSON.stringify(canonicalCorpora),
     corpusMoved: committed.corpus_digest !== fresh.corpus_digest,
     sampleCountChanged: committed.sample_count !== fresh.sample_count,
     drift,
     notCovered,
     detectionChanged,
     removed,
+    inert,
     metadata,
   };
 }
 
 /** Fail when the committed evidence does not reproduce. */
 export function evidenceFails(d: EvidenceDiff): boolean {
-  if (d.corpusMoved) return true;
-  return d.sampleCountChanged || d.drift.length > 0;
+  return d.corporaChanged || d.corpusMoved || d.sampleCountChanged || d.drift.length > 0;
 }
 
 /**
- * Ask for a refresh PR when the evidence is stale but not contradicted. Never on
- * a reproduction failure on an unchanged corpus: that needs a person to find out
- * why before anything regenerates the numbers over it.
+ * Ask for a refresh PR only when the evidence reproduces but is stale. Never
+ * after a failure: regenerating over numbers that did not reproduce, or over a
+ * corpus claim that does not hold, would erase the evidence of what happened.
  */
 export function needsRefresh(d: EvidenceDiff): boolean {
-  if (d.corpusMoved) return true;
   if (evidenceFails(d)) return false;
   return (
-    d.notCovered.length + d.detectionChanged.length + d.removed.length + d.metadata.length > 0
+    d.notCovered.length +
+      d.detectionChanged.length +
+      d.removed.length +
+      d.inert.length +
+      d.metadata.length >
+    0
   );
 }
 
-const rec = (r: RuleRecord): string =>
-  `fp_count=${r.fp_count}${r.partial_measurement === true ? " (partial)" : ""}`;
+const rec = (r: RuleRecord | undefined): string =>
+  r === undefined ? "no record" : `fp_count=${r.fp_count}${r.partial_measurement === true ? " (partial)" : ""}`;
 
 function section(title: string, lines: readonly string[], cap = 50): string[] {
   if (lines.length === 0) return [];
@@ -219,35 +290,48 @@ function section(title: string, lines: readonly string[], cap = 50): string[] {
 /** A plain-text report, used for the job summary and the refresh PR body. */
 export function renderReport(d: EvidenceDiff, committed: Measurement, fresh: Measurement): string {
   const out: string[] = [];
+  if (d.corporaChanged) {
+    out.push(
+      `FAIL: the committed evidence names a corpus list other than the canonical one. ` +
+        `The gate recomputes the digest over the list the file names, so an edited list ` +
+        `can make an edited digest look valid. Treat it as tampering until shown otherwise.`,
+    );
+  }
   if (d.corpusMoved) {
     out.push(
       `FAIL: the committed evidence was measured on a different corpus ` +
-        `(recorded ${String(committed.corpus_digest)}, on disk ${String(fresh.corpus_digest)}).`,
+        `(recorded ${String(committed.corpus_digest)}, on disk ${String(fresh.corpus_digest)}). ` +
+        `Find out how a corpus change reached main without its re-measurement before regenerating.`,
     );
-  } else if (d.sampleCountChanged) {
+  }
+  if (d.sampleCountChanged) {
     out.push(
-      `FAIL: same corpus, different sample count (committed ${String(committed.sample_count)}, ` +
+      `FAIL: different sample count (committed ${String(committed.sample_count)}, ` +
         `measured ${String(fresh.sample_count)}). Every FP rate uses this denominator.`,
     );
   }
-  if (!d.corpusMoved && d.drift.length > 0) {
+  if (d.drift.length > 0) {
     out.push(
-      `FAIL: ${d.drift.length} rule(s) whose committed numbers do not reproduce on the same ` +
-        `corpus with the same detection. Either the file was edited or the measurement is not ` +
-        `deterministic; find out which before regenerating it.`,
+      `FAIL: ${d.drift.length} record(s) the action gate trusts did not reproduce. Either the ` +
+        `file was edited or the measurement is not deterministic; find out which before ` +
+        `regenerating it.`,
     );
   }
   if (!evidenceFails(d)) {
     out.push(
-      `Evidence reproduces: every record with a current detection fingerprint matches ` +
-        `the fresh measurement (${Object.keys(fresh.rules).length} rules, ` +
-        `${String(fresh.sample_count)} samples).`,
+      `Evidence reproduces: every record the action gate trusts matches the fresh measurement ` +
+        `(${Object.keys(fresh.rules).length} rules measured, ${String(fresh.sample_count)} samples).`,
     );
   }
   out.push(
     ...section(
-      d.corpusMoved ? "Counts that moved with the corpus" : "Did not reproduce",
-      d.drift.map((x) => `${x.id}: committed ${rec(x.committed)}, measured ${rec(x.fresh)}`),
+      "Trusted records that did not reproduce",
+      d.drift.map((x) => {
+        const fp = x.fresh !== undefined && (x.fresh.detection_fingerprint ?? null) !== (x.committed?.detection_fingerprint ?? null)
+          ? " (measured a different detection)"
+          : "";
+        return `${x.id}: committed ${rec(x.committed)}, measured ${rec(x.fresh)}${fp}`;
+      }),
     ),
     ...section(
       "Not covered — no record yet; the action gate caps these at observe",
@@ -255,13 +339,15 @@ export function renderReport(d: EvidenceDiff, committed: Measurement, fresh: Mea
     ),
     ...section(
       "Detection changed since the record — the action gate treats these as unmeasured",
-      d.detectionChanged.map(
-        (x) => `${x.id}: recorded ${rec(x.committed)}, measured now ${rec(x.fresh)}`,
-      ),
+      d.detectionChanged.map((x) => `${x.id}: recorded ${rec(x.committed)}, measured now ${rec(x.fresh)}`),
     ),
     ...section(
-      "Records for rules no longer on disk",
+      "Records for rule ids no file on disk carries",
       d.removed.map((x) => `${x.id}: recorded ${rec(x.committed)}`),
+    ),
+    ...section(
+      "Changed records for draft or deprecated rules (the gate skips these)",
+      d.inert.map((x) => `${x.id}: recorded ${rec(x.committed)}, measured now ${rec(x.fresh)}`),
     ),
     ...section(
       "Stale record metadata (maturity / skill_path_unmeasured; not used for eligibility)",
@@ -280,6 +366,25 @@ function argValue(argv: readonly string[], name: string): string | null {
 }
 
 export function main(argv: readonly string[], env: NodeJS.ProcessEnv = process.env): number {
+  let rulesDir: string;
+  try {
+    rulesDir = argValue(argv, "--rules") ?? join(REPO_ROOT, "rules");
+  } catch (e) {
+    console.error(`[reverify] ${(e as Error).message}`);
+    return 2;
+  }
+
+  if (argv.includes("--list-ids")) {
+    // The ids the action gate reads, for the measurement step to measure.
+    const ids = [...new Set(diskRules(rulesDir).map((r) => r.id))].sort();
+    if (ids.length === 0) {
+      console.error(`[reverify] no rule files under ${rulesDir}`);
+      return 2;
+    }
+    process.stdout.write(`${ids.join("\n")}\n`);
+    return 0;
+  }
+
   let committed: Measurement;
   let fresh: Measurement;
   let prBody: string | null;
@@ -288,7 +393,9 @@ export function main(argv: readonly string[], env: NodeJS.ProcessEnv = process.e
     const freshPath = argValue(argv, "--fresh");
     prBody = argValue(argv, "--pr-body");
     if (committedPath === null || freshPath === null) {
-      throw new EvidenceInputError("usage: reverify-evidence.ts --committed <path> --fresh <path> [--pr-body <path>]");
+      throw new EvidenceInputError(
+        "usage: reverify-evidence.ts --committed <path> --fresh <path> [--rules <dir>] [--pr-body <path>]",
+      );
     }
     committed = parseMeasurement(readFileSync(committedPath, "utf-8"), committedPath);
     fresh = parseMeasurement(readFileSync(freshPath, "utf-8"), freshPath);
@@ -297,7 +404,7 @@ export function main(argv: readonly string[], env: NodeJS.ProcessEnv = process.e
     return 2;
   }
 
-  const diff = classifyEvidence(committed, fresh);
+  const diff = classifyEvidence(committed, fresh, diskRules(rulesDir));
   const fails = evidenceFails(diff);
   const refresh = needsRefresh(diff);
   const report = renderReport(diff, committed, fresh);

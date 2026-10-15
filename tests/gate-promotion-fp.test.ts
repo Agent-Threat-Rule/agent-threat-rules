@@ -473,3 +473,46 @@ describe("CLI entry point (guards against a no-op gate)", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 });
+
+describe("rule ids written with quotes", () => {
+  // YAML, the engine and the action gate all read `id: 'ATR-...'` and
+  // `id: "ATR-..."` as the bare id. The gate's own id lookup used to keep the
+  // quotes, so a requested id never matched a quoted rule: exit 3 here, and the
+  // reverify job could not measure a rule the action gate trusted.
+  it("resolves a quoted id to its rule instead of reporting it missing", async () => {
+    const root = mkdtempSync(join(tmpdir(), "atr-gate-quoted-"));
+    try {
+      const rulesDir = join(root, "rules");
+      const corpusDir = join(root, "corpus");
+      mkdirSync(rulesDir, { recursive: true });
+      mkdirSync(corpusDir, { recursive: true });
+      const single = fixtureRule("ATR-2026-90003", "single-quoted id", "zzq-never-zzq").replace(
+        "id: ATR-2026-90003",
+        "id: 'ATR-2026-90003'",
+      );
+      const double = fixtureRule("ATR-2026-90004", "double-quoted id", "zzq-never-zzq").replace(
+        "id: ATR-2026-90004",
+        'id:  "ATR-2026-90004"',
+      );
+      writeFileSync(join(rulesDir, "single.yaml"), single, "utf-8");
+      writeFileSync(join(rulesDir, "double.yaml"), double, "utf-8");
+      writeFileSync(join(corpusDir, "benign.jsonl"), `${JSON.stringify({ text: "nothing to see" })}\n`, "utf-8");
+      const ids = join(root, "ids.txt");
+      writeFileSync(ids, "ATR-2026-90003\nATR-2026-90004\n", "utf-8");
+      const clean = join(root, "clean.txt");
+      const code = await runGate(
+        { ...BASE_OPTIONS, idsFile: ids, emitClean: clean },
+        {
+          repoRoot: root,
+          rulesDir,
+          corpora: [corpusDir],
+          listRuleFiles: () => ["rules/double.yaml", "rules/single.yaml"],
+        },
+      );
+      expect(code).toBe(EXIT_OK);
+      expect(readIds(clean)).toEqual(["ATR-2026-90003", "ATR-2026-90004"]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});

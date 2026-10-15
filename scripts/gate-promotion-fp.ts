@@ -336,9 +336,15 @@ function promotedFilesFromDiff(
   return parsePromotedFiles(diff);
 }
 
+/**
+ * The rule id a file declares, quotes removed. YAML reads `id: "ATR-..."` and
+ * `id: 'ATR-...'` as the bare id, and so do the engine and the action gate; an
+ * id kept with its quotes matched no requested id, so a quoted rule was either
+ * reported missing (exit 3) or, when promoted, gated as if it never fired.
+ */
 function ruleIdOf(repoRoot: string, file: string): string | null {
   for (const line of readFileSync(join(repoRoot, file), "utf-8").split("\n")) {
-    const m = /^id:\s*(\S+)/.exec(line);
+    const m = /^id:\s*["']?([^"'\s#]+)/.exec(line);
     if (m) return m[1] ?? null;
   }
   return null;
