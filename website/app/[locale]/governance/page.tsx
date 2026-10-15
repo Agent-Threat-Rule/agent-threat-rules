@@ -389,8 +389,8 @@ export default async function GovernancePage({
           </p>
           <p>
             {zh
-              ? "貢獻者的名字出現在規則的 author 欄位和 metadata_provenance.discovered_by 欄位。當 MISP 匯出到 STIX，當 NIST 引用規則，署名隨著傳遞。"
-              : "A contributor's name appears in the rule's author field and metadata_provenance.discovered_by field. When MISP exports to STIX, when NIST cites the rule, attribution travels with it."}
+              ? "貢獻者的名字出現在規則的 author 欄位和 metadata_provenance.discovered_by 欄位。當 MISP 匯出到 STIX，署名隨著傳遞。"
+              : "A contributor's name appears in the rule's author field and metadata_provenance.discovered_by field. When MISP exports to STIX, attribution travels with it."}
           </p>
         </div>
       </Reveal>

@@ -82,7 +82,6 @@ export const DOCUMENTS: readonly string[] = [
   "docs/SAFE-MCP-MAPPING.md",
   "docs/owasp-pr/README.md",
   "docs/owasp-pr/ASI01_Agent_Behaviour_Hijack.md",
-  "ANNOUNCEMENT-TSC-FORMATION.draft.md",
 ];
 
 export interface CategoryRecall {

@@ -14,7 +14,7 @@ itself; the normative crosswalk fields live on individual Rules under
 
 | File | External framework | Status | Purpose |
 |------|--------------------|--------|---------|
-| [atr-to-nist-csf-2.0.md](./atr-to-nist-csf-2.0.md) | NIST CSF 2.0 (CSWP 29, Feb 2024) | Draft v1.0.0 | NIST IR 8596 Cyber AI Profile Informative Reference submission |
+| [atr-to-nist-csf-2.0.md](./atr-to-nist-csf-2.0.md) | NIST CSF 2.0 (CSWP 29, Feb 2024) | Draft v1.0.0 | Draft; not submitted to NIST |
 
 Planned (not yet drafted):
 

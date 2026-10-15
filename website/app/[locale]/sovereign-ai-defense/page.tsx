@@ -259,16 +259,16 @@ export default async function SovereignAIDefensePage({
           {zh ? (
             <>
               監管者自己也清楚。EU AI Act 是在 agentic AI 出現之前談定的——它的風險分級假設的是
-              「輔助人類決策」的系統,而不是自己決策、自己行動的系統。NIST 的 AI Agent Standards
-              Initiative 在 2026 年 2 月啟動,正是為了補上這個缺口。框架正在追趕;它們底下仍然缺的,
+              「輔助人類決策」的系統,而不是自己決策、自己行動的系統。NIST 在 2026 年 2 月啟動
+              AI Agent Standards Initiative。框架正在追趕;ATR 認為,它們底下仍然缺的,
               是一個<strong className="text-ink">可執行的偵測層</strong>。
             </>
           ) : (
             <>
               The regulators know it. The EU AI Act was negotiated before agentic AI arrived — its risk tiers
               assume systems that <strong className="text-ink">assist</strong> a human decision, not systems that decide and act on their
-              own. NIST&rsquo;s AI Agent Standards Initiative opened in February 2026 precisely to close that gap.
-              The frameworks are catching up; what they still need underneath them is an
+              own. NIST launched its AI Agent Standards Initiative in February 2026.
+              The frameworks are catching up; in ATR&rsquo;s view, what they still need underneath them is an
               {" "}<strong className="text-ink">executable detection layer</strong>.
             </>
           )}
@@ -290,10 +290,15 @@ export default async function SovereignAIDefensePage({
           )}
         </p>
         <Callout borderColor="critical">
-          &ldquo;Conventional cybersecurity approaches do not translate cleanly to autonomous agent deployments.&rdquo;
-          <span className="block font-data text-[10px] tracking-[0.1em] text-stone mt-3 uppercase">
-            NIST CAISI · {zh ? "2026 年 1 月 · 官方承認 AI Agent 防禦標準空白" : "January 2026 · Official acknowledgment of the standards gap"}
-          </span>
+          &ldquo;While these systems promise significant benefits for productivity and innovation, they present unique security challenges.&rdquo;
+          <a
+            href="https://www.nist.gov/news-events/news/2026/01/caisi-issues-request-information-about-securing-ai-agent-systems"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block font-data text-[10px] tracking-[0.1em] text-stone mt-3 uppercase hover:underline"
+          >
+            NIST · {zh ? "2026-01-12 新聞稿:CAISI 發布 AI agent 系統安全 RFI" : "News release, 2026-01-12: CAISI's RFI on securing AI agent systems"}
+          </a>
         </Callout>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-fog border border-fog mt-7">
           <StatCell

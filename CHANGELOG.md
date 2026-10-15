@@ -19,8 +19,8 @@ All notable changes to ATR will be documented in this file.
   figures in README were one-off replays.
 - **Recall figures outside README are rendered from the measurement files.**
   `scripts/render-recall-citations.ts` fills the figures between recall
-  markers in `LIMITATIONS.md`, `docs/SAFE-MCP-MAPPING.md`, the
-  `docs/owasp-pr/` texts and the TSC announcement draft, from the file each
+  markers in `LIMITATIONS.md`, `docs/SAFE-MCP-MAPPING.md` and the
+  `docs/owasp-pr/` texts, from the file each
   source's `latest.json` points at, in both lanes (every rendering is held to
   the rule README's table is checked by). `scripts/sync-citation-garak.ts`
   generates the garak sentence in `CITATION.cff` from root `stats.json`, with
@@ -36,8 +36,8 @@ All notable changes to ATR will be documented in this file.
   file records are labelled instead: the about page's historical garak figure
   as taken with every rule loaded, the neutral-benchmarks post's runs as having
   no recorded lane. The website reads `breakdown.enforce_lane` from the measurement
-  files (home, coverage, research, red-team, garak integration, NIST AI RMF,
-  ATD and sovereign-AI pages, the PINT blog post); it no longer reads recall
+  files (home, coverage, research, red-team, garak integration, ATD and
+  sovereign-AI pages, the PINT blog post); it no longer reads recall
   from the old eval report files or their typed fallbacks, and no longer
   hydrates recall in the browser. The garak figures carry the closed-book
   caveat, and so now do the PINT-format and HackAPrompt figures, which have
@@ -53,6 +53,18 @@ All notable changes to ATR will be documented in this file.
   independent: `garak-full` contains that corpus twice.
 - `data/stats.json` no longer carries the orphaned `benchmark.pintRecall`
   block, a 3.5.11 figure nothing has written since #600 and nothing reads.
+
+### Fixed
+
+- **NIST-related statements corrected across the docs and the website.**
+  Pages described a NIST CAISI dialogue and position paper that did not
+  happen, an RFI response ATR never filed, an OSCAL "Path 1" acceptance,
+  and a quote NIST never published; they listed NIST among adopters and
+  in a trust bar, and showed "100%" or "4/4 functions" for an AI RMF
+  mapping that covers a subset of subcategories. usnistgov/oscal-content#338
+  is described as what it is: open, reworked against NIST's AI RMF catalog,
+  awaiting NIST review. The website changelog page now shows the notes on
+  historical entries, which it used to drop.
 
 ## [4.1.5] - 2026-10-10
 
@@ -906,6 +918,13 @@ No rule content changed and no threshold was loosened in any of the above.
 
 ## [2.1.0] - 2026-05-09
 
+> **Historical entry — the AI RMF line below overstated coverage.**
+> "100% coverage of all 4 AI RMF functions" described the community OSCAL
+> catalog, which encodes all 72 AI RMF subcategories as controls. ATR's
+> rules map to a subset of those subcategories. The catalog is a community
+> contribution and is not endorsed by NIST. Do not quote the line as a
+> coverage claim. (Note added 2026-10-16.)
+
 ### Added
 
 - **NIST AI RMF mapping v0.2** — 100% coverage of all 4 AI RMF functions (Govern / Map / Measure / Manage), 72 controls + 31 cross-reference links + worked example profile. Schema-valid OSCAL catalog published under `Agent-Threat-Rule/ai-rmf-oscal-catalog` (PR #46).
@@ -916,6 +935,14 @@ No rule content changed and no threshold was loosened in any of the above.
 - **OWASP/Agent-Security-Regression-Harness#74** merged 2026-05-11 by mertsatilmaz (OWASP Project Lead): "Welcome to the team."
 
 ## [2.0.11] - 2026-04-21
+
+> **Historical entry — do not quote the garak or SKILL.md figures below.**
+> The 97.1% in-the-wild recall was measured on a garak corpus that many of
+> this release's new rules were written from, so it is not an out-of-sample
+> result. The SKILL.md precision and FP figures are in-sample: the benign
+> set is the one the rules were tuned against. Current figures, reported
+> per lane and with their closed-book share, are in README §8 Evaluation.
+> (Note added 2026-10-16.)
 
 ### Added
 

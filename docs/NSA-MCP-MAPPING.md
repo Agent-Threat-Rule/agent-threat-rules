@@ -67,10 +67,10 @@ The CSI's real-world examples section maps onto existing ATR coverage too: *Tool
 
 R7 (logging/observability) and the CSI's audit-log concern (A7) are what NIST's **SP 800-53 Control Overlays for Securing AI Systems (COSAiS)** and the **OSCAL** assessment layer formalize. ATR already maintains:
 
-- [`ai-rmf-oscal-catalog`](https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog) (CC0) — ATR rules as an OSCAL-consumable AI-RMF control profile.
-- An in-progress NIST OSCAL community contribution (AI-RMF profile examples, PR #338).
+- [`ai-rmf-oscal-catalog`](https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog) (CC0) — a community OSCAL catalog of the NIST AI RMF. It does not contain ATR rules.
+- An open pull request to NIST's OSCAL content repository offering AI RMF profile examples (usnistgov/oscal-content#338), awaiting NIST review.
 
-This NSA MCP mapping is the **MCP-specific evidence exhibit** for that NIST track and the artifact to bring to the COSAiS community channel (`overlays-securing-ai@list.nist.gov` / the #NIST-Overlays-Securing-AI Slack).
+This NSA MCP mapping is MCP-specific material that could be offered to the COSAiS community channel (`overlays-securing-ai@list.nist.gov` / the #NIST-Overlays-Securing-AI Slack).
 
 ---
 
