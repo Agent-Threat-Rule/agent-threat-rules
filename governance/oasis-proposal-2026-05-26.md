@@ -16,6 +16,11 @@
 > - **Downstream adoption.** A merged pull request into an open-source repository such as
 >   `cisco-ai-defense/skill-scanner` is not a vendor product shipment or endorsement.
 >   `ADOPTERS.md` is the source of truth, with per-entry PR evidence.
+> - **NIST (added 2026-10-16).** Section 2 says NIST "signalled" that the project
+>   would benefit from multi-stakeholder governance; NIST made no such statement.
+>   Section 11's "invitations extended to NIST CAISI" describes intent, not NIST
+>   participation: NIST has no role in this proposal. The "97.1% recall on NVIDIA
+>   garak" figure in section 2 is withdrawn as well; see README section 8.
 >
 > Rule counts, version numbers and adopter lists below are point-in-time and have moved.
 > Nothing below has been rewritten; this note is the correction of record.

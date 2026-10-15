@@ -17,7 +17,11 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { runSkillBenchmark } from '../src/eval/skill-benchmark.js';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { runSkillBenchmark, skillBenchmarkMeasurementInput } from '../src/eval/skill-benchmark.js';
+import { enforceLaneRecall } from '../src/measurement/enforce-lane.js';
+import { parseMeasurement } from '../src/measurement/schema.js';
 
 type BenchmarkReport = Awaited<ReturnType<typeof runSkillBenchmark>>;
 
@@ -119,5 +123,59 @@ describe('SKILL.md Benchmark', () => {
     for (const missed of report.missed_attacks) {
       expect(missed.layer).toBe('C');
     }
+  });
+  // runSkillBenchmark had no lane option, so the SKILL.md measurement could only
+  // ever be a hunt-lane figure, and the enforce-lane one (0 of 32 on ATR 4.1.5)
+  // lived in README as a one-off replay. The measurement now records it as
+  // breakdown.enforce_lane, from a second run over the same corpus.
+  describe('enforce lane', () => {
+    const reportPath = join(__dirname, '..', 'data', 'skill-benchmark', 'benchmark-report.json');
+    let enforce: BenchmarkReport;
+    let reportFileAfterHunt: string;
+
+    beforeAll(async () => {
+      reportFileAfterHunt = readFileSync(reportPath, 'utf-8');
+      enforce = await runSkillBenchmark({ lane: 'enforce', outputPath: null });
+    }, process.env.CI ? 600_000 : 180_000);
+
+    it('runs the same corpus on an enforce-lane engine', () => {
+      expect(report.lane).toBe('hunt');
+      expect(enforce.lane).toBe('enforce');
+      expect(enforce.corpus_size).toBe(report.corpus_size);
+      expect(enforce.malicious_count).toBe(report.malicious_count);
+      expect(enforce.rules_in_lane).toBeGreaterThan(0);
+      expect(enforce.rules_in_lane).toBeLessThan(report.rules_in_lane);
+      expect(enforce.true_positives).toBeLessThanOrEqual(report.true_positives);
+      expect(enforce.false_positives).toBeLessThanOrEqual(report.false_positives);
+    });
+
+    it('does not overwrite the hunt report when told not to write one', () => {
+      expect(readFileSync(reportPath, 'utf-8')).toBe(reportFileAfterHunt);
+    });
+
+    it('records the enforce run as breakdown.enforce_lane beside the hunt headline', () => {
+      const input = skillBenchmarkMeasurementInput(report, enforce);
+      expect(input.metrics.recall).toBe(report.overall_recall);
+      const lane = enforceLaneRecall({
+        detected: enforce.true_positives,
+        attacks: enforce.malicious_count,
+        rulesInLane: enforce.rules_in_lane,
+      });
+      expect((input.breakdown as Record<string, unknown>).enforce_lane).toEqual(lane);
+      // The schema's own consistency check: the enforce run covers the headline's attacks.
+      expect(() =>
+        parseMeasurement({
+          ...input,
+          schema_version: '1',
+          atr_version: '0.0.0',
+          atr_commit: 'test',
+          rules_loaded: report.rule_count,
+        }),
+      ).not.toThrow();
+    });
+
+    it('refuses a hunt report as the enforce lane', () => {
+      expect(() => skillBenchmarkMeasurementInput(report, report)).toThrow(/enforce/);
+    });
   });
 });

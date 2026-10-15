@@ -70,9 +70,43 @@ export interface LatencyMs {
  *   - eval-harness: by category and by difficulty
  *
  * Kept as `Record<string, unknown>` because the structure is source-defined.
- * Consumers of this field must validate per-source.
+ * Consumers of this field must validate per-source. The one exception is
+ * `enforce_lane` (below), which every runner records the same way and this
+ * module validates.
  */
 export type Breakdown = Record<string, unknown>;
+
+/**
+ * `breakdown.enforce_lane`: the same samples, through the same detection loop
+ * as `metrics.recall`, on an engine constructed with `lane: 'enforce'`.
+ *
+ * `metrics.recall` is a hunt-lane figure (an engine given no lane loads every
+ * maturity); the enforce lane, the one to run with blocking on, loads only
+ * `maturity: stable`. The two can differ by two orders of magnitude, so a
+ * runner records both — and this one in the breakdown, deliberately not as a
+ * second headline: `metrics`, latest.json and data/stats.json stay hunt.
+ * Built by src/measurement/enforce-lane.ts.
+ */
+export interface EnforceLaneRecall {
+  lane: "enforce";
+  /** Attack samples the enforce-lane engine detected. */
+  detected: number;
+  /** Attack samples evaluated — the headline's `confusion.tp + confusion.fn`. */
+  attacks: number;
+  /** detected / attacks. */
+  recall: number;
+  /**
+   * Rules the enforce lane loads: status not draft/deprecated, maturity stable.
+   * Includes any `confirm: embedding` rule, which the synchronous evaluate()
+   * path most runners use never fires outside the hunt lane.
+   */
+  rules_in_lane: number;
+  /** What the figure is, in the record itself. */
+  note: string;
+}
+
+/** Breakdown key every runner records the enforce-lane figure under. */
+export const ENFORCE_LANE_BREAKDOWN_KEY = "enforce_lane" as const;
 
 /**
  * A single measurement run.
@@ -227,6 +261,48 @@ function parseLatency(raw: unknown, path: string): LatencyMs {
   };
 }
 
+/**
+ * Parse `breakdown.enforce_lane`. Strict: a figure whose recall disagrees with
+ * its own counts, or that names another lane, is a number nothing backs.
+ */
+export function parseEnforceLaneRecall(raw: unknown, path = "$.breakdown.enforce_lane"): EnforceLaneRecall {
+  const obj = assertObject(raw, path);
+  if (obj.lane !== "enforce") {
+    throw new MeasurementSchemaError(`${path}.lane`, `expected "enforce", got ${JSON.stringify(obj.lane)}`);
+  }
+  const attacks = assertNumber(obj.attacks, `${path}.attacks`, { min: 1, integer: true });
+  const detected = assertNumber(obj.detected, `${path}.detected`, { min: 0, max: attacks, integer: true });
+  const recall = assertNumber(obj.recall, `${path}.recall`, { min: 0, max: 1 });
+  if (Math.abs(recall - detected / attacks) > 1e-9) {
+    throw new MeasurementSchemaError(`${path}.recall`, `${recall} != detected / attacks = ${detected}/${attacks}`);
+  }
+  return {
+    lane: "enforce",
+    detected,
+    attacks,
+    recall,
+    rules_in_lane: assertNumber(obj.rules_in_lane, `${path}.rules_in_lane`, { min: 0, integer: true }),
+    note: assertString(obj.note, `${path}.note`, { nonEmpty: true }),
+  };
+}
+
+/**
+ * Validate `breakdown.enforce_lane` when present, and hold it to the headline's
+ * sample set: the enforce run covers the attacks the headline counted
+ * (`tp + fn`), or the two figures are not about the same corpus.
+ */
+function checkEnforceLane(breakdown: Breakdown, confusion: Confusion | undefined): void {
+  if (breakdown[ENFORCE_LANE_BREAKDOWN_KEY] === undefined) return;
+  const lane = parseEnforceLaneRecall(breakdown[ENFORCE_LANE_BREAKDOWN_KEY]);
+  if (confusion !== undefined && lane.attacks !== confusion.tp + confusion.fn) {
+    throw new MeasurementSchemaError(
+      "$.breakdown.enforce_lane.attacks",
+      `${lane.attacks} != confusion.tp + confusion.fn = ${confusion.tp + confusion.fn}: ` +
+        "the enforce run must cover the samples the headline counted",
+    );
+  }
+}
+
 const ISO8601_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
 const SOURCE_RE = /^[a-z0-9][a-z0-9-]*$/;
 
@@ -275,7 +351,10 @@ export function parseMeasurement(raw: unknown): Measurement {
   if (obj.source_commit !== undefined) m.source_commit = assertString(obj.source_commit, "$.source_commit", { nonEmpty: true });
   if (obj.confusion !== undefined) m.confusion = parseConfusion(obj.confusion, "$.confusion");
   if (obj.latency_ms !== undefined) m.latency_ms = parseLatency(obj.latency_ms, "$.latency_ms");
-  if (obj.breakdown !== undefined) m.breakdown = assertObject(obj.breakdown, "$.breakdown");
+  if (obj.breakdown !== undefined) {
+    m.breakdown = assertObject(obj.breakdown, "$.breakdown");
+    checkEnforceLane(m.breakdown, m.confusion);
+  }
   if (obj.notes !== undefined) m.notes = assertString(obj.notes, "$.notes");
   return m;
 }

@@ -4,7 +4,204 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **Every benchmark measurement records the enforce lane beside its
+  headline.** A measurement's `metrics.recall` is the `hunt` lane (the engine
+  default, every maturity). Each runner the weekly measurement calls now also
+  runs the same samples through its own detection loop on an engine
+  constructed with `lane: 'enforce'` (only `maturity: stable` rules, the lane
+  for blocking) and records the result as `breakdown.enforce_lane`. Where a
+  measurement records it, README's Recall cell cites both lanes and root
+  `stats.json` cites the enforce figure as `enforceLaneRecall`;
+  `scripts/check-benchmark-citations.ts` fails CI when either disagrees with
+  the measurement or leaves the enforce figure out. Before this, the enforce
+  figures in README were one-off replays.
+
+### Changed
+
+- **README §8 discloses that the `garak` and `garak-full` figures are partly
+  closed-book.** A replay without the rules whose own YAML shows they were
+  written from the in-the-wild corpus is given in the new `[^garakcorpus]`
+  footnote, and the paragraph on the two `garak` rows no longer calls them
+  independent: `garak-full` contains that corpus twice.
+- `data/stats.json` no longer carries the orphaned `benchmark.pintRecall`
+  block, a 3.5.11 figure nothing has written since #600 and nothing reads.
+
+### Fixed
+
+- **NIST-related statements corrected across the docs and the website.**
+  Pages described a NIST CAISI dialogue and position paper that did not
+  happen, an RFI response ATR never filed, an OSCAL "Path 1" acceptance,
+  and a quote NIST never published; they listed NIST among adopters and
+  in a trust bar, and showed "100%" or "4/4 functions" for an AI RMF
+  mapping that covers a subset of subcategories. usnistgov/oscal-content#338
+  is described as what it is: open, reworked against NIST's AI RMF catalog,
+  awaiting NIST review. The website changelog page now shows the notes on
+  historical entries, which it used to drop.
+
+## [4.1.5] - 2026-10-10
+
+4.1.4 was staged on npm and removed by publish-time scanning before it could be
+approved, like 4.1.1 to 4.1.3. 4.0.0 passed that scanning. What the 4.1 line
+added were rules whose test samples are complete attack snippets: a
+crypto-miner command line with a mining-pool URL, PHP, JSP and ASPX webshells,
+and a Node.js reverse shell. This release carries the 4.1.4 rules and engine,
+packaged without those samples.
+
+### Changed
+
+- **The npm package ships the rules without their test samples.** The release
+  workflow removes `test_cases` and `evasion_tests` from each rule just before
+  staging, after the tests have run on the full rules. The engine does not read
+  them, so detection is unchanged: the same rules load and the same rules fire.
+  The samples stay in the repository. With the package alone, `atr test` on a
+  bundled rule has no samples to run, and `atr stats` reports zero TP/TN
+  counts. DISCLOSURE says so.
+
+### Fixed
+
+- **ATR-2026-02600 no longer names a real public IP in its test samples.** Its
+  two reverse-shell samples now connect to the documentation ranges 203.0.113.14
+  and 192.0.2.4. The detection is unchanged.
+- **ATR-2026-02627 describes the web shells it detects instead of quoting
+  them.** Its description and one false-positive note quoted a working one-line
+  PHP command shell; they now say what it is. The detection is unchanged.
+
+### Changed
+
+- **npm releases go only through the staged path in `publish.yml`.** The
+  package is dual-use, so npm's policy lets CI stage a version but not publish
+  one; a maintainer promotes it with 2FA. Three workflows could still put a
+  version on the registry another way and have been removed:
+  `publish-current-version.yml` (direct `npm publish` through trusted
+  publishing), `publish-on-rules-merge.yml` (bumped and ran `npm publish` with
+  `NPM_TOKEN` on pushes to `main`) and `npm-stage.yml` (approved staged
+  versions from CI with `NPM_TOKEN`, skipping the maintainer's 2FA).
+  `scripts/release.sh` now stops at the tag push instead of also publishing
+  locally. No workflow references `NPM_TOKEN`, and
+  `tests/npm-release-path.test.ts` fails if any workflow other than
+  `publish.yml` gains a publish, stage or approve step.
+
+## [4.1.4] - 2026-10-07
+
+> Not published to npm (see 4.1.5).
+
+The first release since 4.0.0 meant to reach npm. 4.1.1, 4.1.2 and 4.1.3 were
+each blocked by npm's publish-time malware scanning, which reads the attack
+strings in rule files as malware, so `npm install agent-threat-rules` still
+returns 4.0.0. This release declares the package dual-use (see Changed below)
+and goes through npm's staged publishing, approved by a maintainer with 2FA. It
+carries everything listed under 4.1.3, 4.1.2, 4.1.1 and 4.1.0 below.
+
+### Added
+
+- **Four rules.** Each one passed the repository's PR checks, and is
+  experimental, maturity `test`, with alert-level response actions only:
+  - ATR-2026-02846: ignore-previous-and-following instructions (PromptInject
+    goal hijacking), a semantic rule with a narrow regex fallback.
+  - ATR-2026-02847: email exfiltration under a policy, audit or compliance
+    pretext.
+  - ATR-2026-02850: data exfiltration by email under a documentation pretext,
+    including French phrasings.
+  - ATR-2026-02851: a fake user turn inside content that instructs the agent to
+    send an email.
+  ATR-2026-02847, 02850 and 02851 come from human-written attack emails
+  (LLMail-Inject). They fire on none of 526 real emails or 694 benign web pages
+  presented as tool output, and each catches attack emails that were held out
+  while the rule was written.
+
+### Fixed
+
+- **pyATR falls back for regex conditions Python's `re` cannot compile** (such
+  as variable-width lookbehind) instead of dropping the condition (#554, thanks
+  @dc-tw).
+- **The test-case validator reads every key a test case can use.** It read four
+  of nine and misjudged rules whose cases use the others. Its failure count on
+  the current rules drops from 40 to 11, with no new failures (#607).
+
+### Security
+
+- **`atr tc pull` checks the rules a Threat Cloud endpoint returns before
+  writing them, and no longer goes through a shell.** The response is now
+  treated as untrusted: a rule is written only if its id has the form
+  `ATR-YYYY-NNNNN`, its category is one of the schema's categories and no rule
+  with that id is already in the repo; anything else is rejected without
+  touching the disk. The validator then runs as a separate Node.js process with
+  the file path as a plain argument. Before, the id and category came from the
+  response unchecked and the validator was started through a shell, so a
+  compromised or impersonated endpoint could affect the operator's machine
+  beyond the rules directory. The category is also read from the rule's `tags`,
+  not from the first `subcategory:` line in a compliance block, and the
+  validator is found next to the installed CLI rather than in the current
+  directory, so valid rules are no longer filed under the wrong directory or
+  rejected when the command runs outside a checkout of this repo.
+
+### Changed
+
+- **The package is declared dual-use under the npm Dual-Use Content Policy.**
+  npm's publish-time malware scanning, introduced in July 2026, blocked 4.1.1,
+  4.1.2 and 4.1.3: rule files carry attack strings by design, as detection
+  patterns and test samples, and the scanner treats them like malware.
+  `package.json` now carries `"contentPolicy": {"class": "dual-use"}`, and a
+  plain-text `DISCLOSURE` file at the package root says what the attack content
+  is for and what the package does not do. Under that policy, CI may only stage
+  a release; a maintainer approves it with 2FA before it goes live, so
+  `publish.yml` now stages through trusted publishing and waits for the approval
+  before creating the GitHub release.
+
+## [4.1.3] - 2026-10-06
+
+> Not published to npm (see 4.1.4).
+
+The first release of the 4.1 line to reach npm; 4.1.2 did not either. Its
+publish on 2026-10-01 went through trusted publishing (OIDC), printed
+`+ agent-threat-rules@4.1.2`, and was placed in npm's staging queue instead of
+being published. It never appeared on the registry, and a re-run on 2026-10-05
+was refused with E409 ("Cannot publish over previously staged version"), so the
+number is skipped like 4.1.1. The trusted publisher has since been set to allow
+direct publishing. Rules, engine and spec are unchanged from the `v4.1.2` tag.
+
+### Changed
+
+- **The release workflow fails when the version never reaches the registry.**
+  It now asks npm for the exact version after publishing, waits up to ten
+  minutes, and fails before the GitHub release is created. Before, the check
+  read `latest`, ran after the release, and only warned, which is how both 4.1.1
+  and 4.1.2 went green without being published (#633).
+
+## [4.1.2] - 2026-10-01
+
+> Not published to npm (see 4.1.3).
+
+The first release of the 4.1 line to reach npm. Until this one,
+`npm install agent-threat-rules` returned 4.0.0. 4.1.2 carries everything
+listed under 4.1.1 and 4.1.0 below. Rules, engine and spec are unchanged from
+the `v4.1.1` tag; the README rewords one row of its ETSI mapping, which had
+stated a conformance requirement as a fact about the corpus.
+
+Neither earlier 4.1 tag reached the registry:
+
+- `4.1.0` (tagged 2026-09-14): the publish step got E404 on the registry PUT.
+- `4.1.1` (tagged 2026-09-22): the tag-triggered publish failed with EOTP, npm
+  asking CI for a one-time password. A manual republish later that day was
+  placed in npm's staging queue instead of being published, and the retry on
+  2026-09-23 was refused with E409. npm does not allow publishing over a staged
+  version, so the number is skipped.
+
+The 4.1.1 entry below opens by calling itself the first 4.1 release to reach
+npm. It was not; the entry is otherwise left as written.
+
+### Changed
+
+- **Releases publish through npm trusted publishing (OIDC).** `publish.yml` no
+  longer reads a registry token. npm mints a short-lived credential for each
+  run, bound to this repository and that workflow file, and generates the
+  provenance attestation itself (#606).
+
 ## [4.1.1] - 2026-09-22
+
+> Not published to npm (see 4.1.2).
 
 The first release of the 4.1 line to actually reach npm. `4.1.0` was tagged on
 2026-09-14 and never published — the publish step failed on an expired registry
@@ -695,6 +892,13 @@ No rule content changed and no threshold was loosened in any of the above.
 
 ## [2.1.0] - 2026-05-09
 
+> **Historical entry — the AI RMF line below overstated coverage.**
+> "100% coverage of all 4 AI RMF functions" described the community OSCAL
+> catalog, which encodes all 72 AI RMF subcategories as controls. ATR's
+> rules map to a subset of those subcategories. The catalog is a community
+> contribution and is not endorsed by NIST. Do not quote the line as a
+> coverage claim. (Note added 2026-10-16.)
+
 ### Added
 
 - **NIST AI RMF mapping v0.2** — 100% coverage of all 4 AI RMF functions (Govern / Map / Measure / Manage), 72 controls + 31 cross-reference links + worked example profile. Schema-valid OSCAL catalog published under `Agent-Threat-Rule/ai-rmf-oscal-catalog` (PR #46).
@@ -705,6 +909,14 @@ No rule content changed and no threshold was loosened in any of the above.
 - **OWASP/Agent-Security-Regression-Harness#74** merged 2026-05-11 by mertsatilmaz (OWASP Project Lead): "Welcome to the team."
 
 ## [2.0.11] - 2026-04-21
+
+> **Historical entry — do not quote the garak or SKILL.md figures below.**
+> The 97.1% in-the-wild recall was measured on a garak corpus that many of
+> this release's new rules were written from, so it is not an out-of-sample
+> result. The SKILL.md precision and FP figures are in-sample: the benign
+> set is the one the rules were tuned against. Current figures, reported
+> per lane and with their closed-book share, are in README §8 Evaluation.
+> (Note added 2026-10-16.)
 
 ### Added
 
@@ -805,7 +1017,7 @@ No rule content changed and no threshold was loosened in any of the above.
 - Wild scan (96K): 1.35% flag rate, 751 confirmed malware
 - OWASP Agentic Top 10: 10/10 coverage
 - MITRE ATLAS: 100/113 rules mapped
-- SAFE-MCP: 91.8% technique coverage
+- SAFE-MCP: technique coverage figure (withdrawn 2026-10: it was not backed by rule-level data; see docs/SAFE-MCP-MAPPING.md)
 - Avg scan latency: 14ms per file
 
 ### Ecosystem

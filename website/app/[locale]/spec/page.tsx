@@ -1,5 +1,5 @@
 /* ATR Canonical Specification — long-form RFC-style document.
- * Mirrors the structure of README.md and ATR-SPEC-v1.md in the repo,
+ * Mirrors the structure of README.md and SPEC.md in the repo,
  * but rendered as a sticky-ToC standards-document page.
  */
 import Link from "next/link";
@@ -105,11 +105,11 @@ const SECTIONS: Section[] = [
     status: "normative",
     en: {
       title: "Conformance Levels",
-      body: `<p>The keywords MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY in this document and in <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-SPEC-v1.md" target="_blank" rel="noopener noreferrer">ATR-SPEC-v1.md</a> are to be interpreted as described in <a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a>.</p>
+      body: `<p>The keywords MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY in this document and in <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a> are to be interpreted as described in <a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a>.</p>
 <h3>A conforming <strong>ATR engine</strong> MUST:</h3>
 <ol>
   <li>Parse all fields defined in <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer"><code>spec/atr-schema.yaml</code></a> without error.</li>
-  <li>Evaluate <code>detection.conditions</code> with the semantics defined in <code>ATR-SPEC-v1.md §3.5</code> (Detection Logic) and <code>§5</code> (Engine Requirements).</li>
+  <li>Evaluate <code>detection.conditions</code> with the semantics defined in <code>SPEC.md §6</code> (Detection Semantics), and emit Match output as defined in <code>SPEC.md §7</code> (Match Output).</li>
   <li>Honor the <code>scan_target</code> field — a rule with <code>scan_target: skill</code> MUST NOT be evaluated against <code>mcp_exchange</code> events and vice versa.</li>
   <li>Respect rule <code>status</code> — rules with <code>status: deprecated</code> or <code>status: draft</code> MUST NOT participate in production matching unless the consumer opts in explicitly.</li>
   <li>Emit <code>rule_id</code> and rule <code>severity</code> on every match.</li>
@@ -125,11 +125,11 @@ const SECTIONS: Section[] = [
     },
     zh: {
       title: "符規等級 (Conformance Levels)",
-      body: `<p>本文件與 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-SPEC-v1.md" target="_blank" rel="noopener noreferrer">ATR-SPEC-v1.md</a> 中的關鍵詞 MUST、MUST NOT、SHOULD、SHOULD NOT、MAY,皆依 <a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a> 詮釋。</p>
+      body: `<p>本文件與 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a> 中的關鍵詞 MUST、MUST NOT、SHOULD、SHOULD NOT、MAY,皆依 <a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a> 詮釋。</p>
 <h3>一個符規的 <strong>ATR engine</strong> MUST:</h3>
 <ol>
   <li>解析 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer"><code>spec/atr-schema.yaml</code></a> 中所有定義的欄位,且不應出錯。</li>
-  <li>以 <code>ATR-SPEC-v1.md §3.5</code> (Detection Logic) 與 <code>§5</code> (Engine Requirements) 中定義的語意評估 <code>detection.conditions</code>。</li>
+  <li>以 <code>SPEC.md §6</code> (Detection Semantics) 中定義的語意評估 <code>detection.conditions</code>,並依 <code>SPEC.md §7</code> (Match Output) 的定義發出 Match 輸出。</li>
   <li>遵守 <code>scan_target</code> 欄位 ── 帶 <code>scan_target: skill</code> 的規則 MUST NOT 對 <code>mcp_exchange</code> event 評估,反之亦然。</li>
   <li>遵守規則的 <code>status</code> ── <code>status: deprecated</code> 或 <code>status: draft</code> 的規則 MUST NOT 參與生產環境比對,除非消費者明示 opt in。</li>
   <li>每次 match 皆 MUST 發出 <code>rule_id</code> 與 <code>severity</code>。</li>
@@ -156,9 +156,7 @@ const SECTIONS: Section[] = [
     <tr><th>Artifact</th><th>Purpose</th><th>Location</th></tr>
   </thead>
   <tbody>
-    <tr><td>SPEC.md</td><td>Specification entry pointer</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a></td></tr>
-    <tr><td>ATR-SPEC-v1.md</td><td>Rule format spec (normative)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-SPEC-v1.md" target="_blank" rel="noopener noreferrer">ATR-SPEC-v1.md</a></td></tr>
-    <tr><td>ATR-FRAMEWORK-SPEC.md</td><td>Multi-layer framework design</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-FRAMEWORK-SPEC.md" target="_blank" rel="noopener noreferrer">ATR-FRAMEWORK-SPEC.md</a></td></tr>
+    <tr><td>SPEC.md</td><td>Rule format spec (normative)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a></td></tr>
     <tr><td>spec/atr-schema.yaml</td><td>Machine-readable schema</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer">atr-schema.yaml</a></td></tr>
     <tr><td>docs/QUALITY-STANDARD.md</td><td>Rule promotion criteria (RFC-001)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/QUALITY-STANDARD.md" target="_blank" rel="noopener noreferrer">QUALITY-STANDARD.md</a></td></tr>
     <tr><td>LIMITATIONS.md</td><td>Documented evasion techniques</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" target="_blank" rel="noopener noreferrer">LIMITATIONS.md</a></td></tr>
@@ -206,9 +204,7 @@ test_cases:
     <tr><th>Artifact</th><th>用途</th><th>位置</th></tr>
   </thead>
   <tbody>
-    <tr><td>SPEC.md</td><td>規格入口指標</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a></td></tr>
-    <tr><td>ATR-SPEC-v1.md</td><td>規則格式 spec (normative)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-SPEC-v1.md" target="_blank" rel="noopener noreferrer">ATR-SPEC-v1.md</a></td></tr>
-    <tr><td>ATR-FRAMEWORK-SPEC.md</td><td>多層框架設計</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-FRAMEWORK-SPEC.md" target="_blank" rel="noopener noreferrer">ATR-FRAMEWORK-SPEC.md</a></td></tr>
+    <tr><td>SPEC.md</td><td>規則格式 spec (normative)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a></td></tr>
     <tr><td>spec/atr-schema.yaml</td><td>機器可讀 schema</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer">atr-schema.yaml</a></td></tr>
     <tr><td>docs/QUALITY-STANDARD.md</td><td>規則晉升標準 (RFC-001)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/QUALITY-STANDARD.md" target="_blank" rel="noopener noreferrer">QUALITY-STANDARD.md</a></td></tr>
     <tr><td>LIMITATIONS.md</td><td>已記錄的 evasion 技術</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" target="_blank" rel="noopener noreferrer">LIMITATIONS.md</a></td></tr>
@@ -255,12 +251,12 @@ test_cases:
     status: "informative",
     en: {
       title: "Adoption",
-      body: `<p>The full Implementer Report — including conformance level, spec version, integration date, and public reference per organization — is published at <a href="/en/implementers">/implementers</a>. Implementations as of the date of this document include Microsoft Agent Governance Toolkit, Cisco AI Defense&apos;s open-source skill-scanner, MISP / CIRCL (galaxy + taxonomies), OWASP A-S-R-H Project, and Gen Digital Sage (Norton / Avast / AVG parent). Each is evidenced by a merged pull request in a public repository; a merged pull request is not a statement about any vendor&apos;s commercial product. A NIST OSCAL submission is in review (collaboration branch #338); this is not a NIST endorsement.</p>
+      body: `<p>The full Implementer Report — including conformance level, spec version, integration date, and public reference per organization — is published at <a href="/en/implementers">/implementers</a>. Implementations as of the date of this document include Microsoft Agent Governance Toolkit (example directories), Cisco AI Defense&apos;s open-source skill-scanner, MISP / CIRCL (galaxy + taxonomies), OWASP A-S-R-H Project, and Gen Digital Sage (Norton / Avast / AVG parent). Each is evidenced by a merged pull request in a public repository; a merged pull request is not a statement about any vendor&apos;s commercial product. A NIST OSCAL pull request (#338) offering AI RMF profile examples is open and awaiting NIST review; this is not a NIST endorsement.</p>
 <p>New adopters self-declare via pull request to <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ADOPTERS.md" target="_blank" rel="noopener noreferrer"><code>ADOPTERS.md</code></a>. The maintainers do not pre-approve entries; self-certification is the model.</p>`,
     },
     zh: {
       title: "採用 (Adoption)",
-      body: `<p>完整的 Implementer Report ── 包含每個組織的符規等級、規格版本、整合日期、公開憑據 ── 發布於 <a href="/zh/implementers">/implementers</a>。截至本文件日期,已實作的整合包含 Microsoft Agent Governance Toolkit、Cisco AI Defense 的開源 skill-scanner、MISP / CIRCL (galaxy + taxonomies)、OWASP A-S-R-H Project、以及 Gen Digital Sage (Norton / Avast / AVG 的母公司)。每一筆的憑據都是公開 repo 裡一個已合併的 pull request;已合併的 PR 不等於對任何廠商商業產品的陳述。NIST OSCAL 之送件正在審查中 (collaboration branch #338);此非 NIST 背書。</p>
+      body: `<p>完整的 Implementer Report ── 包含每個組織的符規等級、規格版本、整合日期、公開憑據 ── 發布於 <a href="/zh/implementers">/implementers</a>。截至本文件日期,已實作的整合包含 Microsoft Agent Governance Toolkit(範例目錄)、Cisco AI Defense 的開源 skill-scanner、MISP / CIRCL (galaxy + taxonomies)、OWASP A-S-R-H Project、以及 Gen Digital Sage (Norton / Avast / AVG 的母公司)。每一筆的憑據都是公開 repo 裡一個已合併的 pull request;已合併的 PR 不等於對任何廠商商業產品的陳述。NIST OSCAL 的 pull request(#338)提供 AI RMF profile 範例,仍開著、等待 NIST 審查;此非 NIST 背書。</p>
 <p>新採用者透過對 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ADOPTERS.md" target="_blank" rel="noopener noreferrer"><code>ADOPTERS.md</code></a> 開立 pull request 自我宣告。維護者不預先審核條目;自我認證 (self-certification) 即是模型。</p>`,
     },
   },
@@ -275,10 +271,10 @@ test_cases:
   <thead><tr><th>Framework</th><th>Coverage</th><th>Mapping</th></tr></thead>
   <tbody>
     <tr><td>OWASP Agentic Top 10 (2026)</td><td>10/10 categories</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/OWASP-AGENTIC-MAPPING.md" target="_blank" rel="noopener noreferrer">OWASP-AGENTIC-MAPPING.md</a></td></tr>
-    <tr><td>SAFE-MCP</td><td>78/85 techniques (91.8%) (mapping under revision)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md" target="_blank" rel="noopener noreferrer">SAFE-MCP-MAPPING.md</a></td></tr>
+    <tr><td>SAF-MCP</td><td>Reviewed candidate technique mappings against SAF Framework Model v2 (partial or adjacent); not validated by SAF</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md" target="_blank" rel="noopener noreferrer">SAFE-MCP-MAPPING.md</a></td></tr>
     <tr><td>OWASP LLM Top 10 (2025)</td><td>Per-rule references</td><td>Per-rule <code>references.owasp_llm</code></td></tr>
     <tr><td>MITRE ATLAS</td><td>Per-rule references</td><td>Per-rule <code>references.mitre_atlas</code></td></tr>
-    <tr><td>NIST AI RMF (community OSCAL catalog)</td><td>4/4 functions</td><td><a href="https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog" target="_blank" rel="noopener noreferrer">ai-rmf-oscal-catalog</a></td></tr>
+    <tr><td>NIST AI RMF (community OSCAL catalog)</td><td>Per-rule subcategory mappings</td><td><a href="https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog" target="_blank" rel="noopener noreferrer">ai-rmf-oscal-catalog</a></td></tr>
     <tr><td>Five Eyes joint guidance (2026-04-30)</td><td>5-category mapping</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/FIVE-EYES-MAPPING.md" target="_blank" rel="noopener noreferrer">FIVE-EYES-MAPPING.md</a></td></tr>
     <tr><td>CSA MAESTRO (2025)</td><td>7-layer architectural mapping</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/CSA-MAESTRO-MAPPING.md" target="_blank" rel="noopener noreferrer">CSA-MAESTRO-MAPPING.md</a></td></tr>
     <tr><td>ETSI TS 104 223</td><td>13-principle mapping</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/ETSI-TS-104223-MAPPING.md" target="_blank" rel="noopener noreferrer">ETSI-TS-104223-MAPPING.md</a></td></tr>
@@ -293,10 +289,10 @@ test_cases:
   <thead><tr><th>框架</th><th>覆蓋率</th><th>對應</th></tr></thead>
   <tbody>
     <tr><td>OWASP Agentic Top 10 (2026)</td><td>10/10 類別</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/OWASP-AGENTIC-MAPPING.md" target="_blank" rel="noopener noreferrer">OWASP-AGENTIC-MAPPING.md</a></td></tr>
-    <tr><td>SAFE-MCP</td><td>78/85 techniques (91.8%) (對應修訂中)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md" target="_blank" rel="noopener noreferrer">SAFE-MCP-MAPPING.md</a></td></tr>
+    <tr><td>SAF-MCP</td><td>對 SAF Framework Model v2 的經審查候選技術對應(partial 或 adjacent);未經 SAF 驗證</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md" target="_blank" rel="noopener noreferrer">SAFE-MCP-MAPPING.md</a></td></tr>
     <tr><td>OWASP LLM Top 10 (2025)</td><td>Per-rule references</td><td>Per-rule <code>references.owasp_llm</code></td></tr>
     <tr><td>MITRE ATLAS</td><td>Per-rule references</td><td>Per-rule <code>references.mitre_atlas</code></td></tr>
-    <tr><td>NIST AI RMF (community OSCAL catalog)</td><td>4/4 functions</td><td><a href="https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog" target="_blank" rel="noopener noreferrer">ai-rmf-oscal-catalog</a></td></tr>
+    <tr><td>NIST AI RMF (community OSCAL catalog)</td><td>逐條規則的 subcategory 對應</td><td><a href="https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog" target="_blank" rel="noopener noreferrer">ai-rmf-oscal-catalog</a></td></tr>
     <tr><td>Five Eyes joint guidance (2026-04-30)</td><td>5-category mapping</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/FIVE-EYES-MAPPING.md" target="_blank" rel="noopener noreferrer">FIVE-EYES-MAPPING.md</a></td></tr>
     <tr><td>CSA MAESTRO (2025)</td><td>7 層架構對應</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/CSA-MAESTRO-MAPPING.md" target="_blank" rel="noopener noreferrer">CSA-MAESTRO-MAPPING.md</a></td></tr>
     <tr><td>ETSI TS 104 223</td><td>13 項原則對應</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/ETSI-TS-104223-MAPPING.md" target="_blank" rel="noopener noreferrer">ETSI-TS-104223-MAPPING.md</a></td></tr>
@@ -403,7 +399,7 @@ test_cases:
       body: `<h3>Normative References</h3>
 <ul>
   <li><a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a> — Key words for use in RFCs to Indicate Requirement Levels.</li>
-  <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-SPEC-v1.md" target="_blank" rel="noopener noreferrer">ATR-SPEC-v1.md</a> — ATR rule format specification, v1.0 Draft.</li>
+  <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a> — ATR rule format specification, v1.0 Draft.</li>
   <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer">spec/atr-schema.yaml</a> — Authoritative machine-readable schema.</li>
 </ul>
 <h3>Informative References</h3>
@@ -411,7 +407,7 @@ test_cases:
   <li><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10 (2026)</a> — Taxonomy of agentic-application risk categories.</li>
   <li><a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener noreferrer">OWASP LLM Top 10 (2025)</a> — Taxonomy of LLM-application risk categories.</li>
   <li><a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> — Adversarial-threat landscape for AI systems.</li>
-  <li><a href="https://github.com/safe-agentic-framework/safe-mcp" target="_blank" rel="noopener noreferrer">SAFE-MCP</a> — Secure-MCP framework (safe-agentic-framework), technique catalog.</li>
+  <li><a href="https://github.com/secure-agentic-framework/saf-mcp" target="_blank" rel="noopener noreferrer">SAF-MCP</a> — Secure Agentic Framework for Model Context Protocol (secure-agentic-framework), technique catalog.</li>
   <li><a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a> — Generic detection rule format for SIEMs (architectural precedent).</li>
   <li><a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a> — Pattern-matching language for malware (architectural precedent).</li>
 </ul>`,
@@ -421,7 +417,7 @@ test_cases:
       body: `<h3>Normative References</h3>
 <ul>
   <li><a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a> — Key words for use in RFCs to Indicate Requirement Levels.</li>
-  <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ATR-SPEC-v1.md" target="_blank" rel="noopener noreferrer">ATR-SPEC-v1.md</a> — ATR rule format specification, v1.0 Draft.</li>
+  <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a> — ATR rule format specification, v1.0 Draft.</li>
   <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer">spec/atr-schema.yaml</a> — 規範性機器可讀 schema。</li>
 </ul>
 <h3>Informative References</h3>
@@ -429,7 +425,7 @@ test_cases:
   <li><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10 (2026)</a> ── Agentic application 風險類別分類。</li>
   <li><a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener noreferrer">OWASP LLM Top 10 (2025)</a> ── LLM application 風險類別分類。</li>
   <li><a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> ── AI 系統的對抗性威脅 landscape。</li>
-  <li><a href="https://github.com/safe-agentic-framework/safe-mcp" target="_blank" rel="noopener noreferrer">SAFE-MCP</a> ── 安全 MCP 框架 (safe-agentic-framework)、技術型錄。</li>
+  <li><a href="https://github.com/secure-agentic-framework/saf-mcp" target="_blank" rel="noopener noreferrer">SAF-MCP</a> ── 安全 agentic 框架 MCP 版 (secure-agentic-framework)、技術型錄。</li>
   <li><a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a> ── SIEM 通用偵測規則格式 (架構先例)。</li>
   <li><a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a> ── 惡意程式比對語言 (架構先例)。</li>
 </ul>`,
