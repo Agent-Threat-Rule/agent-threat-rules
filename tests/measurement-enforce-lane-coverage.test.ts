@@ -83,6 +83,8 @@ const NOT_A_RUNNER = new Set([
   "npx tsx scripts/measurement/verify.ts",
   "npx tsx scripts/sync-stats-from-measurements.ts",
   "npx tsx scripts/render-benchmark-table.ts",
+  "npx tsx scripts/render-recall-citations.ts",
+  "npx tsx scripts/sync-citation-garak.ts",
 ]);
 
 function latestMeasurement(source: string): Record<string, unknown> | null {

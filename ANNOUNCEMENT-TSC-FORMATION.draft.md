@@ -54,6 +54,10 @@ adds an academic seat and a government / standards-body seat.
 
 At the time of TSC formation:
 
+[Editor: refresh every figure in this list at publication. The recall line
+is rendered from the measurement files; the others are typed and date from
+when this draft was written.]
+
 - 425 rules in the official corpus, MIT-licensed
 - 7 organizations have merged ATR rule packs (Microsoft Agent
   Governance Toolkit, Cisco AI Defense, MISP, NIST AI RMF OSCAL
@@ -61,13 +65,17 @@ At the time of TSC formation:
   Sage, plus 4 awesome-list inclusions)
 - 13 external PR merges across these organizations
 - Recall on the NVIDIA garak in-the-wild jailbreak corpus
-  (<!-- recall:garak:samples -->650<!-- /recall --> prompts): <!-- recall:garak -->92.3% (hunt) / 0.9% (enforce)<!-- /recall -->; the `hunt` figure is partly
+  (<!-- recall:garak:samples -->650<!-- /recall --> prompts, <!-- recall:garak:stamp -->ATR 4.1.5, measured 2026-10-15<!-- /recall -->):
+  <!-- recall:garak -->92.3% (hunt) / 0.9% (enforce)<!-- /recall -->; the `hunt` figure is partly
   closed-book, since many of the rules that fire on this corpus were
-  written from it. On the SKILL.md real-world corpus
-  (<!-- recall:skill-benchmark:samples -->498<!-- /recall --> samples): <!-- recall:skill-benchmark -->100.0% (hunt) / 0.0% (enforce)<!-- /recall -->. `hunt` is the engine default
+  written from it. On the internal SKILL.md benchmark
+  (<!-- recall:skill-benchmark:samples -->498<!-- /recall --> labelled samples, <!-- recall:skill-benchmark:stamp -->ATR 4.1.5, measured 2026-10-15<!-- /recall -->):
+  <!-- recall:skill-benchmark -->100.0% (hunt) / 0.0% (enforce)<!-- /recall -->. `hunt` is the engine default
   and loads every rule maturity; `enforce`, the lane to run with
-  blocking on, loads only stable rules. 0 % false-positive rate on a
-  432-sample benign corpus
+  blocking on, loads only stable rules.
+- Rules are held to a safety gate that rejects any rule firing on the
+  committed benign skill corpus [Editor: a merge condition, not a
+  measurement; give the corpus size at publication]
 - Conformance Test Suite v1.0 published with 103 true-positive, 103
   true-negative, and 20 edge-case fixtures
 - IETF Internet-Draft `draft-lin-atr-core-00` prepared and rendered

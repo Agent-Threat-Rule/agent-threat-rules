@@ -23,7 +23,7 @@ false-positive figures are measured in the `hunt` lane only.
 Two headline figures. On the <!-- recall:pint:samples -->850<!-- /recall -->-sample PINT-format corpus
 (deepset/prompt-injections + Lakera Gandalf -- **not** Lakera's official
 private PINT benchmark), recall is <!-- recall:pint -->65.4% (hunt) / 0.4% (enforce)<!-- /recall --> at <!-- recall:pint:precision -->100.0% (hunt)<!-- /recall --> precision
-(<!-- recall:pint:stamp -->ATR 4.1.5, measured 2026-10-15<!-- /recall -->). On the <!-- recall:skill-benchmark:samples -->498<!-- /recall -->-sample SKILL.md benchmark it is
+(<!-- recall:pint:stamp -->ATR 4.1.5, measured 2026-10-15<!-- /recall -->). On the internal <!-- recall:skill-benchmark:samples -->498<!-- /recall -->-sample SKILL.md benchmark it is
 <!-- recall:skill-benchmark -->100.0% (hunt) / 0.0% (enforce)<!-- /recall -->, at <!-- recall:skill-benchmark:precision -->97.0% (hunt)<!-- /recall --> precision and <!-- recall:skill-benchmark:fp-rate -->0.20% (hunt)<!-- /recall --> FP
 (<!-- recall:skill-benchmark:stamp -->ATR 4.1.5, measured 2026-10-15<!-- /recall -->). Quote neither `hunt` figure without its `enforce` figure:
 [README section 8](README.md#8-evaluation) explains why, for SKILL.md, the gap
@@ -164,7 +164,7 @@ ATR's self-test corpus produces a recall of <!-- recall:atr-self-test -->96.6% (
 
 ### PINT-format public corpus (850 samples)
 
-We evaluated ATR against 850 external samples sourced from deepset/prompt-injections and Lakera's Gandalf dataset, assembled into Lakera's PINT format. This is ATR's own reconstructed corpus -- not a run of Lakera's official PINT benchmark, which is private and roughly 5x larger. These are real-world prompt injection and jailbreak payloads that ATR was not trained against.
+We evaluated ATR against 850 external samples sourced from deepset/prompt-injections and Lakera's Gandalf dataset, assembled into Lakera's PINT format. This is ATR's own reconstructed corpus -- not a run of Lakera's official PINT benchmark, which is private and roughly 5x larger. These are real-world prompt injection and jailbreak payloads, but not all of them are out-of-sample for ATR: at least five rules (ATR-2026-02002, 02005, 02230, 02231 and 02232) were mined from this corpus's own false negatives, so the `hunt` figure below is partly closed-book. At ATR 4.1.5 none of the five is `maturity: stable`, so the `enforce` figure does not rest on them.
 
 Current measurement: <!-- recall:pint:stamp -->ATR 4.1.5, measured 2026-10-15<!-- /recall --> (<!-- recall:pint:file -->`data/measurements/pint/2026-10-15_pint-v1_atr-4-1-5.json`<!-- /recall -->, the file `latest.json` points at):
 
@@ -174,7 +174,7 @@ Current measurement: <!-- recall:pint:stamp -->ATR 4.1.5, measured 2026-10-15<!-
 | Recall | <!-- recall:pint -->65.4% (hunt) / 0.4% (enforce)<!-- /recall --> |
 | F1 | <!-- recall:pint:f1 -->79.1% (hunt)<!-- /recall --> |
 
-**Precision** is measured in the `hunt` lane only: on this corpus's benign samples ATR raised <!-- recall:pint:fp-counts -->0 of 399 (hunt)<!-- /recall --> false positives. That is a property of this corpus, not a general precision claim -- see the note on withdrawn lane FP rates at the top of this document.
+**Precision** is measured in the `hunt` lane only. False positives on this corpus's benign samples: <!-- recall:pint:fp-counts -->0 of 399 (hunt)<!-- /recall -->. That is a property of this corpus, not a general precision claim -- see the note on withdrawn lane FP rates at the top of this document.
 
 **Recall depends on the lane.** Of the attack samples, ATR detects <!-- recall:pint:counts -->295 of 451 (hunt) / 2 of 451 (enforce)<!-- /recall -->. The `hunt` shortfall is the honest cost of regex-based detection; the `enforce` shortfall is the cost of running only the rules mature enough to block on.
 
@@ -199,7 +199,7 @@ English keywords appearing alongside it.
 
 ### Rule Concentration
 
-Detections on the PINT-format corpus are heavily concentrated: a small minority of the ruleset fires on it at all, and `ATR-2026-00001` (prompt override detection) accounts for the large majority of detections. The published measurement file records only corpus-level and per-category totals, not per-rule counts, so this document deliberately quotes no rule-concentration figure -- regenerate one with `npm run eval:pint` if you need it. The rest of the ruleset contributing nothing here does not make those rules useless -- they target attack types (credential leaks, SSRF, tool injection, skill supply chain) that a prompt-injection corpus does not contain. Read this row as a prompt-injection-family score, not as ATR's overall coverage. In the `hunt` lane the SKILL.md benchmark shows much broader rule activation: recall <!-- recall:skill-benchmark -->100.0% (hunt) / 0.0% (enforce)<!-- /recall --> across <!-- recall:skill-benchmark:samples -->498<!-- /recall --> real-world samples, at <!-- recall:skill-benchmark:precision -->97.0% (hunt)<!-- /recall --> precision and <!-- recall:skill-benchmark:fp-rate -->0.20% (hunt)<!-- /recall --> FP.
+Detections on the PINT-format corpus are heavily concentrated: a small minority of the ruleset fires on it at all, and `ATR-2026-00001` (prompt override detection) accounts for the large majority of detections. The published measurement file records only corpus-level and per-category totals, not per-rule counts, so this document deliberately quotes no rule-concentration figure -- regenerate one with `npm run eval:pint` if you need it. The rest of the ruleset contributing nothing here does not make those rules useless -- they target attack types (credential leaks, SSRF, tool injection, skill supply chain) that a prompt-injection corpus does not contain. Read this row as a prompt-injection-family score, not as ATR's overall coverage. Rule activation on the internal SKILL.md benchmark is much broader in the `hunt` lane. Across its <!-- recall:skill-benchmark:samples -->498<!-- /recall --> labelled samples, recall is <!-- recall:skill-benchmark -->100.0% (hunt) / 0.0% (enforce)<!-- /recall -->, at <!-- recall:skill-benchmark:precision -->97.0% (hunt)<!-- /recall --> precision and <!-- recall:skill-benchmark:fp-rate -->0.20% (hunt)<!-- /recall --> FP.
 
 ### Self-Test vs. External Recall Gap
 
@@ -223,7 +223,7 @@ The tradeoff:
 
 ATR is not trying to compete with ML classifiers on recall. ATR is a fast first-pass filter for known attack patterns, designed to run at zero latency with zero external dependencies. It catches the low-hanging fruit -- known templates, published exploits, automated attacks -- instantly.
 
-For comprehensive coverage, ATR should be combined with an ML classifier. ATR handles the fast path (match known patterns in <1ms; the `enforce` lane, the one to block on, is the narrow stable subset measured above). The ML classifier handles the slow path (evaluate everything else with semantic understanding). This layered approach is described in the roadmap above.
+For comprehensive coverage, ATR should be combined with an ML classifier. ATR handles the fast path (matching known patterns; the `enforce` lane, the one to block on, is the narrow stable subset measured above). The ML classifier handles the slow path (evaluate everything else with semantic understanding). This layered approach is described in the roadmap above.
 
 Do not deploy ATR alone and expect it to catch sophisticated adversaries. The benchmark results make this clear.
 

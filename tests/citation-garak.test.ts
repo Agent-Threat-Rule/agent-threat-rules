@@ -68,6 +68,20 @@ describe("garakSentence", () => {
   });
 });
 
+describe("input validation", () => {
+  it("refuses a block that would render a figure as null or a percentage out of range", () => {
+    expect(() => garakSentence({ ...GARAK, recall: null as unknown as number }, "x")).toThrow(/recall is not a percentage/);
+    expect(() => garakSentence({ ...GARAK, enforceLaneRecall: null as unknown as number }, "x")).toThrow(/enforceLaneRecall/);
+    expect(() => garakSentence({ ...GARAK, recall: 923 }, "x")).toThrow(/not a percentage/);
+    expect(() => garakSentence({ ...GARAK, samples: 0 }, "x")).toThrow(/sample count/);
+  });
+
+  it("does not read a dollar sign in the version as a replacement pattern", () => {
+    const after = syncGarakSentence(ABSTRACT(STALE), { ...GARAK, atr_version: "4.1.5$&" }, "x");
+    expect(after).toContain("measured at ATR 4.1.5$&,");
+  });
+});
+
 describe("wrapAbstract", () => {
   it("wraps to the abstract's two-space indent within 80 columns", () => {
     const lines = wrapAbstract(garakSentence(GARAK, "x"));
@@ -115,7 +129,12 @@ describe("CLI", () => {
     expect(run(["--root", r, "--check"]).status).toBe(0);
   });
 
-  it("fails when the sentence is missing", () => {
-    expect(run(["--root", fixture(ABSTRACT([])), "--check"]).status).toBe(1);
+  it("fails --check when the sentence is missing, but only warns in write mode and notes why", () => {
+    const r = fixture(ABSTRACT([]));
+    expect(run(["--root", r, "--check"]).status).toBe(1);
+    const notes = join(r, "notes.md");
+    writeFileSync(notes, "");
+    expect(run(["--root", r, "--review-notes", notes]).status).toBe(0);
+    expect(readFileSync(notes, "utf-8")).toMatch(/### CITATION\.cff not re-rendered[\s\S]*no garak sentence/);
   });
 });

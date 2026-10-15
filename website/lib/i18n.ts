@@ -183,6 +183,8 @@ export const messages: Record<Locale, Record<string, string>> = {
     "research.samples": "Samples",
     "research.gap_note":
       "In the hunt lane, the gap between {precision} precision and {recall} recall is expected: regex catches known patterns but misses paraphrases and multilingual attacks. In the enforce lane, which loads only stable rules and is the one to run with blocking on, recall is {enforce}.",
+    "research.gap_note_hunt_only":
+      "In the hunt lane, the gap between {precision} precision and {recall} recall is expected: regex catches known patterns but misses paraphrases and multilingual attacks. This measurement records no enforce-lane figure.",
     "research.scan": "Ecosystem Scan Data",
     "research.scan.sub": "Real scans of real MCP skill registries.",
     "research.scan.mega": "Mega Scan (OpenClaw + Skills.sh)",
@@ -567,7 +569,9 @@ export const messages: Record<Locale, Record<string, string>> = {
     "research.recall": "Recall",
     "research.samples": "\u6A23\u672C\u6578",
     "research.gap_note":
-      "\u5728 hunt lane,{precision} precision \u548C {recall} recall \u4E4B\u9593\u7684\u5DEE\u8DDD\u662F\u9810\u671F\u7684:Regex \u80FD\u6293\u5230\u5DF2\u77E5\u6A21\u5F0F,\u4F46\u6703\u6F0F\u6389\u91CD\u8FF0\u548C\u591A\u8A9E\u8A00\u653B\u64CA\u3002enforce lane \u53EA\u8F09\u5165 stable \u898F\u5247,\u662F\u958B\u555F\u5C01\u9396\u6642\u8981\u7528\u7684 lane,\u5B83\u7684 recall \u662F {enforce}\u3002",
+      "\u5728 hunt lane\uFF0C{precision} precision \u548C {recall} recall \u4E4B\u9593\u7684\u5DEE\u8DDD\u662F\u9810\u671F\u7684\uFF1ARegex \u80FD\u6293\u5230\u5DF2\u77E5\u6A21\u5F0F\uFF0C\u4F46\u6703\u6F0F\u6389\u91CD\u8FF0\u548C\u591A\u8A9E\u8A00\u653B\u64CA\u3002enforce lane \u53EA\u8F09\u5165 stable \u898F\u5247\uFF0C\u662F\u958B\u555F\u5C01\u9396\u6642\u8981\u7528\u7684 lane\uFF0C\u5B83\u7684 recall \u662F {enforce}\u3002",
+    "research.gap_note_hunt_only":
+      "\u5728 hunt lane\uFF0C{precision} precision \u548C {recall} recall \u4E4B\u9593\u7684\u5DEE\u8DDD\u662F\u9810\u671F\u7684\uFF1ARegex \u80FD\u6293\u5230\u5DF2\u77E5\u6A21\u5F0F\uFF0C\u4F46\u6703\u6F0F\u6389\u91CD\u8FF0\u548C\u591A\u8A9E\u8A00\u653B\u64CA\u3002\u9019\u6B21\u91CF\u6E2C\u6C92\u6709\u8A18\u9304 enforce lane \u7684\u6578\u5B57\u3002",
     "research.scan": "\u751F\u614B\u7CFB\u6383\u63CF\u6578\u64DA",
     "research.scan.sub":
       "\u771F\u5BE6\u6383\u63CF\u771F\u5BE6\u7684 MCP skill \u8A3B\u518A\u8868\u3002",

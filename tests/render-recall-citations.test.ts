@@ -304,6 +304,12 @@ describe("renderDocument", () => {
     expect(problems.join("\n")).toMatch(/unknown format "headline"/);
   });
 
+  it("ends a compact marker at its own closing comment", () => {
+    const { text, problems } = renderDocument("<!--recall:pint-->x<!--/recall-->", loaderFor(fixtureRoot()));
+    expect(problems).toEqual([]);
+    expect(text).toBe("<!--recall:pint-->65.4% (hunt) / 0.4% (enforce)<!--/recall-->");
+  });
+
   it("reports an opening marker that is never closed, and a closing marker with no opener", () => {
     const r = fixtureRoot();
     expect(renderDocument("<!-- recall:pint -->65.4% and no close", loaderFor(r)).problems.join("\n")).toMatch(
@@ -353,10 +359,12 @@ describe("CLI", () => {
     expect(run(["--root", r, "--check"]).status).toBe(0);
   });
 
-  it("--list prints the documents it owns, for the workflow to stage", () => {
-    const r = run(["--list"]);
-    expect(r.status).toBe(0);
-    expect(r.stdout.trim().split("\n")).toEqual([...DOCUMENTS]);
+  it("lists what it could not render in --review-notes, and still exits 0 in write mode", () => {
+    const r = fixtureWithDocuments(span("pint", "x", "headline"));
+    const notes = join(r, "notes.md");
+    writeFileSync(notes, "");
+    expect(run(["--root", r, "--review-notes", notes]).status).toBe(0);
+    expect(readFileSync(notes, "utf-8")).toMatch(/### Recall citations not re-rendered[\s\S]*unknown format "headline"/);
   });
 
   it("--check fails on a marker it cannot render, even when nothing would change", () => {

@@ -37,7 +37,7 @@ const RED_TEAM_TOOLS: RedTeamTool[] = [
     prUrl: "https://github.com/NVIDIA/garak/pull/1676",
     hook: "The reference open-source LLM vulnerability scanner. 50+ probe families, jmartin-tech + leondz maintainers.",
     what_atr_did:
-      "Wrapped 330 ATR rules as garak detectors. PR #1676 cleared two review rounds. The per-family breakdown quoted at PR time (latentinjection 34.4%, sysprompt_extraction 67.9%, dan 90.2%, hunt lane) was taken on an earlier ATR version; garak-full's measurement file records the current per-family figures.",
+      "Wrapped 330 ATR rules as garak detectors. PR #1676 cleared two review rounds. The per-family breakdown quoted at PR time (latentinjection 34.4%, sysprompt_extraction 67.9%, dan 90.1%) was taken on an earlier ATR version, before detection lanes existed, with every rule loaded; garak-full's measurement file records the current per-family figures.",
     figures: [
       { source: "garak", label: "the in-the-wild jailbreak set" },
       { source: "garak-full", label: "the full garak probe suite" },
@@ -112,7 +112,7 @@ const RED_TEAM_TOOLS: RedTeamTool[] = [
     prUrl: "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/51",
     hook: "The largest crowd-sourced prompt-injection competition corpus, 4,780 competition samples across GPT/Claude/PaLM. EMNLP 2023 best-paper nominee.",
     what_atr_did:
-      "Clustered 4,780 HackAPrompt samples by attack family. Shipped 5 ATR rules (ATR-2026-00452..00456) from dominant clusters. HackAPrompt recall moved 28.6% → 66.0% across that sprint (2026-05-12, before detection lanes existed, with every rule loaded: what the hunt lane loads today). The corpus is 100% adversarial and carries no benign population, so it yields no precision or false-positive figure. Each rule cites the HackAPrompt cluster in metadata_provenance.",
+      "Clustered 4,780 HackAPrompt samples by attack family. Shipped 5 ATR rules (ATR-2026-00452..00456) from dominant clusters. HackAPrompt recall moved 28.6% → 66.2% across that sprint (2026-05-12, before detection lanes existed, with every rule loaded: what the hunt lane loads today), measured on the same corpus those rules were mined from, so it is an in-sample gain, not a measure of generalisation. The corpus is 100% adversarial and carries no benign population, so it yields no precision or false-positive figure. Each rule cites the HackAPrompt cluster in metadata_provenance.",
     figures: [{ source: "hackaprompt", label: "HackAPrompt" }],
   },
   {
@@ -687,8 +687,8 @@ export default async function RedTeamPage({
           </div>
           <h2 className="font-display text-[clamp(24px,3.4vw,36px)] font-extrabold tracking-[-2px] leading-tight mb-4 max-w-[720px]">
             {zh
-              ? "5 個語料庫 · 75 條新規則 · HackAPrompt 召回率 28.6% → 66.0%（2026-05-12 該次 sprint,hunt lane）"
-              : "5 corpora · 75 new rules · HackAPrompt recall 28.6% → 66.0% (over that 2026-05-12 sprint, hunt lane)"}
+              ? "5 個語料庫 · 75 條新規則 · HackAPrompt 召回率 28.6% → 66.2%（2026-05-12 該次 sprint，載入全部規則，在挖出規則的同一份語料上量測）"
+              : "5 corpora · 75 new rules · HackAPrompt recall 28.6% → 66.2% (2026-05-12 sprint, every rule loaded, measured on the corpus the rules were mined from)"}
           </h2>
           <p className="text-base text-stone font-light max-w-[640px] mb-4">
             {zh
@@ -704,11 +704,11 @@ export default async function RedTeamPage({
         <Reveal delay={0.1}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-fog mb-8">
             {[
-              { corpus: "HackAPrompt", samples: "4,780", rules: "5", ruleIds: "ATR-2026-00452..00456", recall: zh ? "28.6% → 66.0%（該 sprint 當時,hunt lane）" : "28.6% → 66.0% (at the time of that sprint, hunt lane)" },
+              { corpus: "HackAPrompt", samples: "4,780", rules: "5", ruleIds: "ATR-2026-00452..00456", recall: zh ? "28.6% → 66.2%（該 sprint 當時，載入全部規則，樣本內）" : "28.6% → 66.2% (at the time of that sprint, every rule loaded, in-sample)" },
               { corpus: zh ? "Vendor test suites" : "Vendor test suites", samples: "94", rules: "6", ruleIds: "ATR-2026-00500..00505", recall: "" },
               { corpus: "PromptInject", samples: zh ? "全語料庫" : "full corpus", rules: "4", ruleIds: "ATR-2026-00506..00509", recall: "" },
               { corpus: "OWASP LLM Top 10 + ATLAS PoCs", samples: zh ? "8 標準分類" : "8 standard categories", rules: "8", ruleIds: "ATR-2026-00510..00517", recall: "" },
-              { corpus: zh ? "Garak in-the-wild jailbreak" : "Garak in-the-wild jailbreak", samples: "650", rules: zh ? "已有覆蓋" : "existing coverage", ruleIds: garak ? (zh ? `${recallLanes(garak)} recall(${measuredStamp(garak, true)};部分屬 closed-book)` : `${recallLanes(garak)} recall (${measuredStamp(garak, false)}; partly closed-book)`) : "", recall: "" },
+              { corpus: zh ? "Garak in-the-wild jailbreak" : "Garak in-the-wild jailbreak", samples: "650", rules: zh ? "已有覆蓋" : "existing coverage", ruleIds: garak ? (zh ? `${recallLanes(garak)} recall（${measuredStamp(garak, true, true)}；部分屬 closed-book）` : `${recallLanes(garak)} recall (${measuredStamp(garak, false)}; partly closed-book)`) : "", recall: "" },
             ].map((row) => (
               <div key={row.corpus} className="bg-paper p-5 md:p-6">
                 <div className="font-display text-sm font-bold text-ink mb-2">{row.corpus}</div>

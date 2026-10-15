@@ -1,7 +1,7 @@
 import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { loadSiteStats, type SiteStats } from "@/lib/stats";
-import { commonStamp, count, findBenchmark, pct, recallLanes } from "@/lib/recall";
+import { GARAK_BOTH_CLOSED_BOOK, commonStamp, count, findBenchmark, pct, recallLanes } from "@/lib/recall";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -560,6 +560,6 @@ function benchmarkLine(stats: SiteStats, zh: boolean): string | null {
   if (!garak || !full || !skill) return null;
   const stamp = commonStamp([garak, full, skill], zh);
   return zh
-    ? `效能 benchmark(${stamp}):NVIDIA garak in-the-wild jailbreak 集(${count(garak.samples)} 樣本)召回率 ${recallLanes(garak)},部分屬於 closed-book(在上面開火的規則有不少是從它寫出來的);完整 garak 套件(${count(full.samples)} 樣本)${recallLanes(full)} · ${count(skill.samples)} 筆已標註 SKILL.md 語料上 hunt lane 誤報率 ${pct(skill.fp_rate, 2)} · hunt 是引擎預設、載入所有成熟度的規則,enforce 只載入 stable 規則、是開封鎖時用的 lane · DOI 10.5281/zenodo.19178002`
-    : `Performance benchmarks (${stamp}): recall on NVIDIA garak's in-the-wild jailbreak set (${count(garak.samples)} samples) is ${recallLanes(garak)}, partly closed-book because many of the rules that fire on it were written from it, and ${recallLanes(full)} across the full garak suite (${count(full.samples)} samples) · ${pct(skill.fp_rate, 2)} FP rate in the hunt lane on the ${count(skill.samples)}-sample labeled SKILL.md corpus · hunt is the engine default and loads every rule maturity; enforce, the lane for blocking, loads only stable rules · DOI 10.5281/zenodo.19178002`;
+    ? `效能 benchmark(${stamp}):NVIDIA garak in-the-wild jailbreak 集(${count(garak.samples)} 樣本)召回率 ${recallLanes(garak)};完整 garak 套件(${count(full.samples)} 樣本)${recallLanes(full)}。${GARAK_BOTH_CLOSED_BOOK.zh} · ${count(skill.samples)} 筆已標註的內部 SKILL.md 語料上 hunt lane 誤報率 ${pct(skill.fp_rate, 2)} · hunt 是引擎預設、載入所有成熟度的規則,enforce 只載入 stable 規則、是開封鎖時用的 lane · DOI 10.5281/zenodo.19178002`
+    : `Performance benchmarks (${stamp}): recall on NVIDIA garak's in-the-wild jailbreak set (${count(garak.samples)} samples) is ${recallLanes(garak)}, and ${recallLanes(full)} across the full garak suite (${count(full.samples)} samples). ${GARAK_BOTH_CLOSED_BOOK.en} · ${pct(skill.fp_rate, 2)} FP rate in the hunt lane on the ${count(skill.samples)}-sample labeled internal SKILL.md corpus · hunt is the engine default and loads every rule maturity; enforce, the lane for blocking, loads only stable rules · DOI 10.5281/zenodo.19178002`;
 }

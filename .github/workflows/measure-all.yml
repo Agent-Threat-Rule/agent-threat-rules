@@ -257,21 +257,25 @@ jobs:
       # LIMITATIONS.md and the docs that quote the same corpora carry their
       # recall figures between recall markers. Re-render them from the same
       # pointers, or the rolling PR fails eval.yml's check of them the way it
-      # used to fail on README's table.
+      # used to fail on README's table. What it cannot render is appended to
+      # the PR body's review notes; it never fails the run.
       - name: Render recall citations in Markdown docs
-        run: npx tsx scripts/render-recall-citations.ts --root .
+        run: npx tsx scripts/render-recall-citations.ts --root . --review-notes "$RUNNER_TEMP/benchmark-review.md"
 
       # CITATION.cff's garak sentence is generated from the stats.json garak
-      # block rendered above. sync-stats.ts only runs on rules merges, so
-      # without this the abstract would cite last week's figure until then.
+      # block rendered above. sync-stats.ts only runs when rules/ changes on
+      # main (reconcile-stats.yml), so without this the abstract would cite
+      # last week's figure until then.
       - name: Sync CITATION.cff garak sentence
-        run: npx tsx scripts/sync-citation-garak.ts --root .
+        run: npx tsx scripts/sync-citation-garak.ts --root . --review-notes "$RUNNER_TEMP/benchmark-review.md"
 
       - name: Detect changes
         id: changes
         run: |
-          mapfile -t RECALL_DOCS < <(npx tsx scripts/render-recall-citations.ts --list)
-          git add -A data/measurements/ data/stats.json README.md stats.json CITATION.cff "${RECALL_DOCS[@]}"
+          # The last line is DOCUMENTS in scripts/render-recall-citations.ts;
+          # tests/measure-all-workflow.test.ts fails if the two drift apart.
+          git add -A data/measurements/ data/stats.json README.md stats.json CITATION.cff \
+            LIMITATIONS.md docs/SAFE-MCP-MAPPING.md docs/owasp-pr/README.md docs/owasp-pr/ASI01_Agent_Behaviour_Hijack.md ANNOUNCEMENT-TSC-FORMATION.draft.md
           if git diff --cached --quiet; then
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
             echo "No measurement changes this run."

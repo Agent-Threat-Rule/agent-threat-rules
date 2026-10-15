@@ -96,8 +96,8 @@ const MILESTONES: Milestone[] = [
       zh: "v2.0.11 · NVIDIA garak 覆蓋",
     },
     detail: {
-      en: "193 new rules covering the full NVIDIA garak probe corpus (311 total). garak in-the-wild jailbreak subset recall at the time: 97.1% (646/666), with every rule loaded (detection lanes came later; it is what today's hunt lane loads). Many of these rules were written from that same corpus, so the figure is partly closed-book, not an out-of-sample result.",
-      zh: "新增 193 條規則，涵蓋完整 NVIDIA garak probe corpus（總計 311 條）。garak in-the-wild jailbreak 子集召回率（當時）：97.1%（646/666），載入全部規則（當時還沒有偵測 lane，等同今天的 hunt lane）。這批規則有不少正是從同一份語料寫出來的，所以這個數字部分屬於 closed-book，不是樣本外成績。",
+      en: "193 new rules covering the full NVIDIA garak probe corpus (311 total). garak in-the-wild jailbreak subset recall at the time: 97.1% (647/666), with every rule loaded (detection lanes came later; it is what today's hunt lane loads). Many of these rules were written from that same corpus, so the figure is partly closed-book, not an out-of-sample result.",
+      zh: "新增 193 條規則，涵蓋完整 NVIDIA garak probe corpus（總計 311 條）。garak in-the-wild jailbreak 子集召回率（當時）：97.1%（647/666），載入全部規則（當時還沒有偵測 lane，等同今天的 hunt lane）。這批規則有不少正是從同一份語料寫出來的，所以這個數字部分屬於 closed-book，不是樣本外成績。",
     },
   },
   {

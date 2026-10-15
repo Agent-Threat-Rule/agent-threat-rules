@@ -2,9 +2,12 @@ import { loadCoverageData } from "@/lib/coverage";
 import { loadSiteStats, type SiteStats } from "@/lib/stats";
 import {
   GARAK_BOTH_CLOSED_BOOK,
+  HACKAPROMPT_CLOSED_BOOK,
   LANES_EXPLAINED,
   NO_ENFORCE_RECORD,
+  PINT_CLOSED_BOOK,
   commonStamp,
+  toFullWidth,
   count,
   findBenchmark,
   measuredStamp,
@@ -65,8 +68,8 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
           </div>
           <p className="text-sm text-graphite leading-[1.7] mb-4">
             {locale === "zh"
-              ? `每個召回率都列兩個 lane,先 hunt 後 enforce。${LANES_EXPLAINED.zh}誤報數字只在 hunt lane 量測。`
-              : `Every recall below names two lanes, hunt first. ${LANES_EXPLAINED.en} False-positive figures are measured in the hunt lane only.`}
+              ? `下面每個召回率都標明 lane：先列 hunt，量測有記錄 enforce 的就接著列 enforce。${toFullWidth(LANES_EXPLAINED.zh)}誤報數字只在 hunt lane 量測。`
+              : `Every recall below names its lane: hunt first, then enforce wherever the measurement records it. ${LANES_EXPLAINED.en} False-positive figures are measured in the hunt lane only.`}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-graphite leading-[1.7]">
             {readingNotes(stats, locale === "zh").map((item) => (
@@ -94,10 +97,12 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
             <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">OWASP AST10</div>
             <div className="font-data text-3xl font-bold text-ink">{stats.owaspAst10}</div>
           </div>
-          <div className="bg-paper p-6 text-center">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">PINT F1 · hunt</div>
-            {pint && <div className="font-data text-3xl font-bold text-ink"><CountUp target={Math.round(pint.f1 * 1000) / 10} /></div>}
-          </div>
+          {pint && (
+            <div className="bg-paper p-6 text-center">
+              <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">PINT F1 · hunt</div>
+              <div className="font-data text-3xl font-bold text-ink"><CountUp target={Math.round(pint.f1 * 1000) / 10} /></div>
+            </div>
+          )}
         </div>
       </Reveal>
 
@@ -190,13 +195,13 @@ type Note = { name: string; verdict: string };
 
 function pintNote(stats: SiteStats, zh: boolean): Note | null {
   const pint = findBenchmark(stats, "pint");
-  if (!pint || pint.attacks === null || pint.benign === null) return null;
-  const fp = count(pint.falsePositives ?? 0);
+  if (!pint || pint.attacks === null || pint.benign === null || pint.falsePositives === null) return null;
+  const fp = `${count(pint.falsePositives)} of ${count(pint.benign)}`;
   return {
     name: `PINT-format (${count(pint.samples)} samples)`,
     verdict: zh
-      ? `ATR 在 PINT 格式語料(${count(pint.samples)} 個樣本,其中 ${count(pint.attacks)} 個是攻擊)上的召回率是 ${recallLanes(pint)};hunt lane 在 ${count(pint.benign)} 個良性樣本上誤報 ${fp} 次(${measuredStamp(pint, true)})。這是自建語料(deepset + Lakera Gandalf),不是 Lakera 官方私有 PINT benchmark;只有一小部分規則會在這份語料上開火,請讀成 prompt injection 家族的分數,不是整體覆蓋率。`
-      : `Recall on the PINT-format corpus (${count(pint.samples)} samples, ${count(pint.attacks)} of them attacks) is ${recallLanes(pint)}, with ${fp} false positives on its ${count(pint.benign)} benign samples in the hunt lane (${measuredStamp(pint, false)}). This is a self-built corpus (deepset + Lakera Gandalf), not Lakera's official private PINT benchmark; only a small subset of rules fire on it, so read it as a prompt-injection-family score rather than overall coverage.`,
+      ? `ATR 在 PINT 格式語料（${count(pint.samples)} 個樣本，其中 ${count(pint.attacks)} 個是攻擊）上的召回率是 ${recallLanes(pint)}；hunt lane 在 ${count(pint.benign)} 個良性樣本上誤報 ${count(pint.falsePositives)} 次（${measuredStamp(pint, true, true)}）。${toFullWidth(PINT_CLOSED_BOOK.zh)}這是自建語料（deepset + Lakera Gandalf），不是 Lakera 官方私有 PINT benchmark；只有一小部分規則會在這份語料上開火，請讀成 prompt injection 家族的分數，不是整體覆蓋率。`
+      : `Recall on the PINT-format corpus (${count(pint.samples)} samples, ${count(pint.attacks)} of them attacks) is ${recallLanes(pint)}, with ${fp} benign samples flagged in the hunt lane (${measuredStamp(pint, false)}). ${PINT_CLOSED_BOOK.en} This is a self-built corpus (deepset + Lakera Gandalf), not Lakera's official private PINT benchmark; only a small subset of rules fire on it, so read it as a prompt-injection-family score rather than overall coverage.`,
   };
 }
 
@@ -207,20 +212,19 @@ function hackapromptNote(stats: SiteStats, zh: boolean): Note | null {
   return {
     name: `HackAPrompt (${count(hack.samples)} samples)`,
     verdict: zh
-      ? `ATR 在 ${count(hack.samples)} 個 HackAPrompt 競賽樣本上的召回率是 ${recallLanes(hack)}(${measuredStamp(hack, true)})${none ? `;${NO_ENFORCE_RECORD.zh}` : ""}。這份語料 100% 對抗性、沒有良性樣本,所以它算不出 precision 或誤報率——別把它當精準度證據。`
-      : `Recall on the ${count(hack.samples)} HackAPrompt competition samples is ${recallLanes(hack)} (${measuredStamp(hack, false)})${none ? `; ${NO_ENFORCE_RECORD.en}` : ""}. The corpus is 100% adversarial with no benign population, so it cannot yield a precision or false-positive figure — do not read it as precision evidence.`,
+      ? `ATR 在 ${count(hack.samples)} 個 HackAPrompt 競賽樣本上的召回率是 ${recallLanes(hack)}（${measuredStamp(hack, true, true)}）${none ? `；${toFullWidth(NO_ENFORCE_RECORD.zh)}` : ""}。${toFullWidth(HACKAPROMPT_CLOSED_BOOK.zh)}這份語料 100% 對抗性、沒有良性樣本，所以它算不出 precision 或誤報率——別把它當精準度證據。`
+      : `Recall on the ${count(hack.samples)} HackAPrompt competition samples is ${recallLanes(hack)} (${measuredStamp(hack, false)})${none ? `; ${NO_ENFORCE_RECORD.en}` : ""}. ${HACKAPROMPT_CLOSED_BOOK.en} The corpus is 100% adversarial with no benign population, so it cannot yield a precision or false-positive figure — do not read it as precision evidence.`,
   };
 }
 
 function selfTestNote(stats: SiteStats, zh: boolean): Note | null {
   const self = findBenchmark(stats, "atr-self-test");
-  if (!self) return null;
-  const fp = count(self.falsePositives ?? 0);
+  if (!self || self.benign === null || self.falsePositives === null) return null;
   return {
     name: `Self-test (${count(self.samples)} samples)`,
     verdict: zh
-      ? `ATR 在 ${count(self.samples)} 個內部自測樣本上的召回率是 ${recallLanes(self)},hunt lane 誤報 ${fp} 次(${measuredStamp(self, true)})——這是與 SKILL.md benchmark 分開的獨立語料,且是自家語料,不能當成樣本外證據。`
-      : `Recall on the ${count(self.samples)} internal self-test samples is ${recallLanes(self)}, with ${fp} false positives in the hunt lane (${measuredStamp(self, false)}) — a separate corpus from the SKILL.md benchmark, and an in-house one, so it is not out-of-sample evidence.`,
+      ? `ATR 在 ${count(self.samples)} 個內部自測樣本上的召回率是 ${recallLanes(self)}，hunt lane 在 ${count(self.benign)} 個良性樣本上誤報 ${count(self.falsePositives)} 次（${measuredStamp(self, true, true)}）——這是與 SKILL.md benchmark 分開的獨立語料，且是自家語料，不能當成樣本外證據。`
+      : `Recall on the ${count(self.samples)} internal self-test samples is ${recallLanes(self)}, with ${count(self.falsePositives)} of ${count(self.benign)} benign samples flagged in the hunt lane (${measuredStamp(self, false)}) — a separate corpus from the SKILL.md benchmark, and an in-house one, so it is not out-of-sample evidence.`,
   };
 }
 
@@ -231,7 +235,7 @@ function garakNote(stats: SiteStats, zh: boolean): Note | null {
   return {
     name: `garak (${count(garak.samples)} in-the-wild / ${count(full.samples)} full)`,
     verdict: zh
-      ? `ATR 在 garak in-the-wild 越獄集(${count(garak.samples)} 個 prompt)上的召回率是 ${recallLanes(garak)};在完整 garak probe 套件(${count(full.samples)} 個 prompt)上是 ${recallLanes(full)}(${commonStamp([garak, full], true)})。${GARAK_BOTH_CLOSED_BOOK.zh}`
+      ? `ATR 在 garak in-the-wild 越獄集（${count(garak.samples)} 個 prompt）上的召回率是 ${recallLanes(garak)}；在完整 garak probe 套件（${count(full.samples)} 個 prompt）上是 ${recallLanes(full)}（${commonStamp([garak, full], true, true)}）。${toFullWidth(GARAK_BOTH_CLOSED_BOOK.zh)}`
       : `Recall on garak's in-the-wild jailbreak set (${count(garak.samples)} prompts) is ${recallLanes(garak)}, and on the full garak probe suite (${count(full.samples)} prompts) ${recallLanes(full)} (${commonStamp([garak, full], false)}). ${GARAK_BOTH_CLOSED_BOOK.en}`,
   };
 }

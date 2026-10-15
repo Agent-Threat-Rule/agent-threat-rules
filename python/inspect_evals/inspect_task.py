@@ -314,9 +314,12 @@ def atr_prompt_injection() -> Task:
     coverage. The reported `accuracy` is the share of canonical adversarial
     prompts the ATR corpus matches. Those prompts are the rules' own true
     positives, so read it like ATR's self-test recall, not like the external
-    corpora in the README's evaluation section (section 8), which gives each
-    recall in two lanes: `hunt`, the engine default that loads every rule
-    maturity, and `enforce`, the lane for blocking, which loads only stable rules.
+    corpora in the README's evaluation section (section 8). It is not a figure
+    for either detection lane either: the patterns are matched here with
+    Python's `re`, outside the engine, over every rule that is not deprecated.
+    README section 8 gives recall in two lanes wherever a measurement records
+    both: `hunt`, the engine default that loads every rule maturity, and
+    `enforce`, the lane for blocking, which loads only stable rules.
     """
     dataset = build_dataset()
     return Task(

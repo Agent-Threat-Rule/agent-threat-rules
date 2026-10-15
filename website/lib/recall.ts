@@ -50,17 +50,27 @@ export function recallLanes(m: BenchmarkMeasurement): string {
   return m.enforce === null ? hunt : `${hunt} / ${pct(m.enforce.recall)} (enforce)`;
 }
 
-/** `ATR 4.1.5, measured 2026-10-15`. */
-export function measuredStamp(m: BenchmarkMeasurement, zh: boolean): string {
-  return zh ? `ATR ${m.atr_version},量測於 ${m.measured_date}` : `ATR ${m.atr_version}, measured ${m.measured_date}`;
+/** `ATR 4.1.5, measured 2026-10-15`; `fullWidth` for zh text set in full-width punctuation. */
+export function measuredStamp(m: BenchmarkMeasurement, zh: boolean, fullWidth = false): string {
+  if (!zh) return `ATR ${m.atr_version}, measured ${m.measured_date}`;
+  return `ATR ${m.atr_version}${fullWidth ? "，" : ","}量測於 ${m.measured_date}`;
 }
 
 /** One stamp for figures measured together; otherwise each source's own. */
-export function commonStamp(ms: readonly BenchmarkMeasurement[], zh: boolean): string {
-  const stamps = [...new Set(ms.map((m) => measuredStamp(m, zh)))];
+export function commonStamp(ms: readonly BenchmarkMeasurement[], zh: boolean, fullWidth = false): string {
+  const stamps = [...new Set(ms.map((m) => measuredStamp(m, zh, fullWidth)))];
   if (stamps.length === 1) return stamps[0];
-  return ms.map((m) => `${m.source}: ${measuredStamp(m, zh)}`).join(zh ? ";" : "; ");
+  return ms.map((m) => `${m.source}: ${measuredStamp(m, zh, fullWidth)}`).join(zh ? (fullWidth ? "；" : ";") : "; ");
 }
+
+const FULL_WIDTH: Readonly<Record<string, string>> = { ",": "，", ":": "：", ";": "；", "(": "（", ")": "）" };
+
+/**
+ * The zh wording below is set in half-width punctuation, as most pages are; a
+ * page set in full-width punctuation converts it. Prose only: a figure such as
+ * `65.4% (hunt)` keeps README's form.
+ */
+export const toFullWidth = (zh: string): string => zh.replace(/[,:;()]/g, (c) => FULL_WIDTH[c] ?? c);
 
 /** What the two lanes are. */
 export const LANES_EXPLAINED = {
@@ -78,6 +88,18 @@ export const GARAK_CLOSED_BOOK = {
 export const GARAK_BOTH_CLOSED_BOOK = {
   en: "Both are partly closed-book: many of the rules that fire on them were written from them, and the full suite contains the in-the-wild set twice, so neither hunt figure is an out-of-sample result.",
   zh: "兩份都部分屬於 closed-book(等於看過考題):在上面開火的規則有不少正是從它們寫出來的,完整套件還把 in-the-wild 集收了兩次,所以兩個 hunt 數字都不是樣本外的成績。",
+} as const;
+
+/** PINT-format (verified from rule YAML: ATR-2026-02002, 02005, 02230-02232 cite its false negatives; none is stable). */
+export const PINT_CLOSED_BOOK = {
+  en: "Partly closed-book: some hunt-lane rules were mined from this corpus's own misses, so the hunt figure is not fully out-of-sample.",
+  zh: "部分屬於 closed-book:有幾條 hunt lane 規則正是從這份語料漏抓的樣本挖出來的,所以 hunt 數字不完全是樣本外成績。",
+} as const;
+
+/** HackAPrompt (ATR-2026-00452..00456 and others were written from its clusters, some of them stable). */
+export const HACKAPROMPT_CLOSED_BOOK = {
+  en: "Partly closed-book: rules were written from this corpus's attack clusters, some of them stable, so the figure is not an out-of-sample result.",
+  zh: "部分屬於 closed-book:有規則正是從這份語料的攻擊群集寫出來的,其中幾條是 stable,所以這個數字不是樣本外成績。",
 } as const;
 
 /** A measurement taken before the enforce lane was recorded (hackaprompt, autoresearch). */

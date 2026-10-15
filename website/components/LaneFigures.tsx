@@ -2,10 +2,14 @@ import { CountUp } from "@/components/CountUp";
 import { pct } from "@/lib/recall";
 import type { BenchmarkMeasurement } from "@/lib/stats";
 
-/** CountUp shows one decimal; where that would read a rate as 0% or 100% when it is not, show the exact figure. */
+/**
+ * A rate as README prints it, `97.0%` rather than `97%`. CountUp drops the
+ * decimal of a whole number and rounds to one place, which can read a rate as
+ * 0% or 100% when it is not; those show the exact figure instead.
+ */
 function Rate({ value }: { value: number }) {
   const shown = Math.round(value * 1000) / 10;
-  if ((shown === 100 && value !== 1) || (shown === 0 && value !== 0)) return <>{pct(value)}</>;
+  if (Number.isInteger(shown) || (shown === 100 && value !== 1) || (shown === 0 && value !== 0)) return <>{pct(value)}</>;
   return <CountUp target={shown} suffix="%" />;
 }
 

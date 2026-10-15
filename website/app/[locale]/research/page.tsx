@@ -2,7 +2,7 @@ import { Reveal } from "@/components/Reveal";
 import { CountUp } from "@/components/CountUp";
 import { StatsHydrator } from "@/components/StatsHydrator";
 import { loadSiteStats, type BenchmarkMeasurement } from "@/lib/stats";
-import { count, findBenchmark, measuredStamp, pct, pctHunt } from "@/lib/recall";
+import { PINT_CLOSED_BOOK, count, findBenchmark, measuredStamp, pct, pctHunt, toFullWidth } from "@/lib/recall";
 import { MetricCell, RecallCell } from "@/components/LaneFigures";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { locales, t, type Locale } from "@/lib/i18n";
@@ -152,8 +152,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
               </div>
               <p className="text-xs text-mist mt-2 leading-[1.7]">
                 {zh
-                  ? `這不是 Lakera 官方 PINT benchmark（該語料為私有、規模約 5 倍）。這是一份 PINT 格式的自建 ${count(pint.samples)} 樣本語料，由 deepset/prompt-injections（660）與 Lakera/gandalf_ignore_instructions（190）組成。只有一小部分規則會在這份語料上開火，且單一條規則就佔了大部分偵測——請把它讀成「prompt injection 這個家族」的分數，不是 ATR 的整體覆蓋率。`
-                  : `This is not Lakera's official PINT benchmark — that corpus is private and roughly 5x larger. This is a self-built ${count(pint.samples)}-sample corpus in PINT's format, assembled from deepset/prompt-injections (660) and Lakera/gandalf_ignore_instructions (190). Only a small subset of rules fire on it and a single rule accounts for most detections, so read it as a prompt-injection-family score, not as ATR's overall coverage.`}
+                  ? `這不是 Lakera 官方 PINT benchmark（該語料為私有、規模約 5 倍）。這是一份 PINT 格式的自建 ${count(pint.samples)} 樣本語料，由 deepset/prompt-injections（660）與 Lakera/gandalf_ignore_instructions（190）組成。只有一小部分規則會在這份語料上開火，且單一條規則就佔了大部分偵測——請把它讀成「prompt injection 這個家族」的分數，不是 ATR 的整體覆蓋率。${toFullWidth(PINT_CLOSED_BOOK.zh)}`
+                  : `This is not Lakera's official PINT benchmark — that corpus is private and roughly 5x larger. This is a self-built ${count(pint.samples)}-sample corpus in PINT's format, assembled from deepset/prompt-injections (660) and Lakera/gandalf_ignore_instructions (190). Only a small subset of rules fire on it and a single rule accounts for most detections, so read it as a prompt-injection-family score, not as ATR's overall coverage. ${PINT_CLOSED_BOOK.en}`}
               </p>
             </div>
             {/* Self-test */}
@@ -175,11 +175,13 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
       {pint && (
         <Reveal delay={0.2}>
           <p className="text-sm text-stone mb-8">
-            {t(locale, "research.gap_note", {
-              precision: pct(pint.precision),
-              recall: pctHunt(pint.recall),
-              enforce: pint.enforce ? pct(pint.enforce.recall) : zh ? "未記錄" : "not recorded",
-            })}
+            {pint.enforce
+              ? t(locale, "research.gap_note", {
+                  precision: pct(pint.precision),
+                  recall: pctHunt(pint.recall),
+                  enforce: pct(pint.enforce.recall),
+                })
+              : t(locale, "research.gap_note_hunt_only", { precision: pct(pint.precision), recall: pctHunt(pint.recall) })}
           </p>
         </Reveal>
       )}
@@ -291,8 +293,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {locale === "zh"
-                ? `Precision / recall 跑在一份 PINT 格式的 ${pint ? count(pint.samples) : ""} 樣本語料上;recall 兩個 lane 都列,precision 只在 hunt lane 量測。樣本本身來自外部公開資料集（deepset/prompt-injections、Lakera/gandalf_ignore_instructions），所以不會 overfit 到自家 test cases；但語料是我們自己組的，不是 Lakera 官方 PINT benchmark。另一組 SKILL.md benchmark 從真實 OpenClaw 抓 ${skill ? count(skill.samples) : ""} 個檔案，其中惡意樣本透過人工標記後作為 ground truth。`
-                : `Precision / recall runs on a ${pint ? count(pint.samples) : ""}-sample corpus in PINT's format; recall is reported in both lanes, precision in the hunt lane only. The samples come from external public datasets (deepset/prompt-injections, Lakera/gandalf_ignore_instructions), so they are not overfitted to our own test cases — but the corpus is assembled by us and is not Lakera's official PINT benchmark. A separate SKILL.md benchmark uses ${skill ? count(skill.samples) : ""} real-world OpenClaw files, with malicious samples hand-labeled as ground truth.`}
+                ? `Precision / recall 跑在一份 PINT 格式的自建語料上；recall 兩個 lane 都列，precision 只在 hunt lane 量測。樣本本身來自外部公開資料集（deepset/prompt-injections、Lakera/gandalf_ignore_instructions），但之後有幾條 hunt lane 規則是從這份語料漏抓的樣本挖出來的，所以 hunt 數字部分屬於 closed-book；語料是我們自己組的，不是 Lakera 官方 PINT benchmark。另一組內部 SKILL.md benchmark 用的是已標註的檔案，其中一部分惡意樣本是為這個 benchmark 手寫的。`
+                : `Precision / recall runs on a self-built corpus in PINT's format; recall is reported in both lanes, precision in the hunt lane only. The samples come from external public datasets (deepset/prompt-injections, Lakera/gandalf_ignore_instructions), but some hunt-lane rules were later mined from this corpus's own misses, so the hunt figure is partly closed-book; the corpus is assembled by us and is not Lakera's official PINT benchmark. A separate, internal SKILL.md benchmark uses labelled files, part of its malicious set written for the benchmark.`}
             </p>
           </div>
           <div className="border-l-2 border-fog pl-4">
@@ -486,10 +488,11 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
   );
 }
 
+/** As src/eval/skill-benchmark.ts defines them. */
 const LAYERS: Readonly<Record<string, { en: string; zh: string }>> = {
-  a: { en: "Explicit malicious instructions", zh: "明確惡意指令" },
-  b: { en: "Layer B", zh: "Layer B" },
-  c: { en: "Obfuscated attacks", zh: "混淆/隱藏攻擊" },
+  a: { en: "Obvious payloads", zh: "明顯的惡意 payload" },
+  b: { en: "Obfuscated attacks", zh: "混淆攻擊" },
+  c: { en: "Semantic attacks", zh: "語意型攻擊" },
 };
 
 /**
@@ -505,9 +508,7 @@ function SkillBenchmark({ skill, zh }: { skill: BenchmarkMeasurement; zh: boolea
           {zh ? "SKILL.md 偵測基準" : "SKILL.md Detection Benchmark"}
         </h2>
         <p className="text-sm text-stone mb-6">
-          {zh
-            ? `使用 ${count(skill.samples)} 個真實世界的 OpenClaw SKILL.md 檔案測試(${count(skill.attacks ?? 0)} 個惡意 + ${count(skill.benign ?? 0)} 個正常;${measuredStamp(skill, true)})。Layer A = 明確惡意指令,Layer C = 混淆/隱藏攻擊。`
-            : `Tested against ${count(skill.samples)} real-world OpenClaw SKILL.md files (${count(skill.attacks ?? 0)} malicious + ${count(skill.benign ?? 0)} benign; ${measuredStamp(skill, false)}). Layer A = explicit malicious instructions. Layer C = obfuscated / hidden attacks.`}
+          {skillCorpusLine(skill, zh)}
         </p>
       </Reveal>
       <Reveal delay={0.1}>
@@ -538,7 +539,7 @@ function SkillOverall({ skill, zh }: { skill: BenchmarkMeasurement; zh: boolean 
         </div>
         <div>
           <div className="font-data text-lg font-bold text-ink">{count(skill.samples)}</div>
-          <div className="text-xs text-stone">{zh ? "真實樣本" : "Real-world samples"}</div>
+          <div className="text-xs text-stone">{zh ? "已標註樣本" : "Labelled samples"}</div>
         </div>
       </div>
     </div>
@@ -547,7 +548,7 @@ function SkillOverall({ skill, zh }: { skill: BenchmarkMeasurement; zh: boolean 
 
 function SkillLayers({ skill, zh }: { skill: BenchmarkMeasurement; zh: boolean }) {
   const layers = Object.entries(skill.layers ?? {}).filter(([, l]) => l.total > 0);
-  const fp = count(skill.falsePositives ?? 0);
+  const fp = skill.falsePositives === null ? null : count(skill.falsePositives);
   return (
     <div className="bg-paper p-6">
       <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">
@@ -563,7 +564,7 @@ function SkillLayers({ skill, zh }: { skill: BenchmarkMeasurement; zh: boolean }
             width={(l.detected / l.total) * 100}
           />
         ))}
-        {skill.benign !== null && (
+        {skill.benign !== null && fp !== null && (
           <LayerBar
             name={zh ? "正常樣本" : "Benign"}
             value={`${fp} FP`}
@@ -578,6 +579,17 @@ function SkillLayers({ skill, zh }: { skill: BenchmarkMeasurement; zh: boolean }
       <p className="text-xs text-stone mt-4 leading-[1.6]">{skillEnforceNote(skill, zh)}</p>
     </div>
   );
+}
+
+/** The corpus line: what the benchmark is, from its measurement; the layer names follow the harness. */
+function skillCorpusLine(skill: BenchmarkMeasurement, zh: boolean): string {
+  const split = skill.attacks !== null && skill.benign !== null
+    ? (zh ? `${count(skill.attacks)} 個惡意 + ${count(skill.benign)} 個正常；` : `${count(skill.attacks)} malicious + ${count(skill.benign)} benign; `)
+    : "";
+  const noB = (skill.layers?.b?.total ?? 0) === 0;
+  return zh
+    ? `內部、已標註的 SKILL.md 語料：${count(skill.samples)} 個檔案（${split}${measuredStamp(skill, true, true)}），其中一部分惡意樣本是為這個 benchmark 手寫的。Layer A = 明顯的惡意 payload（curl | bash、base64 執行、reverse shell），Layer C = 語意型攻擊（自然語言指令、社交工程）${noB ? "；這份語料沒有 Layer B（混淆）的樣本" : ""}。`
+    : `An internal, labelled SKILL.md corpus: ${count(skill.samples)} files (${split}${measuredStamp(skill, false)}), part of its malicious set written for the benchmark. Layer A = obvious payloads (curl | bash, base64 exec, reverse shell). Layer C = semantic attacks (natural-language instructions, social engineering).${noB ? " The corpus has no Layer B (obfuscated) samples." : ""}`;
 }
 
 function skillEnforceNote(skill: BenchmarkMeasurement, zh: boolean): string {

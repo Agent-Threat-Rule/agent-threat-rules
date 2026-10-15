@@ -13,8 +13,9 @@
  * text wrapped differently, the version regex stopped matching and the abstract
  * cited ATR 3.5.12 for months. If the anchors are not found this throws.
  *
- * Used by sync-stats.ts (every rules-merge release) and sync-citation-garak.ts
- * (the weekly measurement run, and CI's --check).
+ * Used by sync-stats.ts (whenever rules/ changes on main, via
+ * reconcile-stats.yml) and sync-citation-garak.ts (the weekly measurement run,
+ * and CI's --check).
  */
 
 export interface GarakCitation {
@@ -29,7 +30,21 @@ export interface GarakCitation {
 /** 92.3 -> "92.3%", 100 -> "100.0%", 0.03 -> "0.03%": whole numbers keep one decimal. */
 const pct = (n: number): string => `${Number.isInteger(n) ? n.toFixed(1) : String(n)}%`;
 
+const isPercent = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 100;
+
+/** Throws on a block that would render as "null%" or "undefined-prompt": better no sentence than a wrong one. */
+function assertGarakCitation(g: GarakCitation): void {
+  if (!isPercent(g.recall)) throw new Error(`stats.json benchmarks.garak.recall is not a percentage: ${JSON.stringify(g.recall)}`);
+  if (g.enforceLaneRecall !== undefined && !isPercent(g.enforceLaneRecall)) {
+    throw new Error(`stats.json benchmarks.garak.enforceLaneRecall is not a percentage: ${JSON.stringify(g.enforceLaneRecall)}`);
+  }
+  if (!Number.isInteger(g.samples) || g.samples <= 0) {
+    throw new Error(`stats.json benchmarks.garak.samples is not a sample count: ${JSON.stringify(g.samples)}`);
+  }
+}
+
 export function garakSentence(g: GarakCitation, fallbackVersion: string): string {
+  assertGarakCitation(g);
   const hunt = `${pct(g.recall)} in the hunt lane (the engine default, which loads every rule maturity)`;
   const lanes =
     g.enforceLaneRecall === undefined
@@ -71,5 +86,7 @@ export function syncGarakSentence(text: string, g: GarakCitation, fallbackVersio
         "Restore it in the abstract rather than letting the figure freeze.",
     );
   }
-  return text.replace(SENTENCE, `${wrapAbstract(garakSentence(g, fallbackVersion)).join("\n")}\n`);
+  // A function, not a string: a `$&` in the sentence must not be read as a replacement pattern.
+  const sentence = `${wrapAbstract(garakSentence(g, fallbackVersion)).join("\n")}\n`;
+  return text.replace(SENTENCE, () => sentence);
 }

@@ -24,9 +24,10 @@
  * Everything between the two comments is replaced and nothing outside them
  * moves. GitHub does not render the comments. <format> defaults to `lanes`:
  *
- *   lanes       65.4% (hunt) / 0.4% (enforce)    the README cell form, checked
- *               with the same checkRecallCell rules; hunt only when the
- *               measurement predates the enforce record
+ *   lanes       65.4% (hunt) / 0.4% (enforce)    the README cell form: every
+ *               rendering is held to checkRecallCell, the rule README's table
+ *               is checked by; hunt only when the measurement predates the
+ *               enforce record
  *   counts      295 of 451 (hunt) / 2 of 451 (enforce)
  *   stamp       ATR 4.1.5, measured 2026-10-15
  *   file        `data/measurements/<source>/<file>.json`
@@ -48,19 +49,22 @@
  *   npx tsx scripts/render-recall-citations.ts               # rewrite in place
  *   npx tsx scripts/render-recall-citations.ts --check       # exit 1 if stale or unrenderable
  *   npx tsx scripts/render-recall-citations.ts --root <dir>  # another checkout (tests, CI)
- *   npx tsx scripts/render-recall-citations.ts --list        # print DOCUMENTS, one per line
+ *   npx tsx scripts/render-recall-citations.ts --review-notes <file>
+ *                                     # append what it could not render (the rolling PR body)
  *
  * Exit codes: 0 = current (or rewritten). 1 = --check found a stale figure or
  * a marker it cannot render. 2 = cannot run. In write mode a marker it cannot
- * render is printed as a warning and left as it is, so the weekly measurement
- * run still pushes; the PR's --check then fails where a human sees it.
+ * render is printed as a warning, listed in --review-notes and left as it is,
+ * so the weekly measurement run still pushes; the PR's --check then fails
+ * where a human sees it.
  */
 
 import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { decimalsFor, pct1, pctLane } from "./check-benchmark-citations.js";
+import { checkRecallCell, decimalsFor, pct1, pctLane } from "./check-benchmark-citations.js";
+import { appendReviewNotes } from "./lib/append-review-notes.js";
 import {
   ENFORCE_LANE_BREAKDOWN_KEY,
   type Confusion,
@@ -173,7 +177,10 @@ function confusionOf(m: LaneMeasurement): Confusion {
 
 function lanes(m: LaneMeasurement): string {
   const hunt = `${pct1(m.recall)} (hunt)`;
-  return m.enforce === null ? hunt : `${hunt} / ${pctLane(m.enforce.recall)} (enforce)`;
+  const cell = m.enforce === null ? hunt : `${hunt} / ${pctLane(m.enforce.recall)} (enforce)`;
+  const problem = checkRecallCell(cell, m.recall, m.enforce?.recall ?? null);
+  if (problem !== null) throw new Error(`${m.source}: rendered a figure README's check would reject: ${problem}`);
+  return cell;
 }
 
 function counts(m: LaneMeasurement): string {
@@ -234,7 +241,8 @@ export interface Span {
   bodyEnd: number;
 }
 
-const TOKEN = /<!--\s*(\/?)recall(?::(\S*))?\s*-->/g;
+// `[^\s>]`, not `\S`: a compact `<!--recall:pint-->` must end at its own `-->`.
+const TOKEN = /<!--\s*(\/?)recall(?::([^\s>]*))?\s*-->/g;
 const SPEC = /^([a-z0-9][a-z0-9-]*)(?::([a-z0-9-]+))?$/;
 
 const lineAt = (text: string, index: number): number => text.slice(0, index).split("\n").length;
@@ -353,15 +361,12 @@ function flagValue(argv: readonly string[], flag: string): string | undefined {
 }
 
 function main(argv: readonly string[]): number {
-  // For the measure-all workflow, which stages exactly the documents rendered here.
-  if (argv.includes("--list")) {
-    console.log(DOCUMENTS.join("\n"));
-    return 0;
-  }
   let root: string;
+  let notes: string | undefined;
   let result: { files: FileRender[]; problems: string[] };
   try {
     root = resolve(flagValue(argv, "--root") ?? DEFAULT_ROOT);
+    notes = flagValue(argv, "--review-notes");
     result = renderRepoDocuments(root);
   } catch (err) {
     console.error(`FAIL: ${err instanceof Error ? err.message : String(err)}`);
@@ -379,6 +384,14 @@ function main(argv: readonly string[]): number {
     return 1;
   }
   for (const p of result.problems) console.error(`::warning::recall citation needs a human: ${p}`);
+  if (notes !== undefined) {
+    appendReviewNotes(
+      notes,
+      "Recall citations not re-rendered",
+      "scripts/render-recall-citations.ts left these as they were; CI's --check fails until they are fixed:",
+      result.problems,
+    );
+  }
   for (const f of changed) {
     writeFileSync(f.path, f.after);
     console.log(`rendered ${relative(root, f.path)}`);

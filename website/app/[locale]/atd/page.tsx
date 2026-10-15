@@ -308,7 +308,14 @@ export default async function ATDPage({
             { v: String(ATD_STATS.withCve), l: locale === "zh" ? "有 CVE 佐證" : "CVE-backed" },
             { v: String(ATD_STATS.withLiveRule), l: locale === "zh" ? "已綁定偵測規則(覆蓋率,非門檻)" : "bound to a rule (coverage, not a gate)" },
             ...[
-              proofCard(selfTest, zh, { en: "self-test corpus", zh: "self-test 語料" }, selfTest ? { en: `${count(selfTest.falsePositives ?? 0)} FP in the hunt lane`, zh: `hunt lane 誤報 ${count(selfTest.falsePositives ?? 0)}` } : undefined),
+              proofCard(
+                selfTest,
+                zh,
+                { en: "in-house self-test corpus", zh: "自家 self-test 語料" },
+                selfTest && selfTest.falsePositives !== null && selfTest.benign !== null
+                  ? { en: `${count(selfTest.falsePositives)} of ${count(selfTest.benign)} benign flagged in the hunt lane; not out-of-sample`, zh: `hunt lane 在 ${count(selfTest.benign)} 個良性樣本上誤報 ${count(selfTest.falsePositives)};不是樣本外證據` }
+                  : undefined,
+              ),
               proofCard(garak, zh, { en: "garak in-the-wild", zh: "garak 野外" }, { en: "partly closed-book: many rules were written from this corpus", zh: "部分屬 closed-book:有不少規則是從這份語料寫的" }),
             ].flatMap((c) => c ?? []),
           ].map((m, i) => (

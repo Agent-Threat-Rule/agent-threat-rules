@@ -292,15 +292,12 @@ python3 garak-to-tc.py \\
                 每次 POST 之間預設 100ms 延遲,跑完約一分鐘。
                 {garak && full && (
                   <>
-                    兩份語料、兩個 lane 的數字都公開:在 garak 公開 in-the-wild jailbreak 集
-                    ({count(garak.samples)} 筆)上,recall 是 {recallLanes(garak)};在完整 garak 語料
-                    ({count(full.samples)} 筆,涵蓋全部 probe 家族)上是 {recallLanes(full)}
-                    ({commonStamp([garak, full], true)})。{LANES_EXPLAINED.zh}
+                    {`兩份語料、兩個 lane 的數字都公開:在 garak 公開 in-the-wild jailbreak 集(${count(garak.samples)} 筆)上,recall 是 ${recallLanes(garak)};在完整 garak 語料(${count(full.samples)} 筆,涵蓋全部 probe 家族)上是 ${recallLanes(full)}(${commonStamp([garak, full], true)})。`}
+                    {LANES_EXPLAINED.zh}
                     {GARAK_BOTH_CLOSED_BOOK.zh}
+                    {"兩份語料之間的落差,一部分是刻意的——regex 偵測層不去打某些 probe 家族(例如純語意越獄),硬塞只會換來脆弱簽章與誤報;另一部分是 in-the-wild 的數字有不少靠的是從那份語料寫出來的規則。較低的數字也照樣列出,是因為一個標準的可信度,取決於它願不願意公開自己最差的數字。"}
                   </>
                 )}
-                兩份語料之間的落差是刻意的——regex 偵測層不去打某些 probe 家族(例如純語意越獄),
-                硬塞只會換來脆弱簽章與誤報。較低的數字也照樣列出,是因為一個標準的可信度,取決於它願不願意公開自己最差的數字。
               </>
             ) : (
               <>
@@ -312,12 +309,13 @@ python3 garak-to-tc.py \\
                     full garak corpus ({count(full.samples)} samples, every probe family) it is{' '}
                     {recallLanes(full)} ({commonStamp([garak, full], false)}). {LANES_EXPLAINED.en}{' '}
                     {GARAK_BOTH_CLOSED_BOOK.en}{' '}
+                    Part of the gap between the two corpora is deliberate — the regex detection layer does
+                    not chase some probe families (pure semantic jailbreaks, for instance); forcing it to
+                    would buy brittle signatures and false positives. Part of it is that the in-the-wild
+                    figure rests partly on rules written from that corpus. We report the lower figures too,
+                    because a standard earns trust by publishing its worst numbers, not hiding them.
                   </>
                 )}
-                The gap between the two corpora is deliberate — the regex detection layer does not
-                chase some probe families (pure semantic jailbreaks, for instance); forcing it to would
-                buy brittle signatures and false positives. We report the lower figures too, because a
-                standard earns trust by publishing its worst numbers, not hiding them.
               </>
             )}
           </li>
