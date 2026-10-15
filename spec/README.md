@@ -266,8 +266,8 @@ The spec is being prepared for:
 
 1. **OASIS Open Project (primary)** as adjacent to CoSAI.
    Target: Q3 2026 acceptance, Q1 2027 first Committee Specification.
-2. **NIST CAISI (citation target)**.
-   No formal submission window currently open; awaiting next RFI.
+2. **NIST CAISI**, as a possible future citation venue only.
+   ATR has no engagement with CAISI.
 3. **IETF (informational draft, transport / OTEL emission only)**
    when reference implementations are stable.
 

@@ -385,7 +385,7 @@ This is Microsoft Copilot operating inside AGT, not an MSRC endorsement. Coverag
 
 ### Under maintainer review (open PRs)
 
-[NVIDIA NeMo Guardrails #2251](https://github.com/NVIDIA-NeMo/Guardrails/pull/2251) · [BerriAI LiteLLM #28050](https://github.com/BerriAI/litellm/pull/28050) · [promptfoo #8529](https://github.com/promptfoo/promptfoo/pull/8529) · [Cisco mcp-scanner #194](https://github.com/cisco-ai-defense/mcp-scanner/pull/194) · [Splunk security_content #4128](https://github.com/splunk/security_content/pull/4128) · [NIST OSCAL oscal-content #338](https://github.com/usnistgov/oscal-content/pull/338) (on hold at NIST's request) · [OpenTelemetry semantic-conventions-genai #165](https://github.com/open-telemetry/semantic-conventions-genai/pull/165)
+[NVIDIA NeMo Guardrails #2251](https://github.com/NVIDIA-NeMo/Guardrails/pull/2251) · [BerriAI LiteLLM #28050](https://github.com/BerriAI/litellm/pull/28050) · [promptfoo #8529](https://github.com/promptfoo/promptfoo/pull/8529) · [Cisco mcp-scanner #194](https://github.com/cisco-ai-defense/mcp-scanner/pull/194) · [Splunk security_content #4128](https://github.com/splunk/security_content/pull/4128) · [NIST OSCAL oscal-content #338](https://github.com/usnistgov/oscal-content/pull/338) (awaiting NIST review) · [OpenTelemetry semantic-conventions-genai #165](https://github.com/open-telemetry/semantic-conventions-genai/pull/165)
 
 ### Integrating ATR into your project
 

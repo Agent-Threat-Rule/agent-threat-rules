@@ -28,6 +28,18 @@ All notable changes to ATR will be documented in this file.
 - `data/stats.json` no longer carries the orphaned `benchmark.pintRecall`
   block, a 3.5.11 figure nothing has written since #600 and nothing reads.
 
+### Fixed
+
+- **NIST-related statements corrected across the docs and the website.**
+  Pages described a NIST CAISI dialogue and position paper that did not
+  happen, an RFI response ATR never filed, an OSCAL "Path 1" acceptance,
+  and a quote NIST never published; they listed NIST among adopters and
+  in a trust bar, and showed "100%" or "4/4 functions" for an AI RMF
+  mapping that covers a subset of subcategories. usnistgov/oscal-content#338
+  is described as what it is: open, reworked against NIST's AI RMF catalog,
+  awaiting NIST review. The website changelog page now shows the notes on
+  historical entries, which it used to drop.
+
 ## [4.1.5] - 2026-10-10
 
 4.1.4 was staged on npm and removed by publish-time scanning before it could be
@@ -880,13 +892,12 @@ No rule content changed and no threshold was loosened in any of the above.
 
 ## [2.1.0] - 2026-05-09
 
-> **Historical entry — the AI RMF line below is not a coverage figure.**
+> **Historical entry — the AI RMF line below overstated coverage.**
 > "100% coverage of all 4 AI RMF functions" described the community OSCAL
-> catalog, which encodes all 72 AI RMF subcategories as controls. It never
-> meant that ATR's rules address the whole AI RMF: they map to a subset of
-> subcategories. The catalog is a community contribution and is not
-> endorsed by NIST. Do not quote the line as a coverage claim. (Note added
-> 2026-10-16.)
+> catalog, which encodes all 72 AI RMF subcategories as controls. ATR's
+> rules map to a subset of those subcategories. The catalog is a community
+> contribution and is not endorsed by NIST. Do not quote the line as a
+> coverage claim. (Note added 2026-10-16.)
 
 ### Added
 

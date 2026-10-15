@@ -217,7 +217,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <HeroEntrance delay={1.7}>
             <div className="mt-16 md:mt-24 pt-8 md:pt-10 border-t border-fog/60 font-data text-[11px] md:text-xs text-mist tracking-wide space-y-2">
               <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-                <span>{zh ? "標準同儕:" : "Standards bodies:"}</span>
+                <span>{zh ? "標準與框架:" : "Standards & frameworks:"}</span>
                 <span className="text-ink">MISP / CIRCL</span>
                 <span className="text-fog">·</span>
                 <span className="text-ink">OWASP</span>

@@ -16,6 +16,11 @@
 > - **Downstream adoption.** A merged pull request into an open-source repository such as
 >   `cisco-ai-defense/skill-scanner` is not a vendor product shipment or endorsement.
 >   `ADOPTERS.md` is the source of truth, with per-entry PR evidence.
+> - **NIST (added 2026-10-16).** Section 2 says NIST "signalled" that the project
+>   would benefit from multi-stakeholder governance; NIST made no such statement.
+>   Section 11's "invitations extended to NIST CAISI" describes intent, not NIST
+>   participation: NIST has no role in this proposal. The "97.1% recall on NVIDIA
+>   garak" figure in section 2 is withdrawn as well; see README section 8.
 >
 > Rule counts, version numbers and adopter lists below are point-in-time and have moved.
 > Nothing below has been rewritten; this note is the correction of record.
@@ -205,7 +210,6 @@ To accelerate proposal acceptance, initial PGB members will be confirmed during 
 - ATR Maintainer: Adam Lin (community maintainer, transitioning per `governance/CHARTER.md` § 6.2 founder recusal)
 - Sponsoring members: Cisco + IBM + Anthropic (per § 5)
 - Sovereign liaisons: invitations extended to NIST CAISI, UK NCSC, EU AI Office, Singapore IMDA — slots filled as accepted
-  (Note added 2026-10-16: this line records intent at the time. The maintainers have no record of NIST CAISI accepting a liaison role, and it is not a NIST commitment.)
 - OASIS staff observer: TBD by OASIS staff
 - CoSAI liaison: nominated by CoSAI Steering
 

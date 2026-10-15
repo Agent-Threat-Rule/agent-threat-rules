@@ -54,10 +54,10 @@ adds an academic seat and a government / standards-body seat.
 At the time of TSC formation:
 
 - 425 rules in the official corpus, MIT-licensed
-- 7 organizations have merged ATR rule packs (Microsoft Agent
-  Governance Toolkit, Cisco AI Defense, MISP, NIST AI RMF OSCAL
-  catalog, OWASP Agent Security Regression Harness, Gen Digital
-  Sage, plus 4 awesome-list inclusions)
+- ATR rule packs or references merged at Microsoft Agent Governance
+  Toolkit, Cisco AI Defense (open-source skill-scanner), MISP, OWASP
+  Agent Security Regression Harness and Gen Digital Sage, plus 4
+  awesome-list inclusions
 - 13 external PR merges across these organizations
 - Benchmark figures are kept in README §8 Evaluation, reported per
   lane with their caveats, and are not repeated here so they cannot

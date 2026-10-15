@@ -25,6 +25,7 @@ function buildFrameworks(ruleCount: number) {
     {
       id: "OWASP LLM Top 10 (2025)",
       coverage: "Every rule",
+      coverage_zh: "每條規則",
       desc_en: `All ${ruleCount} rules carry an OWASP LLM Top 10 (2025) reference.`,
       desc_zh: `全部 ${ruleCount} 條規則皆帶有 OWASP LLM Top 10 (2025) 參照。`,
       link: null,
@@ -32,6 +33,7 @@ function buildFrameworks(ruleCount: number) {
     {
       id: "OWASP Agentic Top 10",
       coverage: "Every rule",
+      coverage_zh: "每條規則",
       desc_en: `All ${ruleCount} rules carry an OWASP Agentic Top 10 reference; all 10 ASI risk categories are covered.`,
       desc_zh: `全部 ${ruleCount} 條規則皆帶有 OWASP Agentic Top 10 參照；10 個 ASI 風險類別全覆蓋。`,
       link: null,
@@ -39,6 +41,7 @@ function buildFrameworks(ruleCount: number) {
     {
       id: "MITRE ATLAS",
       coverage: "Every rule",
+      coverage_zh: "每條規則",
       desc_en: `All ${ruleCount} rules carry a MITRE ATLAS technique reference, grouped by tactic in the rule explorer. (ATR's own ATLAS crosswalk.)`,
       desc_zh: `全部 ${ruleCount} 條規則皆帶有 MITRE ATLAS 技術參照，在規則瀏覽器中依戰術分組。（ATR 自行整理的 ATLAS 交叉對照。）`,
       link: null,
@@ -46,13 +49,15 @@ function buildFrameworks(ruleCount: number) {
     {
       id: "NIST AI RMF",
       coverage: "Every rule",
-      desc_en: `All ${ruleCount} rules carry NIST AI RMF subcategory mappings across the GV/MP/MS/MG functions. A community-authored OSCAL catalog (CC0) is self-published; example profiles from it were offered to NIST's OSCAL content repository as PR #338, which NIST asked to hold until it publishes its own AI RMF catalog. Not a NIST endorsement or adoption.`,
-      desc_zh: `全部 ${ruleCount} 條規則皆帶有 NIST AI RMF subcategory 對應,涵蓋 GV/MP/MS/MG 四大 function。社群撰寫的 OSCAL catalog 已自行 publish(CC0);其中的範例 profile 以 PR #338 提交給 NIST 的 OSCAL 內容倉庫,NIST 已請我們擱置到其官方 AI RMF catalog 發布為止。這不是 NIST 背書或採用。`,
+      coverage_zh: "每條規則",
+      desc_en: `All ${ruleCount} rules carry NIST AI RMF subcategory mappings across the GV/MP/MS/MG functions. A community-authored OSCAL catalog (CC0) is self-published, and two example AI RMF profiles are in an open pull request to NIST's OSCAL content repository (#338), awaiting NIST review. Not a NIST endorsement or adoption.`,
+      desc_zh: `全部 ${ruleCount} 條規則皆帶有 NIST AI RMF subcategory 對應,涵蓋 GV/MP/MS/MG 四大 function。社群撰寫的 OSCAL catalog 已自行 publish(CC0),兩份 AI RMF profile 範例在提交給 NIST OSCAL 內容倉庫的 PR #338 中,仍開著、等待 NIST 審查。這不是 NIST 背書或採用。`,
       link: "nist-ai-rmf",
     },
     {
       id: "EU AI Act",
       coverage: "Every rule",
+      coverage_zh: "每條規則",
       desc_en: `All ${ruleCount} rules map to high-risk-AI obligations (Articles 9, 10, 12, 13, 14, 15). The Act names the duty; ATR supplies the runtime detection that produces evidence against the named article. It is detection evidence, not a compliance guarantee by itself.`,
       desc_zh: `全部 ${ruleCount} 條規則皆對應到高風險 AI 義務（第 9、10、12、13、14、15 條）。法案說的是義務,ATR 給的是能對著該條文跑出證據的執行期偵測。是偵測證據,本身並非合規保證。`,
       link: null,
@@ -60,6 +65,7 @@ function buildFrameworks(ruleCount: number) {
     {
       id: "ISO 42001",
       coverage: "Every rule",
+      coverage_zh: "每條規則",
       desc_en: `All ${ruleCount} rules map to AI management system clauses (6.2, 8.1–8.4, 9.1).`,
       desc_zh: `全部 ${ruleCount} 條規則皆對應到 AI 管理系統條款（6.2、8.1–8.4、9.1）。`,
       link: null,
@@ -67,6 +73,7 @@ function buildFrameworks(ruleCount: number) {
     {
       id: "SAFE-MCP",
       coverage: "78/85 techniques",
+      coverage_zh: "78/85 個 technique",
       desc_en: "Technique-level coverage: 78 of 85 SAFE-MCP techniques are covered by at least one rule (conservative lower bound; last fully enumerated at v1.0.0).",
       desc_zh: "技術層級覆蓋：85 項 SAFE-MCP 技術中至少有一條規則覆蓋 78 項（保守下限，最後完整列舉於 v1.0.0）。",
       link: null,
@@ -100,8 +107,8 @@ export default async function CompliancePage({
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-4">
           {zh
-            ? `每一條法規都說同一句話:你必須管理 AI agent 風險。它們沒說的是怎麼在真實成品上證明你做到了。ATR 的 ${stats.ruleCount} 條規則,每一條都帶有六個框架對應——OWASP LLM、OWASP Agentic、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001——合法性,以及「每條規則都帶有對應」,由 CI 強制。一條義務於是接上一個能在 SKILL.md、MCP tool 描述、agent config 上跑的偵測。SAFE-MCP 為技術層級對應(78/85)。所有 metadata 皆 MIT 授權、可下載、可審核。`
-            : `Every regulation says the same thing: you must manage AI agent risk. None of them say how to prove it on a real artifact. Each of ATR's ${stats.ruleCount} rules carries six framework mappings — OWASP LLM, OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, and ISO 42001 — with validity, and a mapping on every rule, enforced in CI. Each obligation thus connects to a detection that runs on a SKILL.md file, an MCP tool description, an agent config. SAFE-MCP is mapped at the technique level (78/85). All metadata is MIT-licensed, downloadable, and auditable.`}
+            ? `每一條法規都說同一句話:你必須管理 AI agent 風險。它們沒說的是怎麼在真實成品上證明你做到了。ATR 的 ${stats.ruleCount} 條規則,每一條都帶有六個框架對應——OWASP LLM、OWASP Agentic、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001——CI 會檢查每個對應都合法、每條規則都有對應。一條義務於是接上一個能在 SKILL.md、MCP tool 描述、agent config 上跑的偵測。SAFE-MCP 為技術層級對應(78/85)。所有 metadata 皆 MIT 授權、可下載、可審核。`
+            : `Every regulation says the same thing: you must manage AI agent risk. None of them say how to prove it on a real artifact. Each of ATR's ${stats.ruleCount} rules carries six framework mappings — OWASP LLM, OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, and ISO 42001 — with CI checking that every mapping is valid and that every rule has one. Each obligation thus connects to a detection that runs on a SKILL.md file, an MCP tool description, an agent config. SAFE-MCP is mapped at the technique level (78/85). All metadata is MIT-licensed, downloadable, and auditable.`}
         </p>
       </Reveal>
 
@@ -156,7 +163,7 @@ export default async function CompliancePage({
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
                 <div className="md:col-span-3">
                   <div className="font-display text-base font-bold text-ink mb-1">{fw.id}</div>
-                  <div className="font-data text-xl font-bold text-blue">{fw.coverage}</div>
+                  <div className="font-data text-xl font-bold text-blue">{zh ? fw.coverage_zh : fw.coverage}</div>
                 </div>
                 <div className="md:col-span-7">
                   <p className="text-sm text-graphite leading-[1.7]">

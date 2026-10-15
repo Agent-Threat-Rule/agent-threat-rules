@@ -68,14 +68,15 @@ Two external pressures converged in 2026-Q2:
 
 > **Correction (2026-10-16).** An earlier version of this page listed a
 > third pressure, a "NIST CAISI dialogue (OSCAL Path 1)" in which CAISI's
-> feedback had asked for a formal spec layer. That was inaccurate. The
-> maintainers have no record of NIST CAISI reviewing or commenting on ATR's
-> specification. The NIST contact that did take place is a pull request
-> offering example AI RMF profiles to NIST's OSCAL content repository
-> ([usnistgov/oscal-content#338](https://github.com/usnistgov/oscal-content/pull/338)),
-> which NIST's OSCAL maintainers asked to hold until NIST publishes its
-> official AI RMF catalog. That pull request concerns OSCAL content, not
-> ATR's rule format, and it is not a NIST endorsement.
+> feedback had asked for a formal spec layer. That was inaccurate: NIST
+> CAISI has not reviewed or commented on ATR's specification. The NIST
+> exchange relevant here was with NIST's OSCAL maintainers, about example
+> AI RMF profiles: an issue in usnistgov/OSCAL (#2234), then
+> [usnistgov/oscal-content#338](https://github.com/usnistgov/oscal-content/pull/338) (a rework of #333).
+> In June NIST asked that #338 wait for NIST's own AI RMF catalog; NIST
+> added that catalog to its develop branch in July, and #338 was reworked
+> against it in August. It is open, awaits NIST review, concerns OSCAL
+> content rather than ATR's rule format, and is not a NIST endorsement.
 
 The work was done as **proposal scaffolding** because:
 
@@ -129,16 +130,15 @@ Sage, OpenHands, garak (in review), and others:**
 - If you want to participate in the proposal review, contact
   adam@agentthreatrule.org.
 
-### If you are a regulator (NIST, EU AI Office, UK ICO, etc.)
+### If you are a regulator or standards body (EU AI Office, UK ICO, NIST, etc.)
 
 - The proposed mapping documents (NIST AI RMF Measure 2.x, EU AI Act
   Art 50, ISO 42001 Annex A.6.2.4) are referenced from
   `spec/atr-profile-v1.0.md`.
 - No formal regulatory mapping is claimed yet; the mapping is in
   proposal stage pending TSC ratification.
-- The NIST OSCAL pull request described in the correction above is on
-  hold at the request of NIST's OSCAL maintainers. It is not a NIST
-  endorsement.
+- The NIST OSCAL pull request described in the correction above is open
+  and awaiting NIST review. It is not a NIST endorsement.
 
 ### If you are a researcher / red team contributor
 
@@ -163,8 +163,8 @@ Sage, OpenHands, garak (in review), and others:**
 ### 2026-06-21+
 
 - (Corrected 2026-10-16: this item said a NIST CAISI position paper would
-  be submitted via "OSCAL Path 1". That did not happen as described; see
-  the correction above.)
+  be submitted via "OSCAL Path 1". No such paper was submitted; see the
+  correction above.)
 
 ### 2026-Q3
 

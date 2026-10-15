@@ -18,11 +18,11 @@ export async function generateMetadata({
   const stats = loadSiteStats();
   return {
     title: zh
-      ? "ATR × NIST AI RMF — 讓風險管理框架長出可驗證的偵測層"
-      : "ATR × NIST AI RMF — a verifiable detection layer under the framework",
+      ? "ATR 規則的 NIST AI RMF 對應(非官方)"
+      : "NIST AI RMF mappings in ATR rules (unofficial)",
     description: zh
-      ? `NIST AI RMF 定義 GOVERN / MAP / MEASURE / MANAGE 四個 function。ATR ${stats.ruleCount} 條規則中多數帶有 subcategory 對應,把治理流程接到能在真實 agent 成品上開火的偵測。16 個 subcategory,跨四大 function。MIT License。`
-      : `NIST AI RMF defines four functions — GOVERN / MAP / MEASURE / MANAGE. Most of ATR's ${stats.ruleCount} rules carry subcategory mappings, wiring those governance functions to detection that fires on real agent artifacts. 16 subcategories across all four. MIT License.`,
+      ? `NIST AI RMF 定義 GOVERN / MAP / MEASURE / MANAGE 四個 function。ATR ${stats.ruleCount} 條規則每一條都帶有 subcategory 對應,把治理流程接到能在真實 agent 成品上開火的偵測。共 25 個 subcategory,跨四大 function。MIT License。`
+      : `NIST AI RMF defines four functions — GOVERN / MAP / MEASURE / MANAGE. Every one of ATR's ${stats.ruleCount} rules carries subcategory mappings, wiring those governance functions to detection that fires on real agent artifacts. 25 subcategories across all four. MIT License.`,
   };
 }
 
@@ -106,12 +106,12 @@ export default async function NistAiRmfPage({
           {zh ? (
             <>
               AI RMF 是一份治理框架——它告訴你要 GOVERN、MAP、MEASURE、MANAGE 哪些風險,但本身不偵測任何東西。ATR 把
-              <strong> compliance.nist_ai_rmf </strong>metadata 寫進規則:每條規則標明自己服務哪個 subcategory,於是框架的每個 function 底下都有可以實際開火的偵測。首版於 2026-05-09 隨 v2.1.0 發布,當時 330 條規則全部對應;corpus 成長到 {stats.ruleCount} 條後,對應同步擴張到多數規則。
+              <strong> compliance.nist_ai_rmf </strong>metadata 寫進規則:每條規則標明自己服務哪個 subcategory,於是框架的每個 function 底下都有可以實際開火的偵測。首版於 2026-05-09 隨 v2.1.0 發布,當時 330 條規則全部對應;corpus 成長到 {stats.ruleCount} 條後,對應同步擴張到每一條規則。
             </>
           ) : (
             <>
               AI RMF is a governance framework — it tells you which risks to GOVERN, MAP, MEASURE, and MANAGE, but it detects nothing on its own. ATR writes{" "}
-              <strong>compliance.nist_ai_rmf</strong> metadata into the rules themselves: each rule declares which subcategory it serves, so every function in the framework has detection that actually fires beneath it. First shipped 2026-05-09 with v2.1.0, when all 330 rules then in the corpus carried the mapping; as the corpus grew to {stats.ruleCount} rules, the mapping expanded to cover most of them.
+              <strong>compliance.nist_ai_rmf</strong> metadata into the rules themselves: each rule declares which subcategory it serves, so every function in the framework has detection that actually fires beneath it. First shipped 2026-05-09 with v2.1.0, when all 330 rules then in the corpus carried the mapping; as the corpus grew to {stats.ruleCount} rules, the mapping expanded to cover every one of them.
             </>
           )}
         </p>
@@ -135,8 +135,8 @@ export default async function NistAiRmfPage({
           </p>
           <p className="text-sm md:text-base text-graphite leading-[1.8] mb-3">
             {zh
-              ? "由它衍生的範例 profile 也以 PR #338 提交給 NIST 官方的 usnistgov/oscal-content 倉庫,放在 NIST OSCAL maintainer 開的 collaboration branch 上。NIST 的 OSCAL maintainer 請我們先擱置,等 NIST 自己的 AI RMF catalog 發布後再處理,所以這個 PR 目前開著但暫停。要不要採用、何時採用,由 NIST 自己決定。"
-              : "Example AI RMF profiles derived from it were also offered to NIST's usnistgov/oscal-content repository as PR #338, on a collaboration branch a NIST OSCAL maintainer opened. NIST's OSCAL maintainers asked that the PR be held until NIST publishes its own AI RMF catalog, so it is open but on hold. Whether and when to use any of it is NIST's decision."}
+              ? "另外,兩份 AI RMF profile 範例以 PR #338 提交給 NIST 的 usnistgov/oscal-content 倉庫。6 月 NIST 請我們等 NIST 自己的 AI RMF catalog;NIST 在 7 月把 catalog 加進 develop 分支,8 月這個 PR 依它重做。PR 仍開著,等待 NIST 審查。要不要採用,由 NIST 決定。"
+              : "Separately, two example AI RMF profiles were offered to NIST's usnistgov/oscal-content repository as PR #338. In June NIST asked that it wait for NIST's own AI RMF catalog; NIST added that catalog to its develop branch in July, and the PR was reworked against it in August. It is open and awaiting NIST review. Whether to use any of it is NIST's decision."}
           </p>
           <div className="bg-ash/40 border border-fog p-4 text-sm text-stone leading-[1.7]">
             <span className="font-data text-xs text-stone tracking-[2px] uppercase block mb-2">
@@ -161,7 +161,7 @@ export default async function NistAiRmfPage({
               rel="noopener noreferrer"
               className="font-data text-xs text-blue hover:underline"
             >
-              {zh ? "查看 usnistgov/oscal-content #338(暫停中)" : "usnistgov/oscal-content #338 (on hold)"} &rarr;
+              {zh ? "查看 usnistgov/oscal-content #338(等待 NIST 審查)" : "usnistgov/oscal-content #338 (awaiting NIST review)"} &rarr;
             </a>
           </div>
         </div>
@@ -171,7 +171,7 @@ export default async function NistAiRmfPage({
       <Reveal delay={0.16}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
           <StatCell label="Corpus" value={String(stats.ruleCount)} unit="" note={zh ? "目前規則總數" : "rules in corpus"} valueColor="blue" />
-          <StatCell label="Subcategories" value="16" unit="" note={zh ? "跨 GV / MP / MS / MG" : "across GV / MP / MS / MG"} />
+          <StatCell label="Subcategories" value="25" unit="" note={zh ? "跨 GV / MP / MS / MG" : "across GV / MP / MS / MG"} />
           <StatCell label="Functions" value="4" unit="" note={zh ? "GOVERN / MAP / MEASURE / MANAGE 皆有規則" : "all of GOVERN / MAP / MEASURE / MANAGE"} />
           <StatCell label="License" value="MIT" unit="" note={zh ? "永久免費,可 fork" : "Forever free, forkable"} />
         </div>
@@ -346,22 +346,22 @@ export default async function NistAiRmfPage({
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh ? (
             <>
-              NIST 有幾條和 AI agent 安全相關的公開工作:CAISI 關於 AI agent 系統安全的資訊徵詢(RFI,docket NIST-2025-0035)、COSAiS 為單一 agent 與多 agent 系統制定的 SP 800-53 控制 overlay,以及 NCCoE 的 Software and SI Agent Identity and Authorization 專案。ATR 是獨立的開源專案,NIST 沒有選定、審查或背書 ATR。
+              NIST 有幾條和 AI agent 安全相關的公開工作:CAISI 關於 AI agent 系統安全的資訊徵詢(RFI,docket NIST-2025-0035)、COSAiS 為單一 agent 與多 agent 系統制定的 SP 800-53 控制 overlay,以及 NCCoE 的 Software and SI Agent Identity and Authorization 專案。ATR 是獨立的開源專案,不參與這些工作;NIST 沒有選定或背書 ATR。
             </>
           ) : (
             <>
-              NIST has several public lines of work on AI agent security: CAISI&rsquo;s request for information on securing AI agent systems (docket NIST-2025-0035), the COSAiS SP 800-53 control overlays for single-agent and multi-agent systems, and the NCCoE Software and SI Agent Identity and Authorization project. ATR is an independent open-source project. NIST has not selected, reviewed, or endorsed it.
+              NIST has several public lines of work on AI agent security: CAISI&rsquo;s request for information on securing AI agent systems (docket NIST-2025-0035), the COSAiS SP 800-53 control overlays for single-agent and multi-agent systems, and the NCCoE Software and SI Agent Identity and Authorization project. ATR is an independent open-source project with no role in this work. NIST has not selected or endorsed it.
             </>
           )}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (
             <>
-              這份 mapping 照「量測優先」的紀律做:對應到一個 subcategory 不該只是一句斷言,而該附帶可重現的量測證據。能量到的就標數字,並註明 lane 與限制;量不到的就不宣稱。
+              本頁的對應是以 LLM 協助起草的理由說明(見方法論),是關聯性的主張,不是量測結果。偵測效能另外量測。
             </>
           ) : (
             <>
-              The mapping follows a measurement-first rule: a claim to serve a subcategory should come with a reproducible measurement, not an assertion. What can be measured gets a number, stated with its lane and its limits; what cannot be measured is not claimed.
+              The mappings on this page are rationales drafted with LLM help (see Methodology). They are claims about relevance, not measurements. Detection performance is measured separately.
             </>
           )}
         </p>
@@ -394,10 +394,10 @@ export default async function NistAiRmfPage({
             <span className="text-blue font-data text-xs pt-[5px]">→</span>
             <span>
               {zh
-                ? "Benchmark 數字分 lane 報告,並附 closed-book 與樣本內的說明:見 README 的 Evaluation 段 "
-                : "Benchmark figures are reported per lane, with closed-book and in-sample caveats, in the README Evaluation section "}
+                ? "Benchmark 數字分 lane 報告,並附 closed-book 與樣本內的說明:"
+                : "Benchmark figures, reported per lane with closed-book and in-sample caveats: "}
               <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules#8-evaluation" target="_blank" rel="noopener noreferrer" className="text-blue underline-offset-4 hover:underline">
-                README §8
+                README §8 Evaluation
               </a>
               {" · DOI 10.5281/zenodo.19178002"}
             </span>

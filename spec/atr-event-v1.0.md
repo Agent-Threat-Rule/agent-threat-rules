@@ -105,7 +105,7 @@ All conformant engines MUST emit these fields on every event.
 | Field | Type | Description |
 |---|---|---|
 | `evidence.observation_id` | UUID | Identifier for cross-reference into OSCAL `observation` records. Same as `atr.event_id` recommended unless an existing system has its own. |
-| `evidence.signature` | base64 ed25519 | Signature over the canonical JSON encoding of this event. Signed by the engine's deployment-time key. Intended for evidence chains such as EU AI Act Article 50 records and OSCAL-based audit pipelines. May be omitted in `dev_mode` deployments. |
+| `evidence.signature` | base64 ed25519 | Signature over the canonical JSON encoding of this event. Signed by the engine's deployment-time key. Intended for evidence chains such as EU AI Act record-keeping and OSCAL-based audit pipelines. May be omitted in `dev_mode` deployments. |
 | `evidence.signature_key_id` | string | Identifier of the signing key. SHOULD reference a key registered with the deployer's CA. |
 | `evidence.upstream_chain` | array \| null | When this event is part of a multi-agent chain (A2A), the upstream event IDs that led to this detection. Enables forensic chain reconstruction. |
 
@@ -136,7 +136,8 @@ is known).
 
 The `agent.identity_assertion` field holds a reference to the identity
 assertion that authorised the agent, written `<issuer>#<assertion id>`
-(for a JWT, its `iss` and `jti`). It never holds the assertion itself:
+(for a JWT, its `iss` and `jti`, or a SHA-256 digest of the token when it
+has no `jti`). It never holds the assertion itself:
 an assertion is a bearer credential, and the Forbidden fields section
 below rules out raw tokens. The IETF AI agent auth drafts
 (`draft-klrc-aiagent-auth-00`, `draft-ni-a2a-ai-agent-security-requirements-01`)
