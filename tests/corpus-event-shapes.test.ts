@@ -397,6 +397,23 @@ describe("fieldCoverage — 'clean' must never quietly mean 'never looked at'", 
     expect(fieldCoverage([semantic("L", { fallback_method: "pattern" })])).toEqual([]);
   });
 
+  it("calls a rule that declares no condition field zero-measurement, whatever its method", () => {
+    const empty = (id: string, conditions: unknown, method?: string): RuleLike => ({
+      id,
+      detection: {
+        condition: "any",
+        conditions,
+        ...(method === undefined ? {} : { method, semantic: { fallback_method: "pattern" } }),
+      },
+    });
+    // A pattern fallback with nothing in it is no fallback at all.
+    for (const r of [empty("M", []), empty("N", {}), empty("O", [], "semantic")]) {
+      const [c] = fieldCoverage([r]);
+      expect(c?.zeroMeasurement, r.id).toBe(true);
+      expect(c?.method, r.id).toBe(null);
+    }
+  });
+
   it("reads both the array and the named-map condition formats", () => {
     const named: RuleLike = {
       id: "G",

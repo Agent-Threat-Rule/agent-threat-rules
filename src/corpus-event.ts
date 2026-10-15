@@ -460,19 +460,22 @@ export function conditionFields(rule: RuleLike): readonly string[] {
  *
  *     trace       null unless the event carries a span DAG; no shape carries one
  *     behavioral  null for every event; a metric window needs a streaming path
- *     signature   whole event.fields values against hashes or exact strings
  *     semantic    null unless detection.semantic.fallback_method is 'pattern';
  *                 the judge runs only in evaluateAsync()
+ *     signature   a match only when a whole event.fields value equals an
+ *                 indicator (a hash, or an exact string)
  *
- * Such a rule scores 0 on every sample whatever its conditions say, so its 0 is
- * not a measurement.
+ * The first three score 0 on every sample whatever their conditions say, so
+ * their 0 is not a measurement. A signature rule fires on a sample only when the
+ * sample IS one of its indicator values, which says nothing about its precision
+ * on real traffic. It is counted with them; that errs toward reporting less as
+ * measured, never more.
  *
  * The comparisons are the engine's, character for character (`method ??
- * 'pattern'`, `=== 'pattern'`), with no trimming or case folding: neither the
- * loader nor tests/validate-rules.ts checks fallback_method, and a predicate
- * that read "Pattern" as "pattern" would call a rule measured that the engine
- * never runs. tests/semantic-method-coverage.test.ts asks a real engine about
- * each variant instead of trusting this list.
+ * 'pattern'`, `=== 'pattern'`), with no trimming or case folding. A predicate
+ * more lenient than the engine, one that read "Pattern" as "pattern", would call
+ * a rule measured that the engine never runs. tests/semantic-method-coverage.test.ts
+ * asks a real engine about each variant instead of trusting this list.
  */
 export type SyncBlindMethod = "trace" | "behavioral" | "signature" | "semantic-no-pattern-fallback";
 
@@ -494,8 +497,8 @@ const SYNC_BLIND_REASONS: Readonly<Record<SyncBlindMethod, string>> = Object.fre
     "method: behavioral — the synchronous evaluateRule returns null unconditionally; " +
     "a metric window needs a streaming path",
   signature:
-    "method: signature — indicators match whole event.fields values against hashes or " +
-    "exact strings, which a text corpus does not exercise",
+    "method: signature — an indicator matches only a whole event.fields value equal to " +
+    "it (a hash or an exact string), which a benign text corpus does not exercise",
   "semantic-no-pattern-fallback":
     "method: semantic without fallback_method: pattern — the judge runs only in " +
     "evaluateAsync(), and the synchronous evaluateRule returns null for every input",
@@ -505,6 +508,10 @@ const SYNC_BLIND_REASONS: Readonly<Record<SyncBlindMethod, string>> = Object.fre
 export function syncBlindReason(method: SyncBlindMethod): string {
   return SYNC_BLIND_REASONS[method];
 }
+
+/** Why a rule that declares no condition field was not measured. */
+export const NO_CONDITION_FIELD_REASON =
+  "the rule declares no condition with a field, so no sample reaches any of its conditions";
 
 export interface FieldCoverage {
   readonly ruleId: string;
@@ -516,9 +523,10 @@ export interface FieldCoverage {
    */
   readonly method: SyncBlindMethod | null;
   /**
-   * True when NOTHING about this rule was measured — the method cannot run, or no
-   * declared field is measurable, or the rule ANDs its conditions so a single
-   * unmeasurable field makes the whole rule unable to fire.
+   * True when NOTHING about this rule was measured — the method cannot run, the
+   * rule declares no condition field, no declared field is measurable, or the
+   * rule ANDs its conditions so a single unmeasurable field makes the whole rule
+   * unable to fire.
    */
   readonly zeroMeasurement: boolean;
 }
@@ -530,7 +538,11 @@ export function fieldCoverage(rules: readonly RuleLike[]): readonly FieldCoverag
     const fields = conditionFields(rule);
     const unmeasured = fields.filter((f) => !isMeasurableField(f));
     const method = syncBlindMethod(rule);
-    if (unmeasured.length === 0 && method === null) continue;
+    // No condition field (`conditions: []` or `{}`, a pattern fallback with
+    // nothing in it) leaves a sample nothing to reach. Such a rule never
+    // matches under `condition: any`. `conditions: []` under `all` matches every
+    // sample instead, and a partial run is still charged for every hit it finds.
+    if (fields.length > 0 && unmeasured.length === 0 && method === null) continue;
     const expr = (rule.detection?.condition ?? "any").toLowerCase();
     const anyOf = expr === "any" || expr === "or";
     const measurable = fields.length - unmeasured.length;
@@ -794,12 +806,16 @@ export function skillPathBlocker(rule: RuleLike): SkillPathGap | null {
   const blind = syncBlindMethod(rule);
   if (blind !== null) return gap(`method-${blind}`, SKILL_PATH_METHOD_REASONS[blind]);
 
-  // scan_target skill/both is exempt from the compound gate entirely.
-  if (scanTarget !== null && SKILL_NATIVE_SCAN_TARGETS.has(scanTarget)) return null;
-
+  // Before the exemption below: with no condition there is nothing to match,
+  // whether or not the compound gate applies. (`conditions: []` under `all`
+  // matches every document instead; listing it here errs toward unmeasured.)
   if (attainable === 0) {
     return gap("no-conditions", "the rule declares no conditions the engine can match");
   }
+
+  // scan_target skill/both is exempt from the compound gate entirely.
+  if (scanTarget !== null && SKILL_NATIVE_SCAN_TARGETS.has(scanTarget)) return null;
+
   if (attainable < required) {
     return gap(
       "compound-gate-unreachable",

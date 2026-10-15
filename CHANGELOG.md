@@ -37,14 +37,15 @@ All notable changes to ATR will be documented in this file.
   `method: semantic` unless `detection.semantic.fallback_method` is exactly
   `pattern`; the judge runs only in `evaluateAsync()`. `fieldCoverage()`
   named trace, behavioral and signature as methods it cannot run, but not
-  this one, so such a rule was written down as `fp_count: 0,
-  partial_measurement: false`, and `scripts/gate-action-eligibility.ts`
-  allowed it `terminate` at maturity `stable` and `degrade` at `test`. It is
-  now recorded partial and capped at `observe`. No rule on main was in this
-  state (every semantic rule falls back to pattern), so the committed
-  evidence is unchanged. The skill-path check now uses the same predicate; it
-  used to read `fallback_method: Pattern` as `pattern`, which the engine does
-  not.
+  this one, and it skipped a rule with no condition field, such as a pattern
+  fallback with nothing in it. Either was written down as `fp_count: 0,
+  partial_measurement: false`, which `scripts/gate-action-eligibility.ts`
+  graded `terminate` at maturity `stable` and `degrade` at `test`. Both are
+  now recorded partial and capped at `observe`. No rule on main is in either
+  state, so the committed evidence is unchanged. The skill-path check uses
+  the same predicate; it used to read `fallback_method: Pattern` as
+  `pattern`, which the engine does not, and it exempted a
+  `scan_target: both` rule with no conditions.
 - **NIST-related statements corrected across the docs and the website.**
   Pages described a NIST CAISI dialogue and position paper that did not
   happen, an RFI response ATR never filed, an OSCAL "Path 1" acceptance,

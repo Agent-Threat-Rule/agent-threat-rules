@@ -17,16 +17,24 @@
  * scripts/gate-action-eligibility.ts read that as a clean sweep: TERMINATE at
  * maturity stable, DEGRADE at test.
  *
- * No rule on main was in that state when this was written — every semantic
- * rule fell back to pattern — and nothing kept one from getting there: neither
- * the loader nor tests/validate-rules.ts checks fallback_method, so deleting one
- * line of a rule was enough.
+ * The same went for a rule that names a pattern fallback and gives it no
+ * condition: fieldCoverage() skipped a rule with no condition field.
+ *
+ * No rule on main was in either state when this was written; every semantic
+ * rule fell back to pattern. A new rule in that state is stopped by
+ * scripts/check-rules-safety.ts, which requires its own true positives to fire
+ * on the synchronous path. An edit to an existing rule is not: with
+ * ATR-2026-02846 set to fallback_method: none, the safety gate (which checks a
+ * modified rule for new benign false positives only), npm run validate and the
+ * whole test suite passed.
  *
  * WHAT IS PINNED
  *
  *  1. The coverage predicates agree with the engine, variant by variant. The
  *     engine is asked (a real ATREngine on the real corpus shapes); its
- *     behaviour is not restated here.
+ *     behaviour is not restated here. One disagreement is allowed, and listed:
+ *     a signature rule is counted unmeasured although a sample equal to one of
+ *     its indicators would fire it, which is the safe direction.
  *  2. The evidence the gate writes marks such a rule partial, and the action
  *     gate reading that evidence caps it at observe.
  *  3. The delta re-measure recomputes the flag rather than carrying forward the
@@ -36,8 +44,8 @@
  *
  * A semantic rule that does fall back to pattern is measured on its fallback.
  * With a judge configured the judge decides, and the fallback runs only when the
- * judge is unavailable, so that number describes the fallback and not the
- * judge. Which tier such a rule may earn is a policy question left open; the
+ * judge is unavailable or fails, so that number describes the fallback and not
+ * the judge. Which tier such a rule may earn is a policy question left open; the
  * control cases below pin today's behaviour (measured like a pattern rule) so
  * that changing it has to be deliberate.
  */
@@ -110,12 +118,24 @@ interface RuleSpec {
   readonly method: readonly string[];
   /** The one regex on `content`. */
   readonly pattern: string;
+  /** Lines under `detection:` that replace the one-regex `conditions:` block. */
+  readonly conditions?: readonly string[];
   readonly maturity?: string;
   readonly actions?: readonly string[];
   readonly scanTarget?: string;
 }
 
-/** A schema-valid rule the real engine loads, with one regex condition on `content`. */
+function oneRegexOnContent(pattern: string): readonly string[] {
+  return [
+    "  conditions:",
+    "    - field: content",
+    "      operator: regex",
+    `      value: '${pattern}'`,
+    "      description: probe",
+  ];
+}
+
+/** A schema-valid rule the real engine loads, by default with one regex condition on `content`. */
 function ruleYaml(spec: RuleSpec): string {
   return [
     `title: method probe ${spec.id}`,
@@ -141,11 +161,7 @@ function ruleYaml(spec: RuleSpec): string {
     ...spec.method,
     "  condition: any",
     "  false_positives: []",
-    "  conditions:",
-    "    - field: content",
-    "      operator: regex",
-    `      value: '${spec.pattern}'`,
-    "      description: probe",
+    ...(spec.conditions ?? oneRegexOnContent(spec.pattern)),
     "response:",
     `  actions: [${(spec.actions ?? ["alert"]).join(", ")}]`,
     "test_cases:",
@@ -168,7 +184,19 @@ interface Variant {
   readonly id: string;
   readonly label: string;
   readonly method: readonly string[];
+  readonly conditions?: readonly string[];
 }
+
+/** A signature indicator equal to the whole sample, on a field the corpus shapes fill. */
+const INDICATOR_EQUAL_TO_SAMPLE: readonly string[] = [
+  "  method: signature",
+  "  signature:",
+  "    match_logic: any",
+  "    indicators:",
+  "      - type: string",
+  "        target_field: user_input",
+  `        value: ${SENTINEL}`,
+];
 
 const VARIANTS: readonly Variant[] = [
   { id: "ATR-2026-96001", label: "no method (pattern by default)", method: [] },
@@ -200,9 +228,34 @@ const VARIANTS: readonly Variant[] = [
     method: ["  method: Semantic", ...semanticBlock("none")],
   },
   { id: "ATR-2026-96009", label: "method: behavioral", method: ["  method: behavioral"] },
-  { id: "ATR-2026-96010", label: "method: signature", method: ["  method: signature"] },
+  { id: "ATR-2026-96010", label: "method: signature, no indicators", method: ["  method: signature"] },
   { id: "ATR-2026-96011", label: "method: trace", method: ["  method: trace"] },
+  {
+    id: "ATR-2026-96012",
+    label: "semantic, fallback_method: pattern, conditions: [] (a fallback with nothing in it)",
+    method: ["  method: semantic", ...semanticBlock("pattern")],
+    conditions: ["  conditions: []"],
+  },
+  {
+    id: "ATR-2026-96013",
+    label: "semantic, fallback_method: pattern, conditions: {}",
+    method: ["  method: semantic", ...semanticBlock("pattern")],
+    conditions: ["  conditions: {}"],
+  },
+  { id: "ATR-2026-96014", label: "pattern, conditions: []", method: [], conditions: ["  conditions: []"] },
+  {
+    id: "ATR-2026-96015",
+    label: "method: signature, an indicator equal to the whole sample",
+    method: INDICATOR_EQUAL_TO_SAMPLE,
+  },
 ];
+
+/**
+ * Variants the predicates call unmeasured although the engine fires them on a
+ * corpus shape. The safe direction, kept on a list so that it stays a decision:
+ * a signature rule fires on a sample only when the sample IS an indicator value.
+ */
+const OVER_REPORTED: ReadonlySet<string> = new Set(["ATR-2026-96015"]);
 
 describe("the method axis mirrors src/engine.ts rather than restating it", () => {
   let engine: ATREngine;
@@ -212,8 +265,12 @@ describe("the method axis mirrors src/engine.ts rather than restating it", () =>
     const dir = tempDir("atr-method-oracle-");
     for (const v of VARIANTS) {
       // scan_target both: the skill path exempts it from the compound gate, so
-      // the only thing that can stop it there is the method.
-      put(dir, `${v.id}.yaml`, ruleYaml({ id: v.id, method: v.method, pattern: SENTINEL, scanTarget: "both" }));
+      // what can stop it there is the method or the conditions themselves.
+      put(
+        dir,
+        `${v.id}.yaml`,
+        ruleYaml({ id: v.id, method: v.method, pattern: SENTINEL, conditions: v.conditions, scanTarget: "both" }),
+      );
     }
     engine = new ATREngine({ rulesDir: dir });
     await engine.loadRules();
@@ -226,14 +283,18 @@ describe("the method axis mirrors src/engine.ts rather than restating it", () =>
     expect(rules.map((r) => r.id).sort()).toEqual(VARIANTS.map((v) => v.id));
   });
 
-  it("fieldCoverage calls a rule zero-measurement exactly when the engine cannot fire it on any corpus shape", () => {
+  it("fieldCoverage calls a rule zero-measurement exactly when the engine cannot fire it on any corpus shape, outside the listed over-reports", () => {
     const fired = matchedRuleIds(engine, SENTINEL);
     // Not vacuous: both outcomes occur.
     expect(fired.size).toBeGreaterThan(0);
     expect(fired.size).toBeLessThan(rules.length);
     for (const rule of rules) {
       const zero = fieldCoverage([rule]).some((c) => c.zeroMeasurement);
-      expect(zero, `${label(rule.id)}: fired=${fired.has(rule.id)}`).toBe(!fired.has(rule.id));
+      const message = `${label(rule.id)}: fired=${fired.has(rule.id)}`;
+      // A listed variant must still be over-reported, so the list goes stale
+      // loudly if the predicate is ever made exact there.
+      if (OVER_REPORTED.has(rule.id)) expect(zero && fired.has(rule.id), message).toBe(true);
+      else expect(zero, message).toBe(!fired.has(rule.id));
     }
   });
 
@@ -257,6 +318,7 @@ const FIRES_ON_BENIGN = "(?i)import random";
 const STABLE_NO_FALLBACK = "ATR-2026-96101";
 const TEST_NO_FALLBACK = "ATR-2026-96102";
 const TEST_PATTERN_FALLBACK = "ATR-2026-96103";
+const STABLE_EMPTY_FALLBACK = "ATR-2026-96104";
 
 describe("a semantic rule without a pattern fallback is recorded partial and capped at observe", () => {
   let rulesDir: string;
@@ -286,6 +348,15 @@ describe("a semantic rule without a pattern fallback is recorded partial and cap
         id: TEST_PATTERN_FALLBACK,
         method: ["  method: semantic", ...semanticBlock("pattern")],
         pattern: FIRES_ON_BENIGN,
+      },
+      {
+        // Names a pattern fallback and gives it nothing to run.
+        id: STABLE_EMPTY_FALLBACK,
+        method: ["  method: semantic", ...semanticBlock("pattern")],
+        pattern: FIRES_ON_BENIGN,
+        conditions: ["  conditions: []"],
+        maturity: "stable",
+        actions: ["kill_agent", "alert"],
       },
     ];
     for (const s of specs) put(root, `rules/${s.id}.yaml`, ruleYaml(s));
@@ -320,7 +391,7 @@ describe("a semantic rule without a pattern fallback is recorded partial and cap
   });
 
   it("writes partial_measurement: true for the rules the synchronous path cannot run", () => {
-    for (const id of [STABLE_NO_FALLBACK, TEST_NO_FALLBACK]) {
+    for (const id of [STABLE_NO_FALLBACK, TEST_NO_FALLBACK, STABLE_EMPTY_FALLBACK]) {
       expect(doc.rules[id], id).toMatchObject({ fp_count: 0, partial_measurement: true });
     }
   });
@@ -332,11 +403,10 @@ describe("a semantic rule without a pattern fallback is recorded partial and cap
   it("the action gate reading that evidence grants them observe and nothing more", () => {
     const violations = findViolations(readRules(rulesDir), doc);
     const byId = new Map(violations.map((v) => [v.id, v]));
-    expect([...byId.keys()].sort()).toEqual([STABLE_NO_FALLBACK, TEST_NO_FALLBACK]);
-    expect(byId.get(STABLE_NO_FALLBACK)).toMatchObject({
-      unearned: ["kill_agent"],
-      maxTier: ACTION_TIERS.OBSERVE,
-    });
+    expect([...byId.keys()].sort()).toEqual([STABLE_NO_FALLBACK, TEST_NO_FALLBACK, STABLE_EMPTY_FALLBACK]);
+    for (const id of [STABLE_NO_FALLBACK, STABLE_EMPTY_FALLBACK]) {
+      expect(byId.get(id), id).toMatchObject({ unearned: ["kill_agent"], maxTier: ACTION_TIERS.OBSERVE });
+    }
     expect(byId.get(TEST_NO_FALLBACK)).toMatchObject({
       unearned: ["block_tool"],
       maxTier: ACTION_TIERS.OBSERVE,
@@ -378,6 +448,7 @@ describe("the delta re-measure does not carry a stale partial flag forward", () 
   let root: string;
   let code: number;
   let after: { rules: Record<string, { fp_count: number; partial_measurement: boolean }> };
+  let report: { measured_on_added_only: number; measured_in_full: readonly { id: string }[] };
 
   beforeAll(async () => {
     const dir = tempDir("atr-semantic-remeasure-");
@@ -442,15 +513,21 @@ describe("the delta re-measure does not carry a stale partial flag forward", () 
     git(root, "commit", "--quiet", "-m", "evidence");
 
     appendFileSync(join(root, ARXIV), record("More zebracorn, in the wild.", "2410.11111"));
+    const reportPath = join(dir, "attribution.json");
     code = await runRemeasure(
-      { baseRef: "HEAD", emitMeasurement: evidence, report: null, maxFullRules: DEFAULT_MAX_FULL_RULES },
+      { baseRef: "HEAD", emitMeasurement: evidence, report: reportPath, maxFullRules: DEFAULT_MAX_FULL_RULES },
       defaultRemeasureDeps(root),
     );
     after = JSON.parse(readFileSync(evidence, "utf-8")) as typeof after;
+    report = JSON.parse(readFileSync(reportPath, "utf-8")) as typeof report;
   }, 120_000);
 
-  it("re-measures on the delta and succeeds", () => {
+  it("re-measures both rules on the added samples only, and succeeds", () => {
     expect(code).toBe(REMEASURE_OK);
+    // Both detections are unchanged, so both take the delta branch: the flag
+    // below comes from re-reading the rule, not from measuring it in full.
+    expect(report.measured_in_full).toEqual([]);
+    expect(report.measured_on_added_only).toBe(2);
     expect(ruleIdOf(root, `rules/a/${DELTA_PATTERN}.yaml`)).toBe(DELTA_PATTERN);
     expect(after.rules[DELTA_PATTERN]).toMatchObject({ fp_count: 2, partial_measurement: false });
   });
