@@ -990,7 +990,7 @@ No rule content changed and no threshold was loosened in any of the above.
 - Wild scan (96K): 1.35% flag rate, 751 confirmed malware
 - OWASP Agentic Top 10: 10/10 coverage
 - MITRE ATLAS: 100/113 rules mapped
-- SAFE-MCP: 91.8% technique coverage
+- SAFE-MCP: technique coverage figure (withdrawn 2026-10: it was not backed by rule-level data; see docs/SAFE-MCP-MAPPING.md)
 - Avg scan latency: 14ms per file
 
 ### Ecosystem

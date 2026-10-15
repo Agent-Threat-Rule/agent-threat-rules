@@ -16,7 +16,6 @@ AI Agent 威脅偵測規則的開放格式
 [![Rules](https://img.shields.io/badge/rules-833-blue?style=flat-square)](#5-specification)
 [![Categories](https://img.shields.io/badge/categories-10-blue?style=flat-square)](#7-coverage)
 [![OWASP Agentic](https://img.shields.io/badge/OWASP_Agentic_Top_10-10%2F10-brightgreen?style=flat-square)](#7-coverage)
-[![SAFE-MCP](https://img.shields.io/badge/SAFE--MCP-91.8%25-brightgreen?style=flat-square)](#7-coverage)
 [![Sponsor](https://img.shields.io/badge/sponsor-Open%20Collective-7FADF2?style=flat-square&logo=opencollective&logoColor=white)](https://opencollective.com/agent-threat-rules)
 
 </div>
@@ -408,7 +407,7 @@ ATR maps its rules onto established frameworks so adopters can answer "we deploy
 | Framework | Coverage | Mapping document |
 |---|---|---|
 | [OWASP Agentic Top 10 (2026)](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) | 10/10 categories, 1,179 mappings across all 683 tagged rules | [docs/OWASP-AGENTIC-MAPPING.md](docs/OWASP-AGENTIC-MAPPING.md) |
-| [SAFE-MCP (OpenSSF)](https://github.com/safe-agentic-framework/safe-mcp) | 78/85 techniques (91.8%) | [docs/SAFE-MCP-MAPPING.md](docs/SAFE-MCP-MAPPING.md) |
+| [SAF-MCP](https://github.com/secure-agentic-framework/saf-mcp) (Framework Model v2) | 55 of 78 active techniques have at least one reviewed ATR rule (partial or adjacent); candidate mappings, not validated by SAF | [docs/SAFE-MCP-MAPPING.md](docs/SAFE-MCP-MAPPING.md) |
 | [OWASP LLM Top 10 (2025)](https://owasp.org/www-project-top-10-for-large-language-model-applications/) | Per-rule references | Per-rule `references.owasp_llm` field |
 | [MITRE ATLAS](https://atlas.mitre.org/) | Per-rule references | Per-rule `references.mitre_atlas` field |
 | NIST AI RMF (community OSCAL catalog) | 4/4 functions covered, community catalog (NIST not endorsing) | [Agent-Threat-Rule/ai-rmf-oscal-catalog](https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog) |
@@ -955,7 +954,7 @@ ATR is released under the [MIT License](LICENSE). All contributions are MIT-lice
 
 ## 17. Acknowledgments
 
-ATR's design draws on prior work in: [Sigma](https://github.com/SigmaHQ/sigma) (SIEM detection format), [YARA](https://github.com/VirusTotal/yara) (malware signature format), [OWASP LLM Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/), [OWASP Agentic Top 10](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/), [MITRE ATLAS](https://atlas.mitre.org/), [NVIDIA garak](https://github.com/NVIDIA/garak), [Lakera PINT](https://github.com/lakeraai/pint-benchmark), [Meta LlamaFirewall](https://ai.meta.com/research/publications/llamafirewall-an-open-source-guardrail-system-for-building-secure-ai-agents/), and [SAFE-MCP (OpenSSF)](https://github.com/safe-agentic-framework/safe-mcp).
+ATR's design draws on prior work in: [Sigma](https://github.com/SigmaHQ/sigma) (SIEM detection format), [YARA](https://github.com/VirusTotal/yara) (malware signature format), [OWASP LLM Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/), [OWASP Agentic Top 10](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/), [MITRE ATLAS](https://atlas.mitre.org/), [NVIDIA garak](https://github.com/NVIDIA/garak), [Lakera PINT](https://github.com/lakeraai/pint-benchmark), [Meta LlamaFirewall](https://ai.meta.com/research/publications/llamafirewall-an-open-source-guardrail-system-for-building-secure-ai-agents/), and [SAF-MCP](https://github.com/secure-agentic-framework/saf-mcp).
 
 The 2026-04 ecosystem-wide skill scan was made possible by the maintainers of OpenClaw, Skills.sh, Hermes Agent, and ClawHub publishing their registries openly.
 
@@ -972,7 +971,7 @@ The 2026-04 ecosystem-wide skill scan was made possible by the maintainers of Op
 - [OWASP Agentic Top 10 (2026)](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) — Taxonomy of agentic-application risk categories.
 - [OWASP LLM Top 10 (2025)](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — Taxonomy of LLM-application risk categories.
 - [MITRE ATLAS](https://atlas.mitre.org/) — Adversarial-threat landscape for AI systems.
-- [SAFE-MCP (OpenSSF)](https://github.com/safe-agentic-framework/safe-mcp) — Secure-MCP framework, technique catalog.
+- [SAF-MCP](https://github.com/secure-agentic-framework/saf-mcp) — Secure Agentic Framework for Model Context Protocol, technique catalog.
 - [Sigma](https://github.com/SigmaHQ/sigma) — Generic detection rule format for SIEMs (architectural precedent).
 - [YARA](https://github.com/VirusTotal/yara) — Pattern-matching language for malware (architectural precedent).
 - Five Eyes joint guidance on AI agent deployment (2026-05-01): CISA + NSA + UK NCSC + ASD + CCCS + NZ NCSC — [CyberScoop coverage](https://cyberscoop.com/cisa-nsa-five-eyes-guidance-secure-deployment-ai-agents/).

@@ -589,7 +589,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog mt-10 md:mt-12">
               {[
                 { name: "OWASP Agentic", score: "10/10", desc: zh ? "完整覆蓋" : "Full coverage" },
-                { name: "SAFE-MCP", score: "91.8%", desc: zh ? "78/85 技術" : "78/85 techniques" },
+                { name: "SAF-MCP", score: stats.safeMcp, desc: zh ? "有效技術(候選對照,未經 SAF 驗證)" : "active techniques (candidate mappings, not SAF-validated)" },
                 { name: "OWASP AST10", score: "7/10", desc: zh ? "3 個是流程層級" : "3 are process-level" },
                 { name: "PINT-format F1", score: String(stats.pintF1), desc: zh ? `自建 ${stats.pintSamples} 樣本語料(非 Lakera 官方 PINT)` : `self-built ${stats.pintSamples}-sample corpus (not Lakera's official PINT)` },
               ].map((s) => (

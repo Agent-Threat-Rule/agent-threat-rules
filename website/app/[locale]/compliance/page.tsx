@@ -11,7 +11,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: "Compliance — ATR",
   description:
-    "Regulation says you must manage AI agent risk. ATR maps every rule to the framework it answers to — OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, ISO 42001, SAFE-MCP — so compliance becomes a detection that runs, not a document that asserts.",
+    "Regulation says you must manage AI agent risk. ATR maps every rule to the framework it answers to — OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, ISO 42001, plus candidate SAF-MCP technique mappings — so compliance becomes a detection that runs, not a document that asserts.",
 };
 
 // Per-rule coverage figures are enforced in CI by
@@ -63,10 +63,10 @@ function buildFrameworks(ruleCount: number) {
       link: null,
     },
     {
-      id: "SAFE-MCP",
-      coverage: "78/85 techniques",
-      desc_en: "Technique-level coverage: 78 of 85 SAFE-MCP techniques are covered by at least one rule (conservative lower bound; last fully enumerated at v1.0.0).",
-      desc_zh: "技術層級覆蓋：85 項 SAFE-MCP 技術中至少有一條規則覆蓋 78 項（保守下限，最後完整列舉於 v1.0.0）。",
+      id: "SAF-MCP",
+      coverage: "55/78 techniques",
+      desc_en: "Technique-level inventory: 55 of 78 active SAF Framework Model v2 techniques have at least one reviewed ATR rule (partial or adjacent). These are candidate mappings and have not been validated by SAF; SAF validates external mappings in its own registry.",
+      desc_zh: "技術層級清單：SAF Framework Model v2 的 78 項有效技術中，55 項至少有一條經審查的 ATR 規則對應（partial 或 adjacent）。屬候選對照，尚未經 SAF 驗證；是否驗證由 SAF 在自己的 registry 決定。",
       link: null,
     },
   ];
@@ -98,8 +98,8 @@ export default async function CompliancePage({
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-4">
           {zh
-            ? `每一條法規都說同一句話:你必須管理 AI agent 風險。它們沒說的是怎麼在真實成品上證明你做到了。ATR 的 ${stats.ruleCount} 條規則,每一條都帶有六個框架對應——OWASP LLM、OWASP Agentic、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001——合法性與 100% 覆蓋由 CI 強制。一條義務於是接上一個能在 SKILL.md、MCP tool 描述、agent config 上跑的偵測。SAFE-MCP 為技術層級對應(78/85)。所有 metadata 皆 MIT 授權、可下載、可審核。`
-            : `Every regulation says the same thing: you must manage AI agent risk. None of them say how to prove it on a real artifact. Each of ATR's ${stats.ruleCount} rules carries six framework mappings — OWASP LLM, OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, and ISO 42001 — with validity and 100% coverage enforced in CI. Each obligation thus connects to a detection that runs on a SKILL.md file, an MCP tool description, an agent config. SAFE-MCP is mapped at the technique level (78/85). All metadata is MIT-licensed, downloadable, and auditable.`}
+            ? `每一條法規都說同一句話:你必須管理 AI agent 風險。它們沒說的是怎麼在真實成品上證明你做到了。ATR 的 ${stats.ruleCount} 條規則,每一條都帶有六個框架對應——OWASP LLM、OWASP Agentic、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001——合法性與 100% 覆蓋由 CI 強制。一條義務於是接上一個能在 SKILL.md、MCP tool 描述、agent config 上跑的偵測。SAF-MCP 為技術層級候選對照(${stats.safeMcp},未經 SAF 驗證)。所有 metadata 皆 MIT 授權、可下載、可審核。`
+            : `Every regulation says the same thing: you must manage AI agent risk. None of them say how to prove it on a real artifact. Each of ATR's ${stats.ruleCount} rules carries six framework mappings — OWASP LLM, OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, and ISO 42001 — with validity and 100% coverage enforced in CI. Each obligation thus connects to a detection that runs on a SKILL.md file, an MCP tool description, an agent config. SAF-MCP is mapped at the technique level as candidate mappings (${stats.safeMcp}, not validated by SAF). All metadata is MIT-licensed, downloadable, and auditable.`}
         </p>
       </Reveal>
 
