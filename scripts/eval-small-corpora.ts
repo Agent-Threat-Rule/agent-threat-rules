@@ -196,6 +196,11 @@ async function main(): Promise<void> {
   for (const source of sources) {
     const corpus = loadCorpus(source);
     if (corpus === null) continue;
+    if (corpus.attacks.length === 0) {
+      // A measurement of 0 attacks would publish 0.0% for a corpus nobody ran.
+      console.error(`::warning::${source}: corpus has no attacks — skipping`);
+      continue;
+    }
     await evalCorpus(source, corpus, engine, enforce);
   }
 

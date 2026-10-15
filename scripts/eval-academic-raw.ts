@@ -240,6 +240,11 @@ async function fetchSource(source: SourceDef): Promise<FetchResult | null> {
       const category = categoryIdx >= 0 ? (row[categoryIdx] ?? 'unknown').trim() : 'unknown';
       prompts.push({ text, category });
     }
+    if (prompts.length === 0) {
+      // Parsed, but nothing usable: a measurement of 0 prompts would publish 0.0%.
+      console.warn(`::warning::${source.id}: no prompts parsed from ${rows.length - 1} rows, skipping`);
+      return null;
+    }
     return { prompts, fetchedAt: new Date().toISOString(), contentLength: csv.length };
   } catch (err) {
     console.warn(
