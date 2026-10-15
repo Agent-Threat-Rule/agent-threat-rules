@@ -12,8 +12,8 @@ What it checks (the load-bearing conversion guarantees):
   3. The ATT&CK join key round-trips: every enterprise ATT&CK id in the source
      ATR rule's references.mitre_attack appears as `attack.txxxx` in Sigma tags,
      and no bogus attack.* tag is minted from an ATLAS id.
-  4. The near-universal leading `(?i)` in ATR regexes is turned into the Sigma
-     `re|i` modifier, not left inline.
+  4. ATR's default case-insensitive regex semantics become Sigma's `re|i`, while
+     the explicit `case_sensitive: true` opt-out remains case-sensitive.
   5. The detection field names survive verbatim (no data loss on the surface).
 """
 from __future__ import annotations
@@ -173,6 +173,37 @@ def test_case_insensitive_flag_becomes_re_i_modifier():
                     f"{rel} sel_{idx}: regex condition not emitted with re modifier: '{key}'"
                 )
     assert saw_re_i, "sample did not exercise the (?i) -> re|i path; sample is unrepresentative"
+
+
+def test_implicit_case_insensitivity_becomes_re_i_modifier():
+    """A real rule without (?i) must retain ATR's default case semantics."""
+    rel = "rules/prompt-injection/ATR-2026-02005-actor-never-breaks-character-roleplay-dan-style-.yaml"
+    atr, _, s, _, _ = _convert(rel)
+    source = atr["detection"]["conditions"][0]["value"]
+    assert not source.startswith("(?i)"), "regression fixture unexpectedly gained inline (?i)"
+    assert list(s["detection"]["sel_1"]) == ["content|re|i"]
+
+
+def test_case_sensitive_opt_out_stays_case_sensitive():
+    detection = {
+        "conditions": [
+            {"field": "content", "operator": "regex", "value": "Secret", "case_sensitive": True}
+        ]
+    }
+    selections, _, warnings = CONV.convert_conditions(detection)
+    assert selections["sel_1"] == {"content|re": "Secret"}
+    assert not warnings
+
+
+def test_case_sensitive_opt_out_overrides_inline_i_with_warning():
+    detection = {
+        "conditions": [
+            {"field": "content", "operator": "regex", "value": "(?is)Secret", "case_sensitive": True}
+        ]
+    }
+    selections, _, warnings = CONV.convert_conditions(detection)
+    assert selections["sel_1"] == {"content|re": "(?s)Secret"}
+    assert any("case_sensitive: true" in warning for warning in warnings)
 
 
 def test_detection_field_names_survive():

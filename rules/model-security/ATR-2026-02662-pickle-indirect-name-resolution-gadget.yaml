@@ -1,0 +1,231 @@
+title: "Pickle Payload Reaches an Execution Primitive Through an Indirect Name Resolver"
+id: ATR-2026-02662
+rule_version: 2
+status: experimental
+description: >
+  Detects a Python deserialization payload that never names an execution
+  primitive in its opcodes, because it calls a name RESOLVER instead:
+  pkgutil.resolve_name("os:system") returns os.system as a stack value, and the
+  second REDUCE calls that value. An opcode scanner sees only pkgutil.
+  resolve_name -- which is on nobody's blocklist -- and the string "os:system"
+  is inert data it does not analyse.
+  Mined from CVE-2026-3490 (picklescan universal blocklist bypass, CVSS 10.0),
+  which reports that EVERY entry in picklescan's _unsafe_globals can be reached
+  this way; importlib.import_module, operator.attrgetter and __import__ are the
+  same trick with a different resolver.
+  Two shapes are matched, chosen because neither occurs in writing ABOUT the
+  attack. First, the payload as bytes: the resolver name and the module:attr
+  target adjacent with NO quote character between them, which is what a pickle
+  stream looks like when a tool reads the file (the string is length-prefixed,
+  not quoted) and is exactly what advisory prose is not -- prose quotes the
+  argument. Second, the weaponisation source: a __reduce__ whose reduce tuple
+  names a resolver as its callable.
+  ATR-2026-00398 and ATR-2026-00433 cover the CALLER (pickle.loads(...),
+  torch.load(..., weights_only=False)); nothing covered the payload itself.
+author: "ATR Community (CVE sweep)"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: critical
+
+references:
+  cve:
+    - "CVE-2026-3490"
+  cwe:
+    - "CWE-502"
+    - "CWE-183"
+    - "CWE-693"
+  owasp_llm:
+    - "LLM03:2025"
+    - "LLM05:2025"
+  owasp_agentic:
+    - "ASI04:2026"
+    - "ASI05:2026"
+  mitre_attack:
+    - "T1027 - Obfuscated Files or Information"
+  mitre_atlas:
+    - "AML.T0010 - AI Supply Chain Compromise"
+  external:
+    - "https://github.com/mmaitre314/picklescan/security/advisories/GHSA-vvpj-8cmc-gx39"
+    - "https://www.vulncheck.com/advisories/picklescan-universal-blocklist-bypass-via-pkgutil-resolve-name"
+    - "https://nvd.nist.gov/vuln/detail/CVE-2026-3490"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires protection against exploitation of system vulnerabilities; this rule detects deserialization payloads engineered specifically to pass an opcode blocklist before executing."
+      strength: primary
+    - article: "10"
+      context: "Article 10 (data and data governance) covers the integrity of data and model artefacts an AI system loads; a pickle carrying an indirect execution gadget is an integrity failure of that artefact."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Malicious serialized artefacts are an identified AI supply-chain risk; this rule is the runtime countermeasure applied when the artefact crosses an agent tool boundary."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Recording blocklist-evading deserialization gadgets in the organizational AI risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by inspecting model and cache artefacts for execution gadgets before they are loaded."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented by alerting on the gadget rather than on the blocked function name the gadget was chosen to avoid."
+      strength: secondary
+
+tags:
+  category: model-security
+  subcategory: deserialization-gadget
+  scan_target: runtime
+  confidence: high
+  suppress_in_code_blocks: true
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '\bresolve_name[\x00-\x09\x0b-\x1f\x7f-\xff~]{1,24}\b(?:os|posix|nt|subprocess|builtins|__builtin__|pty|commands)\s{0,1}:\s{0,1}(?:system|popen\w{0,2}|exec\w{0,2}|eval|call|run|check_output|check_call|getoutput|spawn\w{0,3})\b'
+      description: "A pickle stream in which pkgutil.resolve_name is followed by a module:attribute target naming an execution primitive, separated ONLY by pickle framing bytes -- opcodes and length prefixes, i.e. control characters, high bytes, or the tilde stand-in this rule's test vectors use. rule_version 2 replaced the previous separator class (any 0-24 characters except newline and quote), which let ordinary prose through: a changelog saying 'reject resolve_name targets such as os:system', an advisory saying 'resolve_name with os:system', a markdown table cell, a YAML denylist, and a Traditional Chinese advisory all fired. Framing bytes cannot appear in prose, and a genuine protocol-4 pickle contains nothing else between the two strings."
+    - field: content
+      operator: regex
+      value: '(?:^|\n|\\n)[^-\n]{0,60}\breturn\s{0,4}\(\s{0,4}(?:\w{1,24}\.)?(?:resolve_name|import_module|attrgetter|__import__)\s{0,4},\s{0,4}\(?\s{0,4}["\x27](?:os|posix|nt|subprocess|builtins|__builtin__|pty|commands)(?:\s{0,1}[:.]\s{0,1}(?:system|popen\w{0,2}|exec\w{0,2}|eval|call|run|check_output|check_call|getoutput|spawn\w{0,3}))?["\x27]'
+      description: "A __reduce__ implementation whose reduce tuple names a name-resolution gadget as the callable AND passes a LITERAL string naming an execution primitive as its argument. The literal-argument requirement is what separates the gadget from the legitimate uses of the same callable: copyreg module pickling (return (import_module, (mod.__name__,))), a picklable attrgetter wrapper (return (attrgetter, (self.attr,))), a lazy loader (return (import_module, name)) and a multiprocessing reduction all pass a variable, not a hard-coded 'os:system'. The line must not begin with a dash, which keeps the rule off the removal side of a diff that DELETES the gadget."
+  false_positives:
+    - "ADVERSARIAL, 2026-08-24 refutation pass: rule_version 1 fired on 11 of 16 benign probes. Seven were security writing about CVE-2026-3490 with an UNQUOTED target -- changelog, advisory prose, denylist config, markdown table, ATR's own coverage note, slide notes, and a Traditional Chinese advisory. Four were legitimate reduce tuples: copyreg module pickling, a picklable attrgetter, a lazy loader, and a multiprocessing reduction. All eleven are now true_negatives."
+    - "Legitimate pkgutil.resolve_name / importlib.import_module use, which is what those functions exist for: entry-point loading, logging handler configuration, plugin registries, Django-style dotted settings. Twelve such samples were written and run during authoring; none matched, because the target is a project module rather than an execution primitive, and because the argument is quoted."
+    - "A normal __reduce__ that returns (self.__class__, (args,)) or a module-level factory -- the first tuple element is not a name resolver."
+    - "A unified diff whose REMOVAL line deletes the gadget (a patch that fixes this very bug). FOUND during authoring by a full-corpus run -- the sample is another sweep's benign twin, 'diff -u old.py new.py / - def __reduce__(self): return (pkgutil.resolve_name, ...)' -- and fixed by requiring that the line carrying the return does not begin with a dash. The addition side of such a diff is still read normally."
+    - "Security writing about CVE-2026-3490 that quotes pkgutil.resolve_name(\"os:system\"). The quote characters around the argument keep the first condition silent, and code fences / inline code are suppressed by tags.suppress_in_code_blocks. Prose that writes the target string UNQUOTED and directly after the resolver name would still match; that shape was written during authoring and is the residual limit."
+
+response:
+  actions:
+    - alert
+  message_template: >
+    [ATR-2026-02662] This artefact resolves an execution primitive by name
+    (pkgutil.resolve_name / import_module / attrgetter) instead of importing it.
+    An opcode blocklist cannot see the target -- do not deserialize it.
+
+confidence: 85
+
+test_cases:
+  true_positives:
+    - input: "pickle bytes: ...pkgutil~~resolve_name~~~os:system~R..."
+      expected: triggered
+      description: "CVE-2026-3490 payload as a pickle byte stream read into a tool_response -- resolver name and target adjacent and unquoted (a pickle string is length-prefixed; the tildes stand in for the framing bytes)"
+    - input: "...pkgutil~~resolve_name~~~subprocess:check_output~R..."
+      expected: triggered
+      description: "Same payload shape with subprocess.check_output as the resolved target"
+    - input: "class Payload:  def __reduce__(self): return (pkgutil.resolve_name, ('os:system',))"
+      expected: triggered
+      description: "Weaponisation source: reduce tuple whose callable is the resolver"
+    - input: "def __reduce__(self): return (import_module, ('subprocess',))"
+      expected: triggered
+      description: "Same trick with importlib.import_module as the resolver"
+    - input: "\u0080\u0004\u0095\u001f\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u008c\u0007pkgutil\u0094\u008c\fresolve_name\u0094\u0093\u0094\u008c\tos:system\u0094\u0085\u0094R\u0094."
+      expected: triggered
+      description: "ADDED rule_version 2: a REAL protocol-4 pickle stream for pkgutil.resolve_name('os:system'), not the tilde stand-in. Note the length prefix for the 9-character target is byte 0x09, which is also TAB -- a separator class of 'non-word, non-space' would have missed this, which is why the class is spelled out as control/high bytes."
+  true_negatives:
+    - input: "from pkgutil import resolve_name; handler = resolve_name('myapp.tasks:process_order'); logger.info('resolved %s on this system', handler)"
+      expected: not_triggered
+      description: "The documented purpose of resolve_name: loading a project entry point by name"
+    - input: "resolve_name('logging.handlers:RotatingFileHandler')  # os.path.expanduser is applied to the filename later on this system"
+      expected: not_triggered
+      description: "Logging configuration; the words os and system appear, the execution target does not"
+    - input: "By using pkgutil.resolve_name as the first REDUCE call, an attacker obtains a reference to a blocked function such as 'os:system' without it ever appearing in the opcodes."
+      expected: not_triggered
+      description: "ADVERSARIAL: the advisory sentence itself. The target string is quoted, so the payload condition stays silent."
+    - input: "diff -u old.py new.py\n-    def __reduce__(self): return (pkgutil.resolve_name, (self.spec,))\n+    def __reduce__(self): return (Plugin, (self.spec,))"
+      expected: not_triggered
+      description: "ADVERSARIAL: the patch that REMOVES the gadget. Fired the first version of this rule on a full-corpus run; excluded by the no-leading-dash requirement."
+    - input: "def __reduce__(self): return (self.__class__, (self.host, self.port))"
+      expected: not_triggered
+      description: "A correct __reduce__ returning the object's own class"
+    - input: "def __reduce__(self): return (make_connection, (self.dsn,))"
+      expected: not_triggered
+      description: "__reduce__ using a module-level factory function"
+    - input: "backend = import_module(settings.STORAGE_BACKEND); return backend.Client(os.environ['STORAGE_URL'])"
+      expected: not_triggered
+      description: "Dynamic import of a configured backend -- import_module is not the reduce callable"
+    - input: "rows.sort(key=attrgetter('created_at')); return (rows, total)"
+      expected: not_triggered
+      description: "operator.attrgetter used for sorting; the returned tuple starts with a variable"
+    - input: "func = resolve_name('myapp.cli:main')  # console_scripts entry point, resolved on this system at start-up"
+      expected: not_triggered
+      description: "Console-script entry point resolved at runtime -- module:attr form, but the attribute is a project function"
+    - input: "## 0.0.26\n\n### Security\n- Reject resolve_name targets such as os:system and subprocess:check_output before the second REDUCE runs (CVE-2026-3490, reported by VulnCheck)."
+      expected: not_triggered
+      description: "ADVERSARIAL (2026-08-24 refutation pass): the CHANGELOG entry for the fix. Fired rule_version 1 -- ' targets such as ' is 17 characters, inside the old 24-character any-character window."
+    - input: "The gadget calls resolve_name with os:system as the argument, so an opcode scanner never sees a blocked global name anywhere in the stream. Blocklisting the resolver itself is the only reliable fix."
+      expected: not_triggered
+      description: "ADVERSARIAL: the advisory sentence written WITHOUT quotes around the target. rule_version 1 documented this as its 'residual limit'; it is in fact the dominant shape in real security writing, and it fired."
+    - input: "scanner:\n  blocked_gadgets:\n    - resolve_name: os:system\n    - resolve_name: subprocess:run\n    - resolve_name: builtins:eval"
+      expected: not_triggered
+      description: "ADVERSARIAL: a scanner denylist naming the gadgets it blocks -- the defensive artefact. Fired v1."
+    - input: "| Resolver | Target | Impact |\n| --- | --- | --- |\n| pkgutil.resolve_name | os:system | remote code execution |\n| importlib.import_module | subprocess:run | remote code execution |"
+      expected: not_triggered
+      description: "ADVERSARIAL: a markdown table of resolver/target pairs. Unquoted table cells are not covered by tags.suppress_in_code_blocks. Fired v1."
+    - input: "Coverage note: ATR-2026-02662 flags resolve_name -> os:system and the same trick through operator.attrgetter. ATR-2026-00398 already covered the caller side."
+      expected: not_triggered
+      description: "ADVERSARIAL: ATR's own coverage documentation describing this rule. Fired v1."
+    - input: "資安公告：攻擊者以 resolve_name 取得 os:system 的參考，繞過 picklescan 的封鎖清單，載入模型時即取得任意程式執行能力。"
+      expected: not_triggered
+      description: "ADVERSARIAL: a non-English (Traditional Chinese) advisory. Fired v1 -- CJK characters count against the old any-character window."
+    - input: "import copyreg, types\nfrom importlib import import_module\n\ndef _pickle_module(mod):\n    return (import_module, (mod.__name__,))\n\ncopyreg.pickle(types.ModuleType, _pickle_module)"
+      expected: not_triggered
+      description: "ADVERSARIAL: the standard copyreg recipe that makes module objects picklable. Fired v1's second condition; excluded now because the reduce argument is a variable, not a literal execution target."
+    - input: "class SortKey:\n    def __init__(self, attr):\n        self.attr = attr\n    def __reduce__(self):\n        return (attrgetter, (self.attr,))"
+      expected: not_triggered
+      description: "ADVERSARIAL: a picklable sort-key wrapper returning (attrgetter, (self.attr,)). Fired v1."
+    - input: "def lazy(name):\n    \"\"\"Return a (callable, arg) pair the worker resolves after fork.\"\"\"\n    return (import_module, name)"
+      expected: not_triggered
+      description: "ADVERSARIAL: a deferred-import helper returning (import_module, name). Fired v1."
+    - input: "def _reduce_backend(b):\n    return (import_module, (b.__module__,))\nmultiprocessing.reduction.register(Backend, _reduce_backend)"
+      expected: not_triggered
+      description: "ADVERSARIAL: a multiprocessing reduction registered for a backend class. Fired v1."
+    - input: "Slide 12 notes - resolve_name, os:system, one REDUCE later you have a shell. Ask the room who has picklescan in CI."
+      expected: not_triggered
+      description: "ADVERSARIAL: conference slide notes listing 'resolve_name, os:system'. Fired v1."
+    - input: "The chain is simple: resolve_name→os:system→REDUCE. Nothing in the opcode list is blocked."
+      expected: not_triggered
+      description: "ADVERSARIAL against the FIX: prose using an arrow separator (resolve_name->os:system)."
+    - input: "Write it as resolve_name(os:system) and picklescan sees nothing."
+      expected: not_triggered
+      description: "ADVERSARIAL against the FIX: prose writing resolve_name(os:system) with no quotes at all."
+    - input: "resolve_name/os:system is the canonical CVE-2026-3490 gadget."
+      expected: not_triggered
+      description: "ADVERSARIAL against the FIX: a terse note using a slash separator."
+    - input: "00000010  8c 0c 72 65 73 6f 6c 76  65 5f 6e 61 6d 65 94 93  |..resolve_name..|\n00000020  94 8c 09 6f 73 3a 73 79  73 74 65 6d 94 85 94 52  |...os:system..R|"
+      expected: not_triggered
+      description: "A hexdump of the payload in an incident report -- the bytes are printed as hex text, so no framing byte is adjacent to the target."
+    - input: "def __reduce__(self):\n    return (import_module, ('myapp.plugins.storage',))"
+      expected: not_triggered
+      description: "A plugin __reduce__ that passes a literal module path which is not an execution primitive."
+    - input: "def _reduce_np(): return (import_module, ('numpy',))"
+      expected: not_triggered
+      description: "A reduce helper with a hard-coded but harmless module name."
+    - input: "CVE-2026-3490: picklescan universal blocklist bypass via pkgutil.resolve_name (os:system, subprocess:run, builtins:eval all reachable)"
+      expected: not_triggered
+      description: "ADVERSARIAL against the FIX: the CVE title listing all three reachable targets."
+    - input: "denylist:\n  resolve_name:os:system\n  resolve_name:subprocess:run"
+      expected: not_triggered
+      description: "ADVERSARIAL against the FIX: a denylist written with no spaces at all (resolve_name:os:system)."
+    - input: "攻擊鏈：resolve_name、os:system、REDUCE，三步就拿到 shell。"
+      expected: not_triggered
+      description: "ADVERSARIAL against the FIX: a Traditional Chinese attack-chain summary using ideographic commas."

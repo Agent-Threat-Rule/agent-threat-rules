@@ -30,6 +30,7 @@
  *   run in CI, which is the point.
  */
 import type { RuleVisibility } from "./visibility-scan.js";
+import { needsUnicodeFlag } from "../../src/engine.js";
 
 /** Mirrors normalizeRegex() in src/engine.ts: a LEADING inline flag group only. */
 export function normalizeRegex(pattern: string): string {
@@ -38,7 +39,7 @@ export function normalizeRegex(pattern: string): string {
 
 /** Mirrors the flag choice in src/engine.ts's condition evaluation. */
 export function regexFlagsFor(pattern: string): string {
-  return pattern.includes("\\u{") || pattern.includes("\\p{") ? "iu" : "i";
+  return needsUnicodeFlag(pattern) ? "iu" : "i";
 }
 
 export interface BlindViolation {

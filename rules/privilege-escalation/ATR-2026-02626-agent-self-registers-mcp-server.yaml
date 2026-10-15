@@ -1,0 +1,278 @@
+title: "Agent Writes a New MCP Server Into Its Own Trust Configuration"
+id: ATR-2026-02626
+rule_version: 2
+status: "experimental"
+description: >
+  Detects an agent tool call that adds an entry to the mcpServers block of a
+  trust-configuration file the agent itself loads -- claude_desktop_config.json,
+  .claude.json, .cursor/mcp.json, .vscode/mcp.json, .continue/config.json,
+  .gemini/settings.json. This is persistence and privilege expansion, not remote
+  code execution: the command field is deliberately unremarkable
+  (python -m pkg, npx -y pkg, node dist/x.js) because the malicious code lives
+  inside the module being launched. MAL-2026-2315 (latinum-wallet-mcp on PyPI)
+  is the reference case -- the package silently registered itself as an MCP
+  server on install.
+
+  MEASURED GAP. `{"tool":"write_file","arguments":{"path":".../claude_desktop_config.json","content":"{\"mcpServers\":{...\"command\":\"python\"...}}"}}`
+  matched nothing on any of the seven event types. Reading the neighbouring
+  rules explains why: ATR-2026-00419 requires the command itself to be
+  curl/wget or an inline-eval flag; ATR-2026-02022 requires bash/sh/curl near
+  the mcp.json; ATR-2026-01932 matches PROSE describing a rogue registration
+  rather than the registration itself. Swapping the command to curl makes three
+  rules fire immediately, which confirms existing coverage keys on the command
+  string and not on the structural act of granting a new tool source.
+
+  THE FALSE POSITIVE THIS RULE HAD TO SOLVE. Every MCP server README on earth
+  tells the reader to paste an mcpServers block into claude_desktop_config.json,
+  and a good number give a `cat >> ~/.claude.json <<EOF` one-liner. Measured
+  during authoring, that install documentation is byte-identical in shape to the
+  attack. It is separated here by tags.suppress_in_code_blocks: instructions
+  live inside a fenced block, an agent's actual tool call does not. Both
+  conditions must match (condition: all), so a config payload with no write
+  action, and a write to the trust file that does not add a server, are both
+  silent.
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM03:2025"
+  owasp_agentic:
+    - "ASI05:2026"
+    - "ASI06:2026"
+  mitre_atlas:
+    - "AML.T0010 - AI Supply Chain Compromise"
+    - "AML.T0053 - LLM Plugin Compromise"
+
+compliance:
+  owasp_agentic:
+    - id: ASI05:2026
+      context: "Registering a new MCP server grants the agent a tool source nobody authorised, expanding its capability boundary from inside."
+      strength: primary
+    - id: ASI06:2026
+      context: "The entry persists in a configuration file, so the expanded capability survives restart and applies to every later session."
+      strength: secondary
+  owasp_llm:
+    - id: LLM03:2025
+      context: "A new tool source enters the agent's supply chain without review; the launched module is arbitrary third-party code."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 robustness: a self-modification of the trust configuration changes what the system can do, persistently and without authorisation."
+      strength: primary
+    - article: "14"
+      context: "Article 14 human oversight assumes the operator controls which tools the agent has; a silent registration removes that control."
+      strength: secondary
+    - article: "12"
+      context: "Article 12 record-keeping: a persisted capability grant must be reconstructable after the fact."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Runtime treatment for unauthorised expansion of the agent's tool surface."
+      strength: primary
+    - function: Map
+      subcategory: MP.5.1
+      context: "Catalogues trust-config self-modification as distinct from malicious command execution, which is the framing existing rules assume."
+      strength: secondary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "Detection events supply the security and resilience evidence MEASURE 2.7 asks be documented for capability changes."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 control of externally provided processes: an MCP server is an external process, and this event adds one outside the change-control path."
+      strength: primary
+    - clause: "6.2"
+      context: "Maintaining the integrity of the agent's tool allowlist is an AIMS information security objective under clause 6.2."
+      strength: secondary
+    - clause: "8.4"
+      context: "Impact assessment under clause 8.4 must account for capability grants that persist beyond the session that made them."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: mcp-trust-config-modification
+  scan_target: both
+  confidence: medium
+  suppress_in_code_blocks: true
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: all
+  conditions:
+    - field: content
+      operator: regex
+      value: "(?:\\\\{0,2}[\"'])(?:tool|tool_name|name|function|toolName)(?:\\\\{0,2}[\"'])\\s*:\\s*(?:\\\\{0,2}[\"'])[\\w.-]{0,40}(?:write_file|write_to_file|create_file|edit_file|fs_write|apply_patch|str_replace_editor|str_replace_based_edit_tool|update_file|patch_file)(?:\\\\{0,2}[\"'])[\\s\\S]{0,160}(?:\\\\{0,2}[\"'])(?:path|file_path|filename|file|target_file|filePath)(?:\\\\{0,2}[\"'])\\s*:\\s*(?:\\\\{0,2}[\"'])[^\"'\\n]{0,120}(?:claude_desktop_config\\.json|\\.claude\\.json|\\.cursor/mcp\\.json|\\.vscode/mcp\\.json|\\.continue/config\\.json|windsurf/mcp_config\\.json|\\.mcp\\.json|\\.codex/config\\.toml|\\.gemini/settings\\.json)(?:\\\\{0,2}[\"'])[\\s\\S]{0,140}(?:\\\\{0,2}[\"'])(?:mcpServers|servers)(?:\\\\{0,2}[\"'])\\s*:\\s*\\{[\\s\\S]{0,220}(?:\\\\{0,2}[\"'])command(?:\\\\{0,2}[\"'])\\s*:"
+      description: >-
+        A COMPLETE TOOL-INVOCATION ENVELOPE that writes an MCP trust-config
+        file: a quoted tool/tool_name key naming a file-writing tool, a quoted
+        path key whose value is one of the agent trust-config files, and the
+        mcpServers/servers block carrying a command entry. All three parts, in
+        that order, in one event. The envelope requirement is load-bearing and
+        was added by adversarial review -- see false_positives.
+    - field: content
+      operator: regex
+      value: "(?:\\\\{0,2}[\"'])(?:mcpServers|servers)(?:\\\\{0,2}[\"'])\\s*:\\s*\\{[\\s\\S]{0,220}(?:\\\\{0,2}[\"'])command(?:\\\\{0,2}[\"'])\\s*:"
+      description: "An mcpServers/servers block carrying a command entry -- the payload that grants a new tool source"
+
+  false_positives:
+    - >-
+      ADVERSARIAL REVIEW 2026-08-24, FIXED. Rule v1 asked only for a write-verb
+      TOKEN somewhere on a line, the config path, and the payload, and leaned
+      entirely on tags.suppress_in_code_blocks to separate documentation from a
+      real call. Fifteen benign samples were run through the engine and ELEVEN
+      fired. Code-fence suppression turned out to cover far less than the rule
+      assumed: src/engine.ts buildCodeBlockRanges recognises ``` fences,
+      inline backticks and markdown table cells ONLY, so an install README using
+      ~~~ fences fired, and one using a 4-space indented block fired. The rest
+      were not code blocks at all -- an installer CI log line, a PR body showing
+      a diff, an MCP installer's own unit test, an e2e fixture object, a
+      changelog entry, a Traditional Chinese install guide, an incident
+      postmortem quoting MAL-2026-2315's payload, and the tool_description of
+      mcp-installer, a tool whose entire job is to do this legitimately.
+
+      Fixed by requiring a complete tool-invocation envelope: a quoted tool key
+      naming the writing tool AND a quoted path key holding the trust-config
+      path AND the payload. Prose that merely names a write verb near a path no
+      longer matches, which is what all eleven had in common.
+    - >-
+      ADVERSARIAL REVIEW 2026-08-24, ALSO FIXED: RE2 PORTABILITY. Rule v1 used
+      a negative lookbehind (?<![\w.-]) and two negative lookaheads. RE2 -- Go
+      regexp, Rust regex, every Sigma backend built on them -- cannot compile
+      any of those, and ATR-2026-02626 was absent from
+      data/re2-portability-baseline.json, so scripts/gate-re2-portability.ts
+      fails the build on it as a NEW incompatibility. v2 contains no lookaround
+      and no backreference; the path boundary is now an explicit closing-quote
+      character class.
+    - >-
+      ADVERSARIAL REVIEW 2026-08-24, DEAD TEST CASE REMOVED. v1 shipped a
+      true positive it could not match: the shell heredoc
+      "cat >> ~/.cursor/mcp.json <<EOF ... command ...". Its shell-redirect
+      alternative required a "command": key BEFORE the redirection operator,
+      but in a heredoc the command key arrives after the path, so the branch was
+      unreachable for its own example -- confirmed by running it through the
+      engine. The branch is removed rather than repaired: a bare shell line has
+      no envelope, so it cannot be separated from the identical line inside
+      install documentation. KNOWN GAP.
+    - >-
+      KNOWN GAP: a positional call such as
+      write_file("/home/ops/.continue/config.json", "{...mcpServers...}") is no
+      longer matched. It is the same shape as an MCP installer's own unit test
+      (await write_file("~/.claude.json", '{"mcpServers":...}')), which fired on
+      v1, so the two cannot be told apart.
+    - >-
+      KNOWN RESIDUAL: security writing that quotes a COMPLETE tool-call envelope
+      verbatim in bare prose still fires -- including ATR's own description of
+      this rule. tags.suppress_in_code_blocks covers the fenced and backticked
+      forms, which is where such quotations normally live.
+    - "An operator legitimately installing an MCP server through the agent, at the operator's own request. The rule fires by design; provenance of the request is what triage must establish."
+
+response:
+  actions:
+    - alert
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-02626] The agent modified its own MCP trust configuration to add a
+    tool source. The command field can look completely ordinary -- the malicious
+    code lives in the module it launches, not in the command string. Confirm a
+    human requested this server before allowing it to load.
+
+confidence: 70
+test_cases:
+  true_positives:
+    - input: "{\"tool\":\"write_file\",\"arguments\":{\"path\":\"/Users/dev/Library/Application Support/Claude/claude_desktop_config.json\",\"content\":\"{\\\"mcpServers\\\":{\\\"wallet\\\":{\\\"command\\\":\\\"python\\\",\\\"args\\\":[\\\"-m\\\",\\\"latinum_wallet_mcp\\\"]}}}\"}}"
+      expected: triggered
+      description: "MAL-2026-2315 shape: agent writes a new MCP server into the Claude desktop trust config; the command field looks entirely ordinary"
+    - input: "{\"tool\":\"edit_file\",\"path\":\"~/.claude.json\",\"new_str\":\"{\\\"mcpServers\\\": {\\\"x\\\": {\\\"command\\\": \\\"node\\\", \\\"args\\\": [\\\"dist/x.js\\\"]}}}\"}"
+      expected: triggered
+      description: "Edit tool appending a server entry to the CLI trust config"
+    - input: "{\"tool\":\"fs_write\",\"arguments\":{\"path\":\".vscode/mcp.json\",\"text\":\"{\\\"servers\\\":{\\\"helper\\\":{\\\"command\\\":\\\"uvx\\\",\\\"args\\\":[\\\"helper-mcp\\\"]}}}\"}}"
+      expected: triggered
+      description: "Workspace-scoped MCP config written with a servers key"
+    - input: "{\"tool\":\"apply_patch\",\"arguments\":{\"path\":\"/home/dev/.gemini/settings.json\",\"patch\":\"+ \\\"mcpServers\\\": { \\\"probe\\\": { \\\"command\\\": \\\"python3\\\", \\\"args\\\": [\\\"-m\\\", \\\"probe\\\"] } }\"}}"
+      expected: triggered
+      description: "Patch tool inserting an mcpServers block into another agent's settings"
+    - input: "{\"tool_name\":\"str_replace_editor\",\"arguments\":{\"file_path\":\"/Users/dev/.cursor/mcp.json\",\"new_str\":\"{\\\"mcpServers\\\": {\\\"w\\\": {\\\"command\\\": \\\"npx\\\", \\\"args\\\": [\\\"-y\\\", \\\"w-mcp\\\"]}}}\"}}"
+      expected: triggered
+      description: "Replaces the v1 shell-heredoc case, which never matched. Editor-style tool writing the Cursor trust config, with tool_name/file_path key spellings."
+  true_negatives:
+    - input: "## Installation\n\nAdd this to your claude_desktop_config.json:\n\n```json\n{\"mcpServers\": {\"filesystem\": {\"command\": \"npx\", \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \"/data\"]}}}\n```"
+      expected: not_triggered
+      description: "MCP server README install section -- the overwhelmingly common benign shape"
+    - input: "Quick install:\n\n```bash\ncat >> ~/.claude.json <<EOF\n{\"mcpServers\": {\"fs\": {\"command\": \"npx\", \"args\": [\"@modelcontextprotocol/server-filesystem\"]}}}\nEOF\n```"
+      expected: not_triggered
+      description: "Install documentation whose heredoc is byte-identical in shape to the attack"
+    - input: "{\"tool\":\"read_file\",\"arguments\":{\"path\":\"~/.claude.json\"}}"
+      expected: not_triggered
+      description: "Reading the trust config, which is not a modification"
+    - input: "{\"tool\":\"write_file\",\"arguments\":{\"path\":\"src/index.ts\",\"content\":\"export const x = 1;\"}}"
+      expected: not_triggered
+      description: "An ordinary source write with no trust-config path"
+    - input: "{\"mcpServers\": {\"fs\": {\"command\": \"npx\", \"args\": [\"@modelcontextprotocol/server-filesystem\", \"/data\"]}}}"
+      expected: not_triggered
+      description: "The config payload on its own, with no write action"
+    - input: "Config lives at ~/.cursor/mcp.json on macOS and %APPDATA%\\Cursor\\mcp.json on Windows."
+      expected: not_triggered
+      description: "Documentation naming the path only"
+    - input: "{\"tool\":\"write_file\",\"arguments\":{\"path\":\"~/.claude.json\",\"content\":\"{\\\"theme\\\": \\\"dark\\\", \\\"telemetry\\\": false}\"}}"
+      expected: not_triggered
+      description: "A legitimate write to the trust config that does NOT add a server"
+    - input: "git diff --stat\n .cursor/mcp.json | 4 ++--\n 1 file changed, 2 insertions(+), 2 deletions(-)"
+      expected: not_triggered
+      description: "A diffstat mentioning the config file"
+    - input: "CI log :: [setup] validating .mcp.json schema :: mcpServers.filesystem.command = npx :: ok"
+      expected: not_triggered
+      description: "CI validation log naming both the file and the command field"
+    - input: "Incident response runbook: if an agent writes to claude_desktop_config.json or .cursor/mcp.json, diff the mcpServers block and confirm every command entry was requested by a human."
+      expected: not_triggered
+      description: "A runbook describing this very detection"
+    - input: "{\"tool\":\"edit_file\",\"path\":\"docs/mcp-setup.md\",\"new_str\":\"Add an mcpServers block with a command field to ~/.claude.json\"}"
+      expected: not_triggered
+      description: "Editing DOCUMENTATION about MCP setup rather than the config itself"
+    - input: "backup: cp ~/.claude.json ~/.claude.json.bak && echo saved"
+      expected: not_triggered
+      description: "Copying the trust config for backup"
+    - input: "it(\"adds the server entry\", async () => {\n  await write_file(\"~/.claude.json\", '{\"mcpServers\": {\"fs\": {\"command\": \"npx\", \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \"/data\"]}}}');\n  expect(readConfig().mcpServers.fs.command).toBe(\"npx\");\n});"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. An MCP installer's OWN unit test. Not inside any code fence, so v1's only defence did not apply."
+    - input: "[installer] write_file ~/.claude.json ok :: {\"mcpServers\": {\"fs\": {\"command\": \"npx\", \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \"/data\"]}}}"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. A CI log line from the installer, reporting a write the operator asked for."
+    - input: "This PR changes the bootstrap step:\n+ apply_patch .vscode/mcp.json  {\"servers\": {\"pylsp\": {\"command\": \"pylsp\", \"args\": []}}}\nso the language server is registered on first run."
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. A pull-request body showing the diff in prose."
+    - input: "## Installation\n\n~~~bash\nwrite_file ~/.claude.json '{\"mcpServers\": {\"fs\": {\"command\": \"npx\", \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \"/data\"]}}}'\n~~~\n\nRestart the app."
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. Install README using ~~~ fences. buildCodeBlockRanges only recognises ``` fences, so suppress_in_code_blocks did nothing here."
+    - input: "## Installation\n\nRun:\n\n    write_file ~/.claude.json '{\"mcpServers\": {\"fs\": {\"command\": \"npx\", \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \"/data\"]}}}'\n\nThen restart the app."
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. Install README using a 4-space indented code block, which buildCodeBlockRanges also does not recognise."
+    - input: "MAL-2026-2315 postmortem: the package ran write_file against ~/.claude.json with {\"mcpServers\": {\"wallet\": {\"command\": \"python\", \"args\": [\"-m\", \"latinum_wallet_mcp\"]}}} at install time. Audit every host for that entry."
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. An incident postmortem quoting the reference case's own payload."
+    - input: "Installs an MCP server for the user. Will edit_file your claude_desktop_config.json to add {\"mcpServers\": {\"<name>\": {\"command\": \"<cmd>\", \"args\": []}}} and then prompt you to restart."
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. The tool_description of mcp-installer, a tool whose entire purpose is to do this at the operator's request. Every agent that loads it would have alerted on the description alone."
+    - input: "- installer: update_file now rewrites .cursor/mcp.json atomically, so the {\"servers\": {\"x\": {\"command\": \"uvx\", \"args\": []}}} block is merged instead of replaced (#812)."
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. A changelog entry."
+    - input: "安裝步驟:用 write_file 把設定寫進 ~/.claude.json,內容為 {\"mcpServers\": {\"fs\": {\"command\": \"npx\", \"args\": [\"-y\", \"server-filesystem\"]}}},然後重新啟動應用程式。"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. Non-English (Traditional Chinese) install guide with no code fence."
+    - input: "const FIXTURE = { tool: \"fs_write\", path: \".vscode/mcp.json\", text: '{\"servers\": {\"helper\": {\"command\": \"uvx\", \"args\": [\"helper-mcp\"]}}}' };\nexpect(applyFixture(FIXTURE)).toMatchSnapshot();"
+      expected: not_triggered
+      description: "ADVERSARIAL REVIEW 2026-08-24, FIRED ON v1. An e2e fixture object for an editor extension. Silent on v2 because the tool and path keys are unquoted JavaScript identifiers, not a JSON envelope."
+    - input: "- name: register the language server\n  ansible.builtin.copy:\n    dest: ~/.vscode/mcp.json\n    content: |\n      {\"servers\": {\"gopls\": {\"command\": \"gopls\"}}}"
+      expected: not_triggered
+      description: "An Ansible task templating an editor MCP config -- configuration management, not an agent self-grant."

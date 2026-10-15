@@ -1,0 +1,190 @@
+title: "Observability Query Tool Argument Appends a Pipeline Stage and Comments Out the Rest of the Query"
+id: ATR-2026-02542
+rule_version: 1
+status: experimental
+description: >
+  Detects an agent tool argument that is documented as an identifier or a
+  shorthand timeframe but whose value carries pipeline-query syntax: a `|`
+  followed by a stage verb (`fields`, `fieldsAdd`, `filter`, `summarize`,
+  `project`, `extend`, `parse`, `lookup`, ...) and terminated by a `//` line
+  comment that swallows whatever the tool intended to append. That comment
+  terminator is the tell -- a caller who merely wanted a legitimate value has
+  no reason to comment out the rest of the server's own query. Mined from
+  GHSA-pqh8-p93p-2rx7 (@dynatrace-oss/dynatrace-mcp-server interpolates
+  `entityNames`, `timeframe`, `clusterId` and `kubernetesEntityId` straight
+  into DQL strings; their Zod schemas are plain `z.string()` with no pattern
+  validation, so `svc" | fields id, name, tags //` replaces the tool's
+  `| fields id, name, type` stage, and `30d, to: now() | fieldsAdd
+  internal_secret //` injects a stage before the tool's `| filter`). The
+  impact is contract escape rather than new privilege: the tool's field
+  selection, display caps, time-window bounds and its `readOnlyHint: true`
+  annotation -- which MCP clients may treat as a reason to auto-approve --
+  are all bypassed. Written against the pipeline-and-comment shape shared by
+  DQL, KQL and similar observability query languages rather than against
+  Dynatrace's parameter names, because every observability MCP server that
+  string-builds a query has the same sink.
+author: "ATR Community (GHSA sweep)"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: medium
+
+references:
+  cwe:
+    - "CWE-943"
+    - "CWE-20"
+  owasp_llm:
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI05:2026"
+  mitre_attack:
+    - "T1213 - Data from Information Repositories"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+  ghsa:
+    - "GHSA-pqh8-p93p-2rx7"
+  external:
+    - "https://github.com/advisories/GHSA-pqh8-p93p-2rx7"
+
+metadata_provenance:
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+  ghsa: ghsa-sync
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resistance to unauthorised data access; this rule detects tool arguments that inject query pipeline stages to read fields and time ranges outside the tool's declared output contract."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be addressed by appropriate measures; this rule is the runtime risk-treatment control for the query-language-injection-via-tool-argument risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Pipeline query injection through identifier-typed tool parameters is an identified AI risk requiring an active runtime countermeasure; this rule is the primary treatment implementation."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "MP.5.1 adversarial-input identification must enumerate observability query languages as an injection sink reachable from model-controlled tool arguments."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by this rule's detection of tool arguments that escape their declared query contract."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented by this rule's runtime detection of the injection attempt."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: pipeline-query-stage-injection
+  scan_target: both
+  confidence: medium
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)\|[ \t]{0,4}\b(?:fieldsAdd|fieldsRemove|fieldsKeep|fields|filterOut|filter|summarize|project|extend|search|parse|dedup|lookup|sort|limit)\b[^\n"\x27]{0,40}[ \t]//["\x27]'
+      description: "A pipeline stage verb introduced by | whose tail is commented out by a // that runs IMMEDIATELY into a string terminator (zero spaces). The zero-space requirement is load-bearing: in a real injection the // is the last thing inside the argument value and the quote that follows is the serialization boundary, whereas an ordinary source-code line comment always puts a space after the // before any quoted word (`// \"status\" is OPEN`). The bridge also forbids quotes, so a match cannot run out of the query string and land on a trailing code comment. Both were confirmed false-positive sources: with a `[^\\n]{0,80}\\s//\\s{0,4}[\"\\x27,}\\]]` tail this fired on TypeScript, Go and Java sources that hold a DQL/KQL constant and explain a field in a trailing comment."
+
+    - field: content
+      operator: regex
+      value: '(?i)[:\[,][ \t]{0,4}["\x27][A-Za-z0-9_.\-]{1,40}\\{1,2}["\x27][ \t]{0,4}\|[ \t]{0,4}\b(?:fieldsAdd|fieldsRemove|fieldsKeep|fields|filterOut|filter|summarize|project|extend|parse|dedup|lookup|sort|limit)\b'
+      description: "Escaped-quote breakout, anchored at the START of the argument value: a JSON structural position (: [ ,), the opening quote, a bare identifier with no spaces or operators, and then the value immediately escaping its own quote into a pipeline stage. The start anchor is what makes this safe. A bare `\\\" | verb` test is NOT a breakout signal -- once a query is serialized into a tool call EVERY quote inside it is backslash-escaped, so `host == \\\"web-01\\\" | fields` (an ordinary literal comparison in DQL/KQL/SPL) has exactly the same shape as a breakout. Requiring the value to begin as a bare identifier and escape immediately separates the two, because a legitimate query never starts that way."
+
+    - field: content
+      operator: regex
+      value: '(?i)[a-z0-9_)\]]\\{1,2}["\x27][ \t]{0,4}(?:,[ \t]{0,4}(?:to|from)[ \t]{0,2}:|or\b|and\b)[ \t]{0,4}[^\n"\x27]{0,40}[ \t]//["\x27]'
+      description: "Escaped-quote breakout into a boolean/timeframe clause (or / and / , to: / , from:) terminated by the same zero-space // string terminator -- the tautology and prefix-injection variants of the same escape. Three hardenings, each traced to a measured false positive: the bridge forbids quotes and the // must run straight into the string terminator (the loose form fired on a JS config object, `{ from: \"now()-24h\", to: \"now()\" }; // \"to\" is exclusive`), and the backslash before the quote is MANDATORY rather than optional (with it optional the or-branch fired on ordinary documentation prose offering two literal choices, `the transport to \"grpc\" or http //\"grpc\" is recommended`). Inside a serialized tool argument a real breakout must escape the quote it is breaking out of; unescaped quotes are prose."
+
+  false_positives:
+    - "A query-authoring assistant whose legitimate job is emitting DQL/KQL, where the user genuinely asked for a pipeline whose tail is commented out and which ends exactly at the comment. Rare, because the rule requires the // to run into the string terminator with no space, whereas a human-written comment carries text."
+    - "NOT a false positive any more, recorded because the first draft got it wrong: a legitimate query containing an escaped literal followed by another stage (`host == \\\" web-01 \\\" | fields ...`). Serialization escapes every quote in the query, so that shape is ordinary, not hostile. Condition 2 now requires the value to OPEN as a bare identifier and escape immediately."
+    - "A saved-search definition or dashboard export carried through agent context that already contains commented-out stages. The text is a stored artifact, not a live tool argument; check the event type before acting."
+    - "An advisory or blog post quoting the injection payload verbatim. The payload is structurally identical to the live attack by construction."
+
+response:
+  actions:
+    - alert
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): no FP measurement on the
+    benign corpus; ceiling = observe. Removed block_tool(interrupt). Detection unchanged —
+    recall cost is zero.
+  message_template: >
+    [ATR-2026-02542] MEDIUM: an observability-query tool argument injects a
+    pipeline stage and comments out the remainder of the server-built query.
+    The tool's field selection, display caps, time-window bounds and any
+    readOnlyHint-based auto-approval are being bypassed. Reject the argument and
+    fix the server to bind values rather than interpolate them into query text.
+
+confidence: 65
+
+test_cases:
+  true_positives:
+    - input: '{"name":"list_problems","arguments":{"timeframe":"30d, to: now() | fieldsAdd internal_secret //"}}'
+      expected: triggered
+      description: "GHSA-pqh8-p93p-2rx7 timeframe prefix injection -- a new stage is inserted before the tool''s own | filter and the rest is commented out"
+    - input: '{"name":"find_entity","arguments":{"entityNames":["svc\" | fields id, name, tags //"]}}'
+      expected: triggered
+      description: "entityNames pipeline-stage injection replacing the tool''s documented | fields id, name, type output contract"
+    - input: '{"name":"list_vulnerabilities","arguments":{"timeframe":"7d, to: now() | fields token, apiKey //"}}'
+      expected: triggered
+      description: "Same primitive aimed at credential-bearing fields in the security-events table"
+    - input: '{"name":"find_entity","arguments":{"entityNames":["frontend\\" | summarize count() by user.email"]}}'
+      expected: triggered
+      description: "Escaped-quote breakout into an aggregation stage -- the reshaped result set leaves the tool''s declared schema entirely"
+    - input: '{"name":"get_events_for_cluster","arguments":{"clusterId":"x\" or 1==1 //"}}'
+      expected: triggered
+      description: "Tautology variant: the filter is neutralised and the kubernetesEntityId guard that followed it is commented away"
+  true_negatives:
+    - input: '{"name":"list_problems","arguments":{"timeframe":"24h","maxProblemsToDisplay":20}}'
+      expected: not_triggered
+      description: "Ordinary shorthand timeframe -- the documented contract"
+    - input: '{"name":"execute_dql","arguments":{"query":"fetch logs | filter matchesValue(k8s.namespace.name, \"payments\") | fields timestamp, content | limit 100"}}'
+      expected: not_triggered
+      description: "A legitimate full DQL query submitted to the tool that is DOCUMENTED as taking DQL -- multiple pipeline stages, no comment terminator, nothing escaping a literal"
+    - input: '{"name":"fetch_page","arguments":{"url":"https://status.vendor.example/incidents"}}'
+      expected: not_triggered
+      description: "The // inside https:// is preceded by a colon, not whitespace, so the comment-terminator condition stays quiet on every URL-bearing argument"
+    - input: 'Dynatrace DQL supports // line comments; the MCP server''s read tools interpolate timeframe values into the query string, so a value containing a pipeline stage can bypass the tool''s field selection.'
+      expected: not_triggered
+      description: "Advisory prose describing the injection class without containing an injecting value -- the near-boundary security document"
+    - input: '{"name":"search_logs","arguments":{"query":"| makeresults count=5 | eval src=\"test\""}}'
+      expected: not_triggered
+      description: "A legitimate SPL-style argument whose entire value is a pipeline fragment starting with | -- the value does not open as a bare identifier, so the breakout condition stays quiet on this common shape"
+    - input: '{"name":"execute_dql","arguments":{"query":"fetch logs | filter host == \"web-01\" | fields timestamp, content | limit 100"}}'
+      expected: not_triggered
+      description: "MEASURED FALSE POSITIVE, condition 2 -- a literal comparison followed by the next stage. Once a query is serialized into a tool call every quote inside it is escaped, so `\\\" | fields` is the shape of ORDINARY DQL/KQL/SPL, not of a breakout. Pinned here because the first draft of this rule treated the backslash itself as the signal and fired on every legitimate query tool"
+    - input: 'const PROBLEM_QUERY = "fetch dt.davis.problems | fields display_id, title, status"; // "status" is OPEN or CLOSED'
+      expected: not_triggered
+      description: "MEASURED FALSE POSITIVE, condition 1 -- a TypeScript constant holding a DQL query with a trailing line comment that explains a field. A source-code comment always puts a space after the // before a quoted word; the injection runs // straight into the closing quote"
+    - input: 'private static final String Q = "SecurityEvent | where EventID == \"4625\" | summarize count() by Account"; // "4625" = failed logon'
+      expected: not_triggered
+      description: "MEASURED FALSE POSITIVE -- the same shape in Java with KQL, which tripped both the loose bridge and the loose comment terminator"
+    - input: 'const range = { from: "now()-24h", to: "now()" }; // "to" is exclusive in the Grafana API'
+      expected: not_triggered
+      description: "MEASURED FALSE POSITIVE, condition 3 -- an ordinary JS config object with a to: bound and a trailing quoted comment; no escaped-quote breakout anywhere"
+    - input: 'Set the transport to "grpc" or http //"grpc" is strongly recommended for high-volume tenants.'
+      expected: not_triggered
+      description: "MEASURED FALSE POSITIVE, condition 3 or-branch -- documentation prose offering two literal choices. The quotes are unescaped, which is why the backslash before the quote is mandatory rather than optional"
+    - input: '{"tools":[{"name":"execute_dql","description":"Run a DQL statement. Example: fetch events | filter event.type == \"davis\" | summarize count(), by:{event.name}"}]}'
+      expected: not_triggered
+      description: "A legitimate MCP tool description that carries an example query -- tool descriptions are exactly where this rule would do the most damage if it fired on ordinary pipelines"
+
+evasion_tests:
+  - input: '{"name":"list_problems","arguments":{"timeframe":"30d, to: now() | fieldsAdd internal_secret"}}'
+    expected: not_triggered
+    bypass_technique: omit_comment_terminator
+    notes: "Dropping the // and instead crafting a value whose remainder still parses (for example by balancing the tool''s trailing clause) evades condition 1. The comment terminator is what makes the pattern specific enough to avoid firing on legitimate multi-stage queries, so this is an accepted trade: the rule buys precision with a recall gap, and the gap is recorded rather than hidden."

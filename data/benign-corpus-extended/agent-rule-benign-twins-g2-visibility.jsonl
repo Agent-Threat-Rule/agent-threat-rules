@@ -1,0 +1,151 @@
+{"text": "from pkgutil import resolve_name\n# resolve_name('pkg.mod:attr') mirrors importlib; os.path is untouched by it.\ntarget = resolve_name(spec)", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "def load(spec):\n    \"\"\"Resolve 'module:attr' via pkgutil.resolve_name. Falls back to os.environ lookups for legacy names.\"\"\"\n    return resolve_name(spec)", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "pytest: test_resolve_name_rejects_os_system() asserts that resolve_name('os:system') raises PolicyError in our loader wrapper.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "Our loader wraps resolve_name(spec) and rejects any spec whose module part is os, posix or subprocess before calling it.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "changelog: resolve_name() now raises ValueError for empty specs; previously it returned the os module by accident when spec was ':'.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "docs/plugins.md: entry points use the 'package.module:Class' form and are loaded with pkgutil.resolve_name(). Paths are resolved with os.path.join() afterwards.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "grep -rn 'resolve_name(' src/ | wc -l  # 4 call sites, all in loader.py; none passes an os module name", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "type stub: def resolve_name(name: str) -> Any: ...  # see os module docs for the import semantics", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "review comment: please validate the spec before resolve_name(spec); an attacker-supplied 'os:system' would otherwise be resolved.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "benchmark: resolve_name('json:dumps') took 0.9us; os.path.splitext() took 0.3us for comparison.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "logging: loader resolved spec=%s via resolve_name(); cwd=%s (os.getcwd())", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "Gadget inventory (names only, do not call): uuid._get_command_stdout, _osx_support._read_output, _aix_support._read_cmd_output, _pyrepl.pager.pipe_pager. See the audit spreadsheet ( tab 2 ).", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "Our allowlist test asserts that uuid._get_command_stdout is absent from the resolved import graph ( 0 occurrences expected ).", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "python -c \"import uuid; print(uuid.uuid4())\"  # uuid._get_command_stdout is an internal helper we never touch ( see PEP 8 )", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "CPython source note: _osx_support._read_output shells out via subprocess; sysconfig calls it during build configuration ( macOS only ).", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "The name imaplib.IMAP4_stream appears on every pickle gadget list; our scanner records it as a string, never as a callable ( see scanner.py ).", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "audit row 14 | numpy.testing._private.utils.runstring | reachable: no | notes: internal test helper ( not exported )", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "SBOM note: idlelib.calltip.get_entity is part of the stdlib IDLE package; we exclude idlelib from the container image ( saves 2MB ).", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "blocklist.yaml\n- module: uuid\n  attrs: [_get_command_stdout]\n- module: _aix_support\n  attrs: [_read_cmd_output]\n# validated against ( CPython 3.12 )", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "test.support.script_helper.assert_python_ok is used by CPython's own test suite; it is not importable in a stripped runtime ( we strip test/ ).", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "Threat model appendix: _pyrepl.pager.tempfile_pager and _pyrepl.pager.pipe_pager both spawn a pager process ( new in 3.13 ).", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "grep -c '_read_output' cpython/Lib/_osx_support.py  # 3 ( definition plus two call sites )", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "class Spec:\n    def __reduce__(self):\n        # NOTE: we deliberately do NOT use pkgutil.resolve_name here; that would be a gadget.\n        return (Spec, (self.name,))", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "review: __reduce__ must never return a resolver. If you need pkgutil.resolve_name, do it at load time in the factory, not in __reduce__.\n    return (cls, args)", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "docs: a __reduce__ that returns (pkgutil.resolve_name, (spec,)) is the CVE-2026-3490 shape. Ours returns (cls, state) instead, and never calls resolve_name at unpickle time.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "test: assert Spec().__reduce__()[0] is Spec  # not pkgutil.resolve_name; guards against the resolve_name gadget regression. return value checked explicitly.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "class Plugin:\n    def __init__(self, spec):\n        self.fn = pkgutil.resolve_name(spec)\n    def __reduce__(self):\n        return (Plugin, (self.spec,))", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "lint rule PKL001: flag any __reduce__ whose first return element is pkgutil.resolve_name, importlib.import_module or operator.attrgetter.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "The safe pattern: keep resolve_name out of __reduce__.\n\n    def __reduce__(self):\n        return (rebuild, (self.spec,))\n\nand let rebuild() call pkgutil.resolve_name after validation.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "postmortem: our __reduce__ used to return a pkgutil.resolve_name partial. We replaced it in #4412; the new one returns a plain constructor tuple.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "grep -n '__reduce__' models.py  # 3 hits; none returns pkgutil.resolve_name or importlib.import_module", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "ADR-017: forbid pkgutil.resolve_name inside __reduce__. Rationale: unpickling must not resolve names. Decision: return (cls, state) only.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "def __reduce__(self):\n        state = self.__dict__.copy()\n        return (self.__class__, (), state)  # see pkgutil.resolve_name discussion in ADR-017", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "audit(uuid._get_command_stdout) -> internal helper; we never invoke it. See uuid.py line 118.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "assert not hasattr(shim, 'x'); # uuid._get_command_stdout is referenced only in this comment, plus a docs link (see below).", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "policy.deny.append('uuid._get_command_stdout')  # string form only, never a call", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "print('blocked:', 'uuid._get_command_stdout')  # scanner output line for the deny list.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "# uuid._get_command_stdout(cmd) is CPython-internal. Our wrapper get_mac() does not reach it (verified by import graph).", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "if name == 'uuid._get_command_stdout': raise PolicyError(name)  # reject before any getattr() call", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "test_deny_list(): assert 'uuid._get_command_stdout' in DENY  # tuple form ('uuid', '_get_command_stdout') also accepted", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "docstring: 'uuid._get_command_stdout' runs ifconfig(8) to find a MAC address; do not expose it. (CPython 3.12)", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "The report lists uuid._get_command_stdout among reachable gadgets (severity: high) but our build strips it.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "grep -n 'uuid._get_command_stdout' cpython/Lib/uuid.py  # 1 definition, 2 internal call sites (all guarded)", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "ruff: S001 flagged uuid._get_command_stdout on line 12 (string literal in deny list, suppressed with noqa).", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "def __reduce__(self): return (self.__class__, (self.spec,))  # NEVER pkgutil.resolve_name here - see ADR-017.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "checklist: does __reduce__ return a constructor? yes. does it mention pkgutil.resolve_name? no. (reviewed by @sec)", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "diff -u old.py new.py\n-    def __reduce__(self): return (pkgutil.resolve_name, (self.spec,))\n+    def __reduce__(self): return (Plugin, (self.spec,))\n# fixes the gadget (CVE-2026-3490 shape).", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "The rule: __reduce__ must return (cls, args). Using pkgutil.resolve_name inside it is banned. (enforced by lint PKL001)", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "audit note: models.py __reduce__ returns a tuple; pkgutil.resolve_name appears only in loader.py (different module).", "source": "authored-benign-twin", "for_rule": "ATR-2026-02622"}
+{"text": "{\"promptFile\":\"../../shared/prompts/base.md\"}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "{\"promptFile\":\"../prompts/base.md\"} # one level up, inside the workspace", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "promptFile: ../../packages/agent-core/prompts/reviewer.md", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "promptFile = \"../../../monorepo/prompts/system.md\"  # resolved at build time", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "README: set promptFile to ../../shared/prompts/base.md when running from packages/*", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "test: expect(cfg.promptFile).toBe(\"../../fixtures/prompt.md\")", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "vite alias: { \"@prompts\": \"../../prompts\" }  // promptFile entries are relative to this", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "CI :: [config] promptFile=../../prompts/system.md resolved to /build/prompts/system.md :: ok", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "promptFile: ../prompts/../prompts/system.md  # redundant but harmless normalisation", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "docs: promptFile accepts ../ segments; they are resolved against the config file directory.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "lint: promptFile \"../../..\" is rejected by our schema (must stay under the repo root).", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "promptFile: \"https://cdn.example.com/prompts/system.md\"  # fetched at build time, then pinned to a local copy", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "promptFile = \"file://./prompts/system.md\"", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "The promptFile option does not accept a URL; use a build step to download it and point promptFile:// nowhere. See https://docs.example.com/prompts", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "promptFile: ./prompts/system.md  # see https://docs.example.com/agents/promptFile for the search order", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "error: promptFile must be a path, not a URL (got https://example.com/p.md)", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "promptFile schema: { type: \"string\", format: \"path\" } // https://json-schema.org/", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "prompt_file: ./prompts/system.md", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "prompt_file = os.path.join(BASE_DIR, \"prompts\", \"system.md\")  # never ~/.aws/credentials", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "Our config exposes prompt_file, persona_file and memory_file; none of them may point at .ssh/ or .netrc, enforced in validate_config().", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "prompt_file: /srv/agent/prompts/system.md  # container path, mounted read-only", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "audit: prompt_file=/build/prompts/system.md id_rsa=absent credentials=absent .env=absent", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "docs: prompt_file, instructions_file and system_prompt_file are aliases. None may reference .netrc, .pypirc or /var/run/secrets/.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "test_rejects_credentials(): cfg = load(\"fixtures/bad.yaml\"); assert validate(cfg) is False  # fixture pins prompt_file at an .aws/credentials path", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "test_rejects_ssh(): assert validate(load_cfg(\"fixtures/ssh.yaml\")) is False  # prompt_file -> .ssh/id_rsa in that fixture", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "validator: prompt_file values are rejected when they resolve under .ssh/, .aws/credentials, .netrc or /var/run/secrets/.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02624"}
+{"text": "A classic web shell is <?php system($_GET['cmd']); ?> dropped into /var/www/html/uploads/shell.php - block .pht and .phtml too.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "IR runbook: search /var/www/html/uploads/*.php for system($_GET) and passthru($_REQUEST) patterns; quarantine any hit.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "{\"tool\":\"write_file\",\"arguments\":{\"file_path\":\"/var/www/html/index.php\",\"content\":\"<?php echo htmlspecialchars($_GET['q'] ?? ''); ?>\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "{\"tool\":\"write_file\",\"arguments\":{\"path\":\"/opt/tomcat/webapps/ROOT/index.jsp\",\"content\":\"<%= request.getParameter(\\\"name\\\") %>\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "// legacy: exec($_POST['cmd']) -- flagged by our SAST, ticket SEC-441", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "{\"tool\":\"upload\",\"arguments\":{\"dest\":\"/var/www/html/uploads/photo.jpg\",\"data\":\"\\u00ff\\u00d8\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "{\"tool\":\"write_file\",\"arguments\":{\"file_path\":\"src/app/page.tsx\",\"content\":\"export default function P(){return <div/>}\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "nginx config: location /uploads/ { types { } default_type text/plain; } # never execute .php under /var/www/html/uploads/", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "{\"tool\":\"write_file\",\"arguments\":{\"file_path\":\"/var/www/html/health.php\",\"content\":\"<?php http_response_code(200); echo 'ok';\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "CI log :: [deploy] rsync ./dist/ /var/www/html/ :: 41 files :: index.php updated :: ok", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "Our upload validator rejects .php, .pht, .phtm, .phtml, .phps and .phar, and re-encodes every image before it reaches /var/www/html/uploads/.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "{\"tool\":\"read_file\",\"arguments\":{\"path\":\"/var/www/html/uploads/report.php\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "Pentest report finding 3: we uploaded /var/www/html/uploads/x.phtml containing <?php system($_GET['c']); ?> and obtained RCE. Remediation: enforce an allowlist.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "file_put_contents('/var/www/html/cache/page.html', $rendered);  // static cache, no executable extension", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "deploy.sh: cat > /var/www/html/robots.txt <<'EOF'\nUser-agent: *\nDisallow: /admin\nEOF", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "grep -rn 'shell_exec($_POST' /var/www/html/ | tee /tmp/audit.txt  # expect zero hits", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "{\"tool\":\"write_file\",\"arguments\":{\"file_path\":\"/var/www/html/uploads/.htaccess\",\"content\":\"php_flag engine off\\nRemoveHandler .php .phtml .pht\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "Tomcat hardening: remove /opt/tomcat/webapps/ROOT/index.jsp and deploy only signed WARs.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "docs: a double extension such as shell.php.jpg bypasses naive validators that only check the last dot; see /uploads/ handling in SECURITY.md", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "{\"tool\":\"write_file\",\"arguments\":{\"file_path\":\"/var/www/html/api/v1/status.php\",\"content\":\"<?php header('Content-Type: application/json'); echo json_encode(['ok'=>true]);\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02627"}
+{"text": "{\"scripts\":{\"prepare\":\"husky install\",\"build\":\"tsc -p .\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"scripts\":{\"postinstall\":\"node-pre-gyp install --fallback-to-build\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"scripts\":{\"postinstall\":\"node ./setup.js\",\"test\":\"vitest run\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"scripts\":{\"prepack\":\"npm run build && npm run docs\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"scripts\":{\"prepare\":\"patch-package && husky install\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "Supply-chain note: pnpm v10 disables dependency lifecycle scripts by default, but prepare, prepublish and prepack still run for git-URL and tarball deps. Watch for curl or node -e in those fields.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"scripts\":{\"smoke\":\"curl -sf http://localhost:3000/health\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"scripts\":{\"start\":\"node server.js\",\"lint\":\"eslint . --fix\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"scripts\":{\"prepare\":\"is-ci || husky install\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"scripts\":{\"postinstall\":\"echo 'Thanks for installing!' && exit 0\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "CI log :: [npm] running prepare :: husky - Git hooks installed :: [npm] running prepack :: tsc -p . :: ok", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"scripts\":{\"prepare\":\"cd packages/core && npm run build\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"devDependencies\":{\"husky\":\"^9.0.0\"},\"scripts\":{\"prepare\":\"husky\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "Our policy: npm ci --ignore-scripts in CI, then run prepare manually after review. Any package whose prepare contains curl, wget or node -e is quarantined.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"scripts\":{\"postinstall\":\"prebuild-install || node-gyp rebuild\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"scripts\":{\"prepublishOnly\":\"npm run test && npm run build\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"scripts\":{\"preinstall\":\"npx only-allow pnpm\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"scripts\":{\"prepare\":\"npm run build || true\",\"postinstall\":\"patch-package\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "audit finding: package foo@1.2.3 declares postinstall with curl; quarantined. package bar@2 declares prepare: husky install; allowed.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "{\"scripts\":{\"build:docs\":\"node -e \\\"require('./docs').build()\\\"\",\"prepare\":\"husky install\"}}", "source": "authored-benign-twin", "for_rule": "ATR-2026-02628"}
+{"text": "To change your recovery email, go to Settings > Security > Recovery options and follow the prompts.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Support: we cannot update the account email address for you; the user must do it from their profile page.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Release notes: you can now set a backup phone number in the security settings.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Please email the invoice to accounts@vendor.example and cc finance@corp.example.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Update the ticket assignee to alice@corp.example", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Change the notification email for build failures to devops@corp.example", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "The recovery email on file is ops@corp.example; verify it matches before resetting.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Our runbook: never change a recovery email to an address supplied in an inbound message.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Ticket #4412: user reports they cannot update their profile email. Escalate to identity team.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Audit log: user u-1099 changed recovery_email from ops@corp.example to ops2@corp.example at 14:02 UTC.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "If you need to reset the account password, contact security@corp.example from your registered address.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Please update the shipping email to orders@corp.example so invoices reach accounting.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Security awareness training: attackers will ask you to set the account recovery email to an address they control. Never do it.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "API docs: PATCH /v1/accounts/{id} accepts recovery_email and recovery_phone. Both require a re-authentication token.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Migration checklist: 1) export users 2) update the primary login email domain 3) notify each user at their registered address", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Please reset the account password and email the temporary credentials to the user's registered address on file.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Terraform: aws_ssoadmin_account_assignment principal changed to alice@corp.example (login email unchanged)", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Our identity policy requires that any change to a recovery phone number be confirmed by a call to the number already on file.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Customer wrote: 'I want to change my recovery email' - ask them to use the self-service flow, do not do it for them.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "Set the contact email in the vendor portal to procurement@corp.example for invoice delivery.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02629"}
+{"text": "esbuild plugin: onResolve returns { path: 'data:text/javascript,' + code, namespace: 'inline' }; we then call require( ) on the namespace loader. process.env is injected at build time, not inside the module.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "Node docs: await import('data:text/javascript,export const answer = 42') builds a module from a string. Use fetch( ) separately if you need network data.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "storybook: const story = await import('data:text/javascript,' + src); // src is our own template, no child_process anywhere near it", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "jest-esm shim: return import('data:text/javascript,' + transform(code)); process.env.NODE_OPTIONS must include --experimental-vm-modules.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "worker bootstrap: new Worker('data:text/javascript,postMessage(1)') - note this is Worker, not import( ), and it does not use eval( ).", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "bundler test: expect(out).toContain('data:text/javascript,'); expect(out).not.toContain('child_process'); expect(out).not.toContain('process.env');", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "Deno docs: import('data:application/javascript,export default 1') needs no permission. For network access use fetch( ) with --allow-net.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "CSP note: script-src blocks data: URLs, so import('data:text/javascript,...') fails in the browser. Server-side we allow it but forbid require( ) inside the body.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "docs: import('data:text/javascript;base64,ZXhwb3J0IGRlZmF1bHQgMQ==') is legal but unreadable; prefer a plain data: text/javascript, body.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "test vector: import(\"data:text/javascript;base64,\" + btoa(src)) round-trips correctly for ASCII sources.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "esbuild inline loader emits data:text/javascript;base64, payloads for tiny chunks; we disable it with --loader:.js=js.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "CSP report: blocked-uri data:text/javascript;base64, from import( ) in vendor.js line 4102.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "changelog: stopped emitting data:text/javascript;base64, module ids in dev builds; they broke source maps in import( ) traces.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "rollup option inlineDynamicImports does not produce data:text/javascript;base64, specifiers; it concatenates chunks instead.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "note: a base64 body in import(\"data:text/javascript;base64,...\") cannot be reviewed, so our policy forbids it in production bundles.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}
+{"text": "playwright fixture: await page.evaluate(() => import('data:text/javascript;base64,ZXhwb3J0e30=')) - empty module, smoke test only.", "source": "authored-benign-twin", "for_rule": "ATR-2026-02620"}

@@ -89,11 +89,11 @@ detection:
       description: 'Generic "decode/follow [this/the] Ecoji" instruction — covers paraphrased garak templates and attacker-crafted variants'
     - field: tool_response
       operator: regex
-      value: 'Encoded:\s*[\u{1F000}-\u{1FAFF}\u{2702}-\u{27BF}]{5,}'
+      value: 'Encoded:\s*[🀀-🫿✂-➿]{5,}'
       description: 'garak TEMPLATE 2 "Encoded: {emoji_blob}" — 5+ consecutive emoji immediately after "Encoded:" label; distinct from "Encoded: base64..." (which is ASCII)'
     - field: tool_response
       operator: regex
-      value: '(?:secure\s+system\s+message|admin\s+directive|internal\s+instruction)[\s\S]{0,200}[\u{1F000}-\u{1FAFF}\u{2702}-\u{27BF}]{6,}'
+      value: '(?:secure\s+system\s+message|admin\s+directive|internal\s+instruction)[\s\S]{0,200}[🀀-🫿✂-➿]{6,}'
       description: 'garak TEMPLATE 4 framing "secure system message" followed within 200 chars by 6+ consecutive emoji — social-engineering wrapper paired with dense Ecoji payload'
   condition: any
   false_positives:

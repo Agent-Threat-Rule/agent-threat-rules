@@ -11,7 +11,7 @@ import { ATREngine } from '../engine.js';
 import type { AgentEvent, ATRMatch, ScanResult, ScanType } from '../types.js';
 import type { Lane } from '../quality/rule-contract.js';
 import { scanResultToSARIF } from '../converters/sarif.js';
-import { createTCReporter } from '../tc-reporter.js';
+import { createTCReporter, resolveTcUrl } from '../tc-reporter.js';
 import { createSemanticJudgeFromConfig } from './semantic-judge-config.js';
 
 const SEVERITY_ORDER = ['informational', 'low', 'medium', 'high', 'critical'] as const;
@@ -102,15 +102,26 @@ export async function cmdScanUnified(
     process.exit(1);
   }
 
-  // Threat Cloud reporting is ON by default — use --no-report to disable
-  const reporter = options.reportToCloud !== false
-    ? createTCReporter({
+  // Threat Cloud reporting is OFF by default. Scanning is a local operation, and a
+  // scan of internal material must not leave the machine because of a default. Opt in
+  // explicitly with --report-to-cloud.
+  let reporter: ReturnType<typeof createTCReporter> | undefined;
+  if (options.reportToCloud === true) {
+    try {
+      reporter = createTCReporter({
         tcUrl: options.tcUrl,
         onError: (err) => console.error(`${DIM}TC upload: ${err.message}${RESET}`),
-      })
-    : undefined;
+      });
+    } catch (err) {
+      // No endpoint configured. Refusing here is the point: the alternative is
+      // picking a recipient for the operator, which is what a built-in default
+      // did. Fail with the fix in the message rather than a stack trace.
+      console.error(`${RED}Error: ${err instanceof Error ? err.message : String(err)}${RESET}`);
+      process.exit(1);
+    }
+  }
   if (reporter) {
-    console.error(`${DIM}Threat Cloud: anonymous reporting enabled (--no-report to disable)${RESET}`);
+    console.error(`${DIM}Threat Cloud: anonymous reporting enabled via --report-to-cloud${RESET}`);
   }
 
   if (options.failOn !== undefined && !SEVERITY_ORDER.includes(options.failOn as typeof SEVERITY_ORDER[number])) {
@@ -132,7 +143,7 @@ export async function cmdScanUnified(
     if (reporter) {
       await reporter.destroy();
       if (!options.json && !options.sarif) {
-        console.log(`${DIM}  Threat Cloud: detections reported to ${options.tcUrl ?? 'https://tc.panguard.ai'}${RESET}`);
+        console.log(`${DIM}  Threat Cloud: detections reported to ${resolveTcUrl(options.tcUrl)}${RESET}`);
       }
     }
   }
@@ -145,6 +156,35 @@ export async function cmdScanUnified(
 }
 
 // ── MCP Event Scan ─────────────────────────────────────────────
+
+/**
+ * A `.mcp.json` is a configuration document, not an event.
+ *
+ * `atr scan .mcp.json` — the invocation the README shows — parsed the file, wrapped it as one
+ * event, found no `content` on it and skipped it, while the summary still said one event had been
+ * scanned. The rules never saw a single server, so a config that sets `NODE_OPTIONS` to a require
+ * payload came back as `threats_detected: 0` instead of as an error.
+ *
+ * Each server becomes its own event, with the config as its content, which is the shape the MCP
+ * rules evaluate (ATR-2026-02300, the rule written for exactly this `.mcp.json` env-block surface,
+ * fires on it — see tests/cli-mcp-config-scan.test.ts). One event per server also keeps a finding
+ * attributable to a server name.
+ */
+function configDocumentToEvents(parsed: unknown): AgentEvent[] | null {
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+  const servers = (parsed as { mcpServers?: unknown }).mcpServers;
+  if (!servers || typeof servers !== 'object' || Array.isArray(servers)) return null;
+  const timestamp = new Date().toISOString();
+  const events: AgentEvent[] = [];
+  for (const [name, config] of Object.entries(servers as Record<string, unknown>)) {
+    events.push({
+      type: 'mcp_exchange',
+      timestamp,
+      content: JSON.stringify({ mcpServers: { [name]: config } }),
+    });
+  }
+  return events.length > 0 ? events : null;
+}
 
 async function scanMcpEvents(
   eventsPath: string,
@@ -162,7 +202,8 @@ async function scanMcpEvents(
   let events: AgentEvent[];
   try {
     const parsed = JSON.parse(raw);
-    events = Array.isArray(parsed) ? parsed : [parsed];
+    // A config document becomes one event per server; every other input is unchanged.
+    events = configDocumentToEvents(parsed) ?? (Array.isArray(parsed) ? parsed : [parsed]);
   } catch {
     console.error(`${RED}Error: Invalid JSON in ${eventsPath}${RESET}`);
     process.exit(1);
@@ -188,9 +229,15 @@ async function scanMcpEvents(
   const allResults: Array<{ event: AgentEvent; result: ScanResult; filtered: ATRMatch[] }> = [];
   let totalThreats = 0;
   let failHits = 0;
+  let eventsEvaluated = 0;
+  let eventsSkipped = 0;
 
   for (const event of events) {
-    if (!event.content) continue; // skip malformed events
+    if (!event.content) {
+      eventsSkipped += 1; // skip malformed events, but never silently
+      continue;
+    }
+    eventsEvaluated += 1;
     const result = semantic.enabled
       ? await engine.evaluateFullAsync(event, eventsPath)
       : engine.evaluateFull(event, eventsPath);
@@ -206,6 +253,13 @@ async function scanMcpEvents(
     }
   }
 
+  // An event that never reached the engine is not a clean result, and the counts have to say so:
+  // `events_scanned` used to be `events.length`, computed before the skip.
+  if (eventsEvaluated === 0) {
+    console.error(`${RED}Error: nothing was scanned — ${eventsSkipped} event(s) had no content${RESET}`);
+  } else if (eventsSkipped > 0) {
+    console.error(`${DIM}Warning: ${eventsSkipped} event(s) had no content and were not scanned${RESET}`);
+  }
   if (options.sarif) {
     const sarifResults: ScanResult[] = allResults.map(({ result, filtered }) => ({
       ...result,
@@ -214,13 +268,14 @@ async function scanMcpEvents(
     }));
     const version = process.env['npm_package_version'] ?? '1.0.0';
     console.log(JSON.stringify(scanResultToSARIF(sarifResults, version), null, 2));
-    return failHits;
+    return eventsEvaluated === 0 ? 1 : failHits;
   }
 
   if (options.json) {
     console.log(JSON.stringify({
       scan_type: 'mcp',
-      events_scanned: events.length,
+      events_scanned: eventsEvaluated,
+      events_skipped: eventsSkipped,
       threats_detected: totalThreats,
       rules_loaded: engine.getRuleCount(),
       results: allResults.map(({ event, result, filtered }) => ({
@@ -233,14 +288,16 @@ async function scanMcpEvents(
         matches: filtered.map(formatMatchJson),
       })),
     }, null, 2));
-    return failHits;
+    return eventsEvaluated === 0 ? 1 : failHits;
   }
 
-  printScanHeader('MCP', events.length, engine.getRuleCount(), totalThreats);
+  printScanHeader('MCP', eventsEvaluated, engine.getRuleCount(), totalThreats);
 
   if (totalThreats === 0) {
-    console.log(`${GREEN}No threats detected.${RESET}\n`);
-    return failHits;
+    console.log(eventsEvaluated === 0
+      ? `${RED}Nothing was scanned.${RESET}\n`
+      : `${GREEN}No threats detected.${RESET}\n`);
+    return eventsEvaluated === 0 ? 1 : failHits;
   }
 
   for (const { event, filtered } of allResults) {

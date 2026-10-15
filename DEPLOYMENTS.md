@@ -122,12 +122,12 @@ Skills that passed all checks with zero findings were candidates for auto-whitel
 | Field | Value |
 |-------|-------|
 | **Deployer** | Microsoft |
-| **Framework** | microsoft/agent-governance-toolkit — PolicyEvaluator |
-| **Integration method** | ATR community rules consumed by the PolicyEvaluator engine |
-| **Rules loaded** | ATR community rules (via Agent-Threat-Rule/agent-threat-rules) |
-| **Since** | 2026-04-13 |
-| **Status** | Merged to main |
-| **Reference** | [PR #908](https://github.com/microsoft/agent-governance-toolkit/pull/908) |
+| **Framework** | microsoft/agent-governance-toolkit — examples |
+| **Integration method** | Example directories: an ACS annotator adapter and an ATR-to-ACS manifest import example |
+| **Rules loaded** | No ATR rule files are committed in the repository. The annotator example runs the rule set bundled in its optional `pyatr` dependency; the import example compiles an ATR rules directory supplied by the user. The rule-pack YAML from the earlier example PRs was removed upstream on 2026-07-30 (AGT PR #3451). |
+| **Since** | 2026-04-13 (first example PR) |
+| **Status** | Examples merged to main |
+| **Reference** | [PR #3025](https://github.com/microsoft/agent-governance-toolkit/pull/3025) · [PR #2308](https://github.com/microsoft/agent-governance-toolkit/pull/2308) · [PR #908](https://github.com/microsoft/agent-governance-toolkit/pull/908) |
 
 ---
 
@@ -193,7 +193,7 @@ If you are using ATR rules in your project, we welcome deployment reports. They 
 | 1 | Guard Integration | npm (`agent-threat-rules`) | 61 | Active |
 | 2 | Batch Skill Audit | Direct engine | 61 | Completed |
 | 3 | Cisco AI Defense skill-scanner | First-party rule pack | ATR community pack | Merged 2026-04-03 |
-| 4 | Microsoft Agent Governance Toolkit | PolicyEvaluator rules | ATR community rules | Merged 2026-04-13 |
+| 4 | Microsoft Agent Governance Toolkit | Example directories | None shipped | Examples merged 2026-04-13 onward |
 | 5 | OWASP Agentic AI Top 10 (precize) | Mapping reference | Full rule set | Merged 2026-03-30 |
 
 ## Ecosystem References (documentation listings)

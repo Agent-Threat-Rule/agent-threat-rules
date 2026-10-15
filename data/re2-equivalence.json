@@ -1,90 +1,76 @@
 {
-  "generatedAt": "2026-07-31T07:35:10.519Z",
+  "generatedAt": "2026-08-23T08:47:28.004Z",
   "note": "Patterns whose mechanical RE2 escape rewrite compiles under RE2 but does NOT reproduce the original JavaScript match vector. Produced by scripts/verify-re2-equivalence.ts (differential execution, not static analysis). Consumed by scripts/generate-sigma.py so a rule that would silently mis-detect on an RE2 backend is tagged, not shipped as clean.",
-  "patternsRewritten": 54,
-  "re2Equivalent": 48,
-  "re2Divergent": 6,
+  "patternsRewritten": 39,
+  "re2Equivalent": 34,
+  "re2Divergent": 5,
   "divergentRules": {
     "ATR-2026-00276": [
       {
         "location": "detection.conditions[0].value",
-        "mismatches": 11,
-        "inputs": 13611,
+        "mismatches": 7,
+        "inputs": 13991,
         "causes": [
           "any-character constructs count differently: JavaScript without the u flag counts UTF-16 code units (an astral character is two), RE2 counts runes (one), so bounded repeats disagree"
         ],
         "examples": [
-          "input#7738 \"\\u{200C}\\u{DC41}23\\u{1F600}^\\u{205F}\\u{1F600}\\u{1F600}c0x\\u{205F}\\u{2061}{b[\\u{200A}]^\\u{2060}\\u{200C}\" -> 0 vs 1",
-          "input#8068 \"[\\u{2060}}\\u{200B}?n)xxu\\u{E0041}?c^\\u{200A}uc )0}\\u{E0041}^\\u{A0}\\u{2060}0n\\u{E0041}0,?\\u{9}(\\u{2060}\\u{DB40}\\u{2003}^\\u{A}\\u{A}\" -> 0 vs 1"
+          "input#8053 \"\\u{2061}\\u{2003}\\u{2060}0,\\u{1F600}??\\\\u{200A}63b\\u{E0041}\\u{2061}()\\u{9}\\u{A0}(?\\u{DB40}3\\u{200C}n\\u{200D}] ,}[c\\u{200C}b2\" -> 0 vs 1",
+          "input#9697 \"\\u{1F600}2]\\u{200D}322\\u{2060}\\u{E0041}\\u{200D}6)3\\u{2061}6(6(\\u{9}\\u{DB40}}{\\\\u{DC41}\\u{DB40}c\\u\\u{200C}\\u{9}\\u{200A}\\u{9}{\\u{200D}n:\\u{200B}]\" -> 0 vs 1"
         ]
       },
       {
         "location": "detection.conditions[1].value",
         "mismatches": 8,
-        "inputs": 13611,
+        "inputs": 13991,
         "causes": [
           "any-character constructs count differently: JavaScript without the u flag counts UTF-16 code units (an astral character is two), RE2 counts runes (one), so bounded repeats disagree"
         ],
         "examples": [
-          "input#7730 \" \\u{2061}\\u{200B},^\\u{9}b)\\u{A}2,\\u{200C}\\u{E0041}{\\u{A0}{\\u{1F600}0uu:\\u{1F600},\\u{200D}{\\u{205F}?2\\u{200D}^\\u{200B}b \\u{200C}\" -> 0 vs 1",
-          "input#7789 \"[c\\u{200C}0\\u{200A}\\u{DB40}\\u{2061}\\u{1F600}\\u{9}u3\\u{1F600}{\\u{1F600}n2\\u{E0041}{[\\u{DB40} b\\u{200B}\\u{9}\\u{E0041}\\u{205F}x\\u{2060}6\\u{9}u:\" -> 0 vs 1"
+          "input#9569 \"b\\\\u{200C}x2\\u{DB40}\\u{1F600} 2[\\u{E0041}?\\u{200D}\\u{2061}u3\\u{DC41},\\u{1F600},\\u{1F600}3:\\u{2060})\\u{205F}\\u{2060}:\\u{9}6)\\u{205F}\\(x0b6\" -> 0 vs 1",
+          "input#10793 \"\\u{9}\\u{200B}}\\u{2003}\\u{200B}\\u{200D}6\\u{205F}(\\]\\u{2061}]}n{xb{\\u{E0041}[6\\u{DC41}))\\u{2060}u\\u{A}]\\u{DB40}\\u{2060}\\u{200C}{u\" -> 0 vs 1"
         ]
       }
     ],
     "ATR-2026-00308": [
       {
         "location": "detection.conditions[1].value",
-        "mismatches": 57,
-        "inputs": 13934,
+        "mismatches": 72,
+        "inputs": 14314,
         "causes": [
           "\\s/\\S differ by dialect: JavaScript includes Unicode spaces (U+00A0, U+2003, U+3000, ...), RE2 restricts them to ASCII [\\t\\n\\f\\r ]",
           "any-character constructs count differently: JavaScript without the u flag counts UTF-16 code units (an astral character is two), RE2 counts runes (one), so bounded repeats disagree"
         ],
         "examples": [
-          "input#7806 \"\\u{1AD7}6[\\u{FE2E}F\\u{36E}\\u{1AFF}}\\u{1AFE}\\u{36F}\\u{E0041} \\u{20E7}2\\u{1AFE}-8Eu}\\u{A}\" -> 0 vs 1",
-          "input#7877 \"1\\u{2FF}\\u{1AB0}\\u{36E}]\\u{20FF} \\u{1DFF}B\\u{1E00}\\u{20D0}B6\\u{DB40}]\\u{301}\\u{FE30}u\\u{36F}}\\u{1DFF}{]\\u{1AFE}\\u{300}\\u{1F600}[\\u{337}\\u{FE21}\\u{36E}\\u{DC41}\\u{FE2F},\\u{1DDF}(\" -> 0 vs 1"
+          "input#8172 \"8\\u{20E7}\\u{1DC1}A3\\u{1AAF}3[--EC\\u{20D1}A\\u{20D1}\\u{1AB0}80\\u{20FF}u\\u{1DC1}\\u{20CF}\\u{E0041}\\u{20FF}\\u{A0}\\u{2100}\\u{FE21}\\u{9}\\\\u{1AD7} \\u{20E7}\" -> 0 vs 1",
+          "input#8206 \"\\u{9}\\u{370}\\u{1DC1}FE\\u{20FF}}C\\u{2003}S\\u{20D0}\\u{DC41}s\\u{2003}(\\u{FE27}\\u{FE21}\\u{1DC1}\\u{337}\\u{20E7}\\u{20D0}\\u{E0041}(\\u{FE2E}\\u{20E7}{\\u{A0}-\\u{1B00}\\u{2003}\" -> 0 vs 1"
         ]
       }
     ],
     "ATR-2026-00309": [
       {
         "location": "detection.conditions[1].value",
-        "mismatches": 28,
-        "inputs": 13653,
+        "mismatches": 18,
+        "inputs": 14033,
         "causes": [
           "\\s/\\S differ by dialect: JavaScript includes Unicode spaces (U+00A0, U+2003, U+3000, ...), RE2 restricts them to ASCII [\\t\\n\\f\\r ]"
         ],
         "examples": [
-          "input#7768 \"\\u{28FF}\\u{A} \\u{2801}\\u{2003}\\u{2800}\\u{28FE}\\u{287F}\\u{DB40}[[-\" -> 1 vs 0",
-          "input#8380 \"F{Fx\\u{28FE}+\\u{E0041},)\\u{2900}]}\\u{DC41}\\u{2800}\\u{A0}\\u{2801}\\u{2003}\\u{287F}\\u{A0}]\\u{2003}\\u{1F600}+8x\\u{2800}\\u{2900}([{\\u{27FF}\\u{A0}([0\\u{E0041}\\u{2003}\" -> 1 vs 0"
-        ]
-      }
-    ],
-    "ATR-2026-02010": [
-      {
-        "location": "detection.conditions[0].value",
-        "mismatches": 14,
-        "inputs": 14056,
-        "causes": [
-          "\\s/\\S differ by dialect: JavaScript includes Unicode spaces (U+00A0, U+2003, U+3000, ...), RE2 restricts them to ASCII [\\t\\n\\f\\r ]"
-        ],
-        "examples": [
-          "input#8497 \"\\u{A0}\" -> 1 vs 0",
-          "input#8828 \"\\u{A0}\\u{1F3FC}\" -> 1 vs 0"
+          "input#7993 \"\\u{2003}\\u{DC41}0+?\\u{E0041}?:8)]\\u{2800}:\\u{2801}:(8F\\u{2900}s\\u{9}\\u{A}0\\u{2900}\\u{287F}{\\u{287F}\\u{A}\\u{28FE}\\u{A0}\\u{2801}\\u{DC41},[:\\\" -> 1 vs 0",
+          "input#8070 \"0}]\\u{287F}\\u{28FE}\\u{2900}\\u{28FF}\\u{9}\\u{2801}\\u{A0}\\u{2800}8}[ [\\u{A0}u+[\\\\u{287F}s+0\\u{A}\" -> 1 vs 0"
         ]
       }
     ],
     "ATR-2026-00129": [
       {
         "location": "detection.conditions[0].value",
-        "mismatches": 30,
-        "inputs": 13643,
+        "mismatches": 37,
+        "inputs": 14042,
         "causes": [
           "pattern names UTF-16 surrogate codepoints (U+D800-U+DFFF); RE2 has no surrogates and folds them to U+FFFD, so the ported pattern compiles but can never match"
         ],
         "examples": [
-          "input#4358 \"Please summarize this: \\u{E0049}\\u{E006E}\\u{E0073}\\u{E0074}\\u{E0065}\\u{E0061}\\u{E0064}\\u{E002C}\\u{E0020}\\u{E0072}\\u{E0065}\\u{E0070}\\u{DB40}\" (+27 chars) -> 1 vs 0",
-          "input#4359 \"Normal visible text \\u{E0049}\\u{E0067}\\u{E006E}\\u{E006F}\\u{E0072}\\u{E0065}\\u{E0020}\\u{E0061}\\u{E006C}\\u{E006C} and mor\" (+14 chars) -> 1 vs 0"
+          "input#4613 \"Please summarize this: \\u{E0049}\\u{E006E}\\u{E0073}\\u{E0074}\\u{E0065}\\u{E0061}\\u{E0064}\\u{E002C}\\u{E0020}\\u{E0072}\\u{E0065}\\u{E0070}\\u{DB40}\" (+27 chars) -> 1 vs 0",
+          "input#4614 \"Normal visible text \\u{E0049}\\u{E0067}\\u{E006E}\\u{E006F}\\u{E0072}\\u{E0065}\\u{E0020}\\u{E0061}\\u{E006C}\\u{E006C} and mor\" (+14 chars) -> 1 vs 0"
         ]
       }
     ]

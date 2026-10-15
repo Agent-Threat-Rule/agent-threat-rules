@@ -37,6 +37,7 @@ import { resolve } from 'node:path';
 import { decodeBase64Blocks, foldConfusables, normalizeUnicode } from '../src/engine.js';
 import { loadRulesFromDirectory } from '../src/loader.js';
 import type { ATRRule } from '../src/types.js';
+import { needsUnicodeFlag } from '../src/engine.js';
 
 const RULES_DIR = resolve(process.cwd(), 'rules');
 
@@ -184,7 +185,7 @@ function matchOne(c: ArrayCond, value: string): boolean {
     const op = condOp(c);
     if (op === 'regex') {
       const raw = stripInlineFlags(raw0);
-      const flags = (cs ? '' : 'i') + (raw.includes('\\u{') || raw.includes('\\p{') ? 'u' : '');
+      const flags = (cs ? '' : 'i') + (needsUnicodeFlag(raw) ? 'u' : '');
       try {
         if (new RegExp(raw, flags).test(value)) return true;
       } catch {

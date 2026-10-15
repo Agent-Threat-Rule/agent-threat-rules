@@ -45,8 +45,7 @@ export default function PartnerSyncPage() {
           rules into their own detection stack via npm / PyPI / YAML, and want their integration to
           follow upstream releases automatically rather than waiting on a manual re-install. Keeping
           a detection stack current is the standard's job, not the integrator's — this endpoint is
-          one way to make that automatic, the same shape as the weekly auto-sync workflow Microsoft
-          AGT runs against ATR upstream. For most users, the offline{' '}
+          one way to make that automatic. For most users, the offline{' '}
           <code className="rounded bg-neutral-800 px-1">npm install agent-threat-rules</code> or{' '}
           <code className="rounded bg-neutral-800 px-1">pip install pyatr</code> path is the right
           one — this endpoint is not required to use the standard.

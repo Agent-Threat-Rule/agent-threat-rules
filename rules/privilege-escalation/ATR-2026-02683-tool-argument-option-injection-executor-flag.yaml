@@ -1,0 +1,266 @@
+title: "Agent Tool Data Argument Carries a Program-Executing CLI Option"
+id: ATR-2026-02683
+rule_version: 2
+status: experimental
+description: >
+  Detects an agent tool argument that is supposed to hold DATA -- a search
+  pattern, a glob, a file path, an output name -- but whose value begins with a
+  dash and names a CLI option that makes the underlying binary run a program of
+  the caller's choosing. ripgrep's --pre=<prog> (every matched file is piped
+  through <prog>), tar's --checkpoint-action=exec=<cmd> and --to-command=<cmd>,
+  rsync/scp's -e <shell> and --rsh=<shell>, wget's --output-document=<path>
+  (write anywhere, including a shell startup file), GNU tar's
+  --use-compress-program=<prog>. Mined from CVE-2026-48116 (AnythingLLM
+  filesystem-search-files passes the LLM-controlled pattern straight to ripgrep,
+  so "--pre=/bin/sh" is command execution). None of this needs a single shell
+  metacharacter, which is exactly why ATR's metacharacter rules (ATR-2026-00111
+  and friends) stay silent on it: the injection happens in the argument VECTOR,
+  before any shell is involved. The rule requires the option to carry a real
+  program or path operand, so a developer searching their codebase for the
+  literal string "--pre=" does not match.
+
+  V2 -- ADVERSARIAL REVIEW 2026-08-24. The operand requirement held, but the
+  KEY side did not. v1 accepted any occurrence of a data-shaped word followed by
+  a colon or an equals sign, which is the syntax of ordinary shell, Make, YAML
+  and Dockerfile assignment. 11 of 18 hand-written benign twins fired:
+    ARGS="--use-compress-program=zstd" in a backup script; a JSON job config
+    {"bin":"tar","args":"--use-compress-program=pigz -cf ..."}; a GitHub Actions
+    step with args: --output-document=/tmp/tool.tgz; a Makefile
+    OUTPUT = --output-document=...; a deploy script ARGS="-e ssh -o
+    StrictHostKeyChecking=no"; rsync telemetry {"cmd":"rsync","args":"-e ssh
+    -o BatchMode=yes"}; a k8s CronJob args:; a Dockerfile ENV OUTPUT=...;
+    a Python unit test args = "--output-document=/home/dev/.bashrc" asserting
+    the validator REJECTS it; and remediation prose (English and Traditional
+    Chinese) that names the payload -- pattern = "--pre=/bin/sh" -- in the
+    course of telling you to block it.
+  The common factor: an executing CLI option is a perfectly ordinary VALUE for a
+  variable that holds command-line options. What makes it an attack is that the
+  value arrived as a TOOL ARGUMENT, and v1 never checked that.
+
+  THE FIX: the key/value pair must be framed as an agent tool invocation --
+  either a QUOTED key inside an arguments/parameters/params/tool_input object,
+  or a keyword argument sitting immediately after "(" or "," in a call. Bare
+  KEY=value and bare YAML key: value no longer match. Measured after the fix:
+  0 of 18 benign twins, 0 of 10 fresh round-2 twins (legitimate search /
+  extract / rsync / fetch tool calls, and bash tool calls where the option is
+  the command's OWN flag: tar --use-compress-program=zstd, rsync -e 'ssh -o
+  BatchMode=yes', wget --output-document=/tmp/tool.tgz), 5 of 5 true positives
+  retained.
+
+  RESIDUAL, MEASURED: an advisory that quotes the tool call verbatim
+  ({"arguments":{"pattern":"--pre=/bin/sh"}}) still fires. Irreducible: those
+  are the exact bytes of the attack.
+
+  CORPUS CAVEAT: FP-clean on the 13,601-sample benign corpus is a
+  ZERO-MEASUREMENT pass here -- only 2 corpus samples contain any of these
+  option spellings at all. The twins below are the real evidence.
+author: "ATR Community (CVE sweep)"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-48116"
+  cwe:
+    - "CWE-88"
+    - "CWE-78"
+  owasp_llm:
+    - "LLM06:2025"
+    - "LLM01:2025"
+  owasp_agentic:
+    - "ASI05:2026"
+    - "ASI02:2026"
+  mitre_attack:
+    - "T1059 - Command and Scripting Interpreter"
+  mitre_atlas:
+    - "AML.T0053 - AI Agent Tool Invocation"
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2026-48116"
+    - "https://www.gnu.org/software/tar/manual/html_section/checkpoints.html"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resistance to behaviour-altering exploitation; this rule detects argument-vector injection that turns a read-only agent tool into command execution."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system) requires identified risks to be treated by appropriate measures; this rule is the runtime treatment for the tool-argument option-injection risk class."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Option injection through model-controlled tool arguments is an identified AI risk requiring an active runtime countermeasure; this rule implements it."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Cataloguing argument-vector injection into agent tools as a risk in the organizational AI risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control) is operationalised by validating that data-shaped tool arguments are not option flags."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented by alerting on the executing-option operand."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: tool-argument-option-injection
+  scan_target: agent
+  confidence: high
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?i)(?:["'']?\b(?:arguments|parameters|tool_input|params|toolinput)["'']?\s{0,3}[:=][\s\S]{0,300}?\\?["''](?:pattern|query|search_?term|search_?string|glob|regex|file_?path|file_?name|filename|path|dir|directory|target|source|input|output|args?)\\?["'']\s{0,3}:\s{0,3}\\?["'']--(?:pre|pre-glob|use-compress-program|rsh|to-command|output-document|remote-shell|checkpoint-action)=\s{0,3}["'']?[./~$]{0,2}[\w./$-]{1,40}|[(,]\s{0,3}(?:pattern|query|search_?term|search_?string|glob|regex|file_?path|file_?name|filename|path|dir|directory|target|source|input|output|args?)\s{0,3}=\s{0,3}["'']--(?:pre|pre-glob|use-compress-program|rsh|to-command|output-document|remote-shell|checkpoint-action)=\s{0,3}["'']?[./~$]{0,2}[\w./$-]{1,40})'
+      description: "A data-shaped tool argument whose value is an executing CLI option with a real operand: ripgrep --pre=<prog>, tar --to-command=/--use-compress-program=/--checkpoint-action=exec=<cmd>, rsync --rsh=<shell>, wget --output-document=<path>. The operand requirement is what separates this from someone searching for the flag name itself."
+    - field: content
+      operator: regex
+      value: '(?i)(?:["'']?\b(?:arguments|parameters|tool_input|params|toolinput)["'']?\s{0,3}[:=][\s\S]{0,300}?\\?["''](?:pattern|query|glob|file_?path|filename|path|dir|directory|target|source|input|args?)\\?["'']\s{0,3}:\s{0,3}\\?["'']-e\s{1,3}(?:/bin/|\bsh\b|\bbash\b|ssh\s{1,3}-o)|[(,]\s{0,3}(?:pattern|query|glob|file_?path|filename|path|dir|directory|target|source|input|args?)\s{0,3}=\s{0,3}["'']-e\s{1,3}(?:/bin/|\bsh\b|\bbash\b|ssh\s{1,3}-o))'
+      description: "rsync/scp -e supplied as a data argument, naming a shell (or ssh with an option) as the remote-shell program -- the classic argument-vector escape for file-transfer tools"
+  false_positives:
+    - "Searching a codebase for the flag itself, e.g. {\"pattern\": \"--pre=\"} or rg -- '--output-document' -- the patterns require a real operand after the equals sign"
+    - "A legitimate rsync invocation written as a command string rather than as a data argument, e.g. rsync -e 'ssh -p 2222' src host:/dst -- the -e condition requires the value to sit behind a data-shaped key such as path/pattern/filename"
+    - "tar --use-compress-program=pigz used deliberately by a build script as the compressor, when it is passed as the command itself and not as the value of a path/pattern argument"
+    - "Documentation describing ripgrep's --pre preprocessor feature in prose"
+
+response:
+  actions:
+    - alert
+  message_template: >
+    [ATR-2026-02683] A tool argument that should carry data (a search pattern, a
+    path, an output name) instead carries a CLI option that executes a program.
+    The underlying binary will run it. Reject the argument or pass it after an
+    explicit -- terminator.
+
+confidence: 82
+
+test_cases:
+  true_positives:
+    - input: '{"tool":"filesystem-search-files","arguments":{"pattern":"--pre=/bin/sh","path":"/app"}}'
+      expected: triggered
+      description: "CVE-2026-48116: ripgrep --pre turns every matched file into a shell invocation"
+    - input: '{"tool":"extract_archive","arguments":{"path":"--checkpoint-action=exec=/usr/bin/env curl"}}'
+      expected: triggered
+      description: "tar checkpoint action supplied where an archive path was expected"
+    - input: '{"tool":"sync_files","arguments":{"source":"-e sh -c \"id > /tmp/o\"","target":"host:/srv"}}'
+      expected: triggered
+      description: "rsync remote-shell option smuggled through the source argument"
+    - input: 'search_files(query="--pre=~/.local/bin/wrap", dir="/workspace")'
+      expected: triggered
+      description: "Same ripgrep primitive with a home-relative preprocessor path, keyword-argument spelling"
+    - input: '{"tool":"fetch","arguments":{"output":"--output-document=/home/dev/.bashrc"}}'
+      expected: triggered
+      description: "wget output-document supplied as the output argument, aimed at a shell startup file"
+  true_negatives:
+    - input: '{"tool":"filesystem-search-files","arguments":{"pattern":"--pre=","path":"/app"}}'
+      expected: not_triggered
+      description: "ADVERSARIAL: a developer searching the tree for uses of the --pre flag. Found while writing benign twins; kept passing because the pattern requires a real operand after the equals sign."
+    - input: '{"tool":"filesystem-search-files","arguments":{"pattern":"TODO|FIXME","path":"src/"}}'
+      expected: not_triggered
+      description: "Ordinary search pattern"
+    - input: "rsync -avz -e 'ssh -p 2222' ./dist deploy@build-01:/srv/app"
+      expected: not_triggered
+      description: "A real rsync command line with a custom remote shell -- the option is the command's own, not the value of a data argument"
+    - input: 'tar --use-compress-program=pigz -cf backup.tar.gz ./data'
+      expected: not_triggered
+      description: "Build script choosing a faster compressor, written as the command itself"
+    - input: '{"tool":"read_file","arguments":{"path":"docs/ripgrep-preprocessor.md"}}'
+      expected: not_triggered
+      description: "Reading the documentation page about --pre"
+    - input: 'ripgrep supports a --pre flag that pipes each file through a preprocessor before searching; see the guide for --pre-glob as well.'
+      expected: not_triggered
+      description: "Prose describing the feature, no argument assignment"
+    - input: '{"tool":"download","arguments":{"url":"https://example.com/report.pdf","output":"report.pdf"}}'
+      expected: not_triggered
+      description: "Ordinary download with a plain output filename"
+    - input: "#!/bin/sh\nARGS=\"--use-compress-program=zstd\"\ntar $ARGS -cf /backup/db.tar.zst /var/lib/postgresql"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): shell var holding tar opts"
+    - input: "{\"name\":\"nightly-backup\",\"bin\":\"tar\",\"args\":\"--use-compress-program=pigz -cf /backup/db.tar.gz /data\"}"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): JSON job config for a backup task"
+    - input: "      - uses: docker://alpine:3.20\n        with:\n          args: --output-document=/tmp/tool.tgz https://dl.example.com/tool.tgz"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): GitHub Actions container step"
+    - input: "OUTPUT = --output-document=/tmp/artifact.tgz\nfetch:\n\twget $(OUTPUT) $(URL)"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): Makefile variable"
+    - input: "ARGS=\"-e ssh -o StrictHostKeyChecking=no -o BatchMode=yes\"\nrsync -az $ARGS ./dist deploy@build-01:/srv/app"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): deploy script rsync ssh opts"
+    - input: "Mitigation: reject any tool call where pattern = \"--pre=/bin/sh\" or path = \"--checkpoint-action=exec=/bin/sh\" before it reaches the binary."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): remediation doc naming the payload (security writing)"
+    - input: "def test_rejects_option_injection():\n    args = \"--output-document=/home/dev/.bashrc\"\n    assert not validate_tool_argument(args)"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): unit test asserting the validator rejects it"
+    - input: "{\"cmd\":\"rsync\",\"args\":\"-e ssh -o BatchMode=yes\",\"src\":\"./dist\",\"rc\":0,\"ms\":812}"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): deployment telemetry log line"
+    - input: "修復方式:凡是 pattern = \"--pre=/bin/sh\" 這類以連字號開頭的值都要拒絕,或在參數前加上 -- 終止符。"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): zh-TW advisory explaining CVE-2026-48116"
+    - input: "# ~/.ripgreprc\n--smart-case\n--pre-glob=*.pdf\n--pre=/usr/local/bin/rga-preproc"
+      expected: not_triggered
+      description: "Benign twin held by both versions: .ripgreprc config file"
+    - input: "- name: Sync build output\n  synchronize:\n    src: ./dist/\n    dest: /srv/app/\n    rsync_opts:\n      - \"-e ssh -o StrictHostKeyChecking=no\""
+      expected: not_triggered
+      description: "Benign twin held by both versions: ansible synchronize rsync_opts"
+    - input: "{\"tool\":\"filesystem-search-files\",\"arguments\":{\"pattern\":\"--use-compress-program=\",\"path\":\"/app\"}}"
+      expected: not_triggered
+      description: "Benign twin held by both versions: developer searching the tree for the flag"
+    - input: "          command: [\"/bin/sh\",\"-c\"]\n          args: --use-compress-program=zstd -cf /backup/db.tar.zst /data"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): k8s CronJob backup container"
+    - input: "--to-command=COMMAND\n     Pipe extracted files through COMMAND. The file name is passed in TAR_FILENAME."
+      expected: not_triggered
+      description: "Benign twin held by both versions: GNU tar manual excerpt"
+    - input: "ENV OUTPUT=--output-document=/opt/tool.tgz\nRUN wget $OUTPUT https://dl.example.com/tool.tgz"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): dockerfile env for a fetch helper"
+    - input: "{\"tool\":\"filesystem-search-files\",\"arguments\":{\"pattern\":\"func (s \\*Server) Handle\",\"path\":\"/app/internal\"}}"
+      expected: not_triggered
+      description: "Benign twin held by both versions: legit search tool call"
+    - input: "{\"tool\":\"extract_archive\",\"arguments\":{\"path\":\"/tmp/release-1.4.2.tar.gz\",\"dest\":\"/opt/app\"}}"
+      expected: not_triggered
+      description: "Benign twin held by both versions: legit archive extract"
+    - input: "{\"tool\":\"sync_files\",\"arguments\":{\"source\":\"./dist/\",\"target\":\"deploy@build-01:/srv/app\"}}"
+      expected: not_triggered
+      description: "Benign twin held by both versions: legit rsync tool call"
+    - input: "{\"tool\":\"fetch\",\"arguments\":{\"url\":\"https://dl.example.com/tool.tgz\",\"output\":\"/tmp/tool.tgz\"}}"
+      expected: not_triggered
+      description: "Benign twin held by both versions: legit fetch tool call"
+    - input: "{\"tool\":\"filesystem-search-files\",\"arguments\":{\"pattern\":\"--output-document\",\"path\":\"/app\"}}"
+      expected: not_triggered
+      description: "Benign twin held by both versions: tool call whose pattern searches for the flag"
+    - input: "search_files(query=\"*.tsx\", dir=\"/workspace/src\")"
+      expected: not_triggered
+      description: "Benign twin held by both versions: python kwarg with an ordinary glob"
+    - input: "{\"tool\":\"bash\",\"arguments\":{\"command\":\"tar --use-compress-program=zstd -cf /backup/db.tar.zst /data\"}}"
+      expected: not_triggered
+      description: "Benign twin held by both versions: tar call with compressor as its own flag"
+    - input: "{\"tool\":\"bash\",\"arguments\":{\"command\":\"rsync -az -e 'ssh -o BatchMode=yes' ./dist deploy@host:/srv\"}}"
+      expected: not_triggered
+      description: "Benign twin held by both versions: rsync call with -e as its own flag"
+    - input: "{\"tool\":\"bash\",\"arguments\":{\"command\":\"wget --output-document=/tmp/tool.tgz https://dl.example.com/tool.tgz\"}}"
+      expected: not_triggered
+      description: "Benign twin held by both versions: wget call with -O as its own flag"

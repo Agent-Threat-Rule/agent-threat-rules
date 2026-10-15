@@ -1,0 +1,214 @@
+title: "Query-Language Pipeline Stage Smuggled Into an Identifier-Typed Tool Parameter"
+id: ATR-2026-02669
+rule_version: 1
+status: experimental
+description: >
+  Detects a tool parameter that the tool's own schema describes as an
+  IDENTIFIER -- entityName, entitySelector, table_name, index_name,
+  metric_name, dashboard_id -- carrying a query-language pipeline stage
+  instead: "host-1 | fetch logs | fields content | limit 50000".
+  The observability backend concatenates the identifier into the query it
+  builds, so the appended stages run with the server's credentials and outside
+  every limit the tool documented -- different data source, different fields,
+  a time window and row count the caller was never allowed to ask for.
+  Mined from GHSA-pqh8-p93p-2rx7 (@dynatrace-oss/dynatrace-mcp-server), where
+  parameters not documented as DQL were interpolated into DQL. The same shape
+  appears wherever an MCP server builds a query language from "safe" fields:
+  KQL's | externaldata, Splunk's | inputlookup, Lucene/ES pipelines.
+  ATR-2026-00066 covers template and shell metacharacter injection in tool
+  arguments and has no notion of a query-pipeline stage.
+author: "ATR Community (GHSA sweep)"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: medium
+
+references:
+  ghsa:
+    - "GHSA-pqh8-p93p-2rx7"
+  cwe:
+    - "CWE-943"
+    - "CWE-88"
+  owasp_llm:
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI05:2026"
+  mitre_attack:
+    - "T1213 - Data from Information Repositories"
+  mitre_atlas:
+    - "AML.T0053 - AI Agent Tool Invocation"
+  external:
+    - "https://github.com/advisories/GHSA-pqh8-p93p-2rx7"
+
+metadata_provenance:
+  ghsa: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resistance to input that alters system behaviour; a pipeline stage inside an identifier field rewrites the query the server executes."
+      strength: primary
+    - article: "10"
+      context: "Article 10 (data and data governance): the appended stages read data sets the tool never declared, which is a data-governance boundary failure."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Query-language injection through agent tool parameters is an identified AI risk; this rule is the runtime countermeasure."
+      strength: primary
+    - subcategory: "MP.5.1"
+      context: "Recording observability-query injection in the organizational AI risk register."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control): the documented parameter contract is an operational control, and this rule reports values that break it."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented by alerting before the concatenated query is executed."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: query-language-injection
+  scan_target: runtime
+  confidence: high
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '[{,]\s{0,3}"(?:entity_?name|entity_?selector|table_?name|index_?name|metric_?name|dashboard_?id|cluster_?name|stream_?name)"\s{0,3}:\s{0,3}"(?:[^"\\\n,:]|\\.){0,40}\|\s{1,3}(?:(?:externaldata|inputlookup|mv-expand|make-series|parse-kv|fieldsadd|fieldskeep|fieldsremove|summarize)\b|(?:fetch|fields|limit)\b[^\r\n]{0,24}(?:\||==|\w\())'
+      description: "A JSON tool argument whose identifier-typed key carries a query pipeline stage. Unambiguous query verbs (externaldata, inputlookup, summarize, fieldsAdd, ...) stand alone; the three verbs that are also ordinary English words (fetch, fields, limit) additionally require a second pipe, a comparison or a function call, so a display label such as \"Main Stage | Fetch Festival (2026)\" does not qualify."
+  false_positives:
+    - "MEASURED AND FIXED 2026-08-24 (adversarial review, 19 benign probes through the shipped engine). The published version fired on 12 of 12 first-wave probes. Four separate defects, each fixed: (a) the identifier alternation had no leading boundary, so upstream_name, executable_name and printable_name matched by substring; (b) the value only needed a pipe somewhere, so allowlist regexes such as stream_name = \"^(orders|fetch)-events$\" and index_name: \"(app|fields)-2026.08\" fired; (c) the key could be unquoted and assigned with = or :, so ordinary prose fired -- a GHSA writeup, a CHANGELOG entry, a Traditional Chinese vulnerability explanation, the MCP server's own regression test asserting rejection, and ATR's own rule documentation; (d) a shell pipeline assigned to cluster_name fired."
+    - "MEASURED AND FIXED 2026-08-24, second wave. After (a)-(d) the rule still fired on 7 of 7 display labels that use the ubiquitous ' | ' title separator inside an identifier field: {\"stream_name\":\"Main Stage | Fetch Festival (2026)\"}, {\"metric_name\":\"Requests | Limit (p99)\"}, {\"entity_name\":\"EU West | Fetch & Ship (Ops)\"} and the Traditional Chinese equivalent. Fixed by splitting the verb list: externaldata / inputlookup / summarize / mv-expand / make-series / parse-kv / fieldsAdd / fieldsKeep / fieldsRemove are never ordinary English and stand alone, while fetch / fields / limit additionally require a second pipe, a comparison, or a function call in the following 24 characters."
+    - "A parameter documented as a query and legitimately containing a pipeline (a dql / query / kql field). Those field names are deliberately absent from the identifier list."
+    - "Shell pipelines in a command argument. The query verbs are not shell commands, and the value must be a quoted JSON string attached to an identifier key."
+    - "STATED GAP: the rule now requires the JSON object form ({\"entityName\":\"...\"}) that an mcp_exchange actually carries. A payload rendered as prose or as a Python kwarg (entityName: \"x | fetch logs\", index_name = '...') is no longer detected -- that form could not be separated from documentation describing the advisory, which is the single largest false-positive source for this rule."
+    - "STATED GAP: a pipeline written without a space after the pipe (\"x|fetch logs\") is not detected. The space is what separates a pipeline stage from a regex alternation such as (orders|fetch)."
+
+response:
+  actions:
+    - alert
+  message_template: >
+    [ATR-2026-02669] An identifier-typed tool parameter carries a query
+    pipeline stage. The backend will concatenate it into the query it builds --
+    reject the value or bind it as a parameter instead of concatenating.
+
+confidence: 78
+
+test_cases:
+  true_positives:
+    - input: '{"tool":"execute_dql","arguments":{"entityName":"host-1 | fetch logs | fields content | limit 50000"}}'
+      expected: triggered
+      description: "GHSA-pqh8-p93p-2rx7 -- entityName carrying extra DQL stages, in the JSON form it takes on an mcp_exchange"
+    - input: '{"entitySelector":"x\" | fetch security.events | fieldsAdd secret=lookup()"}'
+      expected: triggered
+      description: "String-break form: the quote is closed and a new stage appended"
+    - input: '{"table_name":"orders | summarize count() by user_id"}'
+      expected: triggered
+      description: "KQL summarize appended to a table identifier"
+    - input: '{"tool":"query_logs","arguments":{"index_name":"app-logs | externaldata (u:string) [@x.csv]"}}'
+      expected: triggered
+      description: "KQL externaldata pulling a remote file through an index identifier"
+  true_negatives:
+    - input: '{"query":"fetch logs | filter dt.entity.host == \"host-1\" | fields content | limit 100"}'
+      expected: not_triggered
+      description: "ADVERSARIAL: a real DQL query in the parameter that is documented as a query -- the pipeline belongs there"
+    - input: '{"entityName":"host-1","query":"fetch logs | limit 100"}'
+      expected: not_triggered
+      description: "Identifier and query supplied as separate parameters, which is the correct usage"
+    - input: 'kubectl get pods -n prod -o name | head -20'
+      expected: not_triggered
+      description: "A shell pipeline; head is not a query verb"
+    - input: 'echo "$cluster_name" | tee -a cluster.log'
+      expected: not_triggered
+      description: "A shell pipeline that happens to involve a cluster_name variable"
+    - input: 'The DQL example in the docs is: fetch logs | fields timestamp, content | limit 20'
+      expected: not_triggered
+      description: "Documentation showing a query, not assigned to an identifier field"
+    - input: "['logs'] | where service == \"api\" | summarize count() by bin_auto(_time)"
+      expected: not_triggered
+      description: "ADVERSARIAL: an ordinary APL/Kusto query in which a quoted literal is followed by a pipe stage. This FIRED the first version of the rule on four real corpus samples and is why the free-standing string-break condition was deleted."
+    - input: '{"query":"AppEvents | where Level == \"Error\" | summarize count() by Source"}'
+      expected: not_triggered
+      description: "ADVERSARIAL: the same ordinary query JSON-encoded, so the quote arrives escaped -- the shape that showed an escaped-quote condition could not stand on its own"
+    - input: '{"metric_name":"builtin:host.cpu.usage","resolution":"1m"}'
+      expected: not_triggered
+      description: "A metric identifier holding a real metric key"
+    - input: "table_name = 'orders'  # summarize is done in the SELECT below"
+      expected: not_triggered
+      description: "Identifier holding a plain table name; the query verb appears only in a comment"
+    - input: '{"dashboard_id":"a1b2c3d4-5e6f-7890-abcd-ef1234567890"}'
+      expected: not_triggered
+      description: "A dashboard identifier holding a UUID"
+    - input: '{"upstream_name":"api | fetch-pool","weight":3}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: nginx/Ansible upstream_name contains ''stream_name'' as a substring'
+    - input: '{"executable_name":"renderer | limit-rss","argv":["--headless"]}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: CMake/Bazel executable_name contains ''table_name'' as a substring'
+    - input: '{"printable_name":"Orders | Fetch history"}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: UI breadcrumb using the ubiquitous '' | '' title separator'
+    - input: 'stream_name = "^(orders|fetch)-events$"'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: allowlist regex whose second branch starts with a query verb'
+    - input: 'index_name: "(app|fields)-2026.08"'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: index pattern regex alternation'
+    - input: 'GHSA-pqh8-p93p-2rx7: the server interpolated entityName: "host-1 | fetch logs | fields content" straight into the DQL it built.'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: SECURITY WRITING EXPLAINING THIS EXACT ADVISORY'
+    - input: 'ATR-2026-02669 detects an identifier parameter such as table_name: "orders | summarize count()" carrying a pipeline stage.'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: ATR''s own rule documentation'
+    - input: 'it(''rejects smuggled stages'', () => expect(() => run({entityName: "x | fetch logs"})).toThrow());'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: the MCP server''s own regression test asserting rejection'
+    - input: '## 1.4.2 Security\n- entitySelector = "x | fetch security.events" is now rejected instead of concatenated (GHSA-pqh8-p93p-2rx7).'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: changelog documenting the fix'
+    - input: 'cluster_name="$(kubectl get ns | fields 1)"'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: shell pipeline assigned to a cluster_name variable'
+    - input: '漏洞說明:當 table_name = "orders | summarize count()" 被直接串進查詢字串時,後端就會執行多餘的階段。'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: Traditional Chinese vulnerability explanation'
+    - input: '{"stream_name":"Main Stage | Fetch Festival 2026","bitrate":6000}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: live-stream display name using a '' | '' separator'
+    - input: '{"stream_name":"Main Stage | Fetch Festival (2026)","bitrate":6000}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: live-stream title with a '' | '' separator and a parenthesised year'
+    - input: '{"entity_name":"EU West | Fetch & Ship (Ops)"}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: team/entity display name'
+    - input: '{"metric_name":"Requests | Limit (p99)","unit":"ms"}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: human-readable metric label'
+    - input: '{"cluster_name":"prod | fields (legacy naming)"}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: cluster label noting a legacy naming scheme'
+    - input: '{"index_name":"app | limit (soft cap 5k)"}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: index label mentioning a soft cap'
+    - input: '{"stream_name":"主舞台 | Fetch 音樂節 (2026)"}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: Traditional Chinese stream title'
+    - input: '{"table_name":"orders | fetch (deprecated alias)"}'
+      expected: not_triggered
+      description: 'adversarial review 2026-08-24: table label documenting a deprecated alias'

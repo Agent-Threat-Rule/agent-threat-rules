@@ -266,8 +266,8 @@ The spec is being prepared for:
 
 1. **OASIS Open Project (primary)** as adjacent to CoSAI.
    Target: Q3 2026 acceptance, Q1 2027 first Committee Specification.
-2. **NIST CAISI (citation target)**.
-   No formal submission window currently open; awaiting next RFI.
+2. **NIST CAISI**, as a possible future citation venue only.
+   ATR has no engagement with CAISI.
 3. **IETF (informational draft, transport / OTEL emission only)**
    when reference implementations are stable.
 
@@ -282,6 +282,6 @@ OASIS Open Project."
 - Spec issues: GitHub Issues with label `spec-bug` or `spec-question`
 - Spec proposals: GitHub Pull Requests with AEP template
 - Maintainer: Adam Lin <adam@agentthreatrule.org>
-- Fiscal sponsor: Open Source Collective Inc. (501(c)(3),
-  EIN 81-1567737)
+- Fiscal sponsor: Open Source Collective Inc. (501(c)(6),
+  EIN 82-2037583)
 - TSC (post-ratification): tsc@agentthreatrule.org (mailing list, public)

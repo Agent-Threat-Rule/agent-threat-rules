@@ -55,28 +55,28 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-graphite leading-[1.7]">
             {[
               {
-                name: "PINT (850 samples)",
+                name: "PINT-format (850 samples)",
                 verdict: locale === "zh"
-                  ? "ATR 在 850 個 PINT 格式對抗性樣本（自建語料，來自 deepset + Lakera Gandalf，非 Lakera 官方私有 benchmark）上達到 63.2% 召回率、99.7% 精準度、0.25% FP——代表規則在真實 MCP 流量中幾乎不誤報。"
-                  : "ATR reaches 63.2% recall, 99.7% precision, and 0.25% FP on 850 PINT-format adversarial samples (self-built from deepset + Lakera Gandalf; not Lakera's official private benchmark) — rules rarely fire on legitimate MCP traffic.",
+                  ? "ATR 在 850 個 PINT 格式對抗性樣本上達到 65.4% 召回率，並在該語料的 399 個良性樣本上 0 誤報（ATR 3.5.12，量測於 2026-08-15）。這是自建語料（deepset + Lakera Gandalf），不是 Lakera 官方私有 PINT benchmark；只有一小部分規則會在這份語料上開火，請讀成 prompt injection 家族的分數，不是整體覆蓋率。"
+                  : "ATR reaches 65.4% recall on 850 PINT-format adversarial samples, with zero false positives on that corpus's 399 benign samples (ATR 3.5.12, measured 2026-08-15). This is a self-built corpus (deepset + Lakera Gandalf), not Lakera's official private PINT benchmark; only a small subset of rules fire on it, so read it as a prompt-injection-family score rather than overall coverage.",
               },
               {
                 name: "HackAPrompt (4,780 samples)",
                 verdict: locale === "zh"
-                  ? "ATR 在 4,780 個 HackAPrompt 競賽樣本上達到 66.0% 召回率、100% 精準度，且不誤報。"
-                  : "ATR catches 66.0% of the 4,780 HackAPrompt competition samples at 100% precision, with no false alarms.",
+                  ? "ATR 在 4,780 個 HackAPrompt 競賽樣本上達到 69.6% 召回率（ATR 3.5.0，量測於 2026-06-16）。這份語料 100% 對抗性、沒有良性樣本，所以它算不出 precision 或誤報率——別把它當精準度證據。"
+                  : "ATR catches 69.6% of the 4,780 HackAPrompt competition samples (ATR 3.5.0, measured 2026-06-16). The corpus is 100% adversarial with no benign population, so it cannot yield a precision or false-positive figure — do not read it as precision evidence.",
               },
               {
                 name: "Self-test (341 samples)",
                 verdict: locale === "zh"
-                  ? "ATR 在 341 個內部自測樣本上達到 89.4% 召回率、100% 精準度、0% FP——這是與 SKILL.md benchmark 分開的獨立語料。"
-                  : "ATR reaches 89.4% recall, 100% precision, and 0% FP on 341 internal self-test samples — a separate corpus from the SKILL.md benchmark.",
+                  ? "ATR 在 341 個內部自測樣本上達到 96.6% 召回率、0 誤報（ATR 3.5.12，量測於 2026-08-15）——這是與 SKILL.md benchmark 分開的獨立語料，且是自家語料,不能當成樣本外證據。"
+                  : "ATR reaches 96.6% recall with zero false positives on 341 internal self-test samples (ATR 3.5.12, measured 2026-08-15) — a separate corpus from the SKILL.md benchmark, and an in-house one, so it is not out-of-sample evidence.",
               },
               {
                 name: "garak (650 in-the-wild / 3,475 full)",
                 verdict: locale === "zh"
-                  ? "ATR 對 garak in-the-wild jailbreak 集（650 個 prompt）達到 98.0% 召回率；對完整 23-probe garak 套件（3,475 個 prompt）為 38.5%。"
-                  : "ATR reaches 98.0% recall on garak's in-the-wild jailbreak set (650 prompts), and 38.5% on the full 23-probe garak suite (3,475 prompts).",
+                  ? "ATR 對 garak in-the-wild jailbreak 集（650 個 prompt）達到 92.3% 召回率；對完整 23-probe garak 套件（3,475 個 prompt）為 57.2%（皆為 ATR 3.5.12，量測於 2026-08-15）。"
+                  : "ATR reaches 92.3% recall on garak's in-the-wild jailbreak set (650 prompts), and 57.2% on the full 23-probe garak suite (3,475 prompts) — both at ATR 3.5.12, measured 2026-08-15.",
               },
             ].map((item) => (
               <div key={item.name}>
@@ -96,7 +96,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
             <div className="font-data text-3xl font-bold text-ink">{stats.owaspAgentic}</div>
           </div>
           <div className="bg-paper p-6 text-center">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">SAFE-MCP</div>
+            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">SAF-MCP (candidate)</div>
             <div className="font-data text-3xl font-bold text-ink">{stats.safeMcp}</div>
           </div>
           <div className="bg-paper p-6 text-center">
@@ -168,8 +168,8 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
 
       {/* SAFE-MCP */}
       <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-12">SAFE-MCP</h2>
-        <p className="text-sm text-stone mb-4">{locale === "zh" ? "85 項 MCP 攻擊技術中，78 項有對應的偵測規則（91.8%）——其餘 7 項是已知缺口，未補的我們直說。對應表正隨類別重整持續校訂。" : "78 of 85 MCP attack techniques are backed by a detection rule (91.8%) — the remaining 7 are known gaps, stated plainly rather than papered over. Mapping is revised continuously as categories are reconciled."}</p>
+        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-12">SAF-MCP</h2>
+        <p className="text-sm text-stone mb-4">{locale === "zh" ? `SAF Framework Model v2 有效技術中，至少有一條經審查 ATR 規則對應（partial 或 adjacent）者為 ${stats.safeMcp}。每組對應依規則實際 pattern 提出，兩位獨立審查者都同意才保留。這是候選對照，未經 SAF 驗證，也不是偵測成效宣稱；adjacent 只提供輔助脈絡，不等於偵測到該技術。沒有對應規則的技術列在對應表最後。` : `Active SAF Framework Model v2 techniques with at least one reviewed ATR rule (partial or adjacent): ${stats.safeMcp}. Each pair was proposed from the rule's actual patterns and kept only when two independent reviewers agreed. These are candidate mappings, not validated by SAF and not a detection-effectiveness claim; an adjacent rule supplies supporting context and does not by itself detect the technique. Techniques with no mapped rule are listed at the end of the mapping.`}</p>
         <a
           href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md"
           target="_blank"

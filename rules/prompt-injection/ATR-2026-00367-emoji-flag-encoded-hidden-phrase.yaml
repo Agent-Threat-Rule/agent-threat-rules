@@ -82,11 +82,11 @@ detection:
       description: '"phrase (that can be) derived from (these/the) emojis" — broadened derivation-request phrasing from inthewild corpus #330; instructs model to decode the flag-emoji sequence into a hidden text string before acting on it; matches both "phrase that can be derived from the emojis" (canonical) and "phrase derived from these emojis" (variant)'
     - field: tool_response
       operator: regex
-      value: '(?:write\s+(?:a\s+)?(?:guide|tutorial|instructions?|how[\s-]to)|decode\s+(?:the\s+)?emojis?\s+(?:into\s+)?(?:a\s+)?phrase|derive\s+(?:a\s+)?(?:phrase|meaning|word)\s+from\s+(?:the\s+)?emojis?)[\s\S]{0,200}(?:[\u{1F1E6}-\u{1F1FF}]){4}'
+      value: '(?:write\s+(?:a\s+)?(?:guide|tutorial|instructions?|how[\s-]to)|decode\s+(?:the\s+)?emojis?\s+(?:into\s+)?(?:a\s+)?phrase|derive\s+(?:a\s+)?(?:phrase|meaning|word)\s+from\s+(?:the\s+)?emojis?)[\s\S]{0,200}(?:[🇦-🇿]){4}'
       description: 'Guide/decode instruction followed within 200 chars by ≥4 regional-indicator emoji (U+1F1E6–U+1F1FF) — combines the action directive with the flag-encoded payload; country flags appear singly in normal text but the ≥4 consecutive threshold catches multi-letter encoded phrases'
     - field: tool_response
       operator: regex
-      value: '(?:[\u{1F1E6}-\u{1F1FF}]){6,}[\s\S]{0,300}(?:write\s+(?:a\s+)?(?:guide|tutorial|instructions?|how[\s-]to)|decode|derive\s+(?:the\s+)?phrase)'
+      value: '(?:[🇦-🇿]){6,}[\s\S]{0,300}(?:write\s+(?:a\s+)?(?:guide|tutorial|instructions?|how[\s-]to)|decode|derive\s+(?:the\s+)?phrase)'
       description: '≥6 consecutive regional-indicator emoji (U+1F1E6–U+1F1FF) followed within 300 chars by a guide/decode action — covers payloads where the emoji block precedes the instruction; ≥6 threshold (3 two-codepoint flag emoji) reliably indicates an encoded multi-word phrase rather than a flag cluster in travel content'
   condition: any
   false_positives:

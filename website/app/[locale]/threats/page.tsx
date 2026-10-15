@@ -14,7 +14,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: "Threat Feed - ATR",
   description:
-    "Public blacklist of flagged AI agent skills. 1,302 flagged, 552 confirmed malware. Generated from open ATR ecosystem scans; Threat Cloud is an optional reference service that can also feed reports.",
+    "Public blacklist of flagged AI agent skills, generated from open ATR ecosystem scans. Threat Cloud is an optional reference service that can also feed reports.",
 };
 
 interface BlacklistData {
@@ -96,8 +96,8 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
       <Reveal delay={0.2}>
         <p className="text-base text-stone font-light mb-8 max-w-[560px] leading-[1.8]">
           {zh
-            ? <>一個偵測標準若只活在規格書裡，就沒有意義。<br />ATR 掃描了 {stats.megaScanTotal.toLocaleString()} 個真實 skill，標記 {bl.total_flagged.toLocaleString()} 個有風險、確認 {bl.confirmed_malware} 個為惡意軟體，<br className="sm:hidden" />並把背後的行為者公開記錄下來。<br /><br className="sm:hidden" />名單與規則都以 MIT 授權公開——任何人都能查詢、引用、自行核對。</>
-            : <>A detection standard that only lives in a spec is worth nothing. ATR scanned {stats.megaScanTotal.toLocaleString()} real skills, flagged {bl.total_flagged.toLocaleString()} as risky, confirmed {bl.confirmed_malware} as malware, and documented the actors behind them.<br /><br className="sm:hidden" />The list and the rules are public under MIT — anyone can query, cite, and verify them.</>}
+            ? <>一個偵測標準若只活在規格書裡，就沒有意義。<br />ATR 在野外掃描了 {stats.megaScanTotal.toLocaleString()} 個真實 skill 與 MCP server 定義，標記 {stats.megaScanFlagged.toLocaleString()} 個有風險項目（engine v2.0.0，{stats.megaScanDate}），<br className="sm:hidden" />並把背後的行為者公開記錄下來。<br /><br className="sm:hidden" />名單與規則都以 MIT 授權公開——任何人都能查詢、引用、自行核對。</>
+            : <>A detection standard that only lives in a spec is worth nothing. ATR scanned {stats.megaScanTotal.toLocaleString()} real agent skills and MCP server definitions in the wild and flagged {stats.megaScanFlagged.toLocaleString()} of them (engine v2.0.0, {stats.megaScanDate}), documenting the actors behind them.<br /><br className="sm:hidden" />The list and the rules are public under MIT — anyone can query, cite, and verify them.</>}
         </p>
       </Reveal>
 
@@ -106,11 +106,11 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog mb-8">
           <div className="bg-paper p-4 md:p-5">
             <div className="font-data text-2xl md:text-3xl font-bold text-critical">{bl.total_flagged.toLocaleString()}</div>
-            <div className="font-data text-xs text-stone mt-1">{zh ? "已標記" : "flagged"}</div>
+            <div className="font-data text-xs text-stone mt-1">{zh ? "本檔已標記" : "flagged in this file"}</div>
           </div>
           <div className="bg-paper p-4 md:p-5">
-            <div className="font-data text-2xl md:text-3xl font-bold text-critical">{bl.confirmed_malware}</div>
-            <div className="font-data text-xs text-stone mt-1">{zh ? "確認惡意軟體" : "confirmed malware"}</div>
+            <div className="font-data text-2xl md:text-3xl font-bold text-critical">{bl.threat_actors.length}</div>
+            <div className="font-data text-xs text-stone mt-1">{zh ? "已記錄行為者" : "documented actors"}</div>
           </div>
           <div className="bg-paper p-4 md:p-5">
             <div className="font-data text-2xl md:text-3xl font-bold text-ink">{bl.severity.critical}</div>
@@ -121,6 +121,11 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
             <div className="font-data text-xs text-stone mt-1">HIGH</div>
           </div>
         </div>
+        <p className="text-xs text-mist mb-8 leading-[1.7] max-w-[620px]">
+          {zh
+            ? `這些數字是這份公開黑名單檔案自身的統計，快照日期 ${bl.generated}。「已標記」是規則命中，不是人工判定的惡意結論；行為者是以整個帳號為單位裁定的發布者層級歸因，不是逐檔分析。對外可引用的野外掃描數字為 ${stats.megaScanTotal.toLocaleString()} 個掃描項目 / ${stats.megaScanFlagged.toLocaleString()} 個標記項目（engine v2.0.0，${stats.megaScanDate}）。`
+            : `These counts describe this public blacklist file itself, snapshotted ${bl.generated}. "Flagged" means a rule matched, not a human verdict of malice, and the actors are publisher-level attribution applied account-wide rather than per-file analysis. The wild-scan figures cleared for external citation are ${stats.megaScanTotal.toLocaleString()} items scanned / ${stats.megaScanFlagged.toLocaleString()} flagged (engine v2.0.0, ${stats.megaScanDate}).`}
+        </p>
       </Reveal>
 
       {/* Threat actors — clickable profile cards */}
@@ -161,8 +166,8 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
                 </div>
                 <div className="font-data text-xs text-stone mt-2">
                   {zh
-                    ? `個惡意 skill (${a.malRatio})`
-                    : `malicious skills (${a.malRatio})`}
+                    ? `個歸因為惡意的 skill(帳號層級歸因,${a.malRatio})`
+                    : `skills attributed as malicious (publisher-level, ${a.malRatio})`}
                 </div>
                 <p className="text-sm text-graphite mt-4 leading-[1.7] line-clamp-3">
                   {zh ? a.summary.zh : a.summary.en}

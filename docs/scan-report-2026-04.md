@@ -1,5 +1,25 @@
 # 53,577 AI Agent Skills Scanned. 946 Are Malicious.
 
+> **ERRATUM (added 2026-09-22).** This is a dated historical artifact, preserved as
+> published. Figures quoted below have since been withdrawn or frozen and must not be
+> cited as current fact:
+>
+> - **Ecosystem / wild scan.** The "96,096 skills scanned" and "751 confirmed malware"
+>   figures are frozen. The only externally citable wild-scan figures are
+>   **101,280 items scanned / 1,434 flagged** (engine v2.0.0, as of 2026-04-13). See
+>   `docs/research/wild-scan-drift.md`, which also explains why the confirmed-malicious
+>   count is a triage floor and not a precision figure.
+> - **Precision / false-positive rate.** "99.7% precision" and the paired "0.3% FP rate"
+>   were withdrawn on 2026-06-15 and should not be cited by anyone, including this
+>   project. The per-lane FP rates published afterwards were withdrawn as well. Current
+>   version-pinned measurements live in README section 8 and `data/stats.json`.
+> - **Downstream adoption.** A merged pull request into an open-source repository such as
+>   `cisco-ai-defense/skill-scanner` is not a vendor product shipment or endorsement.
+>   `ADOPTERS.md` is the source of truth, with per-entry PR evidence.
+>
+> Rule counts, version numbers and adopter lists below are point-in-time and have moved.
+> Nothing below has been rewritten; this note is the correction of record.
+
 **April 2026** | ATR v1.1.1 | 108 detection rules
 
 We scanned every MCP skill on OpenClaw (50,485) and Skills.sh (3,115) — the two largest public AI agent skill registries. 946 skills contain malicious code, credential theft, reverse shells, or prompt injection payloads. Most are still live.
@@ -76,7 +96,7 @@ atr scan my-mcp-config.json --sarif --output results.sarif
 - Sources: OpenClaw skills repo (50,485 SKILL.md files) + Skills.sh registry (3,115 SKILL.md files)
 - Scan date: April 8, 2026
 - Validation: 824/824 embedded test cases pass, 0% FP on 498 labeled benchmark samples (96.9% recall)
-- Same rules shipped in Cisco AI Defense ([PR #79](https://github.com/cisco-ai-defense/skill-scanner/pull/79))
+- Same rules merged upstream into the open-source `cisco-ai-defense/skill-scanner` repository ([PR #79](https://github.com/cisco-ai-defense/skill-scanner/pull/79)). This is a repository merge, not a shipment in a Cisco commercial product.
 
 ## Full data
 

@@ -37,12 +37,12 @@ This charter defines the technical governance of the Agent Threat Rules (ATR)
 project. ATR is the open detection-rule standard for AI agent threats,
 maintained at github.com/Agent-Threat-Rule/agent-threat-rules under the MIT
 license (code, tooling, rule content, and this charter — a single license
-throughout). Fiscal sponsor: Open Source Collective Inc. (EIN 81-1567737).
+throughout). Fiscal sponsor: Open Source Collective Inc. (EIN 82-2037583).
 
 This charter exists because the ATR rule corpus has reached the adoption
 threshold where single-maintainer governance is a structural risk to
-adopters: Microsoft Agent Governance Toolkit, Cisco AI Defense, MISP CIRCL,
-precize / Gen Digital Sage chain all ship ATR rules into production. F500
+adopters: Cisco AI Defense, MISP CIRCL, and the precize / Gen Digital
+Sage chain have merged ATR work into their public repositories. F500
 buyers, national CERTs, and OASIS / NIST / EU AI Office cannot reliably
 build dependencies on a BDFL.
 
@@ -492,9 +492,9 @@ public commit. Self-nominations are welcome. Existing ecosystem
 maintainers from Microsoft Agent Governance Toolkit, Cisco AI Defense,
 MISP CIRCL, precize, and the OASIS CoSAI Open Project will be
 invited to nominate or self-nominate for the Vendor seats. National
-CERTs that have engaged with ATR previously (NIST CAISI, UK NCSC,
-Singapore IMDA, Five Eyes joint guidance authors, EU AI Office) will be
-invited for the Sovereign liaison seats.
+CERTs and public bodies working on agent security (for example NIST
+CAISI, UK NCSC, Singapore IMDA, the Five Eyes joint guidance authors,
+and the EU AI Office) will be invited for the Sovereign liaison seats.
 
 ---
 

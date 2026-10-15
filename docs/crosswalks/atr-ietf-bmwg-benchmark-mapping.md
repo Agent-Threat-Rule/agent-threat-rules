@@ -135,7 +135,7 @@ exfiltration.
 | 4.10 Identity Uniqueness / Authenticatability | O | Protocol identity control. |
 | 4.11 Ecosystem Asset Security / SBOM | P | `skill-compromise` supply-chain rules flag risky components; SBOM lifecycle management is out of scope. |
 | 4.12 MCP Tool Poisoning Defense | D | `tool-poisoning` core: MCP declaration-vs-execution discrepancy, data-theft/backdoor tools. |
-| 4.13 Plugin / Skill Security | D | `skill-compromise` core: pre-install scan + runtime exfil/reverse-shell detection (ecosystem scan of 96,096 skills / 751 confirmed malware; rule ATR-2026-02261 for code-surface credential exfil). |
+| 4.13 Plugin / Skill Security | D | `skill-compromise` core: pre-install scan + runtime exfil/reverse-shell detection (ecosystem scan of 101,280 skills / MCP definitions across five registries, 1,434 flagged, engine v2.0.0, as of 2026-04-13; rule ATR-2026-02261 for code-surface credential exfil). |
 | 4.14 Prompt Template Tampering Defense | D | `prompt-injection`: system-prompt keyword tampering, semantic backdoors. |
 | 4.15 External API Response Cleaning | D | `prompt-injection`: hidden malicious instructions in third-party API data. |
 | 4.16 Identity / Access Credential Security | D | `context-exfiltration` + `privilege-escalation`: plaintext-key handling and credential exfil (ATR-2026-00201/00224 shell-surface, ATR-2026-02261 code-surface). |

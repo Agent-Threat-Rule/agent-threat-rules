@@ -1,0 +1,57 @@
+name: Workflow lint
+
+# Catches workflows that GitHub will refuse to load.
+#
+# WHY THIS EXISTS
+#
+# On 2026-09-22 three workflows were merged carrying
+# `if: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}` at step level. GitHub does
+# not expose the secrets context there — and it does not fail the step, it
+# rejects the entire file. The run shows up with zero jobs, named after the file
+# path instead of the workflow's own name, and every subsequent push produces
+# another failure notification. main was broken until it was spotted.
+#
+# The change had been checked with a YAML parser, which passed, because the file
+# IS valid YAML. It is the Actions schema that rejects it. Parsing YAML is not
+# validating a workflow, and this job is the difference.
+#
+# actionlint on that exact input:
+#   context "secrets" is not allowed here. available contexts are "env",
+#   "github", "inputs", "job", "matrix", "needs", "runner", "steps", ...
+#
+# It also runs shellcheck over every inline `run:` block, which is how the
+# script-injection holes in issue-to-proposal.yml were found: an attacker-
+# controlled issue title interpolated straight into a shell command, in a job
+# holding a repository PAT.
+#
+# Style findings are non-fatal by configuration (.github/actionlint.yaml). A
+# gate that goes red over redirect style is a gate someone switches off, and the
+# correctness checks go with it.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+      - '.github/actionlint.yaml'
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - '.github/actionlint.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    name: Workflows must be loadable
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Run actionlint
+        uses: docker://rhysd/actionlint:latest
+        with:
+          args: -color
