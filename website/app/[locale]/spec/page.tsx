@@ -271,7 +271,7 @@ test_cases:
   <thead><tr><th>Framework</th><th>Coverage</th><th>Mapping</th></tr></thead>
   <tbody>
     <tr><td>OWASP Agentic Top 10 (2026)</td><td>10/10 categories</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/OWASP-AGENTIC-MAPPING.md" target="_blank" rel="noopener noreferrer">OWASP-AGENTIC-MAPPING.md</a></td></tr>
-    <tr><td>SAFE-MCP</td><td>78/85 techniques (91.8%) (mapping under revision)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md" target="_blank" rel="noopener noreferrer">SAFE-MCP-MAPPING.md</a></td></tr>
+    <tr><td>SAF-MCP</td><td>Reviewed candidate technique mappings against SAF Framework Model v2 (partial or adjacent); not validated by SAF</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md" target="_blank" rel="noopener noreferrer">SAFE-MCP-MAPPING.md</a></td></tr>
     <tr><td>OWASP LLM Top 10 (2025)</td><td>Per-rule references</td><td>Per-rule <code>references.owasp_llm</code></td></tr>
     <tr><td>MITRE ATLAS</td><td>Per-rule references</td><td>Per-rule <code>references.mitre_atlas</code></td></tr>
     <tr><td>NIST AI RMF (community OSCAL catalog)</td><td>Per-rule subcategory mappings</td><td><a href="https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog" target="_blank" rel="noopener noreferrer">ai-rmf-oscal-catalog</a></td></tr>
@@ -289,7 +289,7 @@ test_cases:
   <thead><tr><th>框架</th><th>覆蓋率</th><th>對應</th></tr></thead>
   <tbody>
     <tr><td>OWASP Agentic Top 10 (2026)</td><td>10/10 類別</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/OWASP-AGENTIC-MAPPING.md" target="_blank" rel="noopener noreferrer">OWASP-AGENTIC-MAPPING.md</a></td></tr>
-    <tr><td>SAFE-MCP</td><td>78/85 techniques (91.8%) (對應修訂中)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md" target="_blank" rel="noopener noreferrer">SAFE-MCP-MAPPING.md</a></td></tr>
+    <tr><td>SAF-MCP</td><td>對 SAF Framework Model v2 的經審查候選技術對應(partial 或 adjacent);未經 SAF 驗證</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md" target="_blank" rel="noopener noreferrer">SAFE-MCP-MAPPING.md</a></td></tr>
     <tr><td>OWASP LLM Top 10 (2025)</td><td>Per-rule references</td><td>Per-rule <code>references.owasp_llm</code></td></tr>
     <tr><td>MITRE ATLAS</td><td>Per-rule references</td><td>Per-rule <code>references.mitre_atlas</code></td></tr>
     <tr><td>NIST AI RMF (community OSCAL catalog)</td><td>逐條規則的 subcategory 對應</td><td><a href="https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog" target="_blank" rel="noopener noreferrer">ai-rmf-oscal-catalog</a></td></tr>
@@ -409,7 +409,7 @@ test_cases:
   <li><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10 (2026)</a> — Taxonomy of agentic-application risk categories.</li>
   <li><a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener noreferrer">OWASP LLM Top 10 (2025)</a> — Taxonomy of LLM-application risk categories.</li>
   <li><a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> — Adversarial-threat landscape for AI systems.</li>
-  <li><a href="https://github.com/safe-agentic-framework/safe-mcp" target="_blank" rel="noopener noreferrer">SAFE-MCP</a> — Secure-MCP framework (safe-agentic-framework), technique catalog.</li>
+  <li><a href="https://github.com/secure-agentic-framework/saf-mcp" target="_blank" rel="noopener noreferrer">SAF-MCP</a> — Secure Agentic Framework for Model Context Protocol (secure-agentic-framework), technique catalog.</li>
   <li><a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a> — Generic detection rule format for SIEMs (architectural precedent).</li>
   <li><a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a> — Pattern-matching language for malware (architectural precedent).</li>
 </ul>`,
@@ -427,7 +427,7 @@ test_cases:
   <li><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10 (2026)</a> ── Agentic application 風險類別分類。</li>
   <li><a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener noreferrer">OWASP LLM Top 10 (2025)</a> ── LLM application 風險類別分類。</li>
   <li><a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> ── AI 系統的對抗性威脅 landscape。</li>
-  <li><a href="https://github.com/safe-agentic-framework/safe-mcp" target="_blank" rel="noopener noreferrer">SAFE-MCP</a> ── 安全 MCP 框架 (safe-agentic-framework)、技術型錄。</li>
+  <li><a href="https://github.com/secure-agentic-framework/saf-mcp" target="_blank" rel="noopener noreferrer">SAF-MCP</a> ── 安全 agentic 框架 MCP 版 (secure-agentic-framework)、技術型錄。</li>
   <li><a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a> ── SIEM 通用偵測規則格式 (架構先例)。</li>
   <li><a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a> ── 惡意程式比對語言 (架構先例)。</li>
 </ul>`,

@@ -79,7 +79,6 @@ const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 /** The Markdown documents whose recall figures this script renders and checks. */
 export const DOCUMENTS: readonly string[] = [
   "LIMITATIONS.md",
-  "docs/SAFE-MCP-MAPPING.md",
   "docs/owasp-pr/README.md",
   "docs/owasp-pr/ASI01_Agent_Behaviour_Hijack.md",
 ];

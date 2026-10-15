@@ -11,7 +11,7 @@
 > |---|---|---|
 > | Live rule counts, categories, benchmarks | [`data/stats.json`](data/stats.json) | yes |
 > | OWASP Agentic Top 10 per-category rule counts | [`docs/OWASP-AGENTIC-MAPPING.md`](docs/OWASP-AGENTIC-MAPPING.md) | yes |
-> | SAFE-MCP technique coverage | [`docs/SAFE-MCP-MAPPING.md`](docs/SAFE-MCP-MAPPING.md) | yes |
+> | SAF-MCP candidate technique mappings | [`docs/SAFE-MCP-MAPPING.md`](docs/SAFE-MCP-MAPPING.md) | yes |
 > | Version-pinned benchmark results | README §Evaluation | from `data/measurements/` |
 > | What ATR structurally cannot detect | [`LIMITATIONS.md`](LIMITATIONS.md) | no |
 >
@@ -27,7 +27,7 @@ ASI01 to ASI10 has rules mapped to it.
 |---|---|---|
 | OWASP Agentic Top 10 (2026) | **10 / 10 categories** | [`docs/OWASP-AGENTIC-MAPPING.md`](docs/OWASP-AGENTIC-MAPPING.md) |
 | OWASP LLM Top 10 (2025) | **10 / 10 risks** have tagged rules | per-rule `compliance` / `tags` fields |
-| SAFE-MCP (OpenSSF) | **78 / 85 techniques** (conservative lower bound) | [`docs/SAFE-MCP-MAPPING.md`](docs/SAFE-MCP-MAPPING.md) |
+| SAF-MCP (Framework Model v2) | reviewed candidate mappings, not validated by SAF (count in `stats.json` `coverage.safeMcp`) | [`docs/SAFE-MCP-MAPPING.md`](docs/SAFE-MCP-MAPPING.md) |
 | MITRE ATLAS | referenced across the corpus | per-rule `mitre_atlas` field |
 | MITRE ATT&CK | referenced across the corpus | per-rule mapping fields |
 

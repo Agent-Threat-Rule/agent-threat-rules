@@ -33,7 +33,7 @@ interface Stats {
   distribution: { npm: { downloads30d: number | null }; githubStars: number | null };
   coverage: {
     owaspAgentic: { display: string };
-    safeMcp: { display: string; percentage: number };
+    safeMcp: { covered: number; total: number; display: string; basis: string };
   };
   adoption: {
     externalOrgsMerged: number;

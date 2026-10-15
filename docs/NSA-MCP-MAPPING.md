@@ -1,6 +1,6 @@
 # ATR → NSA "Model Context Protocol (MCP): Security Design Considerations" Mapping
 
-- **ATR corpus version:** v3.5.8 HEAD, 833 rules across 10 detection-rule categories. Headline benchmarks below were measured at v3.5.0 (2026-06-16).
+- **ATR corpus version:** v3.5.8 HEAD, 836 rules across 10 detection-rule categories. Headline benchmarks below were measured at v3.5.0 (2026-06-16).
 - **NSA guidance:** *Model Context Protocol (MCP): Security Design Considerations for AI-Driven Automation*, Cybersecurity Information Sheet (CSI), **NSA Artificial Intelligence Security**, **May 2026 Ver. 1.0** (U/OO/6030316-26 | PP-26-1834), posted 2026-06-02 on media.defense.gov; developed with the Carnegie Mellon University Software Engineering Institute.
 - **Document date:** 2026-06-29 (ratings recalibrated after an adversarial second-reviewer pass — see Verification status)
 - **Maintainer:** Adam Lin (adam@agentthreatrule.org)
@@ -39,7 +39,7 @@ This document does **not** claim NSA endorsement (the CSI carries an explicit no
 | A7 | **Poor or missing audit logs** — logging left to implementers; needs traceable sequence + anomaly detection | `prompt-injection/` 00085† audit-evasion, 00094† audit-bypass; `tool-poisoning/` 00105 silent-action-concealment; + every rule's stable `id`/`severity`/`category`/`response` taxonomy | COMPLEMENTARY (ATR generates no logs; detects audit-evasion *attempts* + supplies event taxonomy) |
 | A8 | **Denial of service and fatigue-based techniques** — prompt storms, recursive tasks, "lethargy" resource exhaustion | `excessive-autonomy/` 00050 runaway-loop, 00051 resource-exhaustion, 00052 cascading-failure | MODERATE (detects *textual descriptions* of loops/exhaustion — 00052 says so explicitly — not live runtime resource state) |
 
-The CSI's real-world examples section maps onto existing ATR coverage too: *Tool parameter injection* → `skill-compromise/` 00066, `tool-poisoning/` 00277; *Tool invocation path confusion / naming collisions* → 00089 polymorphic-aliasing, 00106 schema-description-contradiction; *Unrestricted GitHub repo access* → 00064 over-permissioned-skill; *WhatsApp MCP rug-pull* → 00065 skill-update-attack; *Poisoning output for downstream automation* → 00083† indirect-tool-injection, 00063 multi-skill-chain; *CVE-2025-49596 MCP-Inspector RCE* → **known gap** (tracked as SAFE-T1109 in [SAFE-MCP-MAPPING.md](./SAFE-MCP-MAPPING.md)).
+The CSI's real-world examples section maps onto existing ATR coverage too: *Tool parameter injection* → `skill-compromise/` 00066, `tool-poisoning/` 00277; *Tool invocation path confusion / naming collisions* → 00089 polymorphic-aliasing, 00106 schema-description-contradiction; *Unrestricted GitHub repo access* → 00064 over-permissioned-skill; *WhatsApp MCP rug-pull* → 00065 skill-update-attack; *Poisoning output for downstream automation* → 00083† indirect-tool-injection, 00063 multi-skill-chain; *CVE-2025-49596 MCP-Inspector RCE* → **known gap** (was SAFE-T1109; SAF Framework Model v2 deprecated it in favour of SAF-T1005 / SAF-T1101, see [SAFE-MCP-MAPPING.md](./SAFE-MCP-MAPPING.md)).
 
 > † These rules are `status: draft` and/or carry the predicted-author batch tag — not yet production-promoted. Ratings that lean on them are conservative and should be re-checked as the rules mature; production rules anchor each cluster where possible.
 

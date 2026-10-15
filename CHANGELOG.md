@@ -19,8 +19,7 @@ All notable changes to ATR will be documented in this file.
   figures in README were one-off replays.
 - **Recall figures outside README are rendered from the measurement files.**
   `scripts/render-recall-citations.ts` fills the figures between recall
-  markers in `LIMITATIONS.md`, `docs/SAFE-MCP-MAPPING.md` and the
-  `docs/owasp-pr/` texts, from the file each
+  markers in `LIMITATIONS.md` and the `docs/owasp-pr/` texts, from the file each
   source's `latest.json` points at, in both lanes (every rendering is held to
   the rule README's table is checked by). `scripts/sync-citation-garak.ts`
   generates the garak sentence in `CITATION.cff` from root `stats.json`, with
@@ -1043,7 +1042,7 @@ No rule content changed and no threshold was loosened in any of the above.
 - Wild scan (96K): 1.35% flag rate, 751 confirmed malware
 - OWASP Agentic Top 10: 10/10 coverage
 - MITRE ATLAS: 100/113 rules mapped
-- SAFE-MCP: 91.8% technique coverage
+- SAFE-MCP: technique coverage figure (withdrawn 2026-10: it was not backed by rule-level data; see docs/SAFE-MCP-MAPPING.md)
 - Avg scan latency: 14ms per file
 
 ### Ecosystem

@@ -90,7 +90,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
             <div className="font-data text-3xl font-bold text-ink">{stats.owaspAgentic}</div>
           </div>
           <div className="bg-paper p-6 text-center">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">SAFE-MCP</div>
+            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">SAF-MCP (candidate)</div>
             <div className="font-data text-3xl font-bold text-ink">{stats.safeMcp}</div>
           </div>
           <div className="bg-paper p-6 text-center">
@@ -164,8 +164,8 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
 
       {/* SAFE-MCP */}
       <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-12">SAFE-MCP</h2>
-        <p className="text-sm text-stone mb-4">{locale === "zh" ? "85 項 MCP 攻擊技術中，78 項有對應的偵測規則（91.8%）——其餘 7 項是已知缺口，未補的我們直說。對應表正隨類別重整持續校訂。" : "78 of 85 MCP attack techniques are backed by a detection rule (91.8%) — the remaining 7 are known gaps, stated plainly rather than papered over. Mapping is revised continuously as categories are reconciled."}</p>
+        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-12">SAF-MCP</h2>
+        <p className="text-sm text-stone mb-4">{locale === "zh" ? `SAF Framework Model v2 有效技術中，至少有一條經審查 ATR 規則對應（partial 或 adjacent）者為 ${stats.safeMcp}。每組對應依規則實際 pattern 提出，兩位獨立審查者都同意才保留。這是候選對照，未經 SAF 驗證，也不是偵測成效宣稱；adjacent 只提供輔助脈絡，不等於偵測到該技術。沒有對應規則的技術列在對應表最後。` : `Active SAF Framework Model v2 techniques with at least one reviewed ATR rule (partial or adjacent): ${stats.safeMcp}. Each pair was proposed from the rule's actual patterns and kept only when two independent reviewers agreed. These are candidate mappings, not validated by SAF and not a detection-effectiveness claim; an adjacent rule supplies supporting context and does not by itself detect the technique. Techniques with no mapped rule are listed at the end of the mapping.`}</p>
         <a
           href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md"
           target="_blank"
