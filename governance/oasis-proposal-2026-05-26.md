@@ -205,6 +205,7 @@ To accelerate proposal acceptance, initial PGB members will be confirmed during 
 - ATR Maintainer: Adam Lin (community maintainer, transitioning per `governance/CHARTER.md` § 6.2 founder recusal)
 - Sponsoring members: Cisco + IBM + Anthropic (per § 5)
 - Sovereign liaisons: invitations extended to NIST CAISI, UK NCSC, EU AI Office, Singapore IMDA — slots filled as accepted
+  (Note added 2026-10-16: this line records intent at the time. The maintainers have no record of NIST CAISI accepting a liaison role, and it is not a NIST commitment.)
 - OASIS staff observer: TBD by OASIS staff
 - CoSAI liaison: nominated by CoSAI Steering
 

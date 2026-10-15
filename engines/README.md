@@ -55,8 +55,8 @@ Per the deep research scan grounding `governance/CHARTER.md`:
   platform integrations (Microsoft AGT, Cisco AI Defense, Anthropic
   SDK ecosystem). Stays as reference + production engine.
 - **Python** — covers SOC / SecOps ecosystem (Splunk SOAR, Sumo
-  Logic, Datadog), Python-first ML platforms, NIST CAISI evaluation
-  tooling. Enterprise SOC teams cannot run TS-only engines.
+  Logic, Datadog), Python-first ML platforms, and Python-based
+  evaluation tooling. Enterprise SOC teams cannot run TS-only engines.
 - **Go** — covers SIEM / EDR vendor ecosystem (Elastic, Wazuh,
   Falco), cloud-native + Kubernetes ingestion, and the broader
   cloud-security tooling stack.

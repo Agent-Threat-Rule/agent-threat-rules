@@ -7,7 +7,6 @@
 [![Draft](https://img.shields.io/badge/document-DRAFT-orange?style=flat-square)](#)
 [![Cisco](https://img.shields.io/badge/Cisco_AI_Defense-419_rules_merged-2ea44f?style=flat-square)](https://github.com/cisco-ai-defense/skill-scanner)
 [![MISP](https://img.shields.io/badge/MISP-336_rules_merged-2ea44f?style=flat-square)](https://github.com/MISP/misp-galaxy)
-[![NIST OSCAL](https://img.shields.io/badge/NIST_OSCAL-Path_1_accepted-2ea44f?style=flat-square)](https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog)
 
 </div>
 
@@ -60,15 +59,13 @@ At the time of TSC formation:
   catalog, OWASP Agent Security Regression Harness, Gen Digital
   Sage, plus 4 awesome-list inclusions)
 - 13 external PR merges across these organizations
-- 97.1 % recall on the NVIDIA garak in-the-wild jailbreak corpus
-  (666 prompts); 100 % recall on the SKILL.md real-world corpus
-  (341 samples); 0 % false-positive rate on a 432-sample benign
-  corpus
+- Benchmark figures are kept in README §8 Evaluation, reported per
+  lane with their caveats, and are not repeated here so they cannot
+  go stale
 - Conformance Test Suite v1.0 published with 103 true-positive, 103
   true-negative, and 20 edge-case fixtures
 - IETF Internet-Draft `draft-lin-atr-core-00` prepared and rendered
   via xml2rfc; submission to datatracker imminent
-- NIST OSCAL Path 1 acceptance for the community AI RMF catalog
 
 Per [TSC-CHARTER.md §3](TSC-CHARTER.md), the project is now seating a
 Founding Three Technical Steering Committee. This is an accelerated

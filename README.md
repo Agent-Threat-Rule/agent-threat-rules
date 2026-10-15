@@ -29,7 +29,7 @@ ATR (Agent Threat Rules) is an open detection rule format for AI agent security 
 
 ## Status of This Document
 
-ATR is published as a **Working Draft** at version `4.1.5`. The rule format defined in `SPEC.md` is stable and merged into open-source repos at Microsoft, Cisco, and Gen Digital, and integrated by standards-body projects (MISP / CIRCL, OWASP Agent Security Regression Harness, SigmaHQ, FINOS Common Cloud Controls); full list with PR links in [§6 Adoption](#6-adoption). Governance is currently single-maintainer (BDFL) transitioning to a Technical Steering Committee per [GOVERNANCE.md](GOVERNANCE.md).
+ATR is published as a **Working Draft** at version `4.1.5`. The rule format defined in `SPEC.md` is stable and merged into open-source repos at Microsoft, Cisco, and Gen Digital, and integrated by community projects (MISP / CIRCL, OWASP Agent Security Regression Harness, SigmaHQ, FINOS Common Cloud Controls); full list with PR links in [§6 Adoption](#6-adoption). Governance is currently single-maintainer (BDFL) transitioning to a Technical Steering Committee per [GOVERNANCE.md](GOVERNANCE.md).
 
 All numbers in this document are sourced from [`data/stats.json`](data/stats.json), which is the canonical record of the project's current state. Where this README and `stats.json` disagree, `stats.json` is authoritative.
 
@@ -362,7 +362,7 @@ test_cases:
 
 ## 6. Adoption
 
-Production deployments and standards-body integrations, as of 2026-07-05 (every PR state re-verified against GitHub on that date):
+Merged integrations, as of 2026-07-05 (every PR state re-verified against GitHub on that date):
 
 | Organization | Integration | Reference |
 |---|---|---|
@@ -385,7 +385,7 @@ This is Microsoft Copilot operating inside AGT, not an MSRC endorsement. Coverag
 
 ### Under maintainer review (open PRs)
 
-[NVIDIA NeMo Guardrails #2251](https://github.com/NVIDIA-NeMo/Guardrails/pull/2251) · [BerriAI LiteLLM #28050](https://github.com/BerriAI/litellm/pull/28050) · [promptfoo #8529](https://github.com/promptfoo/promptfoo/pull/8529) · [Cisco mcp-scanner #194](https://github.com/cisco-ai-defense/mcp-scanner/pull/194) · [Splunk security_content #4128](https://github.com/splunk/security_content/pull/4128) · [NIST OSCAL oscal-content #338](https://github.com/usnistgov/oscal-content/pull/338) · [OpenTelemetry semantic-conventions-genai #165](https://github.com/open-telemetry/semantic-conventions-genai/pull/165)
+[NVIDIA NeMo Guardrails #2251](https://github.com/NVIDIA-NeMo/Guardrails/pull/2251) · [BerriAI LiteLLM #28050](https://github.com/BerriAI/litellm/pull/28050) · [promptfoo #8529](https://github.com/promptfoo/promptfoo/pull/8529) · [Cisco mcp-scanner #194](https://github.com/cisco-ai-defense/mcp-scanner/pull/194) · [Splunk security_content #4128](https://github.com/splunk/security_content/pull/4128) · [NIST OSCAL oscal-content #338](https://github.com/usnistgov/oscal-content/pull/338) (on hold at NIST's request) · [OpenTelemetry semantic-conventions-genai #165](https://github.com/open-telemetry/semantic-conventions-genai/pull/165)
 
 ### Integrating ATR into your project
 
@@ -411,7 +411,7 @@ ATR maps its rules onto established frameworks so adopters can answer "we deploy
 | [SAFE-MCP (OpenSSF)](https://github.com/safe-agentic-framework/safe-mcp) | 78/85 techniques (91.8%) | [docs/SAFE-MCP-MAPPING.md](docs/SAFE-MCP-MAPPING.md) |
 | [OWASP LLM Top 10 (2025)](https://owasp.org/www-project-top-10-for-large-language-model-applications/) | Per-rule references | Per-rule `references.owasp_llm` field |
 | [MITRE ATLAS](https://atlas.mitre.org/) | Per-rule references | Per-rule `references.mitre_atlas` field |
-| NIST AI RMF (community OSCAL catalog) | 4/4 functions covered, community catalog (NIST not endorsing) | [Agent-Threat-Rule/ai-rmf-oscal-catalog](https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog) |
+| NIST AI RMF (community OSCAL catalog) | Per-rule subcategory mappings; community catalog, not endorsed by NIST | [Agent-Threat-Rule/ai-rmf-oscal-catalog](https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog) |
 | Five Eyes joint guidance (2026-05-01) | 5-category Careful-Adoption guidance → ATR's 10 categories | [docs/FIVE-EYES-MAPPING.md](docs/FIVE-EYES-MAPPING.md) |
 
 ### Detection categories
@@ -851,7 +851,7 @@ ATR is currently single-maintainer (BDFL) under Adam Lin, transitioning to a Tec
 |---|---|
 | Phase 0 — Core spec, reference engine, initial rule corpus | Done |
 | Phase 1 — Distribution surfaces (npm, PyPI, GitHub Action, SARIF, MCP server) | Done |
-| Phase 2 — Production adoption (Microsoft AGT, Cisco AI Defense, MISP, Gen Digital Sage) | In progress |
+| Phase 2 — Downstream integrations (Cisco skill-scanner, MISP, Gen Digital Sage, Microsoft AGT examples) | In progress |
 | Phase 3 — Community contribution flywheel (issue-to-proposal automation, CVE-collector pipeline) | In progress |
 | Phase 4 — TSC seating; second-engine implementation; submission to a standards body | Planned |
 

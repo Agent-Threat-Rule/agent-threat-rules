@@ -56,7 +56,7 @@ Tailwind config:
   | MISP / CIRCL | L1 Galaxy | 2.2.0 | 2026-05-10 | galaxy #1207 |
   | OWASP A-S-R-H | L1 Citation | 2.2.0 | 2026-05-11 | PR #74 |
   | Gen Digital Sage | L1 Engine | 2.2.0 | 2026-05-11 | PR #33 |
-  | NIST OSCAL | Path 1 Accepted | 2.2.0 | 2026-05-10 | catalog ref |
+- Do not list NIST OSCAL in this table. usnistgov/oscal-content#338 is an open pull request that NIST's OSCAL maintainers asked to hold until NIST publishes its official AI RMF catalog; it is not an implementation. (Corrected 2026-10-16: this table previously had a "NIST OSCAL | Path 1 Accepted" row.)
 - Add 301 redirect: `/ecosystem` → `/implementers` (Next.js `redirects()` in `next.config.ts`).
 - Drop "S-tier / 1-4 commercial" tier language. Use formal `Production / Review / Draft`.
 

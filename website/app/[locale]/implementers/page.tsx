@@ -258,12 +258,12 @@ export default async function ImplementersPage({
         {/* Separate aside: standards-body submissions in review — NOT adoptions */}
         <div className="border border-fog rounded-sm p-4 mt-6 bg-paper" style={{ maxWidth: "42em" }}>
           <p className="text-xs uppercase tracking-[0.18em] text-stone mb-2" style={{ fontFamily: "var(--font-data)" }}>
-            {zh ? "標準機構 submission(審查中,非採用)" : "Standards-body submissions (in review, not adoptions)"}
+            {zh ? "標準機構 submission(暫停中,非採用)" : "Standards-body submissions (on hold, not adoptions)"}
           </p>
           <p className="text-sm text-graphite" style={{ fontFamily: "var(--font-body)" }}>
             {zh
-              ? "ATR 把 AI RMF 社群版 OSCAL catalog 提交給 NIST 官方 usnistgov/oscal-content,目前 submission 審查中(NIST OSCAL maintainer 開了 collaboration branch #338)。這不是 NIST 採用、不是 NIST 背書,因此不列入上方生產實作者表。"
-              : "ATR submitted its community AI RMF OSCAL catalog to NIST's official usnistgov/oscal-content repo; the submission is in review (the NIST OSCAL maintainer opened collaboration branch #338). This is not a NIST adoption or endorsement, so it is not listed in the implementers table above."}
+              ? "ATR 把 AI RMF 社群版 OSCAL catalog 的範例 profile 提交給 NIST 官方 usnistgov/oscal-content(PR #338,在 NIST OSCAL maintainer 開的 collaboration branch 上)。NIST 已請我們擱置,等其官方 AI RMF catalog 發布後再處理。這不是 NIST 採用、不是 NIST 背書,因此不列入上方實作者表。"
+              : "ATR offered example profiles from its community AI RMF OSCAL catalog to NIST's usnistgov/oscal-content repo (PR #338, on a collaboration branch a NIST OSCAL maintainer opened). NIST asked that it be held until NIST publishes its own AI RMF catalog. This is not a NIST adoption or endorsement, so it is not listed in the implementers table above."}
             {" "}
             <a
               href="https://github.com/usnistgov/oscal-content/pull/338"

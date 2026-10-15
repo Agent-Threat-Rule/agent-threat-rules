@@ -221,10 +221,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 <span className="text-ink">MISP / CIRCL</span>
                 <span className="text-fog">·</span>
                 <span className="text-ink">OWASP</span>
-                <span className="text-fog">·</span>
-                <span className="text-ink">NIST AI RMF (OSCAL)</span>
-                <span className="text-fog">·</span>
-                <span className="text-ink">OpenTelemetry</span>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
                 <span>{zh ? "已合併至上游:" : "Merged upstream:"}</span>

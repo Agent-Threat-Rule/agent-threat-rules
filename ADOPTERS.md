@@ -65,10 +65,10 @@ Adopters whose adoption is itself a public-good interoperability artefact
 - **Since**: 2026-05-11
 - **Status**: shipped
 
-### NIST AI RMF — community OSCAL catalog (submission in review)
+### NIST AI RMF — community OSCAL catalog (PR open, on hold)
 - **Org**: ATR maintainers (community contribution; NOT a NIST publication)
 - **Type**: reference
-- **Integration**: Community-authored OSCAL catalog covering NIST AI RMF (72 controls + 31 cross-reference links), CC0-licensed, self-published at Agent-Threat-Rule/ai-rmf-oscal-catalog. The catalog was submitted to the NIST OSCAL team; the initial PR usnistgov/oscal-content#333 was closed and reopened as a scope-aligned rework, usnistgov/oscal-content#338 (currently OPEN, in review). The ATR maintainers are awaiting NIST direction. Listed here for transparency about the submission, NOT as evidence of NIST endorsement.
+- **Integration**: Community-authored OSCAL catalog covering NIST AI RMF (72 controls + 31 cross-reference links), CC0-licensed, self-published at Agent-Threat-Rule/ai-rmf-oscal-catalog. The catalog was offered to the NIST OSCAL team; the initial PR usnistgov/oscal-content#333 was closed and reopened as a scope-aligned rework, usnistgov/oscal-content#338. That PR is open, but NIST's OSCAL maintainers asked that it be held until NIST publishes its own AI RMF catalog. Listed here for transparency about the submission, NOT as evidence of NIST endorsement.
 - **Evidence**: <https://github.com/usnistgov/oscal-content/pull/338>
 - **Since**: 2026-05-10 (community catalog published; PR opened 2026-05-21)
 - **Status**: in-review
@@ -109,7 +109,7 @@ deployment publicly (merged PR, public docs, conference talk, etc.).
 ### Cisco AI Defense
 - **Org**: Cisco
 - **Type**: rule-import
-- **Integration**: ATR rule corpus consumed by the AI Defense skill-scanner; matches surface in the Cisco product UI as detection findings
+- **Integration**: ATR rule pack merged into the open-source cisco-ai-defense/skill-scanner repository. This describes that repository, not any Cisco product
 - **Evidence**: <https://github.com/cisco-ai-defense/skill-scanner/pull/99> (and predecessor PoC #79)
 - **Since**: 2026-04-22
 - **Status**: shipped

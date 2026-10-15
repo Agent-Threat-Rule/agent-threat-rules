@@ -282,9 +282,9 @@ export default async function SovereignAIDefensePage({
           )}
         </p>
         <Callout borderColor="critical">
-          &ldquo;Conventional cybersecurity approaches do not translate cleanly to autonomous agent deployments.&rdquo;
+          &ldquo;While these systems promise significant benefits for productivity and innovation, they present unique security challenges.&rdquo;
           <span className="block font-data text-[10px] tracking-[0.1em] text-stone mt-3 uppercase">
-            NIST CAISI · {zh ? "2026 年 1 月 · 官方承認 AI Agent 防禦標準空白" : "January 2026 · Official acknowledgment of the standards gap"}
+            NIST CAISI · {zh ? "2026 年 1 月 · 公告 AI agent 系統安全資訊徵詢(RFI)" : "January 2026 · announcing its RFI on securing AI agent systems"}
           </span>
         </Callout>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-fog border border-fog mt-7">

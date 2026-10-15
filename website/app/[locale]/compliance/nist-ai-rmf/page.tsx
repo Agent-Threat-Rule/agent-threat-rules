@@ -135,8 +135,8 @@ export default async function NistAiRmfPage({
           </p>
           <p className="text-sm md:text-base text-graphite leading-[1.8] mb-3">
             {zh
-              ? "這份內容進一步提交給 NIST 官方的 usnistgov/oscal-content 倉庫:submission(PR #338)仍在審查中,提交在 NIST 自己的 collaboration branch 上,NIST OSCAL maintainer 已在串上回應、一起對齊內容。維護者已寄信 oscal@nist.gov 詢問方向,等待 NIST 團隊指引中。這是開放標準該走的路徑——把貢獻送進上游、公開協作、由標準機構自己決定要不要採。"
-              : "That content was further submitted to NIST's official usnistgov/oscal-content repository. The submission (PR #338) is in review, contributed onto NIST's own collaboration branch, where the NIST OSCAL maintainer has responded on the thread to align on the content. The maintainers have emailed oscal@nist.gov asking for direction and are awaiting a response. This is the path an open standard is supposed to take — contribute upstream, collaborate in the open, and leave the decision to adopt where it belongs: with the standards body itself."}
+              ? "由它衍生的範例 profile 也以 PR #338 提交給 NIST 官方的 usnistgov/oscal-content 倉庫,放在 NIST OSCAL maintainer 開的 collaboration branch 上。NIST 的 OSCAL maintainer 請我們先擱置,等 NIST 自己的 AI RMF catalog 發布後再處理,所以這個 PR 目前開著但暫停。要不要採用、何時採用,由 NIST 自己決定。"
+              : "Example AI RMF profiles derived from it were also offered to NIST's usnistgov/oscal-content repository as PR #338, on a collaboration branch a NIST OSCAL maintainer opened. NIST's OSCAL maintainers asked that the PR be held until NIST publishes its own AI RMF catalog, so it is open but on hold. Whether and when to use any of it is NIST's decision."}
           </p>
           <div className="bg-ash/40 border border-fog p-4 text-sm text-stone leading-[1.7]">
             <span className="font-data text-xs text-stone tracking-[2px] uppercase block mb-2">
@@ -161,7 +161,7 @@ export default async function NistAiRmfPage({
               rel="noopener noreferrer"
               className="font-data text-xs text-blue hover:underline"
             >
-              {zh ? "查看 NIST 一側的 collaboration branch #338(審查中)" : "Collaboration branch #338 on NIST side (in review)"} &rarr;
+              {zh ? "查看 usnistgov/oscal-content #338(暫停中)" : "usnistgov/oscal-content #338 (on hold)"} &rarr;
             </a>
           </div>
         </div>
@@ -182,11 +182,11 @@ export default async function NistAiRmfPage({
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh ? (
             <>
-              NIST AI Risk Management Framework(AI RMF 1.0 + GenAI Profile)是美國聯邦 AI 機構採用的事實標準,也是 NIST CAISI 推動 COSAiS Single-Agent / Multi-Agent overlay 工作的測量基底。它把 AI 風險管理拆成 GOVERN / MAP / MEASURE / MANAGE 四個 function——這是治理的語言,告訴你該管什麼,卻沒告訴你怎麼在一份 SKILL.md 或一個 MCP tool 描述上把風險抓出來。
+              NIST AI Risk Management Framework(AI RMF 1.0 + GenAI Profile)是 NIST 發布、供各組織自願採用的 AI 風險管理框架。它把 AI 風險管理拆成 GOVERN / MAP / MEASURE / MANAGE 四個 function——這是治理的語言,告訴你該管什麼,卻沒告訴你怎麼在一份 SKILL.md 或一個 MCP tool 描述上把風險抓出來。
             </>
           ) : (
             <>
-              The NIST AI Risk Management Framework (AI RMF 1.0 + GenAI Profile) is the de-facto standard adopted by US federal AI agencies, and the measurement foundation NIST CAISI is using for the COSAiS Single-Agent / Multi-Agent overlay work. It splits AI risk management into four functions — GOVERN / MAP / MEASURE / MANAGE. That is the language of governance: it tells you what to manage, but not how to catch the risk inside a single SKILL.md file or one MCP tool description.
+              The NIST AI Risk Management Framework (AI RMF 1.0 + GenAI Profile) is NIST's framework for managing AI risk, intended for voluntary use. It splits AI risk management into four functions — GOVERN / MAP / MEASURE / MANAGE. That is the language of governance: it tells you what to manage, but not how to catch the risk inside a single SKILL.md file or one MCP tool description.
             </>
           )}
         </p>
@@ -341,27 +341,27 @@ export default async function NistAiRmfPage({
         </ul>
       </Section>
 
-      {/* CAISI relevance */}
-      <Section label={zh ? "05 · NIST CAISI 對應位置" : "05 · NIST CAISI relevance"} delay={0.05}>
+      {/* Related NIST work */}
+      <Section label={zh ? "05 · 相關的 NIST 工作" : "05 · Related NIST work"} delay={0.05}>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh ? (
             <>
-              ATR 設計上希望能作為 NIST CAISI 推動 COSAiS Single-Agent / Multi-Agent overlay 工作的 reference implementation,並以此回應 RFI NIST-2025-0035。這是 ATR 自行提交的回應,不代表 NIST 已選定 ATR。
+              NIST 有幾條和 AI agent 安全相關的公開工作:CAISI 關於 AI agent 系統安全的資訊徵詢(RFI,docket NIST-2025-0035)、COSAiS 為單一 agent 與多 agent 系統制定的 SP 800-53 控制 overlay,以及 NCCoE 的 Software and SI Agent Identity and Authorization 專案。ATR 是獨立的開源專案,NIST 沒有選定、審查或背書 ATR。
             </>
           ) : (
             <>
-              ATR is designed to serve as a reference implementation for NIST CAISI&rsquo;s COSAiS Single-Agent and Multi-Agent overlay work, and responds to RFI NIST-2025-0035 on that basis. This is ATR&rsquo;s own submission, not a selection by NIST.
+              NIST has several public lines of work on AI agent security: CAISI&rsquo;s request for information on securing AI agent systems (docket NIST-2025-0035), the COSAiS SP 800-53 control overlays for single-agent and multi-agent systems, and the NCCoE Software and SI Agent Identity and Authorization project. ATR is an independent open-source project. NIST has not selected, reviewed, or endorsed it.
             </>
           )}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (
             <>
-              CAISI 在 Research Blog 提出的「measurement-science-first」框架,正是這份 mapping 的設計根基:對應到一個 subcategory 不該是一句斷言,而該附帶可重現的量測證據(garak in-the-wild benchmark、SKILL.md FP corpus、公開測試 corpus)。能量到的就標數字,量不到的就不宣稱——這跟 CAISI 對「以量測為先」的要求是同一套紀律。
+              這份 mapping 照「量測優先」的紀律做:對應到一個 subcategory 不該只是一句斷言,而該附帶可重現的量測證據。能量到的就標數字,並註明 lane 與限制;量不到的就不宣稱。
             </>
           ) : (
             <>
-              The &ldquo;measurement-science-first&rdquo; framing CAISI uses in its Research Blog is the foundation this mapping is built on: a claim to serve a subcategory should not be an assertion but a reproducible measurement (garak in-the-wild benchmark, SKILL.md FP corpus, publicly-released test corpora). What can be measured gets a number; what cannot is not claimed — the same discipline CAISI asks for when it puts measurement first.
+              The mapping follows a measurement-first rule: a claim to serve a subcategory should come with a reproducible measurement, not an assertion. What can be measured gets a number, stated with its lane and its limits; what cannot be measured is not claimed.
             </>
           )}
         </p>
@@ -381,21 +381,25 @@ export default async function NistAiRmfPage({
           <li className="flex gap-3">
             <span className="text-blue font-data text-xs pt-[5px]">→</span>
             <span>
-              {zh ? "姊妹計畫:" : "Sister project: "}
-              <a href="https://www.nccoe.nist.gov/projects/software-and-ai-agent-identity-and-authorization" target="_blank" rel="noopener noreferrer" className="text-blue underline-offset-4 hover:underline">
-                NCCoE AI Agent Identity &amp; Authorization
+              {zh ? "相關計畫:" : "Related project: "}
+              <a href="https://www.nccoe.nist.gov/projects/software-and-si-agent-identity-and-authorization" target="_blank" rel="noopener noreferrer" className="text-blue underline-offset-4 hover:underline">
+                NCCoE Software and SI Agent Identity and Authorization
               </a>
               {zh
-                ? "——ATR 的偵測層自然位於身分層之上"
-                : " — ATR's detection layer naturally sits above the identity layer"}
+                ? "——agent 的身分與授權;偵測是另一層,需要身分層提供的 context"
+                : " — identity and authorization for agents; detection is a separate layer that needs that identity context"}
             </span>
           </li>
           <li className="flex gap-3">
             <span className="text-blue font-data text-xs pt-[5px]">→</span>
             <span>
               {zh
-                ? "效能 benchmark(ATR 3.5.12,量測於 2026-08-15):NVIDIA garak in-the-wild jailbreak recall 92.3%(650 樣本)、完整 23-probe garak 57.2%(3,475 樣本)· 498 條已標註 SKILL.md 語料上 FP rate 0.20% · DOI 10.5281/zenodo.19178002"
-                : "Performance benchmarks (ATR 3.5.12, measured 2026-08-15): 92.3% recall on NVIDIA garak's in-the-wild jailbreak set (650 samples) and 57.2% across the full 23-probe garak suite (3,475 samples) · 0.20% FP rate on the 498-sample labeled SKILL.md corpus · DOI 10.5281/zenodo.19178002"}
+                ? "Benchmark 數字分 lane 報告,並附 closed-book 與樣本內的說明:見 README 的 Evaluation 段 "
+                : "Benchmark figures are reported per lane, with closed-book and in-sample caveats, in the README Evaluation section "}
+              <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules#8-evaluation" target="_blank" rel="noopener noreferrer" className="text-blue underline-offset-4 hover:underline">
+                README §8
+              </a>
+              {" · DOI 10.5281/zenodo.19178002"}
             </span>
           </li>
         </ul>
@@ -417,7 +421,7 @@ export default async function NistAiRmfPage({
           />
           <CTACard
             num="NPM"
-            head={zh ? "v3.5.0 已發布" : "v3.5.0 published"}
+            head={zh ? "npm 套件" : "npm package"}
             body="npm install agent-threat-rules"
             href="https://www.npmjs.com/package/agent-threat-rules"
           />
