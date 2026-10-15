@@ -101,8 +101,17 @@ detection:
       value: "(?i)(send[_-]?(email|message|webhook|http|request)|upload|post[_-]?data|transmit|exfil)"
     - field: tool_args
       operator: regex
-      value: '(?i)(?=[\s\S]*(?<![a-z])\.env)(?=[\s\S]*(base64|btoa|encodeURI|hex\.encode|rot13|xor|compress|gzip|deflate|encrypt|webhook|ngrok|requestbin|pipedream|hookbin|burpcollaborator|interact\.sh|\boast\b|curl|wget|\bnc\b|exfil|upload))'
-      description: "Dotenv file access ONLY when chained with an obfuscation-or-egress indicator in the same args (multi-step access-then-obfuscate-then-egress chain). A bare startup-style dotenv reference no longer fires alone; the dangerous egress half is now required to flag this composite data-egress signal."
+      value: '(?i)^(?=[\s\S]*(?<![a-z])\.env)(?=[\s\S]*(base64|btoa|encodeURI|hex\.encode|rot13|xor|compress|gzip|deflate|encrypt|webhook|ngrok|requestbin|pipedream|hookbin|burpcollaborator|interact\.sh|\boast\b|curl|wget|\bnc\b|exfil|upload))'
+      description: >-
+        Dotenv file access ONLY when chained with an obfuscation-or-egress indicator in
+        the same args (multi-step access-then-obfuscate-then-egress chain). A bare
+        startup-style dotenv reference no longer fires alone; the dangerous egress half
+        is now required to flag this composite data-egress signal. Anchored with ^: the
+        pattern is two lookaheads and nothing else, so it can only match at offset 0
+        anyway, but unanchored the engine retried both [\s\S]* scans from every start
+        offset, which is quadratic in input length (32K chars: 1.3s per call, 64K: 2.6s)
+        and was 16% of all CPU in the benign-corpus FP scan. Anchored it is linear and
+        returns the same verdict for every input.
   condition: any
   false_positives:
     - "Legitimate backup or migration workflows that read, compress, and transfer files"
