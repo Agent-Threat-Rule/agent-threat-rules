@@ -492,9 +492,9 @@ public commit. Self-nominations are welcome. Existing ecosystem
 maintainers from Microsoft Agent Governance Toolkit, Cisco AI Defense,
 MISP CIRCL, precize, and the OASIS CoSAI Open Project will be
 invited to nominate or self-nominate for the Vendor seats. National
-CERTs that have engaged with ATR previously (NIST CAISI, UK NCSC,
-Singapore IMDA, Five Eyes joint guidance authors, EU AI Office) will be
-invited for the Sovereign liaison seats.
+CERTs and public bodies working on agent security (for example NIST
+CAISI, UK NCSC, Singapore IMDA, the Five Eyes joint guidance authors,
+and the EU AI Office) will be invited for the Sovereign liaison seats.
 
 ---
 

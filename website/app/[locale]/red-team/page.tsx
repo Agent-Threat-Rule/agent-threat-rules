@@ -180,7 +180,7 @@ const ATTRIBUTION_STATS: AttributionStat[] = [
     number: "RULECOUNT",
     label: "Rules, each carrying the discoverer's name",
     detail:
-      "Every rule carries author + metadata_provenance.discovered_by, and a stable ATR-YYYY-NNNNN ID that never changes after publication. Cisco AI Defense, MISP, and OWASP all preserve the field on sync. When MISP exports to STIX, the attribution survives the format change. When NIST references the rule, the lineage back to the original red-teamer stays intact.",
+      "Every rule carries author + metadata_provenance.discovered_by, and a stable ATR-YYYY-NNNNN ID that never changes after publication. Cisco AI Defense, MISP, and OWASP all preserve the field on sync. When MISP exports to STIX, the attribution survives the format change, and the lineage back to the original red-teamer stays intact.",
   },
   {
     number: "0 FP",
@@ -248,7 +248,7 @@ const CONTRIBUTOR_BENEFITS: ContributorBenefit[] = [
     benefit:
       "A citable artifact paired with the attack you described — one with a stable ID, real downstream consumers, and fire counts in production telemetry, not just a paper that sits behind a paywall.",
     proof:
-      "Your name lives in the rule file's author + metadata_provenance.discovered_by. When MISP exports the taxonomy to STIX, the attribution propagates. When NIST references the rule (collaboration in progress with iMichaela at NIST OSCAL — a working branch, not an endorsement), the lineage back to you is intact.",
+      "Your name lives in the rule file's author + metadata_provenance.discovered_by. When MISP exports the taxonomy to STIX, the attribution propagates, and the lineage back to you stays intact.",
   },
   {
     for: "Corporate red teams",

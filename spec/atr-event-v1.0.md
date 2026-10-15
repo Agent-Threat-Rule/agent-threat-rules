@@ -58,7 +58,7 @@ All conformant engines MUST emit these fields on every event.
 | `@timestamp` | RFC 3339 UTC string | When the rule fired. |
 | `atr.event_id` | UUID v7 (time-ordered) | Globally unique event identifier. |
 | `atr.spec_version` | string | ATR spec version this event conforms to. v1.0 = `"1.0"`. |
-| `atr.engine_id` | string | Identifier of the engine that produced the event. Format: `<vendor>/<product>/<version>`. Example: `atr/typescript-reference/3.1.0`, `cisco/ai-defense/2.4.1`, `microsoft/agent-governance-toolkit/2026.05`. |
+| `atr.engine_id` | string | Identifier of the engine that produced the event. Format: `<vendor>/<product>/<version>`. Example: `atr/typescript-reference/3.1.0`, `example-vendor/example-scanner/2.4.1`, `example-org/agent-gateway/2026.05`. |
 
 ### Rule attribution
 
@@ -105,7 +105,7 @@ All conformant engines MUST emit these fields on every event.
 | Field | Type | Description |
 |---|---|---|
 | `evidence.observation_id` | UUID | Identifier for cross-reference into OSCAL `observation` records. Same as `atr.event_id` recommended unless an existing system has its own. |
-| `evidence.signature` | base64 ed25519 | Signature over the canonical JSON encoding of this event. Signed by the engine's deployment-time key. Required for EU AI Act Article 50 evidence chains and NIST AI RMF audit pipelines. May be omitted in `dev_mode` deployments. |
+| `evidence.signature` | base64 ed25519 | Signature over the canonical JSON encoding of this event. Signed by the engine's deployment-time key. Intended for evidence chains such as EU AI Act record-keeping and OSCAL-based audit pipelines. May be omitted in `dev_mode` deployments. |
 | `evidence.signature_key_id` | string | Identifier of the signing key. SHOULD reference a key registered with the deployer's CA. |
 | `evidence.upstream_chain` | array \| null | When this event is part of a multi-agent chain (A2A), the upstream event IDs that led to this detection. Enables forensic chain reconstruction. |
 
@@ -132,12 +132,17 @@ is known).
 | `agent.from_id` | string |
 | `agent.to_id` | string |
 | `agent.delegation_chain` | array of {agent_id, capability_grant, granted_by} |
-| `agent.identity_assertion` | JWT \| null |
+| `agent.identity_assertion` | string \| null (a reference, never the assertion) |
 
-The `agent.identity_assertion` field anticipates the IETF AI agent
-auth drafts (`draft-klrc-aiagent-auth-00`, `draft-ni-a2a-ai-agent-
-security-requirements-01`) — once those reach RFC, the field carries
-the canonical assertion format.
+The `agent.identity_assertion` field holds a reference to the identity
+assertion that authorised the agent, written `<issuer>#<assertion id>`
+(for a JWT, its `iss` and `jti`, or a SHA-256 digest of the token when it
+has no `jti`). It never holds the assertion itself:
+an assertion is a bearer credential, and the Forbidden fields section
+below rules out raw tokens. The IETF AI agent auth drafts
+(`draft-klrc-aiagent-auth-00`, `draft-ni-a2a-ai-agent-security-requirements-01`)
+may settle a canonical identifier format; until then the reference form
+above applies.
 
 ### Memory write detail (when `atr.matched_field == "memory_write"`)
 
