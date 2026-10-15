@@ -434,9 +434,26 @@ describe("enforce-lane figures", () => {
       expect((blocksOf(stats).skill as Record<string, unknown>).enforceLaneRecall).toBe(0);
     });
 
-    it("adds no enforce figure to a block that does not cite one", () => {
-      const { stats } = renderRootStats(ROOT_STATS, fixtureEntries(), GARAK_FULL_DETAIL, fixtureEnforce());
-      expect(blocksOf(stats).garak).not.toHaveProperty("enforceLaneRecall");
+    it("adds the recorded enforce figure, right after recall, to a block that does not cite one yet", () => {
+      const enforce = fixtureEnforce();
+      const { stats } = renderRootStats(ROOT_STATS, fixtureEntries(), GARAK_FULL_DETAIL, enforce);
+      const garak = blocksOf(stats).garak as Record<string, unknown>;
+      expect(garak.enforceLaneRecall).toBe(Number((enforce.get("garak")! * 100).toFixed(1)));
+      const keys = Object.keys(garak);
+      expect(keys.indexOf("enforceLaneRecall")).toBe(keys.indexOf("recall") + 1);
+      // ...and nothing when the measurement records none.
+      const { stats: none } = renderRootStats(ROOT_STATS, fixtureEntries(), GARAK_FULL_DETAIL, new Map());
+      expect(blocksOf(none).garak).not.toHaveProperty("enforceLaneRecall");
+    });
+
+    it("fails the check when stats.json leaves out an enforce figure the measurement records", () => {
+      const check = findCitationProblems(
+        renderReadme(fixtureReadme(), fixtureEntries(), fixtureEnforce()),
+        { benchmarks: fixtureEntries() },
+        ROOT_STATS,
+        fixtureEnforce(),
+      );
+      expect(check.problems.join("\n")).toMatch(/benchmarks\.garak omits enforceLaneRecall/);
     });
 
     it("holds a block whose enforce figure this run's measurement does not record, and says why", () => {
@@ -498,6 +515,25 @@ describe("renderRootStats", () => {
     expect(blocksOf(stats).skill.caveat).toBe(SKILL_CAVEAT);
     expect(blocksOf(stats).pint.atr_version).toBe("4.1.5");
     expect(dropped.filter((d) => /\.(disclaimer|caveat|notOfficialPint)$/.test(d))).toEqual([]);
+  });
+
+  it("keeps the lane descriptor on garak, pint and skill through a re-stamp", () => {
+    // Each block's recall is the hunt lane; the label must survive every weekly
+    // re-stamp, or a block carrying it would be held as holding an unknown field.
+    const labelled = {
+      ...ROOT_STATS,
+      benchmarks: {
+        ...ROOT_STATS.benchmarks,
+        garak: { ...ROOT_STATS.benchmarks.garak, lane: "hunt" },
+        pint: { ...ROOT_STATS.benchmarks.pint, lane: "hunt" },
+      },
+    };
+    const { stats, held } = renderRootStats(labelled, fixtureEntries(), GARAK_FULL_DETAIL, fixtureEnforce());
+    expect(held).toEqual([]);
+    for (const block of ["garak", "pint", "skill"] as const) {
+      expect((blocksOf(stats)[block] as Record<string, unknown>).lane).toBe("hunt");
+      expect(blocksOf(stats)[block].atr_version).toBe("4.1.5");
+    }
   });
 
   it("keeps a disclaimer on any rendered block, even one it was never written for", () => {

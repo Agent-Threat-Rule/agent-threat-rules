@@ -277,6 +277,12 @@ export const ROOT_BLOCK_SOURCES: ReadonlyMap<string, string> = new Map([
  * Each source's enforce-lane recall, read from `breakdown.enforce_lane` of the
  * measurement file its benchmarks[] entry names. A source whose measurement
  * records none is absent. A malformed record throws: verify.ts rejects it too.
+ *
+ * A measurement file that is missing is reported and treated as recording
+ * none, rather than thrown: the weekly render reads every source's file, and
+ * one dangling pointer must not stop a week's measurements from being pushed.
+ * The check still fails on it, because a cell citing that source's enforce
+ * figure is then backed by nothing.
  */
 export function enforceRecallBySource(
   root: string,
@@ -286,7 +292,10 @@ export function enforceRecallBySource(
   for (const e of entries) {
     if (e.measurement_file === undefined) continue;
     const path = resolve(root, e.measurement_file);
-    if (!existsSync(path)) throw new Error(`${e.source}: measurement file ${e.measurement_file} does not exist`);
+    if (!existsSync(path)) {
+      console.error(`WARNING: ${e.source}: measurement file ${e.measurement_file} does not exist; no enforce figure read`);
+      continue;
+    }
     const m = JSON.parse(readFileSync(path, "utf-8")) as { breakdown?: Record<string, unknown> };
     const raw = m.breakdown?.[ENFORCE_LANE_BREAKDOWN_KEY];
     if (raw !== undefined) out.set(e.source, parseEnforceLaneRecall(raw).recall);
@@ -460,11 +469,23 @@ export function findCitationProblems(
 
   // An enforce-lane figure next to a headline is only as good as the
   // measurement behind it: skill.enforceLaneRecall was hand-written as 0 for
-  // weeks with no run recording it.
+  // weeks with no run recording it. And, as in README, a block whose
+  // measurement records the enforce lane must cite it: this is the file
+  // sync-stats.ts propagates, so a hunt figure must not travel alone from here.
   for (const [block, source] of ROOT_BLOCK_SOURCES) {
-    const cited = rootStats.benchmarks?.[block]?.enforceLaneRecall;
-    if (cited === undefined) continue;
+    const cite = rootStats.benchmarks?.[block];
+    if (cite === undefined) continue;
+    const cited = cite.enforceLaneRecall;
     const recorded = enforce.get(source);
+    if (cited === undefined) {
+      if (recorded !== undefined) {
+        problems.push(
+          `stats.json: benchmarks.${block} omits enforceLaneRecall, but data/measurements/${source}/ ` +
+            `records ${pctLaneNumber(recorded)} (breakdown.enforce_lane)`,
+        );
+      }
+      continue;
+    }
     if (recorded === undefined) {
       problems.push(
         `stats.json: benchmarks.${block}.enforceLaneRecall = ${cited} but data/measurements/${source}/ ` +

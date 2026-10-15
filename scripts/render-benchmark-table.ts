@@ -37,7 +37,9 @@
  *                 byte-identical. Unmeasured and exempt rows are untouched.
  *   stats.json  — recall / samples / atr_version / measured / precision /
  *                 fpRate / detected / missed / enforceLaneRecall are
- *                 recomputed; garak.perFamily is recomputed from garak-full's
+ *                 recomputed, and enforceLaneRecall is added after recall to
+ *                 a block that lacks it when its measurement records the
+ *                 enforce lane; garak.perFamily is recomputed from garak-full's
  *                 by_family when garak-full was measured at the same ATR
  *                 version. Descriptors of the corpus or method — source,
  *                 disclaimer, caveat on every block; lane, tiers,
@@ -90,6 +92,7 @@ import {
   type BenchmarkEntry,
   EXEMPT_SOURCES,
   LABEL_TO_SOURCE,
+  ROOT_BLOCK_SOURCES,
   decimalsFor,
   enforceRecallBySource,
   findCitationProblems,
@@ -279,11 +282,18 @@ interface RootBlockRule {
   readonly perFamilyFrom?: string;
 }
 
+/** The checker's block -> source map, so the two can never cite different measurements. */
+const sourceOf = (block: string): string => {
+  const source = ROOT_BLOCK_SOURCES.get(block);
+  if (source === undefined) throw new Error(`ROOT_BLOCK_SOURCES has no "${block}" block`);
+  return source;
+};
+
 const ROOT_BLOCKS: ReadonlyMap<string, RootBlockRule> = new Map([
   // perFamily has always been garak-full's per-family recall (34.4 / 96.4 / 92.5 at 3.5.12).
-  ["garak", { source: "garak", descriptors: [], perFamilyFrom: "garak-full" }],
-  ["pint", { source: "pint", descriptors: ["tiers", "notOfficialPint"] }],
-  ["skill", { source: "skill-benchmark", descriptors: ["lane"] }],
+  ["garak", { source: sourceOf("garak"), descriptors: ["lane"], perFamilyFrom: "garak-full" }],
+  ["pint", { source: sourceOf("pint"), descriptors: ["tiers", "notOfficialPint", "lane"] }],
+  ["skill", { source: sourceOf("skill"), descriptors: ["lane"] }],
 ]);
 
 /**
@@ -418,7 +428,9 @@ function renderBlock(
     (cite.atr_version !== undefined && cite.atr_version !== computed.atr_version) ||
     (cite.measured !== undefined && cite.measured !== computed.measured);
   const recompute = ([k, v]: [string, unknown]): [string, unknown] => [k, k in computed ? computed[k] : v];
-  if (!restamp) return { cite: Object.fromEntries(Object.entries(cite).map(recompute)), dropped: [], held: [] };
+  if (!restamp) {
+    return { cite: withEnforceFigure(Object.fromEntries(Object.entries(cite).map(recompute)), computed), dropped: [], held: [] };
+  }
 
   const droppable = DROPPABLE_FIELDS.get(key) ?? [];
   const stable = (k: string) => STABLE_FIELDS.includes(k) || rule.descriptors.includes(k);
@@ -437,7 +449,29 @@ function renderBlock(
   const next = Object.entries(cite)
     .filter(([k]) => !keys.includes(k))
     .map(recompute);
-  return { cite: Object.fromEntries(next), dropped: keys.map((k) => `benchmarks.${key}.${k}`), held: [] };
+  return {
+    cite: withEnforceFigure(Object.fromEntries(next), computed),
+    dropped: keys.map((k) => `benchmarks.${key}.${k}`),
+    held: [],
+  };
+}
+
+/**
+ * The one field a render adds rather than only rewriting: a block whose
+ * measurement records the enforce lane cites it, right after its recall, as
+ * the checker requires — the hunt figure must not travel alone from the file
+ * sync-stats.ts propagates.
+ */
+function withEnforceFigure(block: Record<string, unknown>, computed: Record<string, unknown>): Block {
+  if (!("enforceLaneRecall" in computed) || "enforceLaneRecall" in block) return block;
+  const entries = Object.entries(block);
+  const at = entries.findIndex(([k]) => k === "recall") + 1;
+  const insertAt = at === 0 ? entries.length : at;
+  return Object.fromEntries([
+    ...entries.slice(0, insertAt),
+    ["enforceLaneRecall", computed.enforceLaneRecall],
+    ...entries.slice(insertAt),
+  ]);
 }
 
 export interface RootStatsRender {
@@ -450,8 +484,10 @@ export interface RootStatsRender {
 
 /**
  * Pure: root stats.json object in, new object out. Only the blocks in
- * ROOT_BLOCKS change, only keys they already have are written, and key order
- * is preserved, so the file diff is the changed values and removed fields.
+ * ROOT_BLOCKS change, and key order is preserved, so the file diff is the
+ * changed values and removed fields. Only keys a block already has are
+ * written, with one exception: enforceLaneRecall is added, after recall, to a
+ * block whose measurement records the enforce lane (withEnforceFigure).
  */
 export function renderRootStats(
   rootStats: Readonly<Record<string, unknown>>,
