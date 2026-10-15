@@ -190,6 +190,8 @@ jobs:
           This is a rolling PR: each run rebuilds evidence-refresh/rolling from main.
           BODY
             echo
+            echo "Measured at $(git rev-parse HEAD~1), the commit this branch is built on."
+            echo
             cat "$EVIDENCE_DIR/evidence-report.md"
           } > "$BODY_FILE"
 

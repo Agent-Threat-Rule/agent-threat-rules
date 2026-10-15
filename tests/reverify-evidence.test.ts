@@ -183,6 +183,22 @@ describe("states that mean the evidence is not true", () => {
 });
 
 describe("against the repository itself", () => {
+  it("the engine and the gate's reader fingerprint every rule the same way", async () => {
+    // Fresh records carry fingerprints computed on engine-loaded rules; trust is
+    // decided on fingerprints the gate computes on js-yaml documents. If those
+    // ever diverged, every affected record would sit in "detection changed"
+    // forever: never trusted, never red.
+    const { ATREngine } = await import("../src/engine.js");
+    const { detectionFingerprint } = await import("../src/quality/action-eligibility.js");
+    const engine = new ATREngine({ rulesDir: join(REPO, "rules") });
+    expect(await engine.loadRules()).toBeGreaterThan(800);
+    const byEngine = new Map(engine.getRules().map((r) => [r.id, detectionFingerprint(r as never)]));
+    const mismatched = diskRules(join(REPO, "rules"))
+      .filter((r) => byEngine.has(r.id) && byEngine.get(r.id) !== r.fingerprint)
+      .map((r) => r.id);
+    expect(mismatched).toEqual([]);
+  });
+
   it("the committed evidence reproduces against itself under the gate's own reader", () => {
     const rules = diskRules(join(REPO, "rules"));
     expect(rules.length).toBeGreaterThan(800);
@@ -280,6 +296,14 @@ describe("main", () => {
     parseMeasurement(readFileSync(join(REPO, "data/benign-fp-measurement.json"), "utf-8"), "evidence");
   const withCount = (): [string, RuleRecord] =>
     Object.entries(real().rules).find(([, r]) => r.fp_count > 0) as [string, RuleRecord];
+
+  it("--list-ids names a rule whose id the evidence parser would refuse", () => {
+    const p = workspace(committed(), committed());
+    writeFileSync(join(p.rules, "a", "odd.yaml"), "id: ATR-26-1\ndetection: {}\n");
+    const r = spawnSync("npx", ["tsx", SCRIPT, "--list-ids", "--rules", p.rules], { encoding: "utf-8" });
+    expect(r.status).toBe(2);
+    expect(r.stderr).toMatch(/odd\.yaml: id "ATR-26-1" is not ATR-YYYY-NNNNN/);
+  }, 60_000);
 
   it("--list-ids lists what the gate's reader sees, quoted ids included", () => {
     const p = workspace(committed(), committed());

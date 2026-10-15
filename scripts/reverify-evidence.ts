@@ -375,8 +375,16 @@ export function main(argv: readonly string[], env: NodeJS.ProcessEnv = process.e
   }
 
   if (argv.includes("--list-ids")) {
-    // The ids the action gate reads, for the measurement step to measure.
-    const ids = [...new Set(diskRules(rulesDir).map((r) => r.id))].sort();
+    // The ids the action gate reads, for the measurement step to measure. An id
+    // the evidence parser would refuse is named here, with its file, rather than
+    // surfacing later as an unreadable measurement.
+    const rules = readRules(rulesDir);
+    const bad = rules.filter((r) => !RULE_ID.test(r.id));
+    if (bad.length > 0) {
+      for (const r of bad) console.error(`[reverify] ${r.file}: id ${JSON.stringify(r.id).slice(0, 40)} is not ATR-YYYY-NNNNN`);
+      return 2;
+    }
+    const ids = [...new Set(rules.map((r) => r.id))].sort();
     if (ids.length === 0) {
       console.error(`[reverify] no rule files under ${rulesDir}`);
       return 2;
