@@ -99,9 +99,10 @@ encoded as `_`.
 
 ### 3.3 Badge tone
 
-Keep badge values short. "Microsoft AGT — 287 rules merged" is
-acceptable. "Microsoft AGT — Several rules merged across multiple
-PRs over many months" is not.
+Keep badge values short. "MISP — galaxy merged" is
+acceptable. "MISP — Several clusters merged across multiple
+PRs over many months" is not. Badge values must describe what is
+still present upstream, not a past state.
 
 ## 4. Typography conventions
 

@@ -409,7 +409,7 @@ export function loadSiteStats(): SiteStats {
     ecosystemIntegrations: ecosystemFromAdopters(),
 
     owaspAgentic: "10/10",
-    safeMcp: "78/85 (91.8%)",
+    safeMcp: "55/78",
     owaspAst10: "7/10",
 
     benchmarks: loadBenchmarkMeasurements(),

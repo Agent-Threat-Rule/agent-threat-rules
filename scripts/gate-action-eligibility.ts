@@ -89,7 +89,7 @@ interface MeasurementFile {
   readonly rules?: Record<string, MeasurementRecord>;
 }
 
-interface RuleOnDisk {
+export interface RuleOnDisk {
   readonly file: string;
   readonly id: string;
   readonly messageTemplate: string;
@@ -128,7 +128,13 @@ export function isInert(
   return s === "draft" || s === "deprecated" || m === "deprecated";
 }
 
-function readRules(rulesDir: string): readonly RuleOnDisk[] {
+/**
+ * Every rule file under rulesDir, read the way this gate reads it (js-yaml,
+ * every .yaml/.yml at any depth, following symlinks). Exported so
+ * scripts/reverify-evidence.ts decides which records this gate trusts from the
+ * same reader, not from a second, looser way of listing rules.
+ */
+export function readRules(rulesDir: string): readonly RuleOnDisk[] {
   const out: RuleOnDisk[] = [];
   for (const file of ruleFiles(rulesDir)) {
     let doc: unknown;

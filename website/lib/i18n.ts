@@ -48,7 +48,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "numbers.scan.desc":
       "Scanned across OpenClaw + Skills.sh. {critical} CRITICAL. {high} HIGH.",
     "numbers.owasp.desc": "OWASP Agentic Top 10 categories fully covered.",
-    "numbers.safemcp.desc": "SAFE-MCP technique coverage. 78 of 85.",
+    "numbers.safemcp.desc": "SAF-MCP techniques with at least one reviewed ATR rule (candidate mappings).",
 
     // Proof
     "proof.label": "Merged upstream",
@@ -422,7 +422,7 @@ export const messages: Record<Locale, Record<string, string>> = {
       "\u6383\u63CF OpenClaw + Skills.sh\u3002{critical} CRITICAL\u3001{high} HIGH\u3002",
     "numbers.owasp.desc": "OWASP Agentic Top 10 \u5168\u90E8\u8986\u84CB\u3002",
     "numbers.safemcp.desc":
-      "SAFE-MCP \u6280\u8853\u8986\u84CB\u7387\u300278/85\u3002",
+      "\u81f3\u5c11\u6709\u4e00\u689d\u7d93\u5be9\u67e5 ATR \u898f\u5247\u5c0d\u61c9\u7684 SAF-MCP \u6280\u8853(\u5019\u9078\u5c0d\u7167)\u3002",
 
     // Proof
     "proof.label": "\u5DF2\u5408\u4F75\u81F3\u4E0A\u6E38",
