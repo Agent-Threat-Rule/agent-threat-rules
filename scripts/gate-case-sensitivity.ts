@@ -68,12 +68,18 @@
  *     check). The engine never evaluates it, so case cannot matter; it is counted,
  *     and validate-rules.ts owns that error.
  *
- * KNOWN GAP (deliberate, as in gate-re2-portability.ts)
- *   The baseline records how many conditions of a rule are affected, not which.
- *   Fixing one in a baselined rule while breaking another stays green. Recording
- *   condition indices or pattern text would churn on every reorder or cosmetic
- *   edit; the inflow this gate exists to stop is new rules, and the
- *   not-in-baseline check covers those completely.
+ * KNOWN GAPS (deliberate)
+ *   - The baseline records how many conditions of a rule are affected, not which,
+ *     as in gate-re2-portability.ts. Fixing one in a baselined rule while breaking
+ *     another stays green. Recording condition indices or pattern text would churn
+ *     on every reorder or cosmetic edit; the inflow this gate exists to stop is new
+ *     rules, and the not-in-baseline check covers those completely.
+ *   - Samples are matched as raw text. The engine also tries the confusable-folded
+ *     form, and skips a language-tagged condition when the input's language
+ *     differs. Neither changed a verdict on 2026-10-16 -- no regex condition
+ *     carries a language tag -- and modelling them would mean copying
+ *     evaluateArrayCondition()'s pipeline here, the kind of copy this gate no
+ *     longer keeps.
  *
  * EXIT CODES  0 pass · 1 an author must act · 2 the gate could not run.
  *
@@ -331,11 +337,16 @@ export function scanCorpus(rulesDir: string, repoRoot: string): CorpusScan {
   const scans: RuleScan[] = [];
   for (const abs of listRuleFiles(rulesDir)) {
     const file = relative(repoRoot, abs);
+    let rule: ATRRule;
     try {
-      scans.push(scanRule(loadRuleFile(abs), file));
+      rule = loadRuleFile(abs);
     } catch (err) {
       unreadable.push({ file, reason: (err as Error).message.split("\n")[0] ?? "unreadable" });
+      continue;
     }
+    // Outside the try: a crash while scanning is the gate failing to run (exit 2),
+    // not a rule that could not be read.
+    scans.push(scanRule(rule, file));
   }
   const sum = (pick: (s: RuleScan) => number): number => scans.reduce((n, s) => n + pick(s), 0);
   return {
