@@ -54,8 +54,13 @@ const RUNNERS: ReadonlyArray<{ command: string; file: string; sources: readonly 
  */
 const NOT_PROVISIONED: ReadonlySet<string> = new Set(["hackaprompt"]);
 
-/** The calls through which a runner records the enforce lane. */
-const RECORDS_ENFORCE_LANE = /\b(enforceLaneRecallOf|enforceLaneFromEval|skillBenchmarkMeasurementInput)\(/;
+/**
+ * A runner records the enforce lane when it CALLS one of these (its own
+ * definition does not count: eval-harness.ts defines enforceLaneFromEval)...
+ */
+const COMPUTES_ENFORCE_LANE = /(?<!function )\b(enforceLaneRecallOf|enforceLaneFromEval|skillBenchmarkMeasurementInput)\(/;
+/** ...and hands the result to the measurement it writes. */
+const WRITES_ENFORCE_LANE = /enforce_lane:|\benforceLane,|\[ENFORCE_LANE_BREAKDOWN_KEY\]:/;
 
 interface Step {
   name?: string;
@@ -94,7 +99,9 @@ describe("the runners measure-all.yml calls", () => {
   });
 
   it.each(RUNNERS.map((r) => [r.file, r]))("%s records the enforce lane", (_file, runner) => {
-    expect(readFileSync(join(REPO, runner.file), "utf8")).toMatch(RECORDS_ENFORCE_LANE);
+    const source = readFileSync(join(REPO, runner.file), "utf8");
+    expect(source).toMatch(COMPUTES_ENFORCE_LANE);
+    expect(source).toMatch(WRITES_ENFORCE_LANE);
   });
 });
 
