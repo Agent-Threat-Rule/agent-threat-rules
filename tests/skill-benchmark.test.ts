@@ -20,8 +20,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { runSkillBenchmark, skillBenchmarkMeasurementInput } from '../src/eval/skill-benchmark.js';
-import { ATREngine } from '../src/engine.js';
-import { enforceLaneRecall, rulesInLane } from '../src/measurement/enforce-lane.js';
+import { enforceLaneRecall } from '../src/measurement/enforce-lane.js';
 import { parseMeasurement } from '../src/measurement/schema.js';
 
 type BenchmarkReport = Awaited<ReturnType<typeof runSkillBenchmark>>;
@@ -148,16 +147,6 @@ describe('SKILL.md Benchmark', () => {
       expect(enforce.rules_in_lane).toBeLessThan(report.rules_in_lane);
       expect(enforce.true_positives).toBeLessThanOrEqual(report.true_positives);
       expect(enforce.false_positives).toBeLessThanOrEqual(report.false_positives);
-    });
-
-    it('fires only rules its lane loads', async () => {
-      const engine = new ATREngine({ rulesDir: join(__dirname, '..', 'rules') });
-      await engine.loadRules();
-      const inLane = new Set(engine.getRules().filter((r) => rulesInLane([r], 'enforce') === 1).map((r) => r.id));
-      expect(inLane.size).toBe(enforce.rules_in_lane);
-      for (const r of enforce.results) {
-        for (const id of r.rules_fired) expect(inLane.has(id), id).toBe(true);
-      }
     });
 
     it('does not overwrite the hunt report when told not to write one', () => {

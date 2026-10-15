@@ -96,7 +96,11 @@ async function main(): Promise<void> {
 
   // The same corpus, event shape and tiers on an enforce-lane engine, recorded
   // beside the headline as breakdown.enforce_lane (never instead of it).
-  const enforceLane = enforceLaneFromEval(await runEval({ rulesDir, corpus, lane: 'enforce' }));
+  const enforceLane = enforceLaneFromEval(await runEval({ rulesDir, corpus, lane: 'enforce' }), {
+    report,
+    eventShape,
+    tiersUsed,
+  });
   console.log(
     `Enforce lane: ${enforceLane.detected}/${enforceLane.attacks} attacks = ${formatPercent(enforceLane.recall)} ` +
       `(${enforceLane.rules_in_lane} rules in lane)`

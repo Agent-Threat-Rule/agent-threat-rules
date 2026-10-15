@@ -33,14 +33,19 @@ export type { EnforceLaneRecall } from "./schema.js";
 /** Stored in every record, so the figure explains itself wherever it is read. */
 export const ENFORCE_LANE_NOTE =
   "Recall of the same attack samples, through the same detection loop as metrics.recall, " +
-  "on an engine constructed with lane: 'enforce', which loads only maturity: stable rules. " +
-  "metrics.recall is the hunt lane (the engine default, every maturity); this is the figure " +
-  "for a deployment with blocking on. Not a headline.";
+  "on an engine constructed with lane: 'enforce', which loads only maturity: stable rules: " +
+  "the lane README recommends when blocking is on. A match is not necessarily a block (src/verdict.ts " +
+  "decides that from severity and confidence), so this is an upper bound on what blocking stops. " +
+  "metrics.recall is the hunt lane (the engine default, every maturity). Not a headline.";
 
 /**
- * Rules an engine in `lane` evaluates: the engine's own two gates, in its
- * order — status `draft` / `deprecated` is skipped outright (src/engine.ts), then
- * the maturity -> lane mapping every pipeline imports (laneAllows).
+ * Rules an engine in `lane` loads: the engine's own two gates, in its order —
+ * status `draft` / `deprecated` is skipped outright (src/engine.ts), then the
+ * maturity -> lane mapping every pipeline imports (laneAllows). A loaded rule
+ * marked `confirm: embedding` still fires only once embedding similarity
+ * confirms it, outside the hunt lane; the synchronous evaluate() most runners
+ * use cannot confirm, so on that path such a rule is counted here but never
+ * fires.
  */
 export function rulesInLane(rules: readonly { status?: unknown; maturity?: unknown }[], lane: Lane): number {
   return rules.filter((r) => r.status !== "draft" && r.status !== "deprecated" && laneAllows(r.maturity, lane))

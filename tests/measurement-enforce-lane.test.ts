@@ -22,7 +22,7 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { ATREngine } from "../src/engine.js";
-import { detectedOnPromptChannels } from "../src/corpus-event.js";
+import { detectedOnPromptChannels, promptChannelShapes } from "../src/corpus-event.js";
 import {
   MeasurementSchemaError,
   parseEnforceLaneRecall,
@@ -166,8 +166,11 @@ describe("loadEnforceLaneEngine", () => {
     const corpus = JSON.parse(
       readFileSync(join(REPO, "data", "test-corpora", "garak-full", "inthewild.json"), "utf8"),
     ) as { prompts: string[] };
-    // A slice keeps this test fast; the lane gate does not depend on the sample.
-    prompts = corpus.prompts.slice(0, 120);
+    // The whole corpus: only a handful of its prompts reach a stable rule at
+    // all, and a slice that reaches none would let both tests below pass
+    // without asserting anything. The enforce engine evaluates 1 rule in 8,
+    // so this stays cheap; hunt runs only on the prompts enforce detects.
+    prompts = corpus.prompts;
   });
 
   it("returns an engine pinned to the enforce lane, with every rule loaded", () => {
@@ -185,19 +188,23 @@ describe("loadEnforceLaneEngine", () => {
         .filter((r) => rulesInLane([r], "enforce") === 1)
         .map((r) => r.id),
     );
+    let fired = 0;
     for (const prompt of prompts) {
-      for (const m of lane.engine.evaluate({ type: "llm_input", timestamp: "t", content: prompt, fields: { user_input: prompt } })) {
-        expect(inLane.has(m.rule.id), m.rule.id).toBe(true);
+      for (const shape of promptChannelShapes(prompt)) {
+        for (const m of lane.engine.evaluate(shape.event)) {
+          fired += 1;
+          expect(inLane.has(m.rule.id), m.rule.id).toBe(true);
+        }
       }
     }
+    // Not vacuous: some stable rule must fire, or nothing above was checked.
+    expect(fired).toBeGreaterThan(0);
   });
 
   it("detects a subset of what the same loop detects in hunt", () => {
-    for (const prompt of prompts) {
-      if (detectedOnPromptChannels(lane.engine, prompt)) {
-        expect(detectedOnPromptChannels(hunt, prompt)).toBe(true);
-      }
-    }
+    const detected = prompts.filter((p) => detectedOnPromptChannels(lane.engine, p));
+    expect(detected.length).toBeGreaterThan(0);
+    for (const prompt of detected) expect(detectedOnPromptChannels(hunt, prompt)).toBe(true);
   });
 
   it("refuses a rules directory that loads nothing, rather than reporting 0 recall", async () => {

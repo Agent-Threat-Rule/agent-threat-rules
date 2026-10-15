@@ -377,15 +377,35 @@ export async function runEval(config: EvalConfig): Promise<{
 /**
  * The enforce-lane record for a measurement, from a runEval() made with
  * `lane: 'enforce'` over the same corpus as the headline run. Its attack
- * samples are the headline's (tp + fn); what differs is the lane.
+ * samples are the headline's (tp + fn); what may differ is the lane, and
+ * nothing else: a second run that presented the samples differently, or lost
+ * the embedding tier the headline had, would measure something the headline
+ * did not, so it is refused rather than recorded.
  */
-export function enforceLaneFromEval(run: {
-  readonly report: EvalReport;
-  readonly lane: Lane;
-  readonly rulesInLane: number;
-}): EnforceLaneRecall {
+export function enforceLaneFromEval(
+  run: {
+    readonly report: EvalReport;
+    readonly lane: Lane;
+    readonly rulesInLane: number;
+    readonly eventShape: EvalEventShapeMode;
+    readonly tiersUsed: readonly string[];
+  },
+  headline: {
+    readonly report: EvalReport;
+    readonly eventShape: EvalEventShapeMode;
+    readonly tiersUsed: readonly string[];
+  },
+): EnforceLaneRecall {
   if (run.lane !== 'enforce') {
     throw new Error(`enforceLaneFromEval: the run was made in the ${run.lane} lane, not enforce`);
+  }
+  const differs = [
+    run.report.corpusSize !== headline.report.corpusSize ? 'corpus size' : null,
+    run.eventShape !== headline.eventShape ? 'event shape' : null,
+    run.tiersUsed.join('+') !== headline.tiersUsed.join('+') ? 'tiers' : null,
+  ].filter((d): d is string => d !== null);
+  if (differs.length > 0) {
+    throw new Error(`enforceLaneFromEval: the enforce run differs from the headline in ${differs.join(', ')}`);
   }
   const { tp, fn } = run.report.overall.confusion;
   return enforceLaneRecall({ detected: tp, attacks: tp + fn, rulesInLane: run.rulesInLane });
@@ -516,7 +536,11 @@ export async function runEvalCLI(): Promise<void> {
 
   // The same corpus, the same event shape and tiers, on an enforce-lane engine.
   // Recorded beside the headline (breakdown.enforce_lane), never instead of it.
-  const enforceLane = enforceLaneFromEval(await runEval({ rulesDir, lane: 'enforce' }));
+  const enforceLane = enforceLaneFromEval(await runEval({ rulesDir, lane: 'enforce' }), {
+    report,
+    eventShape,
+    tiersUsed,
+  });
   console.log(
     `Enforce lane: ${enforceLane.detected}/${enforceLane.attacks} attacks = ${formatPercent(enforceLane.recall)} ` +
       `(${enforceLane.rules_in_lane} rules in lane)`

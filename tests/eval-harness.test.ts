@@ -429,7 +429,7 @@ describe('Detection lane', () => {
   });
 
   it("records the enforce run as breakdown.enforce_lane over the headline's attack samples", () => {
-    const lane = enforceLaneFromEval(enforce);
+    const lane = enforceLaneFromEval(enforce, hunt);
     const { tp, fn } = enforce.report.overall.confusion;
     expect(lane).toMatchObject({ lane: 'enforce', detected: tp, attacks: tp + fn, rules_in_lane: enforce.rulesInLane });
 
@@ -444,6 +444,17 @@ describe('Detection lane', () => {
   });
 
   it('refuses to record a hunt run as the enforce lane', () => {
-    expect(() => enforceLaneFromEval(hunt)).toThrow(/enforce/);
+    expect(() => enforceLaneFromEval(hunt, hunt)).toThrow(/enforce/);
+  });
+
+  it('refuses an enforce run that presented the corpus differently from the headline', () => {
+    // A second runEval() that lost the embedding tier, or ran another event
+    // shape, would measure something the headline did not.
+    expect(() =>
+      enforceLaneFromEval({ ...enforce, tiersUsed: [...enforce.tiersUsed, 'tier2.5-embedding'] }, hunt),
+    ).toThrow(/tiers/);
+    expect(() => enforceLaneFromEval({ ...enforce, eventShape: 'legacy' }, { ...hunt, eventShape: 'canonical' })).toThrow(
+      /event shape/,
+    );
   });
 });

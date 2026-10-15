@@ -95,7 +95,11 @@ export interface EnforceLaneRecall {
   attacks: number;
   /** detected / attacks. */
   recall: number;
-  /** Rules the enforce lane loads: status not draft/deprecated, maturity stable. */
+  /**
+   * Rules the enforce lane loads: status not draft/deprecated, maturity stable.
+   * Includes any `confirm: embedding` rule, which the synchronous evaluate()
+   * path most runners use never fires outside the hunt lane.
+   */
   rules_in_lane: number;
   /** What the figure is, in the record itself. */
   note: string;
