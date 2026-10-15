@@ -9,13 +9,19 @@
  *
  * This gate loads the public benign corpora AND (when provided) an external
  * wild corpus, runs every `maturity: test` rule against every benign sample,
- * and promotes a rule to `maturity: production` ONLY if it produces 0 FP across
+ * and promotes a rule to `maturity: stable` ONLY if it produces 0 FP across
  * the whole set. Critically it REFUSES to promote unless the corpus it actually
  * validated against is at least `--min-corpus` samples — so a 5.2K pass alone
  * can never mint a production rule; you must feed the wild corpus.
  *
  * The gate LOGIC is public (it is just a validation harness); the wild corpus
  * DATA stays private — it is passed in by path, never committed here.
+ *
+ * A 0 counts only where something was measured. A rule the engine never
+ * evaluates, or one whose conditions this corpus cannot fully exercise (a field
+ * no benign sample fills, such as tool_name; a method the synchronous engine
+ * cannot run, such as trace), scores 0 without being read, and is reported as
+ * not promotable instead of clean. See splitCandidates().
  *
  * Usage:
  *   npx tsx scripts/promote-to-stable.ts                              # dry-run, public corpus only
@@ -40,7 +46,12 @@ import { fileURLToPath } from "node:url";
 import { load as yamlLoad } from "js-yaml";
 import { MATURITIES, type Maturity } from "../src/quality/rule-contract.js";
 import { ATREngine } from "../src/engine.js";
-import { matchedRuleIds } from "./lib/corpus-event.js";
+import {
+  fieldCoverage,
+  matchedRuleIds,
+  type FieldCoverage,
+  type RuleLike,
+} from "./lib/corpus-event.js";
 import { unmeasuredTargets } from "./gate-promotion-fp.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -144,7 +155,23 @@ export interface CandidateSplit {
   readonly dirty: readonly Candidate[];
   /** Candidates the engine never evaluates, with the reason: on neither list. */
   readonly unevaluated: ReadonlyMap<string, string>;
+  /**
+   * Candidates with no false positive on conditions this corpus could not fully
+   * exercise (fieldCoverage), with the reason: on neither list. One that did
+   * false-positive is on the dirty list; those hits are real.
+   */
+  readonly unmeasured: ReadonlyMap<string, string>;
   readonly fpCounts: ReadonlyMap<string, number>;
+}
+
+/** Why a rule's 0 FP on this corpus is not a measurement, from its coverage gap. */
+function coverageGapReason(gap: FieldCoverage, rule: RuleLike | undefined): string {
+  const fields = gap.unmeasured.length > 0 ? `unmeasurable ${gap.unmeasured.join(", ")}` : "";
+  const method = rule?.detection?.method;
+  const what = fields || `method ${String(method ?? "pattern")}`;
+  return gap.zeroMeasurement
+    ? `not measured: nothing in it can fire on this corpus (${what})`
+    : `partially measured: 0 FP on the conditions the corpus reaches; the rest never ran (${what})`;
 }
 
 /**
@@ -169,10 +196,22 @@ export function splitCandidates(
       if (ids.has(id)) fpCounts.set(id, (fpCounts.get(id) ?? 0) + 1);
     }
   }
+  // A 0 on conditions the corpus never exercised is the same non-measurement as
+  // an unevaluated rule's, and the action gate already reads it that way: a
+  // partial run that found nothing caps a rule at observe.
+  const rules = engine.getRules() as unknown as RuleLike[];
+  const gaps = new Map(fieldCoverage(rules).map((g) => [g.ruleId, g]));
+  const unmeasured = new Map<string, string>();
+  for (const c of measurable) {
+    const gap = gaps.get(c.id);
+    if (gap === undefined || (fpCounts.get(c.id) ?? 0) > 0) continue;
+    unmeasured.set(c.id, coverageGapReason(gap, rules.find((r) => r.id === c.id)));
+  }
   return {
-    clean: measurable.filter((c) => (fpCounts.get(c.id) ?? 0) === 0),
+    clean: measurable.filter((c) => (fpCounts.get(c.id) ?? 0) === 0 && !unmeasured.has(c.id)),
     dirty: measurable.filter((c) => (fpCounts.get(c.id) ?? 0) > 0),
     unevaluated,
+    unmeasured,
     fpCounts,
   };
 }
@@ -247,13 +286,20 @@ async function main(): Promise<void> {
   const engine = new ATREngine({ rulesDir: RULES_DIR });
   await engine.loadRules();
 
-  const { clean, dirty, unevaluated, fpCounts } = splitCandidates(engine, candidates, samples);
+  const { clean, dirty, unevaluated, unmeasured, fpCounts } = splitCandidates(engine, candidates, samples);
   if (unevaluated.size > 0) {
     console.log(
       `[stable-gate] ${unevaluated.size} rule(s) at maturity:test are never evaluated, so ` +
         `no corpus can show them FP-clean; not promotable:`,
     );
     for (const [id, why] of unevaluated) console.log(`  ${id} — ${why}`);
+  }
+  if (unmeasured.size > 0) {
+    console.log(
+      `[stable-gate] ${unmeasured.size} rule(s) at maturity:test show 0 FP only on conditions ` +
+        `this corpus cannot fully exercise, so 0 is not a measurement; not promotable:`,
+    );
+    for (const [id, why] of unmeasured) console.log(`  ${id} — ${why}`);
   }
   console.log(
     `[stable-gate] ${clean.length} rule(s) with 0 FP · ${dirty.length} rule(s) with FP (stay at test)`,
