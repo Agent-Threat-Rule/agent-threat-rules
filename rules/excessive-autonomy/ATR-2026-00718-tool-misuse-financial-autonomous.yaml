@@ -28,12 +28,12 @@ references:
 
 compliance:
   owasp_llm:
-    - id: LLM08:2025
-      context: "Autonomous financial trading without per-transaction confirmation is the LLM08 excessive agency pattern applied to financial services."
+    - id: LLM06:2025
+      context: "The patterns match requests that have an agent place trades, withdraw a full exchange balance or send crypto to a stored wallet address. LLM06:2025 covers damaging actions taken through an agent's extensions, including excessive autonomy where high-impact actions are not independently verified or approved; the rule flags the request, not the agent's configuration."
       strength: primary
   owasp_agentic:
-    - id: ASI03:2026
-      context: "Placing trades or cryptocurrency transfers autonomously is excessive agency with direct financial harm potential."
+    - id: ASI02:2026
+      context: "The patterns match direct requests for an agent with exchange or wallet tools to place buy or sell orders, withdraw an entire balance, or send funds to a wallet address read from a note. ASI02:2026 covers an agent applying a legitimate tool in an unsafe way through ambiguous instruction or over-privileged access, such as a tool with full financial API access."
       strength: primary
   nist_ai_rmf:
     - subcategory: "MS.2.7"

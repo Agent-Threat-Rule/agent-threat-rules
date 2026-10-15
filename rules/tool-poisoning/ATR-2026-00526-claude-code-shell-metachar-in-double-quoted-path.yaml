@@ -33,11 +33,14 @@ references:
 
 compliance:
   owasp_agentic:
-    - id: ASI06:2026
+    - id: ASI05:2026
       context: >
-        Path-argument command substitution exploits the agent's shell
-        tool execution capability — the canonical ASI06:2026 Tool Misuse
-        vector when the agent is allowed to construct file path inputs.
+        The pattern matches path-shaped key/value arguments in the input
+        (file_path, filename, path, source, target, destination and similar
+        keys) whose quoted value holds $(...) or backtick command substitution,
+        the shell injection behind CVE-2026-35020, 35021 and 35022. ASI05:2026
+        covers agent tool access escalated into code execution on the host; the
+        substitution runs attacker commands if the path reaches a shell.
       strength: primary
   owasp_llm:
     - id: LLM06:2025
