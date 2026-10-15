@@ -33,11 +33,15 @@ references:
 
 compliance:
   owasp_agentic:
-    - id: ASI06:2026
+    - id: ASI05:2026
       context: >
-        ASI06:2026 Tool Misuse — the agent's shell tool accepts unsanitized
-        input as a direct exploit primitive. Detection on the unsafe
-        invocation pattern blocks the class.
+        The patterns match shell-tool wrapper code (ShellTool, BashTool,
+        run_shell, @tool('shell') and similar) that calls subprocess with
+        shell=True, os.system, os.popen, child_process.exec or new Function, or
+        exec or eval on an input variable, and shell tool calls whose argument
+        chains extra commands (CVE-2026-2256). ASI05:2026 lists shell command
+        invocation from reflected prompts and unsafe function calls or code
+        evaluation as unexpected code execution.
       strength: primary
   owasp_llm:
     - id: LLM06:2025
