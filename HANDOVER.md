@@ -26,6 +26,16 @@ misstatement traces back to quoting one without checking the others.
 
 ### 2.1 Nothing has auto-published since 2026-08-23, and the token is the smaller half
 
+> **Superseded 2026-10-08.** `publish-on-rules-merge.yml`,
+> `publish-current-version.yml` and `npm-stage.yml` have been removed, and no
+> workflow reads `NPM_TOKEN` any more. The package is declared dual-use, so npm
+> allows CI only to *stage* a release and a maintainer must promote it with
+> 2FA. The one release path is now: a `v*` tag runs `publish.yml`, which stages
+> through trusted publishing (OIDC); the maintainer approves with 2FA; re-run
+> the job if it timed out, to create the GitHub release. See CONTRIBUTING.md,
+> "How a release reaches npm". The rest of this section is the 2026-09-22
+> diagnosis, kept for the history.
+
 `main` and the git tag are at `v4.1.0`. npm `latest` is `4.0.0`. Every downstream
 consumer is running a version that is behind `main`.
 
@@ -231,12 +241,19 @@ CI and nowhere else.
 ## 4. What only a human with credentials can do
 
 Repository secrets in use (names only — values are never printed anywhere):
-`NPM_TOKEN`, `PYPI_API_TOKEN`, `ATR_REPO_TOKEN`, `ANTHROPIC_API_KEY`,
+`PYPI_API_TOKEN`, `ATR_REPO_TOKEN`, `ANTHROPIC_API_KEY`,
 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `HF_TOKEN`, `TC_API_KEY`,
 `TC_ADMIN_API_KEY`.
 
+`NPM_TOKEN` is no longer referenced by any workflow (npm releases use trusted
+publishing from `publish.yml`, which needs no token). If it still exists under
+Settings → Secrets and variables → Actions, delete it and revoke the token on
+npmjs.com, so no workflow can be edited into publishing with it.
+
 Hand-off items that cannot be automated:
-- Reissue `NPM_TOKEN` (see §2.1) and confirm `4.1.0` publishes.
+- Approve each staged npm release with 2FA (npmjs.com → Staged Packages, or
+  `npm stage approve <stage-id>`); `publish.yml` waits for it before creating
+  the GitHub release.
 - The disclosure address was tested on 2026-09-22 and `security@agentthreatrule.org`
   did not exist: mail to it bounced with SMTP 5.1.3, "the email account that you
   tried to reach does not exist". It had been published in SECURITY.md, README, the

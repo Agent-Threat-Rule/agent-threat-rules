@@ -23,12 +23,12 @@ You spotted an attack pattern. You have example payloads. That's enough to start
 
 3. Submit the issue.
 
-That's it. A workflow runs immediately and opens a draft PR. The proposal YAML
-is auto-generated from your examples. You do not need to clone anything.
+That's it. A maintainer reviews the issue and, if it is accepted, turns it
+into a proposal on a draft PR. You do not need to clone anything.
 
 A maintainer reviews the regex shape and runs the full quality gate before
-merging. You can stop at step 3, or check out the PR branch and write the
-regex yourself if you want to stay involved.
+merging. You can stop at step 3, or, if you want to stay involved, propose a
+regex yourself in a PR comment or in a PR of your own.
 
 ---
 
@@ -90,26 +90,54 @@ npx tsx scripts/next-rule-id.ts
 
 Once your issue or PR lands:
 
-1. Automated PR opens (probe path) or CI runs (direct PR path). The safety gate
-   checks 0 FP against the benign skill corpus (the gate prints the sample count
-   it used).
-   If it fails, the PR gets the `needs-human-review` label and a maintainer
-   looks at it manually.
+1. A maintainer opens the proposal PR (probe path) or CI runs (direct PR
+   path). The CI safety gate (`validate.yml`) checks the rule files a PR adds
+   or changes under `rules/`, so a probe is gated when its proposal is
+   promoted to `rules/`. It checks 0 FP against the benign skill corpus (the
+   gate prints the sample count it used).
+   If it fails, the check fails and a maintainer looks at it manually.
 
 2. Maintainer reviews the regex. Usually one round of tightening. The benign
    corpus is the bar — the regex must not fire on clean content.
 
-3. PR merges. The `publish-on-rules-merge.yml` workflow runs automatically:
-   patch version bump, npm publish, GitHub release.
+3. PR merges. Nothing is published on merge: the rule ships in the next
+   release a maintainer cuts (see [How a release reaches npm](#how-a-release-reaches-npm-maintainers)).
 
-4. The new version is on npm. Open-source projects that vendor ATR — including
+4. Once that release is approved, the new version is on npm. Open-source projects that vendor ATR — including
    repos under Microsoft, Cisco, MISP and OWASP-community orgs — pick it up
    whenever they next sync. What ATR can promise is the publish; when and
    whether any downstream repo updates is theirs to decide, and merging a rule
    here is not a claim that it is running in any company's product.
 
-Typical time from probe submission to npm publish: same day or next day,
-depending on maintainer availability.
+There is no set time from probe submission to npm publish; it depends on
+maintainer availability.
+
+### How a release reaches npm (maintainers)
+
+The npm package is declared dual-use (`contentPolicy` in `package.json`, plus
+the `DISCLOSURE` file). Under npm's
+[Dual-Use Content Policy](https://docs.npmjs.com/policies/dual-use/), CI may
+only *stage* a version; a maintainer promotes it with 2FA. Direct `npm publish`
+from CI, by token or by trusted publishing, is not allowed. Every attempt also
+goes through npm's automated review, and a blocked attempt uses up its version
+number, so there is exactly one release path:
+
+1. Bump `version` in `package.json` on `main`, then push a `v<version>` tag on
+   that commit (or run `scripts/release.sh`, or dispatch `publish.yml` with a
+   `bump_type`, which do both).
+2. The tag triggers `.github/workflows/publish.yml`. It validates, tests,
+   builds, and runs `npm stage publish` through trusted publishing (OIDC). No
+   npm token is involved.
+3. A maintainer approves the staged version with 2FA: npmjs.com → Staged
+   Packages, or `npm stage list agent-threat-rules` and
+   `npm stage approve <stage-id>`.
+4. `publish.yml` waits up to 60 minutes for the version to appear on the
+   registry and then creates the GitHub release. If it timed out, re-run the
+   job after approving; it skips the staging step and goes straight to the
+   wait and the release.
+
+No other workflow publishes, stages or approves, and none runs on a push to
+`main`. `tests/npm-release-path.test.ts` fails if one starts to.
 
 ---
 

@@ -48,6 +48,7 @@ import { readFileSync, readdirSync, statSync, mkdtempSync, writeFileSync } from 
 import { join, resolve, relative } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { load as yamlLoad } from "js-yaml";
 
 const RULES_DIR = resolve(process.cwd(), "rules");
@@ -699,4 +700,10 @@ function main(): void {
   if (failOnNotFixable && notFixable.length > 0) process.exit(1);
 }
 
-main();
+// Run only as a CLI. scripts/author-semantic-rules.ts imports scanPattern to
+// refuse non-RE2 fallbacks before writing a rule, and an import must not scan
+// the rules tree and print this report into the importing process.
+const isEntrypoint =
+  process.argv[1] !== undefined &&
+  resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
+if (isEntrypoint) main();

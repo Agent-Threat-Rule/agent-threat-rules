@@ -1,7 +1,7 @@
 name: Promote Semantic (T2) Rules
 
 # Authors method=semantic (T2) ATR rules from semantic-attack adversarial
-# samples (PromptInject / HackAPrompt / garak clusters) via
+# samples (PromptInject / HackAPrompt clusters; garak is quarantined) via
 # scripts/author-semantic-rules.ts, then opens a needs-human-review PR.
 #
 # WHY THIS LANE EXISTS
@@ -13,25 +13,82 @@ name: Promote Semantic (T2) Rules
 # that DEFINES the attack class with positive and negative cues. The judge carries
 # recall against rewordings; the regex carries graceful no-judge degradation.
 #
-# GATE: a deterministic gate (which the model cannot bypass) requires the narrow
-# fallback to compile, match >=1 of its own true_positives, and produce ZERO
-# matches on data/benign-code + a sample of data/skill-benchmark/benign + its own
-# true_negatives; and requires the judge prompt to carry the untrusted-data guard
-# and the {{input}} placeholder. Drafts that fail are routed to human review and
-# never written. Content-safety garak clusters (dra/lmrc — graphic violence /
-# weapons / drugs) are filtered out as outside ATR's agent-attack scope.
+# GATE: a deterministic gate (scripts/lib/semantic-gate.ts, which the model
+# cannot bypass) measures the narrow fallback the way this PR's own checks will:
+# it must compile under the engine's semantics and be RE2 portable, catch >=3 of
+# its cluster's true_positives (only those hits are declared as true_positives;
+# the misses become judge-only evasion_tests), produce ZERO matches on the gate
+# corpora (MEASUREMENT_CORPORA) and its own true_negatives, and be visible to
+# that corpus (>= VISIBILITY_FLOOR samples contain its literals). The judge
+# prompt must carry the untrusted-data guard and the {{input}} placeholder.
+# The built rule then goes through check-rules-safety's own engine and event
+# shapes (scripts/lib/semantic-engine-gate.ts): declared TPs fire, and nothing
+# fires on MEASUREMENT_CORPORA, data/research-mentions, or any other rule's
+# true_negatives (this run's earlier promotions included). All of that runs in
+# a worker under a per-draft time budget, so a backtracking fallback is stopped
+# rather than hanging the job; a passing fallback also runs through
+# scripts/gate-redos.py on its own. Drafts that fail are routed to human review
+# and never written; one bad draft no longer fails the run. Content-safety
+# garak clusters (dra/lmrc) are out of scope, and the garak source as a whole is
+# quarantined (mostly non-attack prompts; see scripts/lib/semantic-clusters.ts).
+#
+# BACKSTOP: before anything is pushed, the job runs the PR-side checks that
+# failed rolling PR #632 -- validate.yml's compliance, coverage, crosswalk,
+# rule-safety and generalization steps, the RE2 portability gate, the corpus
+# visibility gate and the ReDoS gate -- verbatim, on the tree about to be
+# pushed. Any failure fails the job and nothing is pushed. A run that authored
+# nothing pushes nothing, so it skips the backstop.
+#
+# BEFORE RE-ENABLING THIS WORKFLOW (disabled after #632)
+# Close rolling PR #632 without merging. Its eight rules predate the current
+# gate: four fail it (02848 visibility, 02849 RE2 lookaround, 02852/02853 from
+# the quarantined garak source) and all eight fail validate:compliance. While it
+# is open, the resume step below would put them back on the tree, the dedupe
+# would count their clusters as authored so the gate never re-judges them, and
+# the backstop would fail every run. The resume step now stops on such a branch
+# with this instruction instead. Closing a rolling PR normally rejects its
+# clusters for good (see the history record below), so also label #632
+# `semantic-reauthor`: that drops its head from the record, and the next run
+# starts from main, re-authors those clusters under the current gate and
+# force-pushes the rolling branch against the lease it fetched.
 #
 # Complements promote-cve.yml (CVE PoC -> regex rules) and crystallize.yml
 # (TC + adversarial -> rules). This is the semantic/T2 intake lane.
+#
+# ONE ROLLING PR, NOT ONE PER RUN
+# Authored rules accumulate on a single branch, auto-semantic/rolling, and one
+# open PR tracks it. Each run resumes that branch merged with main, so the
+# author script sees every cluster that already has a rule -- merged or still
+# in review -- and skips it (_semantic_authored.source_cluster). Before this,
+# every run started from the top of the same list and opened a new PR that
+# duplicated the last one.
+#
+# The tree only shows rules that still exist, so it also reads git history:
+# every cluster a lane rule has ever named on main or on any same-repo rolling
+# PR's head is skipped too. Closing the rolling PR without merging rejects every
+# rule in it, and deleting a rule from it rejects that one; the lane does not
+# author those clusters again. Without that record a closed PR's clusters sort
+# straight back to the top and come back regenerated in the next PR.
+# The one exception is a PR closed for how it was built rather than for what it
+# detects (#632, authored before the current gate): label it `semantic-reauthor`
+# when closing it and its head is left out of the record, so its clusters are
+# authored again under the current gate.
 
 on:
   # Chain after the CVE collector so semantic authoring runs on the freshest
   # cluster proposals each day, same as promote-cve.yml.
+  # Chain after the garak miss run, which writes the clusters this lane reads.
+  # The previous trigger named "CVE Collector — Daily Sync", which no longer
+  # lives in this repository; workflow_run cannot fire across repositories, so
+  # that trigger never ran.
   workflow_run:
-    workflows: ["CVE Collector — Daily Sync"]
+    workflows: ["Garak Miss -> Semantic Proposals"]
     types: [completed]
   schedule:
-    - cron: '50 5 * * *'   # daily safety net, after the collector's morning run
+    # Weekly safety net, the day after the Monday garak run, in case the chain
+    # did not fire. The candidate pool is a few dozen clusters and changes weekly;
+    # with the dedupe below, a second run in the same week authors nothing.
+    - cron: '50 5 * * 2'
   workflow_dispatch:
     inputs:
       max:
@@ -53,11 +110,144 @@ jobs:
     runs-on: ubuntu-latest
     # Only run on a successful collector run, or on manual/scheduled trigger.
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+    # Last-resort bound, not the hang guard: each draft's gate already has its
+    # own time budget. Without this, anything else that stalls holds the runner
+    # for GitHub's six-hour default. A full run is the author step (up to --max
+    # drafts) plus the backstop, of which check-rules-safety and npm test are the
+    # long poles.
+    timeout-minutes: 150
     steps:
+      # No credential is persisted into .git/config. The next steps run `npm ci`
+      # and then execute that dependency tree; a token sitting in .git/config is
+      # readable by every one of those packages. The push step supplies the token
+      # only for the push itself.
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Resume only while the rolling PR is open. A PR closed without merging leaves
+      # its branch behind (delete_branch_on_merge only fires on merge); resuming it
+      # would bring the rejected rules back. The sha fetched here is the lease the
+      # push step overwrites against.
+      # `gh pr list --head` matches the branch name only, and a fork can open a PR
+      # from its own auto-semantic/rolling, so only a same-repo PR counts.
+      - name: Resume the rolling branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name "ATR Semantic Author"
+          git config user.email "semantic-author@atr-framework.org"
+          BRANCH="auto-semantic/rolling"
+          OLD_SHA=""
+          if git fetch --quiet origin "$BRANCH" 2>/dev/null; then
+            OLD_SHA=$(git rev-parse "origin/$BRANCH")
+          fi
+          echo "ROLLING_OLD_SHA=$OLD_SHA" >> "$GITHUB_ENV"
+          OPEN=$(gh pr list --head "$BRANCH" --state open --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository | not)][0].number // empty')
+
+          if [ -z "$OPEN" ] || [ -z "$OLD_SHA" ] || git diff --quiet origin/main "origin/$BRANCH" -- rules/; then
+            if [ -n "$OLD_SHA" ] && [ -z "$OPEN" ]; then
+              echo "auto-semantic/rolling exists without an open PR (merged or closed); starting fresh from main."
+            else
+              echo "No rolling PR with rules main lacks; starting fresh from main."
+            fi
+            git checkout -B "$BRANCH" origin/main
+            exit 0
+          fi
+
+          # A rolling branch can hold lane rules written before the current gate
+          # (no _semantic_authored.mappings: the builder before it wrote none) or
+          # from a quarantined source. Resuming it marks their clusters as
+          # authored, so the gate never re-judges them, and the backstop fails on
+          # them every run while the run itself authors nothing. Stop here with
+          # the fix rather than spend LLM credit on a run that cannot push. The
+          # branch is not rewritten automatically: it may carry a reviewer's edits.
+          # Keep the garak path in sync with QUARANTINED_SOURCES in
+          # scripts/lib/semantic-clusters.ts.
+          STALE=""
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            body=$(git show "origin/$BRANCH:$f")
+            grep -q '^_semantic_authored:' <<<"$body" || continue
+            if ! grep -q '^  mappings:' <<<"$body" || grep -q 'source_cluster: proposals/garak-clusters/' <<<"$body"; then
+              STALE="$STALE $f"
+            fi
+          done < <(git diff --name-only --diff-filter=A origin/main "origin/$BRANCH" -- rules/)
+          if [ -n "$STALE" ]; then
+            echo "::error::Rolling PR #$OPEN holds rules authored before the current gate or from a quarantined source:$STALE. Close PR #$OPEN without merging and label it semantic-reauthor; the next run starts from main and re-authors those clusters under the current gate. This run authored nothing."
+            exit 1
+          fi
+
+          echo "Resuming auto-semantic/rolling for open PR #$OPEN."
+          # Tells the push step that this branch is the open PR's, so it is pushed
+          # even in a run that authors nothing (see there).
+          echo "ROLLING_RESUMED=1" >> "$GITHUB_ENV"
+          git checkout -B "$BRANCH" "origin/$BRANCH"
+          if ! git merge --no-edit origin/main; then
+            # The two count caches and the two crosswalk documents are generated from
+            # rules/, and main's rule PRs and reconcile-stats bot rewrite them, so they
+            # collide on most merges. Take main's copy to clear the markers; all four
+            # are regenerated from the merged tree after authoring, before the tests.
+            # A conflict anywhere else still needs a human.
+            DERIVED='stats\.json|data/stats\.json|docs/crosswalks/atr-(attack|ast)-crosswalk\.md'
+            CONFLICTED=$(git diff --name-only --diff-filter=U)
+            OTHER=$(printf '%s\n' "$CONFLICTED" | grep -vxE "$DERIVED" || true)
+            if [ -n "$OTHER" ]; then
+              echo "::error::auto-semantic/rolling conflicts with main in: $OTHER. Resolve it by hand; this run did not author anything."
+              exit 1
+            fi
+            printf '%s\n' "$CONFLICTED" | xargs git checkout --theirs --
+            printf '%s\n' "$CONFLICTED" | xargs git add --
+            git commit --no-edit
+          fi
+
+      # The record of every cluster this lane has authored (see the header) is read
+      # from the head of every same-repo rolling PR -- open, closed or merged --
+      # except one closed unmerged with the `semantic-reauthor` label, whose
+      # clusters a maintainer has sent back to be authored again.
+      # GitHub keeps refs/pull/N/head after a PR closes, even once the push step
+      # has overwritten the branch, so a rejection several PRs back still counts.
+      # Not the bare branch: it can hold rules no PR ever showed a reviewer (a run
+      # whose `gh pr create` failed). Not a fork's PR: anyone can open one, and its
+      # history must not be able to switch clusters off. This runs before `npm ci`
+      # so the token is never in a step that executes the dependency tree.
+      - name: Fetch the history of every rolling PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          BRANCH="auto-semantic/rolling"
+          # A failed listing must fail the job: an empty record lets every rejected
+          # cluster back in behind a green run.
+          PRS=$(gh pr list --head "$BRANCH" --state all --limit 1000 --json number,isCrossRepository,state,labels \
+            --jq '.[] | select(.isCrossRepository | not)
+                      | select((.state == "CLOSED" and any(.labels[]?; .name == "semantic-reauthor")) | not)
+                      | .number')
+          REFSPECS=()
+          for N in $PRS; do
+            REFSPECS+=("+refs/pull/$N/head:refs/semantic-history/$N")
+          done
+          if [ "${#REFSPECS[@]}" -gt 0 ]; then
+            git fetch --quiet origin "${REFSPECS[@]}"
+          fi
+          echo "Fetched the head of ${#REFSPECS[@]} rolling PR(s)."
+
+      # New rule ids must skip the ids other lanes' open PRs hold: the fn-mine
+      # lane's rolling PR allocates from its own branch, so main and this branch
+      # do not show them, and the second PR to merge fails "Duplicate rule ID".
+      # Before `npm ci`, like the step above, so the token never meets dependency
+      # code. A failed listing fails the job: an empty list is how ids collide.
+      - name: Collect the rule files open PRs hold
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          bash "$GITHUB_WORKSPACE/scripts/list-open-pr-files.sh" /tmp/semantic-open-pr-files.txt
+          echo "Open PRs touch $(grep -c '^rules/' /tmp/semantic-open-pr-files.txt || true) rule file(s)."
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -100,6 +290,21 @@ jobs:
           fi
           npm install -g @anthropic-ai/claude-code
 
+      # scripts/gate-redos.py (PR CI's ReDoS gate) runs on each passing draft in
+      # the author step and over the whole tree in the backstop. Pinned as in
+      # redos-gate.yml. If it cannot run, the author step counts that as an
+      # infrastructure failure, never as a draft rejection.
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install PyYAML for the ReDoS gate
+        run: pip install PyYAML
+
+      - name: List every cluster the lane has already authored
+        run: |
+          npx tsx scripts/semantic-authored-history.ts --out /tmp/semantic-authored.txt \
+            origin/main --glob 'refs/semantic-history/*'
 
       - name: Author semantic rules (deterministic 0-FP gate)
         env:
@@ -122,7 +327,11 @@ jobs:
             *) echo "::error::invalid source '$INPUT_SOURCE' (allowed: hackaprompt|promptinject|garak)"; exit 1 ;;
           esac
           set +e
-          npx tsx scripts/author-semantic-rules.ts --write --max "$INPUT_MAX" "${SOURCE_ARG[@]}" --report /tmp/semantic-report.json
+          # --base: rules a resumed rolling branch already adds count against
+          # check-rules-safety's per-PR cap and are gated as peers, as the PR's CI counts them.
+          npx tsx scripts/author-semantic-rules.ts --write --max "$INPUT_MAX" "${SOURCE_ARG[@]}" \
+            --base origin/main --exclude-from /tmp/semantic-authored.txt \
+            --open-pr-files /tmp/semantic-open-pr-files.txt --report /tmp/semantic-report.json
           EXIT=$?
           set -e
           # 0 = ok (promoted 0 or more; any failures were content-level)
@@ -140,10 +349,154 @@ jobs:
           fi
           echo "author-semantic-rules exited $EXIT (0=ok, 2=no-key, 3=all-human, 4=lane-down)"
 
+      # A run that authored nothing pushes no rule, so the backstop has none of
+      # this run's work to judge; running it anyway made a no-op run fail on rules
+      # it never wrote. (A resumed branch can still push main merged in; `npm test`
+      # below runs for that.)
+      - name: Did this run author a rule?
+        id: authored
+        run: |
+          if [ -n "$(git status --porcelain -- rules/)" ]; then
+            echo "any=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "any=false" >> "$GITHUB_OUTPUT"
+            echo "No rule authored this run: the pre-push backstop is skipped and nothing will be pushed."
+          fi
+
+      # stats.json and data/stats.json cache the rule count, and `npm test` asserts
+      # they match the disk (reconcile-rule-count.test.ts). New rules change the
+      # disk, so the caches move with them in the same commit — the same thing the
+      # PR's own CI will check. Both of the lane's first real runs (2026-09-28/29)
+      # failed here.
+      - name: Reconcile rule-count caches
+        run: node scripts/reconcile-rule-count.mjs
+
+      # Both crosswalk documents count rules too, and validate.yml checks them on
+      # every PR with --check. A new rule makes them stale, so the PR this lane
+      # opens would fail validation unless they move in the same commit.
+      - name: Regenerate the crosswalk documents
+        run: |
+          python3 scripts/generate-attack-crosswalk.py
+          python3 scripts/generate-ast-crosswalk.py
+
       - name: Validate new rules
         run: npm run validate
 
+      # ── Pre-push backstop ──────────────────────────────────────────────────
+      # Rolling PR #632 is what happens when this lane's gate and the PR's
+      # checks drift apart: eight rules passed the gate here, then four checks
+      # failed on the PR. The steps below are those checks, copied verbatim
+      # from validate.yml, re2-portability.yml and corpus-visibility.yml, run on
+      # the tree about to be pushed, plus the ReDoS and generalization gates PR
+      # CI also runs. A failure here fails the job before the push step, so
+      # nothing reaches the rolling branch. The author step already measured
+      # each draft the same way and routed the ones that would fail, so a red
+      # backstop means the lane's per-draft gate and these checks have drifted:
+      # fix that drift, do not loosen a check. Keep them in sync with their
+      # source workflows (validate.yml, re2-portability.yml,
+      # corpus-visibility.yml, redos-gate.yml).
+      - name: Validate compliance mappings against framework allowlists
+        if: steps.authored.outputs.any == 'true'
+        run: npm run validate:compliance
+
+      - name: Enforce 100% framework coverage (keeps framework-coverage claims honest)
+        if: steps.authored.outputs.any == 'true'
+        run: npm run audit:mappings -- --require-full=references:owasp_llm,references:owasp_agentic,references:mitre_atlas,compliance:eu_ai_act,compliance:nist_ai_rmf,compliance:iso_42001
+
+      - name: ATT&CK crosswalk freshness (doc must match rule metadata)
+        if: steps.authored.outputs.any == 'true'
+        run: python3 scripts/generate-attack-crosswalk.py --check
+
+      - name: AST crosswalk freshness (doc must match rule metadata)
+        if: steps.authored.outputs.any == 'true'
+        run: python3 scripts/generate-ast-crosswalk.py --check
+
+      # The RE2 gate's oracle compiles every pattern with Go's regexp (which IS
+      # RE2); pinned as in re2-portability.yml.
+      - uses: actions/setup-go@v5
+        if: steps.authored.outputs.any == 'true'
+        with:
+          go-version: "1.25"
+          cache: false
+
+      - name: Audit rule regexes against RE2
+        if: steps.authored.outputs.any == 'true'
+        run: npx tsx scripts/audit-re2-portability.ts --json --verify-re2 > re2-audit.json
+
+      - name: RE2 portability ratchet
+        if: steps.authored.outputs.any == 'true'
+        run: npx tsx scripts/gate-re2-portability.ts --audit re2-audit.json --require-oracle
+
+      - name: RE2 equivalence artifact is current
+        if: steps.authored.outputs.any == 'true'
+        run: |
+          npx tsx scripts/verify-re2-equivalence.ts \
+            --write-equivalence /tmp/re2-equivalence.fresh.json > /dev/null || true
+          python3 - <<'PY'
+          import json, sys
+          def load(p):
+              with open(p, encoding="utf-8") as fh:
+                  return json.load(fh)
+          def tagging_verdict(d):
+              return {
+                  rule_id: sorted(
+                      [entry.get("location", ""), sorted(entry.get("causes", []))]
+                      for entry in entries
+                  )
+                  for rule_id, entries in d.get("divergentRules", {}).items()
+              }
+          committed, fresh = load("data/re2-equivalence.json"), load("/tmp/re2-equivalence.fresh.json")
+          want, got = tagging_verdict(committed), tagging_verdict(fresh)
+          if want != got:
+              print("data/re2-equivalence.json is stale. Regenerate and commit:")
+              print("  npx tsx scripts/verify-re2-equivalence.ts --write-equivalence data/re2-equivalence.json")
+              for rule_id in sorted(set(want) | set(got)):
+                  if want.get(rule_id) != got.get(rule_id):
+                      print(f"  {rule_id}: committed={want.get(rule_id)} actual={got.get(rule_id)}")
+              sys.exit(1)
+          print(
+              "equivalence artifact current: "
+              f"{fresh.get('re2Equivalent')}/{fresh.get('patternsRewritten')} rewritten patterns "
+              f"verified portable, {len(got)} rule(s) measured divergent under RE2"
+          )
+          PY
+
+      - name: Corpus visibility ratchet
+        if: steps.authored.outputs.any == 'true'
+        run: npx tsx scripts/gate-corpus-visibility.ts --verify-blind
+
+      # check-rules-safety sees the authored files whether they are committed
+      # (a resumed rolling branch) or still untracked (this run's new rules).
+      - name: Rule safety gate (duplicate IDs + cross-rule conflicts + own-TP coverage)
+        if: steps.authored.outputs.any == 'true'
+        run: npx tsx scripts/check-rules-safety.ts --base origin/main
+
+      # PR CI runs this in redos-gate.yml. The author step ran it on each draft
+      # alone; this is the whole tree about to be pushed.
+      - name: ReDoS gate (catastrophic backtracking on pumped inputs)
+        if: steps.authored.outputs.any == 'true'
+        run: python3 scripts/gate-redos.py --rules rules
+
+      - name: Generalization gate (own-TP coverage + self-FP, full set)
+        if: steps.authored.outputs.any == 'true'
+        run: npm run gate:generalization
+
+      # PR CI runs this in rule-status-gate.yml: a new rule may not be status draft,
+      # which the engine never evaluates.
+      - name: Rule status ratchet (no new inert rule)
+        if: steps.authored.outputs.any == 'true'
+        run: npx tsx scripts/gate-rule-status.ts
+
+      # PR CI runs this in action-eligibility.yml: a rule may only declare the
+      # response actions its maturity and FP measurement have earned.
+      - name: Response actions must be earned
+        if: steps.authored.outputs.any == 'true'
+        run: npx tsx scripts/gate-action-eligibility.ts
+
+      # Also on a resumed branch that authored nothing: the push step still pushes
+      # it with main merged in and the derived files regenerated.
       - name: Run tests
+        if: steps.authored.outputs.any == 'true' || env.ROLLING_RESUMED == '1'
         run: npm test
 
       - name: Count rules after
@@ -153,47 +506,93 @@ jobs:
           echo "count=$count" >> "$GITHUB_OUTPUT"
           echo "Rules after: $count"
 
-      - name: Open PR for authored semantic rules (human review required)
+
+      - name: Push to the rolling branch and open or update its PR
         env:
           # A PR opened with the default GITHUB_TOKEN is authored by app/github-actions, and
-          # every check on it parks at action_required forever instead of running. Opening it
-          # with a PAT makes a real user the author so the PR's own CI runs. Falls back to
-          # GITHUB_TOKEN when ATR_REPO_TOKEN is absent (PR still opens, checks still park).
+          # every check on it parks at action_required forever instead of running. Pushing and
+          # opening with a PAT makes a real user the author, so the PR's CI runs -- including
+          # on later pushes to the same branch. Falls back to GITHUB_TOKEN when ATR_REPO_TOKEN
+          # is absent (the PR still opens, its checks still park).
+          PUSH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
-          git config user.name "ATR Semantic Author"
-          git config user.email "semantic-author@atr-framework.org"
-
+          set -euo pipefail
+          BRANCH="auto-semantic/rolling"
           BEFORE=${{ steps.before.outputs.count }}
           AFTER=${{ steps.after.outputs.count }}
           NEW=$((AFTER - BEFORE))
 
-          git add rules/ 2>/dev/null || true
-          if git diff --cached --quiet; then
-            echo "No semantic rules authored this run (all drafts routed to human review or no in-scope clusters)."
-          else
-            BRANCH="auto-semantic/run-${{ github.run_id }}"
-            git checkout -b "$BRANCH"
-            git commit -m "feat: author ${NEW} semantic (T2) rule(s) from adversarial clusters
+          git add rules/ stats.json data/stats.json docs/crosswalks/
+          if git diff --cached --quiet -- rules/; then
+            echo "No new semantic rules this run (every in-scope cluster already has a rule, or all drafts went to human review)."
+            # A resumed branch can still have moved: main merged in, the derived files
+            # regenerated. Push that, or the open PR stays conflicting with main and its
+            # crosswalks stay stale until some later run happens to author a rule.
+            # Only on the resume path: on the fresh-from-main path HEAD is main, and
+            # pushing it would just overwrite a closed PR's branch with main.
+            if [ "${ROLLING_RESUMED:-}" = 1 ] && { ! git diff --cached --quiet || [ "$(git rev-parse HEAD)" != "$ROLLING_OLD_SHA" ]; }; then
+              git diff --cached --quiet || git commit -m "chore: sync rolling branch with main"
+              # Same helper and lease as below (see the comment there). HEAD descends
+              # from the leased sha, so this is a fast-forward.
+              # shellcheck disable=SC2016
+              git -c credential.helper= \
+                  -c 'credential.helper=!f() { test "$1" = get || exit 0; echo username=x-access-token; echo "password=$PUSH_TOKEN"; }; f' \
+                  push --force-with-lease="refs/heads/$BRANCH:$ROLLING_OLD_SHA" origin "HEAD:refs/heads/$BRANCH"
+              echo "Synced the open rolling PR's branch with main."
+            fi
+            exit 0
+          fi
 
-          Source: PromptInject / HackAPrompt / garak agent-attack clusters (content-safety filtered out).
+          git commit -m "feat: author ${NEW} semantic (T2) rule(s) from adversarial clusters
+
+          Source: PromptInject / HackAPrompt agent-attack clusters (garak quarantined; content-safety filtered out).
           Pipeline: author-semantic-rules.ts — narrow regex fallback (anchor + redirect) plus LLM-as-judge prompt.
-          Gate: deterministic 0-FP gate on benign-code + benign-skill corpus; judge prompt carries untrusted guard.
+          Gate: engine-semantics compile, RE2 portable, >=3 own-TP hits, 0 FP and visibility on the gate corpora, 0 FP on research mentions and other rules' TNs under the engine's event shapes, ReDoS-gated, time-bounded; judge prompt carries untrusted guard.
+          Backstop: validate:compliance, audit:mappings --require-full, crosswalk --check, RE2 gate, visibility gate, check-rules-safety, ReDoS gate, generalization gate passed before push.
           Status: experimental / maturity: test — requires human review before promotion."
-            git push -u origin "$BRANCH"
-            gh pr create \
-              --title "auto-semantic: ${NEW} T2 semantic rule(s) for human review" \
-              --body "$(cat <<'BODY'
-          Authored method=semantic (T2) rules from semantic-attack adversarial clusters (PromptInject / HackAPrompt / garak) via scripts/author-semantic-rules.ts.
+
+          # The helper is single-quoted, so argv carries the literal text $PUSH_TOKEN and
+          # never its value; the shell git spawns for the helper reads it from the
+          # environment. Nothing is written to .git/config.
+          # SC2016 is the point here, not a mistake: expanding $PUSH_TOKEN now would put
+          # the token in argv, where any process listing on the runner can read it.
+          # The lease is the sha the resume step fetched: a resumed branch fast-forwards,
+          # a branch left by a merged or closed PR is replaced, and a branch someone else
+          # moved since this run started is not touched. Empty means it must not exist.
+          # shellcheck disable=SC2016
+          git -c credential.helper= \
+              -c 'credential.helper=!f() { test "$1" = get || exit 0; echo username=x-access-token; echo "password=$PUSH_TOKEN"; }; f' \
+              push --force-with-lease="refs/heads/$BRANCH:${ROLLING_OLD_SHA:-}" origin "HEAD:refs/heads/$BRANCH"
+
+          # Same-repo only, as in the resume step: a fork's PR from a same-named branch
+          # does not track this branch, and reporting it here would leave the rules on
+          # a branch no PR shows.
+          OPEN=$(gh pr list --head "$BRANCH" --state open --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository | not)][0].number // empty')
+          if [ -n "$OPEN" ]; then
+            echo "Added ${NEW} rule(s) to the open rolling PR #${OPEN}."
+            exit 0
+          fi
+
+          # No `|| echo` here: a PR that fails to open must fail the job. Swallowing
+          # that error is how a lane goes quiet behind a green check.
+          gh pr create \
+            --head "$BRANCH" \
+            --title "auto-semantic: T2 semantic rules for human review (rolling)" \
+            --label "needs-human-review" \
+            --body-file - <<'BODY'
+          Authored method=semantic (T2) rules from semantic-attack adversarial clusters (PromptInject / HackAPrompt; garak is quarantined) via scripts/author-semantic-rules.ts.
+
+          This is a rolling PR. Each weekly run adds rules for clusters that do not yet have one and pushes them here; clusters already covered by a merged rule, or by a rule already in this PR, are skipped. Merge it when ready; the next run starts a new one.
+
+          Closing this PR without merging rejects every rule in it, and deleting a rule from it rejects that rule: the lane reads its own history and does not author those clusters again.
 
           Why semantic, not regex: pure regex on a reworded prompt injection is the MiroFish failure mode (keys on the describing wording, false-positives on benign paraphrases, bypassed by the next rewording). Each rule here follows the ATR-2026-00573 T2 shape: a narrow regex fallback (anchor plus redirect, low false-positive by design) used only when no judge is configured, and a high-quality LLM-as-judge prompt that defines the attack class with positive and negative cues and returns strict JSON.
 
-          Deterministic gate (the model cannot bypass it): the narrow fallback must compile, must match at least one of its own true_positives, and must produce zero matches on data/benign-code plus a sample of data/skill-benchmark/benign plus its own true_negatives; the judge prompt must carry the untrusted-data guard and the input placeholder. Drafts failing the gate are routed to human review and never written. Content-safety garak families (dra, lmrc) are filtered out as outside ATR's agent-attack scope.
+          Deterministic gate (the model cannot bypass it): the narrow fallback must compile under the engine's semantics, be RE2 portable, catch at least three of its cluster's true_positives (only those are declared as true_positives; the misses are recorded as judge-only evasion tests), produce zero matches on the gate corpora (data/skill-benchmark/benign, data/benign-corpus-extended, data/benign-code) and its own true_negatives, and be visible to that corpus; the judge prompt must carry the untrusted-data guard and the input placeholder. Drafts failing the gate are routed to human review and never written. The garak cluster source is quarantined.
+
+          OWASP references are normalised to bare allowlisted identifiers, and the compliance block (EU AI Act 15/9, NIST AI RMF MP.5.1/MG.3.2, ISO/IEC 42001 8.1/8.3) is an automatic template. Review both before promoting any rule to stable.
 
           Status experimental, maturity test. Do not auto-merge; human review required.
           BODY
-          )" \
-              --label "needs-human-review" \
-              || echo "PR creation failed; branch '${BRANCH}' pushed — open PR manually (main was NOT modified)."
-            echo "Opened PR from ${BRANCH} with ${NEW} authored semantic rules"
-          fi
