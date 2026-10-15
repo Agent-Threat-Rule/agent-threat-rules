@@ -21,10 +21,18 @@
  *      rule's known-benign set is a precision regression for that rule.
  *   6. Per-PR cap: ≤ MAX_NEW_PER_PR rule files (default 10).
  *
- * A MODIFIED rule gets the modified-rule FP check instead: no benign false
- * positive the rule did not already have. A renamed rule file is a modified
- * one, compared with the file it was at base; a changed file whose rule id
- * differs, or that was not a rule at base, is a new rule (routeChangedRuleFiles).
+ * A MODIFIED rule gets two differential checks instead, base against head:
+ *   modified-rule FP  no benign false positive the rule did not already have.
+ *   own-TP check      no true positive the rule matched at base, on a path it
+ *                     matched it on, that it no longer matches, with every
+ *                     case replayed as the base rule would receive it; every
+ *                     true positive the change adds must match. Run the way
+ *                     `atr test` runs a case. Before it, an edit that left a
+ *                     rule unable to fire passed: a rule that matches nothing
+ *                     introduces no false positive.
+ * A renamed rule file is a modified one, compared with the file it was at base;
+ * a changed file whose rule id differs, or that was not a rule at base, is a
+ * new rule (routeChangedRuleFiles).
  *
  * Exit 0 = safe to auto-merge
  * Exit 1 = any check failed → PR stays in human-review queue
@@ -84,7 +92,10 @@ import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { load as yamlLoad } from "js-yaml";
 import { ATREngine } from "../src/engine.js";
-import { matchedRuleIds } from "./lib/corpus-event.js";
+import { buildEventFromTestCase, EXTENDED_SOURCE_TO_BASE } from "../src/testcase-event.js";
+import { normalizeMaturity } from "../src/quality/rule-contract.js";
+import type { AgentEvent, ATRRule } from "../src/types.js";
+import { conditionFields, matchedRuleIds, type RuleLike } from "./lib/corpus-event.js";
 import { lintRuleDoc } from "./lint-rule-patterns.js";
 
 /**
@@ -111,7 +122,7 @@ const BENIGN_EXTENDED_DIR = join(REPO_ROOT, "data/benign-corpus-extended");
 const BENIGN_CODE_DIR = join(REPO_ROOT, "data/benign-code");
 const RULES_DIR = join(REPO_ROOT, "rules");
 
-interface Failure {
+export interface Failure {
   file: string;
   reason: string;
 }
@@ -1004,6 +1015,414 @@ async function checkModifiedRulesNoNewFP(
   return failures;
 }
 
+/** Keys a test case uses to describe itself rather than to carry payload. */
+const TEST_CASE_META_KEYS: ReadonlySet<string> = new Set([
+  "expected",
+  "description",
+  "reason",
+  "attack_type",
+  "note",
+  "matched_condition",
+  "label",
+]);
+
+/** A declared test case as `atr test` reads it; a bare string is shorthand for { input }. */
+function testCaseObject(tc: unknown): Record<string, unknown> | null {
+  if (typeof tc === "string") return tc.trim() === "" ? null : { input: tc };
+  return tc !== null && typeof tc === "object" && !Array.isArray(tc)
+    ? (tc as Record<string, unknown>)
+    : null;
+}
+
+/**
+ * What makes a true positive the same one in both versions: its payload, with
+ * meta keys dropped, keys sorted and runs of whitespace collapsed. Editing a
+ * description, or switching a YAML block from `|-` to `|`, is not a new case.
+ */
+function testCaseIdentity(tc: Record<string, unknown>): string {
+  const canonical = (v: unknown): unknown => {
+    if (typeof v === "string") return v.replace(/\s+/g, " ").trim();
+    if (Array.isArray(v)) return v.map(canonical);
+    if (v !== null && typeof v === "object") {
+      const o = v as Record<string, unknown>;
+      return Object.fromEntries(Object.keys(o).sort().map((k) => [k, canonical(o[k])]));
+    }
+    return v;
+  };
+  const payload = Object.fromEntries(
+    Object.entries(tc).filter(([k]) => !TEST_CASE_META_KEYS.has(k)),
+  );
+  return JSON.stringify(canonical(payload));
+}
+
+/** The true positives a rule declares, or null when the key holds something other than a list. */
+function declaredTruePositives(doc: Record<string, unknown>): Record<string, unknown>[] | null {
+  const testCases = doc["test_cases"];
+  const raw =
+    testCases !== null && typeof testCases === "object"
+      ? (testCases as Record<string, unknown>)["true_positives"]
+      : undefined;
+  if (raw === undefined || raw === null) return [];
+  if (!Array.isArray(raw)) return null;
+  return raw.map(testCaseObject).filter((c): c is Record<string, unknown> => c !== null);
+}
+
+/**
+ * A rule the engine evaluates in no lane: status draft or deprecated, or
+ * maturity deprecated (normalizeMaturity trims, as the lane gate does).
+ */
+const isInert = (rule: Record<string, unknown>): boolean =>
+  rule["status"] === "draft" ||
+  rule["status"] === "deprecated" ||
+  normalizeMaturity(rule["maturity"]) === "deprecated";
+
+const scanTargetOf = (rule: Record<string, unknown>): unknown =>
+  (rule["tags"] as { scan_target?: unknown } | undefined)?.scan_target;
+
+const methodOf = (rule: Record<string, unknown>): unknown =>
+  (rule["detection"] as { method?: unknown } | undefined)?.method ?? "pattern";
+
+const sourceOf = (rule: Record<string, unknown>): unknown =>
+  (rule["agent_source"] as { type?: unknown } | undefined)?.type;
+
+/** A rule source as a YAML mapping, or null when it is not one. */
+function parseRule(content: string): Record<string, unknown> | null {
+  try {
+    const doc = yamlLoad(content);
+    return doc !== null && typeof doc === "object" && !Array.isArray(doc)
+      ? (doc as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * An engine holding one version of a rule the way `atr test` holds it (src/cli.ts):
+ * status set aside, and an extended agent_source mapped to the base type its
+ * events arrive as. A deprecated maturity is set aside too, which `atr test`
+ * does not do: what is measured is the detection, not the deployment decision,
+ * and a status or maturity change is its own line in the diff for a reviewer.
+ */
+async function buildTestCaseEngine(
+  name: string,
+  content: string,
+): Promise<{ engine: ATREngine; dir: string }> {
+  const built = await buildScopedEngine(name, content);
+  for (const rule of built.engine.getRules() as unknown as Array<Record<string, unknown>>) {
+    rule["status"] = "experimental";
+    if (normalizeMaturity(rule["maturity"]) === "deprecated") rule["maturity"] = "experimental";
+    const source = rule["agent_source"] as Record<string, unknown> | undefined;
+    const type = source?.["type"];
+    const base = typeof type === "string" ? EXTENDED_SOURCE_TO_BASE[type] : undefined;
+    if (source !== undefined && base !== undefined) rule["agent_source"] = { ...source, type: base };
+  }
+  return built;
+}
+
+/** Whether one test case matched on each path `atr test` tries. */
+interface CaseHits {
+  /** evaluate() on the event the case describes: the runtime hook's path. */
+  readonly evaluate: boolean;
+  /** scanSkill() on the case's text: the SKILL.md path. */
+  readonly skill: boolean;
+}
+
+const NO_HITS: CaseHits = Object.freeze({ evaluate: false, skill: false });
+
+/** `atr test` passes a case that matches on either path (src/cli.ts). */
+const matches = (h: CaseHits): boolean => h.evaluate || h.skill;
+
+/**
+ * One test case run on both paths `atr test` tries. The event is passed in, so
+ * a case declared at base is replayed to the modified rule exactly as the base
+ * rule received it. Both paths are kept apart, unlike `atr test`'s single
+ * verdict: a rule with scan_target both that a change re-routes away from its
+ * runtime events still matches its cases on scanSkill(), and that is a loss.
+ */
+function caseHits(
+  engine: ATREngine,
+  ruleId: string,
+  tc: Record<string, unknown>,
+  event: AgentEvent | null,
+): CaseHits {
+  const evaluate = event !== null && engine.evaluate(event).some((m) => m.rule.id === ruleId);
+  const text = String(tc["input"] ?? tc["tool_response"] ?? tc["agent_output"] ?? "");
+  const skill = text !== "" && engine.scanSkill(text).some((m) => m.rule.id === ruleId);
+  return { evaluate, skill };
+}
+
+/**
+ * The paths a case matched on at base and no longer matches on. scanSkill()
+ * counts for a scan_target skill or both rule. Any other rule matches on the
+ * SKILL.md path only incidentally, through the skill compound gate, and losing
+ * that while it still matches at runtime is not a loss; a case it matched only
+ * that way and now matches nowhere is.
+ */
+function lostPaths(before: CaseHits, after: CaseHits, skillNative: boolean): string[] {
+  const lost: string[] = [];
+  if (before.evaluate && !after.evaluate) lost.push("evaluate()");
+  if (before.skill && !after.skill && (skillNative || !matches(after))) lost.push("scanSkill()");
+  return lost;
+}
+
+/** buildEventFromTestCase, or null when the case cannot be turned into an event. */
+function eventFor(tc: Record<string, unknown>, routing: Record<string, unknown>): AgentEvent | null {
+  try {
+    return buildEventFromTestCase(tc, routing as unknown as ATRRule);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The event a case is replayed to both versions as: what the base rule
+ * received, with event.fields cut down to what production carries for it.
+ * buildEventFromTestCase() fills every field alias (user_input, tool_args,
+ * agent_message, ...) so that any rule can resolve its field in `atr test`.
+ * Replayed whole, that event would let a changed condition read a field no
+ * producer fills for this event; src/hook-handler.ts fills tool_name, tool_args
+ * and content. Kept: the fields the base rule's conditions read, plus tool_name
+ * and content, which every producer sets. Any other field a changed condition
+ * reads then resolves the way src/engine.ts resolveField() resolves it for this
+ * event type in production.
+ */
+function replayEvent(tc: Record<string, unknown>, baseRule: Record<string, unknown>): AgentEvent | null {
+  const event = eventFor(tc, baseRule);
+  if (event === null) return null;
+  const keep = new Set([...conditionFields(baseRule as unknown as RuleLike), "tool_name", "content"]);
+  const fields = Object.fromEntries(Object.entries(event.fields ?? {}).filter(([k]) => keep.has(k)));
+  return { ...event, fields };
+}
+
+const caseSnippet = (tc: Record<string, unknown>): string => {
+  const v = tc["input"] ?? tc["tool_response"] ?? tc["tool_args"] ?? tc["agent_output"] ?? tc;
+  return (typeof v === "string" ? v : JSON.stringify(v)).slice(0, 60).replace(/\s+/g, " ");
+};
+
+/**
+ * The own-TP check for modified rules: a change may not stop a rule matching
+ * its own true positives.
+ *
+ * Check 2 asks this of new rules only, and npm run gate:generalization asks it
+ * of pattern rules only, with the regex applied to a case's text whatever field
+ * or event the rule reads. A modified semantic rule got neither, so setting its
+ * fallback_method from pattern to none, which leaves the synchronous engine
+ * unable to fire it, passed. So did re-routing any rule (agent_source.type, or
+ * the field a condition reads) away from the events its true positives arrive
+ * as.
+ *
+ * Each true positive is run the way `atr test` runs it, on an engine holding
+ * one version of the rule (buildTestCaseEngine). Differential, like the
+ * modified-rule FP check, over the true positives the modified rule declares,
+ * each replayed to both versions as the event the base rule would receive
+ * (replayEvent), whatever the case looks like now:
+ *
+ *   the base rule matches it   the modified rule must still match it on each
+ *                              path the base rule did (evaluate(), and
+ *                              scanSkill() for a skill or both rule).
+ *   it does not, and the case  debt this change did not create: reported,
+ *   was declared at base       not charged.
+ *   it does not, and the case  must match the modified rule, on the event
+ *   is new                     buildEventFromTestCase() builds for it.
+ *
+ * Replaying every case under the base rule's routing, not only the ones whose
+ * text is unchanged, is what keeps a re-routed rule from passing by editing
+ * each case's keys.
+ *
+ * The modified rule must still match at least one of the cases the base rule
+ * matched, kept or dropped, so replacing them all while changing the detection
+ * does not get around the check; dropping some, as a precision fix does, is
+ * reported. When there is no base measurement to compare with (the base rule
+ * did not load or is behavioral), or the change puts a rule back in a lane
+ * (it was draft or deprecated), every case must match, as for a new rule. A
+ * rule that stays in a lane must keep a true positive when it had one; a rule
+ * this change takes out of every lane may drop them. method: behavioral cannot
+ * be run here (`atr test` skips it too): a rule behavioral in both versions is
+ * skipped, and one made behavioral by this change matches nothing.
+ */
+export async function ownTruePositiveRegressions(
+  file: string,
+  baseContent: string,
+  headContent: string,
+): Promise<Failure[]> {
+  const head = parseRule(headContent);
+  if (head === null) {
+    return [{ file, reason: "the modified rule does not parse, so its true positives cannot be checked" }];
+  }
+  const headTps = declaredTruePositives(head);
+  if (headTps === null) {
+    return [{ file, reason: "test_cases.true_positives is not a list, so its true positives cannot be checked" }];
+  }
+  const base = parseRule(baseContent);
+  const baseTps = (base === null ? [] : declaredTruePositives(base)) ?? [];
+
+  if (headTps.length === 0) {
+    if (isInert(head)) return [];
+    if (baseTps.length > 0 || (base !== null && isInert(base))) {
+      return [
+        {
+          file,
+          reason:
+            baseTps.length > 0
+              ? `the change removes every true positive (base declared ${baseTps.length}) from a rule ` +
+                `that stays in a lane; keep at least one, or this check cannot tell whether the rule still fires`
+              : "the change puts a draft or deprecated rule back in a lane without a true positive; " +
+                "add one, so this check can tell whether the rule fires",
+        },
+      ];
+    }
+    return [];
+  }
+
+  const headBehavioral = methodOf(head) === "behavioral";
+  if (headBehavioral && (base === null || methodOf(base) === "behavioral")) {
+    console.log(
+      `  [own-TP advisory] ${file} — method: behavioral cannot be run on the synchronous path; ` +
+        `its true positives were not checked`,
+    );
+    return [];
+  }
+
+  const headId = typeof head["id"] === "string" ? head["id"] : "";
+  const baseId = base !== null && typeof base["id"] === "string" ? base["id"] : "";
+  const name = basename(file);
+  let headBuilt: { engine: ATREngine; dir: string } | null = null;
+  let baseBuilt: { engine: ATREngine; dir: string } | null = null;
+  try {
+    headBuilt = await buildTestCaseEngine(name, headContent);
+    if (base !== null) baseBuilt = await buildTestCaseEngine(name, baseContent);
+    if (headId === "" || !headBuilt.engine.getRuleById(headId)) {
+      return [
+        {
+          file,
+          reason:
+            "the modified rule did not load into the engine (schema rejected, or the file's id " +
+            "does not match) — its true positives cannot be checked",
+        },
+      ];
+    }
+    const baseRule = base;
+    const baseEngine =
+      baseRule !== null && baseBuilt !== null && baseBuilt.engine.getRuleById(baseId) &&
+      methodOf(baseRule) !== "behavioral"
+        ? baseBuilt.engine
+        : null;
+    const revived = baseRule !== null && isInert(baseRule) && !isInert(head);
+    // Nothing to compare with: every case must match, as for a new rule.
+    const comparable = baseEngine !== null && !revived;
+    const skillNative = baseRule !== null && ["skill", "both"].includes(String(scanTargetOf(baseRule)));
+    const headEngine = headBehavioral ? null : headBuilt.engine;
+    const atBase = (tc: Record<string, unknown>, event: AgentEvent | null): CaseHits =>
+      baseEngine === null ? NO_HITS : caseHits(baseEngine, baseId, tc, event);
+    const atHead = (tc: Record<string, unknown>, event: AgentEvent | null): CaseHits =>
+      headEngine === null ? NO_HITS : caseHits(headEngine, headId, tc, event);
+
+    const rerouted =
+      baseRule !== null && sourceOf(baseRule) !== sourceOf(head)
+        ? ` (agent_source.type ${String(sourceOf(baseRule))} -> ${String(sourceOf(head))}; ` +
+          `the case is replayed as the base rule received it)`
+        : "";
+    const declaredAtBase = new Map(baseTps.map((tc) => [testCaseIdentity(tc), tc]));
+    const unmatchedReason = comparable
+      ? "true positive added by this change is not matched"
+      : revived
+        ? "true positive of a rule this change puts back in a lane is not matched"
+        : "true positive is not matched, and the rule at base could not be run to compare";
+    const failures: Failure[] = [];
+    let debt = 0;
+    for (const tc of headTps) {
+      if (comparable && baseRule !== null) {
+        const event = replayEvent(tc, baseRule);
+        const before = atBase(tc, event);
+        const after = atHead(tc, event);
+        const lost = lostPaths(before, after, skillNative);
+        if (lost.length > 0) {
+          failures.push({
+            file,
+            reason:
+              `own true positive matched at base on ${lost.join(" and ")}, not after this ` +
+              `change${rerouted}: "${caseSnippet(tc)}..."`,
+          });
+          continue;
+        }
+        if (matches(before)) continue;
+        if (declaredAtBase.has(testCaseIdentity(tc))) {
+          if (!matches(after)) debt++;
+          continue;
+        }
+      }
+      if (!matches(atHead(tc, eventFor(tc, head)))) {
+        failures.push({ file, reason: `${unmatchedReason}: "${caseSnippet(tc)}..."` });
+      }
+    }
+
+    // Every case the base rule matched, kept or dropped. The modified rule must
+    // still match one of them, or a change that rewrites the detection and all
+    // of its cases at once would leave nothing to compare.
+    const matchedAtBase =
+      comparable && baseRule !== null
+        ? baseTps.filter((tc) => matches(atBase(tc, replayEvent(tc, baseRule))))
+        : [];
+    const stillMatched = (tc: Record<string, unknown>): boolean =>
+      baseRule !== null && matches(atHead(tc, replayEvent(tc, baseRule)));
+    if (failures.length === 0 && matchedAtBase.length > 0 && !matchedAtBase.some(stillMatched)) {
+      failures.push({
+        file,
+        reason:
+          `the rule matched ${matchedAtBase.length} of its true positives at base and matches ` +
+          `none of them after this change`,
+      });
+    }
+    if (debt > 0) {
+      console.log(
+        `  [own-TP advisory] ${file} — ${debt} declared true positive(s) the rule did not ` +
+          `match at base either (not charged to this change)`,
+      );
+    }
+    const kept = new Set(headTps.map(testCaseIdentity));
+    const dropped = matchedAtBase.filter((tc) => !kept.has(testCaseIdentity(tc)));
+    if (dropped.length > 0) {
+      const lostWithThem = dropped.filter((tc) => !stillMatched(tc)).length;
+      console.log(
+        `  [own-TP advisory] ${file} — ${dropped.length} true positive(s) the base rule matched ` +
+          `are no longer declared` +
+          (lostWithThem > 0 ? `; the modified rule no longer matches ${lostWithThem} of them` : ""),
+      );
+    }
+    return failures;
+  } catch (err) {
+    return [
+      {
+        file,
+        reason: `could not build scoped engines to compare own true positives against base: ${asMessage(err)}`,
+      },
+    ];
+  } finally {
+    if (headBuilt) rmSync(headBuilt.dir, { recursive: true, force: true });
+    if (baseBuilt) rmSync(baseBuilt.dir, { recursive: true, force: true });
+  }
+}
+
+/** The own-TP check over every modified rule file; see ownTruePositiveRegressions(). */
+async function checkModifiedRulesKeepOwnTPs(
+  base: string,
+  files: readonly ChangedRuleFile[],
+): Promise<Failure[]> {
+  const failures: Failure[] = [];
+  for (const { basePath, headPath: file } of files) {
+    const baseContent = readFileAtRef(base, basePath);
+    const headPath = join(REPO_ROOT, file);
+    // An unreadable base or a missing head is the modified-rule FP check's to
+    // report (or the gate has already failed on the corpus census).
+    if (baseContent === null || !existsSync(headPath)) continue;
+    const headContent = readFileSync(headPath, "utf-8");
+    if (baseContent === headContent) continue;
+    failures.push(...(await ownTruePositiveRegressions(file, baseContent, headContent)));
+  }
+  return failures;
+}
+
 /** Print usage / environment problems and leave. Never exits 0. */
 function exitUsage(problems: readonly string[]): never {
   console.error(
@@ -1130,12 +1549,16 @@ async function main(): Promise<void> {
   const benignCorpus = flattenCorpora(corpora);
 
   // Modified rules are checked differentially — a change may not introduce
-  // benign FPs the rule did not already have. Runs even when no rule is added,
-  // which is the case this gate previously ignored entirely.
+  // benign FPs the rule did not already have, nor stop it matching its own true
+  // positives (the own-TP check). Runs even when no rule is added, which is the
+  // case this gate previously ignored entirely.
   const modifiedFailures = [
     ...corpusFailures,
     ...(modifiedFiles.length > 0 && corpusFailures.length === 0
       ? await checkModifiedRulesNoNewFP(base, modifiedFiles, benignCorpus)
+      : []),
+    ...(modifiedFiles.length > 0
+      ? await checkModifiedRulesKeepOwnTPs(base, modifiedFiles)
       : []),
   ];
 
@@ -1150,7 +1573,7 @@ async function main(): Promise<void> {
     if (modifiedFailures.length === 0) {
       console.log(
         modifiedFiles.length > 0
-          ? `[safety-gate] PASS — ${modifiedFiles.length} modified rule(s) introduce no new benign FPs`
+          ? `[safety-gate] PASS — ${modifiedFiles.length} modified rule(s) introduce no new benign FPs and still match their own true positives`
           : "[safety-gate] No new or modified rule files, and no target was named — nothing to check, treating as safe.",
       );
       process.exit(0);

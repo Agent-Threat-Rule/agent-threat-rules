@@ -353,16 +353,9 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
   const failures: Array<{ ruleId: string; testType: string; input: string; expected: string; got: string }> = [];
   const skippedRules: Array<{ ruleId: string; cases: number; reason: string }> = [];
 
-  // Map extended agent_source types to basic event-compatible source types
-  // so the engine's source type filter doesn't skip rules during testing.
-  // The engine only recognizes: llm_io, tool_call, mcp_exchange, agent_behavior, multi_agent_comm
-  const EXTENDED_SOURCE_TO_BASE: Record<string, string> = {
-    context_window: 'llm_io',
-    memory_access: 'llm_io',
-    skill_lifecycle: 'tool_call',
-    skill_permission: 'tool_call',
-    skill_chain: 'tool_call',
-  };
+  // Extended agent_source types are mapped to the base type their events
+  // arrive as, so the engine's source type filter doesn't skip rules during
+  // testing (EXTENDED_SOURCE_TO_BASE, shared with scripts/check-rules-safety.ts).
 
   for (const rule of rules) {
     if (!rule.test_cases) continue;
@@ -509,7 +502,7 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
   }
 }
 
-import { buildEventFromTestCase } from "./testcase-event.js";
+import { buildEventFromTestCase, EXTENDED_SOURCE_TO_BASE } from "./testcase-event.js";
 export { buildEventFromTestCase };
 
 // --- STATS command ---
