@@ -108,6 +108,7 @@ import {
   shapeNames,
   fieldCoverage,
   skillPathCoverage,
+  syncBlindReason,
   unmeasurableReason,
   type FieldCoverage,
   type SkillPathGap,
@@ -653,12 +654,13 @@ async function scanFpCounts(
  * "Clean" must never be allowed to mean "never looked at it".
  *
  * A condition on a field this corpus cannot fill (tool_name has no benign corpus;
- * trace/behavioral rules need a span DAG or a metric window) contributes nothing
- * to the FP count. Silence from such a rule is an absence of evidence, so it is
- * named here rather than folded into the clean list without comment. The exit
- * code is deliberately NOT changed: these rules are unmeasurABLE with a text
- * corpus, so failing them would block promotion with no available remedy. Making
- * it loud is the honest half of the fix.
+ * trace/behavioral rules need a span DAG or a metric window), or a method the
+ * synchronous engine never runs (a semantic judge, when there is no pattern
+ * fallback), contributes nothing to the FP count. Silence from such a rule is an
+ * absence of evidence, so it is named here rather than folded into the clean list
+ * without comment. The exit code is deliberately NOT changed: these rules are
+ * unmeasurABLE with a text corpus, so failing them would block promotion with no
+ * available remedy. Making it loud is the honest half of the fix.
  */
 function reportCoverage(coverage: readonly FieldCoverage[]): void {
   if (coverage.length === 0) return;
@@ -669,6 +671,7 @@ function reportCoverage(coverage: readonly FieldCoverage[]): void {
   for (const c of coverage) {
     const tag = c.zeroMeasurement ? "ZERO-MEASUREMENT" : "partially measured";
     console.log(`  ${c.ruleId} — ${tag}`);
+    if (c.method !== null) console.log(`      ${syncBlindReason(c.method)}`);
     for (const f of c.unmeasured)
       console.log(`      ${f}: ${unmeasurableReason(f)}`);
   }

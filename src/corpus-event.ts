@@ -451,14 +451,74 @@ export function conditionFields(rule: RuleLike): readonly string[] {
   return out;
 }
 
+/**
+ * A detection method the synchronous engine cannot run on a text sample.
+ *
+ * Every harness here drives the SYNCHRONOUS path — evaluate() over
+ * corpusShapes(), and scanSkill() — and src/engine.ts evaluateRule() dispatches
+ * on `detection.method` before a single condition runs:
+ *
+ *     trace       null unless the event carries a span DAG; no shape carries one
+ *     behavioral  null for every event; a metric window needs a streaming path
+ *     signature   whole event.fields values against hashes or exact strings
+ *     semantic    null unless detection.semantic.fallback_method is 'pattern';
+ *                 the judge runs only in evaluateAsync()
+ *
+ * Such a rule scores 0 on every sample whatever its conditions say, so its 0 is
+ * not a measurement.
+ *
+ * The comparisons are the engine's, character for character (`method ??
+ * 'pattern'`, `=== 'pattern'`), with no trimming or case folding: neither the
+ * loader nor tests/validate-rules.ts checks fallback_method, and a predicate
+ * that read "Pattern" as "pattern" would call a rule measured that the engine
+ * never runs. tests/semantic-method-coverage.test.ts asks a real engine about
+ * each variant instead of trusting this list.
+ */
+export type SyncBlindMethod = "trace" | "behavioral" | "signature" | "semantic-no-pattern-fallback";
+
+/** The method the synchronous path cannot run for this rule, or null when it can run it. */
+export function syncBlindMethod(rule: RuleLike): SyncBlindMethod | null {
+  const method = rule.detection?.method ?? "pattern";
+  if (method === "trace" || method === "behavioral" || method === "signature") return method;
+  if (method === "semantic" && rule.detection?.semantic?.fallback_method !== "pattern") {
+    return "semantic-no-pattern-fallback";
+  }
+  return null;
+}
+
+const SYNC_BLIND_REASONS: Readonly<Record<SyncBlindMethod, string>> = Object.freeze({
+  trace:
+    "method: trace — evaluateRule returns null unless the event carries a span DAG, " +
+    "and no corpus shape carries one",
+  behavioral:
+    "method: behavioral — the synchronous evaluateRule returns null unconditionally; " +
+    "a metric window needs a streaming path",
+  signature:
+    "method: signature — indicators match whole event.fields values against hashes or " +
+    "exact strings, which a text corpus does not exercise",
+  "semantic-no-pattern-fallback":
+    "method: semantic without fallback_method: pattern — the judge runs only in " +
+    "evaluateAsync(), and the synchronous evaluateRule returns null for every input",
+});
+
+/** Why this harness cannot measure a rule with that method — a sentence. */
+export function syncBlindReason(method: SyncBlindMethod): string {
+  return SYNC_BLIND_REASONS[method];
+}
+
 export interface FieldCoverage {
   readonly ruleId: string;
   /** Declared fields this harness cannot pour the sample into. */
   readonly unmeasured: readonly string[];
   /**
-   * True when NOTHING about this rule was measured — either no declared field is
-   * measurable, or the rule ANDs its conditions so a single unmeasurable field
-   * makes the whole rule unable to fire.
+   * The detection method, when the synchronous path cannot run it at all
+   * (syncBlindMethod); null when the method is not what stops the measurement.
+   */
+  readonly method: SyncBlindMethod | null;
+  /**
+   * True when NOTHING about this rule was measured — the method cannot run, or no
+   * declared field is measurable, or the rule ANDs its conditions so a single
+   * unmeasurable field makes the whole rule unable to fire.
    */
   readonly zeroMeasurement: boolean;
 }
@@ -469,9 +529,8 @@ export function fieldCoverage(rules: readonly RuleLike[]): readonly FieldCoverag
   for (const rule of rules) {
     const fields = conditionFields(rule);
     const unmeasured = fields.filter((f) => !isMeasurableField(f));
-    const method = rule.detection?.method;
-    const methodBlind = method === "trace" || method === "behavioral" || method === "signature";
-    if (unmeasured.length === 0 && !methodBlind) continue;
+    const method = syncBlindMethod(rule);
+    if (unmeasured.length === 0 && method === null) continue;
     const expr = (rule.detection?.condition ?? "any").toLowerCase();
     const anyOf = expr === "any" || expr === "or";
     const measurable = fields.length - unmeasured.length;
@@ -479,7 +538,8 @@ export function fieldCoverage(rules: readonly RuleLike[]): readonly FieldCoverag
       Object.freeze({
         ruleId: rule.id,
         unmeasured: Object.freeze(unmeasured),
-        zeroMeasurement: methodBlind || measurable === 0 || (!anyOf && unmeasured.length > 0),
+        method,
+        zeroMeasurement: method !== null || measurable === 0 || (!anyOf && unmeasured.length > 0),
       }),
     );
   }
@@ -684,6 +744,22 @@ function maxAttainableConditions(rule: RuleLike): number {
   return 0;
 }
 
+/** syncBlindReason(), worded for the event scanSkill() builds. */
+const SKILL_PATH_METHOD_REASONS: Readonly<Record<SyncBlindMethod, string>> = Object.freeze({
+  trace:
+    "method: trace — scanSkill() builds an event with no `trace`, and " +
+    "evaluateRule returns null when event.trace is undefined",
+  behavioral:
+    "method: behavioral — the synchronous evaluateRule returns null " +
+    "unconditionally; a metric window needs a streaming path",
+  signature:
+    "method: signature — indicators are compared against event.fields, and " +
+    "scanSkill() sets `fields: {}`, so no indicator can ever resolve",
+  "semantic-no-pattern-fallback":
+    "method: semantic without fallback_method: pattern — the synchronous " +
+    "scanSkill() path has no judge and returns null",
+});
+
 /**
  * Why this rule can never match on the SKILL.md path — or null when it can.
  *
@@ -696,7 +772,6 @@ export function skillPathBlocker(rule: RuleLike): SkillPathGap | null {
 
   const scanTarget = normalise(rule.tags?.scan_target);
   const maturity = normalise(rule.maturity);
-  const method = normalise(rule.detection?.method) ?? "pattern";
   const required = requiredConditions(rule.detection?.conditions);
   const attainable = maxAttainableConditions(rule);
 
@@ -714,35 +789,10 @@ export function skillPathBlocker(rule: RuleLike): SkillPathGap | null {
 
   // Method dispatch happens before the compound gate and is independent of
   // scan_target: scanSkill() passes an event with no trace, no session window
-  // and `fields: {}`, so these methods return null for every input.
-  if (method === "trace") {
-    return gap(
-      "method-trace",
-      "method: trace — scanSkill() builds an event with no `trace`, and " +
-        "evaluateRule returns null when event.trace is undefined",
-    );
-  }
-  if (method === "behavioral") {
-    return gap(
-      "method-behavioral",
-      "method: behavioral — the synchronous evaluateRule returns null " +
-        "unconditionally; a metric window needs a streaming path",
-    );
-  }
-  if (method === "signature") {
-    return gap(
-      "method-signature",
-      "method: signature — indicators are compared against event.fields, and " +
-        "scanSkill() sets `fields: {}`, so no indicator can ever resolve",
-    );
-  }
-  if (method === "semantic" && normalise(rule.detection?.semantic?.fallback_method) !== "pattern") {
-    return gap(
-      "method-semantic-no-pattern-fallback",
-      "method: semantic without fallback_method: pattern — the synchronous " +
-        "scanSkill() path has no judge and returns null",
-    );
-  }
+  // and `fields: {}`, so these methods return null for every input. The
+  // predicate is fieldCoverage's, so the two axes cannot disagree about it.
+  const blind = syncBlindMethod(rule);
+  if (blind !== null) return gap(`method-${blind}`, SKILL_PATH_METHOD_REASONS[blind]);
 
   // scan_target skill/both is exempt from the compound gate entirely.
   if (scanTarget !== null && SKILL_NATIVE_SCAN_TARGETS.has(scanTarget)) return null;

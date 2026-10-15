@@ -30,6 +30,21 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **A semantic rule without a pattern fallback is no longer recorded as
+  measured clean.** The benign-corpus measurement
+  (`scripts/gate-promotion-fp.ts`, and `scripts/remeasure-benign-fp.ts`
+  through it) drives the synchronous engine, which returns null for
+  `method: semantic` unless `detection.semantic.fallback_method` is exactly
+  `pattern`; the judge runs only in `evaluateAsync()`. `fieldCoverage()`
+  named trace, behavioral and signature as methods it cannot run, but not
+  this one, so such a rule was written down as `fp_count: 0,
+  partial_measurement: false`, and `scripts/gate-action-eligibility.ts`
+  allowed it `terminate` at maturity `stable` and `degrade` at `test`. It is
+  now recorded partial and capped at `observe`. No rule on main was in this
+  state (every semantic rule falls back to pattern), so the committed
+  evidence is unchanged. The skill-path check now uses the same predicate; it
+  used to read `fallback_method: Pattern` as `pattern`, which the engine does
+  not.
 - **NIST-related statements corrected across the docs and the website.**
   Pages described a NIST CAISI dialogue and position paper that did not
   happen, an RFI response ATR never filed, an OSCAL "Path 1" acceptance,

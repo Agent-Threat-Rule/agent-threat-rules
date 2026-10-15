@@ -250,6 +250,15 @@ line is inside `response:`.
 
 All three cap the rule at `observe`.
 
+A rule whose detection method the harness cannot run is partial whatever its
+fields say. Every benign-corpus measurement drives the synchronous engine, whose
+`evaluateRule()` returns null for `method: trace` without a span DAG, for
+`method: behavioral` always, and for `method: semantic` unless
+`detection.semantic.fallback_method` is exactly `pattern` (the judge runs only in
+`evaluateAsync()`); `method: signature` matches only a whole field value equal
+to an indicator. Such a rule can only score 0 there, so its record says
+`partial_measurement: true` and it lands in this cell.
+
 The qualifier on the second is deliberate. A partial run that found **nothing**
 proves nothing — the harness said out loud that it never exercised some of the
 rule's conditions, so its silence is an unasked question. A partial run that
@@ -377,6 +386,11 @@ minus `status: draft` / `status: deprecated` / `maturity: deprecated`.
   `allow`, including an `~/.ssh/id_rsa` exfiltration to a remote host. ATR now
   emits a decision only to restrain (`deny` / `ask`); an `allow` verdict omits
   the whole `hookSpecificOutput` envelope and the host keeps its own prompt.
+- A semantic rule that falls back to pattern is measured on that fallback, and
+  graded on it like a pattern rule. With a judge configured the judge decides,
+  and the fallback runs only when the judge is unavailable or fails, so the
+  recorded number describes the fallback rather than the judge. Which tier a
+  judge-decided rule may earn is not settled.
 - The verdict path (`severity` + `confidence` → `permissionDecision`) has no
   precision input at all. That is a second, larger line: it _would_ change what
   the engine blocks, so it needs its own recall analysis and is out of scope here.
