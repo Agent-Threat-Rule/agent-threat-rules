@@ -11,20 +11,22 @@ All notable changes to ATR will be documented in this file.
   default, every maturity). Each runner the weekly measurement calls now also
   runs the same samples through its own detection loop on an engine
   constructed with `lane: 'enforce'` (only `maturity: stable` rules, the lane
-  for blocking) and records the result as `breakdown.enforce_lane`. README's
-  Recall column cites both lanes, root `stats.json` cites the enforce figure as
-  `enforceLaneRecall`, and `scripts/check-benchmark-citations.ts` fails CI when
-  either disagrees with the measurement or leaves the enforce figure out.
-  Before this, the enforce figures in README were one-off replays.
+  for blocking) and records the result as `breakdown.enforce_lane`. Where a
+  measurement records it, README's Recall cell cites both lanes and root
+  `stats.json` cites the enforce figure as `enforceLaneRecall`;
+  `scripts/check-benchmark-citations.ts` fails CI when either disagrees with
+  the measurement or leaves the enforce figure out. Before this, the enforce
+  figures in README were one-off replays.
 
 ### Changed
 
-- **README §8 discloses that the headline `garak` figure is partly
-  closed-book.** A replay without the rules written from the in-the-wild
-  corpus, by their own metadata or test cases, is given in the new
-  `[^garakcorpus]` footnote.
+- **README §8 discloses that the `garak` and `garak-full` figures are partly
+  closed-book.** A replay without the rules whose own YAML shows they were
+  written from the in-the-wild corpus is given in the new `[^garakcorpus]`
+  footnote, and the paragraph on the two `garak` rows no longer calls them
+  independent: `garak-full` contains that corpus twice.
 - `data/stats.json` no longer carries the orphaned `benchmark.pintRecall`
-  block, a 3.5.11 figure nothing wrote or read.
+  block, a 3.5.11 figure nothing has written since #600 and nothing reads.
 
 ## [4.1.5] - 2026-10-10
 

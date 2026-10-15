@@ -97,7 +97,7 @@ blocking on) and records the result beside the headline:
 | `detected`      | Attack samples the enforce-lane engine detected.                   |
 | `attacks`       | Attack samples evaluated; equals `confusion.tp + confusion.fn`.    |
 | `recall`        | `detected / attacks`.                                              |
-| `rules_in_lane` | Rules the enforce lane loads: status not draft/deprecated, maturity stable. |
+| `rules_in_lane` | Rules the enforce lane loads: status not draft/deprecated, maturity stable. A `confirm: embedding` rule among them fires only once embedding similarity confirms it, which the synchronous `evaluate()` most runners use cannot do. |
 | `note`          | What the figure is, in the file itself.                            |
 
 It is deliberately not a second headline: `metrics`, `latest.json` and
@@ -113,19 +113,23 @@ file. Measurements written before 2026-10-15 do not carry it.
 When citing a measurement externally, use this triple format:
 
 > ATR `<atr_version>` against `<source>` `<source_version>` (`<sample_count>`
-> samples, measured `<YYYY-MM-DD>`): recall `<X.X>%`, precision `<X.X>%`.
+> samples, measured `<YYYY-MM-DD>`): recall `<X.X>%` (hunt) / `<Y.Y>%` (enforce).
 
 Example:
 
-> ATR `3.0.0-alpha.0` against garak `v0.10.3` (666 samples, measured
-> 2026-04-21): recall 97.1%, precision 100.0%.
+> ATR `4.1.5` against `llm-guard` `corpus-2026-05-12` (44 samples, measured
+> 2026-10-15): recall 63.6% (hunt) / 0.0% (enforce).
 
-Name the lane. The figure above is the hunt lane; a deployment with blocking
-on runs the enforce lane, whose recall is `breakdown.enforce_lane.recall` in the
-same file, and the two can differ by two orders of magnitude.
+Name the lane. In a measurement written on or after 2026-10-15, `metrics.recall`
+is the hunt lane and `breakdown.enforce_lane.recall` in the same file is the
+enforce lane, the one README recommends when blocking is on; the two can differ
+by two orders of magnitude. Earlier measurements carry only the hunt figure.
+Cite precision only for a corpus with benign samples: elsewhere it is the
+schema's convention value `1`, not a result. Where README section 8 marks a row
+as partly closed-book (rules were written from that corpus), say so too.
 
 Always link to the underlying measurement file:
-`data/measurements/garak/2026-04-21_garak-v0.10.3_atr-2.0.11.json`.
+`data/measurements/llm-guard/2026-10-15_llm-guard-corpus-2026-05-12_atr-4-1-5.json`.
 
 ## What lives here vs. elsewhere
 
