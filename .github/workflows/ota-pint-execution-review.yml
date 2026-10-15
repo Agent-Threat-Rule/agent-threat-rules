@@ -1,11 +1,29 @@
 name: "Evidence: Ota PINT execution review (non-blocking)"
 
+# Manual, non-blocking evidence lane.
+#
+# It runs only when started by hand (workflow_dispatch). Do not add
+# pull_request or push triggers, and never make either job a required check.
+#
+# Disposable checkout only. `npm run eval:pint` rewrites tracked files under
+# data/pint-benchmark/ and data/measurements/pint/, and the verifier's cleanup
+# runs `git restore` and deletes the generated measurement file. That is safe
+# here only because each job gets a throwaway checkout on a GitHub-hosted
+# runner that is discarded when the job ends. Do not run these steps, or
+# `verify-pint-evidence.mjs cleanup`, in a working clone.
+#
+# Nothing from a run persists in the repository: the token is read-only,
+# checkout does not keep credentials, no dependency cache is saved for other
+# workflows to restore, and the only outputs are the uploaded artifacts.
+#
+# Ota is installed from one release asset whose URL and sha256 are pinned
+# below; the archive is checked before the binary runs and no installer
+# script is fetched. To move to another Ota release, change the version, URL
+# and sha256 together with agent.bootstrap.ota.source and
+# metadata.ota.minimum_version in ota.yaml.
+
 on:
   workflow_dispatch:
-  push:
-    branches: [bobai/ota-atr-v1.6.28]
-  pull_request:
-    branches: [main]
 
 concurrency:
   group: ota-pint-review-${{ github.workflow }}-${{ github.ref }}
@@ -16,27 +34,52 @@ permissions:
 
 env:
   OTA_NO_UPDATE_CHECK: "1"
+  PINNED_OTA_VERSION: v1.6.28
+  PINNED_OTA_URL: https://github.com/ota-run/ota/releases/download/v1.6.28/ota-x86_64-unknown-linux-gnu.tar.gz
+  # sha256 of the archive above, as listed in that release's ota-checksums.txt.
+  PINNED_OTA_SHA256: f7546e64e392a007eb265bf19cbce59421259ff36d652ccd7dd30c13846f0aa0
 
 jobs:
   contract-ci-drift:
     name: Contract-to-CI drift
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
 
       - name: Set up Node 20
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: "20"
+          package-manager-cache: false
 
-      - name: Set up Ota from the contract
-        uses: ota-run/setup@493cba84bf7f7c11c9e8e996d832d93a89c62184 # v1.0.8
-        with:
-          source: contract
-          contract-path: ota.yaml
+      - name: Install pinned Ota (sha256-verified)
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/ota.tar.gz"
+          curl --fail --silent --show-error --location --proto '=https' --retry 3 \
+            --output "$archive" "$PINNED_OTA_URL"
+          actual="$(sha256sum "$archive" | cut -d ' ' -f 1)"
+          if [ "$actual" != "$PINNED_OTA_SHA256" ]; then
+            echo "::error::Ota archive sha256 is $actual, expected $PINNED_OTA_SHA256"
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/ota-bin"
+          tar -xzf "$archive" -C "$RUNNER_TEMP/ota-bin" ota
+          version="$("$RUNNER_TEMP/ota-bin/ota" --version --json | jq -er .version)"
+          if [ "$version" != "$PINNED_OTA_VERSION" ]; then
+            echo "::error::Installed Ota reports $version, expected $PINNED_OTA_VERSION"
+            exit 1
+          fi
+          echo "$RUNNER_TEMP/ota-bin" >> "$GITHUB_PATH"
 
+      # ota-run/action never runs Ota's installer when install is `never`; it
+      # uses the binary installed above.
       - name: Fail on contract-to-CI workflow drift
         uses: ota-run/action@8001070c0c9e54ca2b729282df40d1a9f40c8a79 # v1.0.16
         with:
@@ -65,21 +108,41 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
 
+      # No dependency cache (no `cache: npm`, and automatic caching is off):
+      # this job runs third-party code, so it must not save a cache that other
+      # workflows on the same ref would restore.
       - name: Set up Node 20
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: "20"
-          cache: npm
+          package-manager-cache: false
 
       - name: Check input-identity refusal regressions
         run: node --test .github/ota/verify-pint-evidence.self-check.mjs
 
-      - name: Set up Ota from the contract
-        uses: ota-run/setup@493cba84bf7f7c11c9e8e996d832d93a89c62184 # v1.0.8
-        with:
-          source: contract
-          contract-path: ota.yaml
+      - name: Install pinned Ota (sha256-verified)
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/ota.tar.gz"
+          curl --fail --silent --show-error --location --proto '=https' --retry 3 \
+            --output "$archive" "$PINNED_OTA_URL"
+          actual="$(sha256sum "$archive" | cut -d ' ' -f 1)"
+          if [ "$actual" != "$PINNED_OTA_SHA256" ]; then
+            echo "::error::Ota archive sha256 is $actual, expected $PINNED_OTA_SHA256"
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/ota-bin"
+          tar -xzf "$archive" -C "$RUNNER_TEMP/ota-bin" ota
+          version="$("$RUNNER_TEMP/ota-bin/ota" --version --json | jq -er .version)"
+          if [ "$version" != "$PINNED_OTA_VERSION" ]; then
+            echo "::error::Installed Ota reports $version, expected $PINNED_OTA_VERSION"
+            exit 1
+          fi
+          echo "$RUNNER_TEMP/ota-bin" >> "$GITHUB_PATH"
 
       - name: Record tool identities
         shell: bash
