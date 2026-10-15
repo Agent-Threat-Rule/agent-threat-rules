@@ -26,27 +26,34 @@
  *
  *   README.md   — for each benchmark-table row the checker maps to a measured,
  *                 non-exempt source: Source version, Samples, Recall,
- *                 Precision, FP rate, ATR version and Measured. Recall keeps
- *                 the first figure's lane annotation; any further lane figure
- *                 (`/ 0.0% (enforce)`) is dropped on re-stamp, because the
- *                 measurement is a single (hunt-lane) run. Labels, footnotes,
- *                 row order, padding of unchanged cells and every other line
- *                 stay byte-identical. Unmeasured and exempt rows are untouched.
+ *                 Precision, FP rate, ATR version and Measured. When the
+ *                 measurement records breakdown.enforce_lane, Recall becomes
+ *                 `<hunt> (hunt) / <enforce> (enforce)` plus its footnote
+ *                 markers, which is what the checker requires. Otherwise Recall
+ *                 keeps the first figure's lane annotation, and any further
+ *                 lane figure (`/ 0.0% (enforce)`) is dropped on re-stamp,
+ *                 because nothing measured it. Labels, footnotes, row order,
+ *                 padding of unchanged cells and every other line stay
+ *                 byte-identical. Unmeasured and exempt rows are untouched.
  *   stats.json  — recall / samples / atr_version / measured / precision /
- *                 fpRate / detected / missed are recomputed; garak.perFamily
- *                 is recomputed from garak-full's by_family when garak-full was
- *                 measured at the same ATR version. Descriptors of the corpus
- *                 or method — source, disclaimer, caveat on every block; lane,
- *                 tiers, notOfficialPint where they apply — are kept
- *                 byte-for-byte and never re-stamped or dropped.
+ *                 fpRate / detected / missed / enforceLaneRecall are
+ *                 recomputed; garak.perFamily is recomputed from garak-full's
+ *                 by_family when garak-full was measured at the same ATR
+ *                 version. Descriptors of the corpus or method — source,
+ *                 disclaimer, caveat on every block; lane, tiers,
+ *                 notOfficialPint where they apply — are kept byte-for-byte
+ *                 and never re-stamped or dropped.
  *                 On re-stamp, DROPPABLE_FIELDS this run cannot derive
- *                 (pint.comment, skill.enforceLane*, a perFamily without a
+ *                 (pint.comment, skill.enforceLaneNote, a perFamily without a
  *                 same-version garak-full) are dropped. A block holding any
- *                 other field is left on its old stamp, for the checker to
+ *                 other field — including an enforceLaneRecall this run did
+ *                 not record — is left on its old stamp, for the checker to
  *                 fail and a human to classify.
  *
  * A rate is never rounded to 0% when it is not zero, nor to 100% when it is
- * not one. (Recall keeps the checker's one-decimal form, which CI enforces.)
+ * not one; that includes the enforce-lane figure (pctLane), which sits near
+ * zero. (The hunt recall keeps the checker's one-decimal form, which CI
+ * enforces.)
  *
  * Row -> source mapping, percentage formatting and the table parser are
  * imported from the checker, and the rendered documents are re-checked with
@@ -83,9 +90,13 @@ import {
   type BenchmarkEntry,
   EXEMPT_SOURCES,
   LABEL_TO_SOURCE,
+  decimalsFor,
+  enforceRecallBySource,
   findCitationProblems,
   parseBenchmarkTable,
   pct1,
+  pctLane,
+  pctLaneNumber,
 } from "./check-benchmark-citations.js";
 import { citedTokens, findProseToReview, formatReviewNotes } from "./lib/benchmark-review-notes.js";
 import { aggregateMeasurements, projectForStats, type StatsBenchmarkEntry } from "./measurement/aggregate.js";
@@ -105,18 +116,7 @@ const COL = {
 
 // ── numbers ───────────────────────────────────────────────────────────────────
 
-const MAX_DECIMALS = 8;
-
-/**
- * Decimals needed so a non-zero rate never reads 0% and a rate below one never
- * reads 100%: a 0.04% FP rate written as "0.0%" is a claim of none.
- */
-export function decimalsFor(value: number, min: number): number {
-  const shown = (d: number) => Number((value * 100).toFixed(d));
-  let d = min;
-  while (d < MAX_DECIMALS && ((value !== 0 && shown(d) === 0) || (value !== 1 && shown(d) === 100))) d += 1;
-  return d;
-}
+export { decimalsFor };
 
 /** A README rate cell, at the cell's own precision or finer. `0.20%` keeps two decimals. */
 function pctCell(cellPct: string, value: number): string {
@@ -139,14 +139,23 @@ function replaceLeadingPct(cell: string, render: (old: string) => string): strin
 }
 
 /**
- * The recall cell: the leading figure becomes the measurement (the checker's
- * one-decimal form). On re-stamp, figures after it go — the measurement has no
- * second lane — while the first figure's lane annotation and any footnote
- * markers stay. `100.0% (hunt) / 0.0% (enforce)` -> `95.0% (hunt)`.
+ * The recall cell. When the measurement records an enforce-lane figure the
+ * cell is rewritten whole, as `<hunt> (hunt) / <enforce> (enforce)`, keeping
+ * only its footnote markers: the checker requires both figures, and any other
+ * wording in the cell ("not an enforce figure") would contradict the second.
+ *
+ * Otherwise the leading figure becomes the measurement (the checker's
+ * one-decimal form). On re-stamp, figures after it go — nothing measured a
+ * second lane for this row — while the first figure's lane annotation and any
+ * footnote markers stay. `100.0% (hunt) / 0.0% (enforce)` -> `95.0% (hunt)`.
  */
-function recallCell(cell: string, recall: number, restamp: boolean): string {
+function recallCell(cell: string, recall: number, restamp: boolean, enforce: number | undefined): string {
   const figures = [...cell.matchAll(FIGURE)];
   if (figures.length === 0) return cell;
+  if (enforce !== undefined) {
+    const notes = cell.match(FOOTNOTE_REF) ?? [];
+    return [`${pct1(recall)} (hunt) / ${pctLane(enforce)} (enforce)`, ...notes].join(" ");
+  }
   if (!restamp || figures.length === 1) return replaceLeadingPct(cell, () => pct1(recall));
   const first = figures[0];
   const firstEnd = (first.index ?? 0) + first[0].length;
@@ -156,7 +165,7 @@ function recallCell(cell: string, recall: number, restamp: boolean): string {
 }
 
 /** The new text of each measured cell for one row, keyed by column index. */
-function cellsFor(cells: readonly string[], entry: BenchmarkEntry): Map<number, string> {
+function cellsFor(cells: readonly string[], entry: BenchmarkEntry, enforce: number | undefined): Map<number, string> {
   const measured = entry.measured_at.slice(0, 10);
   const restamp = cells[COL.atrVersion] !== entry.atr_version || cells[COL.measured] !== measured;
   const next = new Map<number, string>([
@@ -168,7 +177,7 @@ function cellsFor(cells: readonly string[], entry: BenchmarkEntry): Map<number, 
   const recall = entry.recall;
   // The checker skips a `—` recall cell; so does this.
   if (recall !== null && cells[COL.recall] !== "—") {
-    next.set(COL.recall, recallCell(cells[COL.recall], recall, restamp));
+    next.set(COL.recall, recallCell(cells[COL.recall], recall, restamp, enforce));
   }
   const precision = entry.precision;
   if (precision !== null) {
@@ -188,11 +197,15 @@ function replacedTokens(before: string, after: string): string[] {
 }
 
 /** Rewrite one table line, touching only cells whose trimmed text changes. */
-function renderRow(line: string, entry: BenchmarkEntry): { line: string; replaced: string[] } {
+function renderRow(
+  line: string,
+  entry: BenchmarkEntry,
+  enforce: number | undefined,
+): { line: string; replaced: string[] } {
   // Same split the checker uses; segment i + 1 holds cell i with its padding.
   const segments = line.split("|");
   const cells = segments.slice(1, -1).map((c) => c.trim());
-  const next = cellsFor(cells, entry);
+  const next = cellsFor(cells, entry, enforce);
   const replaced: string[] = [];
   const out = segments.map((seg, i) => {
     const value = next.get(i - 1);
@@ -212,9 +225,14 @@ export interface ReadmeRender {
 /**
  * Pure: README text in, README text out, plus what the table stopped citing.
  * Only lines the checker parses as benchmark rows with a mapped, non-exempt,
- * measured source can change.
+ * measured source can change. `enforce` is each source's recorded enforce-lane
+ * recall (enforceRecallBySource); a row whose source is in it cites both lanes.
  */
-export function renderReadmeDetailed(readme: string, entries: readonly BenchmarkEntry[]): ReadmeRender {
+export function renderReadmeDetailed(
+  readme: string,
+  entries: readonly BenchmarkEntry[],
+  enforce: ReadonlyMap<string, number> = new Map(),
+): ReadmeRender {
   const bySource = new Map(entries.map((e) => [e.source, e]));
   const lines = readme.split("\n");
   const rendered = new Map<number, string>();
@@ -225,15 +243,19 @@ export function renderReadmeDetailed(readme: string, entries: readonly Benchmark
     const entry = bySource.get(source);
     if (entry === undefined) continue;
     const idx = row.lineNo - 1;
-    const result = renderRow(lines[idx], entry);
+    const result = renderRow(lines[idx], entry, enforce.get(source));
     rendered.set(idx, result.line);
     for (const t of result.replaced) replaced.add(t);
   }
   return { text: lines.map((l, i) => rendered.get(i) ?? l).join("\n"), replaced: [...replaced] };
 }
 
-export function renderReadme(readme: string, entries: readonly BenchmarkEntry[]): string {
-  return renderReadmeDetailed(readme, entries).text;
+export function renderReadme(
+  readme: string,
+  entries: readonly BenchmarkEntry[],
+  enforce: ReadonlyMap<string, number> = new Map(),
+): string {
+  return renderReadmeDetailed(readme, entries, enforce).text;
 }
 
 // ── root stats.json ───────────────────────────────────────────────────────────
@@ -266,14 +288,18 @@ const ROOT_BLOCKS: ReadonlyMap<string, RootBlockRule> = new Map([
 
 /**
  * Version-bound fields no measurement file carries: pint.comment counts rules
- * and per-rule detections, and skill.enforceLane* is an enforce-lane run the
- * harness does not make. Dropped when their block is re-stamped. The
- * limitations they stated outside those numbers live on in the blocks'
- * `disclaimer` / `caveat` (STABLE_FIELDS).
+ * and per-rule detections, and skill.enforceLaneNote is prose around a figure.
+ * Dropped when their block is re-stamped. The limitations they stated outside
+ * those numbers live on in the blocks' `disclaimer` / `caveat` (STABLE_FIELDS).
+ *
+ * `enforceLaneRecall` is not here: every runner records the enforce lane as
+ * breakdown.enforce_lane, so it is re-derived like recall. Nor is it optional:
+ * it is the disclosure beside the headline, so a block citing one that this
+ * run did not record is held on its old stamp for a human, never stripped.
  */
 const UNMEASURED_FIELDS: ReadonlyMap<string, readonly string[]> = new Map([
   ["pint", ["comment"]],
-  ["skill", ["enforceLaneRecall", "enforceLaneNote"]],
+  ["skill", ["enforceLaneNote"]],
 ]);
 
 /**
@@ -340,6 +366,7 @@ function computedFields(
   rule: RootBlockRule,
   bySource: ReadonlyMap<string, BenchmarkEntry>,
   details: ReadonlyMap<string, MeasurementDetail>,
+  enforce: number | undefined,
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {
     // The checker's own projection of a recall.
@@ -350,6 +377,8 @@ function computedFields(
   };
   if (entry.precision !== null) out.precision = pctNumber(entry.precision, 1);
   if (entry.fp_rate !== null) out.fpRate = pctNumber(entry.fp_rate, 2);
+  // The checker's own projection of an enforce figure (never 0 when it is not).
+  if (enforce !== undefined) out.enforceLaneRecall = pctLaneNumber(enforce);
   const detail = details.get(entry.source);
   if (detail?.detected !== undefined) out.detected = detail.detected;
   if (detail?.missed !== undefined) out.missed = detail.missed;
@@ -373,10 +402,18 @@ function renderBlock(
   rule: RootBlockRule,
   bySource: ReadonlyMap<string, BenchmarkEntry>,
   details: ReadonlyMap<string, MeasurementDetail>,
+  enforce: ReadonlyMap<string, number>,
 ): BlockRender {
   const entry = bySource.get(rule.source);
   if (entry === undefined || entry.recall === null) return { cite, dropped: [], held: [] };
-  const computed = computedFields(cite, { ...entry, recall: entry.recall }, rule, bySource, details);
+  const computed = computedFields(
+    cite,
+    { ...entry, recall: entry.recall },
+    rule,
+    bySource,
+    details,
+    enforce.get(rule.source),
+  );
   const restamp =
     (cite.atr_version !== undefined && cite.atr_version !== computed.atr_version) ||
     (cite.measured !== undefined && cite.measured !== computed.measured);
@@ -420,6 +457,8 @@ export function renderRootStats(
   rootStats: Readonly<Record<string, unknown>>,
   entries: readonly BenchmarkEntry[],
   details: ReadonlyMap<string, MeasurementDetail> = new Map(),
+  /** Recorded enforce-lane recall per source (enforceRecallBySource). */
+  enforce: ReadonlyMap<string, number> = new Map(),
 ): RootStatsRender {
   const benchmarks = rootStats.benchmarks;
   if (!isRecord(benchmarks)) return { stats: { ...rootStats }, dropped: [], held: [] };
@@ -430,7 +469,7 @@ export function renderRootStats(
     Object.entries(benchmarks).map(([key, cite]) => {
       const rule = ROOT_BLOCKS.get(key);
       if (rule === undefined || !isRecord(cite)) return [key, cite];
-      const result = renderBlock(key, cite, rule, bySource, details);
+      const result = renderBlock(key, cite, rule, bySource, details, enforce);
       dropped.push(...result.dropped);
       held.push(...result.held);
       return [key, result.cite];
@@ -513,11 +552,14 @@ export function renderRepo(root: string): RepoRender {
   const rootStatsPath = resolve(root, "stats.json");
   const readmeBefore = readText(readmePath);
   const rootStatsBefore = readText(rootStatsPath);
-  const readme = renderReadmeDetailed(readmeBefore, entries);
+  // The checker reads the same breakdown.enforce_lane records, the same way.
+  const enforce = enforceRecallBySource(root, entries);
+  const readme = renderReadmeDetailed(readmeBefore, entries, enforce);
   const rootStats = renderRootStats(
     JSON.parse(rootStatsBefore) as Record<string, unknown>,
     entries,
     measurementDetails(root, entries),
+    enforce,
   );
   // An unchanged object keeps the file's own bytes, whatever its formatting.
   const rootStatsAfter =
@@ -525,7 +567,7 @@ export function renderRepo(root: string): RepoRender {
       ? rootStatsBefore
       : JSON.stringify(rootStats.stats, null, 2) + "\n";
 
-  const check = findCitationProblems(readme.text, dataStats, rootStats.stats);
+  const check = findCitationProblems(readme.text, dataStats, rootStats.stats, enforce);
   const notes = formatReviewNotes({
     prose: readme.text === readmeBefore ? [] : findProseToReview(readme.text, readme.replaced),
     dropped: rootStats.dropped,

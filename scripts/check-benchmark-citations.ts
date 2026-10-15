@@ -34,9 +34,11 @@
  * checker that silently checks nothing is the bug it is here to prevent).
  */
 
-import { readFileSync, realpathSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { ENFORCE_LANE_BREAKDOWN_KEY, parseEnforceLaneRecall } from "../src/measurement/schema.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const README_PATH = resolve(REPO_ROOT, "README.md");
@@ -106,27 +108,32 @@ function readJson(path: string): unknown {
 }
 
 /**
- * Compare a README recall cell against the measured value.
+ * Compare a README recall cell against the measurement.
  *
- * A cell is normally one percentage. It may also be lane-annotated, because
- * recall is lane-dependent and quoting one number without the lane can be
- * catastrophically misleading: the SKILL.md corpus scores 100% in `hunt` and
- * 0% in `enforce`, and someone reading only the first would deploy auto-block
- * expecting detection that is structurally absent.
+ * Recall is lane-dependent, and quoting one number without the lane can be
+ * catastrophically misleading: the headline garak corpus scores 600/650 in
+ * `hunt` and 6/650 in `enforce` (ATR 4.1.5), and someone reading only the
+ * first would deploy auto-block expecting detection that is structurally
+ * absent. So a measurement records both — `metrics.recall` (hunt) and
+ * `breakdown.enforce_lane` — and the cell cites both:
  *
- *     100.0%
- *     100.0% (hunt) / 0.0% (enforce)
+ *     92.3% (hunt) / 0.9% (enforce)
+ *     100.0%                          (only while no measurement records an enforce figure)
  *
- * Two rules, and the second is the one that keeps this honest:
+ * The rules, each closing a way to publish a number nothing backs:
  *
- *   1. One of the percentages must equal the measurement. Otherwise the cell
- *      is not backed by anything.
- *   2. If the cell carries more than one percentage, EVERY percentage must be
- *      lane-annotated. Without that, "add a second number until one matches"
- *      becomes a way to launder a wrong figure past this check — which is the
- *      exact failure mode the script exists to prevent.
+ *   1. The first figure equals the measured hunt recall. Not "any figure":
+ *      `42.0% (hunt) / 92.3% (enforce)` contains the number but attaches it to
+ *      the wrong lane.
+ *   2. With more than one figure, every figure is lane-annotated, so "add a
+ *      second number until one matches" cannot launder a wrong one.
+ *   3. The first figure is the hunt lane, and the only other lane cited is
+ *      `enforce`: no run measures `alert`.
+ *   4. When the measurement records an enforce figure the cell cites it, at
+ *      the recorded value (pctLane), and the hunt figure never stands alone.
+ *      When it records none, the cell cites none.
  */
-export function checkRecallCell(cell: string, measured: number): string | null {
+export function checkRecallCell(cell: string, measured: number, enforce: number | null = null): string | null {
   const want = pct1(measured);
   const values = [...cell.matchAll(/(\d+(?:\.\d+)?%)(\s*\(([a-z-]+)\))?/g)];
   if (values.length === 0) return `recall ${cell} is not a percentage`;
@@ -136,15 +143,61 @@ export function checkRecallCell(cell: string, measured: number): string | null {
       `write each as "N% (lane)" so a reader knows which lane each number belongs to`
     );
   }
-  // The FIRST value, not any value. `42.0% (hunt) / 100.0% (enforce)` contains
-  // the measured number while attaching it to the wrong lane — checking only for
-  // presence would wave that through. The measurement is a hunt-lane run (the
-  // engine default), and the first value is the one a reader takes as headline,
-  // so those two have to be the same number.
   if (values[0][1] !== want) {
     return `recall ${cell} leads with ${values[0][1]}, but the measurement is ${want}`;
   }
+  const leadLane = values[0][3];
+  if (leadLane !== undefined && leadLane !== "hunt") {
+    return `recall ${cell} labels its leading figure ${leadLane}, but the measured headline is the hunt lane`;
+  }
+  const others = values.slice(1);
+  const unmeasured = others.find((m) => m[3] !== "enforce");
+  if (unmeasured !== undefined) {
+    return `recall ${cell} cites a ${unmeasured[3]}-lane figure; no measurement records that lane beside the headline`;
+  }
+  if (enforce === null) {
+    return others.length === 0
+      ? null
+      : `recall ${cell} cites an enforce-lane figure, but the measurement records none (breakdown.enforce_lane)`;
+  }
+  const recorded = pctLane(enforce);
+  if (others.length === 0) {
+    return (
+      `recall ${cell} omits the enforce-lane figure the measurement records (${recorded}); ` +
+      `write "${want} (hunt) / ${recorded} (enforce)"`
+    );
+  }
+  if (others.length > 1 || others[0][1] !== recorded) {
+    return `recall ${cell} cites ${others.map((m) => m[1]).join(", ")} for the enforce lane, but the measurement records ${recorded}`;
+  }
   return null;
+}
+
+const MAX_DECIMALS = 8;
+
+/**
+ * Decimals needed so a non-zero rate never reads 0% and a rate below one never
+ * reads 100%: a 0.04% figure written as "0.0%" is a claim of none.
+ */
+export function decimalsFor(value: number, min: number): number {
+  const shown = (d: number) => Number((value * 100).toFixed(d));
+  let d = min;
+  while (d < MAX_DECIMALS && ((value !== 0 && shown(d) === 0) || (value !== 1 && shown(d) === 100))) d += 1;
+  return d;
+}
+
+/**
+ * An enforce-lane recall as README cites it: one decimal, more when one would
+ * read a non-zero figure as 0% (1 of 3,475 is `0.03%`, not `0.0%`). Enforce
+ * figures sit near zero, where pct1 would erase exactly what they disclose.
+ */
+export function pctLane(n: number): string {
+  return `${(n * 100).toFixed(decimalsFor(n, 1))}%`;
+}
+
+/** The same figure as stats.json's `enforceLaneRecall` carries it, in percent. */
+export function pctLaneNumber(n: number): number {
+  return Number((n * 100).toFixed(decimalsFor(n, 1)));
 }
 
 /** `0.915` -> `"91.5%"`, matching how the README table renders a recall. */
@@ -207,7 +260,38 @@ export function parseBenchmarkTable(readme: string): TableRow[] {
 
 /** The slice of root `stats.json` this check reads. */
 export interface RootStats {
-  benchmarks?: Record<string, { recall?: number; samples?: number; atr_version?: string; measured?: string }>;
+  benchmarks?: Record<
+    string,
+    { recall?: number; samples?: number; atr_version?: string; measured?: string; enforceLaneRecall?: number }
+  >;
+}
+
+/** Root stats.json blocks and the measurement source each one cites. */
+export const ROOT_BLOCK_SOURCES: ReadonlyMap<string, string> = new Map([
+  ["garak", "garak"],
+  ["pint", "pint"],
+  ["skill", "skill-benchmark"],
+]);
+
+/**
+ * Each source's enforce-lane recall, read from `breakdown.enforce_lane` of the
+ * measurement file its benchmarks[] entry names. A source whose measurement
+ * records none is absent. A malformed record throws: verify.ts rejects it too.
+ */
+export function enforceRecallBySource(
+  root: string,
+  entries: readonly { source: string; measurement_file?: string }[],
+): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const e of entries) {
+    if (e.measurement_file === undefined) continue;
+    const path = resolve(root, e.measurement_file);
+    if (!existsSync(path)) throw new Error(`${e.source}: measurement file ${e.measurement_file} does not exist`);
+    const m = JSON.parse(readFileSync(path, "utf-8")) as { breakdown?: Record<string, unknown> };
+    const raw = m.breakdown?.[ENFORCE_LANE_BREAKDOWN_KEY];
+    if (raw !== undefined) out.set(e.source, parseEnforceLaneRecall(raw).recall);
+  }
+  return out;
 }
 
 export interface CitationCheck {
@@ -227,6 +311,8 @@ export function findCitationProblems(
   readme: string,
   dataStats: { benchmarks?: BenchmarkEntry[] },
   rootStats: RootStats,
+  /** Enforce-lane recall per source (enforceRecallBySource); a source not in it records none. */
+  enforce: ReadonlyMap<string, number> = new Map(),
 ): CitationCheck {
   const problems: string[] = [];
 
@@ -283,7 +369,7 @@ export function findCitationProblems(
       );
     }
     if (entry.recall !== null && row.recall !== "—") {
-      const recallProblem = checkRecallCell(row.recall, entry.recall);
+      const recallProblem = checkRecallCell(row.recall, entry.recall, enforce.get(source) ?? null);
       if (recallProblem !== null) {
         problems.push(
           `README.md:${row.lineNo} (${source}): ${recallProblem} ` +
@@ -372,14 +458,36 @@ export function findCitationProblems(
     }
   }
 
+  // An enforce-lane figure next to a headline is only as good as the
+  // measurement behind it: skill.enforceLaneRecall was hand-written as 0 for
+  // weeks with no run recording it.
+  for (const [block, source] of ROOT_BLOCK_SOURCES) {
+    const cited = rootStats.benchmarks?.[block]?.enforceLaneRecall;
+    if (cited === undefined) continue;
+    const recorded = enforce.get(source);
+    if (recorded === undefined) {
+      problems.push(
+        `stats.json: benchmarks.${block}.enforceLaneRecall = ${cited} but data/measurements/${source}/ ` +
+          `records no enforce lane (breakdown.enforce_lane)`,
+      );
+    } else if (cited !== pctLaneNumber(recorded)) {
+      problems.push(
+        `stats.json: benchmarks.${block}.enforceLaneRecall = ${cited} but the measurement records ` +
+          `${pctLaneNumber(recorded)} (data/measurements/${source}/latest.json, breakdown.enforce_lane)`,
+      );
+    }
+  }
+
   return { fatal: null, rowCount: rows.length, problems };
 }
 
 function main(): number {
+  const dataStats = readJson(DATA_STATS_PATH) as { benchmarks?: (BenchmarkEntry & { measurement_file?: string })[] };
   const { fatal, rowCount, problems } = findCitationProblems(
     readFileSync(README_PATH, "utf-8"),
-    readJson(DATA_STATS_PATH) as { benchmarks?: BenchmarkEntry[] },
+    dataStats,
     readJson(ROOT_STATS_PATH) as RootStats,
+    enforceRecallBySource(REPO_ROOT, dataStats.benchmarks ?? []),
   );
   if (fatal !== null) {
     console.error(fatal);
