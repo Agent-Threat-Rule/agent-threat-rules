@@ -15,7 +15,7 @@
  *   - .jsonl lines contribute their `text` field, if it is a non-empty string.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative, sep } from "node:path";
 import { MEASUREMENT_CORPORA } from "../../src/quality/action-eligibility.js";
 
 export { MEASUREMENT_CORPORA };
@@ -61,6 +61,72 @@ export function loadCorpusTexts(pathStr: string): readonly string[] {
     }
   }
   return texts;
+}
+
+/** One sample, with where it came from. */
+export interface CorpusRecord {
+  readonly text: string;
+  /** Path relative to the root the corpus was read from, with forward slashes. */
+  readonly file: string;
+  /** 1-based physical line of a .jsonl record; null for a .md file, which is one sample. */
+  readonly line: number | null;
+  /** The trimmed .jsonl line, or the whole .md file: what the sample was parsed from. */
+  readonly raw: string;
+  readonly source: string | null;
+  readonly sourceId: string | null;
+}
+
+function jsonlRecord(file: string, line: number, raw: string): CorpusRecord | null {
+  // Same acceptance as loadCorpusTexts, including that a line parsing to a
+  // non-object (`null`, `5`) is skipped by the property access throwing.
+  try {
+    const obj = JSON.parse(raw) as { text?: unknown; source?: unknown; source_id?: unknown };
+    if (typeof obj.text !== "string" || obj.text.length === 0) return null;
+    const id = obj.source_id;
+    return {
+      text: obj.text,
+      file,
+      line,
+      raw,
+      source: typeof obj.source === "string" ? obj.source : null,
+      sourceId: typeof id === "string" || typeof id === "number" ? String(id) : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The samples of one corpus path under `root`, as loadCorpusTexts reads them
+ * and in the same order, each with its file, line and recorded source.
+ * Provenance only: callers that count samples must still go through
+ * loadCorpusTexts, and scripts/remeasure-benign-fp.ts asserts that the two
+ * agree text for text.
+ */
+export function loadCorpusRecords(root: string, corpus: string): readonly CorpusRecord[] {
+  const path = join(root, corpus);
+  if (!existsSync(path)) return [];
+  const files = statSync(path).isDirectory() ? collectCorpusFiles(path) : [path];
+  const out: CorpusRecord[] = [];
+  for (const full of files) {
+    let raw: string;
+    try {
+      raw = readFileSync(full, "utf-8");
+    } catch {
+      continue;
+    }
+    const file = relative(root, full).split(sep).join("/");
+    if (full.endsWith(".md")) {
+      out.push({ text: raw, file, line: null, raw, source: null, sourceId: null });
+      continue;
+    }
+    raw.split("\n").forEach((line, i) => {
+      const trimmed = line.trim();
+      const rec = trimmed === "" ? null : jsonlRecord(file, i + 1, trimmed);
+      if (rec !== null) out.push(rec);
+    });
+  }
+  return out;
 }
 
 /** Every benign sample the FP gate would score a rule against. */
