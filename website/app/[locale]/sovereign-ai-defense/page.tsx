@@ -1,6 +1,7 @@
 import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { loadSiteStats } from "@/lib/stats";
+import { count, findBenchmark, measuredStamp, pct, pctHunt } from "@/lib/recall";
 import type { Metadata } from "next";
 
 export function generateStaticParams() {
@@ -49,6 +50,7 @@ export default async function SovereignAIDefensePage({
   const ENC_URL = zh ? ENCODED_URL_ZH : ENCODED_URL_EN;
   const stats = loadSiteStats();
   const ruleCount = stats.ruleCount;
+  const garak = findBenchmark(stats, "garak");
 
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[880px] mx-auto">
@@ -127,12 +129,18 @@ export default async function SovereignAIDefensePage({
             unit={zh ? " 條" : ""}
             note={zh ? "MIT 授權 · 規則數即時讀自 rules/" : "MIT licensed · count read live from rules/"}
           />
-          <StatCell
-            label="GARAK RECALL"
-            value="92.3"
-            unit="%"
-            note={zh ? "650 in-the-wild · 全 3,475 樣本 57.2% · ATR 3.5.12,2026-08-15" : "650 in-the-wild · 57.2% on full 3,475 · ATR 3.5.12, 2026-08-15"}
-          />
+          {garak && (
+            <StatCell
+              label="GARAK RECALL · HUNT"
+              value={pctHunt(garak.recall).replace("%", "")}
+              unit="%"
+              note={
+                zh
+                  ? `enforce lane(封鎖用,只載 stable 規則)${garak.enforce ? pct(garak.enforce.recall) : "未記錄"} · ${count(garak.samples)} in-the-wild · ${measuredStamp(garak, true)} · 部分屬 closed-book:有不少規則是從這份語料寫出來的`
+                  : `enforce lane (for blocking, stable rules only) ${garak.enforce ? pct(garak.enforce.recall) : "not recorded"} · ${count(garak.samples)} in-the-wild · ${measuredStamp(garak, false)} · partly closed-book: many rules were written from this corpus`
+              }
+            />
+          )}
           <StatCell
             label="FALSE POSITIVE"
             value={zh ? "待重測" : "withdrawn"}

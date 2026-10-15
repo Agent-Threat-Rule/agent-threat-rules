@@ -17,6 +17,20 @@ All notable changes to ATR will be documented in this file.
   `scripts/check-benchmark-citations.ts` fails CI when either disagrees with
   the measurement or leaves the enforce figure out. Before this, the enforce
   figures in README were one-off replays.
+- **Every other surface that quotes a recall now names its lane too, and reads
+  it from the measurement files.** `scripts/render-recall-citations.ts` renders
+  the figures in `LIMITATIONS.md`, `docs/SAFE-MCP-MAPPING.md`, the
+  `docs/owasp-pr/` texts and the TSC announcement draft between recall markers,
+  from the file each source's `latest.json` points at, in both lanes;
+  `scripts/sync-citation-garak.ts` (and `sync-stats.ts`) generate the garak
+  sentence in `CITATION.cff` from root `stats.json`, with both lanes and the
+  closed-book caveat. The weekly measurement run re-renders both, and CI fails
+  on a stale or unrenderable figure. The website reads the enforce lane from the
+  same measurement files: the home page, coverage, research, red-team, garak
+  integration, NIST AI RMF, ATD and sovereign-AI pages, and the PINT blog post,
+  quote both lanes, and every garak figure carries the closed-book caveat. The
+  site no longer reads recall from the old eval report files, drops their typed
+  fallbacks, and no longer hydrates recall in the browser.
 
 ### Changed
 

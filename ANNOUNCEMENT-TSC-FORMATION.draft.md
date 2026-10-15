@@ -61,10 +61,14 @@ At the time of TSC formation:
   catalog, OWASP Agent Security Regression Harness, Gen Digital
   Sage, plus 4 awesome-list inclusions)
 - 13 external PR merges across these organizations
-- 97.1 % recall on the NVIDIA garak in-the-wild jailbreak corpus
-  (666 prompts); 100 % recall on the SKILL.md real-world corpus
-  (341 samples); 0 % false-positive rate on a 432-sample benign
-  corpus
+- Recall on the NVIDIA garak in-the-wild jailbreak corpus
+  (<!-- recall:garak:samples -->650<!-- /recall --> prompts): <!-- recall:garak -->92.3% (hunt) / 0.9% (enforce)<!-- /recall -->; the `hunt` figure is partly
+  closed-book, since many of the rules that fire on this corpus were
+  written from it. On the SKILL.md real-world corpus
+  (<!-- recall:skill-benchmark:samples -->498<!-- /recall --> samples): <!-- recall:skill-benchmark -->100.0% (hunt) / 0.0% (enforce)<!-- /recall -->. `hunt` is the engine default
+  and loads every rule maturity; `enforce`, the lane to run with
+  blocking on, loads only stable rules. 0 % false-positive rate on a
+  432-sample benign corpus
 - Conformance Test Suite v1.0 published with 103 true-positive, 103
   true-negative, and 20 edge-case fixtures
 - IETF Internet-Draft `draft-lin-atr-core-00` prepared and rendered

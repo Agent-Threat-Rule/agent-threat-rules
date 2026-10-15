@@ -1,5 +1,15 @@
 import { loadCoverageData } from "@/lib/coverage";
-import { loadSiteStats } from "@/lib/stats";
+import { loadSiteStats, type SiteStats } from "@/lib/stats";
+import {
+  GARAK_BOTH_CLOSED_BOOK,
+  LANES_EXPLAINED,
+  NO_ENFORCE_RECORD,
+  commonStamp,
+  count,
+  findBenchmark,
+  measuredStamp,
+  recallLanes,
+} from "@/lib/recall";
 import { Reveal } from "@/components/Reveal";
 import { CountUp } from "@/components/CountUp";
 import { StatsHydrator } from "@/components/StatsHydrator";
@@ -28,6 +38,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
   const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
   const coverage = loadCoverageData();
   const stats = loadSiteStats();
+  const pint = findBenchmark(stats, "pint");
 
   return (
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
@@ -52,33 +63,13 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
           <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
             {locale === "zh" ? "如何解讀這些數字" : "How to read this"}
           </div>
+          <p className="text-sm text-graphite leading-[1.7] mb-4">
+            {locale === "zh"
+              ? `每個召回率都列兩個 lane,先 hunt 後 enforce。${LANES_EXPLAINED.zh}誤報數字只在 hunt lane 量測。`
+              : `Every recall below names two lanes, hunt first. ${LANES_EXPLAINED.en} False-positive figures are measured in the hunt lane only.`}
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-graphite leading-[1.7]">
-            {[
-              {
-                name: "PINT-format (850 samples)",
-                verdict: locale === "zh"
-                  ? "ATR 在 850 個 PINT 格式對抗性樣本上達到 65.4% 召回率，並在該語料的 399 個良性樣本上 0 誤報（ATR 3.5.12，量測於 2026-08-15）。這是自建語料（deepset + Lakera Gandalf），不是 Lakera 官方私有 PINT benchmark；只有一小部分規則會在這份語料上開火，請讀成 prompt injection 家族的分數，不是整體覆蓋率。"
-                  : "ATR reaches 65.4% recall on 850 PINT-format adversarial samples, with zero false positives on that corpus's 399 benign samples (ATR 3.5.12, measured 2026-08-15). This is a self-built corpus (deepset + Lakera Gandalf), not Lakera's official private PINT benchmark; only a small subset of rules fire on it, so read it as a prompt-injection-family score rather than overall coverage.",
-              },
-              {
-                name: "HackAPrompt (4,780 samples)",
-                verdict: locale === "zh"
-                  ? "ATR 在 4,780 個 HackAPrompt 競賽樣本上達到 69.6% 召回率（ATR 3.5.0，量測於 2026-06-16）。這份語料 100% 對抗性、沒有良性樣本，所以它算不出 precision 或誤報率——別把它當精準度證據。"
-                  : "ATR catches 69.6% of the 4,780 HackAPrompt competition samples (ATR 3.5.0, measured 2026-06-16). The corpus is 100% adversarial with no benign population, so it cannot yield a precision or false-positive figure — do not read it as precision evidence.",
-              },
-              {
-                name: "Self-test (341 samples)",
-                verdict: locale === "zh"
-                  ? "ATR 在 341 個內部自測樣本上達到 96.6% 召回率、0 誤報（ATR 3.5.12，量測於 2026-08-15）——這是與 SKILL.md benchmark 分開的獨立語料，且是自家語料,不能當成樣本外證據。"
-                  : "ATR reaches 96.6% recall with zero false positives on 341 internal self-test samples (ATR 3.5.12, measured 2026-08-15) — a separate corpus from the SKILL.md benchmark, and an in-house one, so it is not out-of-sample evidence.",
-              },
-              {
-                name: "garak (650 in-the-wild / 3,475 full)",
-                verdict: locale === "zh"
-                  ? "ATR 對 garak in-the-wild jailbreak 集（650 個 prompt）達到 92.3% 召回率；對完整 23-probe garak 套件（3,475 個 prompt）為 57.2%（皆為 ATR 3.5.12，量測於 2026-08-15）。"
-                  : "ATR reaches 92.3% recall on garak's in-the-wild jailbreak set (650 prompts), and 57.2% on the full 23-probe garak suite (3,475 prompts) — both at ATR 3.5.12, measured 2026-08-15.",
-              },
-            ].map((item) => (
+            {readingNotes(stats, locale === "zh").map((item) => (
               <div key={item.name}>
                 <div className="font-data text-xs text-blue font-semibold mb-1">{item.name}</div>
                 <p>{item.verdict}</p>
@@ -104,8 +95,8 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
             <div className="font-data text-3xl font-bold text-ink">{stats.owaspAst10}</div>
           </div>
           <div className="bg-paper p-6 text-center">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">PINT F1</div>
-            <div className="font-data text-3xl font-bold text-ink"><CountUp target={stats.pintF1} liveKey="pintF1" /></div>
+            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">PINT F1 · hunt</div>
+            {pint && <div className="font-data text-3xl font-bold text-ink"><CountUp target={Math.round(pint.f1 * 1000) / 10} /></div>}
           </div>
         </div>
       </Reveal>
@@ -193,4 +184,62 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
       </Reveal>
     </div>
   );
+}
+
+type Note = { name: string; verdict: string };
+
+function pintNote(stats: SiteStats, zh: boolean): Note | null {
+  const pint = findBenchmark(stats, "pint");
+  if (!pint || pint.attacks === null || pint.benign === null) return null;
+  const fp = count(pint.falsePositives ?? 0);
+  return {
+    name: `PINT-format (${count(pint.samples)} samples)`,
+    verdict: zh
+      ? `ATR 在 PINT 格式語料(${count(pint.samples)} 個樣本,其中 ${count(pint.attacks)} 個是攻擊)上的召回率是 ${recallLanes(pint)};hunt lane 在 ${count(pint.benign)} 個良性樣本上誤報 ${fp} 次(${measuredStamp(pint, true)})。這是自建語料(deepset + Lakera Gandalf),不是 Lakera 官方私有 PINT benchmark;只有一小部分規則會在這份語料上開火,請讀成 prompt injection 家族的分數,不是整體覆蓋率。`
+      : `Recall on the PINT-format corpus (${count(pint.samples)} samples, ${count(pint.attacks)} of them attacks) is ${recallLanes(pint)}, with ${fp} false positives on its ${count(pint.benign)} benign samples in the hunt lane (${measuredStamp(pint, false)}). This is a self-built corpus (deepset + Lakera Gandalf), not Lakera's official private PINT benchmark; only a small subset of rules fire on it, so read it as a prompt-injection-family score rather than overall coverage.`,
+  };
+}
+
+function hackapromptNote(stats: SiteStats, zh: boolean): Note | null {
+  const hack = findBenchmark(stats, "hackaprompt");
+  if (!hack) return null;
+  const none = hack.enforce === null;
+  return {
+    name: `HackAPrompt (${count(hack.samples)} samples)`,
+    verdict: zh
+      ? `ATR 在 ${count(hack.samples)} 個 HackAPrompt 競賽樣本上的召回率是 ${recallLanes(hack)}(${measuredStamp(hack, true)})${none ? `;${NO_ENFORCE_RECORD.zh}` : ""}。這份語料 100% 對抗性、沒有良性樣本,所以它算不出 precision 或誤報率——別把它當精準度證據。`
+      : `Recall on the ${count(hack.samples)} HackAPrompt competition samples is ${recallLanes(hack)} (${measuredStamp(hack, false)})${none ? `; ${NO_ENFORCE_RECORD.en}` : ""}. The corpus is 100% adversarial with no benign population, so it cannot yield a precision or false-positive figure — do not read it as precision evidence.`,
+  };
+}
+
+function selfTestNote(stats: SiteStats, zh: boolean): Note | null {
+  const self = findBenchmark(stats, "atr-self-test");
+  if (!self) return null;
+  const fp = count(self.falsePositives ?? 0);
+  return {
+    name: `Self-test (${count(self.samples)} samples)`,
+    verdict: zh
+      ? `ATR 在 ${count(self.samples)} 個內部自測樣本上的召回率是 ${recallLanes(self)},hunt lane 誤報 ${fp} 次(${measuredStamp(self, true)})——這是與 SKILL.md benchmark 分開的獨立語料,且是自家語料,不能當成樣本外證據。`
+      : `Recall on the ${count(self.samples)} internal self-test samples is ${recallLanes(self)}, with ${fp} false positives in the hunt lane (${measuredStamp(self, false)}) — a separate corpus from the SKILL.md benchmark, and an in-house one, so it is not out-of-sample evidence.`,
+  };
+}
+
+function garakNote(stats: SiteStats, zh: boolean): Note | null {
+  const garak = findBenchmark(stats, "garak");
+  const full = findBenchmark(stats, "garak-full");
+  if (!garak || !full) return null;
+  return {
+    name: `garak (${count(garak.samples)} in-the-wild / ${count(full.samples)} full)`,
+    verdict: zh
+      ? `ATR 在 garak in-the-wild 越獄集(${count(garak.samples)} 個 prompt)上的召回率是 ${recallLanes(garak)};在完整 garak probe 套件(${count(full.samples)} 個 prompt)上是 ${recallLanes(full)}(${commonStamp([garak, full], true)})。${GARAK_BOTH_CLOSED_BOOK.zh}`
+      : `Recall on garak's in-the-wild jailbreak set (${count(garak.samples)} prompts) is ${recallLanes(garak)}, and on the full garak probe suite (${count(full.samples)} prompts) ${recallLanes(full)} (${commonStamp([garak, full], false)}). ${GARAK_BOTH_CLOSED_BOOK.en}`,
+  };
+}
+
+/**
+ * The "How to read this" notes, each figure from its measurement file with its
+ * lane. A corpus with no measurement gets no note rather than a typed number.
+ */
+function readingNotes(stats: SiteStats, zh: boolean): Note[] {
+  return [pintNote, hackapromptNote, selfTestNote, garakNote].flatMap((note) => note(stats, zh) ?? []);
 }

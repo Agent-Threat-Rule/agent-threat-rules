@@ -9,12 +9,16 @@ abstract: >
   escalation, excessive autonomy, model security), mapped to OWASP Agentic Top
   10 (10/10 categories), SAFE-MCP (78 of 85 techniques) and MITRE ATLAS. Rules
   are hand-authored from real attack payloads, including the NVIDIA garak probe
-  corpus (92.3% recall on the 650-prompt garak in-the-wild jailbreak corpus,
-  measured at ATR 3.5.12), and are held to a community safety gate that requires
-  true-positive and true-negative test cases on every rule, verifies each rule
-  matches its own true positives, and rejects any rule that fires on the
-  committed benign skill corpus. The exact thresholds are defined in
-  scripts/check-rules-safety.ts and CONTRIBUTING.md rather than here.
+  corpus, and are held to a community safety gate that requires true-positive
+  and true-negative test cases on every rule, verifies each rule matches its own
+  true positives, and rejects any rule that fires on the committed benign skill
+  corpus. The exact thresholds are defined in scripts/check-rules-safety.ts and
+  CONTRIBUTING.md rather than here.
+  On the 650-prompt garak in-the-wild jailbreak corpus, measured at ATR 4.1.5,
+  recall is 92.3% in the hunt lane (the engine default, which loads every rule
+  maturity) and 0.9% in the enforce lane (stable rules only, the lane to run
+  with blocking on). The hunt figure is partly closed-book: many of the rules
+  that fire on this corpus were written from it (README section 8).
   Rule counts change daily. Current counts, per-corpus benchmark figures and the
   measurement file behind each one are published in data/stats.json and the
   README evaluation table; those are the citable source, not this abstract.

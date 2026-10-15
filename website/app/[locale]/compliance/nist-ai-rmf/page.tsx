@@ -1,6 +1,7 @@
 import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
-import { loadSiteStats } from "@/lib/stats";
+import { loadSiteStats, type SiteStats } from "@/lib/stats";
+import { commonStamp, count, findBenchmark, pct, recallLanes } from "@/lib/recall";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -390,14 +391,12 @@ export default async function NistAiRmfPage({
                 : " — ATR's detection layer naturally sits above the identity layer"}
             </span>
           </li>
-          <li className="flex gap-3">
-            <span className="text-blue font-data text-xs pt-[5px]">→</span>
-            <span>
-              {zh
-                ? "效能 benchmark(ATR 3.5.12,量測於 2026-08-15):NVIDIA garak in-the-wild jailbreak recall 92.3%(650 樣本)、完整 23-probe garak 57.2%(3,475 樣本)· 498 條已標註 SKILL.md 語料上 FP rate 0.20% · DOI 10.5281/zenodo.19178002"
-                : "Performance benchmarks (ATR 3.5.12, measured 2026-08-15): 92.3% recall on NVIDIA garak's in-the-wild jailbreak set (650 samples) and 57.2% across the full 23-probe garak suite (3,475 samples) · 0.20% FP rate on the 498-sample labeled SKILL.md corpus · DOI 10.5281/zenodo.19178002"}
-            </span>
-          </li>
+          {benchmarkLine(stats, zh) && (
+            <li className="flex gap-3">
+              <span className="text-blue font-data text-xs pt-[5px]">→</span>
+              <span>{benchmarkLine(stats, zh)}</span>
+            </li>
+          )}
         </ul>
       </Section>
 
@@ -548,4 +547,19 @@ function CTACard({
       </div>
     </a>
   );
+}
+
+/**
+ * The benchmark bullet, from the measurement files, with both lanes and the
+ * garak closed-book caveat. Null when a measurement is missing: no typed figure.
+ */
+function benchmarkLine(stats: SiteStats, zh: boolean): string | null {
+  const garak = findBenchmark(stats, "garak");
+  const full = findBenchmark(stats, "garak-full");
+  const skill = findBenchmark(stats, "skill-benchmark");
+  if (!garak || !full || !skill) return null;
+  const stamp = commonStamp([garak, full, skill], zh);
+  return zh
+    ? `效能 benchmark(${stamp}):NVIDIA garak in-the-wild jailbreak 集(${count(garak.samples)} 樣本)召回率 ${recallLanes(garak)},部分屬於 closed-book(在上面開火的規則有不少是從它寫出來的);完整 garak 套件(${count(full.samples)} 樣本)${recallLanes(full)} · ${count(skill.samples)} 筆已標註 SKILL.md 語料上 hunt lane 誤報率 ${pct(skill.fp_rate, 2)} · hunt 是引擎預設、載入所有成熟度的規則,enforce 只載入 stable 規則、是開封鎖時用的 lane · DOI 10.5281/zenodo.19178002`
+    : `Performance benchmarks (${stamp}): recall on NVIDIA garak's in-the-wild jailbreak set (${count(garak.samples)} samples) is ${recallLanes(garak)}, partly closed-book because many of the rules that fire on it were written from it, and ${recallLanes(full)} across the full garak suite (${count(full.samples)} samples) · ${pct(skill.fp_rate, 2)} FP rate in the hunt lane on the ${count(skill.samples)}-sample labeled SKILL.md corpus · hunt is the engine default and loads every rule maturity; enforce, the lane for blocking, loads only stable rules · DOI 10.5281/zenodo.19178002`;
 }

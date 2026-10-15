@@ -23,8 +23,9 @@ name: Measure All Benchmarks
 # It then runs the same samples through the same detection loop on an engine
 # constructed with `lane: 'enforce'` (only maturity: stable rules load — the
 # lane for blocking) and records that as `breakdown.enforce_lane`
-# (src/measurement/enforce-lane.ts), which README's second Recall figure and
-# stats.json's enforceLaneRecall cite. Verify measurement schemas checks the
+# (src/measurement/enforce-lane.ts), which README's second Recall figure,
+# stats.json's enforceLaneRecall and the documents
+# scripts/render-recall-citations.ts renders cite. Verify measurement schemas checks the
 # record; tests/measurement-enforce-lane-coverage.test.ts fails the rolling
 # PR if a source stops recording it.
 #
@@ -253,10 +254,24 @@ jobs:
       - name: Render README benchmark table
         run: npx tsx scripts/render-benchmark-table.ts --root . --review-notes "$RUNNER_TEMP/benchmark-review.md"
 
+      # LIMITATIONS.md and the docs that quote the same corpora carry their
+      # recall figures between recall markers. Re-render them from the same
+      # pointers, or the rolling PR fails eval.yml's check of them the way it
+      # used to fail on README's table.
+      - name: Render recall citations in Markdown docs
+        run: npx tsx scripts/render-recall-citations.ts --root .
+
+      # CITATION.cff's garak sentence is generated from the stats.json garak
+      # block rendered above. sync-stats.ts only runs on rules merges, so
+      # without this the abstract would cite last week's figure until then.
+      - name: Sync CITATION.cff garak sentence
+        run: npx tsx scripts/sync-citation-garak.ts --root .
+
       - name: Detect changes
         id: changes
         run: |
-          git add -A data/measurements/ data/stats.json README.md stats.json
+          mapfile -t RECALL_DOCS < <(npx tsx scripts/render-recall-citations.ts --list)
+          git add -A data/measurements/ data/stats.json README.md stats.json CITATION.cff "${RECALL_DOCS[@]}"
           if git diff --cached --quiet; then
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
             echo "No measurement changes this run."
@@ -319,13 +334,15 @@ jobs:
           headline is the hunt lane; `breakdown.enforce_lane` records the same samples
           through the same loop on an enforce-lane engine. README.md's benchmark
           table and the garak / pint / skill blocks of stats.json are re-rendered from the
-          same pointers by scripts/render-benchmark-table.ts; anything it could not
-          re-render is listed below for a manual pass. Each measurement file is
+          same pointers by scripts/render-benchmark-table.ts, and the recall figures
+          in LIMITATIONS.md and the other documents scripts/render-recall-citations.ts
+          lists by that script; anything they could not re-render is listed below
+          for a manual pass. Each measurement file is
           named for the day it was taken, so the files this PR adds are the recall trend
           since the last merge.
 
           This is a rolling PR. Each weekly run carries the measurement files already
-          waiting here, adds its own, regenerates latest.json, data/stats.json and the README table, and
+          waiting here, adds its own, regenerates latest.json, data/stats.json, the README table and those documents, and
           pushes to measure-all/rolling. Merge it when ready; the next run starts a new one.
           Closing it without merging drops the measurements it holds.
           BODY
