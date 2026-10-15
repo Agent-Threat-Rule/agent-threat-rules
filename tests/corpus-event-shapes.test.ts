@@ -504,6 +504,8 @@ describe("the gate measures a tool_args rule end to end", () => {
 describe("harnesses import the canonical shape set — they do not mirror it", () => {
   const HARNESSES = [
     "scripts/gate-promotion-fp.ts",
+    // The scan loop gate-promotion-fp.ts and its worker processes share.
+    "scripts/lib/fp-scan.ts",
     "scripts/check-rules-safety.ts",
     "scripts/promote-to-stable.ts",
     "scripts/audit-draft-revival.ts",
