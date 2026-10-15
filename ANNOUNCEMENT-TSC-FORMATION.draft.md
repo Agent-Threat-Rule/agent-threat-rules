@@ -5,7 +5,6 @@
 # ATR Forms Inaugural Technical Steering Committee
 
 [![Draft](https://img.shields.io/badge/document-DRAFT-orange?style=flat-square)](#)
-[![Microsoft](https://img.shields.io/badge/Microsoft_AGT-287_rules_merged-2ea44f?style=flat-square)](https://github.com/microsoft/agent-governance-toolkit)
 [![Cisco](https://img.shields.io/badge/Cisco_AI_Defense-419_rules_merged-2ea44f?style=flat-square)](https://github.com/cisco-ai-defense/skill-scanner)
 [![MISP](https://img.shields.io/badge/MISP-336_rules_merged-2ea44f?style=flat-square)](https://github.com/MISP/misp-galaxy)
 [![NIST OSCAL](https://img.shields.io/badge/NIST_OSCAL-Path_1_accepted-2ea44f?style=flat-square)](https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog)

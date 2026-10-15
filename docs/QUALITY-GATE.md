@@ -1,7 +1,7 @@
 # ATR Quality Gate
 
 > Every rule in `rules/` passes this gate before it can ship. Production
-> consumers (Microsoft Agent Governance Toolkit, Cisco AI Defense
+> consumers (Cisco AI Defense
 > skill-scanner, MISP, OWASP A-S-R-H) auto-sync from `rules/`, so a bad
 > rule blast-radiuses across the whole AI-security ecosystem within
 > hours. The gate is what keeps that from happening.

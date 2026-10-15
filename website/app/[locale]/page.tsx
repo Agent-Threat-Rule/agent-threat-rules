@@ -451,8 +451,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.1}>
             <h2 className="font-display text-[24px] md:text-[clamp(28px,4vw,48px)] font-extrabold tracking-[-1.5px] md:tracking-[-2px] leading-[1.15] text-ink max-w-[820px] text-balance">
               {zh
-                ? "安全團隊把 ATR 當成上游規則來源,合併進自己的公開 repo。"
-                : "Security teams consume ATR as an upstream rule source, merged into their own public repos."}
+                ? "ATR 規則包與整合範例,已合併進這些組織的公開 repo。"
+                : "ATR rule packs and integration examples, merged into these organizations' public repos."}
             </h2>
           </Reveal>
 
@@ -462,8 +462,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               {[
                 {
                   name: "Microsoft AGT",
-                  detail: zh ? "PR #908 + #1277 已合併 · 287 條規則(合併當時)+ 每週自動同步" : "PR #908 + #1277 merged · 287 rules (at PR time) + weekly auto-sync",
-                  href: "https://github.com/microsoft/agent-governance-toolkit/pull/1277",
+                  detail: zh ? "PR #2308 + #3025 已合併 · ATR 匯入與 ACS annotator 範例目錄,repo 內沒有規則包" : "PR #2308 + #3025 merged · ATR import and ACS annotator example directories; no rule pack in the repo",
+                  href: "https://github.com/microsoft/agent-governance-toolkit/pull/3025",
                 },
                 {
                   name: "Cisco AI Defense",
@@ -491,17 +491,17 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.25}>
             <div className="mt-6 md:mt-8 bg-paper border-l-2 border-blue p-5 md:p-7 max-w-[860px]">
               <div className="font-data text-[10px] md:text-xs text-stone tracking-[2px] uppercase mb-3">
-                {zh ? "生產環境閉環 · 2 小時 16 分" : "Production loop · 2h 16m"}
+                {zh ? "PR 到合併規則 · 2 小時 16 分" : "PR to merged rule · 2h 16m"}
               </div>
               <p className="font-display text-base md:text-lg font-semibold text-ink leading-[1.5] text-balance">
                 {zh
-                  ? "Microsoft 的自主 AI 工程師開 PR 時,預設 ATR 已覆蓋——而這個假設是對的。"
-                  : "Microsoft's autonomous AI engineer opened a PR assuming ATR coverage existed — and the assumption was correct."}
+                  ? "AGT 維護者把 ATR 維護者提的 issue 指派給 Microsoft 的 Copilot 程式代理;它開的 PR 測試預設 ATR 能偵測兩個 CVE,ATR 當天就發布了對應規則。"
+                  : "Assigned by an AGT maintainer to an issue filed by ATR's maintainer, Microsoft's Copilot coding agent opened a PR whose test fixtures presumed ATR could detect two CVEs. ATR shipped matching rules the same day."}
               </p>
               <p className="text-sm md:text-base text-graphite mt-3 leading-[1.8] text-pretty">
                 {zh
-                  ? "2026-05-11,Copilot SWE Agent 為兩個 Semantic Kernel CVE 開了 AGT#1981,regression fixtures 預設 ATR 偵測存在。規則在 2 小時 16 分鐘內驗證並發布到 npm。不是人工安排的整合。"
-                  : "On 2026-05-11, the Copilot SWE Agent opened AGT#1981 for two Semantic Kernel CVEs with regression fixtures presuming ATR detection. Rules were validated and published to npm within 2h 16m. Not a manually arranged integration."}
+                  ? "2026-05-11,AGT 維護者把 AGT#1937(ATR 維護者前一天提出、為兩個 Semantic Kernel CVE 對映 ATR 規則的 issue)指派給 Copilot SWE Agent,它開了 AGT#1981,regression fixtures 預設 ATR 偵測存在。對應規則在 2 小時 16 分鐘內合併進 ATR,兩分鐘後發布到 npm,四個 fixture 中有兩個對上。這是 Copilot 在 AGT 裡的動作,不是 MSRC 背書。"
+                  : "On 2026-05-11, an AGT maintainer assigned the Copilot SWE Agent to AGT#1937, an issue the ATR maintainer had filed the day before mapping ATR rules to two Semantic Kernel CVEs; it opened AGT#1981 with regression fixtures presuming ATR detection. The matching rules were merged into ATR within 2h 16m and published to npm two minutes later; two of the four fixtures matched. This was Copilot operating inside AGT, not an MSRC endorsement."}
               </p>
               <a href="https://github.com/microsoft/agent-governance-toolkit/issues/1981" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline inline-block mt-3">
                 {zh ? "查看 AGT#1981 →" : "View AGT#1981 →"}
@@ -533,7 +533,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.35}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog mt-8 md:mt-10">
               {[
-                { num: String(tier1MergedCount), label: zh ? "已合併的上游整合" : "merged upstream", sub: zh ? "Microsoft · Cisco · Gen Digital" : "Microsoft, Cisco, Gen Digital" },
+                { num: String(tier1MergedCount), label: zh ? "已合併的上游整合" : "merged upstream", sub: "ADOPTERS.md Tier 1" },
                 { num: String(stats.ruleCount), label: zh ? "條偵測規則" : "detection rules", sub: zh ? `跨 ${categoryCount} 個類別` : `across ${categoryCount} categories` },
                 { num: stats.megaScanTotal.toLocaleString(), label: zh ? "skills 已掃描" : "skills scanned", sub: zh ? "跨多個 registry" : "across registries" },
                 { num: `${mergedCount}/${stats.ecosystemIntegrations.length}`, label: zh ? "生態系 PR" : "ecosystem PRs", sub: zh ? "已合併" : "merged" },

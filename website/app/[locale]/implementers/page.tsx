@@ -37,11 +37,11 @@ export async function generateMetadata({
 const IMPLEMENTERS = [
   {
     org: "Microsoft Agent Governance Toolkit",
-    role: "L1 Engine",
+    role: "L1 Citation",
     version: "3.0.0-alpha",
-    date: "2026-04-26",
-    refLabel: "PR #1277",
-    refUrl: "https://github.com/microsoft/agent-governance-toolkit/pull/1277",
+    date: "2026-06-15",
+    refLabel: "PR #3025",
+    refUrl: "https://github.com/microsoft/agent-governance-toolkit/pull/3025",
   },
   {
     org: "Cisco AI Defense (skill-scanner)",

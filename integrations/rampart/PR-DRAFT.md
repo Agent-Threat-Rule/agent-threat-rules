@@ -17,16 +17,16 @@ RAMPART's launch post (2026-05-20) names community-contributed threat patterns a
 
 ## Why ATR
 
-ATR is a 425-rule MIT-licensed detection corpus that is already in production across four external organizations through public GitHub merges:
+ATR is a 425-rule MIT-licensed detection corpus that has been merged into public repositories at four external organizations:
 
 | Org | What landed | PR |
 |---|---|---|
-| Microsoft Agent Governance Toolkit | 287-rule production pack | [microsoft/agent-governance-toolkit#1277](https://github.com/microsoft/agent-governance-toolkit/pull/1277) (2026-04-26) |
+| Microsoft Agent Governance Toolkit | Example directories (ACS annotator adapter, ATR import example) | [microsoft/agent-governance-toolkit#3025](https://github.com/microsoft/agent-governance-toolkit/pull/3025) (2026-06-15) |
 | Cisco AI Defense skill-scanner | Full ATR pack | [cisco-ai-defense/skill-scanner#99](https://github.com/cisco-ai-defense/skill-scanner/pull/99) (2026-04-22) |
 | MISP CIRCL | misp-galaxy global cluster + taxonomies tag vocab | [#1207](https://github.com/MISP/misp-galaxy/pull/1207), [#323](https://github.com/MISP/misp-taxonomies/pull/323) (2026-05-10) |
 | Gen Digital Sage chain (via precize) | Agent-Security-Regression-Harness | [precize/Agent-Security-Regression-Harness#74](https://github.com/precize/Agent-Security-Regression-Harness/pull/74) (2026-05-11) |
 
-On 2026-05-11 the Microsoft Copilot SWE Agent autonomously opened [microsoft/agent-governance-toolkit#1981](https://github.com/microsoft/agent-governance-toolkit/issues/1981) with regression test fixtures that presumed ATR detection of two Semantic Kernel CVEs (CVE-2026-26030 lambda+eval RCE, CVE-2026-25592 autostart file write). ATR v2.1.2 with rules `ATR-2026-00440` + `ATR-2026-00441` was merged, npm-published, and GitHub-released by 08:24 UTC the same day — end-to-end CVE-to-shipped-rule **2 hours 16 minutes**. (Honest disclosure: coverage was partial — two of four Copilot-generated fixtures matched the v2.1.2 canonical regex shape; the rest landed in later versions.)
+On 2026-05-11, after an AGT maintainer assigned it [microsoft/agent-governance-toolkit#1937](https://github.com/microsoft/agent-governance-toolkit/issues/1937), an issue the ATR maintainer had filed mapping two CVEs to ATR rules, the Microsoft Copilot SWE Agent opened [microsoft/agent-governance-toolkit#1981](https://github.com/microsoft/agent-governance-toolkit/issues/1981) with regression test fixtures that presumed ATR detection of two Semantic Kernel CVEs (CVE-2026-26030 lambda+eval RCE, CVE-2026-25592 autostart file write). ATR v2.1.2 with rules `ATR-2026-00440` + `ATR-2026-00441` was merged, npm-published, and GitHub-released by 08:24 UTC the same day — **2 hours 16 minutes** from PR open to rule merge. (Honest disclosure: coverage was partial — two of four Copilot-generated fixtures matched the v2.1.2 canonical regex shape; the rest landed in later versions.)
 
 That dependency loop is the case for shipping an ATR adapter inside RAMPART. RAMPART users running pytest red-team flows today get to assert against the same corpus that Microsoft's own automation references.
 

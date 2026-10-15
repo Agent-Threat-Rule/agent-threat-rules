@@ -11,7 +11,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: "Red Team — Your attack becomes the standard | ATR",
   description:
-    "ATR is an open detection standard fed by red-team research. A probe found today becomes a versioned rule that propagates to Microsoft Agent Governance Toolkit, Cisco AI Defense, MISP, and OWASP — keeping defenders evolving at the same speed as attackers. Attribution stays attached to the rule ID, permanently.",
+    "ATR is an open detection standard fed by red-team research. A probe found today becomes a versioned rule that propagates to Cisco AI Defense, MISP, and OWASP — keeping defenders evolving at the same speed as attackers. Attribution stays attached to the rule ID, permanently.",
 };
 
 interface RedTeamTool {
@@ -177,21 +177,21 @@ interface AttributionStat {
 const ATTRIBUTION_STATS: AttributionStat[] = [
   {
     number: "2h 16m",
-    label: "Disclosure to published rule",
+    label: "Copilot PR to merged rule",
     detail:
-      "2026-05-07 Microsoft Security disclosed Semantic Kernel CVE-2026-26030. 2026-05-11 06:07 UTC a Microsoft Copilot SWE Agent opened a regression-test PR presuming ATR already covered it. 08:24 UTC v2.1.2 published on npm with the paired rules. The loop from a disclosed attack to a shared detection closes in hours, not committee cycles.",
+      "2026-05-07 Microsoft Security disclosed Semantic Kernel CVE-2026-26030. 2026-05-10 the ATR maintainer filed AGT#1937 mapping it to ATR rules; 2026-05-11 06:07 UTC, after an AGT maintainer assigned that issue to it, a Microsoft Copilot SWE Agent opened a regression-test PR presuming ATR already covered it. 08:22 UTC the paired rules were merged into ATR; 08:24 UTC v2.1.2 published on npm. Once the gap was reported, the loop to a shared detection closed in hours, not committee cycles.",
   },
   {
     number: "5",
-    label: "Independent organizations carry the same rules",
+    label: "Independent organizations have merged ATR work",
     detail:
-      'Microsoft Agent Governance Toolkit (weekly auto-sync). Cisco AI Defense (rule pack in skill-scanner). CIRCL/MISP (taxonomies + galaxy merged by the project lead). OWASP A-S-R-H (lead merged with "Welcome to the team"). Gen Digital Sage (Norton / Avast parent security team merged). A rule written once becomes vocabulary five organizations share — which is the point of a standard.',
+      'Microsoft Agent Governance Toolkit (example directories). Cisco AI Defense (rule pack in skill-scanner). CIRCL/MISP (taxonomies + galaxy merged by the project lead). OWASP A-S-R-H (lead merged with "Welcome to the team"). Gen Digital Sage (Norton / Avast parent security team merged). A rule written once becomes vocabulary shared across organizations — which is the point of a standard.',
   },
   {
     number: "RULECOUNT",
     label: "Rules, each carrying the discoverer's name",
     detail:
-      "Every rule carries author + metadata_provenance.discovered_by, and a stable ATR-YYYY-NNNNN ID that never changes after publication. Microsoft AGT, Cisco AI Defense, MISP, and OWASP all preserve the field on sync. When MISP exports to STIX, the attribution survives the format change. When NIST references the rule, the lineage back to the original red-teamer stays intact.",
+      "Every rule carries author + metadata_provenance.discovered_by, and a stable ATR-YYYY-NNNNN ID that never changes after publication. Cisco AI Defense, MISP, and OWASP all preserve the field on sync. When MISP exports to STIX, the attribution survives the format change. When NIST references the rule, the lineage back to the original red-teamer stays intact.",
   },
   {
     number: "0 FP",
@@ -264,9 +264,9 @@ const CONTRIBUTOR_BENEFITS: ContributorBenefit[] = [
   {
     for: "Corporate red teams",
     benefit:
-      "The variant your team found stops being an internal finding and becomes shared defensive vocabulary. Your team appears as the discoverer in the rule corpus that Microsoft AGT, Cisco AI Defense, MISP, OWASP A-S-R-H, and Gen Digital Sage all pull from.",
+      "The variant your team found stops being an internal finding and becomes shared defensive vocabulary. Your team appears as the discoverer in the rule corpus that Cisco AI Defense, MISP, OWASP A-S-R-H, and Gen Digital Sage all pull from.",
     proof:
-      "Microsoft's Copilot SWE Agent already opens PRs presuming ATR coverage (AGT #1981, closed 2026-05-11). Originating an ATR-2026-NNNNN rule is durable, verifiable provenance — it sits in a public corpus, not a slide.",
+      "Microsoft's Copilot SWE Agent, assigned an ATR maintainer's issue that mapped two CVEs to ATR rules, opened a PR presuming ATR coverage (AGT #1937 → #1981, merged 2026-05-11). Originating an ATR-2026-NNNNN rule is durable, verifiable provenance — it sits in a public corpus, not a slide.",
   },
   {
     for: "Independent researchers",
@@ -336,14 +336,13 @@ export default async function RedTeamPage({
           <p className="font-display text-[clamp(18px,2.2vw,24px)] text-stone font-light leading-snug mb-10 max-w-[760px]">
             {zh ? (
               <>
-                一個攻擊被結晶成一條規則，那條規則就成了所有防禦者共用的字彙。Microsoft
-                AGT 每週自動拉、Cisco AI Defense 的 skill-scanner 內建一份、MISP export
+                一個攻擊被結晶成一條規則，那條規則就成了所有防禦者共用的字彙。Cisco AI Defense 的 skill-scanner 內建一份、MISP export
                 到 STIX 時帶著發現者的署名。這是一道閉環飛輪：攻擊餵養標準，標準與威脅同速演化。
               </>
             ) : (
               <>
                 One attack, crystallized into one rule, becomes a word every
-                defender shares. Microsoft AGT pulls it weekly, Cisco AI
+                defender shares. Cisco AI
                 Defense ships it in skill-scanner, MISP exports it to STIX with
                 the discoverer&apos;s name attached. A closed-loop flywheel:
                 attacks feed the standard, and the standard evolves at the same
@@ -547,13 +546,13 @@ export default async function RedTeamPage({
                   </h3>
                   <p className="text-base text-paper/80 leading-relaxed mb-2">
                     {zh
-                      ? "Microsoft AGT 每週 sync、Cisco AI Defense 跟 release tag、MISP taxonomy + galaxy 每次 release 拉、OWASP A-S-R-H 在 fixture 中引用 rule ID。你的 discovered_by 跟著整條鏈傳遞——這是飛輪的下半圈:一個攻擊變成一條規則,一條規則變成所有防禦者共用的字彙。"
-                      : "Microsoft AGT syncs weekly. Cisco AI Defense pins to release tags. MISP taxonomy + galaxy pull on every release. OWASP A-S-R-H references rule IDs in fixtures. Your discovered_by field rides the whole chain — this is the back half of the flywheel: one attack becomes one rule, and one rule becomes vocabulary every defender shares."}
+                      ? "Cisco AI Defense 跟 release tag、MISP taxonomy + galaxy 每次 release 拉、OWASP A-S-R-H 在 fixture 中引用 rule ID。你的 discovered_by 跟著整條鏈傳遞——這是飛輪的下半圈:一個攻擊變成一條規則,一條規則變成所有防禦者共用的字彙。"
+                      : "Cisco AI Defense pins to release tags. MISP taxonomy + galaxy pull on every release. OWASP A-S-R-H references rule IDs in fixtures. Your discovered_by field rides the whole chain — this is the back half of the flywheel: one attack becomes one rule, and one rule becomes vocabulary every defender shares."}
                   </p>
                   <p className="text-sm text-paper/60">
                     {zh
-                      ? "Microsoft Copilot 的 regression PR 從開 PR 到 v2.1.2 npm publish 用了 2 小時 16 分鐘（06:07 → 08:24 UTC）。標準與威脅同速演化,靠的就是這個節奏。"
-                      : "Microsoft Copilot's regression PR went from opened to v2.1.2 npm publish in 2h 16m (06:07 → 08:24 UTC). That cadence is how a standard stays level with the threat instead of lagging it."}
+                      ? "Microsoft Copilot 的 regression PR 從開 PR 到對應規則合併進 ATR 用了 2 小時 16 分鐘（06:07 → 08:22 UTC）,兩分鐘後 v2.1.2 發布到 npm。標準與威脅同速演化,靠的就是這個節奏。"
+                      : "Microsoft Copilot's regression PR went from opened to the matching rules merged into ATR in 2h 16m (06:07 → 08:22 UTC); v2.1.2 reached npm two minutes later. That cadence is how a standard stays level with the threat instead of lagging it."}
                   </p>
                 </div>
               </div>

@@ -320,9 +320,9 @@ export default async function ATDPage({
         </div>
         <p className="text-stone" style={{ fontSize: "0.8rem", marginTop: "0.9rem", lineHeight: 1.6 }}>
           {locale === "zh" ? (
-            <>ATD 的偵測規則由 ATR 發布 —— 已合併進 Microsoft Agent Governance Toolkit 與 Cisco AI Defense 的開源 skill-scanner,並於 MISP/CIRCL 對映。consumer 整合的是 ATR 規則,非對本草案標準的背書。DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>。</>
+            <>ATD 的偵測規則由 ATR 發布 —— 已合併進 Cisco AI Defense 的開源 skill-scanner、用於 Microsoft Agent Governance Toolkit 的範例,並於 MISP/CIRCL 對映。consumer 整合的是 ATR 規則,非對本草案標準的背書。DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>。</>
           ) : (
-            <>ATD&apos;s detection rules ship in ATR — merged into Microsoft Agent Governance Toolkit and Cisco AI Defense&apos;s open-source skill-scanner, and mapped in MISP/CIRCL. Consumers integrate ATR rules; this is not an endorsement of this draft standard. DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>.</>
+            <>ATD&apos;s detection rules ship in ATR — merged into Cisco AI Defense&apos;s open-source skill-scanner, used in Microsoft Agent Governance Toolkit examples, and mapped in MISP/CIRCL. Consumers integrate ATR rules; this is not an endorsement of this draft standard. DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>.</>
           )}
         </p>
       </section>
