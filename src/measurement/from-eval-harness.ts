@@ -12,6 +12,7 @@
  * type dependency in either direction.
  */
 
+import { ENFORCE_LANE_BREAKDOWN_KEY, type EnforceLaneRecall } from "./schema.js";
 import { writeMeasurement, type MeasurementInput } from "./write.js";
 
 /**
@@ -45,6 +46,12 @@ export interface FromEvalHarnessOpts {
   /** Optional human-readable context. */
   notes?: string;
   /**
+   * The same corpus run on an enforce-lane engine (src/eval/eval-harness.ts
+   * enforceLaneFromEval). Recorded as breakdown.enforce_lane; the headline
+   * metrics stay the report's own (hunt) figures.
+   */
+  enforceLane?: EnforceLaneRecall;
+  /**
    * Force overwrite if the same filename already exists (same source +
    * source_version + atr_version + date). Defaults to false (append-only).
    */
@@ -52,14 +59,13 @@ export interface FromEvalHarnessOpts {
 }
 
 /**
- * Build a `MeasurementInput` from an `EvalReport` plus source metadata, then
- * write it via `writeMeasurement()`. Returns the same paths/objects that
- * `writeMeasurement()` returns.
+ * Build a `MeasurementInput` from an `EvalReport` plus source metadata. Pure:
+ * nothing is written, so tests can assert on exactly what a runner would record.
  */
-export function writeMeasurementFromEvalReport(
+export function measurementInputFromEvalReport(
   report: EvalHarnessReportShape,
   opts: FromEvalHarnessOpts,
-) {
+): MeasurementInput {
   const input: MeasurementInput = {
     source: opts.source,
     source_version: opts.source_version,
@@ -79,6 +85,19 @@ export function writeMeasurementFromEvalReport(
   const breakdown: Record<string, unknown> = {};
   if (report.byCategory) breakdown.by_category = report.byCategory;
   if (report.byDifficulty) breakdown.by_difficulty = report.byDifficulty;
+  if (opts.enforceLane) breakdown[ENFORCE_LANE_BREAKDOWN_KEY] = opts.enforceLane;
   if (Object.keys(breakdown).length > 0) input.breakdown = breakdown;
-  return writeMeasurement(input, { force: opts.force ?? true });
+  return input;
+}
+
+/**
+ * Build the `MeasurementInput` (measurementInputFromEvalReport) and write it via
+ * `writeMeasurement()`. Returns the same paths/objects that `writeMeasurement()`
+ * returns.
+ */
+export function writeMeasurementFromEvalReport(
+  report: EvalHarnessReportShape,
+  opts: FromEvalHarnessOpts,
+) {
+  return writeMeasurement(measurementInputFromEvalReport(report, opts), { force: opts.force ?? true });
 }

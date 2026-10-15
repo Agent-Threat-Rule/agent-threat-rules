@@ -30,6 +30,11 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ATREngine } from '../src/engine.js';
+import {
+  enforceLaneRecallOf,
+  loadEnforceLaneEngine,
+  type EnforceLaneEngine,
+} from '../src/measurement/enforce-lane.js';
 import { writeMeasurement } from '../src/measurement/write.js';
 import { detectedOnPromptChannels } from './lib/corpus-event.js';
 
@@ -82,10 +87,14 @@ function loadCorpus(source: KnownSource): CorpusFile | null {
   return JSON.parse(readFileSync(path, 'utf-8')) as CorpusFile;
 }
 
+/** The headline's detection predicate; the enforce-lane figure runs the same one. */
+const detects = (engine: ATREngine, a: AttackEntry): boolean => detectedOnPromptChannels(engine, a.text);
+
 async function evalCorpus(
   source: KnownSource,
   corpus: CorpusFile,
   engine: ATREngine,
+  enforce: EnforceLaneEngine,
 ): Promise<void> {
   let matched = 0;
   const missedSamples: { family: string; text: string }[] = [];
@@ -102,7 +111,7 @@ async function evalCorpus(
     // entirely, running every rule of every source against an event that
     // carried only `user_input`. Every measurement in this series written
     // before 2026-08-05 was produced on that unintended shape.
-    if (detectedOnPromptChannels(engine, a.text)) {
+    if (detects(engine, a)) {
       matched += 1;
       byFamily[family].matched += 1;
     } else {
@@ -114,7 +123,14 @@ async function evalCorpus(
   const recall = total > 0 ? matched / total : 0;
   const f1 = recall === 0 ? 0 : (2 * recall) / (recall + 1);
 
+  // The same attacks through the same predicate on an enforce-lane engine.
+  const enforceLane = enforceLaneRecallOf(corpus.attacks, detects, enforce);
+
   console.log(`\n[${source}] ${matched}/${total} = ${(recall * 100).toFixed(1)}% recall`);
+  console.log(
+    `  enforce lane: ${enforceLane.detected}/${total} = ${(enforceLane.recall * 100).toFixed(1)}% ` +
+      `(${enforceLane.rules_in_lane} rules in lane)`,
+  );
   for (const [fam, stats] of Object.entries(byFamily).sort((a, b) => b[1].total - a[1].total)) {
     const famRecall = stats.matched / stats.total;
     console.log(`  ${fam}: ${stats.matched}/${stats.total} (${(famRecall * 100).toFixed(0)}%)`);
@@ -159,6 +175,7 @@ async function evalCorpus(
       breakdown: {
         by_family: breakdownFamilies,
         license: corpus.license,
+        enforce_lane: enforceLane,
       },
       notes: `${source} red-team / input-scanner test fixtures extracted from upstream repo. 100% adversarial corpus — fp_rate undefined, recorded as 0 by convention. License: ${corpus.license ?? 'unspecified'}.`,
     },
@@ -174,11 +191,12 @@ async function main(): Promise<void> {
   const engine = new ATREngine({ rulesDir: RULES_DIR });
   const ruleCount = await engine.loadRules();
   console.log(`Loaded ${ruleCount} rules`);
+  const enforce = await loadEnforceLaneEngine({ rulesDir: RULES_DIR });
 
   for (const source of sources) {
     const corpus = loadCorpus(source);
     if (corpus === null) continue;
-    await evalCorpus(source, corpus, engine);
+    await evalCorpus(source, corpus, engine, enforce);
   }
 
   console.log('\nDone.');

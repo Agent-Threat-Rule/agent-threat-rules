@@ -19,7 +19,10 @@
 import { resolve, join } from 'node:path';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { ATREngine } from '../engine.js';
-import { writeMeasurement } from '../measurement/write.js';
+import { enforceLaneRecall, rulesInLane } from '../measurement/enforce-lane.js';
+import { ENFORCE_LANE_BREAKDOWN_KEY } from '../measurement/schema.js';
+import { writeMeasurement, type MeasurementInput } from '../measurement/write.js';
+import type { Lane } from '../quality/rule-contract.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -69,6 +72,10 @@ interface SkillBenchmarkReport {
   readonly corpus_size: number;
   /** Rules the engine loaded for this run; the denominator for latency budgets. */
   readonly rule_count: number;
+  /** The lane the engine ran in: `hunt` unless the caller asked for another. */
+  readonly lane: Lane;
+  /** Rules that lane loads: status not draft/deprecated, maturity admitted by the lane. */
+  readonly rules_in_lane: number;
   readonly malicious_count: number;
   readonly benign_count: number;
   readonly overall_recall: number;
@@ -98,12 +105,22 @@ interface SkillBenchmarkReport {
 export async function runSkillBenchmark(options?: {
   readonly rulesDir?: string;
   readonly corpusDir?: string;
-  readonly outputPath?: string;
+  /** Where the report JSON goes; `null` writes none (a second-lane run must not replace the headline's). */
+  readonly outputPath?: string | null;
+  /**
+   * Detection lane (default: the engine's default, `hunt`, every maturity). The
+   * measurement's headline is a hunt run; the CLI makes a second, `enforce` run
+   * over the same corpus and records it as breakdown.enforce_lane.
+   */
+  readonly lane?: Lane;
 }): Promise<SkillBenchmarkReport> {
   const repoRoot = resolve(import.meta.dirname, '..', '..');
   const rulesDir = options?.rulesDir ?? join(repoRoot, 'rules');
   const corpusDir = options?.corpusDir ?? join(repoRoot, 'data', 'skill-benchmark');
-  const outputPath = options?.outputPath ?? join(repoRoot, 'data', 'skill-benchmark', 'benchmark-report.json');
+  const outputPath =
+    options?.outputPath === null
+      ? null
+      : options?.outputPath ?? join(repoRoot, 'data', 'skill-benchmark', 'benchmark-report.json');
 
   // Load manifest
   const manifestPath = join(corpusDir, 'manifest.json');
@@ -121,8 +138,9 @@ export async function runSkillBenchmark(options?: {
   // Load engine. The rule count is reported because per-sample scan cost is
   // roughly linear in it, so it is the denominator any latency budget for this
   // benchmark has to be expressed in -- see tests/skill-benchmark.test.ts.
-  const engine = new ATREngine({ rulesDir });
+  const engine = new ATREngine({ rulesDir, lane: options?.lane });
   const ruleCount = await engine.loadRules();
+  const lane = engine.getLane();
 
   // Run each sample
   const results: SampleResult[] = [];
@@ -211,6 +229,8 @@ export async function runSkillBenchmark(options?: {
     timestamp: new Date().toISOString(),
     corpus_size: results.length,
     rule_count: ruleCount,
+    lane,
+    rules_in_lane: rulesInLane(engine.getRules(), lane),
     malicious_count: malicious.length,
     benign_count: benign.length,
     overall_recall: Math.round(recall * 1000) / 1000,
@@ -234,7 +254,7 @@ export async function runSkillBenchmark(options?: {
   };
 
   // Save report
-  writeFileSync(outputPath, JSON.stringify(report, null, 2));
+  if (outputPath !== null) writeFileSync(outputPath, JSON.stringify(report, null, 2));
 
   return report;
 }
@@ -244,57 +264,78 @@ export async function runSkillBenchmark(options?: {
 // ---------------------------------------------------------------------------
 
 /**
- * Write the standardized version-pinned Measurement file for a SkillBenchmark
- * report. Separated from runSkillBenchmark so unit tests can exercise the
- * benchmark logic without mutating data/measurements/ on disk (which would
- * make the CI 'sync-stats --check' drift gate flake).
+ * The standardized version-pinned Measurement for a SkillBenchmark run: the
+ * headline from `report`, and `enforce` — the same corpus run with
+ * `lane: 'enforce'` — as breakdown.enforce_lane. Pure, so tests can assert on
+ * exactly what the CLI records without touching data/measurements/.
+ */
+export function skillBenchmarkMeasurementInput(
+  report: SkillBenchmarkReport,
+  enforce: SkillBenchmarkReport,
+): MeasurementInput {
+  if (enforce.lane !== 'enforce') {
+    throw new Error(`skill-benchmark: the second report ran in the ${enforce.lane} lane, not enforce`);
+  }
+  if (enforce.corpus_size !== report.corpus_size || enforce.malicious_count !== report.malicious_count) {
+    throw new Error('skill-benchmark: the enforce run did not evaluate the same corpus as the headline');
+  }
+  return {
+    source: 'skill-benchmark',
+    source_version: 'internal-498',
+    measured_at: report.timestamp,
+    samples: report.corpus_size,
+    metrics: {
+      recall: report.overall_recall,
+      precision: report.overall_precision,
+      f1: report.overall_f1,
+      fp_rate: report.fp_rate,
+    },
+    confusion: {
+      tp: report.true_positives,
+      fp: report.false_positives,
+      tn: report.true_negatives,
+      fn: report.false_negatives,
+    },
+    latency_ms: {
+      p50: report.avg_latency_ms,
+      p95: report.max_latency_ms,
+      p99: report.max_latency_ms,
+      mean: report.avg_latency_ms,
+      max: report.max_latency_ms,
+    },
+    breakdown: {
+      layers: {
+        a: report.layer_a,
+        b: report.layer_b,
+        c: report.layer_c,
+      },
+      malicious_count: report.malicious_count,
+      benign_count: report.benign_count,
+      expected_rules_accuracy: report.expected_rules_accuracy,
+      category_accuracy: report.category_accuracy,
+      [ENFORCE_LANE_BREAKDOWN_KEY]: enforceLaneRecall({
+        detected: enforce.true_positives,
+        attacks: enforce.malicious_count,
+        rulesInLane: enforce.rules_in_lane,
+      }),
+    },
+    notes:
+      'Internal 498-sample SKILL.md benchmark. Layer A = obvious payload, Layer B = obfuscated, Layer C = semantic.',
+  };
+}
+
+/**
+ * Write the Measurement file for a SkillBenchmark run. Separated from
+ * runSkillBenchmark so unit tests can exercise the benchmark logic without
+ * mutating data/measurements/ on disk (which would make the CI
+ * 'sync-stats --check' drift gate flake).
  *
  * Called from the CLI block at the bottom of this file and from any
  * external script that wants to persist the measurement. Safe to call
  * repeatedly the same day — uses force=true.
  */
-export function writeSkillBenchmarkMeasurement(report: SkillBenchmarkReport): void {
-  writeMeasurement(
-    {
-      source: 'skill-benchmark',
-      source_version: 'internal-498',
-      measured_at: report.timestamp,
-      samples: report.corpus_size,
-      metrics: {
-        recall: report.overall_recall,
-        precision: report.overall_precision,
-        f1: report.overall_f1,
-        fp_rate: report.fp_rate,
-      },
-      confusion: {
-        tp: report.true_positives,
-        fp: report.false_positives,
-        tn: report.true_negatives,
-        fn: report.false_negatives,
-      },
-      latency_ms: {
-        p50: report.avg_latency_ms,
-        p95: report.max_latency_ms,
-        p99: report.max_latency_ms,
-        mean: report.avg_latency_ms,
-        max: report.max_latency_ms,
-      },
-      breakdown: {
-        layers: {
-          a: report.layer_a,
-          b: report.layer_b,
-          c: report.layer_c,
-        },
-        malicious_count: report.malicious_count,
-        benign_count: report.benign_count,
-        expected_rules_accuracy: report.expected_rules_accuracy,
-        category_accuracy: report.category_accuracy,
-      },
-      notes:
-        'Internal 498-sample SKILL.md benchmark. Layer A = obvious payload, Layer B = obfuscated, Layer C = semantic.',
-    },
-    { force: true },
-  );
+export function writeSkillBenchmarkMeasurement(report: SkillBenchmarkReport, enforce: SkillBenchmarkReport): void {
+  writeMeasurement(skillBenchmarkMeasurementInput(report, enforce), { force: true });
 }
 
 // ---------------------------------------------------------------------------
@@ -357,12 +398,19 @@ export function printReport(report: SkillBenchmarkReport): void {
 // ---------------------------------------------------------------------------
 
 if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('skill-benchmark.ts')) {
-  runSkillBenchmark().then((report) => {
+  runSkillBenchmark().then(async (report) => {
     printReport(report);
     console.log(`Report saved to: data/skill-benchmark/benchmark-report.json`);
+    // The same corpus on an enforce-lane engine. No report file: the one above
+    // is the headline's.
+    const enforce = await runSkillBenchmark({ lane: 'enforce', outputPath: null });
+    console.log(
+      `Enforce lane: ${enforce.true_positives}/${enforce.malicious_count} malicious = ` +
+        `${formatPercent(enforce.overall_recall)} (${enforce.rules_in_lane} rules in lane)`,
+    );
     // Write the standardized version-pinned Measurement file. CLI-only —
     // unit tests call runSkillBenchmark() directly and skip this.
-    writeSkillBenchmarkMeasurement(report);
+    writeSkillBenchmarkMeasurement(report, enforce);
     console.log(`Measurement: data/measurements/skill-benchmark/`);
   }).catch((err) => {
     console.error('Benchmark failed:', err);

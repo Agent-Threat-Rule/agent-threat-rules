@@ -17,7 +17,7 @@
 
 import { resolve, join } from 'node:path';
 import { loadPintCorpus, getPintCorpusStats } from './pint-corpus.js';
-import { runEval } from './eval-harness.js';
+import { enforceLaneFromEval, runEval } from './eval-harness.js';
 import { writeMeasurementFromEvalReport } from '../measurement/from-eval-harness.js';
 
 // ---------------------------------------------------------------------------
@@ -176,9 +176,18 @@ async function main(): Promise<void> {
 
   console.log(`\nReport saved to: ${outputPath}`);
 
+  // The same corpus, event shape and tiers on an enforce-lane engine, recorded
+  // beside the headline as breakdown.enforce_lane (never instead of it).
+  const enforceLane = enforceLaneFromEval(await runEval({ rulesDir, corpus, lane: 'enforce' }));
+  console.log(
+    `Enforce lane: ${enforceLane.detected}/${enforceLane.attacks} attacks = ${formatPercent(enforceLane.recall)} ` +
+      `(${enforceLane.rules_in_lane} rules in lane)`
+  );
+
   // Also write the standardized Measurement file (version-pinned, immutable).
   const { measurementPath } = writeMeasurementFromEvalReport(report, {
     source: 'pint',
+    enforceLane,
     source_version: 'v1',
     source_url: 'https://github.com/lakeraai/pint-benchmark',
     notes:

@@ -9,7 +9,7 @@
  *   5. Latency stats computation
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { join } from 'node:path';
 import {
   EVAL_CORPUS,
@@ -23,7 +23,10 @@ import {
   checkRegression,
 } from '../src/eval/metrics.js';
 import type { SampleResult, BaselineThresholds } from '../src/eval/metrics.js';
-import { runEval } from '../src/eval/eval-harness.js';
+import { enforceLaneFromEval, runEval } from '../src/eval/eval-harness.js';
+import { measurementInputFromEvalReport } from '../src/measurement/from-eval-harness.js';
+import { rulesInLane } from '../src/measurement/enforce-lane.js';
+import { ATREngine } from '../src/engine.js';
 
 const RULES_DIR = join(__dirname, '..', 'rules');
 
@@ -380,5 +383,67 @@ describe('Full Eval Harness', () => {
     expect(report.corpusSize).toBe(2);
     // Empty text sample should be a FN (not crash)
     expect(report.overall.confusion.fn).toBeGreaterThanOrEqual(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 6. Detection lane — the enforce-lane figure recorded beside the headline
+// ---------------------------------------------------------------------------
+//
+// runEval used to build `new ATREngine({ rulesDir, embeddingModule })`, so every
+// measurement it wrote (atr-self-test, PINT, HackAPrompt) was a hunt-lane figure
+// and nothing could produce the enforce-lane one. The runners now make a second
+// run with `lane: 'enforce'` over the same corpus and record it as
+// breakdown.enforce_lane; the headline stays hunt.
+describe('Detection lane', () => {
+  // One hunt run and one enforce run over a slice, shared by every assertion:
+  // what is under test is the lane plumbing, and a contended runner makes each
+  // runEval() over the full corpus cost minutes.
+  const corpus = EVAL_CORPUS.slice(0, 24);
+  let hunt: Awaited<ReturnType<typeof runEval>>;
+  let enforce: Awaited<ReturnType<typeof runEval>>;
+
+  beforeAll(async () => {
+    hunt = await runEval({ rulesDir: RULES_DIR, corpus, enableEmbedding: false });
+    enforce = await runEval({ rulesDir: RULES_DIR, corpus, enableEmbedding: false, lane: 'enforce' });
+  }, 600_000);
+
+  it('defaults to the hunt lane and reports the lane it ran in', () => {
+    expect(hunt.lane).toBe('hunt');
+    expect(enforce.lane).toBe('enforce');
+  });
+
+  it('counts the rules each lane loads the way the engine gates them', async () => {
+    const engine = new ATREngine({ rulesDir: RULES_DIR });
+    await engine.loadRules();
+    expect(hunt.rulesInLane).toBe(rulesInLane(engine.getRules(), 'hunt'));
+    expect(enforce.rulesInLane).toBe(rulesInLane(engine.getRules(), 'enforce'));
+    expect(enforce.rulesInLane).toBeGreaterThan(0);
+    expect(enforce.rulesInLane).toBeLessThan(hunt.rulesInLane);
+  });
+
+  it('evaluates the same corpus, and the enforce lane detects a subset of hunt', () => {
+    expect(enforce.report.corpusSize).toBe(hunt.report.corpusSize);
+    expect(enforce.report.overall.confusion.tp).toBeLessThanOrEqual(hunt.report.overall.confusion.tp);
+    expect(enforce.report.overall.confusion.fp).toBeLessThanOrEqual(hunt.report.overall.confusion.fp);
+  });
+
+  it("records the enforce run as breakdown.enforce_lane over the headline's attack samples", () => {
+    const lane = enforceLaneFromEval(enforce);
+    const { tp, fn } = enforce.report.overall.confusion;
+    expect(lane).toMatchObject({ lane: 'enforce', detected: tp, attacks: tp + fn, rules_in_lane: enforce.rulesInLane });
+
+    const input = measurementInputFromEvalReport(hunt.report, {
+      source: 'atr-self-test',
+      source_version: 'internal',
+      enforceLane: lane,
+    });
+    expect(input.metrics.recall).toBe(hunt.report.overall.recall);
+    expect((input.breakdown as Record<string, unknown>).enforce_lane).toEqual(lane);
+    expect(input.confusion!.tp + input.confusion!.fn).toBe(lane.attacks);
+  });
+
+  it('refuses to record a hunt run as the enforce lane', () => {
+    expect(() => enforceLaneFromEval(hunt)).toThrow(/enforce/);
   });
 });

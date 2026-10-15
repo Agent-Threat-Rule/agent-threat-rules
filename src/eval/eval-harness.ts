@@ -15,7 +15,9 @@
 import { resolve, join } from 'node:path';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { writeMeasurementFromEvalReport } from '../measurement/from-eval-harness.js';
+import { enforceLaneRecall, rulesInLane, type EnforceLaneRecall } from '../measurement/enforce-lane.js';
 import { ATREngine } from '../engine.js';
+import type { Lane } from '../quality/rule-contract.js';
 import { corpusShapes, sourceAgnosticEvent } from '../corpus-event.js';
 import { EmbeddingModule } from '../modules/embedding.js';
 import type { AgentEvent } from '../types.js';
@@ -81,6 +83,13 @@ export interface EvalConfig {
   readonly enableEmbedding?: boolean;
   /** Event presentation (default: defaultEventShapeMode()) */
   readonly eventShape?: EvalEventShapeMode;
+  /**
+   * Detection lane the engine is constructed with (default: the engine's own
+   * default, `hunt`, which loads every maturity). Every published figure from
+   * this harness is a hunt run; the runners make a second, `enforce` run over
+   * the same corpus and record it as breakdown.enforce_lane.
+   */
+  readonly lane?: Lane;
 }
 
 /**
@@ -278,6 +287,10 @@ export async function runEval(config: EvalConfig): Promise<{
   tiersUsed: readonly string[];
   ruleQuality: RuleQualityReport;
   eventShape: EvalEventShapeMode;
+  /** The lane the engine ran in. */
+  lane: Lane;
+  /** Rules that lane loads: status not draft/deprecated, maturity admitted by the lane. */
+  rulesInLane: number;
 }> {
   const eventShape = config.eventShape ?? defaultEventShapeMode();
   const corpus = config.corpus ?? EVAL_CORPUS;
@@ -300,6 +313,7 @@ export async function runEval(config: EvalConfig): Promise<{
   const engine = new ATREngine({
     rulesDir: config.rulesDir,
     embeddingModule: embeddingModule ?? undefined,
+    lane: config.lane,
   });
   const ruleCount = await engine.loadRules();
 
@@ -347,7 +361,34 @@ export async function runEval(config: EvalConfig): Promise<{
     writeFileSync(config.outputPath, JSON.stringify(output, null, 2));
   }
 
-  return { report, regression, corpusStats, tiersUsed, ruleQuality, eventShape };
+  const lane = engine.getLane();
+  return {
+    report,
+    regression,
+    corpusStats,
+    tiersUsed,
+    ruleQuality,
+    eventShape,
+    lane,
+    rulesInLane: rulesInLane(engine.getRules(), lane),
+  };
+}
+
+/**
+ * The enforce-lane record for a measurement, from a runEval() made with
+ * `lane: 'enforce'` over the same corpus as the headline run. Its attack
+ * samples are the headline's (tp + fn); what differs is the lane.
+ */
+export function enforceLaneFromEval(run: {
+  readonly report: EvalReport;
+  readonly lane: Lane;
+  readonly rulesInLane: number;
+}): EnforceLaneRecall {
+  if (run.lane !== 'enforce') {
+    throw new Error(`enforceLaneFromEval: the run was made in the ${run.lane} lane, not enforce`);
+  }
+  const { tp, fn } = run.report.overall.confusion;
+  return enforceLaneRecall({ detected: tp, attacks: tp + fn, rulesInLane: run.rulesInLane });
 }
 
 // ---------------------------------------------------------------------------
@@ -473,11 +514,20 @@ export async function runEvalCLI(): Promise<void> {
 
   console.log(`\nReport saved to: ${outputPath}`);
 
+  // The same corpus, the same event shape and tiers, on an enforce-lane engine.
+  // Recorded beside the headline (breakdown.enforce_lane), never instead of it.
+  const enforceLane = enforceLaneFromEval(await runEval({ rulesDir, lane: 'enforce' }));
+  console.log(
+    `Enforce lane: ${enforceLane.detected}/${enforceLane.attacks} attacks = ${formatPercent(enforceLane.recall)} ` +
+      `(${enforceLane.rules_in_lane} rules in lane)`
+  );
+
   // Standardized Measurement file (version-pinned, immutable). This is the
   // canonical record consumed by stats.json, README badges, and the website.
   const { measurementPath } = writeMeasurementFromEvalReport(report, {
     source: 'atr-self-test',
     source_version: 'internal',
+    enforceLane,
     notes:
       "Engine regression eval against the union of every rule's own test_cases. " +
       `Event shape: ${eventShape} (see src/eval/eval-harness.ts EvalEventShapeMode — ` +

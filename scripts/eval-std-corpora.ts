@@ -50,10 +50,13 @@
  *   - data/test-corpora/combined-miss-clusters.json
  *   - data/measurements/<source>/<pinned>.json (+ latest.json)
  *
+ * Every measurement records its headline in the hunt lane and, from a second
+ * run of the same loop on an enforce-lane engine, `breakdown.enforce_lane`.
+ *
  * Usage:
  *   npx tsx scripts/eval-std-corpora.ts
- *   npx tsx scripts/eval-std-corpora.ts --lane enforce   # stable-only lane
- *   npx tsx scripts/eval-std-corpora.ts --no-write       # report only
+ *   npx tsx scripts/eval-std-corpora.ts --lane enforce --no-write   # console report in another lane
+ *   npx tsx scripts/eval-std-corpora.ts --no-write                  # report only
  */
 
 import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
@@ -62,6 +65,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import yaml from 'js-yaml';
 import { ATREngine } from '../src/engine.js';
+import { enforceLaneRecallOf, loadEnforceLaneEngine } from '../src/measurement/enforce-lane.js';
 import { writeMeasurement } from '../src/measurement/write.js';
 import {
   matchedRuleIds,
@@ -115,7 +119,14 @@ function parseArgs(): Args {
   if (laneArg !== null && laneArg !== lane) {
     throw new Error(`--lane must be one of enforce|alert|hunt (got ${JSON.stringify(laneArg)})`);
   }
-  return { lane, write: !argv.includes('--no-write') };
+  const write = !argv.includes('--no-write');
+  // A measurement's headline is the hunt lane, and the enforce figure is
+  // recorded beside it. Writing another lane's run as the headline would move
+  // latest.json, README and stats.json to a figure labelled as hunt.
+  if (write && lane !== 'hunt') {
+    throw new Error(`--lane ${lane} writes no measurement; add --no-write (breakdown.enforce_lane already records enforce)`);
+  }
+  return { lane, write };
 }
 
 // ─── Rule inventory (for honesty reporting only — NOT for matching) ──────────
@@ -344,14 +355,18 @@ interface FamilyStat {
 }
 
 /**
- * Run one corpus through the real engine. Every sample goes through
- * `matchedRuleIds` — the canonical shape set plus scanSkill() — so detections
- * here are counted on exactly the presentation the FP gates charge for.
+ * The rules a sample trips: `matchedRuleIds` — the canonical shape set plus
+ * scanSkill() — so detections are counted on exactly the presentation the FP
+ * gates charge for. The headline's detection loop, and the enforce figure's.
  */
+const sampleRuleIds = (engine: ATREngine, sample: SampleEntry): ReadonlySet<string> =>
+  matchedRuleIds(engine, sample.text);
+
+/** Run one corpus through the real engine. */
 function evaluateCorpus(engine: ATREngine, samples: readonly SampleEntry[]): EvalResult[] {
   const results: EvalResult[] = [];
   for (const sample of samples) {
-    const ids = [...matchedRuleIds(engine, sample.text)].sort();
+    const ids = [...sampleRuleIds(engine, sample)].sort();
     results.push({
       id: sample.id,
       text: sample.text.slice(0, 500),
@@ -432,6 +447,7 @@ async function main() {
   const engine = new ATREngine({ rulesDir: RULES_DIR, lane: args.lane });
   const ruleCount = await engine.loadRules();
   console.log(`Loaded ${ruleCount} rules (lane=${args.lane})`);
+  const enforce = await loadEnforceLaneEngine({ rulesDir: RULES_DIR });
   console.log(`Event shapes: ${shapeNames().join(', ')} + scanSkill()`);
 
   console.log('\nWhat this harness structurally cannot measure:');
@@ -456,11 +472,22 @@ async function main() {
     ['mitre-atlas', atlas]
   ] as [string, SampleEntry[]][]) {
     console.log(`\nEvaluating ${corpus} (${samples.length} samples)...`);
+    if (samples.length === 0) {
+      // A 0-sample measurement would publish "0.0%" for a corpus nobody ran.
+      console.log(`::warning::${corpus}: no samples loaded — not measured`);
+      continue;
+    }
 
     const results = evaluateCorpus(engine, samples);
     const matched = results.filter((r) => r.matched).length;
     const recall = samples.length > 0 ? matched / samples.length : 0;
     reportCorpus(corpus, results, samples.length);
+    // The same samples through the same loop on an enforce-lane engine.
+    const enforceLane = enforceLaneRecallOf(samples, (e, s) => sampleRuleIds(e, s).size > 0, enforce);
+    console.log(
+      `  Enforce lane: ${enforceLane.detected}/${samples.length} = ${(enforceLane.recall * 100).toFixed(1)}% ` +
+        `(${enforceLane.rules_in_lane} rules in lane)`,
+    );
 
     // Save legacy results
     const outPath = join(CORPORA_DIR, corpus, 'recall-results.json');
@@ -502,7 +529,12 @@ async function main() {
           tn: 0,
           fn: samples.length - matched,
         },
-        breakdown: { by_family: byFamilyBreakdown, top_contributing_rules: topRules, lane: args.lane },
+        breakdown: {
+          by_family: byFamilyBreakdown,
+          top_contributing_rules: topRules,
+          lane: args.lane,
+          enforce_lane: enforceLane,
+        },
         notes: measurementNotes(corpus, args.lane, ruleCount),
       },
       { force: true },
