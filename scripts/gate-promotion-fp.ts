@@ -31,6 +31,10 @@
  *                              is what the response-action eligibility gate reads;
  *                              an id list cannot express a RATE.
  *   --filter-mode         report FP-dirty rules but still exit 0
+ *   --workers <n>         score the corpus in n worker processes (default: one
+ *                         per CPU, capped at 8, for a corpus of 1,000+ samples;
+ *                         1 keeps it in-process). Changes how fast, never what:
+ *                         the counts are sums over independent samples.
  *
  * Exit codes:
  *   0  gate passed (no promoted rule false-positives), nothing to gate, OR
@@ -95,14 +99,12 @@ import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { ATREngine } from "../src/engine.js";
-import { classifySecurityContent } from "../src/corpus/security-content.js";
 import {
   detectionFingerprint,
   corpusDigest,
   MEASUREMENT_CORPORA,
 } from "../src/quality/action-eligibility.js";
 import {
-  corpusShapes,
   shapeNames,
   fieldCoverage,
   skillPathCoverage,
@@ -110,6 +112,11 @@ import {
   type FieldCoverage,
   type SkillPathGap,
 } from "./lib/corpus-event.js";
+import {
+  resolveWorkerCount,
+  scoreSamples,
+  scoreSamplesInWorkers,
+} from "./lib/fp-scan.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ENFORCE_MATURITIES = new Set(["stable", "production"]);
@@ -130,6 +137,8 @@ export interface GateOptions {
   /** Optional: callers that predate this flag omit it entirely. */
   readonly emitMeasurement?: string | null;
   readonly filterMode: boolean;
+  /** Optional, like emitMeasurement: null or absent means "decide by corpus size". */
+  readonly workers?: number | null;
 }
 
 /**
@@ -205,7 +214,19 @@ export function parseCliOptions(argv: readonly string[]): GateOptions {
     emitDirty,
     emitMeasurement: pathValue(argv, "--emit-measurement"),
     filterMode,
+    workers: workersValue(argv),
   };
+}
+
+/** --workers <n>: a positive integer, or absent. */
+function workersValue(argv: readonly string[]): number | null {
+  const i = argv.indexOf("--workers");
+  if (i < 0) return null;
+  const raw = argv[i + 1];
+  if (raw === undefined || !/^[1-9][0-9]*$/.test(raw)) {
+    throw new GateUsageError("--workers requires a positive integer");
+  }
+  return Number(raw);
 }
 
 // ---------------------------------------------------------------------------
@@ -438,22 +459,6 @@ function writeMeasurement(path: string, scan: ScanResult, repoRoot: string): voi
 }
 
 /**
- * Every rule id a benign sample matches, across the whole canonical shape set.
- *
- * Counted PER SAMPLE, not per shape: a document that trips a rule on two shapes
- * is one false positive, not two. That keeps the number comparable with what the
- * gate reported before the shape set was widened.
- */
-function matchedRuleIds(engine: ATREngine, text: string): ReadonlySet<string> {
-  const matched = new Set<string>();
-  for (const shape of corpusShapes(text)) {
-    for (const m of engine.evaluate(shape.event)) matched.add(m.rule.id);
-  }
-  for (const m of engine.scanSkill(text)) matched.add(m.rule.id);
-  return matched;
-}
-
-/**
  * Every corpus file under a path, INCLUDING subdirectories.
  *
  * This walk used to be one level deep. `data/skill-benchmark/benign` holds 466
@@ -577,11 +582,11 @@ interface ScanResult {
 async function scanFpCounts(
   targets: Targets,
   deps: GateDeps,
+  workers: number | null = null,
 ): Promise<ScanResult> {
-  const engine = new ATREngine({
-    rulesDir: scopedRulesDir(deps.repoRoot, targets.files),
-  });
-  await engine.loadRules();
+  const rulesDir = scopedRulesDir(deps.repoRoot, targets.files);
+  const engine = new ATREngine({ rulesDir });
+  const ruleCount = await engine.loadRules();
   const scanned = new Map<string, { maturity: string | null; fingerprint: string }>();
   for (const r of engine.getRules()) {
     if (!targets.ids.has(r.id)) continue;
@@ -594,27 +599,39 @@ async function scanFpCounts(
   const samples: string[] = [];
   for (const c of deps.corpora) samples.push(...loadCorpusTexts(c));
 
+  // Same numbers either way: scoreSamples() is the per-sample loop, and the
+  // worker path runs that same function over disjoint batches and sums them.
+  const workerCount = resolveWorkerCount(workers, samples.length);
+  const started = Date.now();
+  if (workerCount > 1) {
+    console.log(
+      `[fp-gate] scoring ${samples.length} samples on ${workerCount} worker processes`,
+    );
+  }
+  const scores =
+    workerCount > 1
+      ? await scoreSamplesInWorkers({
+          rulesDir,
+          samples,
+          targetIds: targets.ids,
+          workers: workerCount,
+          expectedRuleCount: ruleCount,
+          log: (line) => console.log(`[fp-gate] ${line}`),
+        })
+      : scoreSamples(engine, samples, targets.ids);
+  if (workerCount > 1) {
+    console.log(
+      `[fp-gate] scored ${scores.scanned} samples in ${Math.round((Date.now() - started) / 1000)}s`,
+    );
+  }
+
   const counts = new Map<string, number>();
   const securityCounts = new Map<string, number>();
   for (const id of targets.ids) {
-    counts.set(id, 0);
-    securityCounts.set(id, 0);
+    counts.set(id, scores.counts.get(id) ?? 0);
+    securityCounts.set(id, scores.securityCounts.get(id) ?? 0);
   }
-  let securitySampleCount = 0;
-  for (const text of samples) {
-    // Labelled BEFORE the rules run and from the sample text alone. The label
-    // cannot be a function of which rules fired, or it degenerates into
-    // "whatever is inconvenient is not benign".
-    const isSecurityContent =
-      classifySecurityContent(text).label === "security-content";
-    if (isSecurityContent) securitySampleCount += 1;
-    for (const id of matchedRuleIds(engine, text)) {
-      if (!targets.ids.has(id)) continue;
-      counts.set(id, (counts.get(id) ?? 0) + 1);
-      if (isSecurityContent)
-        securityCounts.set(id, (securityCounts.get(id) ?? 0) + 1);
-    }
-  }
+  const securitySampleCount = scores.securitySampleCount;
   const coverage = fieldCoverage(engine.getRules()).filter((c) =>
     targets.ids.has(c.ruleId),
   );
@@ -832,7 +849,7 @@ export async function runGate(
   console.log(
     `[fp-gate] gating ${targets.files.length} promoted rule(s) against the benign corpus`,
   );
-  const scan = await scanFpCounts(targets, deps);
+  const scan = await scanFpCounts(targets, deps, options.workers ?? null);
   const {
     counts,
     sampleCount,
