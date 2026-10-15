@@ -9,7 +9,13 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ATREngine } from "../src/engine.js";
-import type { AgentEvent } from "../src/types.js";
+import type { AgentEvent, ATRMatch } from "../src/types.js";
+import {
+  enforceLaneRecallOf,
+  loadEnforceLaneEngine,
+  type EnforceLaneEngine,
+  type EnforceLaneRecall,
+} from "../src/measurement/enforce-lane.js";
 import { writeMeasurement } from "../src/measurement/write.js";
 import { matchedRuleIds, shapeNames } from "./lib/corpus-event.js";
 
@@ -79,6 +85,24 @@ function legacyLlmIoEvent(text: string): AgentEvent {
   } as AgentEvent;
 }
 
+/**
+ * The headline's detection loop for one sample: the legacy event, with an
+ * engine error counted as a miss (null). The enforce-lane figure runs the same
+ * function on an enforce-lane engine.
+ */
+function legacyMatches(engine: ATREngine, text: string): readonly ATRMatch[] | null {
+  try {
+    return engine.evaluate(legacyLlmIoEvent(text));
+  } catch (_) {
+    return null;
+  }
+}
+
+/** Prompts the harness evaluates: shorter than 5 characters is skipped, in both lanes. */
+function evaluatedTexts(records: readonly PromptRecord[]): string[] {
+  return records.map(getPromptText).filter((t) => t.length >= 5);
+}
+
 interface RecallResult {
   total: number;
   matched: number;
@@ -93,12 +117,15 @@ interface RecallResult {
   /** Samples where a rule was the ONLY rule to fire — what dies with the rule. */
   soleByRule: Record<string, number>;
   canonicalSoleByRule: Record<string, number>;
+  /** The same samples through legacyMatches on an enforce-lane engine. */
+  enforceLane: EnforceLaneRecall;
 }
 
 async function runRecallAnalysis(
   _label: string,
   records: PromptRecord[],
-  engine: ATREngine
+  engine: ATREngine,
+  enforce: EnforceLaneEngine,
 ): Promise<RecallResult> {
   let matched = 0;
   let missed = 0;
@@ -127,9 +154,13 @@ async function runRecallAnalysis(
       // a canonical-shape engine error is not a headline miss; leave it uncounted
     }
 
-    try {
-      const matches = engine.evaluate(legacyLlmIoEvent(text));
-      if (matches && matches.length > 0) {
+    const matches = legacyMatches(engine, text);
+    if (matches === null) {
+      // engine errors count as missed
+      missed++;
+      missedRecords.push({ text, record });
+    } else {
+      if (matches.length > 0) {
         matched++;
         // ATRMatch carries the rule OBJECT (`rule.id`); reading `rule_id`/
         // `ruleId` off it always yielded undefined, so every hit was bucketed
@@ -154,10 +185,6 @@ async function runRecallAnalysis(
         missed++;
         missedRecords.push({ text, record });
       }
-    } catch (_) {
-      // engine errors count as missed
-      missed++;
-      missedRecords.push({ text, record });
     }
   }
 
@@ -171,6 +198,11 @@ async function runRecallAnalysis(
     canonicalMatched,
     soleByRule,
     canonicalSoleByRule,
+    enforceLane: enforceLaneRecallOf(
+      evaluatedTexts(records),
+      (laneEngine, text) => (legacyMatches(laneEngine, text)?.length ?? 0) > 0,
+      enforce,
+    ),
   };
 }
 
@@ -357,15 +389,17 @@ async function main() {
   const engine = new ATREngine({ rulesDir: join(REPO, "rules") });
   const ruleCount = await engine.loadRules();
   console.log(`Engine initialized with ${ruleCount} rules.\n`);
+  const enforce = await loadEnforceLaneEngine({ rulesDir: join(REPO, "rules") });
 
   // ---- PromptBench ----
   console.log("=== PromptBench Analysis ===");
   const pbRecords: PromptRecord[] = JSON.parse(readFileSync(PB_FILE, "utf-8"));
   console.log(`Loaded ${pbRecords.length} promptbench records`);
 
-  const pbResult = await runRecallAnalysis("promptbench", pbRecords, engine);
+  const pbResult = await runRecallAnalysis("promptbench", pbRecords, engine, enforce);
   console.log(`  Matched: ${pbResult.matched}/${pbResult.total} (${(pbResult.matched/pbResult.total*100).toFixed(1)}%)`);
   console.log(`  Missed: ${pbResult.missed}`);
+  console.log(`  Enforce lane: ${pbResult.enforceLane.detected}/${pbResult.total} (${pbResult.enforceLane.rules_in_lane} rules in lane)`);
   reportConcentration("promptbench", pbResult, ruleCount);
 
   const pbClusters = clusterMisses(pbResult.missedRecords, 8);
@@ -379,9 +413,10 @@ async function main() {
   const piRecords: PromptRecord[] = JSON.parse(readFileSync(PI_FILE, "utf-8"));
   console.log(`Loaded ${piRecords.length} promptinject records`);
 
-  const piResult = await runRecallAnalysis("promptinject", piRecords, engine);
+  const piResult = await runRecallAnalysis("promptinject", piRecords, engine, enforce);
   console.log(`  Matched: ${piResult.matched}/${piResult.total} (${(piResult.matched/piResult.total*100).toFixed(1)}%)`);
   console.log(`  Missed: ${piResult.missed}`);
+  console.log(`  Enforce lane: ${piResult.enforceLane.detected}/${piResult.total} (${piResult.enforceLane.rules_in_lane} rules in lane)`);
   reportConcentration("promptinject", piResult, ruleCount);
 
   const piClusters = clusterMisses(piResult.missedRecords, 5);
@@ -460,13 +495,14 @@ async function main() {
           tn: 0,
           fn: res.missed,
         },
-        breakdown: { top_matching_rules: topRules, attribution: attr },
+        breakdown: { top_matching_rules: topRules, attribution: attr, enforce_lane: res.enforceLane },
         notes:
           `${source} academic adversarial corpus — 100% attack samples; fp_rate undefined and recorded as 0 by convention. ` +
           `precision=1 is a property of the corpus (no benign samples), NOT a measured result — read it with the benign-gate FP rate, never alone. ` +
           `Recall is measured on the narrow llm_io event (breakdown.attribution.legacy_llm_io); ` +
           `breakdown.attribution.canonical_shapes gives the same corpus on the shape set the benign FP gate uses. ` +
-          `Concentration (top_rule_share_of_tp / recall_without_top_rule) states how much of the number rests on a single rule.`,
+          `Concentration (top_rule_share_of_tp / recall_without_top_rule) states how much of the number rests on a single rule. ` +
+          `breakdown.enforce_lane is the same legacy event on an enforce-lane engine.`,
       },
       { force: true },
     );

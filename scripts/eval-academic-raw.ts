@@ -39,6 +39,11 @@
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ATREngine } from '../src/engine.js';
+import {
+  enforceLaneRecallOf,
+  loadEnforceLaneEngine,
+  type EnforceLaneEngine,
+} from '../src/measurement/enforce-lane.js';
 import { writeMeasurement } from '../src/measurement/write.js';
 import { detectedOnPromptChannels } from './lib/corpus-event.js';
 
@@ -235,6 +240,11 @@ async function fetchSource(source: SourceDef): Promise<FetchResult | null> {
       const category = categoryIdx >= 0 ? (row[categoryIdx] ?? 'unknown').trim() : 'unknown';
       prompts.push({ text, category });
     }
+    if (prompts.length === 0) {
+      // Parsed, but nothing usable: a measurement of 0 prompts would publish 0.0%.
+      console.warn(`::warning::${source.id}: no prompts parsed from ${rows.length - 1} rows, skipping`);
+      return null;
+    }
     return { prompts, fetchedAt: new Date().toISOString(), contentLength: csv.length };
   } catch (err) {
     console.warn(
@@ -244,7 +254,15 @@ async function fetchSource(source: SourceDef): Promise<FetchResult | null> {
   }
 }
 
-async function evalSource(source: SourceDef, fetch: FetchResult, engine: ATREngine): Promise<void> {
+/** The headline's detection predicate; the enforce-lane figure runs the same one. */
+const detects = (engine: ATREngine, p: { text: string }): boolean => detectedOnPromptChannels(engine, p.text);
+
+async function evalSource(
+  source: SourceDef,
+  fetch: FetchResult,
+  engine: ATREngine,
+  enforce: EnforceLaneEngine,
+): Promise<void> {
   let matched = 0;
   const byCategory: Record<string, { total: number; matched: number }> = {};
 
@@ -256,7 +274,7 @@ async function evalSource(source: SourceDef, fetch: FetchResult, engine: ATREngi
     // src/engine.ts skip source-type filtering and admit every rule of every
     // source. Measurements in these series written before 2026-08-05 were
     // produced on that unintended shape.
-    if (detectedOnPromptChannels(engine, p.text)) {
+    if (detects(engine, p)) {
       matched += 1;
       byCategory[p.category].matched += 1;
     }
@@ -266,7 +284,14 @@ async function evalSource(source: SourceDef, fetch: FetchResult, engine: ATREngi
   const recall = total > 0 ? matched / total : 0;
   const f1 = recall === 0 ? 0 : (2 * recall) / (recall + 1);
 
+  // The same prompts through the same predicate on an enforce-lane engine.
+  const enforceLane = enforceLaneRecallOf(fetch.prompts, detects, enforce);
+
   console.log(`\n[${source.id}] ${matched}/${total} = ${(recall * 100).toFixed(1)}% recall`);
+  console.log(
+    `  enforce lane: ${enforceLane.detected}/${total} = ${(enforceLane.recall * 100).toFixed(1)}% ` +
+      `(${enforceLane.rules_in_lane} rules in lane)`,
+  );
   const sortedCats = Object.entries(byCategory).sort((a, b) => b[1].total - a[1].total);
   for (const [cat, stats] of sortedCats.slice(0, 8)) {
     const catRecall = stats.matched / stats.total;
@@ -304,6 +329,7 @@ async function evalSource(source: SourceDef, fetch: FetchResult, engine: ATREngi
         fetched_at: fetch.fetchedAt,
         upstream_bytes: fetch.contentLength,
         license: source.license,
+        enforce_lane: enforceLane,
       },
       notes: `${source.notes} License: ${source.license}. 100% adversarial — fp_rate undefined and recorded as 0 by convention. Corpus fetched live from upstream at ${fetch.fetchedAt} (not committed to repo).`,
     },
@@ -321,13 +347,14 @@ async function main(): Promise<void> {
   const engine = new ATREngine({ rulesDir: RULES_DIR });
   const ruleCount = await engine.loadRules();
   console.log(`Loaded ${ruleCount} rules\n`);
+  const enforce = await loadEnforceLaneEngine({ rulesDir: RULES_DIR });
 
   for (const source of sources) {
     console.log(`=== ${source.id} ===`);
     const fetched = await fetchSource(source);
     if (fetched === null) continue;
     console.log(`  parsed ${fetched.prompts.length} prompts (${fetched.contentLength} bytes)`);
-    await evalSource(source, fetched, engine);
+    await evalSource(source, fetched, engine, enforce);
   }
 
   console.log('\nDone.');
