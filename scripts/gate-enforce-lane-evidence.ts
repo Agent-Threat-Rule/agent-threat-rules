@@ -122,8 +122,40 @@ export function shortfalls(rule: {
   return Object.freeze(reasons);
 }
 
-function scan(): { readonly shortfalls: readonly Shortfall[]; readonly stableCount: number } {
+/**
+ * Compare this run's shortfalls with the committed baseline.
+ *
+ * A baselined rule that no longer shows a shortfall has one of two stories, and
+ * they must not be reported as one: it still runs in the enforce lane and now
+ * meets the bar, or it left the lane (demoted, made inert or deleted) and so is
+ * simply no longer scanned. Reporting the second as the first claimed that
+ * rules demoted for false positives now met the stable bar.
+ */
+export function classifyBaseline(
+  known: ReadonlySet<string>,
+  found: readonly Shortfall[],
+  stableIds: ReadonlySet<string>,
+): {
+  readonly novel: readonly Shortfall[];
+  readonly nowMeetBar: readonly string[];
+  readonly leftEnforceLane: readonly string[];
+} {
+  const failing = new Set(found.map((s) => s.id));
+  const cleared = [...known].filter((id) => !failing.has(id)).sort();
+  return {
+    novel: found.filter((s) => !known.has(s.id)),
+    nowMeetBar: cleared.filter((id) => stableIds.has(id)),
+    leftEnforceLane: cleared.filter((id) => !stableIds.has(id)),
+  };
+}
+
+function scan(): {
+  readonly shortfalls: readonly Shortfall[];
+  readonly stableCount: number;
+  readonly stableIds: ReadonlySet<string>;
+} {
   const out: Shortfall[] = [];
+  const stableIds = new Set<string>();
   let stableCount = 0;
   for (const file of ruleFiles(RULES_DIR)) {
     let doc: unknown;
@@ -154,6 +186,7 @@ function scan(): { readonly shortfalls: readonly Shortfall[]; readonly stableCou
     const status = String(r.status ?? "");
     if (status === "draft" || status === "deprecated") continue; // inert, no lane
     stableCount++;
+    stableIds.add(r.id);
     const reasons = shortfalls(r as never);
     if (reasons.length > 0) {
       out.push({ id: r.id, file: relative(REPO_ROOT, file), reasons });
@@ -162,6 +195,7 @@ function scan(): { readonly shortfalls: readonly Shortfall[]; readonly stableCou
   return {
     shortfalls: Object.freeze(out.sort((a, b) => a.id.localeCompare(b.id))),
     stableCount,
+    stableIds,
   };
 }
 
@@ -175,7 +209,7 @@ function readBaseline(): Baseline {
 }
 
 function main(argv: readonly string[]): number {
-  const { shortfalls: found, stableCount } = scan();
+  const { shortfalls: found, stableCount, stableIds } = scan();
   const baseline = readBaseline();
   const known = new Set(Object.keys(baseline.rules ?? {}));
 
@@ -216,18 +250,26 @@ function main(argv: readonly string[]): number {
     return EXIT_OK;
   }
 
-  const novel = found.filter((s) => !known.has(s.id));
-  const fixed = [...known].filter((id) => !found.some((s) => s.id === id));
+  const { novel, nowMeetBar, leftEnforceLane } = classifyBaseline(known, found, stableIds);
 
   console.log(
     `[enforce-evidence] ${stableCount} rule(s) in the enforce lane; ` +
       `${found.length} do not meet docs/QUALITY-STANDARD.md (baseline ${known.size})`,
   );
-  if (fixed.length > 0) {
+  if (nowMeetBar.length > 0) {
     console.log(
       `\nRATCHET — these now meet the bar and should be removed from the baseline:`,
     );
-    for (const id of fixed.sort()) console.log(`  + ${id}`);
+    for (const id of nowMeetBar) console.log(`  + ${id}`);
+  }
+  if (leftEnforceLane.length > 0) {
+    console.log(
+      `\nRATCHET — these left the enforce lane (demoted, made inert or deleted) and ` +
+        `should be removed from the baseline; they did not meet the bar:`,
+    );
+    for (const id of leftEnforceLane) console.log(`  - ${id}`);
+  }
+  if (nowMeetBar.length + leftEnforceLane.length > 0) {
     console.log(`  (run --write-baseline to tighten)`);
   }
   if (novel.length === 0) {
