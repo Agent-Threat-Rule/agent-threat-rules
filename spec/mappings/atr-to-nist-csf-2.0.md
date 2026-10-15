@@ -1,7 +1,7 @@
 # ATR → NIST Cybersecurity Framework 2.0 Mapping
 
 Version: 1.1.0
-Status: Draft for NIST IR 8596 Informative Reference submission
+Status: Draft. Not submitted to NIST.
 Date: 2026-06-14
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
 Mapped corpus: Agent Threat Rules v3.5.0 (652 rules / 10 categories; per data/stats.json 2026-06-16)
@@ -12,8 +12,9 @@ Reference framework: NIST CSF 2.0 (NIST CSWP 29, February 2024)
 ## 1. Purpose
 
 This document maps the Agent Threat Rules (ATR) detection corpus to the NIST
-Cybersecurity Framework 2.0 subcategory taxonomy. It is intended as an
-Informative Reference submission per [NIST IR 8596 Cyber AI Profile][nist-ir-8596].
+Cybersecurity Framework 2.0 subcategory taxonomy. It is written so it could
+be offered as an Informative Reference under [NIST IR 8596 Cyber AI Profile][nist-ir-8596];
+it has not been submitted.
 
 For each of the 10 ATR attack-class categories and each of the 5 detection
 methods (atr-method-v1.1.md §4), this mapping enumerates the CSF 2.0
@@ -173,7 +174,7 @@ attention:
 | Cross-tenant scope drift (invariant primitive) | GV.SC-04 (supplier criticality), GV.OC-04 (legal/regulatory requirements understood) |
 | Goal drift / autonomy escape (composite) | GV.RM-01 (risk management strategy), GV.SC-07 (risks from suppliers monitored) |
 
-## 8. Implementation Guidance (for NIST IR 8596 reviewers)
+## 8. Implementation Guidance
 
 An organization seeking to use ATR as an Informative Reference for CSF 2.0
 implementation:

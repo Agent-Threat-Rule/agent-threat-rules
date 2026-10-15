@@ -225,7 +225,7 @@ This is exactly the position ATR occupies. ATR is the open, MIT-licensed, agenti
 
 - ATR is MIT-licensed and at https://github.com/Agent-Threat-Rule/agent-threat-rules.
 - Contributions accepted via PR. Quality gate is a 6-check enforcement (schema validation, own-TP-must-match, benign-corpus FP, research-mention FP, cross-rule conflict, per-PR cap).
-- Operational record (verified 2026-06-05): 9 external PRs merged across 5 external organizations — Microsoft (AGT #908, #1277, #1981; PyRIT #1715), Cisco AI Defense (skill-scanner #79, #99), MISP via CIRCL Luxembourg (misp-galaxy #1207, misp-taxonomies #323), and the precize/Agentic-AI-Top10-Vulnerability community repo (#14, #18). NIST OSCAL coordination is in progress (community AI RMF profile examples PR #338); UK AISI Inspect Evals submission (#1658) was closed 2026-05-29 pending arXiv paper publication.
+- Operational record (verified 2026-06-05): 9 external PRs merged across 5 external organizations — Microsoft (AGT #908, #1277, #1981; PyRIT #1715), Cisco AI Defense (skill-scanner #79, #99), MISP via CIRCL Luxembourg (misp-galaxy #1207, misp-taxonomies #323), and the precize/Agentic-AI-Top10-Vulnerability community repo (#14, #18). a pull request offering AI RMF profile examples to NIST's OSCAL content repository (usnistgov/oscal-content#338) is open and awaiting NIST review, and is not a NIST endorsement; UK AISI Inspect Evals submission (#1658) was closed 2026-05-29 pending arXiv paper publication.
 - Maintainer contact: Adam Lin (adam@agentthreatrule.org), Taiwan.
 
 ## References

@@ -65,14 +65,6 @@ Adopters whose adoption is itself a public-good interoperability artefact
 - **Since**: 2026-05-11
 - **Status**: shipped
 
-### NIST AI RMF — community OSCAL catalog (submission in review)
-- **Org**: ATR maintainers (community contribution; NOT a NIST publication)
-- **Type**: reference
-- **Integration**: Community-authored OSCAL catalog covering NIST AI RMF (72 controls + 31 cross-reference links), CC0-licensed, self-published at Agent-Threat-Rule/ai-rmf-oscal-catalog. The catalog was submitted to the NIST OSCAL team; the initial PR usnistgov/oscal-content#333 was closed and reopened as a scope-aligned rework, usnistgov/oscal-content#338 (currently OPEN, in review). The ATR maintainers are awaiting NIST direction. Listed here for transparency about the submission, NOT as evidence of NIST endorsement.
-- **Evidence**: <https://github.com/usnistgov/oscal-content/pull/338>
-- **Since**: 2026-05-10 (community catalog published; PR opened 2026-05-21)
-- **Status**: in-review
-
 ### OpenTelemetry — semantic-conventions-genai
 - **Org**: CNCF / OpenTelemetry GenAI SIG
 - **Type**: reference
@@ -109,7 +101,7 @@ deployment publicly (merged PR, public docs, conference talk, etc.).
 ### Cisco AI Defense
 - **Org**: Cisco
 - **Type**: rule-import
-- **Integration**: ATR rule corpus consumed by the AI Defense skill-scanner; matches surface in the Cisco product UI as detection findings
+- **Integration**: ATR rule pack merged into the open-source cisco-ai-defense/skill-scanner repository. This describes that repository, not any Cisco product
 - **Evidence**: <https://github.com/cisco-ai-defense/skill-scanner/pull/99> (and predecessor PoC #79)
 - **Since**: 2026-04-22
 - **Status**: shipped
@@ -400,3 +392,4 @@ noted here with the reason and the original "Since" date preserved.
 - **Cisco a2a-scanner** (was Tier 2 · since 2026-06-26) — evidence PR cisco-ai-defense/a2a-scanner#14 was withdrawn and closed by its ATR author on 2026-10-14 after no maintainer response. Removed 2026-10-15.
 - **e2b-dev/awesome-ai-agents** (was Tier 3 · since 2026-05-16) — evidence PR e2b-dev/awesome-ai-agents#959 was withdrawn and closed by its ATR author on 2026-10-15 after no maintainer response. Removed 2026-10-15.
 - **e2b-dev/awesome-ai-sdks** (was Tier 3 · since 2026-05-16) — evidence PR e2b-dev/awesome-ai-sdks#194 was withdrawn and closed by its ATR author on 2026-10-15 after no maintainer response. Removed 2026-10-15.
+- **NIST AI RMF — community OSCAL catalog** (was Tier S · since 2026-05-10) — not an adoption. ATR self-published a community OSCAL catalog of the AI RMF and offered AI RMF profile examples to NIST's OSCAL content repository (usnistgov/oscal-content#338), which is open and awaiting NIST review. Listing it under standards bodies read as NIST involvement, which it is not. Removed 2026-10-16.
