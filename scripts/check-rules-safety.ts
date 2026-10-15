@@ -21,6 +21,11 @@
  *      rule's known-benign set is a precision regression for that rule.
  *   6. Per-PR cap: ≤ MAX_NEW_PER_PR rule files (default 10).
  *
+ * A MODIFIED rule gets the modified-rule FP check instead: no benign false
+ * positive the rule did not already have. A renamed rule file is a modified
+ * one, compared with the file it was at base; a changed file whose rule id
+ * differs, or that was not a rule at base, is a new rule (routeChangedRuleFiles).
+ *
  * Exit 0 = safe to auto-merge
  * Exit 1 = any check failed → PR stays in human-review queue
  * Exit 2 = the gate could not run as asked (bad usage / bad environment).
@@ -328,10 +333,106 @@ export function getModifiedRuleFiles(
 ): string[] {
   return tryGit(
     run,
-    ["diff", "--name-only", "--diff-filter=M", `${base}...HEAD`, "--", "rules/"],
+    // T: a rule file replaced by a symlink (or the reverse) is a modification;
+    // git lists it under neither A, M nor R.
+    ["diff", "--name-only", "--diff-filter=MT", `${base}...HEAD`, "--", "rules/"],
     "git diff (modified)",
     onError,
   );
+}
+
+/** A rule file as it was at base and as it is now: one path, or a rename. */
+export interface ChangedRuleFile {
+  readonly basePath: string;
+  readonly headPath: string;
+}
+
+/**
+ * Rule files git reports as renamed between base and HEAD, each with the path
+ * it had at base. `git diff` pairs a moved file with its old path when the two
+ * are similar enough, and then lists it under neither --diff-filter=A nor M: a
+ * rule moved to another directory, and broken in the same commit, cleared this
+ * gate with "nothing to check, treating as safe". A pair whose base path is not
+ * a rule file is new to the rulebase, and main() checks it as a new rule.
+ */
+export function getRenamedRuleFiles(
+  base: string,
+  repoRoot: string = REPO_ROOT,
+  run: GitRunner = execGit(repoRoot),
+  onError: DiscoveryErrorSink = () => {},
+): ChangedRuleFile[] {
+  let out: string;
+  try {
+    out = run([
+      "diff",
+      "--name-status",
+      "-z",
+      "--find-renames",
+      "--diff-filter=R",
+      `${base}...HEAD`,
+      "--",
+      "rules/",
+    ]);
+  } catch (err) {
+    const message = `git diff (renamed) failed: ${err instanceof Error ? err.message : String(err)}`;
+    console.error(`[safety-gate] ${message}`);
+    onError(message);
+    return [];
+  }
+  // -z: status, base path, head path, NUL-terminated and never quoted.
+  const fields = out.split("\0");
+  if (fields[fields.length - 1] === "") fields.pop();
+  const pairs: ChangedRuleFile[] = [];
+  for (let i = 0; i < fields.length; i += 3) {
+    const [status, basePath, headPath] = fields.slice(i, i + 3);
+    if (!status?.startsWith("R") || !basePath || !headPath) {
+      onError(`git diff (renamed) printed output this gate cannot read: ${JSON.stringify(fields.slice(i))}`);
+      break;
+    }
+    if (isRuleFile(headPath)) pairs.push({ basePath, headPath });
+  }
+  return pairs;
+}
+
+/** The rule id a rule source declares, or null when it has none it can be read from. */
+function ruleIdIn(content: string | null): string | null {
+  if (content === null) return null;
+  try {
+    const doc = yamlLoad(content) as { id?: unknown } | null;
+    return doc !== null && typeof doc === "object" && typeof doc.id === "string" ? doc.id : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Split changed rule files into the ones to check as modified and the ones to
+ * check as new. ATR ids are permanent, so a pair whose rule id differs between
+ * base and head, or whose base path is not a rule file, is a rule the rulebase
+ * has not had: git pairs a deleted rule with a similar added one as a rename,
+ * and an id edited in place replaces one rule with another. Either gets every
+ * new-rule check, including the per-PR cap, not a comparison with the rule it
+ * replaced. An id that cannot be read on either side leaves the pair modified,
+ * where the modified-rule checks report why.
+ */
+export function routeChangedRuleFiles(
+  pairs: readonly ChangedRuleFile[],
+  idAtBase: (path: string) => string | null,
+  idAtHead: (path: string) => string | null,
+): { readonly modified: readonly ChangedRuleFile[]; readonly added: readonly string[] } {
+  const modified: ChangedRuleFile[] = [];
+  const added: string[] = [];
+  for (const pair of pairs) {
+    if (!isRuleFile(pair.basePath)) {
+      added.push(pair.headPath);
+      continue;
+    }
+    const before = idAtBase(pair.basePath);
+    const after = idAtHead(pair.headPath);
+    if (before !== null && after !== null && before !== after) added.push(pair.headPath);
+    else modified.push(pair);
+  }
+  return { modified, added };
 }
 
 /** Read a file's contents at a git ref. Null when it is absent there. */
@@ -826,13 +927,13 @@ async function buildScopedEngine(
  */
 async function checkModifiedRulesNoNewFP(
   base: string,
-  files: string[],
+  files: readonly ChangedRuleFile[],
   corpus: readonly LabelledSample[],
 ): Promise<Failure[]> {
   const failures: Failure[] = [];
 
-  for (const file of files) {
-    const baseContent = readFileAtRef(base, file);
+  for (const { basePath, headPath: file } of files) {
+    const baseContent = readFileAtRef(base, basePath);
     const headPath = join(REPO_ROOT, file);
     // Neither half of the comparison may be missing. Skipping here would clear
     // a modified rule without comparing anything.
@@ -943,9 +1044,33 @@ async function main(): Promise<void> {
     discoveryErrors.push(m);
   };
 
+  // Modified and renamed rule files are compared with the file they were at
+  // base, unless the rule id changed or the base file was not a rule: then the
+  // rulebase has a new rule (routeChangedRuleFiles).
+  const changed: readonly ChangedRuleFile[] = explicit
+    ? []
+    : [
+        ...getModifiedRuleFiles(base, REPO_ROOT, execGit(REPO_ROOT), noteDiscoveryError).map(
+          (f): ChangedRuleFile => ({ basePath: f, headPath: f }),
+        ),
+        ...getRenamedRuleFiles(base, REPO_ROOT, execGit(REPO_ROOT), noteDiscoveryError),
+      ];
+  const routed = routeChangedRuleFiles(
+    changed,
+    (p) => ruleIdIn(readFileAtRef(base, p)),
+    (p) => {
+      const abs = join(REPO_ROOT, p);
+      return ruleIdIn(existsSync(abs) ? readFileSync(abs, "utf-8") : null);
+    },
+  );
   const newFiles = explicit
     ? [...targets.files]
-    : getNewRuleFiles(base, REPO_ROOT, execGit(REPO_ROOT), noteDiscoveryError);
+    : [
+        ...new Set([
+          ...getNewRuleFiles(base, REPO_ROOT, execGit(REPO_ROOT), noteDiscoveryError),
+          ...routed.added,
+        ]),
+      ].sort();
 
   if (explicit) {
     console.log(
@@ -955,9 +1080,8 @@ async function main(): Promise<void> {
   } else {
     console.log(`[safety-gate] base=${base}`);
   }
-  const modifiedFiles = explicit
-    ? []
-    : getModifiedRuleFiles(base, REPO_ROOT, execGit(REPO_ROOT), noteDiscoveryError);
+  const modifiedFiles = routed.modified;
+  const renamedCount = modifiedFiles.filter((f) => f.basePath !== f.headPath).length;
   // Say where they came from. "0 new rule file(s)" was the sound this gate made
   // while skipping a whole batch of uncommitted rules, so the split between
   // committed and on-disk-only is worth a line of CI log.
@@ -972,7 +1096,14 @@ async function main(): Promise<void> {
   );
   if (modifiedFiles.length > 0) {
     console.log(
-      `[safety-gate] ${modifiedFiles.length} modified rule file(s) detected`,
+      `[safety-gate] ${modifiedFiles.length} modified rule file(s) detected` +
+        (renamedCount > 0 ? ` (${renamedCount} renamed)` : ""),
+    );
+  }
+  if (routed.added.length > 0) {
+    console.log(
+      `[safety-gate] ${routed.added.length} changed rule file(s) checked as new rules ` +
+        `(rule id changed, or not a rule file at base): ${routed.added.join(", ")}`,
     );
   }
 
