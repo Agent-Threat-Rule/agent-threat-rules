@@ -116,7 +116,6 @@ export const NO_ENFORCE_RECORD = {
 export function currentRecallSentence(
   stats: Pick<SiteStats, "benchmarks">,
   figures: readonly { source: string; label: string }[],
-  closedBook: boolean,
 ): string {
   const found = figures.flatMap(({ source, label }) => {
     const m = findBenchmark(stats, source);
@@ -125,9 +124,8 @@ export function currentRecallSentence(
   if (found.length === 0) return "";
   const parts = found.map(({ m, label }) => `${label} (${count(m.samples)} samples): ${recallLanes(m)}`);
   const missing = found.some(({ m }) => m.enforce === null) ? `; ${NO_ENFORCE_RECORD.en}` : "";
-  const caveat = closedBook ? ` ${GARAK_BOTH_CLOSED_BOOK.en}` : "";
   return (
     " Current recall, hunt lane (every rule maturity) / enforce lane (stable rules only, the one for blocking): " +
-    `${parts.join("; ")} (${commonStamp(found.map((f) => f.m), false)})${missing}.${caveat}`
+    `${parts.join("; ")} (${commonStamp(found.map((f) => f.m), false)})${missing}.`
   );
 }

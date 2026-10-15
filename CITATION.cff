@@ -8,12 +8,14 @@ abstract: >
   agent manipulation, skill compromise, model abuse, data poisoning, privilege
   escalation, excessive autonomy, model security), mapped to OWASP Agentic Top
   10 (10/10 categories), SAF-MCP (reviewed candidate technique mappings) and MITRE ATLAS. Rules
-  are hand-authored from real attack payloads, including the NVIDIA garak probe
-  corpus, and are held to a community safety gate that requires true-positive
-  and true-negative test cases on every rule, verifies each rule matches its own
-  true positives, and rejects any rule that fires on the committed benign skill
-  corpus. The exact thresholds are defined in scripts/check-rules-safety.ts and
-  CONTRIBUTING.md rather than here.
+  are written from attack payloads, public attack corpora (including the NVIDIA
+  garak probe corpus) and vulnerability advisories, by contributors and by
+  automated pipelines (corpus imports, CVE sweeps and language-model drafting).
+  Every rule carries true-positive and true-negative test cases. When a rule is
+  added, a community safety gate checks that it matches its own true positives
+  and fires on nothing in the committed benign skill corpus; a changed rule is
+  checked only for new benign false positives. The exact thresholds are defined
+  in scripts/check-rules-safety.ts and CONTRIBUTING.md rather than here.
   On the 650-prompt garak in-the-wild jailbreak corpus, measured at ATR 4.1.5,
   recall is 92.3% in the hunt lane (the engine default, which loads every rule
   maturity) and 0.9% in the enforce lane (stable rules only, the lane to run
