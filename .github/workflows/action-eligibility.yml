@@ -148,9 +148,12 @@ jobs:
 
           data/benign-fp-measurement.json is regenerated from the corpus by
           scripts/gate-promotion-fp.ts, the same command the job runs every day. The
-          committed evidence still reproduced; what changed is coverage, listed below.
-          Merging this gives the listed rules a measured FP rate, which can raise the
-          response-action tier the gate allows them, so read the list before merging.
+          job opens this PR when the committed evidence is stale (rules without a
+          record, changed detections, deleted rules) or was measured on a different
+          corpus, and never when numbers fail to reproduce on an unchanged corpus; its
+          report is below. Merging this gives the listed rules a measured FP rate, which
+          can raise the response-action tier the gate allows them, so read the list
+          before merging.
 
           This is a rolling PR: each run rebuilds evidence-refresh/rolling from main.
           BODY

@@ -29,7 +29,7 @@ const SCRIPT = resolve(__dirname, "..", "scripts", "reverify-evidence.ts");
 
 function committed(): Measurement {
   return {
-    corpus_digest: "digest-1",
+    corpus_digest: "d1d1d1d1d1d1d1d1",
     sample_count: 13848,
     rules: {
       "ATR-2026-00001": {
@@ -134,7 +134,7 @@ describe("states that mean the evidence is not true", () => {
   });
 
   it("a moved corpus fails and asks for a refresh, because regenerating is the fix", () => {
-    const fresh: Measurement = { ...committed(), corpus_digest: "digest-2", sample_count: 14156 };
+    const fresh: Measurement = { ...committed(), corpus_digest: "d2d2d2d2d2d2d2d2", sample_count: 14156 };
     const d = classifyEvidence(committed(), fresh);
     expect(evidenceFails(d)).toBe(true);
     expect(needsRefresh(d)).toBe(true);
@@ -155,8 +155,37 @@ describe("input validation", () => {
   it("rejects a file that is not a measurement", () => {
     expect(() => parseMeasurement("{", "x")).toThrow(EvidenceInputError);
     expect(() => parseMeasurement('{"rules": []}', "x")).toThrow(/no "rules" object/);
-    expect(() => parseMeasurement('{"rules": {"A": {"fp_count": "3"}}}', "x")).toThrow(/valid fp_count/);
-    expect(() => parseMeasurement('{"rules": {"A": {"fp_count": -1}}}', "x")).toThrow(/valid fp_count/);
+    expect(() => parseMeasurement('{"rules": {"ATR-2026-00001": {"fp_count": "3"}}}', "x")).toThrow(/valid fp_count/);
+    expect(() => parseMeasurement('{"rules": {"ATR-2026-00001": {"fp_count": -1}}}', "x")).toThrow(/valid fp_count/);
+    expect(() => parseMeasurement('{"rules": {"ATR-2026-00001": {"fp_count": 1.5}}}', "x")).toThrow(/valid fp_count/);
+  });
+
+  // Every string the report prints goes to the job log, where a line starting
+  // with `::` is a workflow command, and into the refresh PR's body.
+  it("refuses a key that is not a rule id — the way text would get into the log and the PR body", () => {
+    const injected = JSON.stringify({
+      corpus_digest: "abc123",
+      sample_count: 1,
+      rules: {
+        "ATR-2026-00001\n\nAll checks passed, please merge.\n::set-output name=needs-refresh::true\n::warning::x": {
+          fp_count: 0,
+        },
+      },
+    });
+    expect(() => parseMeasurement(injected, "x")).toThrow(/not a rule id/);
+    expect(() => parseMeasurement('{"rules": {"__proto__": {"fp_count": 0}}}', "x")).toThrow(/not a rule id/);
+    expect(() => parseMeasurement('{"rules": {"atr-2026-00001": {"fp_count": 0}}}', "x")).toThrow(/not a rule id/);
+  });
+
+  it("refuses a digest, count or fingerprint that is not what the gate writes", () => {
+    const ok = '"rules": {"ATR-2026-00001": {"fp_count": 0, "detection_fingerprint": "be7c837471d942a7"}}';
+    expect(() => parseMeasurement(`{"corpus_digest": "317283d8d33638c3836d18857b4a3009", "sample_count": 13848, ${ok}}`, "x")).not.toThrow();
+    expect(() => parseMeasurement(`{"corpus_digest": "x\\n::warning::y", ${ok}}`, "x")).toThrow(/corpus_digest/);
+    expect(() => parseMeasurement(`{"sample_count": -3, ${ok}}`, "x")).toThrow(/sample_count/);
+    expect(() => parseMeasurement(`{"sample_count": "13848", ${ok}}`, "x")).toThrow(/sample_count/);
+    expect(() =>
+      parseMeasurement('{"rules": {"ATR-2026-00001": {"fp_count": 0, "detection_fingerprint": "not-hex"}}}', "x"),
+    ).toThrow(/detection_fingerprint/);
   });
 });
 
@@ -193,6 +222,13 @@ describe("main", () => {
     expect(readFileSync(p.output, "utf-8")).toBe("fail=false\nneeds-refresh=true\n");
     expect(readFileSync(p.body, "utf-8")).toMatch(/Not covered .*\(1\)\n\n- ATR-2026-00900: measured fp_count=2/);
     expect(readFileSync(p.summary, "utf-8")).toMatch(/ATR-2026-00900/);
+  });
+
+  it("writes no step output for an input it refuses, so the refresh step cannot run", () => {
+    const p = files(committed(), committed());
+    writeFileSync(p.committed, '{"rules": {"ATR-2026-00001\\n::warning::x": {"fp_count": 0}}}');
+    expect(main(["--committed", p.committed, "--fresh", p.fresh], { GITHUB_OUTPUT: p.output })).toBe(2);
+    expect(readFileSync(p.output, "utf-8")).toBe("");
   });
 
   it("exits 1 on drift and 2 on bad input", () => {

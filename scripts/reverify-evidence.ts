@@ -90,7 +90,21 @@ export interface EvidenceDiff {
 /** Thrown when an input file is not a measurement this script can read. */
 export class EvidenceInputError extends Error {}
 
-/** Parse and shape-check a measurement file's contents. */
+/** The only shape a rule id on disk takes (`grep '^id:'` over rules/, 2026-10-15: 830/830). */
+const RULE_ID = /^ATR-\d{4}-\d{5}$/;
+const HEX = /^[0-9a-f]+$/;
+
+/**
+ * Parse and shape-check a measurement file's contents.
+ *
+ * Strict on purpose. Every string that reaches the report — rule ids, the corpus
+ * digest — is printed to the job log, where GitHub Actions executes lines that
+ * start with `::` as workflow commands, and is written into the refresh PR's
+ * body. The committed file is the untrusted side: a key like
+ * "ATR-2026-00001\n::warning::..." or a body line addressed to a reviewer would
+ * otherwise travel through verbatim. Anything that is not a rule id, a hex
+ * digest or a count is an input error, so the step fails before it prints.
+ */
 export function parseMeasurement(text: string, label: string): Measurement {
   let doc: unknown;
   try {
@@ -102,10 +116,30 @@ export function parseMeasurement(text: string, label: string): Measurement {
   if (rules === null || typeof rules !== "object" || Array.isArray(rules)) {
     throw new EvidenceInputError(`${label}: no "rules" object`);
   }
-  for (const [id, rec] of Object.entries(rules as Record<string, unknown>)) {
-    const n = (rec as { fp_count?: unknown } | null)?.fp_count;
-    if (typeof n !== "number" || !Number.isInteger(n) || n < 0) {
+  const top = doc as { corpus_digest?: unknown; sample_count?: unknown };
+  if (top.corpus_digest !== undefined && (typeof top.corpus_digest !== "string" || !HEX.test(top.corpus_digest))) {
+    throw new EvidenceInputError(`${label}: corpus_digest is not a hex digest`);
+  }
+  if (
+    top.sample_count !== undefined &&
+    (typeof top.sample_count !== "number" || !Number.isSafeInteger(top.sample_count) || top.sample_count < 0)
+  ) {
+    throw new EvidenceInputError(`${label}: sample_count is not a non-negative integer`);
+  }
+  // Object.keys, not for...in: an own "__proto__" key from JSON.parse is listed
+  // here and fails the id check like any other junk key.
+  for (const id of Object.keys(rules as Record<string, unknown>)) {
+    if (!RULE_ID.test(id)) {
+      throw new EvidenceInputError(`${label}: a key in "rules" is not a rule id (${JSON.stringify(id).slice(0, 40)}...)`);
+    }
+    const rec = (rules as Record<string, unknown>)[id] as Record<string, unknown> | null;
+    const n = rec?.fp_count;
+    if (typeof n !== "number" || !Number.isSafeInteger(n) || n < 0) {
       throw new EvidenceInputError(`${label}: ${id} has no valid fp_count`);
+    }
+    const fp = rec?.detection_fingerprint;
+    if (fp !== undefined && fp !== null && (typeof fp !== "string" || !HEX.test(fp))) {
+      throw new EvidenceInputError(`${label}: ${id} has a detection_fingerprint that is not hex`);
     }
   }
   return doc as Measurement;
