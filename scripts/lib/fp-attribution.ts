@@ -62,7 +62,7 @@ export interface AttributedRule {
 export type FullReason =
   | "absent-from-base-evidence"
   | "detection-changed"
-  | "not-loadable"
+  | "not-evaluated-at-base"
   | "unusable-base-record";
 
 export interface FullMeasurement {
@@ -109,7 +109,7 @@ const REASON_CHARS = 200;
 const FULL_REASON_TEXT: Readonly<Record<FullReason, string>> = Object.freeze({
   "absent-from-base-evidence": "absent from the committed evidence",
   "detection-changed": "detection changed since it",
-  "not-loadable": "not loadable by the engine",
+  "not-evaluated-at-base": "recorded in it but never evaluated",
   "unusable-base-record": "unusable record in it",
 });
 

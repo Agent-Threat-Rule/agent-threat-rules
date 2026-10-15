@@ -137,8 +137,9 @@ jobs:
           #   0  pass.
           #   1  a finding: a rule now carries an action the evidence no longer earns. The PR
           #      still opens; its body names the new samples behind each such rule.
-          #   *  no verdict at all (2: the evidence is missing, unreadable, or for another
-          #      corpus). A pipeline error, not a finding about the samples: fail, open nothing.
+          #   *  no verdict at all (2: the evidence is missing, unreadable, for another
+          #      corpus, or holds a record for a rule that is not live). A pipeline error,
+          #      not a finding about the samples: fail, open nothing.
           GATE_OUT="$RUNNER_TEMP/action-gate.txt"
           GATE_JSON="$RUNNER_TEMP/action-gate.json"
           SECTION="$RUNNER_TEMP/fp-attribution.md"

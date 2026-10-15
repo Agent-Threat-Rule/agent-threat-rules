@@ -336,10 +336,24 @@ export class ATREngine {
    * lane? 'enforce' = stable only; 'alert' = stable+test; 'hunt'/unset = all.
    * Keeps experimental content out of the auto-block path without deleting it.
    */
-  private passesLane(rule: ATRRule): boolean {
+  private passesLane(rule: Pick<ATRRule, 'maturity'>): boolean {
     // Single source of truth for the maturity->lane mapping (incl. safe-fail on
     // missing/odd maturity) lives in the rule-quality contract.
     return laneAllows(rule.maturity, this.lane);
+  }
+
+  /**
+   * Whether this engine evaluates `rule` at all. A draft or deprecated status, or
+   * a maturity outside the lane, stops a rule before any of its conditions run,
+   * so nothing about it — its false positives included — can be observed through
+   * this engine. evaluateRaw() and evaluateAsync() both ask this, and a
+   * measurement harness must ask it too before recording a number for a rule:
+   * a rule that is never evaluated scores 0 by construction, and that 0 is not
+   * a measurement.
+   */
+  evaluates(rule: Pick<ATRRule, 'status' | 'maturity'>): boolean {
+    if (rule.status === 'deprecated' || rule.status === 'draft') return false;
+    return this.passesLane(rule);
   }
 
   /** Active detection lane (config, else 'hunt'). Diagnostics/tests. */
@@ -424,10 +438,9 @@ export class ATREngine {
     // Tier 2: Pattern matching (existing regex rules)
     const isSkillContext = event.scanContext === 'skill';
     for (const rule of this.rules) {
-      // Skip deprecated and draft rules
-      if (rule.status === 'deprecated' || rule.status === 'draft') continue;
-      // Lane gate: keep non-stable maturities out of enforce/alert lanes
-      if (!this.passesLane(rule)) continue;
+      // Skip deprecated and draft rules, and maturities outside the lane
+      // (non-stable rules stay out of the enforce/alert lanes).
+      if (!this.evaluates(rule)) continue;
 
       // Source type filtering: skip rules that don't apply to this event type
       // When scanContext is 'skill', skip source-type filtering — all rules fire
@@ -597,8 +610,7 @@ export class ATREngine {
     // Tier 2: Pattern matching + async semantic rules
     const isSkillContext = event.scanContext === 'skill';
     for (const rule of this.rules) {
-      if (rule.status === 'deprecated' || rule.status === 'draft') continue;
-      if (!this.passesLane(rule)) continue;
+      if (!this.evaluates(rule)) continue;
 
       if (!isSkillContext && eventSourceType && rule.agent_source.type !== eventSourceType) {
         const mcpOverTool = rule.agent_source.type === 'mcp_exchange' && eventSourceType === 'tool_call';
