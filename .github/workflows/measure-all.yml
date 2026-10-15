@@ -17,6 +17,17 @@ name: Measure All Benchmarks
 #      bot, and a release made with GITHUB_TOKEN triggers no workflow. The
 #      numbers on main stopped at #478 (2026-08-17) without anything turning red.
 #
+# Every runner below records two lanes per source. Its headline
+# (`metrics.recall`, which latest.json, data/stats.json and README's first
+# Recall figure carry) is the hunt lane: the engine default, every maturity.
+# It then runs the same samples through the same detection loop on an engine
+# constructed with `lane: 'enforce'` (only maturity: stable rules load — the
+# lane for blocking) and records that as `breakdown.enforce_lane`
+# (src/measurement/enforce-lane.ts), which README's second Recall figure and
+# stats.json's enforceLaneRecall cite. Verify measurement schemas checks the
+# record; tests/measurement-enforce-lane-coverage.test.ts fails the rolling
+# PR if a source stops recording it.
+#
 # This workflow does NOT run on every push — re-measuring per commit is
 # expensive (10-20 minutes for the full sweep) and the daily eval CI already
 # refreshes atr-self-test on every PR.
@@ -304,7 +315,9 @@ jobs:
           Auto-generated measurement refresh from .github/workflows/measure-all.yml.
 
           See `data/measurements/<source>/latest.json` for each updated source and
-          `data/stats.json` for the aggregated benchmarks array. README.md's benchmark
+          `data/stats.json` for the aggregated benchmarks array. Each measurement's
+          headline is the hunt lane; `breakdown.enforce_lane` records the same samples
+          through the same loop on an enforce-lane engine. README.md's benchmark
           table and the garak / pint / skill blocks of stats.json are re-rendered from the
           same pointers by scripts/render-benchmark-table.ts; anything it could not
           re-render is listed below for a manual pass. Each measurement file is
