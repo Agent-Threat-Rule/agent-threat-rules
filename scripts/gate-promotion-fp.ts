@@ -363,7 +363,7 @@ function promotedFilesFromDiff(
  * id kept with its quotes matched no requested id, so a quoted rule was either
  * reported missing (exit 3) or, when promoted, gated as if it never fired.
  */
-function ruleIdOf(repoRoot: string, file: string): string | null {
+export function ruleIdOf(repoRoot: string, file: string): string | null {
   for (const line of readFileSync(join(repoRoot, file), "utf-8").split("\n")) {
     const m = /^id:\s*["']?([^"'\s#]+)/.exec(line);
     if (m) return m[1] ?? null;
@@ -512,7 +512,7 @@ function loadCorpusTexts(pathStr: string): readonly string[] {
 }
 
 /** Copy just the target rule files into a temp dir so the engine loads only them. */
-function scopedRulesDir(repoRoot: string, files: readonly string[]): string {
+export function scopedRulesDir(repoRoot: string, files: readonly string[]): string {
   const dir = mkdtempSync(join(tmpdir(), "atr-gate-"));
   for (const f of files)
     copyFileSync(join(repoRoot, f), join(dir, basename(f)));
