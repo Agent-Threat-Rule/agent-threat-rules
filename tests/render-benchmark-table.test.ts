@@ -21,7 +21,10 @@ import {
   type BenchmarkEntry,
   EXEMPT_SOURCES,
   LABEL_TO_SOURCE,
+  checkRecallCell,
+  enforceRecallBySource,
   findCitationProblems,
+  pctLane,
 } from "../scripts/check-benchmark-citations.js";
 import {
   DROPPABLE_FIELDS,
@@ -105,6 +108,17 @@ const pctOf = (n: number) => `${(n * 100).toFixed(1)}%`;
 const fixtureEntry = (source: string) => fixtureEntries().find((e) => e.source === source)!;
 
 /**
+ * Each fixture source's enforce-lane recall, as breakdown.enforce_lane records
+ * it: a tenth of its hunt figure, so the two can never be confused, and 0 for
+ * SKILL.md, which is what the enforce lane scores there.
+ */
+function fixtureEnforce(): Map<string, number> {
+  return new Map(
+    fixtureEntries().map((e) => [e.source, e.source === "skill-benchmark" ? 0 : e.recall! / 10] as [string, number]),
+  );
+}
+
+/**
  * Honesty disclosures outward material relies on. They describe the corpus or
  * the method, not a run, so no render may drop or reword them. The em dash and
  * quotes make a byte-level change visible.
@@ -180,12 +194,13 @@ describe("renderReadme", () => {
   it("produces a README and stats.json the citation check accepts, from ones it rejects", () => {
     const readme = fixtureReadme();
     const entries = fixtureEntries();
-    const before = findCitationProblems(readme, { benchmarks: entries }, ROOT_STATS);
+    const enforce = fixtureEnforce();
+    const before = findCitationProblems(readme, { benchmarks: entries }, ROOT_STATS, enforce);
     expect(before.problems.length).toBeGreaterThan(0);
 
-    const rendered = renderReadme(readme, entries);
-    const rootStats = renderRootStats(ROOT_STATS, entries, GARAK_FULL_DETAIL).stats;
-    const after = findCitationProblems(rendered, { benchmarks: entries }, rootStats);
+    const rendered = renderReadme(readme, entries, enforce);
+    const rootStats = renderRootStats(ROOT_STATS, entries, GARAK_FULL_DETAIL, enforce).stats;
+    const after = findCitationProblems(rendered, { benchmarks: entries }, rootStats, enforce);
     expect(after.fatal).toBeNull();
     expect(after.problems).toEqual([]);
     expect(after.rowCount).toBe(LABEL_TO_SOURCE.size);
@@ -234,9 +249,25 @@ describe("renderReadme", () => {
     const readme = readFileSync(resolve(REPO, "README.md"), "utf8");
     const dataStats = JSON.parse(readFileSync(resolve(REPO, "data", "stats.json"), "utf8"));
     const rootStats = JSON.parse(readFileSync(resolve(REPO, "stats.json"), "utf8"));
-    const rendered = renderReadme(readme, dataStats.benchmarks);
-    const check = findCitationProblems(rendered, dataStats, renderRootStats(rootStats, dataStats.benchmarks).stats);
+    const enforce = enforceRecallBySource(REPO, dataStats.benchmarks);
+    const rendered = renderReadme(readme, dataStats.benchmarks, enforce);
+    const check = findCitationProblems(
+      rendered,
+      dataStats,
+      renderRootStats(rootStats, dataStats.benchmarks, new Map(), enforce).stats,
+      enforce,
+    );
     expect(check.fatal).toBeNull();
+    expect(check.problems).toEqual([]);
+  });
+
+  it("is already rendered: the committed README and stats.json cite every enforce figure the measurements record", () => {
+    const readme = readFileSync(resolve(REPO, "README.md"), "utf8");
+    const dataStats = JSON.parse(readFileSync(resolve(REPO, "data", "stats.json"), "utf8"));
+    const rootStats = JSON.parse(readFileSync(resolve(REPO, "stats.json"), "utf8"));
+    const enforce = enforceRecallBySource(REPO, dataStats.benchmarks);
+    expect(enforce.size).toBeGreaterThan(0);
+    const check = findCitationProblems(readme, dataStats, rootStats, enforce);
     expect(check.problems).toEqual([]);
   });
 });
@@ -268,9 +299,9 @@ describe("lane figures no measurement backs", () => {
     expect(renderReadme(readme, [e])).toBe(readme);
   });
 
-  it("re-stamps the root skill block with the README row and drops its enforce-lane fields", () => {
+  it("re-stamps the root skill block with the README row, recomputing its enforce figure and dropping the note", () => {
     const entries = fixtureEntries();
-    const { stats, dropped } = renderRootStats(ROOT_STATS, entries, GARAK_FULL_DETAIL);
+    const { stats, dropped } = renderRootStats(ROOT_STATS, entries, GARAK_FULL_DETAIL, fixtureEnforce());
     const e = fixtureEntry("skill-benchmark");
     expect(blocksOf(stats).skill).toEqual({
       recall: Number((e.recall! * 100).toFixed(1)),
@@ -280,16 +311,170 @@ describe("lane figures no measurement backs", () => {
       source: ROOT_STATS.benchmarks.skill.source,
       lane: "hunt",
       caveat: SKILL_CAVEAT,
+      enforceLaneRecall: 0,
       atr_version: "4.1.5",
       measured: "2026-10-12",
     });
-    expect(dropped).toEqual(
-      expect.arrayContaining(["benchmarks.skill.enforceLaneRecall", "benchmarks.skill.enforceLaneNote"]),
-    );
+    expect(dropped).toContain("benchmarks.skill.enforceLaneNote");
+    expect(dropped).not.toContain("benchmarks.skill.enforceLaneRecall");
     const row = renderReadme(fixtureReadme(), entries)
       .split("\n")
       .find((l) => l.startsWith(`| ${SKILL_LABEL}`))!;
     expect(row.split("|")[7].trim()).toBe(blocksOf(stats).skill.atr_version);
+  });
+});
+
+describe("enforce-lane figures", () => {
+  const GARAK_LABEL = "garak (in-the-wild jailbreaks)";
+  const garak: BenchmarkEntry = {
+    source: "garak",
+    source_version: "inthewild-jailbreak-corpus-650",
+    atr_version: "4.1.5",
+    measured_at: "2026-10-15",
+    samples: 650,
+    recall: 600 / 650,
+    precision: 1,
+    fp_rate: 0,
+  };
+  const ENFORCE = new Map([["garak", 6 / 650]]);
+  const garakRow = (recall: string, stamp = "4.1.5 | 2026-10-15") =>
+    `| ${GARAK_LABEL} | inthewild-jailbreak-corpus-650 | 650 | ${recall} | 100.0% | 0.0% | ${stamp} |`;
+  const table = (...rows: string[]) => [...HEADER, ...rows, ""].join("\n");
+
+  describe("checkRecallCell", () => {
+    it("accepts the hunt figure first and the recorded enforce figure second", () => {
+      expect(checkRecallCell("92.3% (hunt) / 0.9% (enforce)", 600 / 650, 6 / 650)).toBeNull();
+    });
+
+    it("rejects an enforce figure that differs from the recorded one", () => {
+      expect(checkRecallCell("92.3% (hunt) / 1.5% (enforce)", 600 / 650, 6 / 650)).toMatch(/enforce lane.*0\.9%/);
+    });
+
+    it("rejects a hunt figure quoted alone once the measurement records the enforce lane", () => {
+      expect(checkRecallCell("92.3%", 600 / 650, 6 / 650)).toMatch(/omits the enforce-lane figure/);
+      expect(checkRecallCell("92.3% (hunt)", 600 / 650, 6 / 650)).toMatch(/omits the enforce-lane figure/);
+    });
+
+    it("rejects an enforce figure no measurement records", () => {
+      expect(checkRecallCell("100.0% (hunt) / 0.0% (enforce)", 1, null)).toMatch(/records none/);
+      // A cell with no enforce figure is fine while nothing records one.
+      expect(checkRecallCell("100.0%", 1, null)).toBeNull();
+    });
+
+    it("rejects a leading figure labelled with another lane, and a lane no run measures", () => {
+      expect(checkRecallCell("92.3% (enforce) / 0.9% (hunt)", 600 / 650, 6 / 650)).toMatch(/hunt/);
+      expect(checkRecallCell("92.3% (hunt) / 50.0% (alert)", 600 / 650, 6 / 650)).toMatch(/alert/);
+    });
+
+    it("never reads a non-zero enforce figure as zero", () => {
+      expect(pctLane(0)).toBe("0.0%");
+      expect(pctLane(6 / 650)).toBe("0.9%");
+      expect(pctLane(1 / 3475)).toBe("0.03%");
+      expect(pctLane(3474 / 3475)).toBe("99.97%");
+      expect(checkRecallCell("57.2% (hunt) / 0.0% (enforce)", 0.572, 1 / 3475)).toMatch(/0\.03%/);
+      expect(checkRecallCell("57.2% (hunt) / 0.03% (enforce)", 0.572, 1 / 3475)).toBeNull();
+    });
+  });
+
+  it("renders the recorded enforce figure beside the hunt figure", () => {
+    expect(renderReadme(table(garakRow("92.3%", "4.1.5 | 2026-10-14")), [garak], ENFORCE).split("\n")[2]).toBe(
+      garakRow("92.3% (hunt) / 0.9% (enforce)"),
+    );
+  });
+
+  it("adds the enforce figure even when the row's stamp does not move", () => {
+    expect(renderReadme(table(garakRow("92.3%")), [garak], ENFORCE).split("\n")[2]).toBe(
+      garakRow("92.3% (hunt) / 0.9% (enforce)"),
+    );
+  });
+
+  it("keeps footnote markers and replaces any other wording in the recall cell", () => {
+    const skill: BenchmarkEntry = { ...garak, source: "skill-benchmark", source_version: "internal-498", samples: 498, recall: 1, precision: 0.97, fp_rate: 0.002 };
+    const row = `| ${SKILL_LABEL} | internal-498 | 498 | 100.0% (hunt); not an enforce figure [^skilllane] | 97.0% (hunt) | 0.20% (hunt) | 4.1.5 | 2026-10-14 |`;
+    expect(renderReadme(table(row), [skill], new Map([["skill-benchmark", 0]])).split("\n")[2]).toBe(
+      `| ${SKILL_LABEL} | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) [^skilllane] | 97.0% (hunt) | 0.20% (hunt) | 4.1.5 | 2026-10-15 |`,
+    );
+  });
+
+  it("is idempotent, and its output passes the citation check", () => {
+    const entries = fixtureEntries();
+    const enforce = fixtureEnforce();
+    const once = renderReadme(fixtureReadme(), entries, enforce);
+    expect(renderReadme(once, entries, enforce)).toBe(once);
+    const rootStats = renderRootStats(ROOT_STATS, entries, GARAK_FULL_DETAIL, enforce).stats;
+    expect(findCitationProblems(once, { benchmarks: entries }, rootStats, enforce).problems).toEqual([]);
+  });
+
+  it("leaves a row whose measurement records no enforce figure as it was", () => {
+    const row = garakRow("92.3%");
+    expect(renderReadme(table(row), [garak], new Map()).split("\n")[2]).toBe(row);
+  });
+
+  it("fails the check when a row quotes the hunt figure alone beside a recorded enforce figure", () => {
+    const check = findCitationProblems(table(garakRow("92.3%")), { benchmarks: [garak] }, ROOT_STATS, ENFORCE);
+    expect(check.problems.join("\n")).toMatch(/garak.*omits the enforce-lane figure/);
+  });
+
+  describe("root stats.json", () => {
+    const withEnforce = {
+      ...ROOT_STATS,
+      benchmarks: {
+        ...ROOT_STATS.benchmarks,
+        garak: { ...ROOT_STATS.benchmarks.garak, enforceLaneRecall: 50 },
+        pint: { ...ROOT_STATS.benchmarks.pint, enforceLaneRecall: 50 },
+      },
+    };
+
+    it("recomputes every enforceLaneRecall it cites, never rounding a non-zero figure to 0", () => {
+      const enforce = new Map([...fixtureEnforce(), ["pint", 1 / 3475]]);
+      const { stats, held } = renderRootStats(withEnforce, fixtureEntries(), GARAK_FULL_DETAIL, enforce);
+      expect(held).toEqual([]);
+      expect(blocksOf(stats).garak).toMatchObject({ enforceLaneRecall: Number((enforce.get("garak")! * 100).toFixed(1)) });
+      expect((blocksOf(stats).pint as Record<string, unknown>).enforceLaneRecall).toBe(0.03);
+      expect((blocksOf(stats).skill as Record<string, unknown>).enforceLaneRecall).toBe(0);
+    });
+
+    it("adds the recorded enforce figure, right after recall, to a block that does not cite one yet", () => {
+      const enforce = fixtureEnforce();
+      const { stats } = renderRootStats(ROOT_STATS, fixtureEntries(), GARAK_FULL_DETAIL, enforce);
+      const garak = blocksOf(stats).garak as Record<string, unknown>;
+      expect(garak.enforceLaneRecall).toBe(Number((enforce.get("garak")! * 100).toFixed(1)));
+      const keys = Object.keys(garak);
+      expect(keys.indexOf("enforceLaneRecall")).toBe(keys.indexOf("recall") + 1);
+      // ...and nothing when the measurement records none.
+      const { stats: none } = renderRootStats(ROOT_STATS, fixtureEntries(), GARAK_FULL_DETAIL, new Map());
+      expect(blocksOf(none).garak).not.toHaveProperty("enforceLaneRecall");
+    });
+
+    it("fails the check when stats.json leaves out an enforce figure the measurement records", () => {
+      const check = findCitationProblems(
+        renderReadme(fixtureReadme(), fixtureEntries(), fixtureEnforce()),
+        { benchmarks: fixtureEntries() },
+        ROOT_STATS,
+        fixtureEnforce(),
+      );
+      expect(check.problems.join("\n")).toMatch(/benchmarks\.garak omits enforceLaneRecall/);
+    });
+
+    it("holds a block whose enforce figure this run's measurement does not record, and says why", () => {
+      const { stats, held } = renderRootStats(withEnforce, fixtureEntries(), GARAK_FULL_DETAIL, new Map());
+      expect(blocksOf(stats).garak).toEqual(withEnforce.benchmarks.garak);
+      expect(held.join("\n")).toMatch(/benchmarks\.garak.*enforceLaneRecall/);
+    });
+
+    it("fails the check on an enforce figure that disagrees with the measurement, or that none records", () => {
+      const entries = fixtureEntries();
+      const readme = renderReadme(fixtureReadme(), entries, fixtureEnforce());
+      const rendered = renderRootStats(withEnforce, entries, GARAK_FULL_DETAIL, fixtureEnforce()).stats;
+      expect(findCitationProblems(readme, { benchmarks: entries }, rendered, fixtureEnforce()).problems).toEqual([]);
+      const wrong = { benchmarks: { ...blocksOf(rendered), garak: { ...blocksOf(rendered).garak, enforceLaneRecall: 12.5 } } };
+      expect(findCitationProblems(readme, { benchmarks: entries }, wrong, fixtureEnforce()).problems.join("\n")).toMatch(
+        /benchmarks\.garak\.enforceLaneRecall = 12\.5/,
+      );
+      const unrecorded = new Map([...fixtureEnforce()].filter(([k]) => k !== "pint"));
+      const problems = findCitationProblems(readme, { benchmarks: entries }, rendered, unrecorded).problems.join("\n");
+      expect(problems).toMatch(/benchmarks\.pint\.enforceLaneRecall.*records no enforce/);
+    });
   });
 });
 
@@ -332,10 +517,30 @@ describe("renderRootStats", () => {
     expect(dropped.filter((d) => /\.(disclaimer|caveat|notOfficialPint)$/.test(d))).toEqual([]);
   });
 
+  it("keeps the lane descriptor on garak, pint and skill through a re-stamp", () => {
+    // Each block's recall is the hunt lane; the label must survive every weekly
+    // re-stamp, or a block carrying it would be held as holding an unknown field.
+    const labelled = {
+      ...ROOT_STATS,
+      benchmarks: {
+        ...ROOT_STATS.benchmarks,
+        garak: { ...ROOT_STATS.benchmarks.garak, lane: "hunt" },
+        pint: { ...ROOT_STATS.benchmarks.pint, lane: "hunt" },
+      },
+    };
+    const { stats, held } = renderRootStats(labelled, fixtureEntries(), GARAK_FULL_DETAIL, fixtureEnforce());
+    expect(held).toEqual([]);
+    for (const block of ["garak", "pint", "skill"] as const) {
+      expect((blocksOf(stats)[block] as Record<string, unknown>).lane).toBe("hunt");
+      expect(blocksOf(stats)[block].atr_version).toBe("4.1.5");
+    }
+  });
+
   it("keeps a disclaimer on any rendered block, even one it was never written for", () => {
     const garak = { ...ROOT_STATS.benchmarks.garak, disclaimer: "Not NVIDIA's own garak scoring." };
     const withGarak = { ...ROOT_STATS, benchmarks: { ...ROOT_STATS.benchmarks, garak } };
-    const { stats, held } = renderRootStats(withGarak, fixtureEntries(), GARAK_FULL_DETAIL);
+    // The fixture's skill block cites an enforce figure, so this run records one.
+    const { stats, held } = renderRootStats(withGarak, fixtureEntries(), GARAK_FULL_DETAIL, fixtureEnforce());
     expect(held).toEqual([]);
     expect((blocksOf(stats).garak as typeof garak).disclaimer).toBe("Not NVIDIA's own garak scoring.");
     expect(blocksOf(stats).garak.atr_version).toBe("4.1.5");
@@ -356,7 +561,17 @@ describe("renderRootStats", () => {
       precision: 1,
       fp_rate: 0,
     });
-    const { stats } = renderRootStats(committed, [next("pint", 850, 0.6), next("skill-benchmark", 498, 1)]);
+    const enforce = new Map([
+      ["pint", 0.01],
+      ["skill-benchmark", 0],
+      ["garak", 0.009],
+    ]);
+    const { stats } = renderRootStats(
+      committed,
+      [next("pint", 850, 0.6), next("skill-benchmark", 498, 1), next("garak", 650, 0.9)],
+      new Map(),
+      enforce,
+    );
     expect(blocksOf(stats).pint.disclaimer).toBe(pint.disclaimer);
     expect(blocksOf(stats).pint.caveat).toBe(pint.caveat);
     expect(blocksOf(stats).pint.notOfficialPint).toBe(true);
@@ -364,7 +579,13 @@ describe("renderRootStats", () => {
     expect(blocksOf(stats).skill.caveat).toBe(blocksOf(committed).skill.caveat);
     expect(typeof blocksOf(stats).skill.caveat).toBe("string");
     expect(blocksOf(stats).skill).not.toHaveProperty("enforceLaneNote");
-    expect(blocksOf(stats).skill).not.toHaveProperty("enforceLaneRecall");
+    // Each enforce figure the committed file cites is re-derived from the run, never carried over.
+    for (const [block, source] of [["garak", "garak"], ["pint", "pint"], ["skill", "skill-benchmark"]] as const) {
+      if ((blocksOf(committed)[block] as Record<string, unknown>).enforceLaneRecall === undefined) continue;
+      expect((blocksOf(stats)[block] as Record<string, unknown>).enforceLaneRecall).toBe(
+        Number((enforce.get(source)! * 100).toFixed(1)),
+      );
+    }
   });
 
   it("keeps every field while the stamp does not move", () => {
@@ -527,13 +748,32 @@ function write(root: string, rel: string, text: string): void {
 }
 
 /** A checkout with a pint measurement newer than what README and stats.json cite. */
-function fixtureCheckout(): string {
+function fixtureCheckout(opts: { enforceDetected?: number } = {}): string {
   const root = mkdtempSync(join(tmpdir(), "render-bench-"));
   dirs.push(root);
   const file = "2026-10-12_pint-v1_atr-4-1-5.json";
   const metrics = { recall: 0.6, precision: 1, f1: 0.75, fp_rate: 0 };
   const base = { source: "pint", source_version: "v1", atr_version: "4.1.5", measured_at: "2026-10-12T12:51:13.373Z", samples: 850 };
-  write(root, `data/measurements/pint/${file}`, JSON.stringify({ ...base, metrics, confusion: { tp: 271, fp: 0, tn: 399, fn: 180 } }));
+  const breakdown =
+    opts.enforceDetected === undefined
+      ? {}
+      : {
+          breakdown: {
+            enforce_lane: {
+              lane: "enforce",
+              detected: opts.enforceDetected,
+              attacks: 451,
+              recall: opts.enforceDetected / 451,
+              rules_in_lane: 103,
+              note: "fixture",
+            },
+          },
+        };
+  write(
+    root,
+    `data/measurements/pint/${file}`,
+    JSON.stringify({ ...base, metrics, confusion: { tp: 271, fp: 0, tn: 399, fn: 180 }, ...breakdown }),
+  );
   write(root, "data/measurements/pint/latest.json", JSON.stringify({ ...base, file, metrics }, null, 2) + "\n");
   const projection = projectForStats(aggregateMeasurements(join(root, "data", "measurements")));
   write(root, "data/stats.json", JSON.stringify({ benchmarks: projection.benchmarks }, null, 2) + "\n");
@@ -567,6 +807,21 @@ describe("CLI", () => {
       atr_version: "4.1.5",
       measured: "2026-10-12",
     });
+  });
+
+  it("renders the enforce figure a measurement records into README and stats.json, then --check passes", () => {
+    const root = fixtureCheckout({ enforceDetected: 9 });
+    const stats = JSON.parse(readFileSync(join(root, "stats.json"), "utf8"));
+    stats.benchmarks.pint.enforceLaneRecall = 0;
+    write(root, "stats.json", JSON.stringify(stats, null, 2) + "\n");
+    const rendered = cli(root);
+    expect(rendered.status, rendered.stderr).toBe(0);
+    expect(readFileSync(join(root, "README.md"), "utf8")).toContain(
+      "| PINT-format (deepset + Lakera Gandalf) [^pint] | v1 | 850 | 60.0% (hunt) / 2.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-12 |",
+    );
+    expect(JSON.parse(readFileSync(join(root, "stats.json"), "utf8")).benchmarks.pint.enforceLaneRecall).toBe(2);
+    const check = cli(root, "--check");
+    expect(check.status, check.stderr).toBe(0);
   });
 
   it("writes the disclaimer's stats.json line back byte-for-byte", () => {

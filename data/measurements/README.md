@@ -82,20 +82,54 @@ top-level fields:
 |                  |          | by family, by severity, by layer — source-defined).    |
 | `notes`          | string   | Optional human-readable context.                       |
 
+## The enforce lane: `breakdown.enforce_lane`
+
+`metrics.recall` is a **hunt**-lane figure: the runners construct the engine
+with no lane, and an engine with no lane loads every maturity. Since
+2026-10-15 every runner `.github/workflows/measure-all.yml` calls also runs the
+same samples through the same detection loop on an engine constructed with
+`lane: 'enforce'` (only `maturity: stable` rules load; the lane to run with
+blocking on) and records the result beside the headline:
+
+| Field           | Notes                                                              |
+|-----------------|--------------------------------------------------------------------|
+| `lane`          | Always `"enforce"`.                                                |
+| `detected`      | Attack samples the enforce-lane engine detected.                   |
+| `attacks`       | Attack samples evaluated; equals `confusion.tp + confusion.fn`.    |
+| `recall`        | `detected / attacks`.                                              |
+| `rules_in_lane` | Rules the enforce lane loads: status not draft/deprecated, maturity stable. A `confirm: embedding` rule among them fires only once embedding similarity confirms it, which the synchronous `evaluate()` most runners use cannot do. |
+| `note`          | What the figure is, in the file itself.                            |
+
+It is deliberately not a second headline: `metrics`, `latest.json` and
+`data/stats.json` stay the hunt lane. README's Recall column cites both lanes
+(`<hunt>% (hunt) / <enforce>% (enforce)`) and root `stats.json` cites the
+enforce figure as `enforceLaneRecall`; `scripts/check-benchmark-citations.ts`
+fails CI when either disagrees with the measurement. `src/measurement/schema.ts`
+validates the record, which `scripts/measurement/verify.ts` runs over every
+file. Measurements written before 2026-10-15 do not carry it.
+
 ## Public reference format
 
 When citing a measurement externally, use this triple format:
 
 > ATR `<atr_version>` against `<source>` `<source_version>` (`<sample_count>`
-> samples, measured `<YYYY-MM-DD>`): recall `<X.X>%`, precision `<X.X>%`.
+> samples, measured `<YYYY-MM-DD>`): recall `<X.X>%` (hunt) / `<Y.Y>%` (enforce).
 
 Example:
 
-> ATR `3.0.0-alpha.0` against garak `v0.10.3` (666 samples, measured
-> 2026-04-21): recall 97.1%, precision 100.0%.
+> ATR `4.1.5` against `llm-guard` `corpus-2026-05-12` (44 samples, measured
+> 2026-10-15): recall 63.6% (hunt) / 0.0% (enforce).
+
+Name the lane. In a measurement written on or after 2026-10-15, `metrics.recall`
+is the hunt lane and `breakdown.enforce_lane.recall` in the same file is the
+enforce lane, the one README recommends when blocking is on; the two can differ
+by two orders of magnitude. Earlier measurements carry only the hunt figure.
+Cite precision only for a corpus with benign samples: elsewhere it is the
+schema's convention value `1`, not a result. Where README section 8 marks a row
+as partly closed-book (rules were written from that corpus), say so too.
 
 Always link to the underlying measurement file:
-`data/measurements/garak/2026-04-21_garak-v0.10.3_atr-2.0.11.json`.
+`data/measurements/llm-guard/2026-10-15_llm-guard-corpus-2026-05-12_atr-4-1-5.json`.
 
 ## What lives here vs. elsewhere
 
