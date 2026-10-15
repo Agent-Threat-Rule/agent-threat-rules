@@ -41,8 +41,8 @@ throughout). Fiscal sponsor: Open Source Collective Inc. (EIN 82-2037583).
 
 This charter exists because the ATR rule corpus has reached the adoption
 threshold where single-maintainer governance is a structural risk to
-adopters: Microsoft Agent Governance Toolkit, Cisco AI Defense, MISP CIRCL,
-precize / Gen Digital Sage chain all ship ATR rules into production. F500
+adopters: Cisco AI Defense, MISP CIRCL, and the precize / Gen Digital
+Sage chain have merged ATR work into their public repositories. F500
 buyers, national CERTs, and OASIS / NIST / EU AI Office cannot reliably
 build dependencies on a BDFL.
 
