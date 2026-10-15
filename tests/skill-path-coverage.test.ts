@@ -316,7 +316,7 @@ describe("the predicate mirrors src/engine.ts rather than restating it", () => {
     const src = engineSource();
     const occurrences = [
       ...src.matchAll(
-        /isSkillContext\s*&&\s*rule\.tags\.scan_target\s*!==\s*'([a-z]+)'\s*&&\s*rule\.tags\.scan_target\s*!==\s*'([a-z]+)'/g,
+        /isSkillContext\s*&&\s*rule\.tags\??\.scan_target\s*!==\s*'([a-z]+)'\s*&&\s*rule\.tags\??\.scan_target\s*!==\s*'([a-z]+)'/g,
       ),
     ];
     expect(

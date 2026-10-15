@@ -27,7 +27,7 @@
  */
 import { fork } from "node:child_process";
 import { createRequire } from "node:module";
-import { availableParallelism } from "node:os";
+import * as os from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { classifySecurityContent } from "../../src/corpus/security-content.js";
@@ -47,8 +47,15 @@ export interface SampleScores {
 
 /** Below this many samples the cost of starting workers outweighs them. */
 export const PARALLEL_MIN_SAMPLES = 1_000;
-/** Ceiling for the automatic worker count; --workers can still go higher. */
+/** Ceiling for the automatic worker count; --workers can still go higher... */
 export const MAX_AUTO_WORKERS = 8;
+/** ...up to this hard ceiling, so a typo cannot fork thousands of processes. */
+export const MAX_WORKERS = 64;
+
+/** CPUs available to this process; availableParallelism() is Node 18.14+. */
+function cpuCount(): number {
+  return typeof os.availableParallelism === "function" ? os.availableParallelism() : os.cpus().length;
+}
 /** How often a parallel scan reports progress. */
 export const PROGRESS_EVERY_MS = 60_000;
 /** A batch closes once it holds this many characters... */
@@ -146,9 +153,11 @@ export function planBatches(
 export function resolveWorkerCount(
   requested: number | null,
   sampleCount: number,
-  cpus: number = availableParallelism(),
+  cpus: number = cpuCount(),
 ): number {
-  if (requested !== null) return Math.max(1, Math.floor(requested));
+  if (requested !== null) {
+    return Number.isFinite(requested) ? Math.max(1, Math.min(Math.floor(requested), MAX_WORKERS)) : 1;
+  }
   if (sampleCount < PARALLEL_MIN_SAMPLES) return 1;
   return Math.max(1, Math.min(cpus, MAX_AUTO_WORKERS));
 }
@@ -195,6 +204,9 @@ export interface ParallelScanRequest {
   readonly expectedRuleCount: number;
   /** Progress lines, one every PROGRESS_EVERY_MS. */
   readonly log?: (line: string) => void;
+  /** Test seam: the worker script to fork, and the node flags to start it with. */
+  readonly workerPath?: string;
+  readonly execArgv?: readonly string[];
 }
 
 /**
@@ -207,7 +219,8 @@ export interface ParallelScanRequest {
  */
 export function scoreSamplesInWorkers(req: ParallelScanRequest): Promise<SampleScores> {
   const batches = planBatches(req.samples.map((s) => s.length));
-  const workers = Math.max(1, Math.min(req.workers, batches.length));
+  const requested = Number.isFinite(req.workers) ? Math.floor(req.workers) : 1;
+  const workers = Math.max(1, Math.min(requested, MAX_WORKERS, batches.length));
   const started = Date.now();
   // Progress is reported against characters, not samples: the longest samples go
   // out first and carry most of the work, so "10% of samples" would arrive late
@@ -221,27 +234,31 @@ export function scoreSamplesInWorkers(req: ParallelScanRequest): Promise<SampleS
   let failed = false;
   const parts: SampleScores[] = [];
 
-  const loader = tsxLoader();
+  const workerPath = req.workerPath ?? WORKER_PATH;
+  const execArgv = req.execArgv ?? ["--import", tsxLoader()];
   return new Promise<SampleScores>((resolve, reject) => {
     const children: ReturnType<typeof fork>[] = [];
+    // Once failed, every handler below is a no-op and every child is killed:
+    // a rejected scan must not leave workers grinding through the corpus.
     const fail = (err: Error): void => {
       if (failed) return;
       failed = true;
-      for (const c of children) if (c.exitCode === null) c.kill();
+      for (const c of children) if (c.exitCode === null && c.signalCode === null) c.kill();
       reject(err);
     };
 
-    for (let k = 0; k < workers; k++) {
+    const start = (k: number): void => {
       let told = false;
       let inFlightChars = 0;
-      const child = fork(WORKER_PATH, [], {
-        execArgv: ["--import", loader],
+      const child = fork(workerPath, [], {
+        execArgv: [...execArgv],
         env: { ...process.env, ATR_FP_SCAN_WORKER: "1" },
         serialization: "advanced",
       });
       children.push(child);
 
       const send = (msg: ParentMessage): void => {
+        if (failed) return;
         try {
           child.send(msg);
         } catch (e) {
@@ -249,6 +266,7 @@ export function scoreSamplesInWorkers(req: ParallelScanRequest): Promise<SampleS
         }
       };
       const dispatch = (): void => {
+        if (failed) return;
         const batch = batches[next];
         if (batch === undefined) {
           told = true;
@@ -262,6 +280,7 @@ export function scoreSamplesInWorkers(req: ParallelScanRequest): Promise<SampleS
       };
 
       child.on("message", (raw: unknown) => {
+        if (failed) return;
         const msg = raw as WorkerMessage;
         if (msg.type === "ready") {
           if (msg.ruleCount !== req.expectedRuleCount) {
@@ -320,6 +339,14 @@ export function scoreSamplesInWorkers(req: ParallelScanRequest): Promise<SampleS
       });
 
       send({ type: "init", rulesDir: req.rulesDir, targetIds: [...req.targetIds] });
+    };
+
+    // fork() can throw synchronously (ENOMEM, EAGAIN). Whatever was already
+    // started is killed by fail(), and nothing more is started.
+    try {
+      for (let k = 0; k < workers && !failed; k++) start(k);
+    } catch (e) {
+      fail(e instanceof Error ? e : new Error(String(e)));
     }
   });
 }

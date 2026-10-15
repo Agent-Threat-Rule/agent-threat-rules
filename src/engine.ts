@@ -317,9 +317,9 @@ export class ATREngine {
       }
     }
 
+    for (const rule of this.rules) this.indexRule(rule);
     // Pre-compile regex patterns for performance
     for (const rule of this.rules) {
-      this.indexRule(rule);
       this.compilePatterns(rule);
     }
 
@@ -458,7 +458,7 @@ export class ATREngine {
       // Whether the skill compound gate below applies to this rule. Hoisted so
       // the pre-check and the gate itself read one expression.
       const skillGated =
-        isSkillContext && rule.tags.scan_target !== 'skill' && rule.tags.scan_target !== 'both';
+        isSkillContext && rule.tags?.scan_target !== 'skill' && rule.tags?.scan_target !== 'both';
       // The gate's verdict is already known for most rules — see
       // skillGateAlwaysRejects(). Skip the evaluation, not the verdict.
       if (skillGated && skillGateAlwaysRejects(rule)) continue;
@@ -493,8 +493,7 @@ export class ATREngine {
         // skillPathCoverage() in scripts/lib/corpus-event.ts and pinned by
         // tests/skill-path-coverage.test.ts.
         if (skillGated) {
-          const totalConds: number = Number(rule.detection?.conditions?.length ?? 1);
-          const minRequired = Math.max(2, Math.ceil(totalConds * 0.3));
+          const minRequired = skillGateMinRequired(rule);
           if ((matchResult.matchedConditions?.length ?? 0) < minRequired) {
             continue;
           }
@@ -617,7 +616,7 @@ export class ATREngine {
 
       // Same hoisted predicate and pre-check as evaluateRaw().
       const skillGated =
-        isSkillContext && rule.tags.scan_target !== 'skill' && rule.tags.scan_target !== 'both';
+        isSkillContext && rule.tags?.scan_target !== 'skill' && rule.tags?.scan_target !== 'both';
       if (skillGated && skillGateAlwaysRejects(rule)) continue;
 
       const matchResult = await this.evaluateRuleAsync(rule, event, this.config.semanticJudge);
@@ -626,8 +625,7 @@ export class ATREngine {
         // `condition: any` rules this rejects unconditionally, which is why the
         // SKILL.md path effectively runs only scan_target: skill|both rules.
         if (skillGated) {
-          const totalConds: number = Number(rule.detection?.conditions?.length ?? 1);
-          const minRequired = Math.max(2, Math.ceil(totalConds * 0.3));
+          const minRequired = skillGateMinRequired(rule);
           if ((matchResult.matchedConditions?.length ?? 0) < minRequired) {
             continue;
           }
@@ -1889,31 +1887,50 @@ export class ATREngine {
 }
 
 /**
+ * The skill compound gate's threshold: how many conditions a rule that is not
+ * `scan_target: skill|both` must report as matched on the SKILL.md path.
+ * evaluateRaw(), evaluateAsync() and skillGateAlwaysRejects() all read it from
+ * here, so the gate and the pre-check in front of it cannot drift apart.
+ */
+function skillGateMinRequired(rule: ATRRule): number {
+  const totalConds: number = Number(rule.detection?.conditions?.length ?? 1);
+  return Math.max(2, Math.ceil(totalConds * 0.3));
+}
+
+/**
+ * The most conditions a match of this rule can report. An array-format pattern
+ * rule with `condition: any|or` reports at most one, because
+ * evaluateArrayConditions() breaks on the first matching condition. Every other
+ * shape is treated as unbounded, so it is never skipped.
+ */
+function maxReportedConditions(rule: ATRRule): number {
+  const { detection } = rule;
+  if ((detection.method ?? 'pattern') !== 'pattern') return Number.POSITIVE_INFINITY;
+  if (!Array.isArray(detection.conditions)) return Number.POSITIVE_INFINITY;
+  return detection.condition === 'any' || detection.condition === 'or'
+    ? 1
+    : Number.POSITIVE_INFINITY;
+}
+
+/**
  * True when the skill compound gate is certain to reject this rule's match
- * whatever the input, so evaluating the rule on the SKILL.md path is wasted work.
+ * whatever the input, so evaluating the rule on the SKILL.md path is wasted work:
+ * the most conditions it can report is below the gate's threshold.
  *
  * Deliberately the narrowest provable case, and deliberately NOT
  * skillPathBlocker() from src/corpus-event.ts: that predicate exists to be
  * CHECKED against this engine (tests/skill-path-coverage.test.ts), and an engine
  * that consulted it would turn those tests into the predicate checking itself.
- *
- * The case: a pattern rule with array conditions and `condition: any|or`.
- * evaluateArrayConditions() breaks on the first matching condition for those,
- * so matchedConditions holds at most one entry while the gate demands
- * max(2, ...). The verdict is "reject" before a single regex runs. If that
- * short-circuit is ever removed, this function has to go with it — the test
- * "evaluateArrayConditions still short-circuits" in
- * tests/skill-path-coverage.test.ts fails first and says why.
+ * If the any-mode short-circuit in evaluateArrayConditions() is ever removed,
+ * maxReportedConditions() has to change with it — the test "evaluateArrayConditions
+ * still short-circuits" in tests/skill-path-coverage.test.ts fails first.
  *
  * Measured 2026-10-15 on the benign-corpus FP scan: 645 of 829 rules qualify,
  * and skipping them took the skill pass from 16.8% to ~3% of all CPU with the
  * matched-rule set identical for every one of 13,848 samples.
  */
 function skillGateAlwaysRejects(rule: ATRRule): boolean {
-  const { detection } = rule;
-  if ((detection.method ?? 'pattern') !== 'pattern') return false;
-  if (!Array.isArray(detection.conditions)) return false;
-  return detection.condition === 'any' || detection.condition === 'or';
+  return maxReportedConditions(rule) < skillGateMinRequired(rule);
 }
 
 function escapeRegex(str: string): string {
@@ -1943,7 +1960,7 @@ function normalizeRegex(pattern: string): string {
  * per-distinct-input work. Measured 2026-10-15 on the benign-corpus FP scan,
  * the repeated NFKC pass plus its zero-width strip were ~9% of all CPU.
  */
-let _normKey: string | null = null;
+let _normKey = '';
 let _normVal = '';
 export function normalizeUnicode(text: string): string {
   if (text === _normKey) return _normVal;

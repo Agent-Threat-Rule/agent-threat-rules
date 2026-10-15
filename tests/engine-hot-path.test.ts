@@ -80,20 +80,43 @@ const llmInput = (content: string): AgentEvent => ({
 });
 
 describe("normalizeUnicode memo", () => {
+  const ZW = "ig\u200Bnore";
+  const WIDE = "\uFF49\uFF47\uFF4E\uFF4F\uFF52\uFF45";
+
   it("returns the right value whatever order inputs arrive in", () => {
-    const zw = "ig​nore";
-    const wide = "ｉｇｎｏｒｅ";
     for (let i = 0; i < 3; i++) {
-      expect(normalizeUnicode(zw)).toBe("ignore");
-      expect(normalizeUnicode(wide)).toBe("ignore");
+      expect(normalizeUnicode(ZW)).toBe("ignore");
+      expect(normalizeUnicode(WIDE)).toBe("ignore");
       expect(normalizeUnicode("plain")).toBe("plain");
     }
-    // Same content, different string object: still the memoised answer.
-    expect(normalizeUnicode(["ig", "​", "nore"].join(""))).toBe("ignore");
+    // Same content, different string object: still the right answer.
+    expect(normalizeUnicode(["ig", "\u200B", "nore"].join(""))).toBe("ignore");
+  });
+
+  it("answers a repeated input from the memo, and answers it right", () => {
+    // Consecutive identical inputs are the case the memo exists for. Each one
+    // needs real normalisation, so a memo that returned its input would fail.
+    for (const input of [ZW, WIDE]) {
+      expect(normalizeUnicode(input)).toBe("ignore");
+      expect(normalizeUnicode(input)).toBe("ignore");
+      expect(normalizeUnicode(input)).toBe("ignore");
+    }
+    expect(normalizeUnicode("")).toBe("");
   });
 });
 
 describe("rule lookup by id", () => {
+  it("answers with the first rule loaded under an id, as Array.find did", () => {
+    // Two rules sharing an id: the first one's tags govern code-block
+    // suppression for both, exactly as rules.find() made them.
+    const e = engineWith(
+      rule("ATR-2026-99009", { suppressInCodeBlocks: true, patterns: ["gamma-token"] }),
+      rule("ATR-2026-99009", { suppressInCodeBlocks: false, patterns: ["gamma-token"] }),
+    );
+    expect(e.evaluate(llmInput("intro\n```\ngamma-token\n```\noutro"))).toHaveLength(0);
+    expect(e.evaluate(llmInput("prose gamma-token prose")).length).toBeGreaterThan(0);
+  });
+
   it("still applies a rule's own suppress_in_code_blocks tag", () => {
     const e = engineWith(rule("ATR-2026-99001", { suppressInCodeBlocks: true }));
     const inFence = "intro\n```\nalpha-token\n```\noutro";
@@ -126,6 +149,14 @@ describe("skill compound gate pre-check", () => {
     ]);
     // ...and it is still held to the gate: one matching condition is not enough.
     expect(e.scanSkill("only alpha-token here")).toHaveLength(0);
+  });
+
+  it("does not throw on SKILL.md for a rule loaded without tags", () => {
+    const tagless = rule("ATR-2026-99010") as unknown as Record<string, unknown>;
+    delete tagless.tags;
+    const e = engineWith(tagless as unknown as ATRRule);
+    expect(() => e.scanSkill("plain text")).not.toThrow();
+    expect(() => e.scanSkill(BOTH_TOKENS)).not.toThrow();
   });
 
   it("skips exactly rules the independent predicate calls compound-gate-unreachable", async () => {

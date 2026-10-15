@@ -20,6 +20,7 @@ import {
   scoreSamplesInWorkers,
   PARALLEL_MIN_SAMPLES,
   MAX_AUTO_WORKERS,
+  MAX_WORKERS,
   type SampleScores,
 } from "../scripts/lib/fp-scan.js";
 
@@ -158,9 +159,11 @@ describe("mergeScores", () => {
 });
 
 describe("resolveWorkerCount", () => {
-  it("honours an explicit request", () => {
+  it("honours an explicit request, up to the hard ceiling", () => {
     expect(resolveWorkerCount(3, 10, 16)).toBe(3);
     expect(resolveWorkerCount(1, 1_000_000, 16)).toBe(1);
+    expect(resolveWorkerCount(10_000, 1_000_000, 16)).toBe(MAX_WORKERS);
+    expect(resolveWorkerCount(Number.NaN, 1_000_000, 16)).toBe(1);
   });
 
   it("keeps a small corpus in-process", () => {
@@ -219,15 +222,75 @@ describe("scoreSamplesInWorkers", () => {
     ).rejects.toThrow(/loaded 3 rules, expected 4/);
   }, 120_000);
 
-  it("rejects instead of returning a partial scan when a worker loads no rules", async () => {
-    await expect(
-      scoreSamplesInWorkers({
-        rulesDir: join(root, "no-such-dir"),
-        samples: corpus(),
-        targetIds: new Set(Object.keys(RULES)),
-        workers: 2,
-        expectedRuleCount: Object.keys(RULES).length,
-      }),
-    ).rejects.toThrow(/fp-scan worker/);
-  }, 120_000);
+  it("scores an empty corpus to an empty result", async () => {
+    const got = await scoreSamplesInWorkers({
+      rulesDir,
+      samples: [],
+      targetIds: new Set(Object.keys(RULES)),
+      workers: 4,
+      expectedRuleCount: Object.keys(RULES).length,
+    });
+    expect(asObject(got)).toEqual({ counts: {}, securityCounts: {}, securitySampleCount: 0, scanned: 0 });
+  }, 60_000);
+
+  it("treats a worker count that is not a number as one worker, rather than none", async () => {
+    const samples = corpus().slice(0, 20);
+    const { scores: expected, ruleCount } = await inProcess(samples);
+    const got = await scoreSamplesInWorkers({
+      rulesDir,
+      samples,
+      targetIds: new Set(Object.keys(RULES)),
+      workers: Number.NaN,
+      expectedRuleCount: ruleCount,
+    });
+    expect(asObject(got)).toEqual(asObject(expected));
+  }, 60_000);
+});
+
+/**
+ * Misbehaving workers, to pin the failure paths a real worker rarely takes.
+ * Plain .mjs files speaking the same protocol, injected through the test seam.
+ */
+describe("scoreSamplesInWorkers with a misbehaving worker", () => {
+  const fake = (name: string, onMessage: string): string => {
+    const path = join(root, `${name}.mjs`);
+    writeFileSync(path, `process.on("message", (msg) => {\n${onMessage}\n});\n`, "utf-8");
+    return path;
+  };
+  const run = (workerPath: string) =>
+    scoreSamplesInWorkers({
+      rulesDir,
+      samples: corpus().slice(0, 30),
+      targetIds: new Set(Object.keys(RULES)),
+      workers: 2,
+      expectedRuleCount: 3,
+      workerPath,
+      execArgv: [],
+    });
+
+  it("rejects when a worker exits cleanly before it was told to", async () => {
+    await expect(run(fake("early-exit", "process.exit(0);"))).rejects.toThrow(
+      /before finishing its work/,
+    );
+  }, 60_000);
+
+  it("rejects when a worker reports an error", async () => {
+    const worker = fake(
+      "reports-error",
+      'process.send({ type: "error", message: "boom" }, () => process.exit(1));',
+    );
+    await expect(run(worker)).rejects.toThrow(/fp-scan worker \d/);
+  }, 60_000);
+
+  it("rejects a merged total short of the corpus instead of returning it", async () => {
+    const worker = fake(
+      "scores-nothing",
+      [
+        'if (msg.type === "init") process.send({ type: "ready", ruleCount: 3 });',
+        'else if (msg.type === "batch") process.send({ type: "result", counts: [], securityCounts: [], securitySampleCount: 0, scanned: 0 });',
+        "else process.exit(0);",
+      ].join("\n"),
+    );
+    await expect(run(worker)).rejects.toThrow(/scored 0 of 30 samples/);
+  }, 60_000);
 });
