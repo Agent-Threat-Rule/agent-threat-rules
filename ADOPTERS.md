@@ -336,7 +336,7 @@ discoverability.
 - **Org**: xlabs-club
 - **Type**: reference
 - **Integration**: ATR added to the English and Simplified-Chinese lists by maintainer l10178 — ATR did not open this PR
-- **Evidence**: <https://github.com/xlabs-club/awesome-x-ops/pull/220>
+- **Evidence**: <https://github.com/xlabs-club/awesome-x-ops/commit/f80a9ee142b1f6698fb885c5d83bfb7e0afa43ff> (the commit message cites #220, which no longer resolves)
 - **Since**: 2026-08-17
 - **Still-present**: README.md contains "agent-threat-rules"
 - **Status**: shipped
