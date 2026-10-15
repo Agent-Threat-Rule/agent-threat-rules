@@ -164,13 +164,24 @@ export interface CandidateSplit {
   readonly fpCounts: ReadonlyMap<string, number>;
 }
 
-/** Why a rule's 0 FP on this corpus is not a measurement, from its coverage gap. */
+/** Methods the synchronous engine cannot run on a text sample (see fieldCoverage). */
+const SYNC_BLIND_METHODS: ReadonlySet<string> = new Set(["trace", "behavioral", "signature"]);
+
+/**
+ * Why a rule's 0 FP on this corpus is not a measurement, from its coverage gap:
+ * what the runtime corpus shapes cannot exercise. A skill or both rule's
+ * conditions all read the document on the SKILL.md path, but that says nothing
+ * about a tool_name condition at runtime, where the enforce lane blocks.
+ */
 function coverageGapReason(gap: FieldCoverage, rule: RuleLike | undefined): string {
-  const fields = gap.unmeasured.length > 0 ? `unmeasurable ${gap.unmeasured.join(", ")}` : "";
-  const method = rule?.detection?.method;
-  const what = fields || `method ${String(method ?? "pattern")}`;
+  const method = String(rule?.detection?.method ?? "pattern");
+  const parts = [
+    ...(SYNC_BLIND_METHODS.has(method) ? [`method ${method}`] : []),
+    ...(gap.unmeasured.length > 0 ? [`unmeasurable ${gap.unmeasured.join(", ")}`] : []),
+  ];
+  const what = parts.join("; ") || "no condition field this corpus fills";
   return gap.zeroMeasurement
-    ? `not measured: nothing in it can fire on this corpus (${what})`
+    ? `not measured: the corpus cannot exercise the rule as a whole (${what})`
     : `partially measured: 0 FP on the conditions the corpus reaches; the rest never ran (${what})`;
 }
 
@@ -296,8 +307,8 @@ async function main(): Promise<void> {
   }
   if (unmeasured.size > 0) {
     console.log(
-      `[stable-gate] ${unmeasured.size} rule(s) at maturity:test show 0 FP only on conditions ` +
-        `this corpus cannot fully exercise, so 0 is not a measurement; not promotable:`,
+      `[stable-gate] ${unmeasured.size} rule(s) at maturity:test show 0 FP on a corpus that ` +
+        `could not exercise all of their conditions; not promotable:`,
     );
     for (const [id, why] of unmeasured) console.log(`  ${id} — ${why}`);
   }

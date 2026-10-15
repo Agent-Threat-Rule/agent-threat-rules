@@ -187,7 +187,7 @@ describe("splitCandidates and conditions the corpus cannot exercise", () => {
       expect(split.clean.map((c) => c.id)).toEqual([PLAIN]);
       expect(split.dirty.map((c) => c.id)).toEqual([ANY_TOOL_NAME_NOISY]);
       expect([...split.unmeasured.keys()].sort()).toEqual([AND_TOOL_NAME, ANY_TOOL_NAME_QUIET, TRACE].sort());
-      expect(split.unmeasured.get(TRACE)).toMatch(/not measured/);
+      expect(split.unmeasured.get(TRACE)).toMatch(/not measured.*method trace/);
       expect(split.unmeasured.get(AND_TOOL_NAME)).toMatch(/not measured.*tool_name/);
       expect(split.unmeasured.get(ANY_TOOL_NAME_QUIET)).toMatch(/partially measured.*tool_name/);
       expect(split.unevaluated.size).toBe(0);
