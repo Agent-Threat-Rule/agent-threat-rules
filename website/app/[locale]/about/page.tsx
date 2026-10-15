@@ -52,8 +52,8 @@ const MILESTONES: Milestone[] = [
       zh: "v1.0.0 發布",
     },
     detail: {
-      en: "Coverage milestone: OWASP Agentic 10/10, SAFE-MCP 91.8%, PINT F1 76.7.",
-      zh: "覆蓋里程碑：OWASP Agentic 10/10、SAFE-MCP 91.8%、PINT F1 76.7。",
+      en: "Coverage milestone: OWASP Agentic 10/10, PINT F1 76.7.",
+      zh: "覆蓋里程碑：OWASP Agentic 10/10、PINT F1 76.7。",
     },
   },
   {
