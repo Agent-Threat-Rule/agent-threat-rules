@@ -211,6 +211,9 @@ value: "\\bAKIA[0-9A-Z]{16}\\b"
   condition. Array-format conditions have no case-sensitive mode. A
   `case_sensitive` key on one is ignored; only the named-map format's
   `patterns` conditions honour it.
+- Do not reach for a scoped modifier such as `(?-i:AKIA)`. It compiles only on
+  Node 23 and later; on older runtimes, including the Node 20 that CI pins, it
+  is a SyntaxError and the engine silently drops the whole condition.
 - The other flags in that leading group are stripped and not applied: `(?s)`
   does not make `.` match a newline, `(?m)` does not make `^` and `$` match at
   line breaks, and `(?x)` does not ignore whitespace. Write `[\s\S]` for a dot

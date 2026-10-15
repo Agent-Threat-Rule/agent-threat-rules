@@ -1957,12 +1957,13 @@ export interface RegexConditionSpec {
 }
 
 /**
- * The one definition of how an array-format `operator: regex` condition is
- * compiled. Both compile sites in ATREngine call it (compilePatterns() and the
- * on-the-fly fallback in evaluateArrayCondition()), and so does
- * scripts/gate-case-sensitivity.ts, which has to see each pattern exactly as the
- * engine does. That gate used to keep its own copy of this logic, and the copy
- * went stale when needsUnicodeFlag() started setting `u` for astral literals.
+ * The engine's single definition of how an array-format `operator: regex`
+ * condition is compiled. Both compile sites in ATREngine call it (compilePatterns()
+ * and the on-the-fly fallback in evaluateArrayCondition()), and
+ * scripts/gate-case-sensitivity.ts imports it, because it has to see each pattern
+ * exactly as the engine does. That gate used to keep its own copy of this logic,
+ * and the copy went stale when needsUnicodeFlag() started setting `u` for astral
+ * literals. Other scripts still re-derive it by hand and could import it too.
  *
  * Two consequences rule authors cannot see from the pattern:
  *   - `i` is applied whether or not the author wrote (?i), so letter case never

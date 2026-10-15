@@ -49,13 +49,16 @@
  *   benign input, not necessarily a false positive. The fix belongs in the rule: if
  *   case does not matter, add (?i) so the pattern says what it does; if it does,
  *   express the difference without letter case. This condition shape has no
- *   case-sensitive mode.
+ *   portable case-sensitive mode: a scoped (?-i:...) compiles only on Node 23+, and
+ *   on the Node that CI pins, the engine drops the whole condition as a SyntaxError.
  *
  * RATCHET, FULL SET -- the same shape as gate-rule-status.ts and
  * gate-re2-portability.ts. Pre-existing findings live in
  * data/case-sensitivity-baseline.json as a count of affected conditions per rule,
  * and the whole working tree is compared against it, because rules also reach main
- * through doors no PR diff can see.
+ * through doors no PR diff can see. Unlike those two, it runs on pull requests only
+ * (the case-sensitivity job in rule-quality.yml), so a rule that reaches main
+ * directly is caught by the next pull request that touches rules/, not at push.
  *
  * WHAT FAILS THE BUILD
  *   - A rule absent from the baseline has a finding.
@@ -74,10 +77,13 @@
  *     another stays green. Recording condition indices or pattern text would churn
  *     on every reorder or cosmetic edit; the inflow this gate exists to stop is new
  *     rules, and the not-in-baseline check covers those completely.
- *   - Samples are matched as raw text. The engine also tries the confusable-folded
- *     form, and skips a language-tagged condition when the input's language
- *     differs. Neither changed a verdict on 2026-10-16 -- no regex condition
- *     carries a language tag -- and modelling them would mean copying
+ *   - Samples are matched as raw text, against every text on the test case's
+ *     event rather than only the field the condition names. The engine reads one
+ *     field (resolveField()), also tries the confusable-folded form, and skips a
+ *     language-tagged condition when the input's language differs. So the gate
+ *     can over-report, never under-report. None of it changed a verdict on
+ *     2026-10-16 -- both findings are on the condition's own field, and no regex
+ *     condition carries a language tag -- and modelling it would mean copying
  *     evaluateArrayCondition()'s pipeline here, the kind of copy this gate no
  *     longer keeps.
  *
@@ -453,14 +459,19 @@ export interface CaseComparison {
   readonly resolved: readonly string[];
 }
 
+/** A baseline entry by rule id, own keys only -- "constructor" is not a baselined rule. */
+function recorded(baseline: CaseBaseline, ruleId: string): CaseBaselineEntry | undefined {
+  return Object.hasOwn(baseline.knownCaseReliant, ruleId) ? baseline.knownCaseReliant[ruleId] : undefined;
+}
+
 export function compareToBaseline(scan: CorpusScan, baseline: CaseBaseline): CaseComparison {
   const known = baseline.knownCaseReliant;
   const current = [...scan.affected.values()];
   const ids = Object.keys(known).sort();
   return {
-    added: current.filter((r) => known[r.ruleId] === undefined),
+    added: current.filter((r) => recorded(baseline, r.ruleId) === undefined),
     worsened: current.flatMap((r) => {
-      const entry = known[r.ruleId];
+      const entry = recorded(baseline, r.ruleId);
       return entry && r.conditions > entry.conditions ? [{ rule: r, recorded: entry.conditions }] : [];
     }),
     improved: ids.filter((id) => {
@@ -477,7 +488,9 @@ export function compareToBaseline(scan: CorpusScan, baseline: CaseBaseline): Cas
 
 /** One line per affected condition: where it is and what the engine let in. */
 function renderRule(rule: RuleFindings, label: string): string[] {
-  const firstPerCondition = [...new Map(rule.findings.map((f) => [f.condition, f])).values()];
+  const firstPerCondition = rule.findings.filter(
+    (f, i) => rule.findings.findIndex((g) => g.condition === f.condition) === i,
+  );
   return [
     label ? `  - ${rule.ruleId}  ${label}` : `  - ${rule.ruleId}`,
     `      ${rule.file}`,
@@ -495,7 +508,8 @@ const FIX_HINT = [
   "each condition above:",
   "  - if case does not matter, start the pattern with (?i) so it says what it does;",
   "  - if it does, express the difference without letter case (surrounding syntax, a",
-  "    delimiter, another condition). This condition shape has no case-sensitive mode.",
+  "    delimiter, another condition). There is no portable case-sensitive mode: a",
+  "    scoped (?-i:...) compiles only on Node 23+, and older runtimes drop the condition.",
   "Do NOT add the rule to data/case-sensitivity-baseline.json to silence this.",
 ];
 
@@ -520,7 +534,7 @@ function renderReport(scan: CorpusScan, baseline: CaseBaseline, c: CaseCompariso
     out.push(...c.worsened.flatMap((w) => renderRule(w.rule, `(${w.recorded} -> ${w.rule.conditions} conditions)`)));
     out.push("", ...FIX_HINT);
   }
-  const debt = findings.filter((r) => baseline.knownCaseReliant[r.ruleId] !== undefined);
+  const debt = findings.filter((r) => recorded(baseline, r.ruleId) !== undefined);
   if (debt.length > 0) {
     out.push("", `ACCEPTED DEBT -- ${debt.length} baselined rule(s), still case-reliant:`);
     out.push(...debt.slice(0, MAX_LISTED).flatMap((r) => renderRule(r, "")));
@@ -607,8 +621,26 @@ function writeTightened(baseline: CaseBaseline, scan: CorpusScan, c: CaseCompari
 export function runGate(options: CaseGateOptions, deps: CaseGateDeps = defaultDeps()): GateResult {
   const baseline = loadBaseline(deps.baselinePath);
   const scan = scanCorpus(deps.rulesDir, deps.repoRoot);
+  if (scan.rules === 0 && scan.unreadable.length === 0) {
+    // A wrong path must not read as a clean corpus.
+    throw new CaseGateUsageError(`no rule files under ${deps.rulesDir} -- refusing to report a pass over nothing`);
+  }
   const comparison = compareToBaseline(scan, baseline);
-  if (options.writeBaseline) return writeTightened(baseline, scan, comparison, deps);
+  if (options.writeBaseline) {
+    if (scan.unreadable.length > 0) {
+      // A rule the scan could not read would drop out of the baseline as if fixed.
+      return {
+        code: EXIT_FAIL,
+        lines: [
+          `[case-gate] baseline NOT written: ${scan.unreadable.length} rule file(s) could not be loaded,`,
+          "            and an unchecked rule is not a fixed one:",
+          ...scan.unreadable.map((u) => `  - ${u.file}: ${u.reason}`),
+        ],
+        comparison,
+      };
+    }
+    return writeTightened(baseline, scan, comparison, deps);
+  }
 
   const failed =
     scan.unreadable.length > 0 || comparison.added.length > 0 || comparison.worsened.length > 0;

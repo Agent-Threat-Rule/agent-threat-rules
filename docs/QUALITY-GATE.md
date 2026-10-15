@@ -102,13 +102,15 @@ Letter case therefore keeps nothing out: `[A-Z]` also matches `a-z`, and a
 condition that relies on case to exclude a benign input matches it anyway.
 
 The `case-sensitivity` job in `.github/workflows/rule-quality.yml` runs
-`scripts/gate-case-sensitivity.ts`. A finding is one of a rule's own
-`true_negatives` that a condition matches under the engine's flags but not as
-written. It is a ratchet in the same shape as the status gate: rules recorded in
-`data/case-sensitivity-baseline.json` pass, a new rule with a finding (or a
-recorded rule with more affected conditions) fails, and `--write-baseline` only
-shrinks the file. To clear a finding, start the pattern with `(?i)` if case does
-not matter, or express the difference without letter case if it does.
+`scripts/gate-case-sensitivity.ts` on pull requests. A finding is one of a
+rule's own `true_negatives` that a condition matches under the engine's flags
+but not as written. Like the status gate it is a ratchet over the whole corpus:
+rules recorded in `data/case-sensitivity-baseline.json` pass, a new rule with a
+finding (or a recorded rule with more affected conditions) fails, and
+`--write-baseline` only shrinks the file. Because it runs on pull requests only,
+a rule that reaches main by a direct commit is caught by the next pull request
+that touches `rules/`. To clear a finding, start the pattern with `(?i)` if
+case does not matter, or express the difference without letter case if it does.
 
 ```bash
 npx tsx scripts/gate-case-sensitivity.ts                    # gate

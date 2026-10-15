@@ -281,14 +281,20 @@ describe("the engine really ignores the case distinction the gate flags", () => 
 
   it("compiles the same way on the engine's on-the-fly path as on the precompiled one", async () => {
     // evaluateArrayCondition() falls back to compiling on the fly when a rule has no
-    // precompiled entry. Reach that path by handing the engine an uncompiled rule.
-    const sample = "how do I drop table partitions safely";
-    const rule = ruleObject("ATR-2026-99003", [{ value: "\\bDROP\\s+TABLE\\b" }], [{ input: sample }]);
-    const engine = new ATREngine({ rulesDir: join(tmpdir(), "atr-case-gate-no-rules") });
-    await engine.loadRules();
-    (engine as unknown as { rules: ATRRule[] }).rules = [rule];
-    const fired = engine.evaluate(buildEventFromTestCase({ input: sample }, rule));
-    expect(fired.map((m) => m.rule.id)).toEqual([rule.id]);
+    // precompiled entry. Reach that path by handing the engine uncompiled rules --
+    // one needing only `i`, and one that is a SyntaxError unless `u` is set too.
+    const cases: ReadonlyArray<readonly [string, string, string]> = [
+      ["ATR-2026-99003", "\\bDROP\\s+TABLE\\b", "how do I drop table partitions safely"],
+      ["ATR-2026-99004", `tag${TAG_CLASS}{2}`, "TAG\u{E0041}\u{E0042}"],
+    ];
+    for (const [id, value, sample] of cases) {
+      const rule = ruleObject(id, [{ value }], [{ input: sample }]);
+      const engine = new ATREngine({ rulesDir: join(tmpdir(), "atr-case-gate-no-rules") });
+      await engine.loadRules();
+      (engine as unknown as { rules: ATRRule[] }).rules = [rule];
+      const fired = engine.evaluate(buildEventFromTestCase({ input: sample }, rule));
+      expect(fired.map((m) => m.rule.id), id).toEqual([id]);
+    }
   });
 });
 
@@ -328,10 +334,21 @@ describe("findings", () => {
     // The first version also probed each sample upper-cased. Under the engine's
     // flags a case variant matches exactly when the original does, so a variant
     // only ever added a finding here -- where the pattern keeps nothing out.
-    const rule = ruleObject("ATR-2026-99021", [{ value: "\\bsocket\\.connect\\(" }], [
-      { input: "s = socket.socket(); s.connect((host, 443))" },
-    ]);
+    const view = compileCondition("\\bsocket\\.connect\\(");
+    const sample = "x = socket.connect(('h', 443))";
+    // Both readings match: this sample is what pins the "not as written" half.
+    expect(view.kind === "compared" && view.written.test(sample) && view.engine.test(sample)).toBe(true);
+    const rule = ruleObject("ATR-2026-99021", [{ value: "\\bsocket\\.connect\\(" }], [{ input: sample }]);
     expect(scanRule(rule, "rules/x.yaml").findings).toEqual([]);
+  });
+
+  it("flags a sample that arrives as a tool_response or an object input, end to end", () => {
+    const rule = ruleObject("ATR-2026-99025", [{ value: "\\bDROP\\s+TABLE\\b", field: "content" }], [
+      { tool_response: "the job will drop table staging_1 tonight" },
+      { input: { tool_name: "sql", tool_args: "drop table staging_2" } },
+    ]);
+    const { findings } = scanRule(rule, "rules/x.yaml");
+    expect(findings.map((f) => f.sample)).toEqual([0, 1]);
   });
 
   it("does not flag a condition that declares (?i)", () => {
@@ -470,6 +487,29 @@ describe("runGate", () => {
     expect(doc.added).toEqual(["ATR-2026-90001"]);
     expect(doc.findings[0]).toMatchObject({ ruleId: "ATR-2026-90001", condition: 0, sample: 0 });
   });
+
+  it("names the first sample that shows a condition's finding", () => {
+    addRule("ATR-2026-90001", [{ value: "\\bDROP\\s+TABLE\\b" }], [
+      { input: "drop table first" },
+      { input: "drop table second" },
+    ]);
+    writeBaselineFile({});
+    const text = runGate(OPTIONS, fixture.deps).lines.join("\n");
+    expect(text).toContain("true_negatives[0]");
+    expect(text).not.toContain("true_negatives[1]");
+  });
+
+  it("does not read an id that is an Object.prototype key as baselined", () => {
+    addCaseReliantRule("constructor");
+    writeBaselineFile({});
+    expect(runGate(OPTIONS, fixture.deps).comparison.added.map((r) => r.ruleId)).toEqual(["constructor"]);
+  });
+
+  it("refuses to report a pass over a rules directory with no rule files", () => {
+    writeBaselineFile({});
+    expect(() => runGate(OPTIONS, fixture.deps)).toThrow(CaseGateUsageError);
+    expect(main([], fixture.deps)).toBe(EXIT_USAGE);
+  });
 });
 
 describe("--write-baseline is tighten-only", () => {
@@ -489,6 +529,17 @@ describe("--write-baseline is tighten-only", () => {
     expect(lines.join("\n")).toContain("NOT added");
     // Writing the baseline did not launder the new findings into acceptance.
     expect(runGate(OPTIONS, fixture.deps).code).toBe(EXIT_FAIL);
+  });
+
+  it("refuses to write while a rule file cannot be read -- an unchecked rule is not a fixed one", () => {
+    addCaseReliantRule("ATR-2026-90002");
+    writeFileSync(join(fixture.root, "rules", "prompt-injection", "broken.yaml"), "id: [unclosed\n", "utf-8");
+    writeBaselineFile({ "ATR-2026-90001": 1, "ATR-2026-90002": 1 });
+    const before = readFileSync(fixture.deps.baselinePath, "utf-8");
+    const { code, lines } = runGate({ ...OPTIONS, writeBaseline: true }, fixture.deps);
+    expect(code).toBe(EXIT_FAIL);
+    expect(readFileSync(fixture.deps.baselinePath, "utf-8")).toBe(before);
+    expect(lines.join("\n")).toContain("broken.yaml");
   });
 
   it("is a pure shrink", () => {
