@@ -7,9 +7,12 @@
  *
  *   1. Metadata: test_cases.true_positives AND true_negatives both
  *      non-empty; author present and not "MiroFish Predicted".
- *   2. Own-TP-must-match: the rule's regex / conditions MUST actually
- *      match every entry in test_cases.true_positives. A rule that
- *      doesn't catch its own declared TPs is broken.
+ *   2. Own-TP-must-match: the rule MUST match every entry in
+ *      test_cases.true_positives, each run the way `atr test` runs a case,
+ *      and its text must also match on the corpus shapes Checks 3 to 5 use
+ *      (scripts/lib/own-true-positives.ts). A rule that doesn't catch its own
+ *      declared TPs is broken; one that catches them only through what no
+ *      benign sample exercises is not measured by the checks below.
  *   3. Benign skill corpus: 0 FP across data/skill-benchmark/benign/*.md
  *      (known-clean SKILL.md samples; the corpus grows, so the count is
  *      counted at run time and printed, never written down here).
@@ -20,6 +23,10 @@
  *      rule's test_cases.true_negatives. A rule that fires on another
  *      rule's known-benign set is a precision regression for that rule.
  *   6. Per-PR cap: ≤ MAX_NEW_PER_PR rule files (default 10).
+ *
+ * A new rule that Checks 3 to 5 cannot run at all (deprecated, or a trace,
+ * behavioral or signature method) is refused before they run
+ * (corpusBlindReason), as is one the engine does not load.
  *
  * A MODIFIED rule gets two differential checks instead, base against head:
  *   modified-rule FP  no benign false positive the rule did not already have.
@@ -92,10 +99,25 @@ import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { load as yamlLoad } from "js-yaml";
 import { ATREngine } from "../src/engine.js";
-import { buildEventFromTestCase, EXTENDED_SOURCE_TO_BASE } from "../src/testcase-event.js";
+import { loadRulesFromDirectory } from "../src/loader.js";
 import { normalizeMaturity } from "../src/quality/rule-contract.js";
-import type { AgentEvent, ATRRule } from "../src/types.js";
+import type { AgentEvent } from "../src/types.js";
 import { conditionFields, matchedRuleIds, type RuleLike } from "./lib/corpus-event.js";
+import {
+  NO_HITS,
+  caseHits,
+  caseSnippet,
+  corpusBlindReason,
+  declaredTruePositives,
+  eventFor,
+  matches,
+  methodOf,
+  offCorpusPath,
+  testCaseEngine,
+  truePositiveMisses,
+  truePositiveObstacle,
+  type CaseHits,
+} from "./lib/own-true-positives.js";
 import { lintRuleDoc } from "./lint-rule-patterns.js";
 
 /**
@@ -846,60 +868,6 @@ async function checkCrossRuleConflict(
 }
 
 /**
- * Check 2 (sanity): rule's own true_positives MUST actually match its
- * own regex. A rule that doesn't catch its own declared TPs is broken
- * by construction.
- *
- * NOTE: engine.evaluate() skips rules with status='draft' or 'deprecated',
- * so new draft rules would never match their own TPs via the normal path.
- * To work around this, we temporarily promote each draft/test rule to
- * 'active' in the in-memory engine object before testing, then restore it.
- * This only affects the in-memory engine used for validation — it never
- * modifies the rule files on disk.
- *
- * The engine is chosen per rule by the caller: the full rulebase for a rule
- * that lives under rules/, the scoped engine for a target that does not (a
- * proposal file). Asking the full engine about a rule it never loaded would
- * report every declared TP as unmatched — a finding about the harness, not the
- * rule. Suppression is decided from a rule's own tags, so the scoped engine
- * returns the same verdict for the rule as the full one.
- */
-async function checkOwnTruePositivesMatch(
-  engineFor: (ruleId: string) => ATREngine,
-  newRuleEntries: Array<{ id: string; file: string; tps: string[] }>,
-): Promise<Map<string, string[]>> {
-  // NOTE: caller is responsible for promoting draft/test rules to 'active'
-  // before calling this function — engine.evaluate() skips draft rules.
-  const fps = new Map<string, string[]>();
-  for (const r of newRuleEntries) {
-    const misses: string[] = [];
-    for (const tp of r.tps) {
-      const matchedIds = matchAllRuleIds(engineFor(r.id), tp);
-      if (!matchedIds.has(r.id)) {
-        misses.push(tp.slice(0, 60).replace(/\s+/g, " "));
-      }
-    }
-    if (misses.length > 0) {
-      fps.set(
-        r.id,
-        misses.map((m) => `own TP not matched: "${m}..."`),
-      );
-    }
-  }
-  return fps;
-}
-
-function extractTruePositives(doc: Record<string, unknown>): string[] {
-  const tc = doc.test_cases as
-    | { true_positives?: Array<string | { input?: string }> }
-    | undefined;
-  const tps = tc?.true_positives ?? [];
-  return tps
-    .map((t) => (typeof t === "string" ? t : (t?.input ?? "")))
-    .filter((s): s is string => typeof s === "string" && s.length > 0);
-}
-
-/**
  * Build an engine holding exactly the supplied rule sources. Draft/test
  * statuses are activated so an inert rule still gets measured — the same
  * treatment the new-rule path gives them.
@@ -1026,14 +994,6 @@ const TEST_CASE_META_KEYS: ReadonlySet<string> = new Set([
   "label",
 ]);
 
-/** A declared test case as `atr test` reads it; a bare string is shorthand for { input }. */
-function testCaseObject(tc: unknown): Record<string, unknown> | null {
-  if (typeof tc === "string") return tc.trim() === "" ? null : { input: tc };
-  return tc !== null && typeof tc === "object" && !Array.isArray(tc)
-    ? (tc as Record<string, unknown>)
-    : null;
-}
-
 /**
  * What makes a true positive the same one in both versions: its payload, with
  * meta keys dropped, keys sorted and runs of whitespace collapsed. Editing a
@@ -1055,18 +1015,6 @@ function testCaseIdentity(tc: Record<string, unknown>): string {
   return JSON.stringify(canonical(payload));
 }
 
-/** The true positives a rule declares, or null when the key holds something other than a list. */
-function declaredTruePositives(doc: Record<string, unknown>): Record<string, unknown>[] | null {
-  const testCases = doc["test_cases"];
-  const raw =
-    testCases !== null && typeof testCases === "object"
-      ? (testCases as Record<string, unknown>)["true_positives"]
-      : undefined;
-  if (raw === undefined || raw === null) return [];
-  if (!Array.isArray(raw)) return null;
-  return raw.map(testCaseObject).filter((c): c is Record<string, unknown> => c !== null);
-}
-
 /**
  * A rule the engine evaluates in no lane: status draft or deprecated, or
  * maturity deprecated (normalizeMaturity trims, as the lane gate does).
@@ -1078,9 +1026,6 @@ const isInert = (rule: Record<string, unknown>): boolean =>
 
 const scanTargetOf = (rule: Record<string, unknown>): unknown =>
   (rule["tags"] as { scan_target?: unknown } | undefined)?.scan_target;
-
-const methodOf = (rule: Record<string, unknown>): unknown =>
-  (rule["detection"] as { method?: unknown } | undefined)?.method ?? "pattern";
 
 const sourceOf = (rule: Record<string, unknown>): unknown =>
   (rule["agent_source"] as { type?: unknown } | undefined)?.type;
@@ -1098,58 +1043,23 @@ function parseRule(content: string): Record<string, unknown> | null {
 }
 
 /**
- * An engine holding one version of a rule the way `atr test` holds it (src/cli.ts):
- * status set aside, and an extended agent_source mapped to the base type its
- * events arrive as. A deprecated maturity is set aside too, which `atr test`
- * does not do: what is measured is the detection, not the deployment decision,
- * and a status or maturity change is its own line in the diff for a reviewer.
+ * An engine holding one version of a rule the way `atr test` holds it
+ * (testCaseEngine in scripts/lib/own-true-positives.ts), read from its file by
+ * the rule loader, so a rule the loader refuses is not in it.
  */
 async function buildTestCaseEngine(
   name: string,
   content: string,
 ): Promise<{ engine: ATREngine; dir: string }> {
-  const built = await buildScopedEngine(name, content);
-  for (const rule of built.engine.getRules() as unknown as Array<Record<string, unknown>>) {
-    rule["status"] = "experimental";
-    if (normalizeMaturity(rule["maturity"]) === "deprecated") rule["maturity"] = "experimental";
-    const source = rule["agent_source"] as Record<string, unknown> | undefined;
-    const type = source?.["type"];
-    const base = typeof type === "string" ? EXTENDED_SOURCE_TO_BASE[type] : undefined;
-    if (source !== undefined && base !== undefined) rule["agent_source"] = { ...source, type: base };
+  const dir = mkdtempSync(join(tmpdir(), "atr-safety-testcase-"));
+  try {
+    writeFileSync(join(dir, name), content, "utf-8");
+    const loaded = loadRulesFromDirectory(dir) as unknown as Array<Record<string, unknown>>;
+    return { engine: testCaseEngine(loaded), dir };
+  } catch (err) {
+    rmSync(dir, { recursive: true, force: true });
+    throw err;
   }
-  return built;
-}
-
-/** Whether one test case matched on each path `atr test` tries. */
-interface CaseHits {
-  /** evaluate() on the event the case describes: the runtime hook's path. */
-  readonly evaluate: boolean;
-  /** scanSkill() on the case's text: the SKILL.md path. */
-  readonly skill: boolean;
-}
-
-const NO_HITS: CaseHits = Object.freeze({ evaluate: false, skill: false });
-
-/** `atr test` passes a case that matches on either path (src/cli.ts). */
-const matches = (h: CaseHits): boolean => h.evaluate || h.skill;
-
-/**
- * One test case run on both paths `atr test` tries. The event is passed in, so
- * a case declared at base is replayed to the modified rule exactly as the base
- * rule received it. Both paths are kept apart, unlike `atr test`'s single
- * verdict: a rule with scan_target both that a change re-routes away from its
- * runtime events still matches its cases on scanSkill(), and that is a loss.
- */
-function caseHits(
-  engine: ATREngine,
-  ruleId: string,
-  tc: Record<string, unknown>,
-  event: AgentEvent | null,
-): CaseHits {
-  const evaluate = event !== null && engine.evaluate(event).some((m) => m.rule.id === ruleId);
-  const text = String(tc["input"] ?? tc["tool_response"] ?? tc["agent_output"] ?? "");
-  const skill = text !== "" && engine.scanSkill(text).some((m) => m.rule.id === ruleId);
-  return { evaluate, skill };
 }
 
 /**
@@ -1164,15 +1074,6 @@ function lostPaths(before: CaseHits, after: CaseHits, skillNative: boolean): str
   if (before.evaluate && !after.evaluate) lost.push("evaluate()");
   if (before.skill && !after.skill && (skillNative || !matches(after))) lost.push("scanSkill()");
   return lost;
-}
-
-/** buildEventFromTestCase, or null when the case cannot be turned into an event. */
-function eventFor(tc: Record<string, unknown>, routing: Record<string, unknown>): AgentEvent | null {
-  try {
-    return buildEventFromTestCase(tc, routing as unknown as ATRRule);
-  } catch {
-    return null;
-  }
 }
 
 /**
@@ -1195,10 +1096,62 @@ function replayEvent(tc: Record<string, unknown>, baseRule: Record<string, unkno
   return { ...event, fields };
 }
 
-const caseSnippet = (tc: Record<string, unknown>): string => {
-  const v = tc["input"] ?? tc["tool_response"] ?? tc["tool_args"] ?? tc["agent_output"] ?? tc;
-  return (typeof v === "string" ? v : JSON.stringify(v)).slice(0, 60).replace(/\s+/g, " ");
-};
+/**
+ * Check 2 — a new rule must match each true positive it declares, run the way
+ * `atr test` runs a case and the way the own-TP check below runs one for a
+ * modified rule (scripts/lib/own-true-positives.ts): on an engine holding only
+ * this rule, loaded from its file, the event buildEventFromTestCase() builds
+ * for the case from the rule's own routing through evaluate(), and the case's
+ * text through scanSkill(). Either one matching is a match. The case's text
+ * must also match on the corpus shapes Checks 3 to 5 charge the rule on, or
+ * what fires on it is something those checks never measure.
+ *
+ * Check 2 used to read only a case's `input` (a string, or { input: string }),
+ * and asked only the second question. A case that carries its payload
+ * elsewhere (tool_response, tool_args, tool_description, a user_input key, an
+ * object input) was never read, so a rule none of whose cases had one passed
+ * with nothing run. The routing a rule declares (agent_source.type, the field a
+ * condition reads) was never exercised either. A rule could pass here with a
+ * case the own-TP check does not match, and that case was debt on the rule's
+ * first modification.
+ */
+export async function ownTruePositiveFailures(file: string, content: string): Promise<Failure[]> {
+  const rule = parseRule(content);
+  if (rule === null) {
+    return [{ file, reason: "the rule does not parse, so its true positives cannot be checked" }];
+  }
+  const obstacle = truePositiveObstacle(rule);
+  if (obstacle !== null) return [{ file, reason: obstacle }];
+
+  const id = typeof rule["id"] === "string" ? rule["id"] : "";
+  let built: { engine: ATREngine; dir: string } | null = null;
+  try {
+    built = await buildTestCaseEngine(basename(file), content);
+    if (id === "" || !built.engine.getRuleById(id)) {
+      return [
+        {
+          file,
+          reason:
+            "the rule did not load into the engine (schema rejected, or the file's id does not " +
+            "match) — its true positives cannot be checked",
+        },
+      ];
+    }
+    return truePositiveMisses(built.engine, rule).map(({ testCase, kind }) => ({
+      file,
+      reason:
+        kind === "unmatched"
+          ? `own TP not matched: "${caseSnippet(testCase)}..."`
+          : `own TP matches only off the corpus shapes the benign checks use, through ` +
+            `${offCorpusPath(rule)}, so Checks 3 to 5 do not measure what fires on it: ` +
+            `"${caseSnippet(testCase)}..."`,
+    }));
+  } catch (err) {
+    return [{ file, reason: `could not build an engine to run its true positives: ${asMessage(err)}` }];
+  } finally {
+    if (built) rmSync(built.dir, { recursive: true, force: true });
+  }
+}
 
 /**
  * The own-TP check for modified rules: a change may not stop a rule matching
@@ -1595,7 +1548,7 @@ async function main(): Promise<void> {
   const failures: Failure[] = [...modifiedFailures];
   const newRuleIds = new Set<string>();
   const fileToId = new Map<string, string>();
-  const ruleEntries: Array<{ id: string; file: string; tps: string[] }> = [];
+  const ruleEntries: Array<{ id: string; file: string; content: string }> = [];
 
   for (const file of newFiles) {
     const doc = loadDoc(file);
@@ -1625,9 +1578,16 @@ async function main(): Promise<void> {
       });
       continue;
     }
-    newRuleIds.add(id);
     fileToId.set(id, file);
-    ruleEntries.push({ id, file, tps: extractTruePositives(doc) });
+    // A rule the corpus checks below cannot measure at all would clear them
+    // with nothing measured (corpusBlindReason).
+    const blind = corpusBlindReason(doc);
+    if (blind !== null) {
+      failures.push({ file, reason: blind });
+      continue;
+    }
+    newRuleIds.add(id);
+    ruleEntries.push({ id, file, content: readFileSync(join(REPO_ROOT, file), "utf-8") });
 
     // Check 6 — loose-regex lint. The bare-keyword-without-word-boundary class
     // (e.g. "nc" matching inside "async", "host" inside prose) is the highest-
@@ -1675,8 +1635,9 @@ async function main(): Promise<void> {
     // engine holding ONLY the new rules yields the identical new-rule match
     // set at ~100x less work. Verified empirically: scoped+promoted
     // reproduces the full-engine FP set exactly (same rules, same counts).
-    // The full engine is still used for own-TP (Check 2) and cross-rule
-    // conflict (Check 5, which must see every existing rule's true_negatives).
+    // The full engine is still used for cross-rule conflict (Check 5, which
+    // must see every existing rule's true_negatives); Check 2 builds an engine
+    // of its own for each rule.
     const scopedDir = mkdtempSync(join(tmpdir(), "atr-safety-newrules-"));
     for (const f of newFiles) {
       copyFileSync(join(REPO_ROOT, f), join(scopedDir, basename(f)));
@@ -1707,23 +1668,19 @@ async function main(): Promise<void> {
       }
     }
 
-    // Check 2 — own TPs must actually match. Measured on the engine that
-    // actually holds the rule: rules/ files come from the full rulebase, a
-    // target outside rules/ (a proposal) from the scoped engine.
-    const engineFor = (id: string): ATREngine =>
-      engine.getRuleById(id) ? engine : scopedEngine;
-    const tpMisses = await checkOwnTruePositivesMatch(
-      engineFor,
-      ruleEntries.filter((r) => loadedInScope.has(r.id)),
-    );
-    for (const [id, reasons] of tpMisses) {
-      for (const r of reasons.slice(0, 3))
-        failures.push({ file: fileToId.get(id) ?? id, reason: r });
-      if (reasons.length > 3)
+    // Check 2 — own TPs must actually match, each run the way `atr test` runs
+    // a case and on the corpus shapes (ownTruePositiveFailures). A rule that
+    // did not load is reported above.
+    for (const r of ruleEntries) {
+      if (!loadedInScope.has(r.id)) continue;
+      const misses = await ownTruePositiveFailures(r.file, r.content);
+      failures.push(...misses.slice(0, 3));
+      if (misses.length > 3) {
         failures.push({
-          file: fileToId.get(id) ?? id,
-          reason: `(+${reasons.length - 3} more TP-not-matched failures suppressed)`,
+          file: r.file,
+          reason: `(+${misses.length - 3} more TP-not-matched failures suppressed)`,
         });
+      }
     }
 
     // Check 3 — benign skill corpus FP (count printed above, counted on disk).
