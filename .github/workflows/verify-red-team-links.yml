@@ -1,0 +1,102 @@
+name: Verify Red-Team Links
+
+# The /red-team page lists offensive tools and corpora, each with a status:
+# in-review (a proposal that is still open), in-production (merged upstream) or
+# corpus (ingested into this repository). The list used to be written by hand
+# inside the page, and NVIDIA/garak#1676 stayed listed as under review for ten
+# weeks after it was withdrawn on 2026-08-04, until #688 removed it by hand. The
+# list now lives in website/data/red-team-tools.json, and this job holds every
+# status to what GitHub says: in-review must be OPEN, in-production and corpus
+# must be MERGED, and an in-production entry's upstream file must still mention
+# ATR. It runs when the list or the checker changes, and weekly, because the
+# linked repositories move on their own. It cannot tell an open proposal nobody
+# answers from one under active review (six of the seven #688 removed were that
+# kind), which is why the page calls the group "Open proposals".
+#
+# A red scheduled run is easy to miss, so a failure on main or on the schedule
+# opens one tracking issue (or rewrites the open one), and the next green run
+# closes it.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'website/data/red-team-tools.json'
+      - 'scripts/verify-red-team-links.mjs'
+      - '.github/workflows/verify-red-team-links.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'website/data/red-team-tools.json'
+      - 'scripts/verify-red-team-links.mjs'
+      - '.github/workflows/verify-red-team-links.yml'
+  schedule:
+    - cron: '15 3 * * 1' # weekly, Monday 03:15 UTC, after verify-adopters
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      # Stdlib only, so no npm install. GITHUB_TOKEN lifts the 60 req/h
+      # unauthenticated API limit; an API error counts as a failure, not a pass.
+      - name: Re-check every red-team link against GitHub
+        id: verify
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/verify-red-team-links.mjs 2>&1 | tee "$RUNNER_TEMP/red-team-links.txt"
+
+      - name: Open or update the tracking issue
+        if: failure() && steps.verify.outcome == 'failure' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="Red-team page links no longer match GitHub"
+          existing="$(gh issue list --state open --search "$title in:title" --json number --jq '.[0].number // empty')"
+          body="$(printf '%s\n' \
+            "scripts/verify-red-team-links.mjs failed on ${GITHUB_EVENT_NAME}. Fix website/data/red-team-tools.json," \
+            "or re-run the workflow if every failure is listed as unverified (a GitHub API problem, not drift)." \
+            "" \
+            "Run: ${RUN_URL}" \
+            "" \
+            '```' \
+            "$(cat "$RUNNER_TEMP/red-team-links.txt")" \
+            '```')"
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body" --label auto-generated
+          fi
+
+      - name: Close the tracking issue once links match again
+        if: success() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="Red-team page links no longer match GitHub"
+          existing="$(gh issue list --state open --search "$title in:title" --json number --jq '.[0].number // empty')"
+          if [ -n "$existing" ]; then
+            gh issue close "$existing" --comment "Every red-team link matches GitHub again: ${RUN_URL}"
+          fi
