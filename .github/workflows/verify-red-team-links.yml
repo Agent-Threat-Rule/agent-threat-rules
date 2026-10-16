@@ -14,8 +14,9 @@ name: Verify Red-Team Links
 # kind), which is why the page calls the group "Open proposals".
 #
 # A red scheduled run is easy to miss, so a failure on main or on the schedule
-# opens one tracking issue (or rewrites the open one), and the next green run
-# closes it.
+# opens one tracking issue (or rewrites the open one), and the next green run on
+# main closes it. The issue carries the auto-generated label, and the lookup
+# filters on it so a person's issue with a similar title is never overwritten.
 
 on:
   pull_request:
@@ -40,7 +41,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     permissions:
       contents: read
       issues: write
@@ -60,10 +61,12 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/verify-red-team-links.mjs 2>&1 | tee "$RUNNER_TEMP/red-team-links.txt"
+        run: |
+          set -o pipefail
+          node scripts/verify-red-team-links.mjs 2>&1 | tee "$RUNNER_TEMP/red-team-links.txt"
 
       - name: Open or update the tracking issue
-        if: failure() && steps.verify.outcome == 'failure' && github.event_name != 'pull_request'
+        if: failure() && steps.verify.outcome == 'failure' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -71,7 +74,7 @@ jobs:
         run: |
           set -euo pipefail
           title="Red-team page links no longer match GitHub"
-          existing="$(gh issue list --state open --search "$title in:title" --json number --jq '.[0].number // empty')"
+          existing="$(gh issue list --state open --label auto-generated --search "$title in:title" --json number --jq '.[0].number // empty')"
           body="$(printf '%s\n' \
             "scripts/verify-red-team-links.mjs failed on ${GITHUB_EVENT_NAME}. Fix website/data/red-team-tools.json," \
             "or re-run the workflow if every failure is listed as unverified (a GitHub API problem, not drift)." \
@@ -88,7 +91,7 @@ jobs:
           fi
 
       - name: Close the tracking issue once links match again
-        if: success() && github.event_name != 'pull_request'
+        if: success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -96,7 +99,7 @@ jobs:
         run: |
           set -euo pipefail
           title="Red-team page links no longer match GitHub"
-          existing="$(gh issue list --state open --search "$title in:title" --json number --jq '.[0].number // empty')"
+          existing="$(gh issue list --state open --label auto-generated --search "$title in:title" --json number --jq '.[0].number // empty')"
           if [ -n "$existing" ]; then
             gh issue close "$existing" --comment "Every red-team link matches GitHub again: ${RUN_URL}"
           fi

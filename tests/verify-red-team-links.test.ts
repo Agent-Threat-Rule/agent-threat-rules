@@ -19,7 +19,8 @@
  * Nothing here touches the network: GitHub is a fake fetch.
  */
 import { describe, it, expect } from "vitest";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import yaml from "js-yaml";
@@ -53,9 +54,11 @@ function tool(status: Status, prUrl?: string, name = "Example", extra: Record<st
 /** A fetch stand-in answering GitHub API URLs from a table; a list answers successive calls. */
 function fakeFetch(table: Record<string, Reply | Reply[]>) {
   const calls: string[] = [];
+  const inits: { signal?: unknown }[] = [];
   const seen = new Map<string, number>();
-  const impl = async (url: string) => {
+  const impl = async (url: string, init: { signal?: unknown } = {}) => {
     calls.push(url);
+    inits.push(init);
     const entry = table[url];
     const n = seen.get(url) ?? 0;
     seen.set(url, n + 1);
@@ -67,14 +70,15 @@ function fakeFetch(table: Record<string, Reply | Reply[]>) {
       status,
       json: async () => {
         if (reply.badJson) throw new SyntaxError("Unexpected token <");
-        return reply.body ?? {};
+        return "body" in reply ? reply.body : {};
       },
     };
   };
-  return { impl, calls };
+  return { impl, calls, inits };
 }
 
 const base64 = (s: string) => Buffer.from(s, "utf8").toString("base64");
+const file = (text: string) => ({ body: { type: "file", encoding: "base64", content: base64(text) } });
 const PYRIT_SPEC = 'pyrit/loader.py contains "Agent-Threat-Rule/agent-threat-rules"';
 const pyrit = tool("in-production", "https://github.com/microsoft/PyRIT/pull/1715", "PyRIT", { stillPresent: PYRIT_SPEC });
 const review = tool("in-review", "https://github.com/QData/TextAttack/issues/824", "TextAttack");
@@ -177,6 +181,9 @@ describe("validateTools", () => {
     const merged = tool("in-production", "https://github.com/a/b/pull/2", "X");
     expect(validateTools([merged]).join("\n")).toMatch(/stillPresent/);
     expect(validateTools([{ ...merged, stillPresent: "loader.py has ATR" }]).join("\n")).toMatch(/stillPresent/);
+    for (const path of ["../../orgs/x", "/abs/path.py", "a//b.py", "a/./b.py"]) {
+      expect(validateTools([{ ...merged, stillPresent: `${path} contains "ATR"` }]).join("\n")).toMatch(/stillPresent/);
+    }
   });
 
   it("rejects a missing required field and duplicate names", () => {
@@ -205,7 +212,7 @@ describe("verifyTools", () => {
     const { impl } = fakeFetch({
       [`${API}/QData/TextAttack/issues/824`]: { body: { state: "open" } },
       [`${API}/microsoft/PyRIT/pulls/1715`]: MERGED,
-      [`${API}/microsoft/PyRIT/contents/pyrit/loader.py`]: { body: { content: base64("url = 'https://github.com/Agent-Threat-Rule/agent-threat-rules'") } },
+      [`${API}/microsoft/PyRIT/contents/pyrit/loader.py`]: file("url = 'https://github.com/Agent-Threat-Rule/agent-threat-rules'"),
     });
     const results = await verifyTools([review, pyrit], impl, NO_WAIT);
     expect(results.map((r: { ok: boolean }) => r.ok)).toEqual([true, true]);
@@ -215,7 +222,7 @@ describe("verifyTools", () => {
   it("flags a merged integration whose upstream file dropped ATR (a revert)", async () => {
     const { impl } = fakeFetch({
       [`${API}/microsoft/PyRIT/pulls/1715`]: MERGED,
-      [`${API}/microsoft/PyRIT/contents/pyrit/loader.py`]: { body: { content: base64("nothing here") } },
+      [`${API}/microsoft/PyRIT/contents/pyrit/loader.py`]: file("nothing here"),
     });
     const [result] = await verifyTools([pyrit], impl, NO_WAIT);
     expect(result).toMatchObject({ content: "absent", ok: false });
@@ -229,6 +236,34 @@ describe("verifyTools", () => {
     expect(failureKind(result)).toBe("gone");
   });
 
+  it("calls a removed or vanished upstream file gone, including a 410", async () => {
+    for (const reply of [{ status: 404 }, { status: 410 }] as Reply[]) {
+      const { impl } = fakeFetch({ [`${API}/microsoft/PyRIT/pulls/1715`]: MERGED, [`${API}/microsoft/PyRIT/contents/pyrit/loader.py`]: reply });
+      const [result] = await verifyTools([pyrit], impl, NO_WAIT);
+      expect(result).toMatchObject({ content: "gone", ok: false });
+      expect(failureKind(result)).toBe("gone");
+    }
+  });
+
+  it("does not read a directory or an unreadable file as present", async () => {
+    const dir = fakeFetch({ [`${API}/microsoft/PyRIT/pulls/1715`]: MERGED, [`${API}/microsoft/PyRIT/contents/pyrit/loader.py`]: { body: [{ name: "a.py" }] } });
+    const [asDir] = await verifyTools([pyrit], dir.impl, NO_WAIT);
+    expect(asDir).toMatchObject({ content: "not-a-file", ok: false });
+    expect(failureKind(asDir)).toBe("drift");
+    // GitHub serves files over 1 MB with an empty content and encoding "none".
+    const big = fakeFetch({ [`${API}/microsoft/PyRIT/pulls/1715`]: MERGED, [`${API}/microsoft/PyRIT/contents/pyrit/loader.py`]: { body: { type: "file", encoding: "none", content: "" } } });
+    const [tooBig] = await verifyTools([pyrit], big.impl, NO_WAIT);
+    expect(tooBig).toMatchObject({ content: "bad-response", ok: false });
+    expect(failureKind(tooBig)).toBe("unverified");
+  });
+
+  it("never passes an in-production entry on its PR state alone", async () => {
+    const { stillPresent: _spec, ...unasserted } = pyrit;
+    const { impl } = fakeFetch({ [`${API}/microsoft/PyRIT/pulls/1715`]: MERGED });
+    const [result] = await verifyTools([unasserted], impl, NO_WAIT);
+    expect(result).toMatchObject({ content: "no-assertion", ok: false });
+  });
+
   it("flags a proposal that was closed without merging", async () => {
     const { impl } = fakeFetch({ [`${API}/NVIDIA/garak/pulls/1676`]: { body: { state: "closed", merged_at: null } } });
     const [result] = await verifyTools([closedProposal], impl, NO_WAIT);
@@ -236,15 +271,17 @@ describe("verifyTools", () => {
     expect(failureKind(result)).toBe("drift");
   });
 
-  it("calls a 404 gone, not unverified", async () => {
-    const { impl } = fakeFetch({ [`${API}/NVIDIA/garak/pulls/1676`]: { status: 404 } });
-    const [result] = await verifyTools([closedProposal], impl, NO_WAIT);
-    expect(result).toMatchObject({ observed: "api-404", ok: false });
-    expect(failureKind(result)).toBe("gone");
+  it("calls a 404 or 410 gone, not unverified", async () => {
+    for (const status of [404, 410]) {
+      const { impl } = fakeFetch({ [`${API}/NVIDIA/garak/pulls/1676`]: { status } });
+      const [result] = await verifyTools([closedProposal], impl, NO_WAIT);
+      expect(result).toMatchObject({ observed: `api-${status}`, ok: false });
+      expect(failureKind(result)).toBe("gone");
+    }
   });
 
   it("treats rate limits, thrown fetches and unreadable bodies as unverified, never as a pass", async () => {
-    for (const reply of [{ status: 403 }, { status: 429 }, { status: 502 }, { throws: true }, { badJson: true }, { body: null }] as Reply[]) {
+    for (const reply of [{ status: 401 }, { status: 403 }, { status: 429 }, { status: 502 }, { throws: true }, { badJson: true }, { body: null }, { body: [] }, { body: "x" }] as Reply[]) {
       const { impl } = fakeFetch({ [`${API}/QData/TextAttack/issues/824`]: reply });
       const [result] = await verifyTools([review], impl, NO_WAIT);
       expect(result.ok).toBe(false);
@@ -259,6 +296,22 @@ describe("verifyTools", () => {
     const [result] = await verifyTools([review], impl, NO_WAIT);
     expect(result).toMatchObject({ observed: "open", ok: true });
     expect(calls).toHaveLength(3);
+  });
+
+  it("retries a rate limit, and waits between attempts", async () => {
+    const waits: number[] = [];
+    const { impl, calls } = fakeFetch({ [`${API}/QData/TextAttack/issues/824`]: [{ status: 429 }, { body: { state: "open" } }] });
+    const [result] = await verifyTools([review], impl, { sleep: async (ms: number) => { waits.push(ms); } });
+    expect(result).toMatchObject({ observed: "open", ok: true });
+    expect(calls).toHaveLength(2);
+    expect(waits).toHaveLength(1);
+    expect(waits[0]).toBeGreaterThan(0);
+  });
+
+  it("gives every request a timeout", async () => {
+    const { impl, inits } = fakeFetch({ [`${API}/QData/TextAttack/issues/824`]: { body: { state: "open" } } });
+    await verifyTools([review], impl, NO_WAIT);
+    expect(inits[0].signal).toBeInstanceOf(AbortSignal);
   });
 
   it("does not retry a 404", async () => {
@@ -315,6 +368,20 @@ describe("main", () => {
     expect(await quiet(() => main({ dataPath: dataFile("{not json"), fetchImpl: limited, ...NO_WAIT }))).toBe(1);
     expect(await quiet(() => main({ dataPath: join(tmpdir(), "no-such-red-team-file.json"), fetchImpl: limited, ...NO_WAIT }))).toBe(1);
   });
+
+  it("runs when node is pointed at the file directly or through a symlink, and fails on an empty list", () => {
+    const root = mkdtempSync(join(tmpdir(), "red-team-invoke-"));
+    mkdirSync(join(root, "scripts"));
+    mkdirSync(join(root, "website", "data"), { recursive: true });
+    copyFileSync(join(REPO_ROOT, "scripts", "verify-red-team-links.mjs"), join(root, "scripts", "verify-red-team-links.mjs"));
+    writeFileSync(join(root, "website", "data", "red-team-tools.json"), "[]\n");
+    symlinkSync(join(root, "scripts", "verify-red-team-links.mjs"), join(root, "alias.mjs"));
+    for (const target of [join(root, "scripts", "verify-red-team-links.mjs"), join(root, "alias.mjs")]) {
+      const run = spawnSync(process.execPath, [target], { encoding: "utf8", env: { ...process.env, GITHUB_TOKEN: "" } });
+      expect(run.status).toBe(1);
+      expect(run.stderr).toMatch(/list is empty/);
+    }
+  });
 });
 
 describe(".github/workflows/verify-red-team-links.yml", () => {
@@ -339,12 +406,23 @@ describe(".github/workflows/verify-red-team-links.yml", () => {
     expect(job.steps.find((s) => s.uses?.startsWith("actions/checkout"))?.with?.["persist-credentials"]).toBe(false);
   });
 
-  it("files an issue for a failure outside pull requests, and closes it when green", () => {
+  it("does not let tee hide the checker's exit code", () => {
+    const check = job.steps.find((s) => s.run?.includes("node scripts/verify-red-team-links.mjs")) as { id?: string; shell?: string; run?: string };
+    expect(check.id).toBe("verify");
+    expect(check.shell).toBe("bash");
+    expect(check.run).toMatch(/set -o pipefail/);
+  });
+
+  it("files an issue for a failure on main outside pull requests, and closes it when green", () => {
     const open = job.steps.find((s) => s.run?.includes("gh issue create"));
     const close = job.steps.find((s) => s.run?.includes("gh issue close"));
     expect(open?.if).toMatch(/failure\(\)/);
-    expect(open?.if).toMatch(/github\.event_name != 'pull_request'/);
+    expect(open?.if).toMatch(/steps\.verify\.outcome == 'failure'/);
     expect(close?.if).toMatch(/success\(\)/);
-    expect(close?.if).toMatch(/github\.event_name != 'pull_request'/);
+    for (const step of [open, close]) {
+      expect(step?.if).toMatch(/github\.event_name != 'pull_request'/);
+      expect(step?.if).toMatch(/github\.ref == 'refs\/heads\/main'/);
+      expect(step?.run).toMatch(/gh issue list[^\n]*--label auto-generated/);
+    }
   });
 });

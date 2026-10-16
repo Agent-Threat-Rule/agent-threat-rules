@@ -84,7 +84,10 @@ export function verdict(status, kind, observed) {
 /** `<path> contains "<needle>"` -> { path, needle }, else null. */
 export function parseStillPresent(spec) {
   const m = /^(\S+)\s+contains\s+"(.+)"\s*$/.exec(typeof spec === 'string' ? spec.trim() : '');
-  return m ? { path: m[1], needle: m[2] } : null;
+  if (!m) return null;
+  const segments = m[1].split('/');
+  if (segments.some((s) => s === '' || s === '.' || s === '..')) return null;
+  return { path: m[1], needle: m[2] };
 }
 
 function linkProblems(tool, label) {
@@ -104,7 +107,7 @@ function stillPresentProblems(tool, label) {
     return [`${label}: in-production needs stillPresent ('<path> contains "<text>"'): a merged PR can be reverted`];
   }
   if (tool.stillPresent !== undefined && parseStillPresent(tool.stillPresent) === null) {
-    return [`${label}: stillPresent must read '<path> contains "<text>"'`];
+    return [`${label}: stillPresent must read '<path> contains "<text>"', with a repository-relative path (no spaces, no . or .. segments)`];
   }
   return [];
 }
@@ -192,9 +195,11 @@ async function fetchState(link, opts) {
 async function fetchStillPresent(link, spec, opts) {
   const encodedPath = spec.path.split('/').map(encodeURIComponent).join('/');
   const { body, error } = await getJson(`/repos/${link.owner}/${link.repo}/contents/${encodedPath}`, opts);
-  if (error === 'api-404') return 'gone';
+  if (error === 'api-404' || error === 'api-410') return 'gone';
   if (error) return error;
-  if (typeof body.content !== 'string') return 'gone';
+  if (Array.isArray(body) || body.type !== 'file') return 'not-a-file';
+  // GitHub returns files over 1 MB with an empty content and encoding "none".
+  if (body.encoding !== 'base64' || typeof body.content !== 'string') return 'bad-response';
   return Buffer.from(body.content, 'base64').toString('utf8').includes(spec.needle) ? 'present' : 'absent';
 }
 
@@ -206,7 +211,11 @@ async function verifyOne(tool, opts) {
   const observed = await fetchState(link, opts);
   const stateOk = verdict(tool.status, link.kind, observed);
   const spec = parseStillPresent(tool.stillPresent);
-  if (!stateOk || spec === null) return { ...base, kind: link.kind, observed, ok: stateOk };
+  if (!stateOk) return { ...base, kind: link.kind, observed, ok: false };
+  if (spec === null) {
+    const needsAssertion = tool.status === 'in-production';
+    return { ...base, kind: link.kind, observed, content: needsAssertion ? 'no-assertion' : null, ok: !needsAssertion };
+  }
   const content = await fetchStillPresent(link, spec, opts);
   return { ...base, kind: link.kind, observed, content, ok: content === 'present' };
 }
@@ -234,7 +243,7 @@ export function failureKind(result) {
 const ADVICE = {
   drift: 'GitHub disagrees with the declared status. Fix website/data/red-team-tools.json: move a merged proposal to in-production, remove a closed one, and remove an in-production entry whose upstream file no longer mentions ATR.',
   gone: 'The linked PR, issue, repository or stillPresent file no longer exists (a PR link to an issue also 404s). Remove the entry or point it at the right URL.',
-  unverified: 'GitHub could not be asked (rate limit, server error, network or an unreadable response). This is not a pass: re-run with GITHUB_TOKEN set before editing the list.',
+  unverified: 'GitHub could not be asked (rate limit, server error, network, or a response that cannot be read, such as a file over 1 MB). This is not a pass: re-run with a valid GITHUB_TOKEN before editing the list. api-401 means the token itself was rejected.',
 };
 
 function report(results) {
