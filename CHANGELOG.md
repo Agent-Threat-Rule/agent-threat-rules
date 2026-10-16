@@ -62,6 +62,21 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **A `medium` confidence label no longer depends on float rounding to stay
+  out of `deny`.** A pattern match scored `0.7 + 0.1 * coverage`, and a
+  `high`-severity match denies at `>= 0.8`. At full coverage that sum is
+  `0.7999999999999999` in IEEE doubles, so the verdict was `ask` only because
+  of the rounding direction; the same quantity as an integer percentage is
+  `0.8`. Label-derived confidence is now computed in one place
+  (`src/rule-confidence.ts`) on a basis-point scale, and a label below the
+  deny threshold is capped one basis point under it. No verdict or
+  auto-response decision changes. The raw `confidence` of a `medium` match at
+  full coverage is `0.7999` instead of `0.7999999999999999`, and other
+  partial-coverage values lose trailing float noise (`0.9500000000000001`
+  becomes `0.95`). One displayed percentage moves as a result: a
+  named-condition rule labelled `medium` at 3/4 coverage shows 78% (`0.775`)
+  where the noise used to show 77%. No shipped rule reaches that cell.
+
 - **NIST-related statements corrected across the docs and the website.**
   Pages described a NIST CAISI dialogue and position paper that did not
   happen, an RFI response ATR never filed, an OSCAL "Path 1" acceptance,
