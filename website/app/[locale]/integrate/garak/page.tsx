@@ -1,5 +1,13 @@
 import type { Metadata } from 'next';
 import { loadSiteStats } from '@/lib/stats';
+import {
+  GARAK_BOTH_CLOSED_BOOK,
+  LANES_EXPLAINED,
+  commonStamp,
+  count,
+  findBenchmark,
+  recallLanes,
+} from '@/lib/recall';
 import { locales, type Locale } from '@/lib/i18n';
 
 export function generateStaticParams() {
@@ -21,6 +29,8 @@ export default async function GarakIntegratePage({
   const locale = (locales.includes(raw as Locale) ? raw : 'en') as Locale;
   const zh = locale === 'zh';
   const stats = loadSiteStats();
+  const garak = findBenchmark(stats, 'garak');
+  const full = findBenchmark(stats, 'garak-full');
   const ruleCountStr = `${stats.ruleCount} rules today`.padEnd(25);
 
   return (
@@ -279,23 +289,33 @@ python3 garak-to-tc.py \\
           <li>
             {zh ? (
               <>
-                每次 POST 之間預設 100ms 延遲,跑完約一分鐘。兩個數字都公開:在 garak 公開
-                in-the-wild jailbreak 集(650 筆)上,recall 是 92.3%;在完整 garak 語料
-                (3,475 筆,涵蓋全部 probe 家族)上,recall 是 57.2%(皆為 ATR 3.5.12,量測於
-                2026-08-15)。落差是刻意的——regex
-                偵測層不去打某些 probe 家族(例如純語意越獄),硬塞只會換來脆弱簽章與誤報。
-                列出較低的那個數字,是因為一個標準的可信度,取決於它願不願意公開自己最差的數字。
+                每次 POST 之間預設 100ms 延遲,跑完約一分鐘。
+                {garak && full && (
+                  <>
+                    {`兩份語料、兩個 lane 的數字都公開:在 garak 公開 in-the-wild jailbreak 集(${count(garak.samples)} 筆)上,recall 是 ${recallLanes(garak)};在完整 garak 語料(${count(full.samples)} 筆,涵蓋全部 probe 家族)上是 ${recallLanes(full)}(${commonStamp([garak, full], true)})。`}
+                    {LANES_EXPLAINED.zh}
+                    {GARAK_BOTH_CLOSED_BOOK.zh}
+                    {"兩份語料之間的落差,一部分是刻意的——regex 偵測層不去打某些 probe 家族(例如純語意越獄),硬塞只會換來脆弱簽章與誤報;另一部分是 in-the-wild 的數字有不少靠的是從那份語料寫出來的規則。較低的數字也照樣列出,是因為一個標準的可信度,取決於它願不願意公開自己最差的數字。"}
+                  </>
+                )}
               </>
             ) : (
               <>
-                Default 100ms delay between POSTs; a run takes about a minute. Both figures are
-                published. On the public garak in-the-wild jailbreak set (650 samples) recall is
-                92.3%; on the full garak corpus (3,475 samples, every probe family) recall is 57.2%
-                — both at ATR 3.5.12, measured 2026-08-15.
-                The gap is deliberate — the regex detection layer does not chase some probe families
-                (pure semantic jailbreaks, for instance); forcing it to would buy brittle signatures
-                and false positives. We report the lower number because a standard earns trust by
-                publishing its worst figure, not hiding it.
+                Default 100ms delay between POSTs; a run takes about a minute.{' '}
+                {garak && full && (
+                  <>
+                    Both corpora are published, in both lanes. On the public garak in-the-wild
+                    jailbreak set ({count(garak.samples)} samples) recall is {recallLanes(garak)}; on the
+                    full garak corpus ({count(full.samples)} samples, every probe family) it is{' '}
+                    {recallLanes(full)} ({commonStamp([garak, full], false)}). {LANES_EXPLAINED.en}{' '}
+                    {GARAK_BOTH_CLOSED_BOOK.en}{' '}
+                    Part of the gap between the two corpora is deliberate — the regex detection layer does
+                    not chase some probe families (pure semantic jailbreaks, for instance); forcing it to
+                    would buy brittle signatures and false positives. Part of it is that the in-the-wild
+                    figure rests partly on rules written from that corpus. We report the lower figures too,
+                    because a standard earns trust by publishing its worst numbers, not hiding them.
+                  </>
+                )}
               </>
             )}
           </li>

@@ -9,6 +9,16 @@ import { Flywheel } from "@/components/Flywheel";
 import { HeroGrid } from "@/components/DotGrid";
 import { EcosystemWall } from "@/components/EcosystemWall";
 import { loadSiteStats } from "@/lib/stats";
+import {
+  EVALUATION_URL,
+  GARAK_CLOSED_BOOK,
+  LANES_EXPLAINED,
+  count,
+  findBenchmark,
+  measuredStamp,
+  pct,
+  pctHunt,
+} from "@/lib/recall";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { loadAllRules, getCategories, categoryDisplayName } from "@/lib/rules";
 import { locales, type Locale } from "@/lib/i18n";
@@ -94,12 +104,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const tier3Merged = stats.ecosystemIntegrations.filter(
     (e) => e.tier === "3" && e.type === "merged",
   ).length;
-  // Pull garak recall from the version-pinned measurement (data/measurements/garak/latest.json)
-  // rather than hardcoding — keeps the hero stat honest as the corpus is re-run.
-  const garakMeasurement = stats.benchmarks.find((b) => b.source === "garak");
-  const garakRecall = garakMeasurement
-    ? (Math.round(garakMeasurement.recall * 1000) / 10).toFixed(1)
-    : "97.2";
+  // The hero's garak figure, from the measurement file data/measurements/garak/latest.json
+  // points at, in both lanes. No measurement, no figure: never a typed fallback.
+  const garak = findBenchmark(stats, "garak");
+  const pint = findBenchmark(stats, "pint");
 
   return (
     <>
@@ -150,9 +158,34 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <span><span className="font-data font-bold text-ink">{stats.ruleCount}</span> <span className="text-stone">{zh ? "條規則" : "rules"}</span></span>
               <span className="text-fog">·</span>
               <span><span className="font-data font-bold text-ink">{categoryCount}</span> <span className="text-stone">{zh ? "個類別" : "categories"}</span></span>
-              <span className="text-fog">·</span>
-              <span><span className="font-data font-bold text-ink">{garakRecall}%</span> <span className="text-stone">{zh ? "garak 抓得到" : "garak recall"}</span></span>
+              {garak && (
+                <>
+                  <span className="text-fog">·</span>
+                  <span>
+                    <span className="font-data font-bold text-ink">{pctHunt(garak.recall)}</span>{" "}
+                    <span className="text-stone">hunt</span>
+                    {garak.enforce && (
+                      <>
+                        <span className="text-fog"> / </span>
+                        <span className="font-data font-bold text-ink">{pct(garak.enforce.recall)}</span>{" "}
+                        <span className="text-stone">enforce</span>
+                      </>
+                    )}{" "}
+                    <span className="text-stone">{zh ? "garak 召回率" : "garak recall"}</span>
+                  </span>
+                </>
+              )}
             </div>
+            {garak && (
+              <p className="mt-3 mx-auto max-w-[620px] text-[11px] leading-[1.6] text-stone text-pretty">
+                {zh
+                  ? `garak in-the-wild 越獄語料,${count(garak.samples)} 個 prompt,${measuredStamp(garak, true)}。${LANES_EXPLAINED.zh}${GARAK_CLOSED_BOOK.zh} `
+                  : `garak in-the-wild jailbreak corpus, ${count(garak.samples)} prompts, ${measuredStamp(garak, false)}. ${LANES_EXPLAINED.en} ${GARAK_CLOSED_BOOK.en} `}
+                <a href={EVALUATION_URL} className="underline hover:text-ink" target="_blank" rel="noopener noreferrer">
+                  {zh ? "量測方式 →" : "How it is measured →"}
+                </a>
+              </p>
+            )}
           </HeroEntrance>
 
           {/* Document Status strip — W3C-style version + status + canonical URL. */}
@@ -587,7 +620,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 { name: "OWASP Agentic", score: "10/10", desc: zh ? "完整覆蓋" : "Full coverage" },
                 { name: "SAF-MCP", score: stats.safeMcp, desc: zh ? "有效技術(候選對照,未經 SAF 驗證)" : "active techniques (candidate mappings, not SAF-validated)" },
                 { name: "OWASP AST10", score: "7/10", desc: zh ? "3 個是流程層級" : "3 are process-level" },
-                { name: "PINT-format F1", score: String(stats.pintF1), desc: zh ? `自建 ${stats.pintSamples} 樣本語料(非 Lakera 官方 PINT)` : `self-built ${stats.pintSamples}-sample corpus (not Lakera's official PINT)` },
+                ...(pint
+                  ? [{
+                      name: "PINT-format F1 · hunt",
+                      score: (pint.f1 * 100).toFixed(1),
+                      desc: zh
+                        ? `自建 ${count(pint.samples)} 樣本語料(非 Lakera 官方 PINT);hunt lane,${measuredStamp(pint, true)}`
+                        : `self-built ${count(pint.samples)}-sample corpus (not Lakera's official PINT); hunt lane, ${measuredStamp(pint, false)}`,
+                    }]
+                  : []),
               ].map((s) => (
                 <div key={s.name} className="bg-paper p-6 md:p-8 text-center">
                   <div className="font-data text-[10px] md:text-xs font-medium text-stone tracking-[2px] uppercase mb-2 md:mb-3">{s.name}</div>

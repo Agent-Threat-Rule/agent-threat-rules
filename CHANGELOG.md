@@ -17,9 +17,34 @@ All notable changes to ATR will be documented in this file.
   `scripts/check-benchmark-citations.ts` fails CI when either disagrees with
   the measurement or leaves the enforce figure out. Before this, the enforce
   figures in README were one-off replays.
+- **Recall figures outside README are rendered from the measurement files.**
+  `scripts/render-recall-citations.ts` fills the figures between recall
+  markers in `LIMITATIONS.md` and the `docs/owasp-pr/` texts, from the file each
+  source's `latest.json` points at, in both lanes (every rendering is held to
+  the rule README's table is checked by). `scripts/sync-citation-garak.ts`
+  generates the garak sentence in `CITATION.cff` from root `stats.json`, with
+  both lanes and the closed-book caveat. The weekly measurement run re-renders
+  and stages both and lists what it could not render in the rolling PR's body;
+  CI (`eval.yml`) fails on a stale or unrenderable figure.
 
 ### Changed
 
+- **Every recall figure the site, LIMITATIONS.md, CITATION.cff and the docs
+  above take from the measurement files now names its lane** and gives the
+  enforce figure wherever the measurement records one. Figures no measurement
+  file records are labelled instead: the about page's historical garak figure
+  as taken with every rule loaded, the neutral-benchmarks post's runs as having
+  no recorded lane. The website reads `breakdown.enforce_lane` from the measurement
+  files (home, coverage, research, red-team, garak integration, ATD and
+  sovereign-AI pages, the PINT blog post); it no longer reads recall
+  from the old eval report files or their typed fallbacks, and no longer
+  hydrates recall in the browser. The garak figures carry the closed-book
+  caveat, and so now do the PINT-format and HackAPrompt figures, which have
+  rules mined from them too. The SKILL.md benchmark is described as the
+  internal, labelled corpus it is, with the harness's layer names. An erratum
+  (`e-2026-10-16-recall-lanes`) records the change on the site.
+- `sync-stats.ts` now fails when CITATION.cff has no garak sentence to
+  rewrite, instead of leaving an old figure in place.
 - **README §8 discloses that the `garak` and `garak-full` figures are partly
   closed-book.** A replay without the rules whose own YAML shows they were
   written from the in-the-wild corpus is given in the new `[^garakcorpus]`
