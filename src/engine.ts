@@ -35,6 +35,7 @@ import { laneAllows, requiresConfirm, type Lane } from './quality/rule-contract.
 import { laneFromConfig } from './enforcement.js';
 import type { SessionTracker } from './session-tracker.js';
 import { computeVerdict } from './verdict.js';
+import { ruleConfidence } from './rule-confidence.js';
 import type { ActionExecutor } from './action-executor.js';
 import type { SkillFingerprintStore } from './skill-fingerprint.js';
 import { SemanticModule } from './modules/semantic.js';
@@ -707,12 +708,11 @@ export class ATREngine {
       }
       const result = evaluateTraceRule(rule, event.trace);
       if (!result.matched) return null;
-      const baseConfidence = rule.tags.confidence === 'high' ? 0.9 : rule.tags.confidence === 'medium' ? 0.7 : 0.5;
       return {
         rule,
         matchedConditions: result.matchedPrimitives.map((p) => `trace.${p}`),
         matchedPatterns: result.violations,
-        confidence: baseConfidence,
+        confidence: ruleConfidence(rule.tags.confidence, 0),
         timestamp: new Date().toISOString(),
         scan_context: 'native' as const,
       };
@@ -872,9 +872,8 @@ export class ATREngine {
 
     if (!matched) return null;
 
-    const baseConfidence = rule.tags.confidence === 'high' ? 0.9 : rule.tags.confidence === 'medium' ? 0.7 : 0.5;
     const matchRatio = matchedConditionIndices.length / Math.max(conditions.length, 1);
-    const confidence = Math.min(baseConfidence + matchRatio * 0.1, 1.0);
+    const confidence = ruleConfidence(rule.tags.confidence, matchRatio);
 
     return {
       rule,
@@ -1024,9 +1023,8 @@ export class ATREngine {
     const finalResult = this.evaluateExpression(conditionExpr, conditionResults);
     if (!finalResult) return null;
 
-    const baseConfidence = rule.tags.confidence === 'high' ? 0.9 : rule.tags.confidence === 'medium' ? 0.7 : 0.5;
     const matchRatio = matchedConditionNames.length / Math.max(Object.keys(conditions).length, 1);
-    const confidence = Math.min(baseConfidence + matchRatio * 0.1, 1.0);
+    const confidence = ruleConfidence(rule.tags.confidence, matchRatio);
 
     return {
       rule,
