@@ -64,6 +64,21 @@ All notable changes to ATR will be documented in this file.
   is described as what it is: open, reworked against NIST's AI RMF catalog,
   awaiting NIST review. The website changelog page now shows the notes on
   historical entries, which it used to drop.
+- **ATR-2026-00226 and ATR-2026-00231 no longer carry a smoke-test author.**
+  Both were drafted on 2026-04-18 by the Threat Cloud garak drafter from a
+  prompt in the garak in-the-wild jailbreak corpus that ATR's own garak
+  evaluation had missed, during a smoke test of the garak bridge run under the
+  placeholder partner name `nvidia-airt-test` (#19 records it as "early
+  smoke-test provenance"). They shipped with `author: "nvidia-airt-test (via
+  ATR garak pipe)"`, which reads as an NVIDIA AI Red Team submission; it was a
+  test placeholder. They now carry `ATR Community (via NVIDIA garak
+  in-the-wild corpus)`, the author line of the twelve other garak-drafter
+  rules from #19 and #20. Their descriptions also said the technique "was
+  observed bypassing Claude-3.5-Sonnet via garak probe atr:missed-3". The
+  `atr:missed` id marks the bridge's ATR-missed path, which attacks no model
+  and takes the target model from a command-line argument, so the sentence now
+  says where the prompt came from. Detection conditions, test cases, IDs and
+  maturity are unchanged.
 
 ## [4.1.5] - 2026-10-10
 
