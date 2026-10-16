@@ -17,8 +17,10 @@
  * Design notes:
  *   - We DO NOT touch any field of stats.json other than `benchmarks` and
  *     `generated_at`. The existing schema (rules.total, ecosystem.*, etc.) is
- *     preserved verbatim. This keeps backwards compat with the auto-crystallize
- *     bot that also writes to stats.json.
+ *     preserved verbatim. This keeps compatibility with the other jobs that
+ *     write stats.json (reconcile-stats.yml among them; the auto-crystallize
+ *     bot did too before Threat Cloud crystallization moved out of this
+ *     repository).
  *   - We write atomically (tmp + fsync + rename). Concurrent updates from other
  *     workflows are safe (last writer wins on rename, no half-written file).
  *   - `--check` mode is intended for CI. It computes the projection and

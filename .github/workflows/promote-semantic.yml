@@ -52,8 +52,8 @@ name: Promote Semantic (T2) Rules
 # starts from main, re-authors those clusters under the current gate and
 # force-pushes the rolling branch against the lease it fetched.
 #
-# Complements promote-cve.yml (CVE PoC -> regex rules) and crystallize.yml
-# (TC + adversarial -> rules). This is the semantic/T2 intake lane.
+# Complements the CVE promotion and Threat Cloud crystallization lanes, which
+# moved out of this repository in 5ec2fe933. This is the semantic/T2 intake lane.
 #
 # ONE ROLLING PR, NOT ONE PER RUN
 # Authored rules accumulate on a single branch, auto-semantic/rolling, and one
@@ -75,8 +75,6 @@ name: Promote Semantic (T2) Rules
 # authored again under the current gate.
 
 on:
-  # Chain after the CVE collector so semantic authoring runs on the freshest
-  # cluster proposals each day, same as promote-cve.yml.
   # Chain after the garak miss run, which writes the clusters this lane reads.
   # The previous trigger named "CVE Collector — Daily Sync", which no longer
   # lives in this repository; workflow_run cannot fire across repositories, so

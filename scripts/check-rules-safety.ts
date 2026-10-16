@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
- * check-rules-safety.ts — Auto-merge safety gate for ATR rule additions
+ * check-rules-safety.ts — safety gate for ATR rule additions
  *
  * Per quality-gate policy (see docs/QUALITY-GATE.md), every new rule must
- * clear ALL of the following before it can auto-merge to main:
+ * clear ALL of the following before a maintainer merges it to main (nothing
+ * merges automatically: auto-merge was retired in 521b4b0e, 2026-06-03):
  *
  *   1. Metadata: test_cases.true_positives AND true_negatives both
  *      non-empty; author present and not "MiroFish Predicted".
@@ -41,12 +42,13 @@
  * a changed file whose rule id differs, or that was not a rule at base, is a
  * new rule (routeChangedRuleFiles).
  *
- * Exit 0 = safe to auto-merge
+ * Exit 0 = every check passed; a maintainer still reviews and merges the PR
  * Exit 1 = any check failed → PR stays in human-review queue
  * Exit 2 = the gate could not run as asked (bad usage / bad environment).
  *          Never reported as safe: a gate that did not run is not a pass.
  *
- * Usage (in tc-pr-back workflow):
+ * Usage (validate.yml runs it on every rule PR; fn-mine-scheduled.yml and
+ * promote-semantic.yml run it before they open their PRs):
  *   npx tsx scripts/check-rules-safety.ts --base origin/main
  *
  * Explicit-target mode (for /red-team, /cve-collector and CONTRIBUTING's
@@ -1782,11 +1784,7 @@ async function main(): Promise<void> {
   }
 
   if (failures.length === 0) {
-    console.log(
-      explicit
-        ? `[safety-gate] PASS — ${newFiles.length} named rule(s) cleared every check`
-        : `[safety-gate] PASS — ${newFiles.length} rule(s) safe to auto-merge`,
-    );
+    console.log(passLine(newFiles.length, explicit));
     newFiles.forEach((f) => console.log(`  ✓ ${f}`));
     process.exit(0);
   }
@@ -1796,6 +1794,18 @@ async function main(): Promise<void> {
   );
   failures.forEach((f) => console.log(`  ✗ ${f.file} — ${f.reason}`));
   process.exit(1);
+}
+
+/**
+ * The line printed when every check passes. scripts/fn-mine-llm.ts decides
+ * pass or fail by matching /PASS —/ in the gate's output, so keep the prefix.
+ * It must not promise a merge: auto-merge was retired, and a maintainer reviews
+ * and merges every rule PR.
+ */
+export function passLine(count: number, explicit: boolean): string {
+  return explicit
+    ? `[safety-gate] PASS — ${count} named rule(s) cleared every check`
+    : `[safety-gate] PASS — ${count} rule(s) cleared every check; a maintainer still reviews and merges the PR`;
 }
 
 // Only run when invoked directly, so unit tests can import the discovery

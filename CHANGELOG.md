@@ -60,6 +60,17 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **The rule safety gate no longer calls a passing rule "safe to
+  auto-merge".** Auto-merge was retired in 521b4b0e and is off for the
+  repository; the pass line now says a maintainer still reviews and merges,
+  and keeps the `PASS —` prefix `fn-mine-llm.ts` reads. The full-set gates'
+  comments and docs no longer say the CVE collector and auto-crystallize
+  commit rules straight to main: the collector commits only `proposals/` and
+  its run report, and Threat Cloud crystallization no longer runs in this
+  repository. The reasons that still hold are untracked rule files gated
+  before any commit and pushes by an actor on the main ruleset's bypass list.
+  Gate behaviour is unchanged.
+
 - **Three rules no longer hand converters a regex they cannot take** (#858).
   ATR-2026-01610 (two conditions) and ATR-2026-00296 had a literal newline
   inside a character class, written as `\n` in a double-quoted YAML string, so

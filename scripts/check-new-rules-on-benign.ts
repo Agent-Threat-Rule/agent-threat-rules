@@ -4,8 +4,8 @@
  * 432-file benign skill corpus to ensure zero false positives before commit.
  *
  * Mirrors the FP-on-benign portion of scripts/check-rules-safety.ts but works
- * on untracked files (the auto-merge gate uses git diff which only sees
- * committed adds).
+ * on untracked files. It was written when the safety gate's diff only saw
+ * committed adds; check-rules-safety.ts now also finds untracked rule files.
  */
 
 import { readdirSync, readFileSync } from 'node:fs';

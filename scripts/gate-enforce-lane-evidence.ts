@@ -36,8 +36,8 @@
  *
  * WHY FULL-SET AND NOT PR-DIFF SCOPED
  *   Same reasoning as gate-rule-status.ts: rules reach this repo through doors
- *   no `git diff base...HEAD` can see (untracked files gated before commit, the
- *   CVE collector committing straight to main). Comparing the working tree
+ *   no `git diff base...HEAD` can see (untracked files gated before commit, a
+ *   push straight to main by a ruleset-bypass actor). Comparing the working tree
  *   against a committed baseline sees all of them and needs no git history.
  *
  * WHAT FAILS THE BUILD

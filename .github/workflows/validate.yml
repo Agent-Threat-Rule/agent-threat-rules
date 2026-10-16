@@ -84,7 +84,8 @@ jobs:
       # using real engine semantics (Unicode/confusable folding, base64 decode,
       # multi-field + nested test cases). Fails if any rule NOT already in the
       # baseline fails to match its own true_positive or fires on its own
-      # true_negative. Catches rules that landed via direct-to-main crystallize
-      # commits, which the PR-diff-scoped safety gate above never sees.
+      # true_negative. Catches rules that reach main without the PR-diff-scoped
+      # safety gate above seeing them, such as a push by an actor on the main
+      # ruleset's bypass list.
       - name: Generalization gate (own-TP coverage + self-FP, full set)
         run: npm run gate:generalization

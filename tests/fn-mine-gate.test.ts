@@ -45,7 +45,10 @@ function gateOutput(...lines: string[]): string {
   ].join("\n");
 }
 
-const PASS: GateRun = { pass: true, raw: "[safety-gate] PASS — 3 rule(s) safe to auto-merge\n" };
+const PASS: GateRun = {
+  pass: true,
+  raw: "[safety-gate] PASS — 3 rule(s) cleared every check; a maintainer still reviews and merges the PR\n",
+};
 const fail = (...lines: string[]): GateRun => ({ pass: false, raw: gateOutput(...lines) });
 
 describe("attributeGateFailures", () => {

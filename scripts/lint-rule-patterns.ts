@@ -4,8 +4,8 @@
  * 00220 greedy [^)]* span, 00422 benign verbs, 00547 bare localhost).
  *
  * Used two ways:
- *   1. Imported by check-rules-safety (Check 6) to route loose-pattern NEW
- *      rules to human review instead of auto-merge.
+ *   1. Imported by check-rules-safety (Check 6), which fails a NEW rule with a
+ *      bare-keyword pattern and prints an advisory for other loose patterns.
  *   2. Run standalone to audit the whole corpus:
  *        npx tsx scripts/lint-rule-patterns.ts
  *

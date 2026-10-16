@@ -25,9 +25,9 @@ name: Rule status gate
 # a PR diff, and that is the load-bearing design choice. A diff-scoped gate is
 # what failed here: rules reach this repo through doors no `git diff base...HEAD`
 # can see -- untracked files written into rules/ and checked before any commit
-# (scripts/fn-mine-llm.ts does exactly this), plus the CVE collector and
-# auto-crystallize, which commit straight to main. A full-set comparison sees all
-# of them, needs no git history, and is correct on a shallow checkout.
+# (scripts/fn-mine-llm.ts does exactly this), plus pushes straight to main by an
+# actor on the main ruleset's bypass list. A full-set comparison sees all of
+# them, needs no git history, and is correct on a shallow checkout.
 
 on:
   pull_request:
