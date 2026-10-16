@@ -40,6 +40,29 @@ nothing to check, treating as safe` and exited 0 while skipping all six checks.
 Discovery now unions the diff with `git ls-files --others --exclude-standard --
 rules/`, so a rule on disk is measured whether or not git has heard of it.
 
+## Modified rules
+
+A rule file the PR changes gets two differential checks instead of the six
+above. Each compares the rule as it is at the base with the rule as changed, so
+debt the change did not create is not charged to it.
+
+| Check               | What it catches                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Modified-rule FP    | The change may not make the rule match a benign sample it did not match before. A rule that already false-positives is pre-existing debt, and failing whichever PR touches it next would only teach contributors to route around the gate.                                                                                                                                                                                                                                             |
+| Own TPs still match | Each true positive is run the way `atr test` runs it, and every case is replayed to the changed rule as the event the base rule would receive: built from the test case for the base rule, with only the fields the base rule reads plus `tool_name` and `content`, through `evaluate()`, and the case's text through `scanSkill()`. So re-routing a rule (`agent_source.type`, the field a condition reads, `scan_target`) away from its cases fails like breaking its pattern does. A case the base rule matched on a path must still match there; a case the change adds must match; the changed rule must still match at least one case the base rule matched, kept or dropped; a case the base rule did not match is printed as an advisory, not charged. Status and maturity are set aside, so taking a rule out of every lane never fails it and may drop its true positives; putting one back in a lane requires every case to match. |
+
+`npm run gate:generalization` also requires every pattern rule to match its own
+true positives, with each condition's regex applied to the case's text. It does
+not cover a semantic rule, which is how a semantic rule whose
+`fallback_method` was set to `none` (leaving the synchronous engine unable to
+fire it) passed every check, nor routing, which it does not read.
+
+A renamed rule file is a modified rule, compared with the file it was at the
+base; before, a rename put it on neither the new nor the modified list, and a
+rule moved to another directory skipped both checks above. A changed file whose
+rule id differs, or that was not a rule at the base, is a new rule and gets the
+six checks.
+
 ## Counting rules honestly
 
 Two numbers, both true, not interchangeable:

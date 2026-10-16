@@ -1,6 +1,21 @@
 import type { AgentEvent, ATRRule, ATRTrace } from "./types.js";
 
 /**
+ * agent_source types the engine's source filter does not know, mapped to the
+ * base type whose events they arrive as. buildEventFromTestCase() builds an
+ * llm_input event for a context_window rule; without this mapping the engine
+ * would filter that rule out of its own test case. `atr test` (src/cli.ts) and
+ * scripts/check-rules-safety.ts apply it to the rule under test.
+ */
+export const EXTENDED_SOURCE_TO_BASE: Readonly<Record<string, string>> = Object.freeze({
+  context_window: 'llm_io',
+  memory_access: 'llm_io',
+  skill_lifecycle: 'tool_call',
+  skill_permission: 'tool_call',
+  skill_chain: 'tool_call',
+});
+
+/**
  * Build the AgentEvent a declared test case describes.
  *
  * Extracted from src/cli.ts so scripts/validate-rule-testcases.ts can use the
