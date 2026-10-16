@@ -47,6 +47,41 @@ All notable changes to ATR will be documented in this file.
 
 ### Changed
 
+- **The ReDoS gate now times long inputs, every branch of an alternation
+  and input tiled with a pattern's own openers, and its baseline grew from 9
+  to 439 conditions because of it.** Nothing got slower; the gate started
+  looking. Two integrations packaging the corpus found conditions that took
+  seconds to minutes on 8,000- and 50,000-character inputs while
+  `scripts/gate-redos.py` reported them clean: its inputs were 1,500 to
+  3,000 characters, where a quadratic condition costs about a tenth of a
+  second, and only the first branch of an alternation was ever pumped. Each
+  condition is now also run on 20,000-character inputs built per quantifier
+  -- the text that reaches the quantifier, through whichever branch,
+  lookbehind or back-reference leads there, followed by a long run of its
+  own body -- and on its openers and pumped near-match tiled to length
+  (#601). Each worker calibrates per chunk and times are reported in
+  reference-machine seconds, which reduces, but does not remove, the effect
+  of load that changes during a run. `data/redos-baseline.json` now lists
+  439 conditions in 259 rules: 350 over the budget when it was written (201
+  of them did not return within the wall even timed alone) and 89 under the
+  budget but over a third of it, recorded too because one condition's
+  readings spread by more than 2x across runs and machines. 41 are in the
+  enforce lane and 412 are high or critical.
+  Each entry carries a fingerprint of its pattern, so editing a baselined
+  condition makes it new again instead of inheriting the exemption; an
+  unchanged baselined hang is not re-run. The gate stays a ratchet: it fails
+  on a slow condition outside that file. `scripts/verify_rule_redos.py` now
+  uses the gate's own inputs and timing -- it had reported PASS on
+  ATR-2026-02372 with both conditions hanging -- and with `--base REF` also
+  times a changed condition on the inputs derived from its previous pattern.
+  Twelve conditions that Python `re` cannot compile, and that the gate
+  skipped without saying so, are now listed by key. pyatr runs eleven of
+  them through its `regex` fallback and the TypeScript engine compiles all
+  twelve, so they run in production and are still untimed here; the twelfth,
+  ATR-2026-00290#3, back-references a group that does not exist, which pyatr
+  refuses and JavaScript reads as the character U+0001 (#331). The semantic
+  lane's per-draft ReDoS precheck now allows 300 s instead of 120 s.
+
 - **Every recall figure the site, LIMITATIONS.md, CITATION.cff and the docs
   above take from the measurement files now names its lane** and gives the
   enforce figure wherever the measurement records one. Figures no measurement
