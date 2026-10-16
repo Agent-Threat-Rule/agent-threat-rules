@@ -56,9 +56,9 @@
  * WHY FULL-SET AND NOT PR-DIFF SCOPED
  *   Rules reach this repo through doors no `git diff base...HEAD` can see:
  *   untracked files written straight into rules/ and gated before any commit
- *   (scripts/fn-mine-llm.ts), plus the CVE collector and auto-crystallize,
- *   which commit to main. Comparing the whole tree to a committed baseline sees
- *   all of them and needs no git history.
+ *   (scripts/fn-mine-llm.ts), plus pushes straight to main by an actor on the
+ *   main ruleset's bypass list. Comparing the whole tree to a committed
+ *   baseline sees all of them and needs no git history.
  *
  * WHAT FAILS THE BUILD
  *   - A blind or thin rule with no baseline entry. New rule, or a rule whose

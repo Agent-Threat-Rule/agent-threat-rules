@@ -22,10 +22,10 @@ name: Rule latency
 # rules that land here every day cannot dilute the denominator and lift everyone
 # else's number with them.
 #
-# It MEASURES the whole corpus on both PRs and pushes to main, because rules also
-# land here through doors that never open a pull request -- the CVE collector and
-# auto-crystallize commit straight to main -- and a diff-scoped measurement
-# cannot see those. What differs is who is held responsible for the result.
+# It MEASURES the whole corpus on both PRs and pushes to main, because a rule can
+# land here without a pull request -- an actor on the main ruleset's bypass list
+# can push straight to main -- and a diff-scoped measurement cannot see that.
+# What differs is who is held responsible for the result.
 #
 # On a pull request, --changed-since limits FAILURE to rules the diff touched.
 # Everything else prints under PRE-EXISTING. Without that, one expensive rule

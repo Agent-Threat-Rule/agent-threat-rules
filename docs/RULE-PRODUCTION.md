@@ -518,10 +518,11 @@ Two notes on running these locally:
 
 Four of these are **ratchets**, not diff-scoped gates: `rule-status`,
 `re2-portability`, `corpus-visibility` and `rule-latency` compare the whole
-working tree against a committed baseline. That is deliberate — rules reach
-`rules/` by doors no `git diff base...HEAD` can see (the CVE collector commits
-straight to `main`; `fn-mine-llm.ts` writes untracked files and gates them
-before any commit).
+working tree against a committed baseline. That is deliberate — they must see
+rules no `git diff base...HEAD` shows: `fn-mine-llm.ts` writes untracked files
+and gates them before any commit, and an actor on the main ruleset's bypass
+list can push straight to `main`. (The CVE collector, once cited here, commits
+only `proposals/` and its run report.)
 
 ---
 
