@@ -141,6 +141,13 @@ All notable changes to ATR will be documented in this file.
   copied rule files into its scratch directory by file name, so of two
   same-named files in different directories only the last was read, and the
   other was reported clean.
+- **`scripts/promote-to-stable.ts` no longer promotes on a 0 it did not
+  measure.** A `maturity: test` rule whose conditions the benign corpus cannot
+  fully exercise (a field no sample fills, such as `tool_name`, or a method the
+  synchronous engine cannot run, such as `trace`) scored 0 false positives
+  without being read, and `--write` promoted it to `stable`. Such a rule is now
+  reported as not promotable; one that did false-positive stays with the rules
+  that have false positives. No `maturity: test` rule on main is affected today.
 
 ## [4.1.5] - 2026-10-10
 

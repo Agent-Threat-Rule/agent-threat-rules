@@ -85,3 +85,114 @@ describe("splitCandidates", () => {
     }
   });
 });
+
+/**
+ * A candidate the engine evaluates can still score 0 without being measured:
+ * src/corpus-event.ts fieldCoverage() names the rules whose conditions this
+ * benign corpus cannot exercise (a field no sample fills, such as tool_name; a
+ * method the synchronous path cannot run, such as trace). Their 0 is not
+ * evidence, and promotion puts them in the enforce lane.
+ */
+describe("splitCandidates and conditions the corpus cannot exercise", () => {
+  const PLAIN = "ATR-2026-90061";
+  const TRACE = "ATR-2026-90062";
+  const AND_TOOL_NAME = "ATR-2026-90063";
+  const ANY_TOOL_NAME_QUIET = "ATR-2026-90064";
+  const ANY_TOOL_NAME_NOISY = "ATR-2026-90065";
+
+  const condition = (field: string, pattern: string): string[] => [
+    `    - field: ${field}`,
+    "      operator: regex",
+    `      value: '${pattern}'`,
+    "      description: fixture",
+  ];
+
+  /** A maturity:test rule with the given detection lines. */
+  function ruleWith(id: string, detection: readonly string[]): string {
+    return [
+      `title: fixture ${id}`,
+      `id: ${id}`,
+      "rule_version: 1",
+      "status: experimental",
+      "description: fixture rule for the stable-promotion tests",
+      "author: test",
+      "date: 2026/10/16",
+      "schema_version: '0.1'",
+      "detection_tier: pattern",
+      "maturity: test",
+      "severity: high",
+      "tags:",
+      "  category: tool-poisoning",
+      "  scan_target: runtime",
+      "  confidence: high",
+      "agent_source:",
+      "  type: llm_io",
+      "  framework: [any]",
+      "  provider: [any]",
+      "detection:",
+      ...detection,
+      "response:",
+      "  actions: [alert]",
+      "test_cases:",
+      "  true_positives: []",
+      "  true_negatives: []",
+      "",
+    ].join("\n");
+  }
+
+  it("does not call 0 FP clean when the corpus could not exercise the rule", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "atr-promote-coverage-"));
+    try {
+      const sources: Record<string, string> = {
+        [PLAIN]: ruleWith(PLAIN, ["  condition: any", "  conditions:", ...condition("content", "qqq-never-qqq")]),
+        // The synchronous engine returns null for method: trace without an event trace.
+        [TRACE]: ruleWith(TRACE, ["  method: trace", "  condition: any", "  conditions:", ...condition("content", "(?i)hello")]),
+        // ANDed with a field no benign sample fills: it can never fire here.
+        [AND_TOOL_NAME]: ruleWith(AND_TOOL_NAME, [
+          "  condition: all",
+          "  conditions:",
+          ...condition("tool_name", "(?i)^bash$"),
+          ...condition("content", "(?i)hello"),
+        ]),
+        // Partly measured: the content condition ran and found nothing; tool_name never ran.
+        [ANY_TOOL_NAME_QUIET]: ruleWith(ANY_TOOL_NAME_QUIET, [
+          "  condition: any",
+          "  conditions:",
+          ...condition("tool_name", "(?i)^bash$"),
+          ...condition("content", "qqq-never-qqq"),
+        ]),
+        // Partly measured and it did fire: the hits are real, so it is dirty.
+        [ANY_TOOL_NAME_NOISY]: ruleWith(ANY_TOOL_NAME_NOISY, [
+          "  condition: any",
+          "  conditions:",
+          ...condition("tool_name", "(?i)^bash$"),
+          ...condition("content", "(?i)hello"),
+        ]),
+      };
+      const files: Record<string, string> = {};
+      for (const [id, source] of Object.entries(sources)) {
+        files[id] = join(dir, `${id}.yaml`);
+        writeFileSync(files[id] as string, source);
+      }
+      const engine = new ATREngine({ rulesDir: dir });
+      await engine.loadRules();
+      expect(engine.getRules().map((r) => r.id).sort()).toEqual(Object.keys(sources).sort());
+
+      const split = splitCandidates(
+        engine,
+        Object.keys(sources).map((id) => ({ id, file: files[id] ?? "" })),
+        ["hello world", "plain prose"],
+      );
+
+      expect(split.clean.map((c) => c.id)).toEqual([PLAIN]);
+      expect(split.dirty.map((c) => c.id)).toEqual([ANY_TOOL_NAME_NOISY]);
+      expect([...split.unmeasured.keys()].sort()).toEqual([AND_TOOL_NAME, ANY_TOOL_NAME_QUIET, TRACE].sort());
+      expect(split.unmeasured.get(TRACE)).toMatch(/not measured.*method trace/);
+      expect(split.unmeasured.get(AND_TOOL_NAME)).toMatch(/not measured.*tool_name/);
+      expect(split.unmeasured.get(ANY_TOOL_NAME_QUIET)).toMatch(/partially measured.*tool_name/);
+      expect(split.unevaluated.size).toBe(0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
