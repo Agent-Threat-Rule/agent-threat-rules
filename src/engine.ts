@@ -35,6 +35,7 @@ import { laneAllows, requiresConfirm, type Lane } from './quality/rule-contract.
 import { laneFromConfig } from './enforcement.js';
 import type { SessionTracker } from './session-tracker.js';
 import { computeVerdict } from './verdict.js';
+import { ruleConfidence } from './rule-confidence.js';
 import type { ActionExecutor } from './action-executor.js';
 import type { SkillFingerprintStore } from './skill-fingerprint.js';
 import { SemanticModule } from './modules/semantic.js';
@@ -719,12 +720,11 @@ export class ATREngine {
       }
       const result = evaluateTraceRule(rule, event.trace);
       if (!result.matched) return null;
-      const baseConfidence = rule.tags.confidence === 'high' ? 0.9 : rule.tags.confidence === 'medium' ? 0.7 : 0.5;
       return {
         rule,
         matchedConditions: result.matchedPrimitives.map((p) => `trace.${p}`),
         matchedPatterns: result.violations,
-        confidence: baseConfidence,
+        confidence: ruleConfidence(rule.tags.confidence, 0),
         timestamp: new Date().toISOString(),
         scan_context: 'native' as const,
       };
@@ -884,9 +884,8 @@ export class ATREngine {
 
     if (!matched) return null;
 
-    const baseConfidence = rule.tags.confidence === 'high' ? 0.9 : rule.tags.confidence === 'medium' ? 0.7 : 0.5;
     const matchRatio = matchedConditionIndices.length / Math.max(conditions.length, 1);
-    const confidence = Math.min(baseConfidence + matchRatio * 0.1, 1.0);
+    const confidence = ruleConfidence(rule.tags.confidence, matchRatio);
 
     return {
       rule,
@@ -973,9 +972,8 @@ export class ATREngine {
           return false;
         }
         // Fallback: compile on the fly (ReDoS-gated — see safeCompile)
-        const normalized = normalizeRegex(value);
-        const rFlags = needsUnicodeFlag(normalized) ? 'iu' : 'i';
-        const regex = safeCompile(normalized, rFlags);
+        const spec = regexConditionSpec(value);
+        const regex = safeCompile(spec.source, spec.flags);
         if (regex && testNormalisedThenRaw(regex, fieldValue, rawFieldValue)) {
           if (suppressInCodeBlocks && codeRanges.length > 0 && isInsideCodeBlock(fieldValue, regex, codeRanges)) {
             return false;
@@ -1037,9 +1035,8 @@ export class ATREngine {
     const finalResult = this.evaluateExpression(conditionExpr, conditionResults);
     if (!finalResult) return null;
 
-    const baseConfidence = rule.tags.confidence === 'high' ? 0.9 : rule.tags.confidence === 'medium' ? 0.7 : 0.5;
     const matchRatio = matchedConditionNames.length / Math.max(Object.keys(conditions).length, 1);
-    const confidence = Math.min(baseConfidence + matchRatio * 0.1, 1.0);
+    const confidence = ruleConfidence(rule.tags.confidence, matchRatio);
 
     return {
       rule,
@@ -1571,9 +1568,8 @@ export class ATREngine {
       for (let i = 0; i < conditions.length; i++) {
         const cond = conditions[i] as unknown as Record<string, unknown>;
         if (cond['operator'] === 'regex' && typeof cond['value'] === 'string') {
-          const pattern = normalizeRegex(cond['value'] as string);
-          const flags = needsUnicodeFlag(pattern) ? 'iu' : 'i';
-          const compiledRe = safeCompile(pattern, flags, rule.id);
+          const spec = regexConditionSpec(cond['value'] as string);
+          const compiledRe = safeCompile(spec.source, spec.flags, rule.id);
           if (compiledRe) ruleMap.set(String(i), [compiledRe]);
         }
       }
@@ -1949,12 +1945,45 @@ function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+/** A leading inline flag group as rule authors write it: (?i), (?is), (?im), ... */
+const LEADING_INLINE_FLAGS = /^\(\?([imsx]+)\)/;
+
 /**
  * Strip inline flags like (?i) from regex patterns.
  * JavaScript RegExp uses flags as a constructor parameter, not inline.
  */
 function normalizeRegex(pattern: string): string {
-  return pattern.replace(/^\(\?[imsx]+\)/, '');
+  return pattern.replace(LEADING_INLINE_FLAGS, '');
+}
+
+/** How the engine compiles one array-format `operator: regex` condition. */
+export interface RegexConditionSpec {
+  /** The pattern handed to RegExp: the condition's value minus a leading inline flag group. */
+  readonly source: string;
+  /** The letters of that stripped group ("i", "is", ...), or "" when there was none. Stripped, not applied. */
+  readonly inlineFlags: string;
+  /** Always `i` -- this condition shape has no case-sensitive mode -- plus `u` when the pattern needs it. */
+  readonly flags: 'i' | 'iu';
+}
+
+/**
+ * The engine's single definition of how an array-format `operator: regex`
+ * condition is compiled. Both compile sites in ATREngine call it (compilePatterns()
+ * and the on-the-fly fallback in evaluateArrayCondition()), and
+ * scripts/gate-case-sensitivity.ts imports it, because it has to see each pattern
+ * exactly as the engine does. That gate used to keep its own copy of this logic,
+ * and the copy went stale when needsUnicodeFlag() started setting `u` for astral
+ * literals. Other scripts still re-derive it by hand and could import it too.
+ *
+ * Two consequences rule authors cannot see from the pattern:
+ *   - `i` is applied whether or not the author wrote (?i), so letter case never
+ *     distinguishes anything: [A-Z] also matches a-z.
+ *   - A stripped (?s), (?m) or (?x) is NOT applied.
+ */
+export function regexConditionSpec(value: string): RegexConditionSpec {
+  const inline = LEADING_INLINE_FLAGS.exec(value);
+  const source = normalizeRegex(value);
+  return { source, inlineFlags: inline?.[1] ?? '', flags: needsUnicodeFlag(source) ? 'iu' : 'i' };
 }
 
 /**

@@ -122,7 +122,7 @@ const jsonLd = {
       "@type": "SoftwareSourceCode",
       name: "agent-threat-rules",
       description:
-        `Open-source detection standard for AI agent security. ${stats.ruleCount} rules, ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. Sub-millisecond, zero dependencies.`,
+        `Open-source detection standard for AI agent security. ${stats.ruleCount} rules, ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. By default the engine runs in process, with no network or model calls.`,
       codeRepository: "https://github.com/Agent-Threat-Rule/agent-threat-rules",
       programmingLanguage: ["YAML", "TypeScript"],
       license: "https://opensource.org/licenses/MIT",

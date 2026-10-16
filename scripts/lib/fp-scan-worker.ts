@@ -12,6 +12,13 @@
  *   ...                                    ...
  *   parent -> end                          worker exits 0
  * Any failure is reported as `error` and the worker exits 1.
+ *
+ * If the channel closes before `end`, the parent ended in a way that ran no
+ * JavaScript (SIGKILL, say) and could not stop this worker, and nothing will
+ * read another result: the worker exits 1. It notices only between batches,
+ * because scoring one is synchronous, so the batch in hand is finished first.
+ * (A parent stopped by SIGINT or SIGTERM, or one that exits through JavaScript,
+ * kills its workers itself.)
  */
 import { ATREngine } from "../../src/engine.js";
 import {
@@ -40,6 +47,8 @@ async function serve(): Promise<void> {
       await reply({ type: "ready", ruleCount });
     } else if (msg.type === "batch") {
       if (engine === null) throw new Error("batch received before init");
+      // Between batches is the only point at which this worker can notice.
+      if (!process.connected) process.exit(1);
       const s = scoreSamples(engine, msg.texts, targets);
       await reply({
         type: "result",
@@ -53,6 +62,14 @@ async function serve(): Promise<void> {
     }
   };
 
+  // The parent went away without sending `end`. Without this listener the
+  // worker would still stop — on its next failed reply, or, if idle, with exit
+  // 0 once nothing was left to wait on — but by accident, and possibly with a
+  // status that reads as success.
+  process.on("disconnect", () => process.exit(1));
+  // Loading this module and its imports takes a while. A parent that went in
+  // the meantime emitted its 'disconnect' before there was a listener for it.
+  if (!process.connected) process.exit(1);
   process.on("message", (raw: unknown) => {
     queue = queue
       .then(() => handle(raw as ParentMessage))
