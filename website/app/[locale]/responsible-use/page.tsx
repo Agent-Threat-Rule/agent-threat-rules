@@ -65,8 +65,8 @@ export default async function ResponsibleUsePage({
             {
               title: zh ? "紅隊測試的基準線" : "Red-team baseline",
               desc: zh
-                ? "在授權範圍內，用 ATR 規則衡量你的紅隊工具找到的攻擊有多少已被偵測覆蓋，有多少是尚無規則的新型態——新型態正是下一條規則的來源。這是進行中的 NVIDIA garak 整合的設計意圖。"
-                : "Within an authorized scope, use ATR rules to measure what fraction of the attacks your red-team tool discovers already have detection coverage, and what fraction are novel — the novel fraction is where the next rule comes from. This is the design intent of the in-review NVIDIA garak integration.",
+                ? "在授權範圍內，用 ATR 規則衡量你的紅隊工具找到的攻擊有多少已被偵測覆蓋，有多少是尚無規則的新型態——新型態正是下一條規則的來源。"
+                : "Within an authorized scope, use ATR rules to measure what fraction of the attacks your red-team tool discovers already have detection coverage, and what fraction are novel — the novel fraction is where the next rule comes from.",
             },
             {
               title: zh ? "標準映射與合規文件" : "Standards mapping and compliance documentation",
@@ -187,8 +187,8 @@ export default async function ResponsibleUsePage({
           </p>
           <p className="mt-4">
             {zh
-              ? "最後，誠實的揭露也意味著說清楚 ATR 抓不到什麼。規則以 pattern 為基礎，對換句話說的改寫、語意等價的重述、非英語的注入、跨多輪逐步升級、以及傳輸層協定攻擊本質上是盲的——任何讀過公開規則的攻擊者，都能避開特定的動詞、名詞與句構。ATR 公開維護 64 條已知繞過技法（每條規則的 evasion_tests 欄位）與一份完整的 LIMITATIONS.md，把這些邊界寫成可被引用的文件，而不是行銷話術裡的空白。一個偵測標準的可信度，取決於它願不願意公開自己最差的數字。"
-              : "Finally, honest disclosure means stating what ATR cannot catch. The rules are pattern-based, and are blind by construction to paraphrase, semantic equivalence, non-English injection, gradual multi-turn escalation, and transport-layer protocol attacks — any attacker who reads the published rules can route around the specific verbs, nouns, and syntax. ATR publishes 64 known evasion techniques (in each rule's evasion_tests field) and a full LIMITATIONS.md, writing these boundaries down as a citable document rather than leaving them as a blank in the marketing. A detection standard earns trust by publishing its worst figure, not hiding it."}
+              ? "最後，誠實的揭露也意味著說清楚 ATR 抓不到什麼。規則以 pattern 為基礎，對換句話說的改寫、語意等價的重述、非英語的注入、跨多輪逐步升級、以及傳輸層協定攻擊本質上是盲的——任何讀過公開規則的攻擊者，都能避開特定的動詞、名詞與句構。ATR 把已知的繞過手法公開寫在規則的 evasion_tests 欄位（目前不到一半的規則有），並維護一份完整的 LIMITATIONS.md，把這些邊界寫成可被引用的文件，而不是行銷話術裡的空白。一個偵測標準的可信度，取決於它願不願意公開自己最差的數字。"
+              : "Finally, honest disclosure means stating what ATR cannot catch. The rules are pattern-based, and are blind by construction to paraphrase, semantic equivalence, non-English injection, gradual multi-turn escalation, and transport-layer protocol attacks — any attacker who reads the published rules can route around the specific verbs, nouns, and syntax. ATR publishes known evasions in its rules' evasion_tests fields (fewer than half of the rules have them) and a full LIMITATIONS.md, writing these boundaries down as a citable document rather than leaving them as a blank in the marketing. A detection standard earns trust by publishing its worst figure, not hiding it."}
           </p>
         </div>
       </Reveal>

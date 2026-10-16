@@ -197,7 +197,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "research.limits": "What ATR Cannot Detect",
     "research.limits.sub":
       "We publish this section because honest limitations build more trust than false confidence.",
-    "research.limits.full": "Full limitations document with 64 evasion tests",
+    "research.limits.full": "Full limitations document, with the evasion tests rules carry",
     "research.limit.paraphrase": "Paraphrase Attacks",
     "research.limit.paraphrase.desc":
       'Any regex rule can be bypassed by semantically equivalent rephrasing. "Ignore previous instructions" is detected; "please set aside the guidance you were given earlier" is not.',
@@ -586,7 +586,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "research.limits.sub":
       "\u6211\u5011\u767C\u5E03\u9019\u500B\u7AE0\u7BC0\uff0C\u56E0\u70BA\u8AA0\u5BE6\u7684\u9650\u5236\u6BD4\u865B\u5047\u7684\u81EA\u4FE1\u66F4\u80FD\u5EFA\u7ACB\u4FE1\u4EFB\u3002",
     "research.limits.full":
-      "\u5B8C\u6574\u9650\u5236\u6587\u4EF6\uff0C\u5305\u542B 64 \u500B evasion test",
+      "\u5B8C\u6574\u9650\u5236\u6587\u4EF6\uff0C\u4EE5\u53CA\u898F\u5247\u9644\u5E36\u7684 evasion test",
     "research.limit.paraphrase": "\u91CD\u8FF0\u653B\u64CA",
     "research.limit.paraphrase.desc":
       "\u4EFB\u4F55 regex \u898F\u5247\u90FD\u53EF\u4EE5\u88AB\u8A9E\u7FA9\u7B49\u50F9\u7684\u91CD\u8FF0\u7E5E\u904E\u3002\u300CIgnore previous instructions\u300D\u6703\u88AB\u5075\u6E2C\uff1B\u300Cplease set aside the guidance you were given earlier\u300D\u4E0D\u6703\u3002",

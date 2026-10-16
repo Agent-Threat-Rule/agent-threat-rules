@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 # OpenShell content filter -> ATR reference binding (NVIDIA/OpenShell#1272).
+# NVIDIA/OpenShell#1272 was closed as not planned on 2026-06-11; this is a
+# design sketch that no OpenShell release runs (see content_filters.yaml).
 #
 # Contract: stdin = L7 body, exit 0 = allow, exit 1 = deny (reason JSON on
 # stdout), exit 2 = internal error (supervisor applies its on_timeout policy).
