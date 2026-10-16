@@ -261,6 +261,17 @@ the rate it observed, reported as a lower bound, and can never reach `terminate`
 5,352 samples. Discarding that as "incomplete" would have been the polite reading
 and the wrong one.
 
+The second case also covers a rule the harness cannot run at all. Every
+benign-corpus measurement drives the synchronous engine, whose `evaluateRule()`
+returns null for `method: trace` without a span DAG, for `method: behavioral`
+always, and for `method: semantic` unless `detection.semantic.fallback_method` is
+exactly `pattern` (the judge runs only in `evaluateAsync()`). Such a rule scores
+0 on every sample, so its record says `partial_measurement: true` and it lands in
+this cell. Two more are recorded the same way: a rule with no condition field,
+which leaves a sample nothing to reach, and `method: signature`, which matches
+only a field value equal to one of its indicators, something a benign sample
+practically never is.
+
 The third is the "green CI expires" rule made mechanical. A false-positive count
 is a measurement **of a detection**, not of a rule id: edit the conditions and
 the number on file describes a rule that no longer exists. The fingerprint covers
@@ -377,6 +388,11 @@ minus `status: draft` / `status: deprecated` / `maturity: deprecated`.
   `allow`, including an `~/.ssh/id_rsa` exfiltration to a remote host. ATR now
   emits a decision only to restrain (`deny` / `ask`); an `allow` verdict omits
   the whole `hookSpecificOutput` envelope and the host keeps its own prompt.
+- A semantic rule that falls back to pattern is measured on that fallback, and
+  graded on it like a pattern rule. With a judge configured the judge decides,
+  and the fallback runs only when the judge is unavailable or fails, so the
+  recorded number describes the fallback rather than the judge. Which tier a
+  judge-decided rule may earn is not settled.
 - The verdict path (`severity` + `confidence` → `permissionDecision`) has no
   precision input at all. That is a second, larger line: it _would_ change what
   the engine blocks, so it needs its own recall analysis and is out of scope here.
