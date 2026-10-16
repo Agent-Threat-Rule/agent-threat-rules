@@ -137,6 +137,25 @@ All notable changes to ATR will be documented in this file.
   `fallback_method` (`pattern` or `none`, compared exactly, as the engine
   does), its `threshold` (a number from 0 to 1), and that a pattern fallback
   has a condition to match.
+- **`scripts/check-rules-safety.ts` runs a new rule's true positives the way
+  `atr test` does (Check 2).** It read only a case's `input` and ran it as the
+  text of the benign corpus shapes. On main, as if each rule past Check 1 were
+  new, 250 true positives in 54 rules carry their payload elsewhere
+  (`tool_response`, `tool_args`, `tool_description`, a `user_input` key, an
+  object `input`, ...) and were never read; 47 of those rules had none read
+  and passed with nothing run. The routing a rule declares was never
+  exercised. Each case now runs as the event built from it for the rule's own
+  `agent_source.type`, and through `scanSkill()`, with the code the own-TP
+  check for modified rules uses (`scripts/lib/own-true-positives.ts`), and its
+  text must still match on the corpus shapes, so a case that fires only
+  through a tool name, which no benign sample exercises, fails. The semantic
+  lane's pre-gate runs the same code. A case that cannot be run fails, and so
+  does a rule of a type the engine withholds from typed events
+  (`memory_access`), whose cases `atr test` reports as unevaluable. A new rule
+  the benign checks cannot run at all (deprecated, or a trace, behavioral or
+  signature method) is refused with the reason; Check 2 used to fail most of
+  them only because it could not match their cases either, and one whose cases
+  carried no `input` passed the whole gate.
 - **README §8 discloses that the `garak` and `garak-full` figures are partly
   closed-book.** A replay without the rules whose own YAML shows they were
   written from the in-the-wild corpus is given in the new `[^garakcorpus]`
