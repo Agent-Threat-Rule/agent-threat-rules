@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-11
 ATR corpus: v3.5.12, 777 effective rules (784 files, 10 categories)
-> Rule counts are a dated snapshot and move daily (auto-crystallize + ecosystem PRs); for the live figure see stats.json on the ATR repo.
+> Rule counts are a dated snapshot and move often (CVE and advisory sweeps, benchmark-miss mining, contributor PRs); for the live figure see stats.json on the ATR repo.
 Source framework: **MAESTRO — Multi-Agent Environment, Security, Threat, Risk & Outcome**,
 Cloud Security Alliance (2025). A layered threat-modeling framework for agentic AI that
 decomposes an agent system into seven architectural layers, each with its own threat

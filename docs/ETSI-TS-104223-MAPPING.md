@@ -243,7 +243,8 @@ hardening is out of scope.
   two frameworks share the 13 principles but number provisions differently.
 - This mapping cites provisions where ATR supplies evidence; it does not claim
   full provision coverage of either framework.
-- Rule counts move daily via auto-crystallize and ecosystem PRs. The counts here
+- Rule counts move often (CVE and advisory sweeps, benchmark-miss mining,
+  contributor PRs). The counts here
   (462 total / category counts in §4.4) were `find rules -name "*.yaml" | wc -l` and
   data/stats.json on 2026-06-12. Re-verify before any external citation.
 

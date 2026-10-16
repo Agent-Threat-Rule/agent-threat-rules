@@ -354,8 +354,8 @@ export default async function QualityStandardPage({
           </p>
           <p className="text-sm text-stone leading-relaxed">
             {locale === "zh"
-              ? "規則集每天透過自動結晶飛輪擴張,新生成的規則大多先標記為 LLM 生成(雙重閘門驗證)。human-reviewed 的比例隨著人工 review 持續積累而上升——而這個比例本身,是公開的。"
-              : "The ruleset grows daily through an auto-crystallization flywheel, and most newly generated rules start tagged LLM-generated (2-gate validated). The human-reviewed share rises as human review accumulates — and that share is itself published."}
+              ? "規則集透過 CVE 與安全公告掃描、benchmark 漏報挖掘與貢獻者擴張,每一條都經由維護者合併的 pull request 進入 main。human-reviewed 的比例隨著人工 review 持續積累而上升——而這個比例本身,是公開的。"
+              : "The ruleset grows through CVE and advisory sweeps, benchmark-miss mining and contributors, and each rule reaches main through a pull request a maintainer merges. The human-reviewed share rises as human review accumulates — and that share is itself published."}
           </p>
         </div>
       </Reveal>

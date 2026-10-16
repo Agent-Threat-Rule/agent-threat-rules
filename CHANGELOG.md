@@ -26,6 +26,13 @@ All notable changes to ATR will be documented in this file.
   both lanes and the closed-book caveat. The weekly measurement run re-renders
   and stages both and lists what it could not render in the rolling PR's body;
   CI (`eval.yml`) fails on a stale or unrenderable figure.
+- **`scripts/bench-evaluate-latency.ts` times single `ATREngine.evaluate()`
+  calls** in the hunt and enforce lanes on three committed corpora of
+  different input length, so the latency wording in LIMITATIONS.md and
+  THREAT-MODEL.md can be checked on any hardware. The `latency_ms` blocks in
+  `data/measurements/` time whole corpus samples (several event shapes, a
+  skill scan and, when installed, an embedding pass) inside a full benchmark
+  run, and are not comparable.
 
 ### Changed
 
@@ -64,6 +71,34 @@ All notable changes to ATR will be documented in this file.
   is described as what it is: open, reworked against NIST's AI RMF catalog,
   awaiting NIST review. The website changelog page now shows the notes on
   historical entries, which it used to drop.
+- **Integration status, provenance, evasion and latency claims corrected.**
+  The red-team page listed seven proposals as under review that their ATR
+  author had withdrawn unmerged (NVIDIA/garak#1676 on 2026-08-04; HarmBench,
+  AgentDojo, JailbreakBench, Counterfit, PromptInject and Damn Vulnerable MCP
+  Server on 2026-10-14 and 15, six of them never answered). They are removed,
+  along with the lapsed "On deck" schedule, and the garak, sovereign-AI,
+  responsible-use, integrate and STANDARDIZATION-STATUS surfaces no longer
+  call the garak integration or any OWASP PR open. The garak page and the
+  contributor docs (QUALITY-GATE.md, TSC-ONBOARDING.md, REVIEWER-GUIDE.md,
+  RULE-PRODUCTION.md, the issue-to-proposal PR text) no longer describe
+  auto-merge, which has been off since 2026-06-03. The red-team and governance
+  pages no longer promise a `metadata_provenance.discovered_by` field no rule
+  has, and the home, red-team, about and quality-standard pages no longer
+  credit daily auto-crystallization for growth that came from CVE sweeps,
+  benchmark-miss mining and contributors. The sovereign-AI page no longer says
+  ATR detects intent and cannot be evaded; LIMITATIONS.md and the
+  responsible-use, integrate and research pages no longer say every rule
+  carries evasion tests or that there are 64; LIMITATIONS.md and
+  THREAT-MODEL.md now agree that the optional judge and embedding modules ship
+  but are off by default. "Sub-millisecond", "< 5ms", "5ms pattern match" and
+  "Done in 47ms" are replaced by how evaluation cost scales; the OpenShell
+  example is marked as a sketch of a proposal OpenShell closed, and its
+  timeouts now exceed a one-shot cold start. CITATION.cff no longer calls the
+  rules hand-authored and says what the safety gate checks for added and
+  changed rules; the OWASP PR text drops its 76-rule count and notes the PR
+  was withdrawn. Errata `e-2026-10-16-integration-status`,
+  `e-2026-10-16-evasion`, `e-2026-10-16-latency` and `e-2026-10-16-provenance`
+  record the site changes.
 - **ATR-2026-00226 and ATR-2026-00231 no longer carry a smoke-test author.**
   Both were drafted on 2026-04-18 by the Threat Cloud garak drafter from a
   prompt in the garak in-the-wild jailbreak corpus that ATR's own garak
