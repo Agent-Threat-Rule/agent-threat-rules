@@ -12,9 +12,9 @@
  *   existing backlog drain on its own schedule.
  *
  * WHY FULL-SET AND NOT PR-DIFF SCOPED
- *   Rules land here by paths that never open a pull request -- the CVE
- *   collector and auto-crystallize commit straight to main. A gate that only
- *   inspects a PR diff cannot see those. Comparing the whole corpus against a
+ *   A rule can land here without a pull request -- an actor on the main
+ *   ruleset's bypass list can push straight to main. A gate that only
+ *   inspects a PR diff cannot see that. Comparing the whole corpus against a
  *   baseline catches a new incompatibility no matter which door it came in
  *   through, and needs no git history (so a shallow checkout is enough).
  *
