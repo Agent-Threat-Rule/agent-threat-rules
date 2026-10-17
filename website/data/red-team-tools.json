@@ -1,0 +1,63 @@
+[
+  {
+    "name": "TextAttack",
+    "org": "QData · ACL 2020",
+    "status": "in-review",
+    "homepage": "https://github.com/QData/TextAttack",
+    "prUrl": "https://github.com/QData/TextAttack/issues/824",
+    "hook": "NLP adversarial-attack framework from the QData lab (ACL 2020).",
+    "what_atr_did": "Issue #824 proposes a textattack-detection-atr companion PyPI package — plugin-shaped, zero core changes. Single ask: README cross-link."
+  },
+  {
+    "name": "Microsoft PyRIT",
+    "org": "Microsoft AI Red Team",
+    "status": "in-production",
+    "homepage": "https://github.com/microsoft/PyRIT",
+    "prUrl": "https://github.com/microsoft/PyRIT/pull/1715",
+    "stillPresent": "pyrit/datasets/seed_datasets/remote/agent_threat_rules_dataset.py contains \"Agent-Threat-Rule/agent-threat-rules\"",
+    "hook": "The toolkit Microsoft uses internally to red-team production LLM products. Roman Lutz leads.",
+    "what_atr_did": "Added an ATR dataset loader exposing the rule corpus as PyRIT attack sources; PR #1715 merged 2026-05-27."
+  },
+  {
+    "name": "HackAPrompt",
+    "org": "Schulhoff et al. — Learn Prompting · EMNLP 2023",
+    "status": "corpus",
+    "homepage": "https://hackaprompt.com",
+    "prUrl": "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/51",
+    "hook": "The largest crowd-sourced prompt-injection competition corpus, 4,780 competition samples across GPT/Claude/PaLM. EMNLP 2023 best-paper nominee.",
+    "what_atr_did": "Clustered 4,780 HackAPrompt samples by attack family. Shipped 5 ATR rules (ATR-2026-00452..00456) from dominant clusters. HackAPrompt recall moved 28.6% → 66.2% across that sprint (2026-05-12, before detection lanes existed, with every rule loaded: what the hunt lane loads today), measured on the same corpus those rules were mined from, so it is an in-sample gain, not a measure of generalisation. The corpus is 100% adversarial and carries no benign population, so it yields no precision or false-positive figure. Each rule cites the HackAPrompt cluster in metadata_provenance.",
+    "figures": [
+      {
+        "source": "hackaprompt",
+        "label": "HackAPrompt"
+      }
+    ]
+  },
+  {
+    "name": "NeMo-Guardrails + llm-guard + Promptfoo",
+    "org": "NVIDIA · Protect AI · Promptfoo Inc.",
+    "status": "corpus",
+    "homepage": "https://github.com/NVIDIA/NeMo-Guardrails",
+    "prUrl": "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/52",
+    "hook": "Vendor test suites from three production guardrail systems. Combined 94 adversarial samples covering jailbreak, injection, and output sanitization.",
+    "what_atr_did": "Ingested combined 94-sample corpus. Shipped 6 ATR rules (ATR-2026-00500..00505) covering attack patterns present across all three vendor test suites. Each rule validated against the vendor's own test cases as true-positive ground truth."
+  },
+  {
+    "name": "OWASP LLM Top 10 + MITRE ATLAS PoCs",
+    "org": "OWASP · MITRE",
+    "status": "corpus",
+    "homepage": "https://owasp.org/www-project-top-10-for-large-language-model-applications/",
+    "prUrl": "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/53",
+    "hook": "Standards-defined PoC attack patterns from OWASP LLM01-LLM10 and corresponding MITRE ATLAS technique catalog (AML.T00XX series).",
+    "what_atr_did": "Shipped 8 ATR rules (ATR-2026-00510..00517), each mapping to a named OWASP LLM category (LLM01-LLM10) and a specific MITRE ATLAS technique. Rules are standards-aligned at the metadata_provenance level."
+  },
+  {
+    "name": "Promptfoo",
+    "org": "Promptfoo Inc.",
+    "status": "in-review",
+    "homepage": "https://github.com/promptfoo/promptfoo",
+    "prUrl": "https://github.com/promptfoo/promptfoo/pull/8529",
+    "hook": "Open-source LLM red-teaming and evaluation tool. Promptfoo generates and runs adversarial tests against LLM applications.",
+    "what_atr_did": "PR #8529 adds an MCP red-team example using ATR as the deterministic defense layer. Promptfoo runs the probe; ATR rules return the verdict."
+  }
+]

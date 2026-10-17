@@ -33,6 +33,19 @@ All notable changes to ATR will be documented in this file.
   `data/measurements/` time whole corpus samples (several event shapes, a
   skill scan and, when installed, an embedding pass) inside a full benchmark
   run, and are not comparable.
+- **CI re-checks the /red-team page's links against GitHub.** The page's list
+  of offensive tools and corpora moved out of the page into
+  `website/data/red-team-tools.json`. `scripts/verify-red-team-links.mjs`, run
+  by `verify-red-team-links.yml` when the list or the checker changes and
+  weekly, fails when an in-review entry's PR or issue is no longer open, an
+  in-production or corpus entry's PR is not merged, or an in-production
+  entry's upstream file no longer mentions ATR. It reports drift, links that
+  are gone, and lookups GitHub could not answer separately, and counts none of
+  them as a pass; a failure on main or on the schedule opens a tracking issue.
+  It would have flagged NVIDIA/garak#1676 within a week of its withdrawal on
+  2026-08-04, instead of the ten weeks it stayed listed before #688. It cannot
+  flag an open proposal nobody answers, which is why the page calls that group
+  "Open proposals".
 
 ### Changed
 
