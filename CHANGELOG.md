@@ -114,6 +114,16 @@ All notable changes to ATR will be documented in this file.
   was withdrawn. Errata `e-2026-10-16-integration-status`,
   `e-2026-10-16-evasion`, `e-2026-10-16-latency` and `e-2026-10-16-provenance`
   record the site changes.
+- **The rule safety gate no longer calls a passing rule "safe to
+  auto-merge".** Auto-merge was retired in 521b4b0e and is off for the
+  repository; the pass line now says a maintainer still reviews and merges,
+  and keeps the `PASS —` prefix `fn-mine-llm.ts` reads. The full-set gates'
+  comments and docs no longer say the CVE collector and auto-crystallize
+  commit rules straight to main: the collector commits only `proposals/` and
+  its run report, and Threat Cloud crystallization no longer runs in this
+  repository. The reasons that still hold are untracked rule files gated
+  before any commit and pushes by an actor on the main ruleset's bypass list.
+  Gate behaviour is unchanged.
 
 ## [4.1.5] - 2026-10-10
 

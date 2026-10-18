@@ -80,8 +80,10 @@ shape of the maturity-FP and RE2 gates:
   that would make the gate lie, so a genuine new exception must be hand-written
   where review can see it.
 
-It compares the whole working tree, not a PR diff, because rules also arrive via
-the CVE collector and auto-crystallize, which commit straight to main.
+It compares the whole working tree, not a PR diff, because it must also see
+rules no diff shows: untracked files gated before any commit
+(scripts/fn-mine-llm.ts), and pushes straight to main by an actor on the main
+ruleset's bypass list.
 
 ```bash
 npx tsx scripts/gate-rule-status.ts             # gate

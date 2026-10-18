@@ -17,9 +17,9 @@ name: RE2 portability
 # exceptions live in data/re2-portability-baseline.json.
 #
 # It runs on push to main as well as on PRs, and compares the WHOLE corpus
-# rather than a PR diff, because rules also land here through doors that never
-# open a pull request (the CVE collector and auto-crystallize commit straight
-# to main). A diff-scoped gate cannot see those.
+# rather than a PR diff, because a rule can land here without a pull request:
+# an actor on the main ruleset's bypass list can push straight to main. A
+# diff-scoped gate cannot see that.
 
 on:
   pull_request:
@@ -103,7 +103,7 @@ jobs:
       # (verify-re2-equivalence.ts loadCorpusTestInputs), so adding a single
       # rule shifts those numbers on every entry while changing nothing about
       # which rule is portable. Diffing them would red-flag every rule PR and
-      # every auto-crystallize push to main -- a gate that cries wolf on normal
+      # every push that adds a rule -- a gate that cries wolf on normal
       # work gets ignored or removed, and then the real mislabel walks through.
       - name: Equivalence artifact is current
         run: |
