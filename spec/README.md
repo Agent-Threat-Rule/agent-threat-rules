@@ -56,7 +56,10 @@ spec/
 │   └── atr-to-nist-csf-2.0.md         ← NIST CSF 2.0 (NIST IR 8596 Informative Reference draft)
 │
 ├── category-registry/
-│   └── v1.0.yaml                      ← (new) versioned top-level category list
+│   ├── v1.0.yaml                      ← (new) versioned top-level category list
+│   └── gemara/                        ← (new) the registry as Gemara catalogs, generated
+│                                         from v1.0.yaml; published as an OCI bundle
+│                                         by publish-gemara.yml
 │
 ├── schema/                            ← (new) JSON Schemas
 │   ├── rule.schema.json               ← rule format JSON Schema
