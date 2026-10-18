@@ -6,6 +6,17 @@ All notable changes to ATR will be documented in this file.
 
 ### Added
 
+- **The category registry as Gemara catalogs, generated and published from
+  here.** `spec/category-registry/gemara/` holds a vector, capability, threat
+  and control catalog validated against the Gemara v1.6.0 CUE schemas. The
+  vector catalog is generated from `spec/category-registry/v1.0.yaml` (ids and
+  descriptions verbatim) by `scripts/generate-gemara-catalogs.ts`;
+  `tests/gemara-catalogs.test.ts` fails when the committed catalogs are stale.
+  `.github/workflows/publish-gemara.yml` publishes them as one keyless-signed
+  OCI bundle, `ghcr.io/agent-threat-rule/agent-threat-rules/gemara:<bundle
+  version>`, on release tags only, and pushes nothing when that version is
+  already published with the same catalogs.
+
 - **Every benchmark measurement records the enforce lane beside its
   headline.** A measurement's `metrics.recall` is the `hunt` lane (the engine
   default, every maturity). Each runner the weekly measurement calls now also
