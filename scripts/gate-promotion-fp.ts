@@ -17,7 +17,8 @@
  *
  * Modes:
  *   gate-promotion-fp.ts --base origin/main   # auto-detect rules this branch
- *                                             # sets to stable/production, gate them
+ *                                             # moves into the enforce lane
+ *                                             # (promotedFilesFromDiff), gate them
  *   gate-promotion-fp.ts --ids <file>         # gate an explicit ATR-id list.
  *                                             # Every id MUST resolve to a rule
  *                                             # file on disk (tracked or not);
@@ -139,9 +140,14 @@ import {
   scoreSamples,
   scoreSamplesInWorkers,
 } from "./lib/fp-scan.js";
+import {
+  ENFORCE_MATURITIES,
+  enteringEnforceLane,
+  loadedRuleId,
+  ruleFileChanges,
+} from "./lib/enforce-lane-entry.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const ENFORCE_MATURITIES = new Set(["stable", "production"]);
 
 export const EXIT_OK = 0;
 export const EXIT_FAIL = 1;
@@ -364,20 +370,57 @@ export function gitRuleFiles(
     .sort();
 }
 
+/**
+ * Rule files this branch moves into the enforce lane, found two ways:
+ *
+ *   - parsePromotedFiles: an added `maturity: stable|production` line. Kept as
+ *     it was; it reads the diff's text, so it also names a promoted file that
+ *     does not load, which the check below (it loads both sides) passes over.
+ *   - enteringEnforceLane: a rule whose maturity rose into the enforce lane, or
+ *     that became live while already holding such a maturity, judged by loading
+ *     it at the merge base and now, whatever lines changed. That is how a rule
+ *     revived by its status alone is caught (scripts/lib/enforce-lane-entry.ts).
+ *
+ * The diff is requested with explicit prefixes and no colour or external
+ * driver, so a developer's git settings cannot turn the headers
+ * parsePromotedFiles reads into something it does not recognise.
+ */
 function promotedFilesFromDiff(
   base: string,
   repoRoot: string,
 ): readonly string[] {
   const diff = execFileSync(
     "git",
-    ["diff", `${base}...HEAD`, "--unified=0", "--", "rules/"],
+    [
+      "diff",
+      `${base}...HEAD`,
+      "--unified=0",
+      "--no-color",
+      "--no-ext-diff",
+      "--src-prefix=a/",
+      "--dst-prefix=b/",
+      "--",
+      "rules/",
+    ],
     {
       cwd: repoRoot,
       encoding: "utf-8",
       maxBuffer: 64 * 1024 * 1024,
     },
   );
-  return parsePromotedFiles(diff);
+  const promoted = parsePromotedFiles(diff);
+  const entering = enteringEnforceLane(ruleFileChanges(base, repoRoot)).filter(
+    (file) => !promoted.includes(file),
+  );
+  if (entering.length > 0) {
+    // JSON-quoted: a raw newline in a path could start an Actions workflow command.
+    console.log(
+      `[fp-gate] ${entering.length} rule(s) move into the enforce lane with no plain ` +
+        `maturity line in the diff (a maturity raised to stable/production, or a rule ` +
+        `made live while already there): ${entering.map((f) => JSON.stringify(f)).join(", ")}`,
+    );
+  }
+  return [...promoted, ...entering];
 }
 
 /**
@@ -591,10 +634,50 @@ function resolveTargets(options: GateOptions, deps: GateDeps): Targets {
   if (options.idsFile !== null)
     return targetsFromIdsFile(options.idsFile, deps);
   const files = promotedFilesFromDiff(options.base, deps.repoRoot);
-  const ids = files
-    .map((f) => ruleIdOf(deps.repoRoot, f))
-    .filter((x): x is string => x !== null);
+  assertDistinctFileNames(files);
+  const ids = files.map((f) => promotedRuleId(deps.repoRoot, f));
   return { files, ids: new Set(ids), missing: [] };
+}
+
+/**
+ * The id a promoted file is measured under: the one the engine loads, so an id
+ * written on its own line, as a block scalar or with a tag cannot point the scan
+ * at an id no loaded rule carries — that scan records a clean 0. A file that does
+ * not load keeps the line reading it had. Anything but a string id fails the run
+ * (no id, or `id: 12345`, which the engine loads as a number the scan's string
+ * ids never match): a promoted file the gate cannot name is one it cannot
+ * measure, and leaving it out passed.
+ */
+function promotedRuleId(repoRoot: string, file: string): string {
+  const loaded = loadedRuleId(join(repoRoot, file));
+  const id = loaded.loads ? loaded.id : ruleIdOf(repoRoot, file);
+  if (typeof id !== "string" || id === "") {
+    throw new Error(
+      `[fp-gate] ${JSON.stringify(file)} has no readable string rule id, so it cannot ` +
+        `be measured; it is promoted, so the gate fails rather than leave it out.`,
+    );
+  }
+  return id;
+}
+
+/**
+ * scopedRulesDir() copies the targets into one directory by file name, so of two
+ * promoted files with the same name in different directories only the last is
+ * read, and the other is reported clean unread. Refuse that rather than pass it.
+ */
+function assertDistinctFileNames(files: readonly string[]): void {
+  const seen = new Map<string, string>();
+  for (const file of files) {
+    const name = file.slice(file.lastIndexOf("/") + 1);
+    const earlier = seen.get(name);
+    if (earlier !== undefined) {
+      throw new Error(
+        `[fp-gate] ${JSON.stringify(earlier)} and ${JSON.stringify(file)} share a file ` +
+          `name; the scan copies rule files by name and would read only one of them.`,
+      );
+    }
+    seen.set(name, file);
+  }
 }
 
 interface ScanResult {
