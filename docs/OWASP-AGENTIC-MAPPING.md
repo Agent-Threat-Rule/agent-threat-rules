@@ -1,15 +1,15 @@
 # ATR -> OWASP Agentic Top 10 (2026) Mapping
 
-Last updated: 2026-10-08
-ATR version: v4.1.4 (830 rules with OWASP Agentic tags)
+Last updated: 2026-10-15
+ATR version: v4.1.5 (836 rules with OWASP Agentic tags)
 OWASP framework: Agentic Top 10 v1.0 (December 2025)
 
 ## Summary
 
 - Categories covered: **10/10**
-- Total rule -> category mappings: **1094**
-- Tagged ATR rules: **829** of 829 total rules in repo
-- ATR version: `v4.1.4` -- OWASP Agentic Top 10: `v1.0 (December 2025)`
+- Total rule -> category mappings: **1098**
+- Tagged ATR rules: **833** of 833 total rules in repo
+- ATR version: `v4.1.5` -- OWASP Agentic Top 10: `v1.0 (December 2025)`
 
 Strength tiers: **STRONG** >= 8 rules · **MODERATE** 4-7 rules · **LIMITED** 1-3 rules.
 
@@ -17,12 +17,12 @@ Strength tiers: **STRONG** >= 8 rules · **MODERATE** 4-7 rules · **LIMITED** 1
 
 | ASI | Title | Rule count | Strength | Reference attack |
 |---|---|---|---|---|
-| ASI01 | Agent Goal Hijack | 487 | STRONG | EchoLeak |
+| ASI01 | Agent Goal Hijack | 490 | STRONG | EchoLeak |
 | ASI02 | Tool Misuse and Exploitation | 70 | STRONG | Amazon Q |
 | ASI03 | Identity and Privilege Abuse | 125 | STRONG | n/a |
 | ASI04 | Agentic Supply Chain Vulnerabilities | 98 | STRONG | GitHub MCP exploit |
 | ASI05 | Unexpected Code Execution (RCE) | 106 | STRONG | AutoGPT RCE |
-| ASI06 | Memory & Context Poisoning | 104 | STRONG | Gemini Memory Attack |
+| ASI06 | Memory & Context Poisoning | 105 | STRONG | Gemini Memory Attack |
 | ASI07 | Insecure Inter-Agent Communication | 23 | STRONG | n/a |
 | ASI08 | Cascading Failures | 52 | STRONG | n/a |
 | ASI09 | Human-Agent Trust Exploitation | 21 | STRONG | n/a |
@@ -32,7 +32,7 @@ Strength tiers: **STRONG** >= 8 rules · **MODERATE** 4-7 rules · **LIMITED** 1
 
 ## Per-category detail
 
-### ASI01: Agent Goal Hijack (487 rules) -- STRONG
+### ASI01: Agent Goal Hijack (490 rules) -- STRONG
 
 **OWASP description.** Attackers manipulate the agent's decision pathways or objectives so it pursues an adversary-controlled goal instead of its assigned task. Canonical instance: EchoLeak.
 
@@ -50,7 +50,7 @@ Top rules by severity:
 | ATR-2026-00091 | Advanced Structured Data Injection with Nested Payloads | critical | Detects advanced structured data injection where malicious prompts are deeply nested with… |
 | ATR-2026-00092 | Multi-Agent Consensus Poisoning and Sybil Attack | critical | Detects attacks targeting multi-agent consensus systems through coordinated fake proposal… |
 
-Plus 482 additional rules tagged ASI01 -- see `docs/owasp-agentic-mapping.json` for the complete list.
+Plus 485 additional rules tagged ASI01 -- see `docs/owasp-agentic-mapping.json` for the complete list.
 
 ### ASI02: Tool Misuse and Exploitation (70 rules) -- STRONG
 
@@ -130,7 +130,7 @@ Top rules by severity:
 
 Plus 101 additional rules tagged ASI05 -- see `docs/owasp-agentic-mapping.json` for the complete list.
 
-### ASI06: Memory & Context Poisoning (104 rules) -- STRONG
+### ASI06: Memory & Context Poisoning (105 rules) -- STRONG
 
 **OWASP description.** Long-term memory, RAG stores, or shared context are corrupted so the agent's future behavior is shaped by attacker payloads. Canonical instance: Gemini Memory Attack.
 
@@ -148,7 +148,7 @@ Top rules by severity:
 | ATR-2026-00201 | Credential Exfiltration via Shell Pipe | critical | Detects credential theft patterns where environment variables containing API keys, secret… |
 | ATR-2026-00212 | mcp-atlassian Credential Leak via Hint Parameter Injection (CVE-2026-27825/27826) | critical | Detects the mcp-atlassian credential-leak attack pattern (CVE-2026-27825 and CVE-2026-278… |
 
-Plus 99 additional rules tagged ASI06 -- see `docs/owasp-agentic-mapping.json` for the complete list.
+Plus 100 additional rules tagged ASI06 -- see `docs/owasp-agentic-mapping.json` for the complete list.
 
 ### ASI07: Insecure Inter-Agent Communication (23 rules) -- STRONG
 
@@ -250,7 +250,7 @@ Outputs `docs/OWASP-AGENTIC-MAPPING.md` (this file) and `docs/owasp-agentic-mapp
 - EU AI Act -- per-rule `compliance.eu_ai_act[]` (Article 9, Article 15)
 - ISO/IEC 42001 -- per-rule `compliance.iso_42001[]`
 - OWASP LLM Top 10 (2025) -- per-rule `compliance.owasp_llm[]`
-- SAFE-MCP -- see [SAFE-MCP-MAPPING.md](SAFE-MCP-MAPPING.md) (78/85 techniques, 91.8%)
+- SAF-MCP -- see [SAFE-MCP-MAPPING.md](SAFE-MCP-MAPPING.md) (reviewed candidate mappings against SAF Framework Model v2)
 - OWASP Agentic Skills Top 10 (AST) -- see [OWASP-AST10-MAPPING.md](OWASP-AST10-MAPPING.md) (skill supply chain framework)
 - OWASP Agentic AI Maturity Model -- see [OWASP-AGENTIC-MATURITY-MAPPING.md](OWASP-AGENTIC-MATURITY-MAPPING.md) (which ASI detections substantiate governance maturity)
 

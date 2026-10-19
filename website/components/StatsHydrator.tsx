@@ -22,11 +22,9 @@ export function StatsHydrator() {
 
     async function hydrate() {
       try {
-        const [pintRes, evalRes, statsRes] = await Promise.all([
-          fetch(`${GITHUB_RAW}/pint-benchmark/pint-eval-report.json`, { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-          fetch(`${GITHUB_RAW}/eval-report.json`, { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-          fetch(`${GITHUB_RAW}/stats.json`, { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-        ]);
+        const statsRes = await fetch(`${GITHUB_RAW}/stats.json`, { cache: "no-store" })
+          .then(r => r.ok ? r.json() : null)
+          .catch(() => null);
 
         if (cancelled) return;
 
@@ -44,18 +42,11 @@ export function StatsHydrator() {
         // the withdrawn subset totals. The build-time values from
         // data/full-scan-v2-2026-04-14.json are the citable ones — leave them.
 
-        if (pintRes?.report?.overall) {
-          live.pintPrecision = Math.round(pintRes.report.overall.precision * 1000) / 10;
-          live.pintRecall = Math.round(pintRes.report.overall.recall * 1000) / 10;
-          live.pintF1 = Math.round(pintRes.report.overall.f1 * 1000) / 10;
-          live.pintSamples = pintRes.report.corpusSize;
-        }
-
-        if (evalRes?.report?.overall) {
-          live.selfTestPrecision = Math.round(evalRes.report.overall.precision * 1000) / 10;
-          live.selfTestRecall = Math.round(evalRes.report.overall.recall * 1000) / 10;
-          live.selfTestSamples = evalRes.report.corpusSize;
-        }
+        // Benchmark figures are deliberately NOT hydrated either. A recall is
+        // only honest next to its lane: the build reads both from the same
+        // measurement file (lib/stats.ts, lib/recall.ts), and the site is rebuilt
+        // whenever data/ changes on main. Hydrating a hunt figure from the old
+        // report files could put it beside an enforce figure from another run.
 
         if (Object.keys(live).length > 0) {
           window.dispatchEvent(new CustomEvent("atr:live-stats", { detail: live }));

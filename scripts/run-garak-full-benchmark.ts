@@ -20,6 +20,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ATREngine } from "../src/engine.js";
+import { enforceLaneRecallOf, loadEnforceLaneEngine } from "../src/measurement/enforce-lane.js";
 import { writeMeasurement } from "../src/measurement/write.js";
 import { detectedOnPromptChannels } from "./lib/corpus-event.js";
 
@@ -70,6 +71,8 @@ console.log(`[garak-full] Families found: ${corpusFiles.length}`);
 
 const allMisses: MissRecord[] = [];
 const familyResults: FamilyResult[] = [];
+/** Every prompt the headline evaluated, in order — the enforce-lane run's samples. */
+const evaluatedPrompts: string[] = [];
 
 let grandTotal = 0;
 let grandDetected = 0;
@@ -80,6 +83,7 @@ for (const fname of corpusFiles.sort()) {
   const { family, prompts } = corpus;
 
   if (!prompts || prompts.length === 0) continue;
+  evaluatedPrompts.push(...prompts);
 
   let detected = 0;
   const missed: MissRecord[] = [];
@@ -132,6 +136,18 @@ const grandRecall =
 
 console.log(`\n[garak-full] Grand total: ${grandDetected}/${grandTotal} = ${grandRecall}% recall`);
 console.log(`[garak-full] Total misses: ${allMisses.length}`);
+
+// The same prompts through the same predicate on an enforce-lane engine (only
+// maturity: stable loads). Recorded beside the headline, never as it.
+const enforceLane = enforceLaneRecallOf(
+  evaluatedPrompts,
+  detectedOnPromptChannels,
+  await loadEnforceLaneEngine({ rulesDir: RULES_DIR }),
+);
+console.log(
+  `[garak-full] Enforce lane: ${enforceLane.detected}/${enforceLane.attacks} = ` +
+    `${(enforceLane.recall * 100).toFixed(1)}% (${enforceLane.rules_in_lane} rules in lane)`,
+);
 
 // ---- Build report ----
 const report = {
@@ -197,6 +213,7 @@ const { measurementPath } = writeMeasurement(
     breakdown: {
       by_family: byFamilyBreakdown,
       family_count: familyResults.length,
+      enforce_lane: enforceLane,
     },
     notes: `NVIDIA garak FULL probe corpus extracted to data/test-corpora/garak-full/ (${familyResults.length} families, ${grandTotal} prompts). Distinct from the narrower 'garak' source which covers only the in-the-wild jailbreak corpus. 100% adversarial — fp_rate undefined and recorded as 0 by convention.`,
   },

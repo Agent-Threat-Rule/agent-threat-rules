@@ -70,6 +70,15 @@ jobs:
       - name: Check benchmark citations are backed by measurement files
         run: npx tsx scripts/check-benchmark-citations.ts
 
+      # The same check for LIMITATIONS.md and the docs that quote the same
+      # corpora: each recall figure sits between recall markers and must equal
+      # its measurement file, hunt and enforce lane both.
+      - name: Check recall citations in Markdown docs
+        run: npx tsx scripts/render-recall-citations.ts --check
+
+      - name: Check CITATION.cff garak sentence matches stats.json
+        run: npx tsx scripts/sync-citation-garak.ts --check
+
       - name: Eval
         run: npm run eval
 

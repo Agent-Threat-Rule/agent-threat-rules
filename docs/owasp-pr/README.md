@@ -8,6 +8,10 @@
 > it is: a contribution ATR submitted, which the repository's maintainers may
 > or may not accept.
 >
+> The ASI01-ASI10 contribution described below was opened as
+> OWASP/www-project-top-10-for-large-language-model-applications#814 and
+> withdrawn, unmerged, by its ATR author on 2026-10-15.
+>
 > **Numbers in this directory are quoted in outward-facing material and go
 > stale fast.** Re-verify every figure against `data/stats.json`, `COVERAGE.md`
 > and README section 8 immediately before submitting. Never cite the withdrawn
@@ -18,9 +22,9 @@
 
 This PR adds real-world attack examples, prevention strategies, and detection references to all 10 ASI categories in the OWASP Agentic AI Top 10. Content is based on:
 
-- **76 open-source detection rules** from [ATR (Agent Threat Rules)](https://github.com/Agent-Threat-Rule/agent-threat-rules), MIT licensed
+- **Open-source detection rules** from [ATR (Agent Threat Rules)](https://github.com/Agent-Threat-Rule/agent-threat-rules), MIT licensed (the rule count changes as rules are added; the current count is in the ATR repository's `stats.json`)
 - **36,394 MCP skills scanned** on ClawHub (182 CRITICAL, 1,124 HIGH findings)
-- **PINT-format corpus** (850 samples from deepset + Lakera Gandalf; **not** Lakera's official PINT benchmark, which is private and roughly 5x larger): 65.4% recall, 100.0% precision, measured against ATR 3.5.12 on 2026-08-15. Read it as a prompt-injection-family score, not as ATR's overall coverage.
+- **PINT-format corpus** (<!-- recall:pint:samples -->850<!-- /recall --> samples from deepset + Lakera Gandalf; **not** Lakera's official PINT benchmark, which is private and roughly 5x larger): recall <!-- recall:pint -->65.4% (hunt) / 0.4% (enforce)<!-- /recall -->, precision <!-- recall:pint:precision -->100.0% (hunt)<!-- /recall -->, <!-- recall:pint:stamp -->ATR 4.1.5, measured 2026-10-15<!-- /recall -->. `hunt` is the engine default and loads every rule maturity; `enforce`, the lane to run with blocking on, loads only stable rules. Some hunt-lane rules were mined from this corpus's own misses, so the hunt figure is partly closed-book. Read it as a prompt-injection-family score, not as ATR's overall coverage.
 - **Real CVEs**: CVE-2026-28363 (CVSS 9.9), CVE-2026-25253 (CVSS 8.8), CVE-2025-59536 (CVSS 8.7), CVE-2025-49150, CVE-2025-53773, and others
 - **Real attack campaigns**: ClawHavoc (1,184 malicious skills), AMOS infostealer (314 skills), Snyk ToxicSkills (76 confirmed malicious)
 
@@ -59,6 +63,6 @@ Each file follows the OWASP template structure (Description, Common Examples, Pr
 ATR (Agent Threat Rules) is an open-source, MIT-licensed detection ruleset for agentic AI security threats. It provides executable YAML-based rules that can be integrated into any MCP/A2A pipeline for real-time threat detection.
 
 - Repository: https://github.com/Agent-Threat-Rule/agent-threat-rules
-- Rules: 76 (71 MCP + 5 skill-level)
-- Eval: PINT-format corpus, self-built from public datasets, **not** Lakera's official PINT benchmark (65.4% recall, 100.0% precision; ATR 3.5.12, measured 2026-08-15). Full benchmark table with per-corpus caveats: README section 8.
+- Rules: current count in the ATR repository's `stats.json`
+- Eval: PINT-format corpus, self-built from public datasets, **not** Lakera's official PINT benchmark (recall <!-- recall:pint -->65.4% (hunt) / 0.4% (enforce)<!-- /recall -->, precision <!-- recall:pint:precision -->100.0% (hunt)<!-- /recall -->; <!-- recall:pint:stamp -->ATR 4.1.5, measured 2026-10-15<!-- /recall -->). Full benchmark table with both lanes and per-corpus caveats: README section 8.
 - License: MIT

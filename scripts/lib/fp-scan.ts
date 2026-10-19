@@ -56,6 +56,13 @@ export const MAX_WORKERS = 64;
 function cpuCount(): number {
   return typeof os.availableParallelism === "function" ? os.availableParallelism() : os.cpus().length;
 }
+/**
+ * Signals that end a parallel scan early. A worker scoring a batch notices
+ * nothing until the batch is done, and one batch can be minutes of work, so on
+ * either signal the parent stops its workers before it goes rather than leave
+ * them running, reparented to PID 1, after it.
+ */
+export const STOP_SIGNALS: readonly NodeJS.Signals[] = ["SIGINT", "SIGTERM"];
 /** How often a parallel scan reports progress. */
 export const PROGRESS_EVERY_MS = 60_000;
 /** A batch closes once it holds this many characters... */
@@ -216,6 +223,13 @@ export interface ParallelScanRequest {
  * that exits before it was told to, on a worker that loaded a different rule
  * count, and on a merged total that does not equal the corpus. A partial scan
  * must never come back looking like a complete one.
+ *
+ * The workers also go when the parent goes while the scan runs: on a
+ * STOP_SIGNALS signal (the scan rejects, and the signal is delivered again so
+ * the parent still ends; see onStopSignal), and on any other exit that still
+ * emits 'exit', such as an uncaught exception or process.exit() elsewhere. Only
+ * an end that runs no JavaScript (SIGKILL, a native crash) leaves them to stop
+ * on their own; see fp-scan-worker.ts.
  */
 export function scoreSamplesInWorkers(req: ParallelScanRequest): Promise<SampleScores> {
   const batches = planBatches(req.samples.map((s) => s.length));
@@ -238,14 +252,46 @@ export function scoreSamplesInWorkers(req: ParallelScanRequest): Promise<SampleS
   const execArgv = req.execArgv ?? ["--import", tsxLoader()];
   return new Promise<SampleScores>((resolve, reject) => {
     const children: ReturnType<typeof fork>[] = [];
+    // kill(2) is synchronous, so this works from an 'exit' listener too.
+    const killWorkers = (): void => {
+      for (const c of children) if (c.exitCode === null && c.signalCode === null) c.kill();
+    };
+    // A listener on a signal replaces Node's default for it, which is to exit.
+    // So this one stops the workers and then, unless something else in the
+    // process is listening and owns the decision, delivers the signal again:
+    // with the last listener gone the default is back, and the parent ends on
+    // the signal instead of leaving its workers behind. (Under the tsx CLI, as
+    // CI runs the gate, the CLI above it still exits 128 + the signal number.)
+    const onStopSignal = (signal: NodeJS.Signals): void => {
+      fail(new Error(`fp-scan interrupted by ${signal}`));
+      if (process.listenerCount(signal) === 0) process.kill(process.pid, signal);
+    };
+    // Each bound to its own signal, since process.emit("SIGINT") passes none,
+    // and prepended, so that the count above still includes every other
+    // listener, a process.once() one that would otherwise run first included.
+    const signalListeners = STOP_SIGNALS.map((s) => [s, () => onStopSignal(s)] as const);
+    // The listeners belong to the scan: added before the first fork, removed
+    // as soon as the scan resolves or rejects.
+    const listen = (): void => {
+      for (const [s, l] of signalListeners) process.prependListener(s, l);
+      process.on("exit", killWorkers);
+    };
+    const unlisten = (): void => {
+      for (const [s, l] of signalListeners) process.off(s, l);
+      process.off("exit", killWorkers);
+    };
     // Once failed, every handler below is a no-op and every child is killed:
-    // a rejected scan must not leave workers grinding through the corpus.
+    // a rejected scan must not leave workers grinding through the corpus. The
+    // kill comes before the listeners go, so a second signal arriving meanwhile
+    // is still caught instead of ending the parent partway through the list.
     const fail = (err: Error): void => {
       if (failed) return;
       failed = true;
-      for (const c of children) if (c.exitCode === null && c.signalCode === null) c.kill();
+      killWorkers();
+      unlisten();
       reject(err);
     };
+    listen();
 
     const start = (k: number): void => {
       let told = false;
@@ -335,6 +381,7 @@ export function scoreSamplesInWorkers(req: ParallelScanRequest): Promise<SampleS
           );
           return;
         }
+        unlisten();
         resolve(merged);
       });
 

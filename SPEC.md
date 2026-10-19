@@ -479,7 +479,7 @@ Registration templates appear in Appendix B.
 - [NIST-GAI-PROFILE] NIST, "Generative AI Profile (AI 600-1)"
 - [OWASP-AGENTIC] OWASP, "Agentic Security Initiative Top 10 (2026)"
 - [MITRE-ATLAS] MITRE, "Adversarial Threat Landscape for AI Systems"
-- [SAFE-MCP] safe-agentic-framework, "Secure AI Framework for Enterprise — MCP", https://github.com/safe-agentic-framework/safe-mcp
+- [SAF-MCP] secure-agentic-framework, "Secure Agentic Framework for Model Context Protocol (SAF-MCP)", https://github.com/secure-agentic-framework/saf-mcp
 
 ## Appendix A. Canonical Response Action Vocabulary
 

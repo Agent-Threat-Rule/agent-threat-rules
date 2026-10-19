@@ -9,6 +9,8 @@ import { locales, type Locale } from "@/lib/i18n";
 import { RFC2119 } from "@/components/spec/RFC2119";
 import { NormativeBadge, InformativeBadge } from "@/components/spec/Badges";
 import { ATD_TECHNIQUES, ATD_TACTICS, ATD_STATS } from "@/lib/atd-data";
+import { loadSiteStats, type BenchmarkMeasurement } from "@/lib/stats";
+import { count, findBenchmark, measuredStamp, pct, pctHunt } from "@/lib/recall";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -35,18 +37,20 @@ const ATD_STATUS_ZH = "Editor's Draft — 治理前草案";
 const ATD_DATE = "2026-06-13";
 const ATD_DOI = "10.5281/zenodo.19178002";
 
-// Version-pinned benchmark proof. Every figure below mirrors
-// data/measurements/<source>/latest.json at ATR 3.5.12, measured 2026-08-15 —
-// re-verify there before citing, and never re-introduce the withdrawn
-// single-figure PINT precision claim.
-const PROOF_AS_OF = "2026-08-15";
-const PROOF_ATR_VERSION = "3.5.12";
-const PROOF = {
-  selfTest: { recall: 96.6, fp: 0, n: 341 },
-  garak: { recall: 92.3, n: 650 },
-  // Self-built corpus in PINT's format — NOT Lakera's official PINT benchmark.
-  pint: { recall: 65.4, precision: 100, n: 850 },
-};
+/**
+ * A benchmark proof card, read from the measurement file (lib/recall.ts): the
+ * hunt figure, then the enforce figure where the measurement records it, with
+ * the corpus, version and date it belongs to. No measurement, no card.
+ */
+function proofCard(m: BenchmarkMeasurement | null, zh: boolean, corpus: { en: string; zh: string }, note?: { en: string; zh: string }): { v: string; l: string } | null {
+  if (!m) return null;
+  const v = m.enforce ? `${pctHunt(m.recall)} / ${pct(m.enforce.recall)}` : pctHunt(m.recall);
+  const lanes = m.enforce ? "hunt / enforce" : "hunt";
+  const extra = note ? (zh ? `;${note.zh}` : `; ${note.en}`) : "";
+  return zh
+    ? { v, l: `recall,${lanes}(${corpus.zh} n=${count(m.samples)}·${measuredStamp(m, true)}${extra})` }
+    : { v, l: `recall, ${lanes} (${corpus.en}, n=${count(m.samples)}, ${measuredStamp(m, false)}${extra})` };
+}
 
 const sevColor: Record<string, string> = {
   critical: "var(--critical)",
@@ -233,7 +237,11 @@ export default async function ATDPage({
 }) {
   const { locale: rawLocale } = await params;
   const locale: Locale = rawLocale === "zh" ? "zh" : "en";
+  const zh = locale === "zh";
   const status = locale === "zh" ? ATD_STATUS_ZH : ATD_STATUS_EN;
+  const stats = loadSiteStats();
+  const selfTest = findBenchmark(stats, "atr-self-test");
+  const garak = findBenchmark(stats, "garak");
 
   // Section bodies carry {LOCALE} for internal links and {TECH}/{TACTICS}/{RULES}
   // so the coverage numbers stay sourced from ATD_STATS — never hardcoded in prose.
@@ -299,8 +307,17 @@ export default async function ATDPage({
             { v: String(ATD_STATS.techniques), l: locale === "zh" ? "技法已編目" : "techniques cataloged" },
             { v: String(ATD_STATS.withCve), l: locale === "zh" ? "有 CVE 佐證" : "CVE-backed" },
             { v: String(ATD_STATS.withLiveRule), l: locale === "zh" ? "已綁定偵測規則(覆蓋率,非門檻)" : "bound to a rule (coverage, not a gate)" },
-            { v: `${PROOF.selfTest.recall}% · ${PROOF.selfTest.fp} FP`, l: locale === "zh" ? `recall(self-test 語料 n=${PROOF.selfTest.n}·ATR ${PROOF_ATR_VERSION}·${PROOF_AS_OF})` : `recall · ${PROOF.selfTest.fp} FP (self-test corpus, n=${PROOF.selfTest.n}, ATR ${PROOF_ATR_VERSION}, ${PROOF_AS_OF})` },
-            { v: `${PROOF.garak.recall}%`, l: locale === "zh" ? `recall(garak 野外 n=${PROOF.garak.n}·ATR ${PROOF_ATR_VERSION}·${PROOF_AS_OF})` : `recall (garak in-the-wild, n=${PROOF.garak.n}, ATR ${PROOF_ATR_VERSION}, ${PROOF_AS_OF})` },
+            ...[
+              proofCard(
+                selfTest,
+                zh,
+                { en: "in-house self-test corpus", zh: "自家 self-test 語料" },
+                selfTest && selfTest.falsePositives !== null && selfTest.benign !== null
+                  ? { en: `${count(selfTest.falsePositives)} of ${count(selfTest.benign)} benign flagged in the hunt lane; not out-of-sample`, zh: `hunt lane 在 ${count(selfTest.benign)} 個良性樣本上誤報 ${count(selfTest.falsePositives)};不是樣本外證據` }
+                  : undefined,
+              ),
+              proofCard(garak, zh, { en: "garak in-the-wild", zh: "garak 野外" }, { en: "partly closed-book: many rules were written from this corpus", zh: "部分屬 closed-book:有不少規則是從這份語料寫的" }),
+            ].flatMap((c) => c ?? []),
           ].map((m, i) => (
             <div key={i} style={{ background: "var(--spec-tint)", borderRadius: "10px", padding: "0.9rem 1rem" }}>
               <div className="text-navy-ink" style={{ fontFamily: "var(--font-data)", fontSize: "1.35rem", fontWeight: 600, letterSpacing: "-0.01em" }}>{m.v}</div>
@@ -310,9 +327,9 @@ export default async function ATDPage({
         </div>
         <p className="text-stone" style={{ fontSize: "0.8rem", marginTop: "0.9rem", lineHeight: 1.6 }}>
           {locale === "zh" ? (
-            <>ATD 的偵測規則由 ATR 發布 —— 已合併進 Microsoft Agent Governance Toolkit 與 Cisco AI Defense 的開源 skill-scanner,並於 MISP/CIRCL 對映。consumer 整合的是 ATR 規則,非對本草案標準的背書。DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>。</>
+            <>ATD 的偵測規則由 ATR 發布 —— 已合併進 Cisco AI Defense 的開源 skill-scanner、用於 Microsoft Agent Governance Toolkit 的範例,並於 MISP/CIRCL 對映。consumer 整合的是 ATR 規則,非對本草案標準的背書。DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>。</>
           ) : (
-            <>ATD&apos;s detection rules ship in ATR — merged into Microsoft Agent Governance Toolkit and Cisco AI Defense&apos;s open-source skill-scanner, and mapped in MISP/CIRCL. Consumers integrate ATR rules; this is not an endorsement of this draft standard. DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>.</>
+            <>ATD&apos;s detection rules ship in ATR — merged into Cisco AI Defense&apos;s open-source skill-scanner, used in Microsoft Agent Governance Toolkit examples, and mapped in MISP/CIRCL. Consumers integrate ATR rules; this is not an endorsement of this draft standard. DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>.</>
           )}
         </p>
       </section>

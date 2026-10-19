@@ -156,9 +156,9 @@ ATR-2026-00003 covers known jailbreak framings, but novel creative frames evade 
 
 ATR's long-term architecture is a three-tier detection pipeline. Each tier addresses limitations that the previous tier cannot.
 
-### Layer 1: Pattern Matching (v0.1 -- current)
+### Layer 1: Pattern Matching (current)
 
-Regex and threshold-based detection. Sub-millisecond per event, deterministic, zero external dependencies. Catches known attack signatures and structural anomalies. This is the entire current release.
+Regex and threshold-based detection, evaluated in process with no network or model calls. Deterministic. The cost of one evaluation grows with the length of the input and with the number of rules in the lane: with every rule loaded, the median call takes about a millisecond for a short prompt and tens of milliseconds for a multi-kilobyte SKILL.md file (`scripts/bench-evaluate-latency.ts`; details in LIMITATIONS.md). Catches known attack signatures and structural anomalies. This is what the engine runs by default; Layers 2 and 3 below ship as optional components that run only when an integrator wires them in.
 
 **Strengths:** Fast, predictable, no infrastructure requirements, auditable rules.
 

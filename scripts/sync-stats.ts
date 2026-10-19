@@ -12,6 +12,8 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 
+import { syncGarakSentence } from './lib/citation-garak.js';
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, '..');
 
@@ -21,7 +23,7 @@ interface Stats {
   ruleCount: { total: number; effective?: number; stable: number; experimental: number; draft: number };
   spec: { version: string; status: string; doi: string };
   benchmarks: {
-    garak: { recall: number; samples: number; atr_version?: string };
+    garak: { recall: number; enforceLaneRecall?: number; samples: number; atr_version?: string };
     skill: { recall: number; precision: number; samples: number };
     pint: { recall: number; precision: number; samples: number };
     hackaprompt: { recall: number; baselineRecall: number; samples: number };
@@ -31,7 +33,7 @@ interface Stats {
   distribution: { npm: { downloads30d: number | null }; githubStars: number | null };
   coverage: {
     owaspAgentic: { display: string };
-    safeMcp: { display: string; percentage: number };
+    safeMcp: { covered: number; total: number; display: string; basis: string };
   };
   adoption: {
     externalOrgsMerged: number;
@@ -114,15 +116,12 @@ function syncCitation(s: Stats): SyncResult {
     // The abstract names the version its count belongs to. Left unsynced, it
     // read "At v4.1.0 it provides 825 rules" with the package at 4.1.4.
     out = out.replace(/\bAt v\d+\.\d+\.\d+[\w.-]* it provides\b/, `At v${s.version} it provides`);
-    out = out.replace(/\(\d+\.\d+% recall on the\b/, `(${s.benchmarks.garak.recall}% recall on the`);
-    // The ATR version in this sentence was NOT synced, so the abstract cited
-    // "91.5% ... ATR 3.5.0" — a recall from one version attributed to another.
-    // The recall and the version it was measured on have to move together.
-    out = out.replace(
-      /garak in-the-wild jailbreak benchmark, \d+ prompts, ATR [\w.-]+\)/,
-      `garak in-the-wild jailbreak benchmark, ${s.benchmarks.garak.samples} prompts, ATR ${s.benchmarks.garak.atr_version ?? s.version})`,
-    );
-    out = out.replace(/garak in-the-wild jailbreak benchmark, \d+ prompts\)/, `garak in-the-wild jailbreak benchmark, ${s.benchmarks.garak.samples} prompts)`);
+    // The garak sentence is generated whole: the hunt and enforce lanes, the
+    // version they were measured on, and the closed-book caveat. Patching the
+    // numbers inside wrapped prose is how it froze before: the version regex
+    // stopped matching, and the abstract cited ATR 3.5.12 (and once "91.5% ...
+    // ATR 3.5.0") long after the measurement moved. A missing sentence throws.
+    out = syncGarakSentence(out, s.benchmarks.garak, s.version);
     out = out.replace(/on a \d+-sample benign corpus/, `on a ${s.benchmarks.benign.samples}-sample benign corpus`);
     return out;
   });

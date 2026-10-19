@@ -1,0 +1,743 @@
+# Editorial source for the Gemara catalogs in spec/category-registry/gemara/.
+#
+# The four catalogs one directory up are GENERATED. Do not edit them by hand.
+# They are built by scripts/generate-gemara-catalogs.ts from two inputs:
+#
+#   spec/category-registry/v1.0.yaml   the category registry. It decides which
+#                                      categories exist, their ids, and their
+#                                      descriptions. Every registry category
+#                                      becomes one vector, with the registry's
+#                                      id and the registry's description.
+#   this file                          everything the registry does not say:
+#                                      vector titles and grouping, and the
+#                                      capability, threat and control catalogs
+#                                      that are written against those vectors.
+#
+# The generator refuses to run when the two disagree: a registry category with
+# no entry here, an entry here for a category the registry does not have, a
+# vector no threat reaches, or a reference to an id that does not exist.
+#
+# After editing this file or the registry:
+#   npx tsx scripts/generate-gemara-catalogs.ts
+# CI fails when the committed catalogs differ from the generator output
+# (tests/gemara-catalogs.test.ts).
+#
+# License: MIT
+
+bundle:
+  # Stamped as metadata.version on all four catalogs and used as the OCI tag
+  # (ghcr.io/<owner>/<repo>/gemara:<version>). MAJOR.MINOR must equal the
+  # registry version. Bump PATCH with any change here that alters a generated
+  # catalog: the publish workflow refuses to push different content under a
+  # version that is already published.
+  version: "1.0.0"
+  # The Gemara release whose CUE schemas these catalogs are validated against.
+  gemara-version: "1.6.0"
+  author:
+    id: atr
+    name: Agent Threat Rules
+    type: Software Assisted
+    contact:
+      name: ATR maintainers
+      affiliation: Agent Threat Rules
+      email: adam@agentthreatrule.org
+
+# References to documents outside this repository. A reference is written into
+# a catalog's metadata only when that catalog uses it. The reference to the
+# category registry itself ("ATR") is generated, not declared here.
+external-references:
+  - id: OWASP-ASI
+    title: OWASP Agentic Security Initiative Top 10
+    version: "2026"
+    url: "https://genai.owasp.org/"
+    description: >
+      Guidance each ATR rule already cross-references in its own metadata.
+  - id: MITRE-ATLAS
+    title: MITRE ATLAS
+    version: "2026"
+    url: "https://atlas.mitre.org/"
+    description: >
+      Adversarial technique taxonomy each ATR rule already cross-references.
+
+vector-catalog:
+  file: atr-attack-vector-catalog.yaml
+  id: ATR-AI-AGENT-VECTOR-CATALOG
+  title: AI Agent Attack Vector Catalog (ATR)
+  description: >
+    Attack vectors against AI agent systems, one per detection category in the
+    Agent Threat Rules (ATR) category registry. A category is a method by which
+    a threat is realized rather than the threat itself, which is why it lives
+    here and is referenced from the threat catalog rather than restated in it.
+    Generated from the registry: each vector id is a registry category id and
+    each description is the registry's description of that category.
+
+    Validated against Gemara's #VectorCatalog, which is marked experimental in
+    vectorcatalog.cue; this artifact may need to change with the schema.
+  groups:
+    - id: via-content
+      title: Through content the agent reads
+      description: >
+        Vectors that arrive inside data the agent ingests and are acted on as
+        though they were operator instructions.
+    - id: via-extension
+      title: Through an artifact the agent loads
+      description: >
+        Vectors carried by tools, skills, plugins or model artifacts, which
+        arrive through the supply chain rather than the conversation.
+    - id: via-authority
+      title: Through the authority the agent holds
+      description: >
+        Vectors that exploit what the agent is permitted to do rather than what
+        it is told.
+  # Keyed by registry category id. Title and group only: the description is
+  # taken from the registry.
+  vectors:
+    prompt-injection:
+      title: Instruction injection into model context
+      group: via-content
+    model-abuse:
+      title: Model-level evasion of robustness and oversight
+      group: via-content
+    data-poisoning:
+      title: Poisoning of state the agent will read later
+      group: via-content
+    agent-manipulation:
+      title: Forged peer-agent identity and message framing
+      group: via-content
+    tool-poisoning:
+      title: Manipulation of tool calls and tool output
+      group: via-extension
+    skill-compromise:
+      title: Compromised skill, plugin or server package
+      group: via-extension
+    model-security:
+      title: Attack on the model artifact
+      group: via-extension
+    context-exfiltration:
+      title: Context and credential exfiltration
+      group: via-authority
+    privilege-escalation:
+      title: Privilege escalation and delegated authority abuse
+      group: via-authority
+    excessive-autonomy:
+      title: Action beyond declared scope or authorization
+      group: via-authority
+
+capability-catalog:
+  file: ai-agent-capability-catalog.yaml
+  id: ATR-AI-AGENT-CAPABILITY-CATALOG
+  title: AI Agent Capability Catalog
+  description: >
+    Capabilities of AI agent systems that create the opportunity for the
+    threats catalogued by Agent Threat Rules (ATR). Each capability describes
+    a feature or function an agent can perform, not a threat. Threats in the
+    companion threat catalog reference these capabilities. Authored by the ATR
+    project and validated against the Gemara schemas; ATR hosts the content,
+    Gemara defines the schema.
+  groups:
+    - id: model-interaction
+      title: Model Interaction
+      description: >
+        Capabilities by which an agent receives instructions and untrusted
+        content into a language model and acts on the model's output.
+    - id: tool-and-protocol
+      title: Tool and Protocol Access
+      description: >
+        Capabilities by which an agent invokes external tools and connects to
+        tool servers over protocols such as the Model Context Protocol (MCP).
+    - id: extensibility
+      title: Extensibility
+      description: >
+        Capabilities by which an agent loads and runs third-party extensions
+        such as skills, plugins, and packaged capability bundles.
+    - id: state-and-memory
+      title: State and Memory
+      description: >
+        Capabilities by which an agent reads and writes persistent state,
+        conversation context, and long-term memory across turns and sessions.
+    - id: autonomy-and-coordination
+      title: Autonomy and Coordination
+      description: >
+        Capabilities by which an agent acts without per-step human approval and
+        coordinates with other agents.
+    - id: model-supply-chain
+      title: Model supply chain
+      description: >
+        Capabilities by which the model an agent depends on is built, packaged
+        and loaded. These sit outside agent runtime: they shape behaviour before
+        any request is served.
+  capabilities:
+    - id: CAP-MODEL-INFERENCE
+      title: Model Inference on Untrusted Input
+      description: >
+        The agent passes user instructions and content drawn from external
+        sources into a language model and treats the resulting output as
+        actionable. Mixing trusted instructions with untrusted content in a
+        single context window is the feature that makes prompt injection and
+        jailbreak attempts possible.
+      group: model-interaction
+    - id: CAP-OUTPUT-ACTION
+      title: Acting on Model Output
+      description: >
+        The agent converts model output into actions, tool calls, or content
+        returned to downstream systems. Because output is consumed without an
+        independent trust boundary, manipulated output can redirect behaviour
+        or carry exfiltrated data.
+      group: model-interaction
+    - id: CAP-TOOL-INVOCATION
+      title: Tool Invocation
+      description: >
+        The agent calls external tools and functions, passing arguments and
+        receiving results that re-enter the model context. Tool arguments and
+        tool results are an attack surface for injection, command execution,
+        and over-broad actions.
+      group: tool-and-protocol
+    - id: CAP-MCP-CONNECTION
+      title: MCP and Tool-Server Connection
+      description: >
+        The agent connects to tool servers over the Model Context Protocol or
+        similar transports, consuming server-provided tool manifests, schemas,
+        and descriptions. Server-controlled metadata is trusted at connection
+        time, which creates the opportunity for tool poisoning and tool
+        redefinition (rug-pull) after initial approval.
+      group: tool-and-protocol
+    - id: CAP-CROSS-AGENT-MESSAGING
+      title: Cross-Agent Message Passing
+      description: >
+        The agent sends and receives messages to and from other agents in a
+        multi-agent workflow. Messages from peer agents are treated as
+        trusted input, which lets a compromised or manipulated agent influence
+        others.
+      group: tool-and-protocol
+    - id: CAP-SKILL-LOADING
+      title: Skill and Plugin Loading
+      description: >
+        The agent loads third-party skills, plugins, or capability bundles and
+        executes the instructions and code they contain. Loaded extensions run
+        with the agent's privileges, which creates the opportunity for supply
+        chain compromise and backdoored or over-privileged skills.
+      group: extensibility
+    - id: CAP-MEMORY-WRITE
+      title: Memory and State Write
+      description: >
+        The agent writes facts, instructions, or artifacts into persistent
+        memory or shared state that influences later turns and sessions.
+        Writable memory is the feature that lets poisoned content persist and
+        take effect after the originating input is gone.
+      group: state-and-memory
+    - id: CAP-MEMORY-READ
+      title: Context and Memory Read
+      description: >
+        The agent reads conversation history, retrieved documents, and
+        long-term memory back into the active context. Reading attacker-
+        influenced state re-introduces untrusted content and is a channel for
+        indirect injection and staged data exfiltration.
+      group: state-and-memory
+    - id: CAP-AUTONOMOUS-ACTION
+      title: Autonomous Action Without Per-Step Approval
+      description: >
+        The agent executes multi-step plans, loops, and side-effecting actions
+        without human approval at each step. Unbounded autonomy is the feature
+        that turns a single manipulated decision into runaway loops, resource
+        abuse, or unauthorized real-world actions.
+      group: autonomy-and-coordination
+    - id: CAP-PRIVILEGED-EXECUTION
+      title: Privileged and Delegated Execution
+      description: >
+        The agent runs with delegated credentials and access to systems,
+        databases, files, and networks. Holding standing privilege creates the
+        opportunity for privilege escalation, sandbox escape, and use of the
+        agent's access beyond its intended scope.
+      group: autonomy-and-coordination
+    - id: CAP-MODEL-ARTIFACT-LOADING
+      title: Model Artifact Loading
+      description: >
+        The agent depends on a serialized model artifact that is fetched from a
+        registry or filesystem and deserialized into an executable object before
+        any behavioural check runs. The artifact is trusted at the moment it is
+        least verified.
+      group: model-supply-chain
+    - id: CAP-TRAINING-DATA-INGESTION
+      title: Training and Fine-Tuning Data Ingestion
+      description: >
+        The model the agent depends on is adapted using data drawn from sources
+        the operator does not fully control. Ingested data shapes behaviour after
+        the originating input is gone, and every deployment of the resulting model
+        carries that shaping.
+      group: model-supply-chain
+
+threat-catalog:
+  file: atr-threat-catalog.yaml
+  id: ATR-AI-AGENT-THREAT-CATALOG
+  title: AI Agent Threat Catalog
+  description: >
+    Threats to an organization operating AI agents, written at the level of
+    what goes wrong and why it matters. Each threat names the capabilities that
+    create the opportunity for it and the attack vectors through which it is
+    realized. The counts deliberately do not line up: several vectors reach the
+    same impact, and one vector reaches more than one.
+  # Description written on each mapping-reference this catalog carries to
+  # another catalog in the bundle.
+  reference-descriptions:
+    ATR-AI-AGENT-CAPABILITY-CATALOG: >
+      Capabilities of AI agent systems that create the opportunity for these
+      threats.
+    ATR-AI-AGENT-VECTOR-CATALOG: >
+      Methods by which these threats are realized, corresponding to ATR's
+      detection categories.
+  groups:
+    - id: unauthorized-action
+      title: Action the operator did not authorize
+      description: Impacts arising from the agent doing something on the operator's behalf.
+    - id: loss-of-confidentiality
+      title: Loss of confidentiality
+      description: Impacts arising from data leaving the boundary the operator set.
+    - id: loss-of-containment
+      title: Loss of containment
+      description: Impacts arising from execution or authority escaping its intended bound.
+  threats:
+    - id: ATR-THREAT-UNAUTHORIZED-ACTION
+      title: Unauthorized action executed with the operator's standing authority
+      description: >
+        The agent takes a consequential action the operator never requested — a
+        tool call, a write, a message to a third party — because instructions
+        reached the model from a source the operator does not control. The action
+        carries the operator's own credentials and audit identity, so it is
+        indistinguishable from legitimate use after the fact, and remediation
+        means unwinding real effects rather than revoking a session.
+      group: unauthorized-action
+      capabilities:
+        - reference-id: ATR-AI-AGENT-CAPABILITY-CATALOG
+          entries:
+            - reference-id: CAP-OUTPUT-ACTION
+            - reference-id: CAP-TOOL-INVOCATION
+            - reference-id: CAP-MODEL-INFERENCE
+            - reference-id: CAP-MCP-CONNECTION
+            - reference-id: CAP-CROSS-AGENT-MESSAGING
+      vectors:
+        - reference-id: ATR-AI-AGENT-VECTOR-CATALOG
+          entries:
+            - reference-id: prompt-injection
+            - reference-id: tool-poisoning
+            - reference-id: agent-manipulation
+            - reference-id: model-abuse
+          remarks: >
+            Four vectors reach this one impact. Which of them a deployment is
+            exposed to depends on whether it ingests untrusted content, connects
+            to third-party tool servers, or runs more than one agent.
+      actors:
+        - id: external-content-author
+          name: Author of content the agent ingests
+          type: Human
+
+    - id: ATR-THREAT-DELAYED-UNAUTHORIZED-ACTION
+      title: Unauthorized action triggered long after the input that caused it
+      description: >
+        Attacker-controlled content is written into memory, cache or a retrieved
+        corpus and shapes a decision in a later session. The organization loses
+        the ability to reason about an incident from its inputs, because the
+        request that produced the harmful action is clean and the poisoned state
+        is not attributable to it without retained provenance.
+      group: unauthorized-action
+      capabilities:
+        - reference-id: ATR-AI-AGENT-CAPABILITY-CATALOG
+          entries:
+            - reference-id: CAP-MEMORY-WRITE
+            - reference-id: CAP-MEMORY-READ
+      vectors:
+        - reference-id: ATR-AI-AGENT-VECTOR-CATALOG
+          entries:
+            - reference-id: data-poisoning
+            - reference-id: prompt-injection
+          remarks: >
+            Separated from the immediate case because the detection opportunity is
+            at write time, not at the time of the harmful action.
+      actors:
+        - id: external-content-author
+          name: Author of content the agent ingests
+          type: Human
+
+    - id: ATR-THREAT-CONTEXT-DISCLOSURE
+      title: Disclosure of conversation context, credentials and retrieved data
+      description: >
+        Credentials, prior conversation content or documents the agent was able
+        to retrieve leave the trust boundary through an outbound call the agent
+        is permitted to make. The organization loses control of secrets and of
+        whatever customer data the agent could read, and because the call is
+        permitted, network controls do not register it as an incident.
+      group: loss-of-confidentiality
+      capabilities:
+        - reference-id: ATR-AI-AGENT-CAPABILITY-CATALOG
+          entries:
+            - reference-id: CAP-OUTPUT-ACTION
+            - reference-id: CAP-TOOL-INVOCATION
+            - reference-id: CAP-MEMORY-READ
+      vectors:
+        - reference-id: ATR-AI-AGENT-VECTOR-CATALOG
+          entries:
+            - reference-id: context-exfiltration
+            - reference-id: prompt-injection
+            - reference-id: model-security
+          remarks: >
+            Model-security appears here for behaviour extraction: systematic
+            probing recovers the system prompt, which is context disclosure by a
+            different route than an outbound call.
+      actors:
+        - id: external-content-author
+          name: Author of content the agent ingests
+          type: Human
+
+    - id: ATR-THREAT-EXECUTION-ESCAPE
+      title: Code execution or privilege beyond the agent's intended bound
+      description: >
+        Execution or authority escapes the scope the deployment intended, whether
+        through a delegation chain, a reused credential, a hostile extension, or
+        deserialization of an untrusted artifact at load time. This is the impact
+        where the blast radius is not bounded by the agent: the host, adjacent
+        workloads and any credential reachable from them are in scope.
+      group: loss-of-containment
+      capabilities:
+        - reference-id: ATR-AI-AGENT-CAPABILITY-CATALOG
+          entries:
+            - reference-id: CAP-PRIVILEGED-EXECUTION
+            - reference-id: CAP-SKILL-LOADING
+            - reference-id: CAP-MODEL-ARTIFACT-LOADING
+      vectors:
+        - reference-id: ATR-AI-AGENT-VECTOR-CATALOG
+          entries:
+            - reference-id: privilege-escalation
+            - reference-id: skill-compromise
+            - reference-id: model-security
+          remarks: >
+            Three vectors, one blast radius. What these share is that execution or
+            authority leaves the agent's bound, not how it got there, so the
+            containment question is the same in all three cases. Which one a
+            deployment is exposed to follows from whether it loads third-party
+            extensions, deserializes model artifacts, or delegates credentials.
+      actors:
+        - id: extension-publisher
+          name: Publisher of a third-party skill, plugin or tool server
+          type: Human
+        - id: tenant-user
+          name: A user with legitimate access to the agent
+          type: Human
+
+    - id: ATR-THREAT-UNBOUNDED-COMMITMENT
+      title: Commitment of resources without a human decision
+      description: >
+        The agent commits money, capacity or an external obligation where a human
+        approval was intended, or continues acting past its objective. The cost is
+        incurred rather than risked, and the organization discovers it from the
+        effect rather than from a security signal.
+      group: unauthorized-action
+      capabilities:
+        - reference-id: ATR-AI-AGENT-CAPABILITY-CATALOG
+          entries:
+            - reference-id: CAP-AUTONOMOUS-ACTION
+            - reference-id: CAP-OUTPUT-ACTION
+      vectors:
+        - reference-id: ATR-AI-AGENT-VECTOR-CATALOG
+          entries:
+            - reference-id: excessive-autonomy
+      actors:
+        - id: tenant-user
+          name: A user with legitimate access to the agent
+          type: Human
+
+    - id: ATR-THREAT-MODEL-BEHAVIOUR-COMPROMISE
+      title: Compromise of the model's behaviour through its supply chain
+      description: >
+        The behaviour of the deployed model is shaped by an attacker before the
+        agent ever runs, through poisoned adaptation data. Nothing in the request
+        path is anomalous, so runtime inspection cannot see it, and the defect is
+        carried by every deployment of that model until it is retrained.
+      group: loss-of-containment
+      capabilities:
+        - reference-id: ATR-AI-AGENT-CAPABILITY-CATALOG
+          entries:
+            - reference-id: CAP-TRAINING-DATA-INGESTION
+      vectors:
+        - reference-id: ATR-AI-AGENT-VECTOR-CATALOG
+          entries:
+            - reference-id: model-security
+          remarks: >
+            The detection opportunity here is in the data pipeline, not on the
+            request path, which is why it is a distinct threat from the execution
+            escape that shares the same vector.
+      actors:
+        - id: upstream-model-supplier
+          name: Producer of the model or of its adaptation data
+          type: Human
+
+control-catalog:
+  file: atr-detection-control-catalog.yaml
+  id: ATR-DETECTION-CONTROL-CATALOG
+  title: ATR Detection Control Catalog
+  description: >
+    Detection controls an operator can apply using Agent Threat Rules (ATR),
+    organized by where in the lifecycle the inspection happens rather than by
+    which rule category is used. Three are written out; the rest are declared
+    Draft rather than filled in with the same text, because a control whose
+    assessment requirement cannot fail is not a control. The OWASP ASI and
+    MITRE ATLAS references on each control are the modal references on the
+    rules in the categories it is implemented with, as counted on the rule
+    corpus on 2026-08-24; they are not recomputed when rules change.
+  reference-descriptions:
+    ATR-AI-AGENT-THREAT-CATALOG: Threats these controls are intended to detect.
+  applicability-groups:
+    - id: pre-load
+      title: Before an artifact is loaded
+      description: >
+        Applies where an artifact is inspected before the agent can use it —
+        skills, plugins, tool manifests, model files.
+    - id: request-path
+      title: On the request path
+      description: >
+        Applies where content is inspected while the agent is running, before
+        it reaches the model or leaves the boundary.
+    - id: at-write
+      title: When content is committed to durable state
+      description: >
+        Applies when content is written to memory, a cache or a retrieval
+        corpus, regardless of whether an agent is executing at the time.
+    - id: data-pipeline
+      title: In the data pipeline
+      description: >
+        Applies where training or adaptation data is assembled, ahead of any
+        agent execution.
+  groups:
+    - id: artifact-screening
+      title: Artifact screening
+      description: Controls that inspect something before the agent is allowed to use it.
+    - id: content-screening
+      title: Content screening
+      description: Controls that inspect content on the request or response path.
+    - id: pipeline-screening
+      title: Pipeline screening
+      description: Controls that inspect data before it shapes a model.
+  controls:
+    - id: ATR-CTL-EXTENSION-SCREENING
+      title: Screening of loadable extensions before use
+      objective: >
+        No skill, plugin, tool manifest or model artifact becomes available to the
+        agent without having been inspected for hostile content, and the operator
+        can tell afterwards which ruleset that inspection was performed under.
+      group: artifact-screening
+      assessment-requirements:
+        - id: ATR-CTL-EXTENSION-SCREENING-AR-1
+          text: >
+            Every extension artifact MUST be scanned before it is registered as
+            available to the agent, and registration MUST fail closed when the
+            scan cannot complete or the ruleset version cannot be resolved.
+          applicability: [pre-load]
+          recommendation: >
+            Failing closed is the part that is usually skipped. A scanner that is
+            unreachable and treated as a pass converts this control into a
+            formality without changing any observable behaviour.
+        - id: ATR-CTL-EXTENSION-SCREENING-AR-2
+          text: >
+            A serialized model artifact MUST NOT be deserialized before its digest
+            has been checked against the digest recorded when it was screened.
+          applicability: [pre-load]
+          recommendation: >
+            Deserialization is the execution boundary for this class of artifact,
+            so a check performed after loading has already lost.
+        - id: ATR-CTL-EXTENSION-SCREENING-AR-3
+          text: >
+            The ruleset version in effect MUST be recorded with each screening
+            result and retained for as long as the artifact remains registered.
+          applicability: [pre-load]
+          recommendation: >
+            A clean result is bounded by the rules that ran. Without the version,
+            a later question about coverage has no answer.
+      guidelines:
+        - reference-id: OWASP-ASI
+          entries:
+            - reference-id: "ASI04:2026"
+            - reference-id: "ASI05:2026"
+        - reference-id: MITRE-ATLAS
+          entries:
+            - reference-id: AML.T0010
+        - reference-id: ATR
+          entries:
+            - reference-id: skill-compromise
+            - reference-id: model-security
+          remarks: >
+            The rule categories this control is implemented with; each id is a
+            category in the ATR category registry and a directory under rules/.
+      threats:
+        - reference-id: ATR-AI-AGENT-THREAT-CATALOG
+          entries:
+            - reference-id: ATR-THREAT-EXECUTION-ESCAPE
+            - reference-id: ATR-THREAT-UNAUTHORIZED-ACTION
+          remarks: >
+            Screening covers both because a hostile extension can either execute
+            directly or steer the model into acting; the rules that detect each
+            differ, the moment of inspection does not.
+      state: Active
+
+    - id: ATR-CTL-INBOUND-CONTENT-SCREENING
+      title: Screening of untrusted content entering model context
+      objective: >
+        Content reaching the model from a source the operator does not control is
+        inspected for embedded instructions before the agent acts on it, and a
+        detection carries enough provenance for a human to adjudicate it.
+      group: content-screening
+      assessment-requirements:
+        - id: ATR-CTL-INBOUND-CONTENT-SCREENING-AR-1
+          text: >
+            Content retrieved from an external source MUST be inspected before it
+            enters the model context, and each detection MUST record the matching
+            rule id, the ruleset version, and the location of the match within the
+            content.
+          applicability: [request-path]
+          recommendation: >
+            Recording the location is what makes a detection adjudicable. A rule
+            id alone tells a reviewer that something matched, not what.
+        - id: ATR-CTL-INBOUND-CONTENT-SCREENING-AR-2
+          text: >
+            Content written into persistent memory or a retrieval corpus MUST be
+            inspected at write time as well as at read time.
+          applicability: [request-path, at-write]
+          recommendation: >
+            Write-time inspection is the only point at which the originating
+            request is still available to attribute a later action to.
+        - id: ATR-CTL-INBOUND-CONTENT-SCREENING-AR-3
+          text: >
+            The deployment MUST record which rule maturity lane was in effect for
+            each inspection, and MUST NOT block on a lane the operator has not
+            accepted for blocking.
+          applicability: [request-path]
+          recommendation: >
+            ATR publishes rules at differing maturity. Blocking on a lane intended
+            for triage converts a detection surface into an availability incident.
+      guidelines:
+        - reference-id: OWASP-ASI
+          entries:
+            - reference-id: "ASI01:2026"
+            - reference-id: "ASI06:2026"
+        - reference-id: MITRE-ATLAS
+          entries:
+            - reference-id: AML.T0051
+        - reference-id: ATR
+          entries:
+            - reference-id: prompt-injection
+            - reference-id: data-poisoning
+          remarks: >
+            The rule categories this control is implemented with; each id is a
+            category in the ATR category registry and a directory under rules/.
+      threats:
+        - reference-id: ATR-AI-AGENT-THREAT-CATALOG
+          entries:
+            - reference-id: ATR-THREAT-UNAUTHORIZED-ACTION
+            - reference-id: ATR-THREAT-DELAYED-UNAUTHORIZED-ACTION
+      state: Active
+
+    - id: ATR-CTL-EGRESS-SCREENING
+      title: Screening of agent-initiated egress
+      objective: >
+        Content the agent sends outside the trust boundary is inspected before it
+        leaves, so that a permitted call carrying context or credentials is
+        surfaced rather than passing on the strength of its destination.
+      group: content-screening
+      assessment-requirements:
+        - id: ATR-CTL-EGRESS-SCREENING-AR-1
+          text: >
+            Outbound request content MUST be inspected before the request is
+            issued, not reconstructed from logs afterwards.
+          applicability: [request-path]
+          recommendation: >
+            Post-hoc inspection can attribute a disclosure but cannot prevent it,
+            and for credentials the distinction is the whole control.
+        - id: ATR-CTL-EGRESS-SCREENING-AR-2
+          text: >
+            Credential-bearing headers MUST be redacted before content is passed
+            to inspection, and a detection MUST NOT reproduce matched credential
+            material in its finding.
+          applicability: [request-path]
+          recommendation: >
+            A detection surface that stores what it detected becomes a second
+            copy of the secret, in a system usually held to a lower standard.
+        - id: ATR-CTL-EGRESS-SCREENING-AR-3
+          text: >
+            Where inspection cannot evaluate a request shape, the deployment MUST
+            record that the request was not evaluated rather than recording it as
+            clean.
+          applicability: [request-path]
+          recommendation: >
+            Rules are written against an event vocabulary. Where a request does
+            not map onto it, "no finding" and "not looked at" are different facts
+            and only one of them is safe to aggregate.
+      guidelines:
+        - reference-id: MITRE-ATLAS
+          entries:
+            - reference-id: AML.T0057
+            - reference-id: AML.T0056
+        - reference-id: ATR
+          entries:
+            - reference-id: context-exfiltration
+          remarks: >
+            The rule category this control is implemented with. No OWASP ASI
+            entry is cited: the modal reference on these rules is ASI01, which
+            names the injection that induces the disclosure rather than the
+            disclosure itself, so citing it here would overstate the fit.
+      threats:
+        - reference-id: ATR-AI-AGENT-THREAT-CATALOG
+          entries:
+            - reference-id: ATR-THREAT-CONTEXT-DISCLOSURE
+      state: Active
+
+    - id: ATR-CTL-AUTONOMY-BOUNDING
+      title: Bounding of unattended commitment
+      objective: >
+        Consequential commitments made without a human decision point are
+        detected and bounded.
+      group: content-screening
+      assessment-requirements:
+        - id: ATR-CTL-AUTONOMY-BOUNDING-AR-1
+          text: >
+            An action that commits funds, capacity or an external obligation MUST
+            require a recorded human decision, and the deployment MUST be able to
+            show which decision authorized a given commitment.
+          applicability: [request-path]
+          state: Draft
+          recommendation: >
+            Held Draft because ATR cannot assess it. The rules under
+            rules/excessive-autonomy detect the shapes that precede an unbounded
+            commitment — loop continuation, scope expansion — but nothing in the
+            corpus observes whether an approval was obtained, because approval is
+            a property of the deployment's control flow rather than of any event
+            ATR inspects. Written out so the gap is visible, and Draft so no
+            evaluator treats it as assessable today.
+      threats:
+        - reference-id: ATR-AI-AGENT-THREAT-CATALOG
+          entries:
+            - reference-id: ATR-THREAT-UNBOUNDED-COMMITMENT
+      state: Draft
+
+    - id: ATR-CTL-ADAPTATION-DATA-SCREENING
+      title: Screening of model adaptation data
+      objective: >
+        Data used to adapt a model is inspected before it shapes behaviour.
+      group: pipeline-screening
+      assessment-requirements:
+        - id: ATR-CTL-ADAPTATION-DATA-SCREENING-AR-1
+          text: >
+            Data used to adapt or fine-tune a model MUST be screened for
+            attacker-controlled content before it enters the training set.
+          applicability: [data-pipeline]
+          state: Draft
+          recommendation: >
+            Held Draft because of a mismatch that is easy to state wrongly. ATR
+            does carry a rule for this — ATR-2026-00073, Malicious Fine-tuning
+            Data, which cites AML.T0020 Poison Training Data — but it binds a
+            runtime event field, user_input over an agent I/O source, rather than
+            a corpus at rest. A deployment could satisfy this requirement with a
+            pipeline scanner ATR had no part in, and ATR could pass a request
+            without the training set having been screened. Draft until rules
+            exist that run against a corpus rather than an event.
+      threats:
+        - reference-id: ATR-AI-AGENT-THREAT-CATALOG
+          entries:
+            - reference-id: ATR-THREAT-MODEL-BEHAVIOUR-COMPROMISE
+      state: Draft

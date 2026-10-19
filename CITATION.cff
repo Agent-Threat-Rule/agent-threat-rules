@@ -3,21 +3,28 @@ message: "If you use ATR in academic work or security research, please cite it a
 title: "ATR: Agent Threat Rules — Open Detection Standard for AI Agent Threats"
 abstract: >
   ATR is an open-source detection rule set for AI agent threats, analogous to
-  Sigma for SIEM or YARA for malware. At v4.1.5 it provides 823 rules across 10
+  Sigma for SIEM or YARA for malware. At v4.1.5 it provides 829 rules across 10
   threat categories (prompt injection, tool poisoning, context exfiltration,
   agent manipulation, skill compromise, model abuse, data poisoning, privilege
   escalation, excessive autonomy, model security), mapped to OWASP Agentic Top
-  10 (10/10 categories), SAFE-MCP (78 of 85 techniques) and MITRE ATLAS. Rules
-  are hand-authored from real attack payloads, including the NVIDIA garak probe
-  corpus (92.3% recall on the 650-prompt garak in-the-wild jailbreak corpus,
-  measured at ATR 3.5.12), and are held to a community safety gate that requires
-  true-positive and true-negative test cases on every rule, verifies each rule
-  matches its own true positives, and rejects any rule that fires on the
-  committed benign skill corpus. The exact thresholds are defined in
-  scripts/check-rules-safety.ts and CONTRIBUTING.md rather than here.
-  Rule counts change daily. Current counts, per-corpus benchmark figures and the
-  measurement file behind each one are published in data/stats.json and the
-  README evaluation table; those are the citable source, not this abstract.
+  10 (10/10 categories), SAF-MCP (reviewed candidate technique mappings) and MITRE ATLAS. Rules
+  are written from attack payloads, public attack corpora (including the NVIDIA
+  garak probe corpus) and vulnerability advisories, by contributors and by
+  automated pipelines (corpus imports, CVE sweeps and language-model drafting).
+  Every rule carries true-positive and true-negative test cases. When a rule is
+  added, a community safety gate checks that it matches its own true positives
+  and fires on nothing in the committed benign skill corpus; a changed rule is
+  checked only for new benign false positives. The exact thresholds are defined
+  in scripts/check-rules-safety.ts and CONTRIBUTING.md rather than here.
+  On the 650-prompt garak in-the-wild jailbreak corpus, measured at ATR 4.1.5,
+  recall is 92.3% in the hunt lane (the engine default, which loads every rule
+  maturity) and 0.9% in the enforce lane (stable rules only, the lane to run
+  with blocking on). The hunt figure is partly closed-book: many of the rules
+  that fire on this corpus were written from it (README section 8).
+  Rule counts change daily. Current counts are published in stats.json; the
+  per-corpus benchmark figures, in both lanes and with the measurement file
+  behind each one, in the README evaluation table and data/measurements/.
+  Those are the citable source, not this abstract.
 type: software
 authors:
   - family-names: "Lin"

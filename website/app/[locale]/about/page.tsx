@@ -52,19 +52,19 @@ const MILESTONES: Milestone[] = [
       zh: "v1.0.0 發布",
     },
     detail: {
-      en: "Coverage milestone: OWASP Agentic 10/10, SAFE-MCP 91.8%, PINT F1 76.7.",
-      zh: "覆蓋里程碑：OWASP Agentic 10/10、SAFE-MCP 91.8%、PINT F1 76.7。",
+      en: "Coverage milestone: OWASP Agentic 10/10, PINT F1 76.7.",
+      zh: "覆蓋里程碑：OWASP Agentic 10/10、PINT F1 76.7。",
     },
   },
   {
     date: "2026-04-13",
     title: {
-      en: "Microsoft AGT merges 15 rules (PR #908)",
-      zh: "Microsoft AGT 合併 15 條規則（PR #908）",
+      en: "Microsoft AGT merges a 15-rule ATR example (PR #908)",
+      zh: "Microsoft AGT 合併 15 條規則的 ATR 範例（PR #908）",
     },
     detail: {
-      en: "Second enterprise adoption. 554 additions, adapted as PolicyDocument.",
-      zh: "第二個企業級採用。新增 554 行，改寫為 PolicyDocument 格式。",
+      en: "Merged as an example directory: 554 additions, adapted as PolicyDocument. The rule YAML is no longer in the AGT repository.",
+      zh: "以範例目錄合併:新增 554 行,改寫為 PolicyDocument 格式。規則 YAML 現已不在 AGT repo。",
     },
   },
   {
@@ -96,8 +96,8 @@ const MILESTONES: Milestone[] = [
       zh: "v2.0.11 · NVIDIA garak 覆蓋",
     },
     detail: {
-      en: "193 new rules covering the full NVIDIA garak probe corpus (311 total). garak in-the-wild jailbreak subset recall: 97.1% (646/666) at the time.",
-      zh: "新增 193 條規則，涵蓋完整 NVIDIA garak probe corpus（總計 311 條）。garak in-the-wild jailbreak 子集召回率（當時）：97.1%（646/666）。",
+      en: "193 new rules, many of them written from the NVIDIA garak probe corpus (311 total). garak in-the-wild jailbreak subset recall at the time: 97.1% (647/666), with every rule loaded (detection lanes came later; it is what today's hunt lane loads). Many of these rules were written from that same corpus, so the figure is partly closed-book, not an out-of-sample result.",
+      zh: "新增 193 條規則，其中不少是從 NVIDIA garak probe corpus 寫出來的（總計 311 條）。garak in-the-wild jailbreak 子集召回率（當時）：97.1%（647/666），載入全部規則（當時還沒有偵測 lane，等同今天的 hunt lane）。這批規則有不少正是從同一份語料寫出來的，所以這個數字部分屬於 closed-book，不是樣本外成績。",
     },
   },
   {
@@ -114,12 +114,12 @@ const MILESTONES: Milestone[] = [
   {
     date: "2026-04-26",
     title: {
-      en: "Microsoft AGT 287-rule expansion + weekly auto-sync (PR #1277)",
-      zh: "Microsoft AGT 287 條規則擴張 + 每週自動同步 (PR #1277)",
+      en: "Microsoft AGT example expanded to 287 rules + weekly sync workflow (PR #1277)",
+      zh: "Microsoft AGT 範例擴充至 287 條規則 + 每週同步 workflow (PR #1277)",
     },
     detail: {
-      en: "Follow-up to PR #908's 15-rule PoC. Adds 272 more rules (287 total) and a workflow that auto-syncs ATR upstream releases every week. First standards-grade auto-sync pipeline.",
-      zh: "PR #908 (15 條 PoC) 的 production 跟進。新增 272 條規則 (合計 287 條),並加上每週自動同步 ATR 上游釋出版本的 workflow。第一條標準級自動同步管線。",
+      en: "Follow-up to PR #908's 15-rule example. Adds 272 more rules (287 total) and a weekly sync workflow. The rule YAML has since left the AGT repository, and the workflow is pinned to an old ATR release.",
+      zh: "PR #908 (15 條範例) 的跟進。新增 272 條規則 (合計 287 條) 與每週同步 workflow。規則 YAML 之後已不在 AGT repo,workflow 釘在舊版 ATR。",
     },
   },
   {
@@ -226,8 +226,8 @@ export default async function AboutPage({
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? <>標準由社群驅動，並透過每日自動結晶飛輪持續擴張——紅隊大掃描與 CVE 攝取兩條管線各自跑完完整 sweep，把規則集從 462 條長到 {ruleCount} 條。</>
-            : <>The standard is community-driven and grows through daily auto-crystallization flywheels — a red-team mega-scan pipeline and a CVE-ingestion pipeline each ran full sweeps, expanding the ruleset from 462 to {ruleCount} rules.</>}
+            ? <>標準由社群驅動。從六月起，規則集從 462 條成長到 {ruleCount} 條，來源是 CVE 與安全公告掃描、benchmark 漏報挖掘與貢獻者；每一條都經由維護者合併的 pull request 進入 main。</>
+            : <>The standard is community-driven. Since June the ruleset has grown from 462 to {ruleCount} rules, from CVE and advisory sweeps, benchmark-miss mining and contributors; each rule reaches main through a pull request a maintainer merges.</>}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
@@ -296,8 +296,8 @@ export default async function AboutPage({
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "目前的外部採用包含三筆已合併的上游整合(Cisco AI Defense 的開源 skill-scanner、Microsoft AGT 287 條規則加每週自動同步、Gen Digital Sage 已合併的規則包 —— 憑據都是公開 repo 裡已合併的 PR),兩個標準機構已合併(MISP/CIRCL 的 taxonomies #323 + galaxy #1207、OWASP A-S-R-H #74),以及兩條送審中的 standards-body 提案(NIST AI RMF 社群 OSCAL catalog 已自 publish · usnistgov/oscal-content#338 協作分支審查中,非 NIST 背書;OpenTelemetry GenAI SIG 的 agent.threat.detection.* PR #165 review 中)——這種「企業把鞋帶綁緊就提 PR」的採用模式,是 ATR 想要的治理質感。"
-            : "External adoption to date includes three merged upstream integrations (the ATR rule pack in Cisco AI Defense's open-source skill-scanner, Microsoft AGT's 287 rules plus weekly auto-sync, and Gen Digital's merged Sage pack — each evidenced by a merged pull request in a public repository); two standards-body integrations actually merged (MISP / CIRCL taxonomies #323 + galaxy #1207, and OWASP A-S-R-H #74); and two standards-body submissions in review (a community-authored OSCAL catalog for NIST AI RMF self-published by the ATR maintainers, with usnistgov/oscal-content#338 collaboration branch in review — not a NIST endorsement; and the agent.threat.detection.* semantic-conventions PR #165 in OpenTelemetry GenAI SIG review). This pattern — enterprises integrating via pull request instead of private forks — is the governance texture ATR is built for."}
+            ? "目前的外部採用包含三筆已合併的上游整合(Cisco AI Defense 的開源 skill-scanner、Microsoft AGT 的 ATR 範例目錄、Gen Digital Sage 已合併的規則包 —— 憑據都是公開 repo 裡已合併的 PR),兩個標準機構已合併(MISP/CIRCL 的 taxonomies #323 + galaxy #1207、OWASP A-S-R-H #74),以及兩個仍開著、尚未合併的提案(提交給 NIST OSCAL 內容倉庫的 usnistgov/oscal-content#338,提供 AI RMF profile 範例,等待 NIST 審查,非 NIST 背書;OpenTelemetry GenAI SIG 的 agent.threat.detection.* PR #165)——這種「企業把鞋帶綁緊就提 PR」的採用模式,是 ATR 想要的治理質感。"
+            : "External adoption to date includes three merged upstream integrations (the ATR rule pack in Cisco AI Defense's open-source skill-scanner, ATR example directories in Microsoft AGT, and Gen Digital's merged Sage pack — each evidenced by a merged pull request in a public repository); two standards-body integrations actually merged (MISP / CIRCL taxonomies #323 + galaxy #1207, and OWASP A-S-R-H #74); and two open, unmerged proposals (usnistgov/oscal-content#338, offering AI RMF profile examples to NIST's OSCAL content repository and awaiting NIST review, not a NIST endorsement; and the agent.threat.detection.* semantic-conventions PR #165 in OpenTelemetry's GenAI SIG). This pattern — enterprises integrating via pull request instead of private forks — is the governance texture ATR is built for."}
         </p>
         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
           <a

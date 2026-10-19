@@ -40,16 +40,27 @@
  *
  * SCOPE
  *
- * Rules the engine cannot load at all (`status: draft` / `deprecated`,
- * `maturity: deprecated`) are skipped: they fire in no lane, so their declared
- * actions are inert. They are gated the moment they are revived, because a
- * revived rule must be re-measured anyway.
+ * Rules the engine never evaluates (`status: draft` / `deprecated`,
+ * `maturity: deprecated`; it loads them and skips them) are skipped here too:
+ * they fire in no lane, so their declared actions are inert. They are gated the
+ * moment they are revived, because a revived rule must be re-measured anyway.
+ *
+ * That holds only while every record in the evidence belongs to a live rule.
+ * A record carries no status, and detection_fingerprint does not cover it, so a
+ * record kept for an inert rule, or for an id no rule file carries any more,
+ * would pass, trusted, to the rule a one-line status edit revives or a restore
+ * brings back. Nor can this gate tell whether such a number was counted while
+ * the rule was live or is the 0 an older gate-promotion-fp.ts wrote for rules
+ * the engine skipped. The measurement scripts record live rules only, so the
+ * gate refuses evidence that holds any other record (exit 2), as it refuses
+ * evidence taken on another corpus.
  *
  * Exit codes:
  *   0  every live rule's actions are within its earned tier
  *   1  at least one rule declares an unearned action
- *   2  the measurement file is missing or unreadable — no verdict is possible,
- *      and a gate that cannot read its evidence must not report success
+ *   2  the measurement file is missing or unreadable, describes another corpus,
+ *      or holds a record for a rule that is not live — no verdict is possible,
+ *      and a gate that cannot trust its evidence must not report success
  */
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
@@ -68,7 +79,8 @@ import {
 } from "../src/quality/action-eligibility.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const DEFAULT_MEASUREMENT = join(REPO_ROOT, "data/benign-fp-measurement.json");
+const DEFAULT_MEASUREMENT_REL = "data/benign-fp-measurement.json";
+const DEFAULT_MEASUREMENT = join(REPO_ROOT, DEFAULT_MEASUREMENT_REL);
 
 export const EXIT_OK = 0;
 export const EXIT_FAIL = 1;
@@ -118,12 +130,14 @@ function ruleFiles(dir: string): string[] {
   return out;
 }
 
-/** A rule the engine skips before any lane gate: its actions cannot be dispatched. */
-export function isInert(
-  status: string | null,
-  maturity: string | null,
-): boolean {
-  const s = String(status ?? "").trim();
+/**
+ * A rule the engine skips before any lane gate: its actions cannot be dispatched.
+ * src/engine.ts compares status as a string, so a status that is not one
+ * (`status: [draft]`) is evaluated there and is live here; maturity goes through
+ * String() there (normalizeMaturity) and here alike.
+ */
+export function isInert(status: unknown, maturity: unknown): boolean {
+  const s = typeof status === "string" ? status.trim() : "";
   const m = String(maturity ?? "").trim();
   return s === "draft" || s === "deprecated" || m === "deprecated";
 }
@@ -238,6 +252,29 @@ export function messageTemplateClaims(
   return Object.freeze(out.sort((a, b) => a.id.localeCompare(b.id)));
 }
 
+/**
+ * Records the evidence holds for ids no live rule file carries: every file with
+ * the id is inert, or no file carries it at all (see SCOPE). With the reason.
+ */
+export function recordsWithoutLiveRule(
+  rules: readonly RuleOnDisk[],
+  measurement: MeasurementFile,
+): readonly { readonly id: string; readonly reason: string }[] {
+  const live = new Set(rules.filter((r) => !isInert(r.status, r.maturity)).map((r) => r.id));
+  const onDisk = new Set(rules.map((r) => r.id));
+  return Object.freeze(
+    Object.keys(measurement.rules ?? {})
+      .filter((id) => !live.has(id))
+      .sort((a, b) => a.localeCompare(b))
+      .map((id) =>
+        Object.freeze({
+          id,
+          reason: onDisk.has(id) ? "draft or deprecated" : "no rule file carries this id",
+        }),
+      ),
+  );
+}
+
 export function findViolations(
   rules: readonly RuleOnDisk[],
   measurement: MeasurementFile,
@@ -333,6 +370,24 @@ function main(argv: readonly string[]): number {
   }
 
   const rules = readRules(join(REPO_ROOT, "rules"));
+
+  const unbacked = recordsWithoutLiveRule(rules, measurement);
+  if (unbacked.length > 0) {
+    const shown = measurementPath === DEFAULT_MEASUREMENT ? DEFAULT_MEASUREMENT_REL : measurementPath;
+    console.error(
+      `[action-gate] FAIL — the measurement holds ${unbacked.length} record(s) for rules that are not live:\n` +
+        unbacked.map((u) => `  ${u.id} (${u.reason})`).join("\n") +
+        `\nA record carries no status, so this gate cannot tell a count taken while the rule was live ` +
+        `from the 0 an older gate-promotion-fp.ts wrote for rules the engine skipped, and either would ` +
+        `be trusted the moment the rule is revived or restored. The measurement records live rules ` +
+        `only; re-emit the evidence:\n` +
+        `  git fetch origin main && npx tsx scripts/remeasure-benign-fp.ts --base-ref origin/main ` +
+        `--emit-measurement ${shown}\n` +
+        `That also measures any rule main's evidence does not describe yet, so its diff can name ` +
+        `other rules. A branch behind main merges it first.`,
+    );
+    return EXIT_NO_EVIDENCE;
+  }
 
   // A rule may not tell the operator it was not blocked — this policy does not
   // govern the hook's verdict, so it has no standing to make that claim.
