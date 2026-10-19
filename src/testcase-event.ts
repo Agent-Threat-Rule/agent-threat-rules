@@ -172,9 +172,11 @@ export function buildEventFromTestCase(
   const toolArgsValue = toolArgs || input;
   if (toolArgsValue) fields['tool_args'] = toolArgsValue;
 
-  // For content-based rules, set content and agent_message fields
+  // For content-based rules, set content and agent_message fields. A case that
+  // names its own agent_message keeps it: copying the content over it ran such a
+  // case on its input there.
   fields['content'] = content;
-  fields['agent_message'] = content;
+  fields['agent_message'] = agentMessage || content;
 
   // v1.1 trace-method rules evaluate over a span DAG (OpenInference), not text.
   // When the rule declares method: trace and the test input is a JSON trace

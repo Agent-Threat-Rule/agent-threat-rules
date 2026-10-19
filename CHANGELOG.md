@@ -171,6 +171,11 @@ All notable changes to ATR will be documented in this file.
   against. No rule on main relied on the old behaviour: every true positive and
   true negative of every rule tests the same.
 
+- **A test case's own `agent_message` is no longer replaced by its content.**
+  `buildEventFromTestCase` set the field from the case and then copied the
+  event's content over it, so a case that names an `agent_message` beside its
+  input was run on the input there. No case on main names one.
+
 - **A `medium` confidence label no longer depends on float rounding to stay
   out of `deny`.** A pattern match scored `0.7 + 0.1 * coverage`, and a
   `high`-severity match denies at `>= 0.8`. At full coverage that sum is
