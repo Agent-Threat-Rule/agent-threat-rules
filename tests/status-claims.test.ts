@@ -122,6 +122,11 @@ describe("scanKeys", () => {
     expect(keys('href="https://github.com/a/b/issues/12"')).toEqual(["a/b#12"]);
   });
 
+  it("finds a link written without its scheme, but not an API or other host's path", () => {
+    expect(keys("see github.com/O/R/pull/7 for details")).toEqual(["o/r#7"]);
+    expect(keys("api.github.com/repos/o/r/pulls/5 and https://gist.github.com/o/r/pull/6")).toEqual([]);
+  });
+
   it("finds owner/repo#N references written without a link", () => {
     expect(keys("offered as usnistgov/oscal-content#338, awaiting review (see o/r#9).")).toEqual(["o/r#9", "usnistgov/oscal-content#338"]);
   });

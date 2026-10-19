@@ -137,7 +137,9 @@ export function validateRegistry(doc) {
   return [...unknown, ...doc.claims.flatMap((claim, i) => claimProblems(claim, i)), ...duplicateProblems(doc.claims)];
 }
 
-const LINK = /https?:\/\/(?:www\.)?github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)\/(?:pull|issues)\/(\d+)/gi;
+// A pull request or issue link, with or without its scheme, but not on another
+// host whose name ends in github.com (api., gist.).
+const LINK = /(?:https?:\/\/)?(?<![\w.-])(?:www\.)?github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)\/(?:pull|issues)\/(\d+)/gi;
 // owner/repo#N in prose. Not inside a longer path or name, and not a markdown
 // anchor such as ARCHITECTURE.md#2-layers.
 const SHORT_REF = /(?<![\w./-])([A-Za-z0-9-]+)\/([A-Za-z0-9_.-]+)#(\d+)(?![\w-])/g;
