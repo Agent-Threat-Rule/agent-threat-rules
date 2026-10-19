@@ -23,7 +23,7 @@
  * With --base <commit> (the workflow passes a pull request's base), every file
  * that commit's list named for a claim whose state has changed since, or that
  * left the list or a claim's files, must have been edited since (a pure rename
- * is not an edit). The files say the state in words, and a state changed in
+ * or a change of file mode is not an edit). The files say the state in words, and a state changed in
  * the list alone would leave them saying the old one. This sees that a file
  * was edited, not what the edit says.
  *
@@ -112,16 +112,27 @@ function readBase(root, base) {
     return { error: `the list at ${base} is not JSON` };
   }
   if (validateRegistry(list).length > 0) return { error: `the list at ${base} is malformed` };
-  // Against the working tree, so uncommitted edits count. A pure rename (R100)
-  // leaves the text as it was, so neither of its paths counts as edited.
-  const changed = git('diff', '--name-status', '-M', base)
-    .split('\n')
-    .filter(Boolean)
-    .flatMap((line) => {
-      const [status, ...paths] = line.split('\t');
-      return status === 'R100' ? [] : paths;
-    });
-  return { list, changed };
+  return { list, changed: editedPaths(git('diff', '--numstat', '-z', '-M', base)) };
+}
+
+/**
+ * Paths whose text changed, from `git diff --numstat -z -M` (run against the
+ * working tree, so uncommitted edits count). A pure rename or a change of
+ * file mode adds and deletes no lines, and leaves the text saying what it
+ * said, so neither counts. Binary files ("-") count as changed.
+ */
+function editedPaths(numstat) {
+  const fields = numstat.split('\0');
+  let edited = [];
+  for (let i = 0; i < fields.length; i++) {
+    const m = /^(-|\d+)\t(-|\d+)\t([\s\S]*)$/.exec(fields[i]);
+    if (m === null) continue;
+    // A rename leaves the path empty, and its two paths follow as fields.
+    const paths = m[3] === '' ? [fields[i + 1], fields[i + 2]] : [m[3]];
+    if (m[3] === '') i += 2;
+    if (m[1] !== '0' || m[2] !== '0') edited = [...edited, ...paths];
+  }
+  return edited;
 }
 
 function printProblems(heading, problems) {

@@ -154,6 +154,7 @@ describe("scanKeys", () => {
           "spec/SPEC.md#6.4",
           "see docs/SPEC.md#3, docs/README.mdx#2 and docs/NOTES.MD#4",
           "section o/r#6.4 of the spec",
+          "see docs/guide.html#3-intro and o/r#12a",
         ].join("\n"),
       ),
     ).toEqual([]);

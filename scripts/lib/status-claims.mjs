@@ -321,7 +321,8 @@ export function fileProblems(registry, { files, read, adoptersText = '', openOnl
  * with the files: compared with `base` (the list on the base branch), every
  * file the base list named for a claim whose state changed, or that left the
  * list, and every file dropped from a claim's files, must be among
- * `changedFiles` (the paths the change edits; a pure rename is not an edit).
+ * `changedFiles` (the paths whose text the change edits; a pure rename or a
+ * change of file mode is not an edit).
  * That a file was edited is all this can see: not what the edit says.
  */
 export function stateChangeProblems(base, head, changedFiles) {

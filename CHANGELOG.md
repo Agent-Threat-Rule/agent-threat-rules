@@ -25,9 +25,9 @@ All notable changes to ATR will be documented in this file.
   issue, which the next green run closes. On a pull request that edits the
   list, the job also requires every file the base branch's list named for a
   claim whose state changed, or that left the list or a claim's files, to be
-  edited in the same pull request (a pure rename is not an edit). It can see
-  that each file was edited, not what the edit says, and the job is not a
-  required check. The open state of usnistgov/oscal-content#338 alone is
+  edited in the same pull request (a pure rename or a change of file mode is
+  not an edit). It can see that each file was edited, not what the edit says,
+  and the job is not a required check. The open state of usnistgov/oscal-content#338 alone is
   stated in twelve files. The /red-team page is left to the check proposed in
   #691.
 

@@ -11,7 +11,7 @@
  * Nothing here touches the network: GitHub is a fake fetch.
  */
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { execFileSync, spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -196,18 +196,34 @@ describe("main --base: a changed state needs its files changed too", () => {
     expect(await main({ root, base, offline: true })).toBe(0);
   });
 
+  // A page long enough that a one-line edit keeps git's rename detection.
+  const PAGE_TEXT = [...Array.from({ length: 12 }, (_, i) => `line ${i} of the page`), `${CLOSED} closed`].join("\n") + "\n";
+  const reopenWithPage = (page: string) => ({ claims: [GOOD.claims[0], { ...GOOD.claims[1], state: "open", files: ["README.md", page] }] });
+  const README_REWORDED = `# x\n### Under maintainer review (open PRs)\n\n${OPEN}\n${CLOSED}\n`;
+
   it("does not count a file that was only renamed: its text still says the old state", async () => {
     const out = quiet();
     const page = "website/app/page.tsx";
-    const { root, base } = gitFixture({ claims: [GOOD.claims[0], { ...GOOD.claims[1], files: ["README.md", page] }] }, { [page]: CLOSED });
+    const { root, base } = gitFixture({ claims: [GOOD.claims[0], { ...GOOD.claims[1], files: ["README.md", page] }] }, { [page]: PAGE_TEXT });
     gitIn(root, "mv", page, "website/app/moved.tsx");
-    const moved = { claims: [GOOD.claims[0], { ...GOOD.claims[1], state: "open", files: ["README.md", "website/app/moved.tsx"] }] };
-    writeFileSync(join(root, "website/data/status-claims.json"), JSON.stringify(moved));
-    writeFileSync(join(root, "README.md"), `# x\n### Under maintainer review (open PRs)\n\n${OPEN}\n${CLOSED}\n`);
+    writeFileSync(join(root, "website/data/status-claims.json"), JSON.stringify(reopenWithPage("website/app/moved.tsx")));
+    writeFileSync(join(root, "README.md"), README_REWORDED);
     expect(await main({ root, base, offline: true })).toBe(1);
     expect(out.join("\n")).toMatch(/website\/app\/page\.tsx: o\/closed#2 changed from closed to open/);
-    writeFileSync(join(root, "website/app/moved.tsx"), `${CLOSED} reopened`);
+    // Renamed and edited: both paths count.
+    writeFileSync(join(root, "website/app/moved.tsx"), PAGE_TEXT.replace(`${CLOSED} closed`, `${CLOSED} reopened`));
     expect(await main({ root, base, offline: true })).toBe(0);
+  });
+
+  it("does not count a change of file mode: the text still says the old state", async () => {
+    const out = quiet();
+    const page = "website/app/page.tsx";
+    const { root, base } = gitFixture({ claims: [GOOD.claims[0], { ...GOOD.claims[1], files: ["README.md", page] }] }, { [page]: PAGE_TEXT });
+    chmodSync(join(root, page), 0o755);
+    writeFileSync(join(root, "website/data/status-claims.json"), JSON.stringify(reopenWithPage(page)));
+    writeFileSync(join(root, "README.md"), README_REWORDED);
+    expect(await main({ root, base, offline: true })).toBe(1);
+    expect(out.join("\n")).toMatch(/website\/app\/page\.tsx: o\/closed#2 changed from closed to open/);
   });
 
   it("fails closed on a base it cannot read, or whose list is broken, and has nothing to compare when the base has no list", async () => {
