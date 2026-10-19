@@ -19,8 +19,15 @@ import { join } from "node:path";
 import yaml from "js-yaml";
 import { CANDIDATE_RULE_ID } from "./semantic-engine-gate.js";
 
-/** gate-redos.py kills each condition after a few seconds; this only bounds a stuck interpreter. */
-export const REDOS_PRECHECK_TIMEOUT_MS = 120_000;
+/**
+ * Bounds a stuck interpreter, not the pattern. gate-redos.py kills a single
+ * search after a few seconds, but a condition is searched on up to a few
+ * hundred inputs and a would-be NEW finding is re-timed alone, so one draft
+ * that sits just under budget on every input can take minutes on a slow
+ * runner. A timeout here reads as "unavailable", which drops the draft as an
+ * infrastructure error instead of routing it to review.
+ */
+export const REDOS_PRECHECK_TIMEOUT_MS = 300_000;
 
 export interface RedosRun {
   readonly status: number | null;
