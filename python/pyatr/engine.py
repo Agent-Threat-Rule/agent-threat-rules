@@ -352,7 +352,7 @@ class ATREngine:
         if field_name == default_field or field_name == "content":
             return event.content or None
 
-        # Common aliases -- mirrors the TS engine (engine.ts:616-632).
+        # Common aliases -- mirrors resolveField in src/engine.ts.
         # For most aliases: if event_type matches, return event.content; else check fields.
         # For tool_name/tool_args: check fields first, fall back to event.content
         # when event_type is tool_call (matching TS ?? operator behavior).
@@ -365,6 +365,13 @@ class ATREngine:
         if field_name in alias_map:
             expected_type = alias_map[field_name]
             if event.event_type == expected_type:
+                return event.content or None
+            # A tool response is text the model reads next: an injection riding
+            # in on tool, MCP or RAG output need not appear as llm_input. So, as
+            # in the TS engine, user_input and agent_output resolve to the
+            # content of a tool_response event (one that sets them returned
+            # above).
+            if field_name in ("user_input", "agent_output") and event.event_type == "tool_response":
                 return event.content or None
             return event.fields.get(field_name)
 

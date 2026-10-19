@@ -33,6 +33,8 @@ for match in engine.evaluate(event):
     print(f"[{match.severity.upper()}] {match.rule_id} - {match.title}")
 ```
 
+Pass what a tool, MCP server or retriever returned as `event_type="tool_response"`. Its content is checked by the rules that read `tool_response`, and also by the rules that read `user_input` or `agent_output`, since that output is text the model reads next. Set `fields["user_input"]` or `fields["agent_output"]` explicitly to give those rules different text.
+
 ### CLI Commands
 
 #### Scan events
