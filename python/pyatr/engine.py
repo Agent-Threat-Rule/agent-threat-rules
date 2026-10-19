@@ -33,6 +33,13 @@ _ZERO_WIDTH_RE = re.compile(
 # Inline flags prefix that JS RegExp does not support natively.
 _INLINE_FLAGS_RE = re.compile(r"^\(\?[imsx]+\)")
 
+# agent_source.type values of the rules the TS engine runs on tool_response
+# events (sourceTypeAdmits in src/engine.ts): mcp_exchange rules, and llm_io
+# rules, so that an injection riding in on tool output is checked; a
+# context_window rule runs where llm_io rules run (RUNTIME_SOURCE_TYPE). Only
+# these rules read a tool response through user_input / agent_output.
+_TOOL_RESPONSE_SOURCE_TYPES = frozenset({"mcp_exchange", "llm_io", "context_window"})
+
 
 _SearchablePattern = re.Pattern[str] | regex.Pattern[str]
 
@@ -88,6 +95,7 @@ def _parse_rule(data: dict[str, Any]) -> ATRRule:
     tags = data.get("tags", {})
     if not isinstance(tags, dict):
         tags = {}
+    agent_source = data.get("agent_source")
 
     return ATRRule(
         id=str(data.get("id", "")),
@@ -100,6 +108,18 @@ def _parse_rule(data: dict[str, Any]) -> ATRRule:
         tags={str(k): str(v) for k, v in tags.items()},
         references=data.get("references", {}),
         response=data.get("response", {}),
+        agent_source=dict(agent_source) if isinstance(agent_source, dict) else {},
+    )
+
+
+def _reads_tool_output(rule: ATRRule, event: AgentEvent) -> bool:
+    """Whether *rule*'s user_input / agent_output conditions read *event*'s
+    content: on a tool_response event, for the rules the TS engine runs there."""
+    source_type = rule.agent_source.get("type")
+    return (
+        event.event_type == "tool_response"
+        and isinstance(source_type, str)
+        and source_type in _TOOL_RESPONSE_SOURCE_TYPES
     )
 
 
@@ -253,9 +273,10 @@ class ATREngine:
     def _evaluate_rule(self, rule: ATRRule, event: AgentEvent) -> ATRMatch | None:
         matched_patterns: list[str] = []
         condition_results: list[bool] = []
+        tool_output = _reads_tool_output(rule, event)
 
         for idx, cond in enumerate(rule.conditions):
-            raw_value = self._resolve_field(cond.field, event)
+            raw_value = self._resolve_field(cond.field, event, tool_output)
             if raw_value is None:
                 condition_results.append(False)
                 continue
@@ -341,8 +362,14 @@ class ATREngine:
             return False
 
     @staticmethod
-    def _resolve_field(field_name: str, event: AgentEvent) -> str | None:
-        """Resolve a field value from an AgentEvent, mirroring the TS engine logic."""
+    def _resolve_field(
+        field_name: str, event: AgentEvent, tool_output: bool = False
+    ) -> str | None:
+        """Resolve a field value from an AgentEvent, mirroring the TS engine logic.
+
+        *tool_output* is true when the rule being evaluated reads a tool
+        response as model input (see _reads_tool_output).
+        """
         # Explicit fields take priority.
         if field_name in event.fields:
             return event.fields[field_name]
@@ -352,7 +379,7 @@ class ATREngine:
         if field_name == default_field or field_name == "content":
             return event.content or None
 
-        # Common aliases -- mirrors the TS engine (engine.ts:616-632).
+        # Common aliases -- mirrors resolveField in src/engine.ts.
         # For most aliases: if event_type matches, return event.content; else check fields.
         # For tool_name/tool_args: check fields first, fall back to event.content
         # when event_type is tool_call (matching TS ?? operator behavior).
@@ -365,6 +392,13 @@ class ATREngine:
         if field_name in alias_map:
             expected_type = alias_map[field_name]
             if event.event_type == expected_type:
+                return event.content or None
+            # A tool response is text the model reads next: an injection riding
+            # in on tool, MCP or RAG output need not appear as llm_input. So, as
+            # in the TS engine, user_input and agent_output resolve to the
+            # content of a tool_response event (one that sets them returned
+            # above), for the rules the TS engine runs on tool responses.
+            if field_name in ("user_input", "agent_output") and tool_output:
                 return event.content or None
             return event.fields.get(field_name)
 

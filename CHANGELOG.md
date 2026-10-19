@@ -66,6 +66,19 @@ All notable changes to ATR will be documented in this file.
 
 ### Changed
 
+- **pyATR reads tool output for the `user_input` and `agent_output`
+  conditions of the rules the TypeScript engine runs on tool responses.** On
+  a `tool_response` event that does not set those fields they now resolve to
+  the event content for rules whose `agent_source.type` is `llm_io`,
+  `mcp_exchange` or `context_window`, as `src/engine.ts` does (`resolveField`
+  behind `sourceTypeAdmits`). `ATRRule` gains an `agent_source` field, which
+  the bundled rule set now carries. Before, the TypeScript engine matched
+  1,236 true-positive texts of 229 rules as tool responses that pyATR did not;
+  now 0, and pyATR gains no match there that the TypeScript engine does not
+  return. Integrations that send tool output as `tool_response` events get new
+  matches: 638 of the 13,620 texts in `data/benign-corpus-extended` gain one,
+  the same 758 matches the TypeScript engine returns for those events.
+
 - **The ReDoS gate now times long inputs, every branch of an alternation
   and input tiled with a pattern's own openers, and its baseline grew from 9
   to 439 conditions because of it.** Nothing got slower; the gate started
