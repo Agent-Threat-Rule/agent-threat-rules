@@ -751,6 +751,38 @@ See [CHANGELOG.md](CHANGELOG.md).
     columns are properties of the corpus, not measurements — read them
     together with the benign-gate FP counts above, never alone.
 
+[^vendorsuites]: **Partly in-sample; precision not cited.** 126 attack and 20
+benign test cases (llm-guard 46 / 16, NeMo Guardrails 22 / 4, promptfoo 58 / 0),
+each traceable to repo, commit, path and line in
+[`manifest.json`](data/test-corpora/vendor-guardrail-suites/manifest.json). At ATR
+4.1.5 (measured 2026-10-19) recall is 97/126 (hunt), 92/126 (alert) and 7/126
+(enforce). Without the 16 rules whose YAML names promptfoo, llm-guard or NeMo, or
+carries the `(vendor-corpus-import)` tag, it is 78/126 = 61.9% (hunt), 70/126 =
+55.6% (alert) and 7/126 = 5.6% (enforce); per vendor in the hunt lane, llm-guard
+26/46, NeMo Guardrails 20/22, promptfoo 32/58. That ablation is the reference
+to cite beside the row, and it still overstates out-of-sample recall, by an
+amount the same file measures (`breakdown.overlaps`): 35 further rules carry a
+40-character run of some vendor sample's text in their YAML, and 23 of the 78
+hunt-lane detections in the ablation are by such a rule on the sample it
+overlaps; removing those rules too gives 58/126 = 46.0% (hunt) / 5/126 = 4.0%
+(enforce). Five NeMo Guardrails attack samples (DAN-style jailbreaks) share 58%
+to 99% of their text with a prompt in `garak-full`'s `dan.json` and
+`inthewild.json`, a corpus other rules were mined from; all five are detected in
+the hunt lane of the ablation. The vendors ship only 20 benign cases (the hunt
+lane flags 1, the enforce lane 0), too few for a precision or FP-rate claim, so
+the cells say "not cited" and `data/stats.json` carries `null` for both
+(`breakdown.precision_not_citable`).
+
+[^legacyvendor]: These three rows are the corpora assembled by hand on
+2026-05-12 and attributed to the vendors' test suites. A script-based audit
+([`legacy-corpora-provenance.json`](data/test-corpora/vendor-guardrail-suites/legacy-corpora-provenance.json))
+checked each of their 94 samples against the vendor repo it names: 79 occur
+verbatim in the vendor file they name, 3 are truncated or edited from it, 2
+are another vendor's test cases, and 10 occur nowhere in the named vendor's
+repo. Read them as ATR-assembled corpora seeded from vendor tests, not as the
+vendors' fixtures; the `Vendor guardrail suites` row is the script-extracted
+replacement.
+
 [^stdcorpora]: Until 2026-08-05 these three rows were **not produced by the ATR
     engine**. `scripts/eval-std-corpora.ts` walked `rules/` with a YAML parser,
     kept only `operator: regex` conditions, flattened every condition of every
@@ -851,38 +883,6 @@ npx tsx scripts/sync-stats-from-measurements.ts                              # r
 ```
 
 Raw data: [`data/full-scan-v2-2026-04-14.json`](data/full-scan-v2-2026-04-14.json) — 101,280 skills scanned, 1,434 flagged, engine 2.0.0, timestamped 2026-04-13. The malware-campaign write-up is in [`docs/research/openclaw-malware-campaign-2026-04.md`](docs/research/openclaw-malware-campaign-2026-04.md).
-
-[^vendorsuites]: **Partly in-sample; precision not cited.** 126 attack and 20
-benign test cases (llm-guard 46 / 16, NeMo Guardrails 22 / 4, promptfoo 58 / 0),
-each traceable to repo, commit, path and line in
-[`manifest.json`](data/test-corpora/vendor-guardrail-suites/manifest.json). At ATR
-4.1.5 (measured 2026-10-19) recall is 97/126 (hunt), 92/126 (alert) and 7/126
-(enforce). Without the 16 rules whose YAML names promptfoo, llm-guard or NeMo, or
-carries the `(vendor-corpus-import)` tag, it is 78/126 = 61.9% (hunt), 70/126 =
-55.6% (alert) and 7/126 = 5.6% (enforce); per vendor in the hunt lane, llm-guard
-26/46, NeMo Guardrails 20/22, promptfoo 32/58. That ablation is the reference
-to cite beside the row, and it still overstates out-of-sample recall, by an
-amount the same file measures (`breakdown.overlaps`): 35 further rules carry a
-40-character run of some vendor sample's text in their YAML, and 23 of the 78
-hunt-lane detections in the ablation are by such a rule on the sample it
-overlaps; removing those rules too gives 58/126 = 46.0% (hunt) / 5/126 = 4.0%
-(enforce). Five NeMo Guardrails attack samples (DAN-style jailbreaks) share 58%
-to 99% of their text with a prompt in `garak-full`'s `dan.json` and
-`inthewild.json`, a corpus other rules were mined from; all five are detected in
-the hunt lane of the ablation. The vendors ship only 20 benign cases (the hunt
-lane flags 1, the enforce lane 0), too few for a precision or FP-rate claim, so
-the cells say "not cited" and `data/stats.json` carries `null` for both
-(`breakdown.precision_not_citable`).
-
-[^legacyvendor]: These three rows are the corpora assembled by hand on
-2026-05-12 and attributed to the vendors' test suites. A script-based audit
-([`legacy-corpora-provenance.json`](data/test-corpora/vendor-guardrail-suites/legacy-corpora-provenance.json))
-checked each of their 94 samples against the vendor repo it names: 79 occur
-verbatim in the vendor file they name, 3 are truncated or edited from it, 2
-are another vendor's test cases, and 10 occur nowhere in the named vendor's
-repo. Read them as ATR-assembled corpora seeded from vendor tests, not as the
-vendors' fixtures; the `Vendor guardrail suites` row is the script-extracted
-replacement.
 
 [^wildscan]: Scanned and flagged counts come from `total_scanned` and `total_flagged` in the raw scan file; the flag rate is those two divided. **No precision figure is given because none was measured over this run.** Earlier material paired a manual-review count against a smaller 96,096-skill analysis subset and reported the ratio as a precision floor. The review covered that subset rather than all 1,434 flags, so the ratio does not describe this scan and is not reproducible from the raw file; it has been withdrawn rather than recomputed. Establishing precision here means re-reviewing a sample of the 1,434 flags, which has not been done.
 
