@@ -781,10 +781,10 @@ the cells say "not cited" and `data/stats.json` carries `null` for both
 [^legacyvendor]: These three rows are the corpora assembled by hand on
 2026-05-12 and attributed to the vendors' test suites. A script-based audit
 ([`legacy-corpora-provenance.json`](data/test-corpora/vendor-guardrail-suites/legacy-corpora-provenance.json))
-checked each of their 94 samples against the vendor repo it names: 79 occur
-verbatim in the vendor file they name, 3 are truncated or edited from it, 2
-are another vendor's test cases, and 10 occur nowhere in the named vendor's
-repo. Read them as ATR-assembled corpora seeded from vendor tests, not as the
+checked each of their 94 samples against the vendor repo it names, at a pinned
+commit: 79 occur verbatim in the vendor file they name, 3 are truncated or
+edited from it, 2 are another vendor's test cases, and 10 are not found
+verbatim anywhere in the vendor repository at the pinned commit. Read them as ATR-assembled corpora seeded from vendor tests, not as the
 vendors' fixtures; the `Vendor guardrail suites` row is the script-extracted
 replacement.
 

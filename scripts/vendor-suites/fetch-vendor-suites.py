@@ -83,6 +83,12 @@ def show(repo: Path, commit: str, path: str) -> str | None:
     return None if raw is None else raw.decode("utf-8")
 
 
+def license_files(v: dict) -> list[dict]:
+    """The license files a vendor's pins must carry: its `license_file` and any `extra_license_files`
+    (e.g. the full license text a short notice refers to), each with the sha256 sources.json pins."""
+    return [{"path": v["license_file"], "sha256": v.get("license_sha256")}] + list(v.get("extra_license_files", []))
+
+
 def license_copy_name(vendor: str, license_file: str) -> str:
     """File name of a vendor's license copy under LICENSES/ (one per vendor: identical across its pins, or the build fails)."""
     return f"{vendor}.{license_file}"
@@ -261,18 +267,22 @@ def build() -> tuple[str, dict, dict[str, bytes]]:
     for v in sources["vendors"]:
         for pin in v["pins"]:
             repo = ensure_commit(v["repo"], pin["commit"])
-            raw = show_bytes(repo, pin["commit"], v["license_file"])
-            if raw is None:
-                raise SystemExit(f"{v['vendor']}@{pin['commit']}: {v['license_file']} not found")
-            lic = raw.decode("utf-8")
-            copy = license_copy_name(v["vendor"], v["license_file"])
-            if copy in license_copies and license_copies[copy] != raw:
-                raise SystemExit(f"{v['vendor']}: {v['license_file']} differs between pins; keep one copy per pin")
-            license_copies[copy] = raw
-            license_check.append({"vendor": v["vendor"], "commit": pin["commit"], "license_file": v["license_file"],
-                                  "declared": v["license"], "license_file_sha256": sha(lic),
-                                  "copy": f"data/test-corpora/vendor-guardrail-suites/LICENSES/{copy}",
-                                  "first_line": lic.strip().splitlines()[0] if lic.strip() else None})
+            for lf in license_files(v):
+                raw = show_bytes(repo, pin["commit"], lf["path"])
+                if raw is None:
+                    raise SystemExit(f"{v['vendor']}@{pin['commit']}: {lf['path']} not found")
+                digest = hashlib.sha256(raw).hexdigest()
+                if lf.get("sha256") is not None and digest != lf["sha256"]:
+                    raise SystemExit(f"{v['vendor']}@{pin['commit']}: {lf['path']} sha256 {digest} != sources.json {lf['sha256']}")
+                lic = raw.decode("utf-8")
+                copy = license_copy_name(v["vendor"], lf["path"])
+                if copy in license_copies and license_copies[copy] != raw:
+                    raise SystemExit(f"{v['vendor']}: {lf['path']} differs between pins; keep one copy per pin")
+                license_copies[copy] = raw
+                license_check.append({"vendor": v["vendor"], "commit": pin["commit"], "license_file": lf["path"],
+                                      "declared": v["license"], "license_file_sha256": digest,
+                                      "copy": f"data/test-corpora/vendor-guardrail-suites/LICENSES/{copy}",
+                                      "first_line": lic.strip().splitlines()[0] if lic.strip() else None})
             for sel in v["selectors"]:
                 src = show(repo, pin["commit"], sel["path"])
                 if src is None:

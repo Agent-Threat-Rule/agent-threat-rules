@@ -35,6 +35,7 @@
  *   npx tsx scripts/vendor-suites/measure-vendor-suites.ts --force    # replace a same-day measurement file
  */
 
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -305,6 +306,15 @@ function ruleValidation(
   return { rules: out, legacy_summary: legacy.summary };
 }
 
+/** git tree id of rules/ at HEAD: the rule set a measurement measured. */
+function rulesTreeSha(): string {
+  try {
+    return execFileSync('git', ['rev-parse', 'HEAD:rules'], { cwd: REPO_ROOT, encoding: 'utf-8' }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
 // ------------------------------------------------------------------ in-sample checks
 
 interface LaneRun {
@@ -551,6 +561,17 @@ async function main(): Promise<void> {
             license: v.license,
             pins: v.pins,
           })),
+        },
+        provenance: {
+          tiers: ['tier2-regex'],
+          engine:
+            'new ATREngine({ rulesDir, lane }) with no embeddingModule, semanticModule or semanticJudge: the regex ' +
+            'conditions only (tier 2). No embedding tier and no semantic tier ran.',
+          rules_tree_sha: rulesTreeSha(),
+          event_shapes: 'role=input: promptChannelShapes (llm_input, tool_response); role=output: one llm_output event',
+          reproduce:
+            'git checkout <atr_commit> (the measured tree; its rules/ tree is breakdown.provenance.rules_tree_sha), ' +
+            'then: npm ci && bash scripts/vendor-suites/reproduce.sh --write',
         },
         detection_predicate:
           'role=input: src/corpus-event.ts promptChannelShapes (llm_input + tool_response); role=output: one llm_output event ' +
