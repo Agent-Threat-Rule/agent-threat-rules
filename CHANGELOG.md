@@ -1054,6 +1054,14 @@ No rule content changed and no threshold was loosened in any of the above.
 ### Metrics
 
 - HackAPrompt (4,780 samples): recall 28.6% → 66.2% (+37.6pp), 100% precision maintained.
+  - Erratum (2026-10-19): re-run on the same 4,780 samples at the sprint commits,
+    recall was 28.6% (1,368, at `3a6145b7`) → 65.0% (3,108, at `e9efefdd`) and
+    66.0% (3,154, at `92c0d0fe`); 66.2% could not be reproduced at either. The
+    28.6% starting point was itself in-sample (ATR-2026-00442..00447 were mined
+    from this subset). "100% precision" was not a measurement: the corpus has
+    no benign samples, so precision is undefined on it. Procedure and figures:
+    `data/hackaprompt/METHOD.md`; current measurement, with the ablation
+    reference: `data/measurements/hackaprompt/`.
 - garak (3,475 prompts): ATR-core families ~80%+; per-family breakdown: latentinjection 34.4%, sysprompt_extraction 67.9%, dan 90.2%.
 - PINT (850 samples): 0.25% FP maintained, 0 FP regression.
 - SKILL.md (341 samples): 100% precision, 0% FP, 0 FP regression.

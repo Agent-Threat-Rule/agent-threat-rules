@@ -26,7 +26,7 @@ interface Stats {
     garak: { recall: number; enforceLaneRecall?: number; samples: number; atr_version?: string };
     skill: { recall: number; precision: number; samples: number };
     pint: { recall: number; precision: number; samples: number };
-    hackaprompt: { recall: number; baselineRecall: number; samples: number };
+    hackaprompt: { recall: number; enforceLaneRecall: number; precision: null; samples: number };
     benign: { fpRate: number; samples: number };
   };
   ecosystem: { skillsScanned: number; confirmedMalware: number };

@@ -257,6 +257,9 @@ async function evaluateSampleFull(
   }
 }
 
+/** Cosine-similarity threshold of the evaluation harness's embedding tier (Tier 2.5). */
+export const EVAL_EMBEDDING_SIMILARITY_THRESHOLD = 0.65;
+
 /**
  * Try to load the embedding module. Returns null if unavailable.
  */
@@ -267,7 +270,7 @@ async function tryLoadEmbedding(embeddingsPath: string): Promise<EmbeddingModule
     const data = JSON.parse(readFileSync(embeddingsPath, 'utf-8'));
     const module = new EmbeddingModule({
       attackVectorsData: data,
-      similarityThreshold: 0.65,
+      similarityThreshold: EVAL_EMBEDDING_SIMILARITY_THRESHOLD,
     });
     await module.initialize();
     return module.isAvailable() ? module : null;
