@@ -3,9 +3,9 @@
   "source": "vendor-guardrail-suites",
   "source_version": "pinned-2026-10-19",
   "atr_version": "4.1.5",
-  "atr_commit": "954a18f1",
+  "atr_commit": "051eee3a",
   "rules_loaded": 836,
-  "measured_at": "2026-10-19T05:12:27.919Z",
+  "measured_at": "2026-10-19T06:01:09.587Z",
   "samples": 146,
   "metrics": {
     "recall": 0.7698412698412699,
@@ -151,6 +151,15 @@
           ]
         }
       ]
+    },
+    "provenance": {
+      "tiers": [
+        "tier2-regex"
+      ],
+      "engine": "new ATREngine({ rulesDir, lane }) with no embeddingModule, semanticModule or semanticJudge: the regex conditions only (tier 2). No embedding tier and no semantic tier ran.",
+      "rules_tree_sha": "6113bc87e0826bdd75b77581d8edcf1b884b74a5",
+      "event_shapes": "role=input: promptChannelShapes (llm_input, tool_response); role=output: one llm_output event",
+      "reproduce": "git checkout <atr_commit> (the measured tree; its rules/ tree is breakdown.provenance.rules_tree_sha), then: npm ci && bash scripts/vendor-suites/reproduce.sh --write"
     },
     "detection_predicate": "role=input: src/corpus-event.ts promptChannelShapes (llm_input + tool_response); role=output: one llm_output event (agent_output). Detected = at least one rule match on at least one event. Same predicate for attacks, benign and every lane.",
     "lanes": {
