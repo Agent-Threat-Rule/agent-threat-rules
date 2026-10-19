@@ -2107,13 +2107,16 @@ export function regexConditionSpec(value: string): RegexConditionSpec {
  * per-distinct-input work. Measured 2026-10-15 on the benign-corpus FP scan,
  * the repeated NFKC pass plus its zero-width strip were ~9% of all CPU.
  */
+/** Zero-width and bidi format characters: invisible, and a way to split a trigger word. */
+const INVISIBLE_FORMAT_CHARS = /[\u200B\u200C\u200D\uFEFF\u2060\u180E\u200E\u200F\u202A-\u202E\u2066-\u2069]/g;
+
 let _normKey = '';
 let _normVal = '';
 export function normalizeUnicode(text: string): string {
   if (text === _normKey) return _normVal;
   const out = text
     .normalize('NFKC')
-    .replace(/[\u200B\u200C\u200D\uFEFF\u2060\u180E\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '');
+    .replace(INVISIBLE_FORMAT_CHARS, '');
   _normKey = text;
   _normVal = out;
   return out;
@@ -2206,7 +2209,45 @@ export function foldConfusables(text: string): string {
 function normalizeUnicodeAggressive(text: string): string {
   return text
     .normalize('NFKC')
-    .replace(/[\u200B\u200C\u200D\uFEFF\u2060\u180E\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '');
+    .replace(INVISIBLE_FORMAT_CHARS, '');
+}
+
+/**
+ * The raw text normalised without lengthening it: a code point takes its NFKC
+ * form when that form is no longer than itself (full-width and mathematical
+ * letters, most compatibility characters) and stays as written otherwise
+ * (ligatures such as U+FB06 for "st", U+FDFA's 18 characters); zero-width and
+ * bidi characters go, and confusables fold to Latin. Never longer than the raw
+ * text, so it can be scanned wherever the raw text is. Memoised on a few
+ * entries: an event's conditions alternate between its fields (content and
+ * tool_args, say), and one entry would recompute it on every switch.
+ */
+const FLAT_MEMO_SIZE = 4;
+const flatMemo = new Map<string, string>();
+function normaliseWithoutLengthening(raw: string): string {
+  const memoised = flatMemo.get(raw);
+  if (memoised !== undefined) return memoised;
+  let out = '';
+  let from = 0;
+  for (let i = 0; i < raw.length; ) {
+    if (raw.charCodeAt(i) < 0x80) {
+      i++;
+      continue;
+    }
+    const width = raw.codePointAt(i)! > 0xffff ? 2 : 1;
+    const char = raw.slice(i, i + width);
+    const nfkc = char.normalize('NFKC');
+    if (nfkc !== char && nfkc.length <= width) {
+      out += raw.slice(from, i) + nfkc;
+      from = i + width;
+    }
+    i += width;
+  }
+  out += raw.slice(from);
+  const flat = foldConfusables(out.replace(INVISIBLE_FORMAT_CHARS, ''));
+  if (flatMemo.size >= FLAT_MEMO_SIZE) flatMemo.delete(flatMemo.keys().next().value as string);
+  flatMemo.set(raw, flat);
+  return flat;
 }
 
 /**
@@ -2297,21 +2338,145 @@ export function conditionLanguageMatches(
   return false;
 }
 
-/** Maximum input length for regex evaluation to mitigate ReDoS */
-const MAX_EVAL_LENGTH = 100_000;
+/**
+ * The longest text a rule's pattern is run on at once. It bounds what a single
+ * synchronous RegExp run can cost (see isReDoSSafe); a longer text is searched
+ * in windows of at most this many characters (scanWindows).
+ */
+export const MAX_EVAL_LENGTH = 100_000;
 
 /**
- * Safely test a regex pattern against input with length limits.
- * Returns false if input exceeds MAX_EVAL_LENGTH to prevent ReDoS.
+ * Real text kept on each side of a window's own region. A match up to this long
+ * that starts in the region is found whole, and ^, $, \b and lookbehind at the
+ * region's edges see the neighbouring text instead of a cut. More than twice the
+ * largest explicit repeat bound in the bundled rules ({20,2000}, ATR-2026-00286);
+ * the longest match on the rules' own true positives is 457 characters. A match or lookahead that
+ * runs on to the window's end reads it as the end of the text: $ can match there
+ * and a negative lookahead finds nothing past it. A lookbehind that reaches back
+ * past the window's start reads it as the start of the text in the same way.
+ */
+export const WINDOW_CONTEXT = 5_000;
+
+/**
+ * The longest text scanned end to end. Past it, the first and the last half of
+ * this budget are scanned and the middle is not, so one search, one pattern on
+ * one text, costs at most 12 window tests (the first window owns
+ * MAX_EVAL_LENGTH - WINDOW_CONTEXT characters, every later one MAX_EVAL_LENGTH -
+ * 2 * WINDOW_CONTEXT). The budget applies to the text searched, so a normalised
+ * text that NFKC lengthened past it is backed by a search of the raw text
+ * normalised without lengthening (testNormalisedThenRaw). It equals the largest
+ * limit an entry point sets (the MCP atr_scan_skill tool refuses more than
+ * 1,000,000 characters); atr scan, atr guard and the library set none.
+ */
+export const MAX_SCAN_LENGTH = 1_000_000;
+
+/** One window of a windowed scan: the slice tested, and the region it owns. */
+export interface ScanWindow {
+  readonly sliceStart: number;
+  readonly ownStart: number;
+  readonly ownEnd: number;
+  readonly sliceEnd: number;
+}
+
+/**
+ * Move an index that falls between the two halves of a surrogate pair one unit
+ * forward (`step` 1) or back (`step` -1), so no slice splits a character. Moving
+ * starts forward and ends back only ever shortens a slice.
+ */
+function codePointBoundary(text: string | undefined, index: number, step: 1 | -1): number {
+  if (text === undefined || index <= 0 || index >= text.length) return index;
+  const unit = text.charCodeAt(index);
+  const before = text.charCodeAt(index - 1);
+  return unit >= 0xdc00 && unit <= 0xdfff && before >= 0xd800 && before <= 0xdbff ? index + step : index;
+}
+
+/**
+ * The windows that cover a text of `length` characters: own regions tiling the
+ * scanned ranges in order, each tested as a slice of at most MAX_EVAL_LENGTH
+ * characters that adds WINDOW_CONTEXT on each side. A text within MAX_EVAL_LENGTH
+ * is one window that owns it all. Pass the text to keep slices off surrogate-pair
+ * boundaries. Exported for unit testing.
+ */
+export function scanWindows(length: number, text?: string): ScanWindow[] {
+  if (length <= MAX_EVAL_LENGTH) return [{ sliceStart: 0, ownStart: 0, ownEnd: length, sliceEnd: length }];
+  const ranges: Array<[number, number]> = length <= MAX_SCAN_LENGTH
+    ? [[0, length]]
+    : [[0, MAX_SCAN_LENGTH / 2], [length - MAX_SCAN_LENGTH / 2, length]];
+  const windows: ScanWindow[] = [];
+  for (const [from, to] of ranges) {
+    let ownStart = codePointBoundary(text, from, 1);
+    const end = codePointBoundary(text, to, -1);
+    while (ownStart < end) {
+      const sliceStart = codePointBoundary(text, Math.max(0, ownStart - WINDOW_CONTEXT), 1);
+      const ownLength = MAX_EVAL_LENGTH - (ownStart - sliceStart) - WINDOW_CONTEXT;
+      const ownEnd = Math.min(end, codePointBoundary(text, ownStart + ownLength, -1));
+      const sliceEnd = Math.min(length, codePointBoundary(text, ownEnd + WINDOW_CONTEXT, -1));
+      windows.push({ sliceStart, ownStart, ownEnd, sliceEnd });
+      ownStart = ownEnd;
+    }
+  }
+  return windows;
+}
+
+/**
+ * A global copy of a pattern, for searching from an offset; built once per
+ * pattern. A sticky flag is dropped: it would try the offset alone.
+ */
+const GLOBAL_COPIES = new WeakMap<RegExp, RegExp>();
+function globalCopy(regex: RegExp): RegExp {
+  let copy = GLOBAL_COPIES.get(regex);
+  if (!copy) {
+    const flags = regex.flags.replace('y', '');
+    copy = new RegExp(regex.source, flags.includes('g') ? flags : flags + 'g');
+    GLOBAL_COPIES.set(regex, copy);
+  }
+  return copy;
+}
+
+/**
+ * Index of the first match in `input`, or -1. Within MAX_EVAL_LENGTH this is the
+ * pattern's own first match. A longer text is searched window by window: each
+ * slice from its own region's start, and a match counts only when it starts in
+ * that region, so each match is counted by exactly one window and ^ cannot match
+ * at a slice's start. What $, lookahead and lookbehind see at a slice's ends is
+ * described at WINDOW_CONTEXT.
+ */
+function firstMatchIndex(regex: RegExp, input: string): number {
+  const search = globalCopy(regex);
+  if (input.length <= MAX_EVAL_LENGTH) {
+    search.lastIndex = 0;
+    const m = search.exec(input);
+    return m ? m.index : -1;
+  }
+  for (const w of scanWindows(input.length, input)) {
+    const slice = input.slice(w.sliceStart, w.sliceEnd);
+    search.lastIndex = w.ownStart - w.sliceStart;
+    const m = search.exec(slice);
+    if (!m) continue;
+    const at = w.sliceStart + m.index;
+    // own regions are half-open, so the end of the text itself, where an empty
+    // match such as (?<=x)$ sits, belongs to the window that owns the last character
+    if (at < w.ownEnd || (at === input.length && w.ownEnd === input.length)) return at;
+  }
+  return -1;
+}
+
+/**
+ * Test a regex pattern against input, MAX_EVAL_LENGTH characters at a time.
+ * A text within MAX_EVAL_LENGTH is tested as is; a longer one is searched in
+ * windows (firstMatchIndex), up to MAX_SCAN_LENGTH. One call is one search.
  */
 function safeRegexTest(regex: RegExp, input: string): boolean {
-  if (input.length > MAX_EVAL_LENGTH) return false;
-  return regex.test(input);
+  if (input.length <= MAX_EVAL_LENGTH) return regex.test(input);
+  return firstMatchIndex(regex, input) >= 0;
 }
 
 /**
  * Test a pattern against the NORMALISED text and, only when normalisation
- * actually changed something, against the RAW text as well.
+ * actually changed something, against the RAW text as well; and, when NFKC made
+ * the normalised text longer than the raw one and longer than MAX_SCAN_LENGTH,
+ * against the raw text normalised without lengthening (see the end of the body).
+ * Each test is one search, at most 12 window tests.
  *
  * The second test exists so a pattern that hunts zero-width / bidi / confusable
  * characters can still see them before foldConfusables strips them. That is a
@@ -2348,7 +2513,14 @@ function testNormalisedThenRaw(
 ): boolean {
   if (safeRegexTest(regex, fieldValue)) return true;
   if (rawFieldValue === fieldValue) return false;
-  return safeRegexTest(regex, rawFieldValue);
+  if (safeRegexTest(regex, rawFieldValue)) return true;
+  // NFKC turns some characters into several (U+FDFA into 18), so a normalised
+  // text can pass MAX_SCAN_LENGTH, leaving its middle unscanned, while the raw
+  // text is far shorter and scanned whole. Then the raw text is tested once more,
+  // normalised without lengthening, which reaches wherever the raw scan does.
+  if (fieldValue.length <= MAX_SCAN_LENGTH) return false;
+  const flat = normaliseWithoutLengthening(rawFieldValue);
+  return flat.length < fieldValue.length && flat !== rawFieldValue && safeRegexTest(regex, flat);
 }
 
 /**
@@ -2359,8 +2531,8 @@ function testNormalisedThenRaw(
  * cannot be interrupted once it starts. Node runs it to completion on the
  * single event-loop thread, so the hook-handler's withTimeout() (a setTimeout
  * race) can never fire while a pathological match is spinning — the timer
- * callback is queued behind the very work it is meant to abort. The length cap
- * in safeRegexTest bounds one axis; this bounds the other by refusing to
+ * callback is queued behind the very work it is meant to abort. The window
+ * length in safeRegexTest bounds one axis; this bounds the other by refusing to
  * compile a pattern whose STRUCTURE permits exponential backtracking, before
  * any attacker-controlled input can reach it.
  *
@@ -2380,7 +2552,7 @@ export function isReDoSSafe(source: string): boolean {
   //     overlap, so each iteration has a single parse: linear, not catastrophic.
   // A purely structural check cannot see inner-class overlap, so we scope the
   // gate to the unambiguous exponential form and rely on the corpus fuzz
-  // (tests/redos-safety.test.ts) + the MAX_EVAL_LENGTH cap for the rest.
+  // (tests/redos-safety.test.ts) + the MAX_EVAL_LENGTH window for the rest.
   //
   // SINGLE-ATOM nested quantifier only: a group whose interior is exactly one
   // quantified atom — (\w+)+, (.*)*, ([a-z]+)*, (a+)+ — then an unbounded outer
@@ -2510,10 +2682,9 @@ function buildCodeBlockRanges(text: string): Array<[number, number]> {
  */
 function isInsideCodeBlock(text: string, regex: RegExp, codeRanges: Array<[number, number]>): boolean {
   if (codeRanges.length === 0) return false;
-  // Reset regex state and find match position
-  const searchRegex = new RegExp(regex.source, regex.flags.includes('g') ? regex.flags : regex.flags + 'g');
-  const m = searchRegex.exec(text);
-  if (!m) return false;
-  const matchPos = m.index;
+  // The first match's position, found the way safeRegexTest found the match:
+  // windowed past MAX_EVAL_LENGTH, so a long text costs no unbounded search here.
+  const matchPos = firstMatchIndex(regex, text);
+  if (matchPos < 0) return false;
   return codeRanges.some(([start, end]) => matchPos >= start && matchPos < end);
 }

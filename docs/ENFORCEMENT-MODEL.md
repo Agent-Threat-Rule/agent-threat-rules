@@ -375,18 +375,37 @@ send, is read as a tool output. Before, the guard answered this event "Unknown
 hook type" and allowed it, so ending a command with `; exit 1` kept its output
 from every rule.
 
-Three limits apply to these scans. A text longer than 100,000 characters matches
-no condition at all (`MAX_EVAL_LENGTH` in `src/engine.ts`), and the limit applies
-to the output's text taken together, so whoever writes any part of an output can
-push the whole past it; a failed call's `error` stays under it, as Claude Code
-cuts it to about 10,000 characters. A string the tool repeats from its input is
-left out of a `PostToolUse` output and of an `error` that is not a string, so text
-the agent passed to a tool and got back unchanged reaches an `llm_io` rule on
-neither `PreToolUse` nor `PostToolUse` (those rules do not run on `PreToolUse`); a
-string `error` is scanned whole. And some rules take time that grows with the
-square of a long run of one character: through the whole rule set on a busy
-machine, 20,000 characters of output took about 8 seconds and 40,000 about 34, and
-no timeout can cut that short, since a regular expression runs synchronously.
+Three limits apply to these scans. A text longer than 100,000 characters
+(`MAX_EVAL_LENGTH` in `src/engine.ts`) is searched in windows of at most that
+length, each reading 5,000 characters of the real text past either edge of the
+region it covers; up to 1,000,000 characters (`MAX_SCAN_LENGTH`) the whole text is
+covered, and past it the first and the last 500,000 characters are and the middle
+is not, so whoever writes more than a million characters of an output can place a
+payload where no rule reads it. The budget applies to the text a pattern is run
+on: when NFKC makes the normalised text longer than the output (one character can
+become 18) and takes it past the budget, the output is also searched normalised
+without lengthening, which leaves any character NFKC lengthens as written (a
+ligature such as U+FB06 for "st", U+33CC for "in", U+2116 for "No", a Roman
+numeral), so a payload spelt with them can still sit unread in the middle of the
+normalised text. A match or lookahead that runs on to the end of a window, 5,000
+characters past the end of the region it starts in, reads that end as the end of
+the text, and a lookbehind that reaches back past the start of a window reads that
+as the start. A failed call's `error` stays far below these, as Claude Code cuts
+it to about 10,000 characters. A string the tool repeats from its input is left
+out of a `PostToolUse` output and of an `error` that is not a string, so text the
+agent passed to a tool and got back unchanged reaches an `llm_io` rule on neither
+`PreToolUse` nor `PostToolUse` (those rules do not run on `PreToolUse`); a string
+`error` is scanned whole. And scanning takes time. Through the whole rule set (the
+default hunt lane) a typical large file costs about a third of a second per
+100,000 characters on a busy machine, and about 30 ms in the enforce lane. Some
+rules take time that grows faster than the text on particular repeated inputs, up
+to about 50 seconds for 10,000 characters of the slowest known one, and no timeout
+can cut that short, since a regular expression runs synchronously. Past 100,000
+characters each window costs at most what a 100,000-character input does, and one
+search, one pattern on one text, has at most 12; a condition searches the
+normalised text, the raw text when normalisation changed it, and, in the case
+above, the text normalised without lengthening, and a rule that suppresses matches
+in code blocks searches the normalised text once more for the match's position.
 
 `atr init` registers the guard on `PreToolUse` only. To scan tool output, add the
 same command under `PostToolUse` and `PostToolUseFailure` in the Claude Code

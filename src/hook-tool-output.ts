@@ -18,9 +18,11 @@
  *     `image_data`, an MCP image or audio block's `data` (also under a source of
  *     type `base64`), an MCP resource's `blob`, and Bash's stdout when the command
  *     printed nothing but an image (`isImage`). Besides not being text, it is
- *     long: the engine matches no condition against a value over 100,000
- *     characters (MAX_EVAL_LENGTH in src/engine.ts), so one screenshot beside a
- *     page's text would hide the text.
+ *     long: the engine scans a value over 100,000 characters in windows
+ *     (MAX_EVAL_LENGTH in src/engine.ts) and only the first and last 500,000
+ *     characters of one over 1,000,000 (MAX_SCAN_LENGTH), so one screenshot
+ *     beside a page's text would cost window tests for nothing and could push
+ *     the text out of what is scanned.
  *   - What Claude Code keeps from the model: an MCP block's `_meta`, Bash's
  *     `bashEditDiff` and `gitOperation`, and the `prompt` and `status` an Agent or
  *     Task result repeats back.

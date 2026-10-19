@@ -304,7 +304,8 @@ export function toClaudeCodePostToolUse(
  * catastrophic-backtracking match monopolizes the single thread and the timer
  * callback is queued behind the very work it is meant to cancel. The real
  * defense against a pathological rule is compile-time rejection — see
- * isReDoSSafe / safeCompile in engine.ts — plus the MAX_EVAL_LENGTH input cap.
+ * isReDoSSafe / safeCompile in engine.ts — plus the MAX_EVAL_LENGTH window each
+ * regex test is limited to.
  */
 function withTimeout<T>(
   promise: Promise<T>,
