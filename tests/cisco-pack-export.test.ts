@@ -10,13 +10,22 @@
  * the concrete case that caught it.
  */
 
-import { mkdtempSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { describe, expect, it } from 'vitest';
+import { regexConditionSpec } from '../src/engine.js';
 import { loadRules, extractPatterns, type AtrRule } from '../scripts/cisco-pack/load-rules.js';
-import { buildSignatureFiles, toSignature, toSignatureId, DEFAULT_REPO_URL } from '../scripts/cisco-pack/transform.js';
+import {
+  buildSignatureFiles,
+  toScannerPattern,
+  toSignature,
+  toSignatureId,
+  DEFAULT_REPO_URL,
+} from '../scripts/cisco-pack/transform.js';
 import { chooseScalarStyle, emitYaml } from '../scripts/cisco-pack/yaml-emit.js';
 
 const OPTIONS = { ref: 'main', repoUrl: DEFAULT_REPO_URL };
@@ -152,6 +161,40 @@ describe('toSignature', () => {
       },
     });
     expect(extractPatterns(repeated)).toEqual(['pickle\\.load', 'pickle\\.load']);
+    expect(toSignature({ ...loaded, rule: repeated }, OPTIONS).patterns).toEqual([
+      '(?i)pickle\\.load',
+      '(?i)pickle\\.load',
+    ]);
+  });
+
+  // One condition per leading-group shape on main: none, (?i), and the three
+  // rules that write more than i (ATR-2026-00450, -00859, -00207).
+  const SHAPES = ['abc', '(?i)abc', '(?im)^abc', '(?si)<x>[^<]*', '(?is)a[.]b'];
+  const shaped = {
+    ...loaded,
+    rule: rule({
+      id: 'ATR-2026-00005',
+      detection: {
+        conditions: SHAPES.map((value) => ({ field: 'user_input', operator: 'regex', value })),
+      },
+    }),
+  };
+
+  it('writes each pattern as (?i) plus the pattern the engine compiles', () => {
+    // The scanner compiles with re.compile(pattern) and no flags. ATR matches
+    // every regex condition case-insensitively and applies no m, s or x
+    // (SPEC.md §6.4), so the rule's own group must not reach the scanner and
+    // a pattern without one must not arrive case-sensitive.
+    const { patterns } = toSignature(shaped, OPTIONS);
+    expect(patterns).toEqual(['(?i)abc', '(?i)abc', '(?i)^abc', '(?i)<x>[^<]*', '(?i)a[.]b']);
+    expect(patterns).toEqual(SHAPES.map((v) => `(?i)${regexConditionSpec(v).source}`));
+    expect(patterns).toEqual(SHAPES.map(toScannerPattern));
+  });
+
+  it('copies patterns verbatim when reproducing the vendored pack', () => {
+    // verify-reproduction.ts compares that pack byte for byte, and it was
+    // built from the rules' own values.
+    expect(toSignature(shaped, { ...OPTIONS, verbatimPatterns: true }).patterns).toEqual(SHAPES);
   });
 
   it('drops conditions whose operator is not regex', () => {
@@ -358,6 +401,31 @@ describe('generated signature files', () => {
   });
 });
 
+describe('generated README', () => {
+  it('says how the patterns were written, and calls them verbatim only in a reproduction', async () => {
+    const { renderReadme } = await import('../scripts/cisco-pack/render.js');
+    const files = buildSignatureFiles(
+      [{ category: 'tool-poisoning', fileName: 'a.yaml', rule: rule({ id: 'ATR-2026-00001' }) }],
+      OPTIONS,
+    );
+    const context = {
+      version: '4.1.5',
+      repoUrl: DEFAULT_REPO_URL,
+      benchmarkSentence: '',
+      benchmarkReadmeLine: '',
+    };
+    const exported = renderReadme(files, context, []);
+    expect(exported).toContain('ATR SPEC.md §6.4');
+    expect(exported).not.toContain('verbatim');
+    const reproduced = renderReadme(
+      files,
+      { ...context, reproduceVendored: true, filesPerCategory: { 'tool-poisoning': 1 } },
+      [],
+    );
+    expect(reproduced).toContain('extracted verbatim');
+  });
+});
+
 describe('exporter output is stable', () => {
   it('produces identical bytes on two runs of the same input', () => {
     const root = mkdtempSync(join(tmpdir(), 'atr-stable-'));
@@ -377,4 +445,53 @@ describe('exporter output is stable', () => {
     expect(JSON.stringify(once)).toBe(JSON.stringify(twice));
     expect(readFileSync(join(root, 'prompt-injection', 'ATR-2026-00001-x.yaml'), 'utf8').length).toBeGreaterThan(0);
   });
+});
+
+describe('export-cisco-pack.ts', () => {
+  // writePack() hands --reproduce-vendored to buildSignatureFiles() as
+  // verbatimPatterns. Without this test only verify-reproduction.ts, which
+  // needs a downstream checkout and runs in no workflow, would notice if that
+  // wiring broke.
+  const REPO = join(dirname(fileURLToPath(import.meta.url)), '..');
+  const TSX = join(REPO, 'node_modules', '.bin', 'tsx');
+  const SCRIPT = join(REPO, 'scripts', 'export-cisco-pack.ts');
+
+  function exportedPatterns(extraArgs: readonly string[]): string[] {
+    const rules = mkdtempSync(join(tmpdir(), 'atr-cisco-cli-rules-'));
+    mkdirSync(join(rules, 'prompt-injection'), { recursive: true });
+    writeFileSync(
+      join(rules, 'prompt-injection', 'ATR-2026-00005-x.yaml'),
+      yaml.dump({
+        id: 'ATR-2026-00005',
+        severity: 'high',
+        description: 'A rule.',
+        detection: {
+          conditions: [
+            { field: 'user_input', operator: 'regex', value: 'abc' },
+            { field: 'user_input', operator: 'regex', value: '(?im)^abc' },
+          ],
+        },
+      }),
+      'utf8',
+    );
+    const out = mkdtempSync(join(tmpdir(), 'atr-cisco-cli-out-'));
+    const run = spawnSync(
+      TSX,
+      [SCRIPT, '--rules', rules, '--out', out, '--version', '0.0.0', '--json', ...extraArgs],
+      { encoding: 'utf8' },
+    );
+    expect(run.status, run.stderr).toBe(0);
+    const dir = join(out, 'signatures');
+    return readdirSync(dir).flatMap((file) => {
+      const parsed = yaml.load(readFileSync(join(dir, file), 'utf8')) as {
+        signatures: { patterns: string[] }[];
+      };
+      return parsed.signatures.flatMap((signature) => signature.patterns);
+    });
+  }
+
+  it('writes (?i) patterns, and verbatim ones only with --reproduce-vendored', () => {
+    expect(exportedPatterns([])).toEqual(['(?i)abc', '(?i)^abc']);
+    expect(exportedPatterns(['--reproduce-vendored'])).toEqual(['abc', '(?im)^abc']);
+  }, 60_000);
 });
