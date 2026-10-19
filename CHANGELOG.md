@@ -108,6 +108,34 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **Conformance Test Suite v1.0.1 and SPEC.md 1.0.2 [Compatible]: the
+  reference engine passes the suite.** No engine could pass suite v1.0.0.
+  41 TP and TN fixtures had no payload: the generator read only a test case's
+  `input`, while 21 rules keep their payload under keys such as
+  `tool_response` or `tool_description`. Six fixture pairs named rules the
+  reference engine did not evaluate as the runner drives it: four at
+  `status: draft`, ATR-2026-00075, whose `memory_access` source the engine
+  withholds from typed events, and ATR-2026-00070, whose `context_window`
+  source it evaluated on no typed event until #701 and whose TP fixture also
+  lacked the injection. ATR-2026-00451's hand-written fixture did not
+  exercise the rule. Four edge fixtures expected no match on zero-width,
+  bidi-override and control-character payloads that rules in the corpus
+  detect, while SPEC §12 required no_match or graceful_error for every edge
+  fixture. The generator now builds the payload from every key
+  `src/testcase-event.ts` reads, fails on a test case with none, and skips
+  rules the runner cannot exercise; the affected fixtures were regenerated or
+  replaced; the runner reports a fixture with no `input`, a tp or tn fixture
+  with no `rule_id`, and a fixture whose outcome its category does not allow
+  as a harness error; and the new edge outcome `handled`, allowed by SPEC.md
+  1.0.2 §12, accepts a match within budget. Result: 226/226. Compatible: no
+  engine needs a change, since 1.0.2 only widens what an edge fixture
+  accepts. Suite v1.0.1 is a corrective release: it alters published
+  fixtures, which the suite's versioning rule otherwise forbids, and issue
+  #705 has the evidence and the versioning question.
+  `.github/workflows/conformance.yml` now runs the suite and
+  `.github/workflows/sigma-export.yml` runs `scripts/test_generate_sigma.py`,
+  whose stale RE2 test is fixed. Erratum `e-2026-10-19-conformance-suite`.
+
 - **SPEC §6.4 corrected: SPEC.md 1.0.1 [Compatible].** A `regex` pattern
   condition matches case-insensitively whether or not it begins with `(?i)`,
   and `m`, `s` and `x` in a leading flag group have no effect. The 1.0.0 text,
