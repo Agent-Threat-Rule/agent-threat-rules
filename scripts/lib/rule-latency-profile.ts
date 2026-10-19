@@ -45,7 +45,7 @@ import { mkdtempSync, readdirSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ATREngine } from "../../src/engine.js";
+import { ATREngine, RUNTIME_SOURCE_TYPE } from "../../src/engine.js";
 import { loadRuleFile } from "../../src/loader.js";
 import { laneAllows } from "../../src/quality/rule-contract.js";
 import { EVAL_CORPUS } from "../../src/eval/corpus.js";
@@ -58,19 +58,32 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const RULES_DIR = join(REPO_ROOT, "rules");
 
 /**
- * ATR source types the eval corpus can actually exercise.
- *
- * Derived from EVENT_TYPE_TO_SOURCE in src/engine.ts applied to the event types
- * present in src/eval/corpus.ts (llm_input, llm_output, tool_call,
- * tool_response, multi_agent_message). A rule declaring anything else has its
- * conditions skipped by the engine on every corpus sample, so its measured cost
- * describes the dispatch loop and nothing about its regexes.
+ * Source types of the events src/eval/corpus.ts carries: EVENT_TYPE_TO_SOURCE
+ * in src/engine.ts applied to the event types present there (llm_input,
+ * llm_output, tool_call, tool_response, multi_agent_message). Listed by hand,
+ * so it has to name the source type of every event type the corpus holds.
  */
-export const CORPUS_SOURCE_TYPES: ReadonlySet<string> = new Set([
+const CORPUS_EVENT_SOURCE_TYPES: readonly string[] = Object.freeze([
   "llm_io",
   "tool_call",
   "mcp_exchange",
   "multi_agent_comm",
+]);
+
+/**
+ * ATR source types the eval corpus can actually exercise.
+ *
+ * CORPUS_EVENT_SOURCE_TYPES, plus every extended type the engine admits on one
+ * of those (RUNTIME_SOURCE_TYPE: context_window runs where llm_io rules run,
+ * the skill_* types where tool_call rules run). A rule declaring anything else
+ * has its conditions skipped by the engine on every corpus sample, so its
+ * measured cost describes the dispatch loop and nothing about its regexes.
+ */
+export const CORPUS_SOURCE_TYPES: ReadonlySet<string> = new Set([
+  ...CORPUS_EVENT_SOURCE_TYPES,
+  ...Object.entries(RUNTIME_SOURCE_TYPE)
+    .filter(([, base]) => CORPUS_EVENT_SOURCE_TYPES.includes(base))
+    .map(([type]) => type),
 ]);
 
 // ---------------------------------------------------------------------------

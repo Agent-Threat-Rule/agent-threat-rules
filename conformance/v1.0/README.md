@@ -119,11 +119,15 @@ They are listed rather than papered over:
    evaluation by design, so no fixture can make this one fire
    (`grep -m1 '^status:' rules/prompt-injection/ATR-2026-00084-structured-data-injection.yaml`).
 
-3. **ATR-2026-00070 and ATR-2026-00075 declare unreachable sources.**
-   Their `agent_source.type` values (`context_window`, `memory_access`) are
-   not produced by any Agent Event type, so the source-type filter excludes
-   them on every channel. The TP fixture for -00070 additionally carries a
-   benign payload ("What is the company refund policy?").
+3. **ATR-2026-00070 and ATR-2026-00075 declare sources no Agent Event type
+   produces** (`context_window`, `memory_access`), so on 2026-09-22 the
+   source-type filter excluded them on every channel. The reference engine
+   now runs `context_window` rules where it runs `llm_io` rules
+   (`RUNTIME_SOURCE_TYPE` in `src/engine.ts`), but the TP fixture for -00070
+   carries a benign payload ("What is the company refund policy?") and still
+   fails. `memory_access` is withheld from typed events
+   (`WITHHELD_SOURCE_TYPES`, which gives the reason), so the -00075 fixture
+   still fails as before.
 
 4. **ATR-2026-00451's TP fixture does not exercise the Rule it names.**
    Every condition requires a `bearer ...` prefix; the fixture supplies an

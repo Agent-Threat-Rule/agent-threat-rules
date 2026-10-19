@@ -65,6 +65,41 @@ All notable changes to ATR will be documented in this file.
 
 ### Changed
 
+- **The ReDoS gate now times long inputs, every branch of an alternation
+  and input tiled with a pattern's own openers, and its baseline grew from 9
+  to 439 conditions because of it.** Nothing got slower; the gate started
+  looking. Two integrations packaging the corpus found conditions that took
+  seconds to minutes on 8,000- and 50,000-character inputs while
+  `scripts/gate-redos.py` reported them clean: its inputs were 1,500 to
+  3,000 characters, where a quadratic condition costs about a tenth of a
+  second, and only the first branch of an alternation was ever pumped. Each
+  condition is now also run on 20,000-character inputs built per quantifier
+  -- the text that reaches the quantifier, through whichever branch,
+  lookbehind or back-reference leads there, followed by a long run of its
+  own body -- and on its openers and pumped near-match tiled to length
+  (#601). Each worker calibrates per chunk and times are reported in
+  reference-machine seconds, which reduces, but does not remove, the effect
+  of load that changes during a run. `data/redos-baseline.json` now lists
+  439 conditions in 259 rules: 350 over the budget when it was written (201
+  of them did not return within the wall even timed alone) and 89 under the
+  budget but over a third of it, recorded too because one condition's
+  readings spread by more than 2x across runs and machines. 41 are in the
+  enforce lane and 412 are high or critical.
+  Each entry carries a fingerprint of its pattern, so editing a baselined
+  condition makes it new again instead of inheriting the exemption; an
+  unchanged baselined hang is not re-run. The gate stays a ratchet: it fails
+  on a slow condition outside that file. `scripts/verify_rule_redos.py` now
+  uses the gate's own inputs and timing -- it had reported PASS on
+  ATR-2026-02372 with both conditions hanging -- and with `--base REF` also
+  times a changed condition on the inputs derived from its previous pattern.
+  Twelve conditions that Python `re` cannot compile, and that the gate
+  skipped without saying so, are now listed by key. pyatr runs eleven of
+  them through its `regex` fallback and the TypeScript engine compiles all
+  twelve, so they run in production and are still untimed here; the twelfth,
+  ATR-2026-00290#3, back-references a group that does not exist, which pyatr
+  refuses and JavaScript reads as the character U+0001 (#331). The semantic
+  lane's per-draft ReDoS precheck now allows 300 s instead of 120 s.
+
 - **Every recall figure the site, LIMITATIONS.md, CITATION.cff and the docs
   above take from the measurement files now names its lane** and gives the
   enforce figure wherever the measurement records one. Figures no measurement
@@ -91,6 +126,54 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **SPEC §6.4 corrected: SPEC.md 1.0.1 [Compatible].** A `regex` pattern
+  condition matches case-insensitively whether or not it begins with `(?i)`,
+  and `m`, `s` and `x` in a leading flag group have no effect. The 1.0.0 text,
+  added on 2026-07-19 (#340), said an engine applies the flags named in that
+  group, which made a pattern without `(?i)` case-sensitive and gave `(?s)`
+  and `(?m)` their dotAll and multiline meaning. Compatible: an engine that
+  passes the conformance suite needs no change, because its true-positive
+  fixtures already require case-insensitive matching; an implementation built
+  to the 1.0.0 wording does. 1.0.1 also admits `x` in the group, which both
+  engines already removed, says when the `u` flag applies, advises against
+  modifier groups such as `(?-i:...)`, and adds a revision history (Appendix
+  D). Issue #698 has the evidence; erratum `e-2026-10-19-regex-dialect`
+  records the error. `tests/spec-regex-dialect.test.ts` and pyATR's
+  `TestRegexDialectSpec64` pin the statements. `scripts/generate-sigma.py` no
+  longer copies `m` and `s` from that group into exported Sigma patterns,
+  where a backend would honour them; of the three rules on main that carry
+  such a group, only ATR-2026-00450's `(?im)^...` condition matched
+  differently because of it. Other exports that still follow the 1.0.0
+  wording are listed in #698.
+- **Rules with a `context_window` or `skill_*` `agent_source.type` run on the
+  events their data arrives in.** `src/engine.ts` maps an event type to one of
+  five source types and skipped every rule whose type differed, so a rule of an
+  extended type never ran on a typed event: on the `tool_call` and
+  `tool_response` events `src/hook-handler.ts` builds, ATR-2026-00070, -00075,
+  -01155, -01774, -00134, -00157 and -02405 never fired, while `atr test` mapped
+  their types to a base type and passed every case. The engine now does that
+  mapping itself (`RUNTIME_SOURCE_TYPE`): `context_window` runs where `llm_io`
+  rules run, the `skill_*` types where `tool_call` rules run, and a rule without
+  `agent_source` no longer throws a `TypeError` that aborted the whole
+  evaluation of a typed event. `memory_access` is withheld
+  (`WITHHELD_SOURCE_TYPES`): ATR-2026-00075 also matches standing instructions
+  in an ordinary chat turn ("From now on, always answer in French."), which the
+  Mastra processor and the OpenShell filter, both blocking by default, would
+  refuse; -00075 and -01155 still run only on an untyped event and in a skill
+  scan, and a new `memory_access` rule fails the test suite until the type is
+  mapped. `atr test` no longer maps anything, so what passes there is what the
+  engine runs, and it reports a withheld type's cases as unevaluable, with the
+  reason. The rule-latency gate profiles the five rules instead of listing them
+  as unexercised. The benign-corpus measurement does not change, because its
+  untyped shape already ran these rules; what changes is that their matches now
+  surface at runtime in the hunt lane, the default: ATR-2026-00070 (high)
+  matches 20 of the 14,157 benign samples. On the weekly benchmark suite three
+  hunt-lane recalls rise: garak 601 to 602 of 650 and garak-full 1,989 to 1,991
+  of 3,475 (one prompt, which -00070 catches on the tool-response channel and
+  garak-full holds twice), and atr-self-test 310 to 312 of 321 (-00070's own
+  true positives). No precision or false-positive figure moves (the new matches
+  fall on attack samples), and no enforce-lane figure moves (none of the five
+  rules is stable).
 - **A `medium` confidence label no longer depends on float rounding to stay
   out of `deny`.** A pattern match scored `0.7 + 0.1 * coverage`, and a
   `high`-severity match denies at `>= 0.8`. At full coverage that sum is
@@ -170,6 +253,13 @@ All notable changes to ATR will be documented in this file.
   copied rule files into its scratch directory by file name, so of two
   same-named files in different directories only the last was read, and the
   other was reported clean.
+- **`scripts/promote-to-stable.ts` no longer promotes on a 0 it did not
+  measure.** A `maturity: test` rule whose conditions the benign corpus cannot
+  fully exercise (a field no sample fills, such as `tool_name`, or a method the
+  synchronous engine cannot run, such as `trace`) scored 0 false positives
+  without being read, and `--write` promoted it to `stable`. Such a rule is now
+  reported as not promotable; one that did false-positive stays with the rules
+  that have false positives. No `maturity: test` rule on main is affected today.
 
 ## [4.1.5] - 2026-10-10
 
