@@ -22,12 +22,12 @@ the second pin is the vendor's head when this corpus was built. A text found at 
   licenses in `LICENSES/`; copyright stays with Protect AI, NVIDIA and Promptfoo respectively.
   Strings a vendor's test files did not attribute to anyone else are redistributed under that
   vendor's repository license, with no further claim about where the vendor took them from.
-- `LICENSES/` — each vendor's license file, verbatim from its pinned commits (identical at both pins
+- `LICENSES/` — each vendor's license files, verbatim from its pinned commits (identical at both pins
   of a vendor): `llm-guard.LICENSE` (MIT), `nemo-guardrails.LICENSE.md` (NeMo Guardrails' Apache-2.0
-  notice, as the repository ships it; the license text it refers to is
-  https://www.apache.org/licenses/LICENSE-2.0), `promptfoo.LICENSE` (MIT). `manifest.json` records
-  the sha256 of each at each pin, and `fetch-vendor-suites.py --check` fails when a copy is missing,
-  edited or stray, or when that sha256 no longer matches upstream.
+  notice) with `nemo-guardrails.LICENSE-Apache-2.0.txt` (the full Apache License 2.0 text the
+  repository ships beside it), `promptfoo.LICENSE` (MIT). `sources.json` pins the sha256 of each,
+  `manifest.json` records it at each pin, and `fetch-vendor-suites.py --check` fails when a copy is
+  missing, edited or stray, or when a sha256 no longer matches upstream.
 - `manifest.json` — counts, the sha256 of `samples.jsonl`, the license file seen at each pin, and the
   full provenance (repo, commit, path, line, selector) of every sample.
 - `legacy-corpora-provenance.json` — whether each of the 94 samples of the 2026-05-12 corpora

@@ -62,4 +62,39 @@ describe.skipIf(!python)('vendor-suite license copies', () => {
       expect(createHash('sha256').update(readFileSync(resolve(REPO, l.copy))).digest('hex')).toBe(l.license_file_sha256);
     }
   });
+
+  it('carries NeMo Guardrails\' full Apache-2.0 text beside its notice, at the sha256 sources.json pins', () => {
+    const sources = JSON.parse(readFileSync(resolve(REPO, 'data/test-corpora/vendor-guardrail-suites/sources.json'), 'utf-8')) as {
+      vendors: { vendor: string; license_file: string; license_sha256?: string; extra_license_files?: { path: string; sha256: string }[] }[];
+    };
+    const nemo = sources.vendors.find((v) => v.vendor === 'nemo-guardrails')!;
+    const full = nemo.extra_license_files?.find((f) => f.path === 'LICENSE-Apache-2.0.txt');
+    expect(full?.sha256).toMatch(/^[0-9a-f]{64}$/);
+    const copy = readFileSync(resolve(REPO, 'data/test-corpora/vendor-guardrail-suites/LICENSES/nemo-guardrails.LICENSE-Apache-2.0.txt'));
+    expect(createHash('sha256').update(copy).digest('hex')).toBe(full!.sha256);
+    expect(copy.toString('utf-8')).toContain('Apache License');
+    for (const v of sources.vendors) {
+      const main = readFileSync(resolve(REPO, `data/test-corpora/vendor-guardrail-suites/LICENSES/${v.vendor}.${v.license_file}`));
+      expect(createHash('sha256').update(main).digest('hex'), v.vendor).toBe(v.license_sha256);
+    }
+    const manifest = JSON.parse(readFileSync(resolve(REPO, 'data/test-corpora/vendor-guardrail-suites/manifest.json'), 'utf-8')) as {
+      licenses: { vendor: string; license_file: string; license_file_sha256: string }[];
+    };
+    const recorded = manifest.licenses.filter((l) => l.vendor === 'nemo-guardrails' && l.license_file === 'LICENSE-Apache-2.0.txt');
+    expect(recorded).toHaveLength(2);
+    for (const l of recorded) expect(l.license_file_sha256).toBe(full!.sha256);
+  });
+
+  it('refuses a license file whose sha256 differs from the one sources.json pins', () => {
+    const driver = `
+import importlib.util
+spec = importlib.util.spec_from_file_location("fvs", ${JSON.stringify(SCRIPT)})
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+v = {"license_file": "LICENSE", "license_sha256": "a" * 64, "extra_license_files": [{"path": "FULL.txt", "sha256": "b" * 64}]}
+print([f["path"] for f in m.license_files(v)], [f["sha256"][0] for f in m.license_files(v)])
+`;
+    const r = spawnSync('python3', ['-c', driver], { encoding: 'utf-8' });
+    expect(r.stdout.trim()).toBe("['LICENSE', 'FULL.txt'] ['a', 'b']");
+    expect(readFileSync(SCRIPT, 'utf-8')).toMatch(/sha256 \{digest\} != sources\.json/);
+  });
 });
