@@ -3,9 +3,9 @@
   "source": "vendor-guardrail-suites",
   "source_version": "pinned-2026-10-19",
   "atr_version": "4.1.5",
-  "atr_commit": "ef7d4377",
+  "atr_commit": "954a18f1",
   "rules_loaded": 836,
-  "measured_at": "2026-10-19T01:54:14.637Z",
+  "measured_at": "2026-10-19T05:12:27.919Z",
   "samples": 146,
   "metrics": {
     "recall": 0.7698412698412699,
@@ -1790,6 +1790,1052 @@
         "benign_flagged": []
       }
     },
+    "in_sample_ablation": {
+      "note": "Ablation reference, not an out-of-sample result. Rules whose YAML names promptfoo, llm-guard or NeMo Guardrails, or carries the vendor-corpus-import author tag, were written from these suites. without_rules_naming_source re-measures every lane without them; it is the figure to cite beside the headline. It approximates an out-of-sample figure without guaranteeing one: rules that do not name a vendor can still carry vendor text (breakdown.overlaps.rule_text), and some vendor samples also occur in garak-full, a corpus other rules were mined from (breakdown.overlaps.garak_full). without_rules_naming_or_sharing_text also removes every rule whose YAML shares a 40-character run with a vendor sample.",
+      "reference": "without_rules_naming_source",
+      "without_rules_naming_source": {
+        "description": "every rule whose YAML text matches /promptfoo|\\bllm[-_ ]?guard\\b|\\bnemo\\b|vendor-corpus-import/i (promptfoo, llm-guard, NeMo / NeMo Guardrails, the vendor-corpus-import author tag)",
+        "removed_rule_ids": [
+          "ATR-2026-00061",
+          "ATR-2026-00500",
+          "ATR-2026-00501",
+          "ATR-2026-00502",
+          "ATR-2026-00503",
+          "ATR-2026-00504",
+          "ATR-2026-00505",
+          "ATR-2026-00521",
+          "ATR-2026-00522",
+          "ATR-2026-00525",
+          "ATR-2026-00527",
+          "ATR-2026-00552",
+          "ATR-2026-01155",
+          "ATR-2026-02858",
+          "ATR-2026-02859",
+          "ATR-2026-02860"
+        ],
+        "lanes": {
+          "hunt": {
+            "lane": "hunt",
+            "detected": 78,
+            "attacks": 126,
+            "recall": 0.6190476190476191,
+            "rules_in_lane": 813,
+            "benign": 20,
+            "benign_flagged": 1,
+            "by_vendor": {
+              "llm-guard": {
+                "attacks": 46,
+                "detected": 26,
+                "recall": 0.5652173913043478,
+                "benign": 16,
+                "benign_flagged": 1,
+                "benign_flag_rate": 0.0625
+              },
+              "nemo-guardrails": {
+                "attacks": 22,
+                "detected": 20,
+                "recall": 0.9090909090909091,
+                "benign": 4,
+                "benign_flagged": 0,
+                "benign_flag_rate": 0
+              },
+              "promptfoo": {
+                "attacks": 58,
+                "detected": 32,
+                "recall": 0.5517241379310345,
+                "benign": 0,
+                "benign_flagged": 0,
+                "benign_flag_rate": null
+              }
+            }
+          },
+          "alert": {
+            "lane": "alert",
+            "detected": 70,
+            "attacks": 126,
+            "recall": 0.5555555555555556,
+            "rules_in_lane": 736,
+            "benign": 20,
+            "benign_flagged": 0,
+            "by_vendor": {
+              "llm-guard": {
+                "attacks": 46,
+                "detected": 25,
+                "recall": 0.5434782608695652,
+                "benign": 16,
+                "benign_flagged": 0,
+                "benign_flag_rate": 0
+              },
+              "nemo-guardrails": {
+                "attacks": 22,
+                "detected": 20,
+                "recall": 0.9090909090909091,
+                "benign": 4,
+                "benign_flagged": 0,
+                "benign_flag_rate": 0
+              },
+              "promptfoo": {
+                "attacks": 58,
+                "detected": 25,
+                "recall": 0.43103448275862066,
+                "benign": 0,
+                "benign_flagged": 0,
+                "benign_flag_rate": null
+              }
+            }
+          },
+          "enforce": {
+            "lane": "enforce",
+            "detected": 7,
+            "attacks": 126,
+            "recall": 0.05555555555555555,
+            "rules_in_lane": 103,
+            "benign": 20,
+            "benign_flagged": 0,
+            "by_vendor": {
+              "llm-guard": {
+                "attacks": 46,
+                "detected": 0,
+                "recall": 0,
+                "benign": 16,
+                "benign_flagged": 0,
+                "benign_flag_rate": 0
+              },
+              "nemo-guardrails": {
+                "attacks": 22,
+                "detected": 5,
+                "recall": 0.22727272727272727,
+                "benign": 4,
+                "benign_flagged": 0,
+                "benign_flag_rate": 0
+              },
+              "promptfoo": {
+                "attacks": 58,
+                "detected": 2,
+                "recall": 0.034482758620689655,
+                "benign": 0,
+                "benign_flagged": 0,
+                "benign_flag_rate": null
+              }
+            }
+          }
+        }
+      },
+      "without_rules_naming_or_sharing_text": {
+        "description": "the rules removed by without_rules_naming_source, and every rule whose YAML shares a 40-character run with a vendor sample (breakdown.overlaps.rule_text)",
+        "removed_rule_ids": [
+          "ATR-2026-00001",
+          "ATR-2026-00061",
+          "ATR-2026-00237",
+          "ATR-2026-00239",
+          "ATR-2026-00253",
+          "ATR-2026-00267",
+          "ATR-2026-00273",
+          "ATR-2026-00297",
+          "ATR-2026-00307",
+          "ATR-2026-00318",
+          "ATR-2026-00319",
+          "ATR-2026-00340",
+          "ATR-2026-00457",
+          "ATR-2026-00460",
+          "ATR-2026-00472",
+          "ATR-2026-00485",
+          "ATR-2026-00495",
+          "ATR-2026-00500",
+          "ATR-2026-00501",
+          "ATR-2026-00502",
+          "ATR-2026-00503",
+          "ATR-2026-00504",
+          "ATR-2026-00505",
+          "ATR-2026-00506",
+          "ATR-2026-00507",
+          "ATR-2026-00508",
+          "ATR-2026-00518",
+          "ATR-2026-00521",
+          "ATR-2026-00522",
+          "ATR-2026-00525",
+          "ATR-2026-00527",
+          "ATR-2026-00552",
+          "ATR-2026-00863",
+          "ATR-2026-01001",
+          "ATR-2026-01155",
+          "ATR-2026-01454",
+          "ATR-2026-01464",
+          "ATR-2026-01600",
+          "ATR-2026-01601",
+          "ATR-2026-01602",
+          "ATR-2026-01603",
+          "ATR-2026-01604",
+          "ATR-2026-01609",
+          "ATR-2026-01613",
+          "ATR-2026-01614",
+          "ATR-2026-01770",
+          "ATR-2026-01772",
+          "ATR-2026-02846",
+          "ATR-2026-02858",
+          "ATR-2026-02859",
+          "ATR-2026-02860"
+        ],
+        "lanes": {
+          "hunt": {
+            "lane": "hunt",
+            "detected": 58,
+            "attacks": 126,
+            "recall": 0.4603174603174603,
+            "rules_in_lane": 779,
+            "benign": 20,
+            "benign_flagged": 0,
+            "by_vendor": {
+              "llm-guard": {
+                "attacks": 46,
+                "detected": 22,
+                "recall": 0.4782608695652174,
+                "benign": 16,
+                "benign_flagged": 0,
+                "benign_flag_rate": 0
+              },
+              "nemo-guardrails": {
+                "attacks": 22,
+                "detected": 20,
+                "recall": 0.9090909090909091,
+                "benign": 4,
+                "benign_flagged": 0,
+                "benign_flag_rate": 0
+              },
+              "promptfoo": {
+                "attacks": 58,
+                "detected": 16,
+                "recall": 0.27586206896551724,
+                "benign": 0,
+                "benign_flagged": 0,
+                "benign_flag_rate": null
+              }
+            }
+          },
+          "alert": {
+            "lane": "alert",
+            "detected": 58,
+            "attacks": 126,
+            "recall": 0.4603174603174603,
+            "rules_in_lane": 704,
+            "benign": 20,
+            "benign_flagged": 0,
+            "by_vendor": {
+              "llm-guard": {
+                "attacks": 46,
+                "detected": 22,
+                "recall": 0.4782608695652174,
+                "benign": 16,
+                "benign_flagged": 0,
+                "benign_flag_rate": 0
+              },
+              "nemo-guardrails": {
+                "attacks": 22,
+                "detected": 20,
+                "recall": 0.9090909090909091,
+                "benign": 4,
+                "benign_flagged": 0,
+                "benign_flag_rate": 0
+              },
+              "promptfoo": {
+                "attacks": 58,
+                "detected": 16,
+                "recall": 0.27586206896551724,
+                "benign": 0,
+                "benign_flagged": 0,
+                "benign_flag_rate": null
+              }
+            }
+          },
+          "enforce": {
+            "lane": "enforce",
+            "detected": 5,
+            "attacks": 126,
+            "recall": 0.03968253968253968,
+            "rules_in_lane": 99,
+            "benign": 20,
+            "benign_flagged": 0,
+            "by_vendor": {
+              "llm-guard": {
+                "attacks": 46,
+                "detected": 0,
+                "recall": 0,
+                "benign": 16,
+                "benign_flagged": 0,
+                "benign_flag_rate": 0
+              },
+              "nemo-guardrails": {
+                "attacks": 22,
+                "detected": 5,
+                "recall": 0.22727272727272727,
+                "benign": 4,
+                "benign_flagged": 0,
+                "benign_flag_rate": 0
+              },
+              "promptfoo": {
+                "attacks": 58,
+                "detected": 0,
+                "recall": 0,
+                "benign": 0,
+                "benign_flagged": 0,
+                "benign_flag_rate": null
+              }
+            }
+          }
+        }
+      }
+    },
+    "overlaps": {
+      "method": "rule_text: every string in each rule's parsed YAML (test cases, patterns, descriptions) compared with every sample after folding whitespace and typographic quotes and lower-casing; a rule overlaps a sample when they share a run of 40 characters. garak_full: for each vendor attack sample, the prompt of data/test-corpora/garak-full/*.json holding the largest share of the sample's distinct 40-character folded runs; listed when that share is at least 0.5 (contained = the whole sample occurs in the prompt; shared-template = a jailbreak template shared with the payload slot filled differently).",
+      "rule_text": {
+        "rules_overlapping": 44,
+        "rules_overlapping_not_naming_a_vendor": 35,
+        "attack_samples_overlapped": 56,
+        "attack_samples_overlapped_by_rules_not_naming_a_vendor": 34,
+        "reference_ablation_detections_by_an_overlapping_rule": {
+          "hunt": {
+            "count": 23,
+            "sample_ids": [
+              "vgs-5ca37198b318",
+              "vgs-98e0888e5c01",
+              "vgs-25933de4af77",
+              "vgs-3919291cbe91",
+              "vgs-458d40e578e8",
+              "vgs-b6a556ad2dff",
+              "vgs-c4956e91b0ef",
+              "vgs-1062306cf3c5",
+              "vgs-7a99437483ce",
+              "vgs-0dc9575d027e",
+              "vgs-684fb3fd8bc0",
+              "vgs-6278c2f0b2f7",
+              "vgs-342ca1562328",
+              "vgs-3f270b1302de",
+              "vgs-b04dbf58f20b",
+              "vgs-00589552800c",
+              "vgs-24e752b88044",
+              "vgs-d09c58734210",
+              "vgs-f1ed4ee69806",
+              "vgs-292abb8c020b",
+              "vgs-dc5a086c6942",
+              "vgs-e3a48090466b",
+              "vgs-6ad6fbc346fc"
+            ]
+          },
+          "alert": {
+            "count": 16,
+            "sample_ids": [
+              "vgs-5ca37198b318",
+              "vgs-98e0888e5c01",
+              "vgs-25933de4af77",
+              "vgs-3919291cbe91",
+              "vgs-458d40e578e8",
+              "vgs-c4956e91b0ef",
+              "vgs-1062306cf3c5",
+              "vgs-7a99437483ce",
+              "vgs-0dc9575d027e",
+              "vgs-684fb3fd8bc0",
+              "vgs-6278c2f0b2f7",
+              "vgs-00589552800c",
+              "vgs-24e752b88044",
+              "vgs-d09c58734210",
+              "vgs-f1ed4ee69806",
+              "vgs-6ad6fbc346fc"
+            ]
+          },
+          "enforce": {
+            "count": 2,
+            "sample_ids": [
+              "vgs-0dc9575d027e",
+              "vgs-684fb3fd8bc0"
+            ]
+          }
+        },
+        "rules": [
+          {
+            "rule_id": "ATR-2026-00001",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-b6a556ad2dff"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00237",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-c4956e91b0ef"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00239",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-3919291cbe91"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00253",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-3919291cbe91"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00267",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-25933de4af77"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00273",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-25933de4af77"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00297",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-23eaa4d9e937",
+              "vgs-843cc332a505",
+              "vgs-ba1778a33f3b"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00307",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-3919291cbe91"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00318",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-25933de4af77"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00319",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-458d40e578e8"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00340",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-3919291cbe91"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00457",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-458d40e578e8"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00460",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-3919291cbe91"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00472",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-25933de4af77"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00485",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-25933de4af77"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00495",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [],
+            "attack_samples": [
+              "vgs-25933de4af77"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00502",
+            "names_a_vendor": true,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-0b862d514270",
+              "vgs-46f8787174d0",
+              "vgs-7f363c8bc8b4",
+              "vgs-85c8592e6ffc"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00503",
+            "names_a_vendor": true,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-1cfe54df3aad",
+              "vgs-cf14726b3b14",
+              "vgs-df5ea36b872c"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00504",
+            "names_a_vendor": true,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-0af3bd707478",
+              "vgs-3b61e29d415a",
+              "vgs-5e4757c7f396",
+              "vgs-6ad6fbc346fc"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00505",
+            "names_a_vendor": true,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-4e0561f8be70",
+              "vgs-6278c2f0b2f7",
+              "vgs-8b365a04a86e",
+              "vgs-a7051c021f4c",
+              "vgs-b3ab2c07fd87"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00506",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-5ca37198b318",
+              "vgs-98e0888e5c01"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00507",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-18fc038641c9"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00508",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-5ca37198b318",
+              "vgs-98e0888e5c01"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00518",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-18fc038641c9",
+              "vgs-5ca37198b318",
+              "vgs-98e0888e5c01"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00521",
+            "names_a_vendor": true,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-00589552800c",
+              "vgs-24e752b88044",
+              "vgs-89834e4ee17d",
+              "vgs-8c7ff386790e",
+              "vgs-a0c12de2ecd3",
+              "vgs-d09c58734210",
+              "vgs-f1ed4ee69806"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00522",
+            "names_a_vendor": true,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-265656d29d7c",
+              "vgs-2677c97ea1a4",
+              "vgs-292abb8c020b",
+              "vgs-9e5fc2464e23",
+              "vgs-cc011c8383d1",
+              "vgs-cd6cd2eda881",
+              "vgs-dc5a086c6942",
+              "vgs-e3a48090466b"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-00863",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-00589552800c",
+              "vgs-24e752b88044",
+              "vgs-d09c58734210",
+              "vgs-f1ed4ee69806"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-01001",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert",
+              "enforce"
+            ],
+            "attack_samples": [
+              "vgs-25933de4af77"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-01454",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert",
+              "enforce"
+            ],
+            "attack_samples": [
+              "vgs-0dc9575d027e",
+              "vgs-684fb3fd8bc0"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-01464",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-6278c2f0b2f7"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-01600",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-2677c97ea1a4"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-01601",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert",
+              "enforce"
+            ],
+            "attack_samples": [
+              "vgs-265656d29d7c"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-01602",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert",
+              "enforce"
+            ],
+            "attack_samples": [
+              "vgs-cc011c8383d1",
+              "vgs-cd6cd2eda881"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-01603",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-9e5fc2464e23"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-01604",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-cc011c8383d1"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-01609",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-00589552800c",
+              "vgs-8c7ff386790e",
+              "vgs-da40899ae138",
+              "vgs-f1ed4ee69806"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-01613",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt"
+            ],
+            "attack_samples": [
+              "vgs-292abb8c020b",
+              "vgs-342ca1562328",
+              "vgs-3f270b1302de",
+              "vgs-e3a48090466b"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-01614",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt"
+            ],
+            "attack_samples": [
+              "vgs-b04dbf58f20b",
+              "vgs-dc5a086c6942"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-01770",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-1062306cf3c5",
+              "vgs-7a99437483ce"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-01772",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-6ad6fbc346fc"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-02846",
+            "names_a_vendor": false,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-18fc038641c9",
+              "vgs-5ca37198b318",
+              "vgs-98e0888e5c01"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-02858",
+            "names_a_vendor": true,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-01de98f81ffa",
+              "vgs-0271d7825a60",
+              "vgs-79c2b87519da"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-02859",
+            "names_a_vendor": true,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-65e0d3cae9e1"
+            ],
+            "benign_samples": []
+          },
+          {
+            "rule_id": "ATR-2026-02860",
+            "names_a_vendor": true,
+            "loaded_in_lanes": [
+              "hunt",
+              "alert"
+            ],
+            "attack_samples": [
+              "vgs-00b957a9f6d3",
+              "vgs-6d0349eff11d"
+            ],
+            "benign_samples": []
+          }
+        ]
+      },
+      "garak_full": {
+        "attack_samples_found": 5,
+        "by_vendor": {
+          "nemo-guardrails": 5
+        },
+        "by_file": {
+          "dan.json": 5,
+          "inthewild.json": 5
+        },
+        "reference_ablation_detections_among_them": {
+          "hunt": 5,
+          "alert": 5,
+          "enforce": 0
+        },
+        "occurrences": [
+          {
+            "sample_id": "vgs-25933de4af77",
+            "vendor": "nemo-guardrails",
+            "file": "dan.json",
+            "prompt_index": 219,
+            "shared_run_fraction": 0.5774,
+            "relation": "shared-template"
+          },
+          {
+            "sample_id": "vgs-25933de4af77",
+            "vendor": "nemo-guardrails",
+            "file": "inthewild.json",
+            "prompt_index": 215,
+            "shared_run_fraction": 0.5774,
+            "relation": "shared-template"
+          },
+          {
+            "sample_id": "vgs-3919291cbe91",
+            "vendor": "nemo-guardrails",
+            "file": "dan.json",
+            "prompt_index": 409,
+            "shared_run_fraction": 0.9887,
+            "relation": "shared-template"
+          },
+          {
+            "sample_id": "vgs-3919291cbe91",
+            "vendor": "nemo-guardrails",
+            "file": "inthewild.json",
+            "prompt_index": 396,
+            "shared_run_fraction": 0.9887,
+            "relation": "shared-template"
+          },
+          {
+            "sample_id": "vgs-458d40e578e8",
+            "vendor": "nemo-guardrails",
+            "file": "dan.json",
+            "prompt_index": 293,
+            "shared_run_fraction": 0.9658,
+            "relation": "shared-template"
+          },
+          {
+            "sample_id": "vgs-458d40e578e8",
+            "vendor": "nemo-guardrails",
+            "file": "inthewild.json",
+            "prompt_index": 284,
+            "shared_run_fraction": 0.9658,
+            "relation": "shared-template"
+          },
+          {
+            "sample_id": "vgs-8170f1b37e92",
+            "vendor": "nemo-guardrails",
+            "file": "dan.json",
+            "prompt_index": 257,
+            "shared_run_fraction": 0.6911,
+            "relation": "shared-template"
+          },
+          {
+            "sample_id": "vgs-8170f1b37e92",
+            "vendor": "nemo-guardrails",
+            "file": "inthewild.json",
+            "prompt_index": 249,
+            "shared_run_fraction": 0.6911,
+            "relation": "shared-template"
+          },
+          {
+            "sample_id": "vgs-c4956e91b0ef",
+            "vendor": "nemo-guardrails",
+            "file": "dan.json",
+            "prompt_index": 257,
+            "shared_run_fraction": 0.8824,
+            "relation": "shared-template"
+          },
+          {
+            "sample_id": "vgs-c4956e91b0ef",
+            "vendor": "nemo-guardrails",
+            "file": "inthewild.json",
+            "prompt_index": 249,
+            "shared_run_fraction": 0.8824,
+            "relation": "shared-template"
+          }
+        ]
+      }
+    },
+    "precision_not_citable": {
+      "reason": "The vendors ship 20 benign test cases (llm-guard 16, NeMo Guardrails 4, promptfoo none). That is too few for a precision or false-positive-rate claim: metrics.precision and metrics.fp_rate are the bare ratios the schema requires, and data/stats.json projects them as null. Cite the counts instead.",
+      "benign_samples": 20,
+      "flagged_by_lane": {
+        "hunt": 1,
+        "alert": 0,
+        "enforce": 0
+      }
+    },
     "vendor_import_rules": {
       "ATR-2026-00500": {
         "title": "SSRF via Agent URL Fetch Instruction",
@@ -3246,5 +4292,5 @@
       }
     }
   },
-  "notes": "Vendor guardrail test suites (protectai/llm-guard, NVIDIA-NeMo/Guardrails, promptfoo/promptfoo) extracted deterministically from pinned commits; see manifest.json. metrics/confusion are the hunt lane over all 146 samples; fp_rate and precision use only the 20 benign test cases the vendors ship (llm-guard and NeMo; promptfoo ships none) and are too few to support a precision claim. breakdown.lanes carries hunt, alert and enforce per vendor and per category."
+  "notes": "Vendor guardrail test suites (protectai/llm-guard, NVIDIA-NeMo/Guardrails, promptfoo/promptfoo) extracted deterministically from pinned commits; see manifest.json. metrics/confusion are the hunt lane over all 146 samples; fp_rate and precision use only the 20 benign test cases the vendors ship (llm-guard and NeMo; promptfoo ships none) and are too few to support a precision claim (breakdown.precision_not_citable; data/stats.json carries null). breakdown.lanes carries hunt, alert and enforce per vendor and per category. breakdown.in_sample_ablation.without_rules_naming_source is the ablation reference to cite beside the headline; breakdown.overlaps states how far even that is from out-of-sample."
 }
