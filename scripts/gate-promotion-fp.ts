@@ -17,7 +17,8 @@
  *
  * Modes:
  *   gate-promotion-fp.ts --base origin/main   # auto-detect rules this branch
- *                                             # sets to stable/production, gate them
+ *                                             # moves into the enforce lane
+ *                                             # (promotedFilesFromDiff), gate them
  *   gate-promotion-fp.ts --ids <file>         # gate an explicit ATR-id list.
  *                                             # Every id MUST resolve to a rule
  *                                             # file on disk (tracked or not);
@@ -41,18 +42,22 @@
  *      --filter-mode was requested (the caller consumes the emitted lists
  *      instead of the exit code)
  *   1  gate failed: at least one promoted rule FPs on the benign corpus
- *      (default/gate semantics — unchanged), or an unexpected runtime error
+ *      (default/gate semantics — unchanged), or could not be measured at all
+ *      because the engine does not evaluate it (see 4 below), or an
+ *      unexpected runtime error
  *   2  usage error: the flags given cannot produce a meaningful run
  *   3  --ids named rule ids that no file on disk carries. The requested scan
  *      cannot be performed, so no verdict is reported (see below).
  *
  * DEFAULT BEHAVIOUR IS FROZEN: with no output flags this script behaves exactly
- * as before (CI's maturity-fp-gate workflow depends on it). --emit-clean alone
+ * as before (CI's maturity-fp-gate workflow depends on it), with one deliberate
+ * exception: a promoted rule the engine does not evaluate now fails the gate
+ * instead of passing as clean (4 below). --emit-clean alone
  * keeps gate semantics — it only adds a side output. Only the explicit opt-in
  * --filter-mode relaxes the exit code, and it refuses to run unless it is
  * paired with an emit target, so it can never be used to silently mute the gate.
  *
- * THREE WAYS THIS GATE USED TO PASS WITHOUT MEASURING ANYTHING (all fixed here):
+ * FOUR WAYS THIS GATE USED TO PASS WITHOUT MEASURING ANYTHING (all fixed here):
  *
  *   1. The candidate list came from `git ls-files rules/` — tracked files only.
  *      Rules are routinely written to rules/ and gated BEFORE being committed
@@ -82,6 +87,22 @@
  *      pays its false positives on. Fields a text corpus genuinely cannot fill
  *      (tool_name, trace, behavioral) are now reported as NOT MEASURED instead of
  *      being folded silently into the clean list.
+ *
+ *   4. A NUMBER FOR A RULE THAT WAS NEVER EVALUATED. A rule the engine skips —
+ *      status draft or deprecated, or maturity deprecated — scores 0 by
+ *      construction, and that 0 went into --emit-measurement and onto the clean
+ *      list like any measured one. detection_fingerprint does not cover status,
+ *      so reviving such a rule (one line: status: experimental) handed it a
+ *      never-measured 0 the action gate trusted — DEGRADE for a test-maturity
+ *      rule, enough for block_tool. scopedRulesDir() also copied rule files by
+ *      basename, so of two same-named files in different directories the second
+ *      replaced the first, whose 0 was never read either. Every requested rule is
+ *      now checked against the engine (ATREngine.evaluates); one it never
+ *      evaluates, or that did not load, gets no record, no place on either list,
+ *      and a NOT MEASURED line with the reason. Without --filter-mode that is a
+ *      FAIL: the remedy is one line (revive the rule in the same change, so it
+ *      is measured, or leave its maturity alone), unlike a field no text corpus
+ *      can fill. Rule files keep their paths.
  */
 import {
   readFileSync,
@@ -92,13 +113,15 @@ import {
   statSync,
   mkdtempSync,
   copyFileSync,
+  rmSync,
 } from "node:fs";
-import { join, resolve, dirname, basename, relative} from "node:path";
+import { join, resolve, dirname, relative, sep } from "node:path";
 import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { ATREngine } from "../src/engine.js";
+import type { ATRRule } from "../src/types.js";
 import {
   detectionFingerprint,
   corpusDigest,
@@ -119,9 +142,14 @@ import {
   scoreSamples,
   scoreSamplesInWorkers,
 } from "./lib/fp-scan.js";
+import {
+  ENFORCE_MATURITIES,
+  enteringEnforceLane,
+  loadedRuleId,
+  ruleFileChanges,
+} from "./lib/enforce-lane-entry.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const ENFORCE_MATURITIES = new Set(["stable", "production"]);
 
 export const EXIT_OK = 0;
 export const EXIT_FAIL = 1;
@@ -281,9 +309,10 @@ export function partitionByFp(
 export function resolveExitCode(
   dirtyCount: number,
   filterMode: boolean,
+  unmeasuredCount = 0,
 ): number {
-  if (dirtyCount === 0) return EXIT_OK;
-  return filterMode ? EXIT_OK : EXIT_FAIL;
+  if (filterMode) return EXIT_OK;
+  return dirtyCount === 0 && unmeasuredCount === 0 ? EXIT_OK : EXIT_FAIL;
 }
 
 /** One id per line; an empty list yields an empty file, never a blank line. */
@@ -343,20 +372,57 @@ export function gitRuleFiles(
     .sort();
 }
 
+/**
+ * Rule files this branch moves into the enforce lane, found two ways:
+ *
+ *   - parsePromotedFiles: an added `maturity: stable|production` line. Kept as
+ *     it was; it reads the diff's text, so it also names a promoted file that
+ *     does not load, which the check below (it loads both sides) passes over.
+ *   - enteringEnforceLane: a rule whose maturity rose into the enforce lane, or
+ *     that became live while already holding such a maturity, judged by loading
+ *     it at the merge base and now, whatever lines changed. That is how a rule
+ *     revived by its status alone is caught (scripts/lib/enforce-lane-entry.ts).
+ *
+ * The diff is requested with explicit prefixes and no colour or external
+ * driver, so a developer's git settings cannot turn the headers
+ * parsePromotedFiles reads into something it does not recognise.
+ */
 function promotedFilesFromDiff(
   base: string,
   repoRoot: string,
 ): readonly string[] {
   const diff = execFileSync(
     "git",
-    ["diff", `${base}...HEAD`, "--unified=0", "--", "rules/"],
+    [
+      "diff",
+      `${base}...HEAD`,
+      "--unified=0",
+      "--no-color",
+      "--no-ext-diff",
+      "--src-prefix=a/",
+      "--dst-prefix=b/",
+      "--",
+      "rules/",
+    ],
     {
       cwd: repoRoot,
       encoding: "utf-8",
       maxBuffer: 64 * 1024 * 1024,
     },
   );
-  return parsePromotedFiles(diff);
+  const promoted = parsePromotedFiles(diff);
+  const entering = enteringEnforceLane(ruleFileChanges(base, repoRoot)).filter(
+    (file) => !promoted.includes(file),
+  );
+  if (entering.length > 0) {
+    // JSON-quoted: a raw newline in a path could start an Actions workflow command.
+    console.log(
+      `[fp-gate] ${entering.length} rule(s) move into the enforce lane with no plain ` +
+        `maturity line in the diff (a maturity raised to stable/production, or a rule ` +
+        `made live while already there): ${entering.map((f) => JSON.stringify(f)).join(", ")}`,
+    );
+  }
+  return [...promoted, ...entering];
 }
 
 /**
@@ -516,8 +582,22 @@ function loadCorpusTexts(pathStr: string): readonly string[] {
 /** Copy just the target rule files into a temp dir so the engine loads only them. */
 export function scopedRulesDir(repoRoot: string, files: readonly string[]): string {
   const dir = mkdtempSync(join(tmpdir(), "atr-gate-"));
-  for (const f of files)
-    copyFileSync(join(repoRoot, f), join(dir, basename(f)));
+  // Each file keeps its path relative to the repository; the engine's loader
+  // walks subdirectories. Copying by basename let the second of two same-named
+  // files replace the first, which was then reported clean without being read.
+  try {
+    for (const f of files) {
+      const dest = resolve(dir, f);
+      if (!dest.startsWith(`${dir}${sep}`)) {
+        throw new Error(`rule file path leaves the scope directory: ${f}`);
+      }
+      mkdirSync(dirname(dest), { recursive: true });
+      copyFileSync(join(repoRoot, f), dest);
+    }
+  } catch (e) {
+    rmSync(dir, { recursive: true, force: true });
+    throw e;
+  }
   return dir;
 }
 
@@ -556,10 +636,50 @@ function resolveTargets(options: GateOptions, deps: GateDeps): Targets {
   if (options.idsFile !== null)
     return targetsFromIdsFile(options.idsFile, deps);
   const files = promotedFilesFromDiff(options.base, deps.repoRoot);
-  const ids = files
-    .map((f) => ruleIdOf(deps.repoRoot, f))
-    .filter((x): x is string => x !== null);
+  assertDistinctFileNames(files);
+  const ids = files.map((f) => promotedRuleId(deps.repoRoot, f));
   return { files, ids: new Set(ids), missing: [] };
+}
+
+/**
+ * The id a promoted file is measured under: the one the engine loads, so an id
+ * written on its own line, as a block scalar or with a tag cannot point the scan
+ * at an id no loaded rule carries — that scan records a clean 0. A file that does
+ * not load keeps the line reading it had. Anything but a string id fails the run
+ * (no id, or `id: 12345`, which the engine loads as a number the scan's string
+ * ids never match): a promoted file the gate cannot name is one it cannot
+ * measure, and leaving it out passed.
+ */
+function promotedRuleId(repoRoot: string, file: string): string {
+  const loaded = loadedRuleId(join(repoRoot, file));
+  const id = loaded.loads ? loaded.id : ruleIdOf(repoRoot, file);
+  if (typeof id !== "string" || id === "") {
+    throw new Error(
+      `[fp-gate] ${JSON.stringify(file)} has no readable string rule id, so it cannot ` +
+        `be measured; it is promoted, so the gate fails rather than leave it out.`,
+    );
+  }
+  return id;
+}
+
+/**
+ * scopedRulesDir() copies the targets into one directory by file name, so of two
+ * promoted files with the same name in different directories only the last is
+ * read, and the other is reported clean unread. Refuse that rather than pass it.
+ */
+function assertDistinctFileNames(files: readonly string[]): void {
+  const seen = new Map<string, string>();
+  for (const file of files) {
+    const name = file.slice(file.lastIndexOf("/") + 1);
+    const earlier = seen.get(name);
+    if (earlier !== undefined) {
+      throw new Error(
+        `[fp-gate] ${JSON.stringify(earlier)} and ${JSON.stringify(file)} share a file ` +
+          `name; the scan copies rule files by name and would read only one of them.`,
+      );
+    }
+    seen.set(name, file);
+  }
 }
 
 interface ScanResult {
@@ -579,6 +699,12 @@ interface ScanResult {
   readonly skillCoverage: readonly SkillPathGap[];
   /** Maturity + detection fingerprint of every rule actually scanned. */
   readonly scanned: ReadonlyMap<string, { maturity: string | null; fingerprint: string }>;
+  /**
+   * Requested rules this run could not measure, with the reason: the engine
+   * never evaluates them, or their file did not load. They are absent from
+   * `counts`, so they get no record and land on neither list.
+   */
+  readonly unmeasured: ReadonlyMap<string, string>;
 }
 
 async function scanFpCounts(
@@ -589,9 +715,10 @@ async function scanFpCounts(
   const rulesDir = scopedRulesDir(deps.repoRoot, targets.files);
   const engine = new ATREngine({ rulesDir });
   const ruleCount = await engine.loadRules();
+  const unmeasured = unmeasuredTargets(engine, targets.ids);
   const scanned = new Map<string, { maturity: string | null; fingerprint: string }>();
   for (const r of engine.getRules()) {
-    if (!targets.ids.has(r.id)) continue;
+    if (!targets.ids.has(r.id) || unmeasured.has(r.id)) continue;
     scanned.set(r.id, {
       maturity: (r as { maturity?: string }).maturity ?? null,
       fingerprint: detectionFingerprint(r),
@@ -630,15 +757,17 @@ async function scanFpCounts(
   const counts = new Map<string, number>();
   const securityCounts = new Map<string, number>();
   for (const id of targets.ids) {
+    if (unmeasured.has(id)) continue;
     counts.set(id, scores.counts.get(id) ?? 0);
     securityCounts.set(id, scores.securityCounts.get(id) ?? 0);
   }
   const securitySampleCount = scores.securitySampleCount;
-  const coverage = fieldCoverage(engine.getRules()).filter((c) =>
-    targets.ids.has(c.ruleId),
-  );
+  // Coverage notes describe how a measured rule was measured; a rule that was
+  // not measured at all is reported once, by reportUnmeasured().
+  const measured = (id: string): boolean => targets.ids.has(id) && !unmeasured.has(id);
+  const coverage = fieldCoverage(engine.getRules()).filter((c) => measured(c.ruleId));
   const skillCoverage = skillPathCoverage(engine.getRules()).filter((c) =>
-    targets.ids.has(c.ruleId),
+    measured(c.ruleId),
   );
   return {
     counts,
@@ -648,7 +777,46 @@ async function scanFpCounts(
     coverage,
     skillCoverage,
     scanned,
+    unmeasured,
   };
+}
+
+/**
+ * Requested rules no number can be recorded for, and why.
+ *
+ * Asked of the engine itself (ATREngine.evaluates), not restated here: the
+ * engine's own skip decision is the only one that says whether a rule's 0 came
+ * from reading it. An id that several loaded files carry is not measured either:
+ * the engine keys compiled patterns by id, so their matches cannot be told apart
+ * and a record would describe whichever file happened to load last.
+ */
+export function unmeasuredTargets(
+  engine: Pick<ATREngine, "getRules" | "evaluates" | "getLane">,
+  ids: ReadonlySet<string>,
+): ReadonlyMap<string, string> {
+  const loaded = new Map<string, ATRRule[]>();
+  for (const r of engine.getRules()) {
+    if (ids.has(r.id)) loaded.set(r.id, [...(loaded.get(r.id) ?? []), r]);
+  }
+  const out = new Map<string, string>();
+  for (const id of [...ids].sort()) {
+    const rules = loaded.get(id) ?? [];
+    const rule = rules[0];
+    if (rule === undefined) {
+      out.set(id, "its rule file did not load");
+    } else if (rules.length > 1) {
+      out.set(id, `${rules.length} loaded rule files carry this id; their matches cannot be told apart`);
+    } else if (!engine.evaluates(rule)) {
+      const status = String(rule.status ?? "");
+      out.set(
+        id,
+        status === "draft" || status === "deprecated"
+          ? `status ${status}: the engine never evaluates it`
+          : `maturity ${String(rule.maturity)}: the engine's ${engine.getLane()} lane does not evaluate it`,
+      );
+    }
+  }
+  return out;
 }
 
 /**
@@ -758,6 +926,20 @@ function reportSecuritySplit(
   );
 }
 
+/**
+ * A requested rule this run could not measure is not clean and not dirty: it
+ * has no number. Named here, with the reason, because a list that silently
+ * shrank would read as "measured and fine".
+ */
+function reportUnmeasured(unmeasured: ReadonlyMap<string, string>): void {
+  if (unmeasured.size === 0) return;
+  console.log(
+    `\n[fp-gate] NOT MEASURED — ${unmeasured.size} requested rule(s) were never evaluated. ` +
+      `No record is written for them and they are on neither list:`,
+  );
+  for (const [id, reason] of unmeasured) console.log(`  ${id} — ${reason}`);
+}
+
 function report(
   partition: FpPartition,
   sampleCount: number,
@@ -766,6 +948,7 @@ function report(
   skillCoverage: readonly SkillPathGap[] = [],
   securityCounts: ReadonlyMap<string, number> = new Map(),
   securitySampleCount = 0,
+  unmeasured: ReadonlyMap<string, string> = new Map(),
 ): void {
   console.log(`[fp-gate] corpus = ${sampleCount} benign samples`);
   console.log(
@@ -783,10 +966,23 @@ function report(
   );
   reportCoverage(coverage);
   reportSkillPathCoverage(skillCoverage);
-  if (partition.dirty.length === 0) {
-    console.log(
-      `[fp-gate] PASS — all promoted rules are FP-clean on the benign corpus.`,
+  reportUnmeasured(unmeasured);
+  if (unmeasured.size > 0 && !filterMode) {
+    console.error(
+      `\n[fp-gate] FAIL — ${unmeasured.size} promoted rule(s) could not be measured (listed above). ` +
+        `A rule the engine does not evaluate cannot be shown FP-clean: revive it in the same ` +
+        `change (status: experimental) so this gate measures it, or leave its maturity alone.`,
     );
+  }
+  if (partition.dirty.length === 0) {
+    if (unmeasured.size === 0) {
+      console.log(`[fp-gate] PASS — all promoted rules are FP-clean on the benign corpus.`);
+    } else if (filterMode) {
+      console.log(
+        `[fp-gate] PASS — every promoted rule that was measured is FP-clean; ` +
+          `${unmeasured.size} could not be measured (listed above).`,
+      );
+    }
     return;
   }
   const secOf = (id: string): string => {
@@ -863,6 +1059,7 @@ export async function runGate(
     securitySampleCount,
     coverage,
     skillCoverage,
+    unmeasured,
   } = scan;
   const partition = partitionByFp(counts);
   report(
@@ -873,6 +1070,7 @@ export async function runGate(
     skillCoverage,
     securityCounts,
     securitySampleCount,
+    unmeasured,
   );
   emitLists(options, partition);
   // `?? null` and not `!== null`: GateOptions is constructed by hand in tests and
@@ -882,7 +1080,7 @@ export async function runGate(
   if (measurementPath !== null) {
     writeMeasurement(measurementPath, scan, deps.repoRoot);
   }
-  return resolveExitCode(partition.dirty.length, options.filterMode);
+  return resolveExitCode(partition.dirty.length, options.filterMode, unmeasured.size);
 }
 
 export async function main(

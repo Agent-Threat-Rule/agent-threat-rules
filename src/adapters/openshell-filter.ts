@@ -3,7 +3,10 @@
  *
  * Implements the external content-filter contract proposed in
  * NVIDIA/OpenShell#1272 ("L7 content inspection hooks — scriptable
- * request/response filtering"): the OpenShell *supervisor* (outside the agent
+ * request/response filtering"). That proposal was closed as not planned on
+ * 2026-06-11 (OpenShell's maintainers pointed to their middleware RFC,
+ * NVIDIA/OpenShell#1733), so no OpenShell release runs this filter. The
+ * contract: the OpenShell *supervisor* (outside the agent
  * sandbox) runs this as a script against L7 request/response bodies. The body
  * arrives on stdin; the script signals the verdict via exit code:
  *
@@ -13,10 +16,14 @@
  *
  * Two run modes:
  *   one-shot (default): read the whole body from stdin, evaluate, exit.
- *       Matches the #1272 contract literally. Cold-starts the engine per call.
+ *       Matches the #1272 contract literally. Cold-starts the engine per call:
+ *       starting Node, loading the rule set and compiling its patterns take
+ *       hundreds of milliseconds to about a second.
  *   serve (--serve):    read NDJSON requests line-by-line from stdin and write
  *       one NDJSON verdict per line. Loads the rule set ONCE, so per-request
- *       latency is just regex evaluation (sub-ms). Production path for a
+ *       latency is just regex evaluation: a median of about a millisecond for
+ *       a short body, tens of milliseconds for a multi-kilobyte one
+ *       (scripts/bench-evaluate-latency.ts). Intended path for a
  *       persistent guard service (cf. NVIDIA/OpenShell#1733 RFC 0005). A bad
  *       line (or an engine error) yields a per-line error verdict and the
  *       stream continues — one malformed body cannot take the inspector offline.

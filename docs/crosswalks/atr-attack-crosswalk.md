@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 833
+- ATR rules total: 836
 - Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 223
 - Distinct enterprise ATT&CK techniques referenced: 86
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 833
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 836
 - Distinct MITRE ATLAS techniques referenced: 45
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 833
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 836
 - ATR categories (distinct `tags.category` values): 10
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -335,7 +335,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### prompt-injection
 
-Rules in category: 251
+Rules in category: 253
 
 ATT&CK techniques (join key):
 
@@ -382,13 +382,13 @@ ATT&CK techniques (join key):
 | T1574.002 | Hijack Execution Flow: DLL Side-Loading | `ATR-2026-02410` |
 | T1583.008 | Acquire Infrastructure: Malvertising | `ATR-2026-02410` |
 
-ATLAS techniques ATR adds: AML.T0010, AML.T0010.005, AML.T0011, AML.T0011.000, AML.T0018.000, AML.T0020, AML.T0024, AML.T0040, AML.T0044, AML.T0047, AML.T0048, AML.T0050, AML.T0051, AML.T0051.001, AML.T0053, AML.T0054, AML.T0057, AML.T0060, AML.T0080, AML.T0104, AML.T0109
+ATLAS techniques ATR adds: AML.T0010, AML.T0010.005, AML.T0011, AML.T0011.000, AML.T0018.000, AML.T0020, AML.T0024, AML.T0040, AML.T0044, AML.T0047, AML.T0048, AML.T0050, AML.T0051, AML.T0051.001, AML.T0053, AML.T0054, AML.T0057, AML.T0060, AML.T0080, AML.T0109, AML.T0115.002
 
 OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI08:2026, ASI09:2026
 
 ### tool-poisoning
 
-Rules in category: 118
+Rules in category: 119
 
 ATT&CK techniques (join key):
 
@@ -423,7 +423,7 @@ ATT&CK techniques (join key):
 | T1552 | Unsecured Credentials | `ATR-2026-00534`, `ATR-2026-01931` |
 | T1552.001 | Credentials In Files | `ATR-2026-00576` |
 
-ATLAS techniques ATR adds: AML.T0010, AML.T0010.005, AML.T0019, AML.T0024, AML.T0029, AML.T0040, AML.T0049, AML.T0051, AML.T0051.001, AML.T0053, AML.T0056, AML.T0057, AML.T0069, AML.T0070, AML.T0104, AML.T0110.000
+ATLAS techniques ATR adds: AML.T0010, AML.T0010.005, AML.T0024, AML.T0029, AML.T0040, AML.T0049, AML.T0051, AML.T0051.001, AML.T0053, AML.T0056, AML.T0057, AML.T0069, AML.T0070, AML.T0110.000, AML.T0115.000, AML.T0115.002
 
 OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:2026, ASI05:2026, ASI06:2026, ASI07:2026, ASI08:2026, ASI09:2026
 

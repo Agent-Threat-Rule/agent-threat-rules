@@ -25,6 +25,21 @@ export const SEVERITY_RANK: Readonly<Record<ATRSeverity, number>> = {
 };
 
 /**
+ * Minimum confidence at which a high-severity match denies; below it, asks.
+ *
+ * Compared as given. A confidence the engine derives from a rule's
+ * `tags.confidence` label reaches this threshold only from a `high` label:
+ * `src/rule-confidence.ts` caps every lower label one basis point under it.
+ */
+export const HIGH_SEVERITY_DENY_CONFIDENCE = 0.8;
+
+/**
+ * Minimum confidence at which a medium-severity match asks; below it, allows.
+ * A `low` label reaches it exactly (0.6) when every condition matched.
+ */
+export const MEDIUM_SEVERITY_ASK_CONFIDENCE = 0.6;
+
+/**
  * Check whether auto-response is enabled for a matched rule.
  * The auto_response_threshold field on ATRResponse indicates the
  * minimum confidence level at which the action should be taken
@@ -66,9 +81,9 @@ function determineOutcome(
     return 'deny';
   }
   if (severity === 'high') {
-    return confidence >= 0.8 ? 'deny' : 'ask';
+    return confidence >= HIGH_SEVERITY_DENY_CONFIDENCE ? 'deny' : 'ask';
   }
-  if (severity === 'medium' && confidence >= 0.6) {
+  if (severity === 'medium' && confidence >= MEDIUM_SEVERITY_ASK_CONFIDENCE) {
     return 'ask';
   }
   return 'allow';

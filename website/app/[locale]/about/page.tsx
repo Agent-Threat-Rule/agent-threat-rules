@@ -96,8 +96,8 @@ const MILESTONES: Milestone[] = [
       zh: "v2.0.11 · NVIDIA garak 覆蓋",
     },
     detail: {
-      en: "193 new rules covering the full NVIDIA garak probe corpus (311 total). garak in-the-wild jailbreak subset recall: 97.1% (646/666) at the time.",
-      zh: "新增 193 條規則，涵蓋完整 NVIDIA garak probe corpus（總計 311 條）。garak in-the-wild jailbreak 子集召回率（當時）：97.1%（646/666）。",
+      en: "193 new rules, many of them written from the NVIDIA garak probe corpus (311 total). garak in-the-wild jailbreak subset recall at the time: 97.1% (647/666), with every rule loaded (detection lanes came later; it is what today's hunt lane loads). Many of these rules were written from that same corpus, so the figure is partly closed-book, not an out-of-sample result.",
+      zh: "新增 193 條規則，其中不少是從 NVIDIA garak probe corpus 寫出來的（總計 311 條）。garak in-the-wild jailbreak 子集召回率（當時）：97.1%（647/666），載入全部規則（當時還沒有偵測 lane，等同今天的 hunt lane）。這批規則有不少正是從同一份語料寫出來的，所以這個數字部分屬於 closed-book，不是樣本外成績。",
     },
   },
   {
@@ -226,8 +226,8 @@ export default async function AboutPage({
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? <>標準由社群驅動，並透過每日自動結晶飛輪持續擴張——紅隊大掃描與 CVE 攝取兩條管線各自跑完完整 sweep，把規則集從 462 條長到 {ruleCount} 條。</>
-            : <>The standard is community-driven and grows through daily auto-crystallization flywheels — a red-team mega-scan pipeline and a CVE-ingestion pipeline each ran full sweeps, expanding the ruleset from 462 to {ruleCount} rules.</>}
+            ? <>標準由社群驅動。從六月起，規則集從 462 條成長到 {ruleCount} 條，來源是 CVE 與安全公告掃描、benchmark 漏報挖掘與貢獻者；每一條都經由維護者合併的 pull request 進入 main。</>
+            : <>The standard is community-driven. Since June the ruleset has grown from 462 to {ruleCount} rules, from CVE and advisory sweeps, benchmark-miss mining and contributors; each rule reaches main through a pull request a maintainer merges.</>}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh

@@ -100,6 +100,9 @@ export default async function NeutralBenchmarksPostPage({
           <p>
             我們公開的是我們跑到的數字,不是我們希望看到的數字。只有這種數字,值得站在後面。
           </p>
+          <p className="text-sm text-stone">
+            {"附註(2026-10-16):這兩次都是一次性的執行,沒有記錄在 data/measurements/ 裡,所以當時用的是哪個偵測 lane 沒有紀錄,也無法從這個 repo 重現。本站其他的召回率都標明 lane:hunt lane 是引擎預設、載入所有成熟度的規則;enforce lane 只載入 stable 規則,是開封鎖時用的 lane。"}
+          </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">來源</h2>
           <ul className="space-y-2">
@@ -178,6 +181,13 @@ export default async function NeutralBenchmarksPostPage({
           <p>
             We&apos;re publishing the numbers we got, not the numbers we wish we had. That is the only
             kind worth standing behind.
+          </p>
+          <p className="text-sm text-stone">
+            Note (2026-10-16): both runs were one-off and are not recorded in data/measurements/, so the
+            detection lane they used is not on record and they cannot be reproduced from this
+            repository. Every other recall on this site names its lane: the hunt lane is the engine
+            default and loads every rule maturity; the enforce lane, the one to run with blocking on,
+            loads only stable rules.
           </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">Sources</h2>

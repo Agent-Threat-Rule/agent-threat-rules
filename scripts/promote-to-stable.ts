@@ -41,6 +41,7 @@ import { load as yamlLoad } from "js-yaml";
 import { MATURITIES, type Maturity } from "../src/quality/rule-contract.js";
 import { ATREngine } from "../src/engine.js";
 import { matchedRuleIds } from "./lib/corpus-event.js";
+import { unmeasuredTargets } from "./gate-promotion-fp.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const RULES_DIR = join(REPO_ROOT, "rules");
@@ -133,9 +134,47 @@ function loadCorpusTexts(pathStr: string): string[] {
   return texts;
 }
 
-interface Candidate {
+export interface Candidate {
   id: string;
   file: string;
+}
+
+export interface CandidateSplit {
+  readonly clean: readonly Candidate[];
+  readonly dirty: readonly Candidate[];
+  /** Candidates the engine never evaluates, with the reason: on neither list. */
+  readonly unevaluated: ReadonlyMap<string, string>;
+  readonly fpCounts: ReadonlyMap<string, number>;
+}
+
+/**
+ * Count each candidate's false positives over `samples` and split them.
+ *
+ * A candidate the engine does not evaluate (draft or deprecated status, or a
+ * file that did not load) scores 0 on every sample by construction. That 0 is
+ * the status gate's doing, not the corpus's, so it is not clean: it is set
+ * aside, the way scripts/gate-promotion-fp.ts sets it aside.
+ */
+export function splitCandidates(
+  engine: ATREngine,
+  candidates: readonly Candidate[],
+  samples: readonly string[],
+): CandidateSplit {
+  const unevaluated = unmeasuredTargets(engine, new Set(candidates.map((c) => c.id)));
+  const measurable = candidates.filter((c) => !unevaluated.has(c.id));
+  const ids = new Set(measurable.map((c) => c.id));
+  const fpCounts = new Map<string, number>(measurable.map((c) => [c.id, 0]));
+  for (const text of samples) {
+    for (const id of matchAllRuleIds(engine, text)) {
+      if (ids.has(id)) fpCounts.set(id, (fpCounts.get(id) ?? 0) + 1);
+    }
+  }
+  return {
+    clean: measurable.filter((c) => (fpCounts.get(c.id) ?? 0) === 0),
+    dirty: measurable.filter((c) => (fpCounts.get(c.id) ?? 0) > 0),
+    unevaluated,
+    fpCounts,
+  };
 }
 
 interface RuleMeta {
@@ -208,17 +247,14 @@ async function main(): Promise<void> {
   const engine = new ATREngine({ rulesDir: RULES_DIR });
   await engine.loadRules();
 
-  const candidateIds = new Set(candidates.map((c) => c.id));
-  const fpCounts = new Map<string, number>();
-  for (const c of candidates) fpCounts.set(c.id, 0);
-  for (const text of samples) {
-    for (const id of matchAllRuleIds(engine, text)) {
-      if (candidateIds.has(id)) fpCounts.set(id, (fpCounts.get(id) ?? 0) + 1);
-    }
+  const { clean, dirty, unevaluated, fpCounts } = splitCandidates(engine, candidates, samples);
+  if (unevaluated.size > 0) {
+    console.log(
+      `[stable-gate] ${unevaluated.size} rule(s) at maturity:test are never evaluated, so ` +
+        `no corpus can show them FP-clean; not promotable:`,
+    );
+    for (const [id, why] of unevaluated) console.log(`  ${id} — ${why}`);
   }
-
-  const clean = candidates.filter((c) => (fpCounts.get(c.id) ?? 0) === 0);
-  const dirty = candidates.filter((c) => (fpCounts.get(c.id) ?? 0) > 0);
   console.log(
     `[stable-gate] ${clean.length} rule(s) with 0 FP · ${dirty.length} rule(s) with FP (stay at test)`,
   );
@@ -263,7 +299,14 @@ async function main(): Promise<void> {
   console.log(`\n[stable-gate] promoted ${promoted} rule(s) test -> stable.`);
 }
 
-main().catch((err: unknown) => {
-  console.error(err instanceof Error ? err.stack : String(err));
-  process.exit(1);
-});
+// Only run when invoked directly, so tests can import splitCandidates.
+const INVOKED_DIRECTLY =
+  process.argv[1] !== undefined &&
+  resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
+
+if (INVOKED_DIRECTLY) {
+  main().catch((err: unknown) => {
+    console.error(err instanceof Error ? err.stack : String(err));
+    process.exit(1);
+  });
+}

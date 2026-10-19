@@ -401,8 +401,9 @@ function renderReport(
     out.push("", `${verdict} -- ${suspicious.length} baselined draft rule(s) carry true_positives:`);
     out.push(...renderList(suspicious));
     out.push("  Their author wrote the attack samples these are meant to catch, so they read");
-    out.push("  as working rules. They fire on nothing. Best revival candidates: run them");
-    out.push("  through scripts/gate-promotion-fp.ts --ids, then flip status to experimental.");
+    out.push("  as working rules. They fire on nothing. Best revival candidates: flip status to");
+    out.push("  experimental in your working tree, measure them with scripts/gate-promotion-fp.ts");
+    out.push("  --ids (it does not measure a draft), and commit only the ones that come back clean.");
   }
 
   if (resolved.length > 0) {

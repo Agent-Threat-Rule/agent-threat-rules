@@ -212,6 +212,16 @@ medium, confidence >= 0.6     -> ask
 otherwise                     -> allow
 ```
 
+For a pattern or trace match, the confidence comes from the rule's
+`tags.confidence` label (`src/rule-confidence.ts`): `high` 0.90, `medium` 0.70,
+anything else 0.50, plus up to 0.10 for the share of the rule's conditions that
+matched. The label decides `deny`; coverage never carries a match into it.
+A label below the deny threshold is capped one basis point under it, so
+`medium` peaks at 0.7999 and a `high`-severity match on a `medium` label asks
+however many conditions fire. Coverage can still lift a `low` label to exactly
+0.60, which asks on a `medium`-severity match. Semantic-judge and embedding
+confidences are continuous and are compared as given.
+
 `isAutoResponseEnabled` additionally requires `response.auto_response_threshold`
 to be met before an action may run unattended.
 
