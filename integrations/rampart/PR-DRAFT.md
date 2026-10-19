@@ -10,9 +10,9 @@ RAMPART's launch post (2026-05-20) names community-contributed threat patterns a
 
 ## What this adds
 
-- `rampart/evaluators/atr_rules.py` — `ATRRulesEvaluator(rules_dir=..., categories=..., min_severity=..., strict=...)`. Loads every `.yaml` rule under `rules_dir`, compiles the regex condition for each, and matches against `context.text`, the latest user request, or `context.all_tool_calls` depending on the rule's declared field.
+- `rampart/evaluators/atr_rules.py` — `ATRRulesEvaluator(rules_dir=..., categories=..., min_severity=..., strict=...)`. Loads every `.yaml` rule under `rules_dir`, compiles the first regex condition of each case-insensitively as ATR's SPEC.md §6.4 specifies (a leading inline flag group such as `(?i)` or `(?is)` is removed; `m`, `s` and `x` in it have no effect), and matches against `context.text`, the latest user request, or `context.all_tool_calls` depending on the rule's declared field.
 - `rampart/evaluators/__init__.py` — re-exports `ATRRulesEvaluator`.
-- `tests/evaluators/test_atr_rules.py` — 13 tests covering load-time filtering (category allowlist, severity gate, strict vs lenient skip), evaluation across all three target fields, multi-rule aggregation, and empty-context safety. Tests use temp YAML fixtures so they do not depend on the live ATR corpus.
+- `tests/evaluators/test_atr_rules.py` — 16 tests covering load-time filtering (category allowlist, severity gate, strict vs lenient skip), evaluation across all three target fields, multi-rule aggregation, empty-context safety, and SPEC.md §6.4 flag handling. Tests use temp YAML fixtures so they do not depend on the live ATR corpus.
 - `docs/evaluators/atr_rules.md` — usage and behavior docs in the same shape as the existing three evaluators.
 
 ## Why ATR
@@ -49,12 +49,13 @@ These are documented in the evaluator's module docstring and in `docs/evaluators
 
 ```
 $ python -m pytest tests/evaluators/test_atr_rules.py -v
-============================== 13 passed in 0.05s ==============================
+============================== 16 passed in 0.20s ==============================
 ```
 
 Coverage:
 - Loading: valid rules, category allowlist, severity filter, strict-on-unsupported-operator, lenient-skip-on-unsupported, XOR arg validation, missing-dir handling (7 tests)
 - Evaluation: response field match, user_input field match, tool_call field match, no-match returns NOT_DETECTED, multi-rule aggregation, empty-context safety (6 tests)
+- Regex dialect (ATR SPEC.md §6.4): a leading `(?im)` or `(?is)` group does not turn on multiline or dotAll matching, and a pattern without a group still matches case-insensitively (3 tests)
 
 ## Dependencies
 
@@ -81,7 +82,7 @@ Happy to iterate on naming, interface, or scope. Microsoft AI Safety org has bee
 - [ ] Copy `integrations/rampart/tests/test_atr_rules_evaluator.py` → `tests/evaluators/test_atr_rules.py` (REMOVE the stub block at top — use real `rampart.core.types`)
 - [ ] Add `PyYAML>=6.0` to `pyproject.toml` runtime deps
 - [ ] Write `docs/evaluators/atr_rules.md` (copy from `integrations/rampart/README.md` Behavior + Use sections, RAMPART-doc voice)
-- [ ] Run `pytest tests/evaluators/test_atr_rules.py -v` — should be 13/13 green
+- [ ] Run `pytest tests/evaluators/test_atr_rules.py -v` — should be 16/16 green
 - [ ] Open PR with title and body above
 - [ ] Reply to first reviewer comment within 24h (responsiveness signal)
 - [ ] Wait. No bumping — memory rule.
