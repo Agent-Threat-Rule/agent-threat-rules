@@ -216,12 +216,36 @@ All notable changes to ATR will be documented in this file.
   289 of PINT's 451 attacks match (0 before) and none of its 399 benign samples;
   1,246 of the 14,157 benign-corpus samples match a rule (0 before), most of them
   through rules at maturity `test`. In the alert lane 1,183 match, in the enforce
-  lane none. Not covered: a failed tool call, which reaches Claude Code's
-  `PostToolUseFailure` hook instead; an output whose text exceeds 100,000
-  characters taken together (`MAX_EVAL_LENGTH`); and some rules take time
-  quadratic in a long run of one character. `atr init` registers the guard on
+  lane none. Not covered: an output whose text exceeds 100,000 characters
+  taken together (`MAX_EVAL_LENGTH`); and some rules take time quadratic in a
+  long run of one character. `atr init` registers the guard on
   PreToolUse only, so this reaches an installation that added it under
   PostToolUse.
+
+- **The guard also scans a failed tool call's output (PostToolUseFailure).**
+  When a tool call fails, a Bash command whose exit code Claude Code counts as
+  a failure among them (most non-zero codes; `grep`'s exit 1 is not one),
+  Claude Code sends `PostToolUseFailure` instead of `PostToolUse`. Its input
+  carries `tool_name`, `tool_input`, `tool_use_id`, `error`, `is_interrupt`
+  and `duration_ms`, and no `tool_response` (checked against the shipped
+  2.1.280 binary). The guard answered it "Unknown hook type" and allowed it,
+  so ending a command with `; exit 1` kept its output from every rule. It now
+  builds the event from `error`, the failure as the model sees it: for a shell
+  command, its stderr and stdout after Claude Code's `Exit code N` line and
+  abort note, which are left out. A command that printed nothing leaves no
+  text, and its event is built from the input, as an output-less PostToolUse
+  is. It answers in the PostToolUse contract under the `PostToolUseFailure`
+  name, which Claude Code accepts, and with blocking on its `decision:
+  "block"` reaches the model as a blocking error. Measured through the hook in
+  the default hunt lane, each sample as a failed Bash command's error: the own
+  true positives of the 746 rules the engine runs on a tool response match
+  3,852 of 3,890 times (0 before); 289 of PINT's 451 attacks match (0 before)
+  and none of its 399 benign samples; 1,246 of the 14,157 benign-corpus
+  samples match a rule (0 before). On every sample the verdict and the rules
+  matched are those of the same text as a Bash command's output on
+  PostToolUse. Claude Code cuts a failed call's error to about 10,000
+  characters; 1,117 of the benign samples are longer and were sent whole. To
+  use it, register the guard under `PostToolUseFailure` too.
 
 - **SPEC §6.4 corrected: SPEC.md 1.0.1 [Compatible].** A `regex` pattern
   condition matches case-insensitively whether or not it begins with `(?i)`,

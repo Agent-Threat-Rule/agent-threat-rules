@@ -359,21 +359,38 @@ text sits under `tool_input.content`. Before the guard read
 `tool_input.response`, where Claude Code never puts one, so on Claude Code a
 `PostToolUse` event carried the tool's input and nothing the tool returned.
 
-Four limits apply to that scan. A tool call that fails reaches Claude Code's
-`PostToolUseFailure` hook instead, which the guard does not handle, so the output
-of a command that exits non-zero is not scanned. A text longer than 100,000
-characters matches no condition at all (`MAX_EVAL_LENGTH` in `src/engine.ts`), and
-the limit applies to the output's text taken together, so whoever writes any part
-of an output can push the whole past it. A string the tool repeats from its input
-is left out, so text the agent passed to a tool and got back unchanged reaches an
-`llm_io` rule on neither hook (those rules do not run on `PreToolUse`). And some
-rules take time that grows with the square of a long run of one character:
-through the whole rule set on a busy machine, 20,000 characters of output took
-about 8 seconds and 40,000 about 34, and no timeout can cut that short, since a
-regular expression runs synchronously.
+A tool call that fails reaches Claude Code's `PostToolUseFailure` hook instead,
+with no `tool_response`: its input carries `error`, the failure as the model sees
+it. For a Bash command whose exit code Claude Code counts as a failure (most
+non-zero codes; `grep`'s exit 1 is not one), that is an `Exit code N` line, Claude
+Code's note when it aborted the command, then the command's stderr and stdout,
+trimmed and middle-truncated to about 10,000 characters. The guard scans that text
+without Claude Code's own lines, on the same event a `PostToolUse` output gets,
+and answers in the `PostToolUse` contract under the `PostToolUseFailure` name;
+with blocking on, Claude Code 2.1.280 shows the model `decision: "block"` and its
+reason as a blocking error for this event too. A command that printed nothing
+leaves only those lines, so its event is built from the input, as an output-less
+`PostToolUse` is. An `error` that is not a string, which Claude Code does not
+send, is read as a tool output. Before, the guard answered this event "Unknown
+hook type" and allowed it, so ending a command with `; exit 1` kept its output
+from every rule.
+
+Three limits apply to these scans. A text longer than 100,000 characters matches
+no condition at all (`MAX_EVAL_LENGTH` in `src/engine.ts`), and the limit applies
+to the output's text taken together, so whoever writes any part of an output can
+push the whole past it; a failed call's `error` stays under it, as Claude Code
+cuts it to about 10,000 characters. A string the tool repeats from its input is
+left out of a `PostToolUse` output and of an `error` that is not a string, so text
+the agent passed to a tool and got back unchanged reaches an `llm_io` rule on
+neither `PreToolUse` nor `PostToolUse` (those rules do not run on `PreToolUse`); a
+string `error` is scanned whole. And some rules take time that grows with the
+square of a long run of one character: through the whole rule set on a busy
+machine, 20,000 characters of output took about 8 seconds and 40,000 about 34, and
+no timeout can cut that short, since a regular expression runs synchronously.
 
 `atr init` registers the guard on `PreToolUse` only. To scan tool output, add the
-same command under `PostToolUse` in the Claude Code settings.
+same command under `PostToolUse` and `PostToolUseFailure` in the Claude Code
+settings.
 
 ## 3. Three decision channels, and who reads which
 
