@@ -81,7 +81,7 @@ detection:
       description: 'Classic "ignore previous instructions" embedded in retrieved text'
     - field: tool_response
       operator: regex
-      value: '(?:^|\n)\s*---+\s*\n\s*(?:CONFIDENTIAL|INTERNAL|HIDDEN|IMPORTANT|NOTE|INSTRUCTION)\s*:\s*(?:ignore|disregard|forget|you\s+(?:must|should|are\s+required))'
+      value: '(?:^|\n)[^\S\n]*---+[^\S\n]*\n\s*(?:CONFIDENTIAL|INTERNAL|HIDDEN|IMPORTANT|NOTE|INSTRUCTION)\s*:\s*(?:ignore|disregard|forget|you\s+(?:must|should|are\s+required))'
       description: 'HR-document separator followed by instruction override - garak resume probe pattern'
     - field: tool_response
       operator: regex

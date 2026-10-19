@@ -81,13 +81,13 @@ detection:
       value: "(?i)(;|&&|\\|\\||`|\\$\\()\\s*(whoami|\\bid\\b|uname\\s+-a|curl\\s+(?:-\\S+\\s+)*https?://(?!localhost|127\\.)|wget\\s+https?://(?!localhost|127\\.)|\\bnc\\b\\s|ncat\\s|cat\\s+/etc/(?:passwd|shadow|sudoers)|\\b(?:ba)?sh\\s+-[ic]|python[0-9]?\\s+-c|base64\\s+-d|rm\\s+-[rf])"
     - field: tool_args
       operator: regex
-      value: "(?i)('\\s*(OR|AND|UNION)\\s+'|'?\\s*;\\s*(DROP|DELETE|INSERT|UPDATE|ALTER|CREATE)\\s|--\\s*[;\\\"'\\)\\]]|/\\*.*\\*/)"
+      value: "(?i)('\\s*(OR|AND|UNION)\\s+'|;\\s*(DROP|DELETE|INSERT|UPDATE|ALTER|CREATE)\\s|--\\s*[;\\\"'\\)\\]]|/\\*.*\\*/)"
     - field: tool_args
       operator: regex
       value: "(\\.\\./|\\.\\.\\\\){2,}|(\\.\\.(/|\\\\)){2,}(etc|windows|usr|home|root|var|tmp)"
     - field: tool_args
       operator: regex
-      value: "(?i)(\\{\\{.*\\}\\}|\\$\\{IFS|\\$\\{[^}]*[`(]|\\$\\{[^}]*jndi:|\\$\\([^)]*[A-Za-z]|<%.*%>|#\\{.*\\}|\\{%.*%\\})"
+      value: "(?i)((?:^|[^{])\\{\\{.*\\}\\}|\\$\\{IFS|\\$\\{[^}]*[`(]|\\$\\{[^}]*jndi:|\\$\\([^)]*[A-Za-z]|<%.*%>|#\\{.*\\}|\\{%.*%\\})"
     - field: tool_args
       operator: regex
       value: "(?i)(\\x00|%00|\\\\0|null\\s*byte|\\\\u0000)"
