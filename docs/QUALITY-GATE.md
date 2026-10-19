@@ -16,7 +16,7 @@ auto-merges (the repository has auto-merge turned off). Any failure → label
 | #   | Check                  | What it catches                                                                                                                                                                                                                                                                             |
 | --- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Metadata complete      | Rule has author, test_cases.true_positives ≥1, test_cases.true_negatives ≥1, valid id. Blocks `MiroFish Predicted` authorship (a deprecated draft tier).                                                                                                                                    |
-| 2   | Own TPs must match     | The rule's own `detection.conditions` must actually fire on every entry in its own `test_cases.true_positives`. Catches broken regex that wouldn't detect what it claims to detect.                                                                                                         |
+| 2   | Own TPs must match     | Every entry in the rule's own `test_cases.true_positives` must match, each run the way `atr test` runs a case: read whole, so a case that carries its payload in `tool_response`, `tool_args` or an object `input` is run, as the event built from the case for the rule's own `agent_source.type` through `evaluate()`, and the case's text through `scanSkill()`; either one matching is a match. The case's text must also match on the corpus shapes Checks 3 to 5 use, so what fires on it is something they measure. A case that cannot be run, no case at all, `method: behavioral`, or an `agent_source.type` the engine withholds from typed events (`WITHHELD_SOURCE_TYPES`, whose cases `atr test` reports as unevaluable) fails. Catches broken regex, a condition the event built for the rule's own source does not carry, and a rule that matches its cases only through what no benign sample exercises (a tool name). |
 | 3   | Benign-skill corpus FP | Rule must produce 0 matches across `data/skill-benchmark/benign/*.md` — currently 432 known-clean SKILL.md samples. This is the original FP gate; it catches "rule that fires on legitimate skill descriptions."                                                                            |
 | 4   | Research-mention FP    | Rule must produce 0 matches across `data/research-mentions/corpus.jsonl` — curated text that MENTIONS attacks but isn't an attack (academic abstracts, security blog posts, READMEs, course material, CVE descriptions). This catches "rule that fires on the paper describing the attack." |
 | 5   | Cross-rule conflict    | Rule must NOT match any OTHER existing rule's `test_cases.true_negatives`. If new rule X fires on existing rule Y's known-benign set, Y just regressed in precision and a human needs to look at the overlap.                                                                               |
@@ -40,6 +40,29 @@ Those rules were invisible: the gate printed `0 new rule file(s) detected —
 nothing to check, treating as safe` and exited 0 while skipping all six checks.
 Discovery now unions the diff with `git ls-files --others --exclude-standard --
 rules/`, so a rule on disk is measured whether or not git has heard of it.
+
+Check 2 used to read only a case's `input` (a string, or `{ input: string }`)
+and run it as the text of the corpus shapes the benign checks use, which put it
+in every field of an event every rule is admitted to. A case with its payload
+anywhere else was never read, and a rule none of whose cases had an `input`
+passed with nothing run; the routing a rule declares was never exercised. It now
+runs cases as `atr test` and the own-TP check for modified rules do, and still
+asks what it asked before, of every case's text: that it match on the corpus
+shapes (`scripts/lib/own-true-positives.ts`). The semantic lane's pre-gate
+(`scripts/lib/semantic-engine-gate.ts`) runs the same code.
+
+A new rule that Checks 3 to 5 cannot run at all is refused before they run: one
+deprecated by status or by maturity, which no lane evaluates, and one whose
+method (trace, behavioral, signature) the engine cannot run on a text sample.
+Such a rule matches no benign sample whatever its patterns say, so it would
+clear every corpus check with nothing measured. Check 2 failed them only by
+accident, because the old reading could not match their cases either; a
+deprecated or trace rule whose cases carried no `input` passed the whole gate.
+A rule whose conditions no corpus shape reaches (a `tool_name` condition in an
+`all` rule, say) is left to Check 2, which then matches none of its cases on the
+corpus shapes. A draft rule is measured with its status set aside, and a rule
+the corpus reaches only in part is measured on that part, with every one of its
+cases matched there too.
 
 ## Modified rules
 
