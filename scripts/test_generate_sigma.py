@@ -202,8 +202,33 @@ def test_case_sensitive_opt_out_overrides_inline_i_with_warning():
         ]
     }
     selections, _, warnings = CONV.convert_conditions(detection)
-    assert selections["sel_1"] == {"content|re": "(?s)Secret"}
+    assert selections["sel_1"] == {"content|re": "Secret"}
     assert any("case_sensitive: true" in warning for warning in warnings)
+
+
+def test_leading_m_s_x_letters_are_dropped_per_spec_6_4():
+    """SPEC §6.4 gives m, s and x no effect in ATR. A Sigma backend would honour
+    (?m) or (?s) and match lines or newlines the ATR engine does not, so the
+    export drops them along with the i."""
+    detection = {
+        "conditions": [
+            {"field": "content", "operator": "regex", "value": "(?im)^SYSTEM:"},
+            {"field": "content", "operator": "regex", "value": "(?s)a.b"},
+            {"field": "content", "operator": "regex", "value": "(?x)a b"},
+        ]
+    }
+    selections, _, warnings = CONV.convert_conditions(detection)
+    assert selections["sel_1"] == {"content|re|i": "^SYSTEM:"}
+    assert selections["sel_2"] == {"content|re|i": "a.b"}
+    assert selections["sel_3"] == {"content|re|i": "a b"}
+    assert not warnings
+
+
+def test_flag_group_outside_spec_keeps_all_but_i():
+    """A group with a letter SPEC §6.4 does not define is not ours to drop."""
+    detection = {"conditions": [{"field": "content", "operator": "regex", "value": "(?iu)x"}]}
+    selections, _, _ = CONV.convert_conditions(detection)
+    assert selections["sel_1"] == {"content|re|i": "(?u)x"}
 
 
 def test_detection_field_names_survive():

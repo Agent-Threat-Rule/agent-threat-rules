@@ -73,6 +73,26 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **SPEC §6.4 corrected: SPEC.md 1.0.1 [Compatible].** A `regex` pattern
+  condition matches case-insensitively whether or not it begins with `(?i)`,
+  and `m`, `s` and `x` in a leading flag group have no effect. The 1.0.0 text,
+  added on 2026-07-19 (#340), said an engine applies the flags named in that
+  group, which made a pattern without `(?i)` case-sensitive and gave `(?s)`
+  and `(?m)` their dotAll and multiline meaning. Compatible: an engine that
+  passes the conformance suite needs no change, because its true-positive
+  fixtures already require case-insensitive matching; an implementation built
+  to the 1.0.0 wording does. 1.0.1 also admits `x` in the group, which both
+  engines already removed, says when the `u` flag applies, advises against
+  modifier groups such as `(?-i:...)`, and adds a revision history (Appendix
+  D). Issue #698 has the evidence; erratum `e-2026-10-19-regex-dialect`
+  records the error. `tests/spec-regex-dialect.test.ts` and pyATR's
+  `TestRegexDialectSpec64` pin the statements. `scripts/generate-sigma.py` no
+  longer copies `m` and `s` from that group into exported Sigma patterns,
+  where a backend would honour them; of the three rules on main that carry
+  such a group, only ATR-2026-00450's `(?im)^...` condition matched
+  differently because of it. Other exports that still follow the 1.0.0
+  wording are listed in #698.
+
 - **A `medium` confidence label no longer depends on float rounding to stay
   out of `deny`.** A pattern match scored `0.7 + 0.1 * coverage`, and a
   `high`-severity match denies at `>= 0.8`. At full coverage that sum is

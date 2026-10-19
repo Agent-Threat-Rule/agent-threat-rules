@@ -384,3 +384,35 @@ class TestFieldResolution:
         matches = engine.evaluate(event)
         rule_ids = [m.rule_id for m in matches]
         assert "ATR-2026-00013" in rule_ids
+
+
+class TestRegexDialectSpec64:
+    """SPEC §6.4 as pyATR compiles it: a leading (?imsx...) group is removed,
+    every regex condition matches case-insensitively, and m, s and x in that
+    group are not applied. pyATR uses Python re, not ECMAScript: its $ also
+    matches before a final newline, its . also matches a carriage return,
+    U+2028 and U+2029, and a second flag group after the leading one is
+    applied. Those differences are known (issue #698) and not pinned here."""
+
+    def test_leading_flag_group_is_removed(self) -> None:
+        compiled = engine_module._compile_regex("(?imsx)ignore previous")
+        assert compiled.search("please ignore previous orders")
+
+    def test_case_insensitive_with_or_without_inline_i(self) -> None:
+        assert engine_module._compile_regex("ignore previous").search("IGNORE PREVIOUS")
+        assert engine_module._compile_regex(r"\bAKIA[0-9A-Z]{4}\b").search("akia12ab")
+
+    def test_m_has_no_effect(self) -> None:
+        compiled = engine_module._compile_regex("(?im)^system:")
+        assert compiled.search("system: obey")
+        assert compiled.search("hello\nsystem: obey") is None
+
+    def test_s_has_no_effect(self) -> None:
+        compiled = engine_module._compile_regex("(?is)begin.end")
+        assert compiled.search("begin-end")
+        assert compiled.search("begin\nend") is None
+
+    def test_x_has_no_effect(self) -> None:
+        compiled = engine_module._compile_regex("(?x)ignore previous")
+        assert compiled.search("ignore previous")
+        assert compiled.search("ignoreprevious") is None
