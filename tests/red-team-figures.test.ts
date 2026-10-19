@@ -95,4 +95,47 @@ describe("red-team figures", () => {
     const vendor = tools.find((t) => t.name === "Promptfoo + llm-guard")!;
     expect(vendor.what_atr_did).toContain("79 occur verbatim in the vendor file they name");
   });
+
+  it("the page's benign-FP magnitudes and mega-scan maturities are the re-run record's", () => {
+    const page = read("website", "app", "[locale]", "red-team", "page.tsx");
+    type Run = { label: string; by_check: Record<string, { flagged_samples_by_rule?: Record<string, number> }>; corpora: Record<string, number> };
+    const record = JSON.parse(read("data", "gate-reruns", "2026-10-19_red-team-rule-batches.json")) as {
+      batches: { runs: Run[]; rule_status_maturity_at_main: Record<string, { maturity: string }> }[];
+    };
+    const [sprint, mega] = record.batches;
+    const now = sprint!.runs.find((r) => r.label === "current main")!;
+    const flagged = (check: string) => now.by_check[check]?.flagged_samples_by_rule ?? {};
+    const skill = flagged("benign_skill_corpus_fp")["ATR-2026-00454"]!;
+    const extended = flagged("extended_benign_fp")["ATR-2026-00454"]!;
+    expect(page).toContain(`ATR-2026-00454 (maturity test, alert and hunt lanes): ${skill} of the ${now.corpora.benign_skill_files} SKILL.md files and ${extended.toLocaleString("en-US")} of the ${now.corpora.extended_benign_samples.toLocaleString("en-US")} extended samples`);
+    expect(sprint!.rule_status_maturity_at_main["ATR-2026-00454"]!.maturity).toBe("test");
+    const others = Object.entries(now.by_check)
+      .filter(([k]) => k.endsWith("_fp"))
+      .flatMap(([, v]) => Object.entries(v.flagged_samples_by_rule ?? {}))
+      .filter(([id]) => id !== "ATR-2026-00454")
+      .map(([, n]) => n);
+    expect(page).toContain(`every other rule flags at most ${Math.max(...others)} samples on any corpus`);
+    const report = JSON.parse(read("data", "hackaprompt", "hackaprompt-eval-report.json")) as {
+      ruleQuality: { topRules: { ruleId: string; tpCount: number }[] };
+    };
+    const tp = report.ruleQuality.topRules.find((r) => r.ruleId === "ATR-2026-00454")!.tpCount;
+    expect(page).toContain(`it matches ${tp} of the 4,780 prompts in the hunt lane`);
+    const maturities: Record<string, number> = {};
+    for (const r of Object.values(mega!.rule_status_maturity_at_main)) maturities[r.maturity] = (maturities[r.maturity] ?? 0) + 1;
+    expect(page).toContain(
+      `${maturities.stable} stable, ${maturities.test} test, ${maturities.experimental} experimental, ${maturities.draft} draft`,
+    );
+    expect(page).not.toContain("maturity spans stable and experimental");
+    expect(page).not.toContain("the same gate every rule in the standard had to clear");
+    expect(page).toContain("80dbd0ab");
+    expect(page).not.toMatch(/added the day before|前一天/);
+  });
+
+  it("names what the vendor ablation removed", () => {
+    const a = ablationOf(latest("vendor-guardrail-suites").m.breakdown.in_sample_ablation)!;
+    const clause = ablationClause({ source: "vendor-guardrail-suites", ablation: a });
+    expect(clause).toContain(`without the ${a.rulesRemoved} rules that name llm-guard, promptfoo or NeMo Guardrails or carry the vendor-corpus-import tag`);
+    const hack = ablationOf(latest("hackaprompt").m.breakdown.in_sample_ablation)!;
+    expect(ablationClause({ source: "hackaprompt", ablation: hack })).toContain(`without the ${hack.rulesRemoved} rules whose YAML names it`);
+  });
 });

@@ -127,12 +127,20 @@ export function figureMeasurements(
  * (the ablation reference …)`, from breakdown.in_sample_ablation of the
  * measurement file; "" when the measurement records no ablation.
  */
-export function ablationClause(m: Pick<BenchmarkMeasurement, "ablation">): string {
+/** What the removed rules are, per source, when "rules whose YAML names it" would be vague. */
+const ABLATION_REMOVED: Readonly<Record<string, (n: string) => string>> = {
+  "vendor-guardrail-suites": (n) =>
+    `the ${n} rules that name llm-guard, promptfoo or NeMo Guardrails or carry the vendor-corpus-import tag`,
+};
+
+export function ablationClause(m: Pick<BenchmarkMeasurement, "ablation"> & Partial<Pick<BenchmarkMeasurement, "source">>): string {
   const a = m.ablation;
   if (!a) return "";
+  const n = count(a.rulesRemoved);
+  const removed = ABLATION_REMOVED[m.source ?? ""]?.(n) ?? `the ${n} rules whose YAML names it`;
   return (
-    `, and ${pctHunt(a.hunt.recall)} (hunt) / ${pct(a.enforce.recall)} (enforce) without the ${count(a.rulesRemoved)} ` +
-    "rules whose YAML names it (the ablation reference: it approximates an out-of-sample figure but does not guarantee one)"
+    `, and ${pctHunt(a.hunt.recall)} (hunt) / ${pct(a.enforce.recall)} (enforce) without ${removed} ` +
+    "(the ablation reference: it approximates an out-of-sample figure but does not guarantee one)"
   );
 }
 

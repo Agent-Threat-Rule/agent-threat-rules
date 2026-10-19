@@ -43,9 +43,9 @@ const ATTRIBUTION_STATS: AttributionStat[] = [
   },
   {
     number: "0 FP",
-    label: "Required across the benign gate before a rule ships",
+    label: "Required of a rule pull request before it merges",
     detail:
-      "A 6-check quality gate: own-TP must match, 0 FP across the benign, extended, code and research-mention corpora, 0 cross-rule conflicts, and own true_negative coverage. The gate prints the sample counts it used on every run — those are the figures of record, not a number on this page. A rule that fires on the paper describing the attack does not ship. The standard would rather miss a clever variant than corrupt the corpus with a false positive — and it publishes its real per-lane figures rather than a single flattering one.",
+      "The rule safety gate (scripts/check-rules-safety.ts) runs in the required Validate Rules & Build check on every pull request and checks the rules that pull request adds or changes: own true positives must match, 0 FP across the benign, extended, code and research-mention corpora, 0 cross-rule conflicts, and own true_negative coverage. The gate prints the sample counts it used on every run — those are the figures of record, not a number on this page. It is the merge condition for rule pull requests now; earlier batches did not all pass it. Re-run on 2026-10-19, 33 of the 71 rules of the 2026-05-12 sprint and 4 of the 29 of the 2026-06 mega-scan fail it at current main (data/gate-reruns/2026-10-19_red-team-rule-batches.json). The standard would rather miss a clever variant than corrupt the corpus with a false positive — and it publishes its real per-lane figures rather than a single flattering one.",
   },
 ];
 
@@ -75,7 +75,7 @@ const CONTRIBUTOR_BENEFITS: ContributorBenefit[] = [
     benefit:
       "Ship a detection without hand-writing regex. Submit positive and negative examples; a maintainer writes the regex from them and runs it through the full gate.",
     proof:
-      "Your benign look-alikes become the rule's true negatives. The regex must match none of them and hold 0 FP on the benign corpus before it merges. That is the same gate every rule in the standard had to clear.",
+      "Your benign look-alikes become the rule's true negatives. The regex must match none of them and hold 0 FP on the benign corpora before it merges: the rule safety gate every rule pull request has to pass now. Rules from earlier batches did not all pass it; see the re-run record in data/gate-reruns/2026-10-19_red-team-rule-batches.json.",
   },
   {
     for: "Bug bounty hunters",
@@ -304,8 +304,8 @@ export default async function RedTeamPage({
                   </p>
                   <p className="text-sm text-paper/60">
                     {zh
-                      ? "Gate = 自己 TP 必須 100% 命中 + benign、extended、code、research-mention corpus 全部 0 FP + 跨規則 0 衝突。樣本數以 gate 執行時印出的為準。"
-                      : "Gate = your TPs must match 100% + 0 FP on the benign, extended, code and research-mention corpora + 0 cross-rule conflicts. The gate prints the sample counts it used."}
+                      ? "Gate（你的 PR 合併前必須通過）= 自己 TP 必須 100% 命中 + benign、extended、code、research-mention corpus 全部 0 FP + 跨規則 0 衝突。樣本數以 gate 執行時印出的為準。較早批次的規則並非全部通過，重跑紀錄見 data/gate-reruns/2026-10-19_red-team-rule-batches.json。"
+                      : "Gate (your pull request must pass it to merge) = your TPs must match 100% + 0 FP on the benign, extended, code and research-mention corpora + 0 cross-rule conflicts. The gate prints the sample counts it used. Rules from earlier batches did not all pass it; the re-run record is data/gate-reruns/2026-10-19_red-team-rule-batches.json."}
                   </p>
                 </div>
               </div>
@@ -501,8 +501,8 @@ export default async function RedTeamPage({
           </h2>
           <p className="text-base text-stone font-light max-w-[640px] mb-4">
             {zh
-              ? "2026-05-12：11 個並行 agent 消化五個外部語料庫。該次 sprint 的兩個 commit（e9efefdd、92c0d0fe）新增 71 個規則檔，ATR-2026-00452..00522；v2.2.0 changelog 寫的 75 條，另外算進了前一天加入的 4 條 CVE 規則（00448..00451）。詳細版本記錄在 /changelog。"
-              : "2026-05-12: 11 parallel agents ingested five external corpora. The sprint's two commits (e9efefdd, 92c0d0fe) added 71 rule files, ATR-2026-00452..00522; the 75 in the v2.2.0 changelog also counts four CVE rules (00448..00451) added the day before. Full version record at /changelog."}
+              ? "2026-05-12：11 個並行 agent 消化五個外部語料庫。該次 sprint 的兩個 commit（e9efefdd、92c0d0fe）新增 71 個規則檔，ATR-2026-00452..00522；v2.2.0 changelog 寫的 75 條，另外算進了同一天稍早（commit 80dbd0ab，在 sprint 的兩個 commit 之前）加入的 4 條 CVE 規則（00448..00451）。詳細版本記錄在 /changelog。"
+              : "2026-05-12: 11 parallel agents ingested five external corpora. The sprint's two commits (e9efefdd, 92c0d0fe) added 71 rule files, ATR-2026-00452..00522; the 75 in the v2.2.0 changelog also counts four CVE rules (00448..00451) added earlier the same day, in commit 80dbd0ab, before the sprint commits. Full version record at /changelog."}
           </p>
           <p className="text-base text-stone font-light max-w-[640px] mb-4">
             {zh
@@ -537,8 +537,8 @@ export default async function RedTeamPage({
         <Reveal delay={0.2}>
           <p className="text-xs text-stone max-w-[640px]">
             {zh
-              ? "這 71 條規則當時的品質門檻執行紀錄沒有 commit 進 repo，所以「全部通過、benign corpus 0 FP」的說法撤回，改成兩次實測（2026-10-19 重跑 repo 的規則安全閘 scripts/check-rules-safety.ts）。用 92c0d0fe 當時的閘與語料：71 條都沒有在 432 份良性 SKILL.md 上誤報；10 條未通過，原因都是有 true positive 沒命中，其中 1 條另在 1,352 筆 extended 良性樣本中誤報 1 筆、1 條在 157 筆 research-mention 樣本中誤報 1 筆、2 條與其他規則的 true negative 衝突。用現在的 main（ATR 4.1.5）：33 條未通過；26 條至少誤報 1 筆良性樣本（467 份 SKILL.md 上 4 條、13,620 筆 extended 上 26 條、69 筆程式碼上 1 條、157 筆 research-mention 上 2 條）。這 26 條沒有一條是 maturity stable，所以都不在 enforce lane；24 條在 alert 與 hunt lane，2 條只在 hunt lane。紀錄見 data/gate-reruns/2026-10-19_red-team-rule-batches.json。53 條規則的 regex 已從字面模式泛化為多層結構 pattern。"
-              : "No record of the quality gate's run on these 71 rules was committed, so the claim that all passed it with 0 FP on the benign corpus is withdrawn and replaced by two measurements (the repository's rule safety gate, scripts/check-rules-safety.ts, re-run on 2026-10-19). With the gate and corpora as of 92c0d0fe: none of the 71 flags any of the 432 benign SKILL.md files; 10 fail, all for missing one of their own true positives, and of those, 1 also flags 1 of 1,352 extended benign samples, 1 flags 1 of 157 research-mention samples and 2 conflict with another rule's true negatives. At current main (ATR 4.1.5): 33 fail; 26 flag at least one benign sample (4 on the 467 SKILL.md files, 26 on 13,620 extended samples, 1 on 69 code samples, 2 on 157 research-mention samples). None of those 26 has maturity stable, so none loads in the enforce lane; 24 load in the alert and hunt lanes, 2 in the hunt lane only. Record: data/gate-reruns/2026-10-19_red-team-rule-batches.json. 53 rules had regex generalized from literal fingerprints to multi-layer structural patterns."}
+              ? "這 71 條規則當時的品質門檻執行紀錄沒有 commit 進 repo，所以「全部通過、benign corpus 0 FP」的說法撤回，改成兩次實測（2026-10-19 重跑 repo 的規則安全閘 scripts/check-rules-safety.ts）。用 92c0d0fe 當時的閘與語料：71 條都沒有在 432 份良性 SKILL.md 上誤報；10 條未通過，原因都是有 true positive 沒命中，其中 1 條另在 1,352 筆 extended 良性樣本中誤報 1 筆、1 條在 157 筆 research-mention 樣本中誤報 1 筆、2 條與其他規則的 true negative 衝突。用現在的 main（ATR 4.1.5）：33 條未通過；26 條至少誤報 1 筆良性樣本（467 份 SKILL.md 上 4 條、13,620 筆 extended 上 26 條、69 筆程式碼上 1 條、157 筆 research-mention 上 2 條）。這 26 條沒有一條是 maturity stable，所以都不在 enforce lane；24 條在 alert 與 hunt lane，2 條只在 hunt lane。誤報最多的是 ATR-2026-00454（maturity test，在 alert 與 hunt lane）：467 份 SKILL.md 中 152 份、13,620 筆 extended 中 1,376 筆；其餘每條在任一語料上都不超過 23 筆。00454 也是上方 HackAPrompt hunt 與 alert 數字的分子來源之一：在 hunt lane 命中 4,780 筆中的 757 筆。紀錄見 data/gate-reruns/2026-10-19_red-team-rule-batches.json。53 條規則的 regex 已從字面模式泛化為多層結構 pattern。"
+              : "No record of the quality gate's run on these 71 rules was committed, so the claim that all passed it with 0 FP on the benign corpus is withdrawn and replaced by two measurements (the repository's rule safety gate, scripts/check-rules-safety.ts, re-run on 2026-10-19). With the gate and corpora as of 92c0d0fe: none of the 71 flags any of the 432 benign SKILL.md files; 10 fail, all for missing one of their own true positives, and of those, 1 also flags 1 of 1,352 extended benign samples, 1 flags 1 of 157 research-mention samples and 2 conflict with another rule's true negatives. At current main (ATR 4.1.5): 33 fail; 26 flag at least one benign sample (4 on the 467 SKILL.md files, 26 on 13,620 extended samples, 1 on 69 code samples, 2 on 157 research-mention samples). None of those 26 has maturity stable, so none loads in the enforce lane; 24 load in the alert and hunt lanes, 2 in the hunt lane only. By far the largest is ATR-2026-00454 (maturity test, alert and hunt lanes): 152 of the 467 SKILL.md files and 1,376 of the 13,620 extended samples; every other rule flags at most 23 samples on any corpus. 00454 also counts toward the HackAPrompt hunt and alert figures above: it matches 757 of the 4,780 prompts in the hunt lane. Record: data/gate-reruns/2026-10-19_red-team-rule-batches.json. 53 rules had regex generalized from literal fingerprints to multi-layer structural patterns."}
           </p>
         </Reveal>
         <Reveal delay={0.3}>
@@ -579,8 +579,8 @@ export default async function RedTeamPage({
         <Reveal delay={0.2}>
           <p className="text-xs text-stone max-w-[640px]">
             {zh
-              ? "29 條為去重後的 distinct 規則;部分源自跨語料庫共通的 miss,成熟度涵蓋 stable 與 experimental。它們當時的門檻執行紀錄沒有 commit,所以「全部通過、0 FP」的說法撤回,改成實測:2026-10-19 在 main(ATR 4.1.5)重跑規則安全閘,29 條都沒有在 467 份良性 SKILL.md 上誤報;4 條未通過,其中 3 條在 13,620 筆 extended 良性樣本中各誤報 2 到 4 筆(都是 maturity test,在 alert 與 hunt lane,不在 enforce lane,其中 1 條另與其他規則的 true negative 衝突),1 條有 true positive 沒命中。紀錄同上。"
-              : "29 distinct rules after de-duplication; several emerged from misses shared across corpora, and maturity spans stable and experimental. No record of their gate runs was committed, so the claim that all cleared it with 0 FP is withdrawn and replaced by a measurement: the rule safety gate re-run at main (ATR 4.1.5) on 2026-10-19. None of the 29 flags any of the 467 benign SKILL.md files; 4 fail, 3 of them flagging 2 to 4 of 13,620 extended benign samples each (all maturity test: alert and hunt lanes, not enforce; one of them also conflicts with another rule's true negatives), 1 missing one of its own true positives. Same record."}
+              ? "29 條為去重後的 distinct 規則;部分源自跨語料庫共通的 miss。依規則檔的 maturity:15 條 stable、12 條 test、1 條 experimental、1 條 draft。它們當時的門檻執行紀錄沒有 commit,所以「全部通過、0 FP」的說法撤回,改成實測:2026-10-19 在 main(ATR 4.1.5)重跑規則安全閘,29 條都沒有在 467 份良性 SKILL.md 上誤報;4 條未通過,其中 3 條在 13,620 筆 extended 良性樣本中各誤報 2 到 4 筆(都是 maturity test,在 alert 與 hunt lane,不在 enforce lane,其中 1 條另與其他規則的 true negative 衝突),1 條有 true positive 沒命中。紀錄同上。"
+              : "29 distinct rules after de-duplication; several emerged from misses shared across corpora. By the maturity in their rule files: 15 stable, 12 test, 1 experimental, 1 draft. No record of their gate runs was committed, so the claim that all cleared it with 0 FP is withdrawn and replaced by a measurement: the rule safety gate re-run at main (ATR 4.1.5) on 2026-10-19. None of the 29 flags any of the 467 benign SKILL.md files; 4 fail, 3 of them flagging 2 to 4 of 13,620 extended benign samples each (all maturity test: alert and hunt lanes, not enforce; one of them also conflicts with another rule's true negatives), 1 missing one of its own true positives. Same record."}
           </p>
         </Reveal>
       </section>
