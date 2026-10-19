@@ -341,6 +341,40 @@ $ npx tsx src/cli.ts guard --blocking </dev/null
 Any `[atr]`-prefixed warnings from the paragraphs above are printed before these
 two lines, on the same stream.
 
+### 2.4 What the guard scans after a tool runs
+
+What the guard scans on `PostToolUse` is the tool's output. Claude Code sends it
+at the top level of the hook input, as `tool_response`, in the tool's own shape
+(`Read` gives `{"type":"text","file":{"filePath":…,"content":…}}`, `Bash` gives
+`{"stdout":…,"stderr":…}`, an MCP tool its content blocks), and the guard reads
+every string in it as written (`src/hook-tool-output.ts`). It leaves out binary
+data, the parts Claude Code keeps from the model, and labels and strings the tool
+only repeats from its input. A tool that edits a file (`Edit`, `MultiEdit`,
+`Write`, `NotebookEdit`) returns the edit it made beside the file's previous
+contents, so for those the guard scans the tool's input, as it always did. With an
+output, the event's content is its text and `tool_args` the JSON of the input.
+Without one, the event is built from the input, as for the example in §2.2, whose
+text sits under `tool_input.content`. Before the guard read
+`tool_response`, it looked for an output only under `tool_input.output` and
+`tool_input.response`, where Claude Code never puts one, so on Claude Code a
+`PostToolUse` event carried the tool's input and nothing the tool returned.
+
+Four limits apply to that scan. A tool call that fails reaches Claude Code's
+`PostToolUseFailure` hook instead, which the guard does not handle, so the output
+of a command that exits non-zero is not scanned. A text longer than 100,000
+characters matches no condition at all (`MAX_EVAL_LENGTH` in `src/engine.ts`), and
+the limit applies to the output's text taken together, so whoever writes any part
+of an output can push the whole past it. A string the tool repeats from its input
+is left out, so text the agent passed to a tool and got back unchanged reaches an
+`llm_io` rule on neither hook (those rules do not run on `PreToolUse`). And some
+rules take time that grows with the square of a long run of one character:
+through the whole rule set on a busy machine, 20,000 characters of output took
+about 8 seconds and 40,000 about 34, and no timeout can cut that short, since a
+regular expression runs synchronously.
+
+`atr init` registers the guard on `PreToolUse` only. To scan tool output, add the
+same command under `PostToolUse` in the Claude Code settings.
+
 ## 3. Three decision channels, and who reads which
 
 A consumer can learn "should this be stopped?" from three different places in

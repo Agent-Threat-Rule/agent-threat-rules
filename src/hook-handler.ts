@@ -37,6 +37,7 @@ import type {
 import type { ATREngine } from './engine.js';
 import type { ActionExecutor } from './action-executor.js';
 import { blockingFromConfig } from './enforcement.js';
+import { toolOutputText } from './hook-tool-output.js';
 
 /** Default evaluation timeout in milliseconds */
 const DEFAULT_TIMEOUT_MS = 5_000;
@@ -94,23 +95,23 @@ function hookInputToEvent(input: HookInput): AgentEvent {
   const type = isPreTool ? 'tool_call' : 'tool_response';
 
   const toolInput = input.tool_input ?? {};
-  const content = typeof toolInput['content'] === 'string'
+  const inputText = typeof toolInput['content'] === 'string'
     ? toolInput['content']
     : JSON.stringify(toolInput);
+  // After the tool runs, the event is about what it returned: the engine reads
+  // a tool_response event's content as the text the model ingests (llm_io rules
+  // run on it as indirect prompt injection). Without an output, the input
+  // stands in, as it did for every PostToolUse event before Claude Code's
+  // tool_response was read.
+  const output = isPreTool ? '' : postToolOutput(input, toolInput);
+  const content = output !== '' ? output : inputText;
 
   const fields: Record<string, string> = {
     tool_name: input.tool_name ?? '',
     tool_args: JSON.stringify(toolInput),
     content,
+    ...(output !== '' ? { tool_response: output } : {}),
   };
-
-  // For PostToolUse, include output/response if present
-  if (!isPreTool) {
-    const output = toolInput['output'] ?? toolInput['response'];
-    if (typeof output === 'string') {
-      fields['tool_response'] = output;
-    }
-  }
 
   return Object.freeze({
     type,
@@ -119,6 +120,24 @@ function hookInputToEvent(input: HookInput): AgentEvent {
     fields: Object.freeze(fields),
     sessionId: input.session_id,
   });
+}
+
+/**
+ * The text of the tool's output on a PostToolUse input.
+ *
+ * Claude Code sends it at the top level, as tool_response (checked against the
+ * shipped 2.1.280 binary, whose PostToolUse input is { hook_event_name,
+ * tool_name, tool_input, tool_response, tool_use_id, duration_ms, ... }). Only
+ * tool_input.output and tool_input.response were read before, where Claude Code
+ * never puts a tool's output, so its PostToolUse events carried the tool's input
+ * and nothing it returned. Those two keys are still read, for a host that sends
+ * the output there; the host's own tool_response wins when it holds text.
+ */
+function postToolOutput(input: HookInput, toolInput: Readonly<Record<string, unknown>>): string {
+  const fromHost = toolOutputText(input.tool_name ?? '', input.tool_response, toolInput);
+  if (fromHost !== '') return fromHost;
+  const legacy = toolInput['output'] ?? toolInput['response'];
+  return typeof legacy === 'string' ? legacy : '';
 }
 
 /**

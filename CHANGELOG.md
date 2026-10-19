@@ -196,6 +196,33 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **On Claude Code, the guard scans what a tool returned on PostToolUse.**
+  Claude Code sends a tool's output at the top level of the PostToolUse hook
+  input, as `tool_response` (checked against the shipped 2.1.280 binary).
+  `src/hook-handler.ts` read an output only from `tool_input.output` or
+  `tool_input.response`, where Claude Code never puts one, so the event's content
+  was the tool's input, and a prompt injection in a command's output, a file or a
+  fetched page reached no rule. The event's content and `tool_response` are now
+  the text of the output: `src/hook-tool-output.ts` keeps every string in it, as
+  written, and leaves out binary data, what Claude Code keeps from the model,
+  and labels and strings the tool only repeats from its input. A tool that edits
+  a file returns the edit it made, so its event is still built from its input.
+  `tool_args` stays the JSON of the input, and `tool_input.output` and
+  `.response` are still read for a host that sends the output there, now as raw
+  text in content too. Measured through the hook in the default hunt lane, each
+  sample as a Bash command's output: the own true positives of the 746 rules the
+  engine runs on a tool response (`llm_io`, `mcp_exchange` and `context_window`)
+  match 3,852 of 3,890 times (0 before, and the same as a Read or MCP output);
+  289 of PINT's 451 attacks match (0 before) and none of its 399 benign samples;
+  1,246 of the 14,157 benign-corpus samples match a rule (0 before), most of them
+  through rules at maturity `test`. In the alert lane 1,183 match, in the enforce
+  lane none. Not covered: a failed tool call, which reaches Claude Code's
+  `PostToolUseFailure` hook instead; an output whose text exceeds 100,000
+  characters taken together (`MAX_EVAL_LENGTH`); and some rules take time
+  quadratic in a long run of one character. `atr init` registers the guard on
+  PreToolUse only, so this reaches an installation that added it under
+  PostToolUse.
+
 - **SPEC §6.4 corrected: SPEC.md 1.0.1 [Compatible].** A `regex` pattern
   condition matches case-insensitively whether or not it begins with `(?i)`,
   and `m`, `s` and `x` in a leading flag group have no effect. The 1.0.0 text,
