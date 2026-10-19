@@ -143,7 +143,7 @@ describe("verify-adopters.yml: runs and checkouts", () => {
   const doc = workflowDoc(WORKFLOW) as {
     concurrency?: { group?: string; "cancel-in-progress"?: boolean };
     permissions?: Record<string, string>;
-    jobs: Record<string, { steps: { name?: string; id?: string; if?: string; run?: string; uses?: string; with?: Record<string, unknown> }[] }>;
+    jobs: Record<string, { steps: { name?: string; id?: string; if?: string; run?: string; uses?: string; with?: Record<string, unknown>; env?: Record<string, string> }[] }>;
   };
   const steps = doc.jobs[JOB].steps;
 
@@ -160,8 +160,19 @@ describe("verify-adopters.yml: runs and checkouts", () => {
   it("files a failure on main and closes the issue on a green run on main, and nowhere else", () => {
     expect(steps.find((s) => s.name === OPEN_ISSUE)?.if).toBe("failure() && github.ref == 'refs/heads/main'");
     expect(steps.find((s) => s.name === CLOSE_ISSUE)?.if).toBe("success() && github.ref == 'refs/heads/main'");
-    expect(steps.find((s) => s.id === "verify")?.name).toBe("Re-verify every evidence link");
     expect(doc.permissions?.issues).toBe("write");
+  });
+
+  it("looks up only its own open issue: open, labelled auto-generated, with its title", () => {
+    // The stand-in gh filters on all three, so the runs below cannot show a
+    // missing filter; the lookup is pinned here instead.
+    const lookup = `gh issue list --state open --label auto-generated --search "$title in:title" --json number --jq '.[0].number // empty'`;
+    for (const name of [OPEN_ISSUE, CLOSE_ISSUE]) expect(steps.find((s) => s.name === name)?.run, name).toContain(lookup);
+  });
+
+  it("tells the issue step whether the verification itself finished", () => {
+    expect(steps.find((s) => s.id === "verify")?.name).toBe("Re-verify every evidence link");
+    expect(steps.find((s) => s.name === OPEN_ISSUE)?.env?.VERIFY_OUTCOME).toBe("${{ steps.verify.outcome }}");
   });
 });
 

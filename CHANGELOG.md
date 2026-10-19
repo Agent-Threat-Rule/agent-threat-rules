@@ -417,8 +417,8 @@ All notable changes to ATR will be documented in this file.
   without being read, and `--write` promoted it to `stable`. Such a rule is now
   reported as not promotable; one that did false-positive stays with the rules
   that have false positives. No `maturity: test` rule on main is affected today.
-- **verify-adopters.yml no longer fails when main moves during a run, and its
-  failures get noticed.** The job commits the refreshed
+- **verify-adopters.yml no longer fails when other commits land on main during
+  a run, and its failures get noticed.** The job commits the refreshed
   `data/adopters-verification.json` straight to main with a plain push, which
   was rejected whenever another commit landed first, failing the run with
   nothing wrong in ADOPTERS.md (2026-10-07, 2026-10-15). It now rebases its
