@@ -21,7 +21,7 @@ ATR is an MIT-licensed detection corpus. Work built from it has been merged into
 
 | Org | What landed | PR |
 |---|---|---|
-| Microsoft Agent Governance Toolkit | Example directories (ACS annotator adapter, ATR import example) | [microsoft/agent-governance-toolkit#3025](https://github.com/microsoft/agent-governance-toolkit/pull/3025) (2026-06-15) |
+| Microsoft Agent Governance Toolkit | Example directories (ACS annotator adapter, ATR import example) | [microsoft/agent-governance-toolkit#2308](https://github.com/microsoft/agent-governance-toolkit/pull/2308) (2026-05-18), [#3025](https://github.com/microsoft/agent-governance-toolkit/pull/3025) (2026-06-15) |
 | Cisco AI Defense skill-scanner | Full ATR pack | [cisco-ai-defense/skill-scanner#99](https://github.com/cisco-ai-defense/skill-scanner/pull/99) (2026-04-22) |
 | MISP CIRCL | misp-galaxy global cluster + taxonomies tag vocab | [#1207](https://github.com/MISP/misp-galaxy/pull/1207), [#323](https://github.com/MISP/misp-taxonomies/pull/323) (2026-05-10) |
 | OWASP Agent Security Regression Harness | Four ATR-derived regression scenarios (the files carry no ATR attribution upstream) | [OWASP/agent-security-regression-harness#74](https://github.com/OWASP/agent-security-regression-harness/pull/74) (2026-05-11) |
@@ -29,7 +29,7 @@ ATR is an MIT-licensed detection corpus. Work built from it has been merged into
 
 On 2026-05-11, after an AGT maintainer assigned it [microsoft/agent-governance-toolkit#1937](https://github.com/microsoft/agent-governance-toolkit/issues/1937), an issue the ATR maintainer had filed mapping two CVEs to ATR rules, the Microsoft Copilot SWE Agent opened [microsoft/agent-governance-toolkit#1981](https://github.com/microsoft/agent-governance-toolkit/issues/1981) with regression test fixtures that presumed ATR detection of two Semantic Kernel CVEs (CVE-2026-26030 lambda+eval RCE, CVE-2026-25592 autostart file write). ATR v2.1.2 with rules `ATR-2026-00440` + `ATR-2026-00441` was merged, npm-published, and GitHub-released by 08:24 UTC the same day — **2 hours 16 minutes** from PR open to rule merge. (Honest disclosure: coverage was partial — two of four Copilot-generated fixtures matched the v2.1.2 canonical regex shape; the rest landed in later versions.)
 
-That dependency loop is the case for shipping an ATR adapter inside RAMPART. RAMPART users running pytest red-team flows today get to assert against the same corpus that Microsoft's own automation references.
+AGT has since removed those fixtures (2026-07-30 refactor) and takes no runtime dependency on ATR; ADOPTERS.md has the current status.
 
 ## Scope
 
@@ -68,7 +68,7 @@ ATR is maintained by [Adam Lin](https://github.com/eeee2345) under fiscal sponso
 
 The corpus ships new versions often. This adapter loads from a user-provided rules_dir so RAMPART consumers pin a specific corpus version rather than tracking ATR's main branch.
 
-Happy to iterate on naming, interface, or scope. Microsoft AI Safety org has been a consistently constructive maintainer of the AGT merges; I trust this team to land good feedback fast.
+Happy to iterate on naming, interface, or scope.
 
 — Adam (adam@agentthreatrule.org)
 
