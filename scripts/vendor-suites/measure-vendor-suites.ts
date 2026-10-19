@@ -14,6 +14,13 @@
  *      category the rule's description says it was generalised from.
  *   3. Whether each of those rules' own test_cases.true_positives is a vendor test case (exact text), or
  *      a sample of the 2026-05-12 corpora that the provenance audit could not find in the vendor repo.
+ *   4. breakdown.in_sample_ablation: every lane again, per vendor, with the rules whose YAML names a vendor
+ *      or the vendor-corpus-import tag removed (the ablation reference to cite beside the headline), and
+ *      once more with every rule whose YAML shares a 40-character run with a vendor sample also removed.
+ *   5. breakdown.overlaps: rules carrying vendor-sample text, and vendor samples that occur verbatim in the
+ *      garak-full corpus, so the distance from out-of-sample is stated, not assumed.
+ *   6. breakdown.precision_not_citable: the vendors ship 20 benign cases, too few for a precision or
+ *      FP-rate claim; data/stats.json projects those fields as null.
  *
  * Detection predicate (identical for attacks and benign, identical across lanes)
  *   role=input  -> src/corpus-event.ts promptChannelShapes(): llm_input + tool_response, the predicate
@@ -25,6 +32,7 @@
  * Usage:
  *   npx tsx scripts/vendor-suites/measure-vendor-suites.ts            # measure + write measurement
  *   npx tsx scripts/vendor-suites/measure-vendor-suites.ts --dry-run  # measure, print, write nothing
+ *   npx tsx scripts/vendor-suites/measure-vendor-suites.ts --force    # replace a same-day measurement file
  */
 
 import { createHash } from 'node:crypto';
@@ -36,6 +44,15 @@ import { promptChannelShapes } from '../../src/corpus-event.js';
 import { ENFORCE_LANE_NOTE, rulesInLane } from '../../src/measurement/enforce-lane.js';
 import { writeMeasurement } from '../../src/measurement/write.js';
 import type { AgentEvent, ATRRule } from '../../src/types.js';
+import {
+  SHINGLE_CHARS,
+  VENDOR_NAMING_PATTERN,
+  loadRuleTexts,
+  ruleTextOverlaps,
+  rulesDirWithout,
+  rulesNaming,
+  vendorSamplesInCorpus,
+} from './in-sample.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, '..', '..');
@@ -44,7 +61,10 @@ const CORPUS_DIR = resolve(REPO_ROOT, 'data/test-corpora/vendor-guardrail-suites
 const SAMPLES_PATH = resolve(CORPUS_DIR, 'samples.jsonl');
 const MANIFEST_PATH = resolve(CORPUS_DIR, 'manifest.json');
 const LEGACY_AUDIT_PATH = resolve(CORPUS_DIR, 'legacy-corpora-provenance.json');
+const GARAK_FULL_DIR = resolve(REPO_ROOT, 'data/test-corpora/garak-full');
 const DRY_RUN = process.argv.includes('--dry-run');
+const FORCE = process.argv.includes('--force');
+const ABLATION_REFERENCE = 'without_rules_naming_source';
 
 type Lane = 'hunt' | 'alert' | 'enforce';
 const LANES: readonly Lane[] = ['hunt', 'alert', 'enforce'];
@@ -285,6 +305,128 @@ function ruleValidation(
   return { rules: out, legacy_summary: legacy.summary };
 }
 
+// ------------------------------------------------------------------ in-sample checks
+
+interface LaneRun {
+  readonly hits: Map<string, readonly string[]>;
+  readonly ruleIds: Set<string>;
+  readonly ruleCount: number;
+  readonly rules: readonly ATRRule[];
+}
+
+async function runLane(rulesDir: string, lane: Lane, samples: readonly Sample[]): Promise<LaneRun> {
+  const engine = new ATREngine({ rulesDir, lane });
+  const loaded = await engine.loadRules();
+  if (loaded === 0) throw new Error(`${lane}: no rules loaded from ${rulesDir}`);
+  if (engine.getLane() !== lane) throw new Error(`engine is in the ${engine.getLane()} lane, not ${lane}`);
+  const rules = engine.getRules();
+  return {
+    hits: new Map(samples.map((s) => [s.id, matchedRuleIds(engine, s)] as const)),
+    ruleIds: new Set(rules.filter((r) => rulesInLane([r], lane) === 1).map((r) => r.id)),
+    ruleCount: rulesInLane(rules, lane),
+    rules,
+  };
+}
+
+/** One lane of an ablation, in the shape breakdown.lanes uses for the headline (detected / attacks / recall). */
+function ablationLane(lane: Lane, run: LaneRun, samples: readonly Sample[]) {
+  const t = tally(samples, run.hits);
+  const byVendor: Record<string, Tally> = {};
+  for (const [v, xs] of [...groupBy(samples, (s) => s.vendor)].sort()) byVendor[v] = tally(xs, run.hits);
+  return {
+    lane,
+    detected: t.detected,
+    attacks: t.attacks,
+    recall: t.recall,
+    rules_in_lane: run.ruleCount,
+    benign: t.benign,
+    benign_flagged: t.benign_flagged,
+    by_vendor: byVendor,
+  };
+}
+
+async function ablation(ids: readonly string[], description: string, samples: readonly Sample[]) {
+  const { dir, removed } = rulesDirWithout(RULES_DIR, ids);
+  const lanes: Record<string, ReturnType<typeof ablationLane>> = {};
+  const runs = {} as Record<Lane, LaneRun>;
+  for (const lane of LANES) {
+    runs[lane] = await runLane(dir, lane, samples);
+    lanes[lane] = ablationLane(lane, runs[lane], samples);
+  }
+  return { record: { description, removed_rule_ids: removed, lanes }, runs };
+}
+
+/** Rule-text and garak-full overlaps, and how many reference-ablation detections they account for. */
+function overlaps(
+  samples: readonly Sample[],
+  namingIds: readonly string[],
+  laneRuleIds: Readonly<Record<Lane, ReadonlySet<string>>>,
+  reference: Readonly<Record<Lane, LaneRun>>,
+) {
+  const byId = new Map(samples.map((s) => [s.id, s] as const));
+  const overlap = ruleTextOverlaps(loadRuleTexts(RULES_DIR), samples, SHINGLE_CHARS);
+  const naming = new Set(namingIds);
+  const rules = [...overlap].map(([ruleId, ids]) => ({
+    rule_id: ruleId,
+    names_a_vendor: naming.has(ruleId),
+    loaded_in_lanes: LANES.filter((ln) => laneRuleIds[ln].has(ruleId)),
+    attack_samples: ids.filter((id) => byId.get(id)?.label === 'attack'),
+    benign_samples: ids.filter((id) => byId.get(id)?.label === 'benign'),
+  }));
+  const surviving = rules.filter((r) => !r.names_a_vendor);
+  const attacksIn = (rs: typeof rules) => [...new Set(rs.flatMap((r) => r.attack_samples))].sort();
+  const overlapOf = new Map(rules.map((r) => [r.rule_id, new Set([...r.attack_samples, ...r.benign_samples])] as const));
+  const viaOverlap: Record<string, string[]> = {};
+  for (const lane of LANES) {
+    viaOverlap[lane] = samples
+      .filter((s) => s.label === 'attack')
+      .filter((s) => (reference[lane].hits.get(s.id) ?? []).some((r) => overlapOf.get(r)?.has(s.id) === true))
+      .map((s) => s.id);
+  }
+  const garak = vendorSamplesInCorpus(
+    samples.filter((s) => s.label === 'attack').map((s) => ({ id: s.id, text: s.text, vendor: s.vendor })),
+    GARAK_FULL_DIR,
+  );
+  const garakIds = [...new Set(garak.map((g) => g.sample_id))].sort();
+  const garakByVendor: Record<string, number> = {};
+  for (const id of garakIds) {
+    const v = byId.get(id)!.vendor;
+    garakByVendor[v] = (garakByVendor[v] ?? 0) + 1;
+  }
+  const garakDetected: Record<string, number> = {};
+  for (const lane of LANES) {
+    garakDetected[lane] = garakIds.filter((id) => (reference[lane].hits.get(id) ?? []).length > 0).length;
+  }
+  return {
+    method:
+      `rule_text: every string in each rule's parsed YAML (test cases, patterns, descriptions) compared with every ` +
+      `sample after folding whitespace and typographic quotes and lower-casing; a rule overlaps a sample when they ` +
+      `share a run of ${SHINGLE_CHARS} characters. garak_full: for each vendor attack sample, the prompt of ` +
+      `data/test-corpora/garak-full/*.json holding the largest share of the sample's distinct ${SHINGLE_CHARS}-character ` +
+      'folded runs; listed when that share is at least 0.5 (contained = the whole sample occurs in the prompt; ' +
+      'shared-template = a jailbreak template shared with the payload slot filled differently).',
+    rule_text: {
+      rules_overlapping: rules.length,
+      rules_overlapping_not_naming_a_vendor: surviving.length,
+      attack_samples_overlapped: attacksIn(rules).length,
+      attack_samples_overlapped_by_rules_not_naming_a_vendor: attacksIn(surviving).length,
+      reference_ablation_detections_by_an_overlapping_rule: Object.fromEntries(
+        LANES.map((ln) => [ln, { count: viaOverlap[ln]!.length, sample_ids: viaOverlap[ln] }]),
+      ),
+      rules,
+    },
+    garak_full: {
+      attack_samples_found: garakIds.length,
+      by_vendor: garakByVendor,
+      by_file: Object.fromEntries(
+        [...new Set(garak.map((g) => g.file))].sort().map((f) => [f, garak.filter((g) => g.file === f).length]),
+      ),
+      reference_ablation_detections_among_them: garakDetected,
+      occurrences: garak,
+    },
+  };
+}
+
 // ------------------------------------------------------------------ main
 
 const pct = (x: number | null): string => (x === null ? 'n/a' : `${(x * 100).toFixed(1)}%`);
@@ -299,16 +441,28 @@ async function main(): Promise<void> {
   const laneRuleCount = {} as Record<Lane, number>;
   let huntRules: readonly ATRRule[] = [];
   for (const lane of LANES) {
-    const engine = new ATREngine({ rulesDir: RULES_DIR, lane });
-    const loaded = await engine.loadRules();
-    if (loaded === 0) throw new Error(`${lane}: no rules loaded`);
-    const rules = engine.getRules();
-    if (lane === 'hunt') huntRules = rules;
-    laneRuleCount[lane] = rulesInLane(rules, lane);
-    if (engine.getLane() !== lane) throw new Error(`engine is in the ${engine.getLane()} lane, not ${lane}`);
-    laneRuleIds[lane] = new Set(rules.filter((r) => rulesInLane([r], lane) === 1).map((r) => r.id));
-    laneHits[lane] = new Map(samples.map((s) => [s.id, matchedRuleIds(engine, s)] as const));
+    const run = await runLane(RULES_DIR, lane, samples);
+    if (lane === 'hunt') huntRules = run.rules;
+    laneRuleCount[lane] = run.ruleCount;
+    laneRuleIds[lane] = run.ruleIds;
+    laneHits[lane] = run.hits;
   }
+
+  const namingIds = rulesNaming(RULES_DIR, VENDOR_NAMING_PATTERN);
+  const reference = await ablation(
+    namingIds,
+    `every rule whose YAML text matches ${VENDOR_NAMING_PATTERN} (promptfoo, llm-guard, NeMo / NeMo Guardrails, ` +
+      'the vendor-corpus-import author tag)',
+    samples,
+  );
+  const overlapReport = overlaps(samples, namingIds, laneRuleIds, reference.runs);
+  const sharingIds = overlapReport.rule_text.rules.map((r) => r.rule_id);
+  const stricter = await ablation(
+    [...new Set([...namingIds, ...sharingIds])].sort(),
+    `the rules removed by ${ABLATION_REFERENCE}, and every rule whose YAML shares a ${SHINGLE_CHARS}-character ` +
+      'run with a vendor sample (breakdown.overlaps.rule_text)',
+    samples,
+  );
 
   const lanes: Record<string, unknown> = {};
   for (const lane of LANES) lanes[lane] = { rules_in_lane: laneRuleCount[lane], ...laneReport(samples, laneHits[lane]) };
@@ -352,6 +506,20 @@ async function main(): Promise<void> {
         `${x.own_true_positives_cut_or_edited_from_vendor_cases} cut/edited from one, of ${x.own_true_positives}; lanes ${x.loaded_in_lanes.join(',')}`,
     );
   }
+  for (const [name, a] of [[ABLATION_REFERENCE, reference.record], ['without_rules_naming_or_sharing_text', stricter.record]] as const) {
+    console.log(`  ${name}: ${a.removed_rule_ids.length} rules removed`);
+    for (const lane of LANES) {
+      const x = a.lanes[lane]!;
+      const per = Object.entries(x.by_vendor).map(([v, t]) => `${v} ${t.detected}/${t.attacks}`).join(', ');
+      console.log(`      ${lane.padEnd(7)} ${x.detected}/${x.attacks} = ${pct(x.recall)}  (${per})  benign flagged ${x.benign_flagged}/${x.benign}`);
+    }
+  }
+  const rt = overlapReport.rule_text;
+  console.log(
+    `  overlaps: ${rt.rules_overlapping} rules share ${SHINGLE_CHARS} chars with a sample ` +
+      `(${rt.rules_overlapping_not_naming_a_vendor} do not name a vendor; ${rt.attack_samples_overlapped_by_rules_not_naming_a_vendor} attack samples); ` +
+      `${overlapReport.garak_full.attack_samples_found} vendor attack samples occur in garak-full ${JSON.stringify(overlapReport.garak_full.by_vendor)}`,
+  );
   if (DRY_RUN) return;
 
   const { measurementPath } = writeMeasurement(
@@ -388,6 +556,28 @@ async function main(): Promise<void> {
           'role=input: src/corpus-event.ts promptChannelShapes (llm_input + tool_response); role=output: one llm_output event ' +
           '(agent_output). Detected = at least one rule match on at least one event. Same predicate for attacks, benign and every lane.',
         lanes,
+        in_sample_ablation: {
+          note:
+            'Ablation reference, not an out-of-sample result. Rules whose YAML names promptfoo, llm-guard or NeMo ' +
+            `Guardrails, or carries the vendor-corpus-import author tag, were written from these suites. ${ABLATION_REFERENCE} ` +
+            're-measures every lane without them; it is the figure to cite beside the headline. It approximates an ' +
+            'out-of-sample figure without guaranteeing one: rules that do not name a vendor can still carry vendor text ' +
+            '(breakdown.overlaps.rule_text), and some vendor samples also occur in garak-full, a corpus other rules were ' +
+            'mined from (breakdown.overlaps.garak_full). without_rules_naming_or_sharing_text also removes every rule ' +
+            `whose YAML shares a ${SHINGLE_CHARS}-character run with a vendor sample.`,
+          reference: ABLATION_REFERENCE,
+          [ABLATION_REFERENCE]: reference.record,
+          without_rules_naming_or_sharing_text: stricter.record,
+        },
+        overlaps: overlapReport,
+        precision_not_citable: {
+          reason:
+            'The vendors ship 20 benign test cases (llm-guard 16, NeMo Guardrails 4, promptfoo none). That is too few ' +
+            'for a precision or false-positive-rate claim: metrics.precision and metrics.fp_rate are the bare ratios ' +
+            'the schema requires, and data/stats.json projects them as null. Cite the counts instead.',
+          benign_samples: hunt.benign,
+          flagged_by_lane: Object.fromEntries(LANES.map((ln) => [ln, tally(samples, laneHits[ln]).benign_flagged])),
+        },
         vendor_import_rules: validation.rules,
         legacy_2026_05_12_corpora_provenance: validation.legacy_summary,
       },
@@ -395,10 +585,12 @@ async function main(): Promise<void> {
         'Vendor guardrail test suites (protectai/llm-guard, NVIDIA-NeMo/Guardrails, promptfoo/promptfoo) extracted ' +
         'deterministically from pinned commits; see manifest.json. metrics/confusion are the hunt lane over all ' +
         `${samples.length} samples; fp_rate and precision use only the ${hunt.benign} benign test cases the vendors ` +
-        'ship (llm-guard and NeMo; promptfoo ships none) and are too few to support a precision claim. ' +
-        'breakdown.lanes carries hunt, alert and enforce per vendor and per category.',
+        'ship (llm-guard and NeMo; promptfoo ships none) and are too few to support a precision claim ' +
+        '(breakdown.precision_not_citable; data/stats.json carries null). breakdown.lanes carries hunt, alert and ' +
+        `enforce per vendor and per category. breakdown.in_sample_ablation.${ABLATION_REFERENCE} is the ablation ` +
+        'reference to cite beside the headline; breakdown.overlaps states how far even that is from out-of-sample.',
     },
-    { force: false },
+    { force: FORCE },
   );
   console.log(`Measurement: ${measurementPath}`);
 }

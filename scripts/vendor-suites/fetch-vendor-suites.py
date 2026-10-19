@@ -6,12 +6,15 @@ Reads  data/test-corpora/vendor-guardrail-suites/sources.json
 Writes data/test-corpora/vendor-guardrail-suites/samples.jsonl   (one sample per line, sorted, deduplicated)
        data/test-corpora/vendor-guardrail-suites/manifest.json   (repo + commit + path + line for every sample,
                                                                   counts, and the sha256 of samples.jsonl)
+       data/test-corpora/vendor-guardrail-suites/LICENSES/       (each vendor's license file, verbatim from its
+                                                                  pinned commits; sha256 in manifest.json)
 
 Nothing in samples.jsonl is typed by hand: every text is read with `git show <commit>:<path>` from a
 depth-1 fetch of the pinned commit and selected by the deterministic selector named in sources.json.
 
   python3 scripts/vendor-suites/fetch-vendor-suites.py            # fetch + write
   python3 scripts/vendor-suites/fetch-vendor-suites.py --check    # fetch + compare with the committed files, exit 1 on drift
+                                                                   # (samples.jsonl, manifest digests, LICENSES/ copies)
 
 Needs: python3 >= 3.9, git, network access to github.com. Cache: $VENDOR_SUITES_CACHE or ./.cache/vendor-suites.
 """
@@ -35,6 +38,7 @@ CORPUS_DIR = REPO_ROOT / "data" / "test-corpora" / "vendor-guardrail-suites"
 SOURCES = CORPUS_DIR / "sources.json"
 SAMPLES = CORPUS_DIR / "samples.jsonl"
 MANIFEST = CORPUS_DIR / "manifest.json"
+LICENSES_DIR = CORPUS_DIR / "LICENSES"
 CACHE = Path(os.environ.get("VENDOR_SUITES_CACHE", REPO_ROOT / ".cache" / "vendor-suites"))
 
 
@@ -67,11 +71,21 @@ def ensure_commit(repo_url: str, commit: str) -> Path:
     return path
 
 
-def show(repo: Path, commit: str, path: str) -> str | None:
+def show_bytes(repo: Path, commit: str, path: str) -> bytes | None:
     res = subprocess.run(["git", "show", f"{commit}:{path}"], cwd=repo, capture_output=True)
     if res.returncode != 0:
         return None
-    return res.stdout.decode("utf-8")
+    return res.stdout
+
+
+def show(repo: Path, commit: str, path: str) -> str | None:
+    raw = show_bytes(repo, commit, path)
+    return None if raw is None else raw.decode("utf-8")
+
+
+def license_copy_name(vendor: str, license_file: str) -> str:
+    """File name of a vendor's license copy under LICENSES/ (one per vendor: identical across its pins, or the build fails)."""
+    return f"{vendor}.{license_file}"
 
 
 # --------------------------------------------------------------------- extractors
@@ -237,18 +251,27 @@ def sha(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def build() -> tuple[str, dict]:
+def build() -> tuple[str, dict, dict[str, bytes]]:
     sources = json.loads(SOURCES.read_text())
     merged: dict[str, dict] = {}       # key: sha256(text)
     occurrences = 0
     missing_paths = []
     license_check = []
+    license_copies: dict[str, bytes] = {}   # LICENSES/<name> -> verbatim bytes at the pinned commits
     for v in sources["vendors"]:
         for pin in v["pins"]:
             repo = ensure_commit(v["repo"], pin["commit"])
-            lic = show(repo, pin["commit"], v["license_file"]) or ""
+            raw = show_bytes(repo, pin["commit"], v["license_file"])
+            if raw is None:
+                raise SystemExit(f"{v['vendor']}@{pin['commit']}: {v['license_file']} not found")
+            lic = raw.decode("utf-8")
+            copy = license_copy_name(v["vendor"], v["license_file"])
+            if copy in license_copies and license_copies[copy] != raw:
+                raise SystemExit(f"{v['vendor']}: {v['license_file']} differs between pins; keep one copy per pin")
+            license_copies[copy] = raw
             license_check.append({"vendor": v["vendor"], "commit": pin["commit"], "license_file": v["license_file"],
                                   "declared": v["license"], "license_file_sha256": sha(lic),
+                                  "copy": f"data/test-corpora/vendor-guardrail-suites/LICENSES/{copy}",
                                   "first_line": lic.strip().splitlines()[0] if lic.strip() else None})
             for sel in v["selectors"]:
                 src = show(repo, pin["commit"], sel["path"])
@@ -308,24 +331,57 @@ def build() -> tuple[str, dict]:
         "cross_vendor_duplicates": [r["id"] for r in samples if len(r["vendors"]) > 1],
         "selector_paths_absent_at_pin": missing_paths,
         "licenses": license_check,
+        "redistribution": "Each sample is the vendor's text, redistributed under the license in LICENSES/ that "
+                          "its repository carried at the pinned commit. Strings the vendor did not attribute to "
+                          "a third party are redistributed under that repository license, with no further claim "
+                          "about their origin.",
         "sources": sources["vendors"],
         "inclusion_policy": sources["inclusion_policy"],
         "provenance": {r["id"]: r["provenance"] for r in samples},
     }
-    return lines, manifest
+    return lines, manifest, license_copies
+
+
+def license_problems(manifest: dict, copies: dict[str, bytes], committed: dict | None) -> list[str]:
+    """Every way the committed LICENSES/ copies or the manifest's license digests disagree with upstream."""
+    problems = []
+    for name, raw in sorted(copies.items()):
+        path = LICENSES_DIR / name
+        if not path.exists():
+            problems.append(f"LICENSES/{name} missing")
+        elif path.read_bytes() != raw:
+            problems.append(f"LICENSES/{name} is not the upstream file (sha256 {hashlib.sha256(path.read_bytes()).hexdigest()})")
+    for entry in manifest["licenses"]:
+        copy = REPO_ROOT / entry["copy"]
+        if copy.exists() and hashlib.sha256(copy.read_bytes()).hexdigest() != entry["license_file_sha256"]:
+            problems.append(f"{entry['copy']} sha256 != license_file_sha256 for {entry['vendor']}@{entry['commit'][:12]}")
+    extra = sorted(p.name for p in LICENSES_DIR.glob("*")) if LICENSES_DIR.exists() else []
+    problems += [f"LICENSES/{n} is not a vendor license this corpus uses" for n in extra if n not in copies]
+    if committed is not None and committed.get("licenses") != manifest["licenses"]:
+        problems.append("manifest.json licenses[] differs from upstream (commit, file or sha256)")
+    return problems
 
 
 def main() -> int:
     check = "--check" in sys.argv
-    lines, manifest = build()
+    lines, manifest, license_copies = build()
     text_manifest = json.dumps(manifest, indent=2, ensure_ascii=False) + "\n"
     if check:
+        committed = json.loads(MANIFEST.read_text()) if MANIFEST.exists() else None
         ok = SAMPLES.exists() and SAMPLES.read_text() == lines
-        ok = ok and MANIFEST.exists() and json.loads(MANIFEST.read_text())["samples_sha256"] == manifest["samples_sha256"]
+        ok = ok and committed is not None and committed["samples_sha256"] == manifest["samples_sha256"]
         print(f"samples sha256 {manifest['samples_sha256']} — {'MATCH' if ok else 'DRIFT'}")
-        return 0 if ok else 1
+        lic = license_problems(manifest, license_copies, committed)
+        for p in lic:
+            print(f"license: {p}")
+        if not lic:
+            print(f"licenses: {len(license_copies)} copies in LICENSES/ match the pinned upstream files")
+        return 0 if ok and not lic else 1
     SAMPLES.write_text(lines)
     MANIFEST.write_text(text_manifest)
+    LICENSES_DIR.mkdir(exist_ok=True)
+    for name, raw in license_copies.items():
+        (LICENSES_DIR / name).write_bytes(raw)
     print(f"{manifest['samples']} samples ({manifest['attacks']} attack / {manifest['benign']} benign) "
           f"from {manifest['occurrences_extracted']} extracted occurrences")
     print(f"attacks by vendor: {manifest['attacks_by_vendor']}  benign by vendor: {manifest['benign_by_vendor']}")
