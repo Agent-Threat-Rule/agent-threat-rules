@@ -4,7 +4,7 @@ Loads detection rules from the Agent Threat Rules (ATR) corpus
 (github.com/Agent-Threat-Rule/agent-threat-rules) and exposes them
 as a RAMPART evaluator that asserts on rule violations.
 
-ATR is an MIT-licensed open detection corpus (425+ rules across 10
+ATR is an MIT-licensed open detection corpus (rules across 10
 categories) for AI agent threats. It has been merged into public
 repositories at Cisco AI Defense, MISP CIRCL, Microsoft Agent Governance
 Toolkit (example directories), and others.
