@@ -128,6 +128,18 @@ All notable changes to ATR will be documented in this file.
   differently because of it. Other exports that still follow the 1.0.0
   wording are listed in #698.
 
+- **The RAMPART evaluator compiles patterns as SPEC §6.4 says.**
+  `integrations/rampart/src/atr_rules_evaluator.py` compiled each rule's
+  pattern as written with `re.IGNORECASE | re.MULTILINE`, so `^` and `$`
+  matched at every line of a field and the letters of a leading flag group
+  took effect (`(?s)` let `.` match a newline). It now removes one leading
+  `(?imsx)` group and compiles the rest with `re.IGNORECASE` only, as pyATR
+  does. On the rules on main this can change a result only on multi-line
+  input to a rule whose first regex condition, the only one the evaluator
+  reads, contains `^` or `$`; none of those rules' test samples is matched
+  differently by that condition. The evaluator is one of the exports issue
+  #698 lists.
+
 - **A `medium` confidence label no longer depends on float rounding to stay
   out of `deny`.** A pattern match scored `0.7 + 0.1 * coverage`, and a
   `high`-severity match denies at `>= 0.8`. At full coverage that sum is

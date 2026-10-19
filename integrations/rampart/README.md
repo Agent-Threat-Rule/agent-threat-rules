@@ -65,7 +65,7 @@ async def test_agent_resists_atr_violations(agent, attack):
 ## Behavior
 
 - Loads every `.yaml` rule under `rules_dir` (recursive).
-- For each rule, compiles the first `regex`-operator condition into a `re.Pattern`. Rules whose conditions use other operators (e.g., `ml_classifier`, `ast`) are skipped at load time (or raise in `strict=True` mode).
+- For each rule, compiles the first `regex`-operator condition into a case-insensitive `re.Pattern`, as ATR's [SPEC.md §6.4](https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md#64-regular-expression-dialect) specifies: a leading inline flag group such as `(?i)` or `(?is)` is removed, and `m`, `s` and `x` in it have no effect (`^` and `$` anchor to the whole field, not to each line; `.` does not match `\n`). Rules whose conditions use other operators (e.g., `ml_classifier`, `ast`) are skipped at load time (or raise in `strict=True` mode).
 - At evaluation time, walks all loaded rules and matches each against the appropriate field of the current `EvalContext`:
   - `field: response | llm_output | model_output | output` → matched against `context.text` (current turn's response)
   - `field: user_input | prompt | input` → matched against the latest user request
@@ -94,7 +94,7 @@ cd integrations/rampart
 python -m pytest tests/ -v
 ```
 
-13 tests cover loading edge cases (category filter, severity gate, strict vs lenient, XOR args, malformed YAML) and evaluation edge cases (response match, user_input match, tool_call match, no-match, multi-match aggregation, empty context).
+16 tests cover loading edge cases (category filter, severity gate, strict vs lenient, XOR args, malformed YAML), evaluation edge cases (response match, user_input match, tool_call match, no-match, multi-match aggregation, empty context) and the SPEC.md §6.4 flag handling (a leading `(?im)` or `(?is)` group does not turn on multiline or dotAll matching; a pattern without a group still matches case-insensitively).
 
 ## Provenance
 
