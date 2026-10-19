@@ -117,6 +117,26 @@ All notable changes to ATR will be documented in this file.
   (`e-2026-10-16-recall-lanes`) records the change on the site.
 - `sync-stats.ts` now fails when CITATION.cff has no garak sentence to
   rewrite, instead of leaving an old figure in place.
+- **`scripts/check-rules-safety.ts` checks that a modified rule still matches
+  its own true positives, and checks renamed rules.** A new rule's true
+  positives had to match; a modified rule only had to add no benign false
+  positive, and a rule that matches nothing adds none. `npm run
+  gate:generalization` covers pattern rules only, so a semantic rule whose
+  `fallback_method` was set to `none` passed every check. The new own-TP check
+  runs each true positive on both paths `atr test` tries, replaying every case
+  to the changed rule as the event the base rule would receive: a case the
+  base rule matched on a path (`evaluate()`, `scanSkill()`) must still match
+  there, one the change adds must match, and the changed rule must still match
+  one of the cases the base rule matched. That also catches re-routing a rule
+  away from its cases. A rule of a type the engine withholds from typed events
+  (`WITHHELD_SOURCE_TYPES`), which `atr test` reports as unevaluable, is
+  skipped while it stays that type. A renamed rule file was on neither the new
+  nor the modified list and skipped both checks; it is now compared with the
+  file it was at the base, and a changed file whose rule id differs is checked
+  as a new rule. `npm run validate` also checks a semantic rule's
+  `fallback_method` (`pattern` or `none`, compared exactly, as the engine
+  does), its `threshold` (a number from 0 to 1), and that a pattern fallback
+  has a condition to match.
 - **README §8 discloses that the `garak` and `garak-full` figures are partly
   closed-book.** A replay without the rules whose own YAML shows they were
   written from the in-the-wild corpus is given in the new `[^garakcorpus]`
