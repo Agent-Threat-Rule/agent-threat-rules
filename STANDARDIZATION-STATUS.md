@@ -28,7 +28,7 @@ of those interfaces have changed**. Continue as before.
 | **Rule corpus** | `rules/*` (777 effective rules, 784 files) | **STABLE — IN PRODUCTION** | Unchanged. Continues to be the canonical source. |
 | **Rule format** | `spec/atr-schema.yaml` | **STABLE — IN PRODUCTION** | Unchanged. Rule YAML files still parse against this. |
 | **TS production engine** | `src/`, npm `agent-threat-rules` v2.1.3 | **STABLE — IN PRODUCTION** | Unchanged. No API breakage. |
-| **Existing ecosystem integrations** | Microsoft AGT, Cisco AI Defense, MISP CIRCL, OWASP A-S-R-H, precize, Sage, OpenHands, garak (in review) | **UNAFFECTED** | All continue to work without modification. |
+| **Existing ecosystem integrations** | Microsoft AGT, Cisco AI Defense, MISP CIRCL, OWASP A-S-R-H, precize, Sage, OpenHands | **UNAFFECTED** | All continue to work without modification. |
 | **Existing governance** | `BDFL-charter.md`, `GOVERNANCE.md` v1.1 | **STABLE — CURRENT OPERATING MODEL** | Still the governance in effect. v2.0 charter is proposed but not ratified. |
 | **Existing threat model** | `THREAT-MODEL.md` | **STABLE — CURRENT** | Operational threat model (what ATR rules detect). Unchanged. |
 | **New governance proposal** | `governance/CHARTER.md` v2.0 | **PROPOSED — NOT RATIFIED** | A proposal for community comment. The 9-seat TSC does NOT yet exist. No seats filled. No elections held. |
@@ -100,7 +100,7 @@ community comment window.
 ### If you maintain an ecosystem integration of ATR
 
 **Microsoft AGT, Cisco AI Defense, MISP CIRCL, OWASP A-S-R-H, precize,
-Sage, OpenHands, garak (in review), and others:**
+Sage, OpenHands, and others:**
 
 - Your integration continues to work. Do nothing.
 - If you want to weigh in on the proposed governance, see

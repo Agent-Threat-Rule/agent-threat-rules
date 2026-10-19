@@ -62,6 +62,7 @@ import {
   type RemeasureOptions,
 } from "../scripts/remeasure-benign-fp.js";
 import { parseAttributionReport, type AttributedRule } from "../scripts/lib/fp-attribution.js";
+import { readRules } from "../scripts/gate-action-eligibility.js";
 
 const EVIDENCE = "data/benign-fp-measurement.json";
 const ARXIV = "data/benign-corpus-extended/arxiv.jsonl";
@@ -81,6 +82,10 @@ const R3 = "ATR-2026-91003";
 const R4 = "ATR-2026-91004";
 // R6 is deleted at head: a full run would not measure it, so neither may the delta.
 const R6 = "ATR-2026-91006";
+// R7 fires on "zebracorn" like R1 but is a draft; R8 has maturity deprecated. The
+// engine evaluates neither, so a full run records neither, and nor may the delta.
+const R7 = "ATR-2026-91007";
+const R8 = "ATR-2026-91008";
 
 const GIT_ENV = {
   ...process.env,
@@ -494,6 +499,81 @@ describe("an unchanged corpus re-measures only what is stale", () => {
     const report = parseAttributionReport(readFileSync(fx.report, "utf-8"));
     expect(report.added_sample_count).toBe(0);
     expect(report.rules).toEqual([]);
+  });
+});
+
+describe("a rule the engine does not evaluate", () => {
+  const draft = (id: string, pattern: string): string =>
+    rule(id, pattern).replace("status: experimental", "status: draft");
+
+  it("gets no record on either path, and the delta still equals the full measurement", async () => {
+    const fx = await baseFixture();
+    put(fx.root, `rules/c/${R7}.yaml`, draft(R7, "zebracorn"));
+    put(fx.root, `rules/c/${R8}.yaml`, rule(R8, "zebracorn", "deprecated"));
+    harvest(fx);
+    expect(await runRemeasure(options(fx), defaultRemeasureDeps(fx.root))).toBe(EXIT_OK);
+    const fullOut = join(fx.scratch, "full.json");
+    await measureFull(fx, fullOut);
+    const delta = readFileSync(fx.evidence, "utf-8");
+    expect(comparable(delta)).toBe(comparable(readFileSync(fullOut, "utf-8"), digestOf(fx.root)));
+    expect(Object.keys((JSON.parse(delta) as { rules: object }).rules)).toEqual([R1, R2, R3, R4]);
+  });
+
+  it("is measured in full once revived, not credited with the 0 an older measurement wrote for it", async () => {
+    const fx = await baseFixture();
+    put(fx.root, `rules/c/${R7}.yaml`, draft(R7, "zebracorn"));
+    put(fx.root, `rules/c/${R8}.yaml`, rule(R8, "zebracorn", "deprecated"));
+    git(fx.root, "add", "-A");
+    git(fx.root, "commit", "--quiet", "-m", "two inert rules");
+    // What gate-promotion-fp.ts wrote for such rules before it asked the engine:
+    // a 0, under the fingerprint the action gate compares against.
+    const prints = new Map(readRules(join(fx.root, "rules")).map((r) => [r.id, r.fingerprint]));
+    const zero = (id: string, maturity: string): Record<string, unknown> => ({
+      fp_count: 0,
+      maturity,
+      detection_fingerprint: prints.get(id),
+      partial_measurement: false,
+      skill_path_unmeasured: false,
+    });
+    const doc = JSON.parse(readFileSync(fx.evidence, "utf-8")) as { rules: Record<string, unknown> };
+    const rules = Object.fromEntries(
+      Object.entries({ ...doc.rules, [R7]: zero(R7, "test"), [R8]: zero(R8, "deprecated") }).sort(([a], [b]) =>
+        a.localeCompare(b),
+      ),
+    );
+    writeFileSync(fx.evidence, `${JSON.stringify({ ...doc, rules }, null, 2)}\n`);
+    git(fx.root, "commit", "--quiet", "-am", "evidence as the older measurement wrote it");
+    // Revived in one line: same detection, so the same fingerprint as the 0 above.
+    put(fx.root, `rules/c/${R7}.yaml`, rule(R7, "zebracorn"));
+    harvest(fx);
+
+    expect(await runRemeasure(options(fx), defaultRemeasureDeps(fx.root))).toBe(EXIT_OK);
+    const fullOut = join(fx.scratch, "full.json");
+    await measureFull(fx, fullOut);
+    const delta = readFileSync(fx.evidence, "utf-8");
+    expect(comparable(delta)).toBe(comparable(readFileSync(fullOut, "utf-8"), digestOf(fx.root)));
+    const out = (JSON.parse(delta) as { rules: Record<string, { fp_count: number }> }).rules;
+    // R1's count: 2 on the base corpus, 5 on the added samples. Not the carried 0 plus 5.
+    expect(out[R7]?.fp_count).toBe(7);
+    expect(out[R8]).toBeUndefined();
+    const report = parseAttributionReport(readFileSync(fx.report, "utf-8"));
+    expect(report.measured_in_full).toContainEqual({ id: R7, reason: "not-evaluated-at-base" });
+    // The 0 was never a count, so the report does not show it as the one before.
+    expect(report.rules.find((r) => r.id === R7)).toMatchObject({ measured: "full", fp_count_before: null });
+  });
+
+  it("drops the record of a rule retired at head, as the full measurement does", async () => {
+    const fx = await baseFixture();
+    const before = JSON.parse(readFileSync(fx.evidence, "utf-8")) as { rules: Record<string, unknown> };
+    expect(Object.keys(before.rules)).toContain(R1);
+    put(fx.root, `rules/a/${R1}.yaml`, draft(R1, "zebracorn"));
+    harvest(fx);
+    expect(await runRemeasure(options(fx), defaultRemeasureDeps(fx.root))).toBe(EXIT_OK);
+    const fullOut = join(fx.scratch, "full.json");
+    await measureFull(fx, fullOut);
+    const delta = readFileSync(fx.evidence, "utf-8");
+    expect(comparable(delta)).toBe(comparable(readFileSync(fullOut, "utf-8"), digestOf(fx.root)));
+    expect(Object.keys((JSON.parse(delta) as { rules: object }).rules)).toEqual([R2, R3, R4]);
   });
 });
 

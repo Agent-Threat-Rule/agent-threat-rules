@@ -9,7 +9,8 @@
 ## The 6 pre-merge checks
 
 `scripts/check-rules-safety.ts` runs all six on every PR that touches
-`rules/`. Auto-merge requires all six green. Any failure → label
+`rules/`. A maintainer merges only when all six are green; nothing
+auto-merges (the repository has auto-merge turned off). Any failure → label
 `needs-human-review` and the PR sits in the maintainer queue.
 
 | #   | Check                  | What it catches                                                                                                                                                                                                                                                                             |

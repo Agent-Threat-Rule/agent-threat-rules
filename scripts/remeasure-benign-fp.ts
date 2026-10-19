@@ -78,7 +78,7 @@ import { ATREngine } from "../src/engine.js";
 import { detectionFingerprint, MEASUREMENT_CORPORA } from "../src/quality/action-eligibility.js";
 import { matchedRuleIds } from "./lib/corpus-event.js";
 import { loadCorpusTexts, type CorpusRecord } from "./lib/benign-corpus.js";
-import { gitRuleFiles, ruleIdOf, runGate, scopedRulesDir } from "./gate-promotion-fp.js";
+import { gitRuleFiles, ruleIdOf, runGate, scopedRulesDir, unmeasuredTargets } from "./gate-promotion-fp.js";
 import {
   ATTRIBUTION_SCHEMA,
   EXCERPT_CHARS,
@@ -191,7 +191,12 @@ const sum = (xs: Iterable<number>): number => [...xs].reduce((a, b) => a + b, 0)
 // ---------------------------------------------------------------------------
 
 interface Rules {
-  /** Every rule id, as the measurement's own --ids resolution finds them. */
+  /**
+   * Every rule id the measurement's own --ids resolution finds and the engine
+   * evaluates. A full measurement records nothing for the others (draft or
+   * deprecated status, deprecated maturity, a file that does not load), so
+   * neither does the delta.
+   */
   readonly ids: readonly string[];
   /** The engine runGate would build for all of them, for fingerprints and attribution. */
   readonly engine: ATREngine;
@@ -202,17 +207,27 @@ async function loadRules(deps: RemeasureDeps): Promise<Rules> {
   // Exactly the files runGate's --ids resolution scans when asked for every id: those with an id line.
   const withIds = deps.listRuleFiles().map((f): [string, string | null] => [f, ruleIdOf(deps.repoRoot, f)]);
   const files = withIds.filter(([, id]) => id !== null).map(([f]) => f);
-  const ids = [...new Set(withIds.flatMap(([, id]) => (id === null ? [] : [id])))].sort((a, b) => a.localeCompare(b));
-  if (ids.length === 0) throw new Error(`found no rule ids under ${deps.repoRoot}/rules; refusing to write evidence for no rules`);
+  const all = [...new Set(withIds.flatMap(([, id]) => (id === null ? [] : [id])))].sort((a, b) => a.localeCompare(b));
+  if (all.length === 0) throw new Error(`found no rule ids under ${deps.repoRoot}/rules; refusing to write evidence for no rules`);
   const dir = scopedRulesDir(deps.repoRoot, files);
   try {
     const engine = new ATREngine({ rulesDir: dir });
     await engine.loadRules();
-    const prints = new Map(engine.getRules().map((r): [string, string] => [r.id, detectionFingerprint(r)]));
-    const unloaded = ids.filter((id) => !prints.has(id));
-    if (unloaded.length > 0) {
-      log(`WARNING: the engine loaded no rule for ${unloaded.join(", ")}; a full measurement records them as 0 FP too`);
+    const unmeasured = unmeasuredTargets(engine, new Set(all));
+    if (unmeasured.size > 0) {
+      const named = [...unmeasured].map(([id, why]) => `${id} (${why})`).join(", ");
+      log(`${unmeasured.size} rule(s) get no record, as in a full measurement: ${named}`);
     }
+    const ids = all.filter((id) => !unmeasured.has(id));
+    if (ids.length === 0) {
+      throw new Error(`the engine evaluates none of the ${all.length} rule(s) under ${deps.repoRoot}/rules; refusing to write evidence for no rules`);
+    }
+    const prints = new Map(
+      engine
+        .getRules()
+        .filter((r) => !unmeasured.has(r.id))
+        .map((r): [string, string] => [r.id, detectionFingerprint(r)]),
+    );
     return { ids, engine, prints };
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -224,14 +239,17 @@ interface Split {
   readonly full: readonly FullMeasurement[];
 }
 
-function splitRules(rules: Rules, evidence: BaseEvidence): Split {
+function splitRules(rules: Rules, base: Base): Split {
   const unchanged = new Set<string>();
   const full: FullMeasurement[] = [];
   for (const id of rules.ids) {
-    const rec = evidence.rules.get(id);
+    const rec = base.evidence.rules.get(id);
     const print = rules.prints.get(id);
     if (rec === undefined) full.push({ id, reason: "absent-from-base-evidence" });
-    else if (print === undefined) full.push({ id, reason: "not-loadable" });
+    // A record for a rule the engine skipped at the base is a 0 nothing measured
+    // (an older gate-promotion-fp.ts wrote one). Extending it would hand a
+    // revived rule that 0 plus whatever the new samples add.
+    else if (base.inertRuleIds.has(id)) full.push({ id, reason: "not-evaluated-at-base" });
     else if (!isCount(rec.fp_count) || typeof rec.detection_fingerprint !== "string") {
       full.push({ id, reason: "unusable-base-record" });
     } else if (rec.detection_fingerprint !== print) full.push({ id, reason: "detection-changed" });
@@ -415,7 +433,12 @@ function mergeRules(
 function buildReport(
   options: RemeasureOptions,
   base: Base,
-  context: { readonly added: readonly string[]; readonly split: Split; readonly rules: Readonly<Record<string, RuleRecord>> },
+  context: {
+    readonly added: readonly string[];
+    readonly split: Split;
+    readonly rules: Readonly<Record<string, RuleRecord>>;
+    readonly notEvaluatedAtBase: ReadonlySet<string>;
+  },
   attribution: ReadonlyMap<string, ReadonlyMap<string, number>>,
   provenance: ReadonlyMap<string, readonly CorpusRecord[]>,
 ): AttributionReport {
@@ -423,7 +446,8 @@ function buildReport(
     .filter((id) => attribution.has(id))
     .map((id): AttributedRule => {
       const hits = attribution.get(id) ?? new Map<string, number>();
-      const before = base.evidence.rules.get(id)?.fp_count;
+      // A base record for a rule the engine skipped at the base is no count to compare against.
+      const before = context.notEvaluatedAtBase.has(id) ? null : base.evidence.rules.get(id)?.fp_count;
       return {
         id,
         measured: context.split.unchanged.has(id) ? "delta" : "full",
@@ -467,7 +491,7 @@ async function remeasure(options: RemeasureOptions, deps: RemeasureDeps, tmp: st
   const head = readCorpus(deps.repoRoot, "head");
   const added = addedSamples(head, base.corpus);
   const rules = await loadRules(deps);
-  const split = splitRules(rules, base.evidence);
+  const split = splitRules(rules, base);
   log(
     `base ${options.baseRef} (${base.commit.slice(0, 12)}): ${base.evidence.sampleCount} samples, ` +
       `${base.evidence.rules.size} rule records; head: ${head.texts.length} samples, ${added.length} added`,
@@ -495,7 +519,14 @@ async function remeasure(options: RemeasureOptions, deps: RemeasureDeps, tmp: st
   if (digestOf(deps.repoRoot) !== headDigest) throw new Inconsistent("the corpus changed while it was being measured");
   const merged = mergeRules(rules.ids, split, base.evidence, pass1, pass2);
   const doc = { ...pass1.doc, corpus_digest: headDigest, sample_count: sampleCount, rules: merged };
-  const report = buildReport(options, base, { added, split, rules: merged }, attribution, newRecordsByText(head, base.corpus));
+  const notEvaluatedAtBase = new Set(split.full.filter((f) => f.reason === "not-evaluated-at-base").map((f) => f.id));
+  const report = buildReport(
+    options,
+    base,
+    { added, split, rules: merged, notEvaluatedAtBase },
+    attribution,
+    newRecordsByText(head, base.corpus),
+  );
   return { evidence: `${JSON.stringify(doc, null, 2)}\n`, report };
 }
 

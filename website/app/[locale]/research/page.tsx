@@ -1,7 +1,9 @@
 import { Reveal } from "@/components/Reveal";
 import { CountUp } from "@/components/CountUp";
 import { StatsHydrator } from "@/components/StatsHydrator";
-import { loadSiteStats } from "@/lib/stats";
+import { loadSiteStats, type BenchmarkMeasurement } from "@/lib/stats";
+import { PINT_CLOSED_BOOK, count, findBenchmark, measuredStamp, pct, pctHunt, toFullWidth } from "@/lib/recall";
+import { MetricCell, RecallCell } from "@/components/LaneFigures";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
@@ -19,6 +21,10 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
   const { locale: raw } = await params;
   const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
   const stats = loadSiteStats();
+  const zh = locale === "zh";
+  const pintRun = findBenchmark(stats, "pint");
+  const selfTestRun = findBenchmark(stats, "atr-self-test");
+  const skillRun = findBenchmark(stats, "skill-benchmark");
 
   return (
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
@@ -130,140 +136,58 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
         <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-10">{t(locale, "research.benchmarks")}</h2>
         <p className="text-sm text-stone mb-6">{t(locale, "research.benchmarks.sub")}</p>
       </Reveal>
-      <Reveal delay={0.1}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog mb-8">
-          {/* PINT */}
-          <div className="bg-paper p-6">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">{t(locale, "research.pint")}</div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <div className="font-data text-2xl font-bold text-ink"><CountUp target={stats.pintPrecision} suffix="%" liveKey="pintPrecision" /></div>
-                <div className="text-xs text-stone">{t(locale, "research.precision")}</div>
+      {pintRun && selfTestRun && (
+        <Reveal delay={0.1}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog mb-8">
+            {/* PINT */}
+            <div className="bg-paper p-6">
+              <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">{t(locale, "research.pint")}</div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <MetricCell value={pintRun.precision} label={`${t(locale, "research.precision")} · hunt`} />
+                <RecallCell m={pintRun} label={t(locale, "research.recall")} zh={zh} />
+                <MetricCell value={pintRun.f1} label="F1 · hunt" plain />
               </div>
-              <div>
-                <div className="font-data text-2xl font-bold text-ink"><CountUp target={stats.pintRecall} suffix="%" liveKey="pintRecall" /></div>
-                <div className="text-xs text-stone">{t(locale, "research.recall")}</div>
+              <div className="font-data text-xs text-stone mt-3">
+                {count(pintRun.samples)} {zh ? "個樣本" : "samples"} · {measuredStamp(pintRun, zh)}
               </div>
-              <div>
-                <div className="font-data text-2xl font-bold text-ink"><CountUp target={stats.pintF1} liveKey="pintF1" /></div>
-                <div className="text-xs text-stone">F1</div>
-              </div>
+              <p className="text-xs text-mist mt-2 leading-[1.7]">
+                {zh
+                  ? `這不是 Lakera 官方 PINT benchmark（該語料為私有、規模約 5 倍）。這是一份 PINT 格式的自建 ${count(pintRun.samples)} 樣本語料，由 deepset/prompt-injections（660）與 Lakera/gandalf_ignore_instructions（190）組成。只有一小部分規則會在這份語料上開火，且單一條規則就佔了大部分偵測——請把它讀成「prompt injection 這個家族」的分數，不是 ATR 的整體覆蓋率。${toFullWidth(PINT_CLOSED_BOOK.zh)}`
+                  : `This is not Lakera's official PINT benchmark — that corpus is private and roughly 5x larger. This is a self-built ${count(pintRun.samples)}-sample corpus in PINT's format, assembled from deepset/prompt-injections (660) and Lakera/gandalf_ignore_instructions (190). Only a small subset of rules fire on it and a single rule accounts for most detections, so read it as a prompt-injection-family score, not as ATR's overall coverage. ${PINT_CLOSED_BOOK.en}`}
+              </p>
             </div>
-            <div className="font-data text-xs text-stone mt-3">{stats.pintSamples} {locale === "zh" ? "個樣本" : "samples"}</div>
-            <p className="text-xs text-mist mt-2 leading-[1.7]">
-              {locale === "zh"
-                ? `這不是 Lakera 官方 PINT benchmark（該語料為私有、規模約 5 倍）。這是一份 PINT 格式的自建 ${stats.pintSamples} 樣本語料，由 deepset/prompt-injections（660）與 Lakera/gandalf_ignore_instructions（190）組成。只有一小部分規則會在這份語料上開火，且單一條規則就佔了大部分偵測——請把它讀成「prompt injection 這個家族」的分數，不是 ATR 的整體覆蓋率。`
-                : `This is not Lakera's official PINT benchmark — that corpus is private and roughly 5x larger. This is a self-built ${stats.pintSamples}-sample corpus in PINT's format, assembled from deepset/prompt-injections (660) and Lakera/gandalf_ignore_instructions (190). Only a small subset of rules fire on it and a single rule accounts for most detections, so read it as a prompt-injection-family score, not as ATR's overall coverage.`}
-            </p>
-          </div>
-          {/* Self-test */}
-          <div className="bg-paper p-6">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">{t(locale, "research.self")}</div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <div className="font-data text-2xl font-bold text-ink"><CountUp target={stats.selfTestPrecision} suffix="%" liveKey="selfTestPrecision" /></div>
-                <div className="text-xs text-stone">Precision</div>
+            {/* Self-test */}
+            <div className="bg-paper p-6">
+              <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">{t(locale, "research.self")}</div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <MetricCell value={selfTestRun.precision} label="Precision · hunt" />
+                <RecallCell m={selfTestRun} label="Recall" zh={zh} />
+                <div>
+                  <div className="font-data text-2xl font-bold text-ink">{count(selfTestRun.samples)}</div>
+                  <div className="text-xs text-stone">{zh ? "樣本數" : "Samples"}</div>
+                </div>
               </div>
-              <div>
-                <div className="font-data text-2xl font-bold text-ink"><CountUp target={stats.selfTestRecall} suffix="%" liveKey="selfTestRecall" /></div>
-                <div className="text-xs text-stone">Recall</div>
-              </div>
-              <div>
-                <div className="font-data text-2xl font-bold text-ink">{stats.selfTestSamples}</div>
-                <div className="text-xs text-stone">{locale === "zh" ? "樣本數" : "Samples"}</div>
-              </div>
+              <div className="font-data text-xs text-stone mt-3">{measuredStamp(selfTestRun, zh)}</div>
             </div>
           </div>
-        </div>
-      </Reveal>
-      <Reveal delay={0.2}>
-        <p className="text-sm text-stone mb-8">
-          {t(locale, "research.gap_note", { precision: String(stats.pintPrecision), recall: String(stats.pintRecall) })}
-        </p>
-      </Reveal>
+        </Reveal>
+      )}
+      {pintRun && (
+        <Reveal delay={0.2}>
+          <p className="text-sm text-stone mb-8">
+            {pintRun.enforce
+              ? t(locale, "research.gap_note", {
+                  precision: pct(pintRun.precision),
+                  recall: pctHunt(pintRun.recall),
+                  enforce: pct(pintRun.enforce.recall),
+                })
+              : t(locale, "research.gap_note_hunt_only", { precision: pct(pintRun.precision), recall: pctHunt(pintRun.recall) })}
+          </p>
+        </Reveal>
+      )}
 
       {/* SKILL.md Benchmark */}
-      <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-10">
-          {locale === "zh" ? "SKILL.md 偵測基準" : "SKILL.md Detection Benchmark"}
-        </h2>
-        <p className="text-sm text-stone mb-6">
-          {locale === "zh"
-            ? "使用 498 個真實世界的 OpenClaw SKILL.md 檔案測試（32 個惡意 + 466 個正常）。Layer A = 明確惡意指令，Layer C = 混淆/隱藏攻擊。"
-            : "Tested against 498 real-world OpenClaw SKILL.md files (32 malicious + 466 benign). Layer A = explicit malicious instructions. Layer C = obfuscated / hidden attacks."}
-        </p>
-      </Reveal>
-      <Reveal delay={0.1}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog mb-8">
-          <div className="bg-paper p-6">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">
-              {locale === "zh" ? "整體表現" : "Overall Performance"}
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <div className="font-data text-2xl font-bold text-ink"><CountUp target={stats.skillBenchRecall} suffix="%" /></div>
-                <div className="text-xs text-stone">Recall</div>
-              </div>
-              <div>
-                <div className="font-data text-2xl font-bold text-ink"><CountUp target={stats.skillBenchPrecision} suffix="%" /></div>
-                <div className="text-xs text-stone">Precision</div>
-              </div>
-              <div>
-                <div className="font-data text-2xl font-bold text-ink"><CountUp target={stats.skillBenchF1} /></div>
-                <div className="text-xs text-stone">F1</div>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-fog">
-              <div>
-                <div className="font-data text-lg font-bold text-green"><CountUp target={stats.skillBenchFpRate} suffix="%" /></div>
-                <div className="text-xs text-stone">{locale === "zh" ? "誤報率" : "False positive rate"}</div>
-              </div>
-              <div>
-                <div className="font-data text-lg font-bold text-ink">{stats.skillBenchSamples}</div>
-                <div className="text-xs text-stone">{locale === "zh" ? "真實樣本" : "Real-world samples"}</div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-paper p-6">
-            {/* SKILL.md benchmark snapshot (v2.0.0, 498 samples): Layer A 24 + Layer C 8 = 32 malicious, both 100% detected. Pinned numbers — re-sync if the benchmark is re-run. */}
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">
-              {locale === "zh" ? "按攻擊層分析" : "By Attack Layer"}
-            </div>
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-baseline justify-between mb-1">
-                  <span className="font-data text-sm font-semibold">Layer A</span>
-                  <span className="font-data text-sm font-bold text-ink">100%</span>
-                </div>
-                <div className="text-xs text-stone">
-                  {locale === "zh" ? "明確惡意指令 — 24/24 全部偵測" : "Explicit malicious instructions — 24/24 detected"}
-                </div>
-                <div className="mt-1.5 h-1.5 bg-fog"><div className="h-full bg-blue" style={{ width: "100%" }} /></div>
-              </div>
-              <div>
-                <div className="flex items-baseline justify-between mb-1">
-                  <span className="font-data text-sm font-semibold">Layer C</span>
-                  <span className="font-data text-sm font-bold text-ink">100%</span>
-                </div>
-                <div className="text-xs text-stone">
-                  {locale === "zh" ? "混淆/隱藏攻擊 — 8/8 全部偵測" : "Obfuscated attacks — 8/8 detected"}
-                </div>
-                <div className="mt-1.5 h-1.5 bg-fog"><div className="h-full bg-blue" style={{ width: "100%" }} /></div>
-              </div>
-              <div>
-                <div className="flex items-baseline justify-between mb-1">
-                  <span className="font-data text-sm font-semibold">{locale === "zh" ? "正常樣本" : "Benign"}</span>
-                  <span className="font-data text-sm font-bold text-green">1 FP</span>
-                </div>
-                <div className="text-xs text-stone">
-                  {locale === "zh" ? "466 個正常 SKILL.md — 1 個誤報（0.20%）" : "466 benign SKILL.md files — 1 false positive (0.20%)"}
-                </div>
-                <div className="mt-1.5 h-1.5 bg-fog"><div className="h-full bg-green" style={{ width: "100%" }} /></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Reveal>
+      {skillRun && <SkillBenchmark run={skillRun} zh={zh} />}
 
       {/* Ecosystem Scan Data */}
       <Reveal>
@@ -369,8 +293,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {locale === "zh"
-                ? `Precision / recall 跑在一份 PINT 格式的 ${stats.pintSamples} 樣本語料上。樣本本身來自外部公開資料集（deepset/prompt-injections、Lakera/gandalf_ignore_instructions），所以不會 overfit 到自家 test cases；但語料是我們自己組的，不是 Lakera 官方 PINT benchmark。另一組 SKILL.md benchmark 從真實 OpenClaw 抓 ${stats.skillBenchSamples} 個檔案，其中惡意樣本透過人工標記後作為 ground truth。`
-                : `Precision / recall runs on a ${stats.pintSamples}-sample corpus in PINT's format. The samples come from external public datasets (deepset/prompt-injections, Lakera/gandalf_ignore_instructions), so they are not overfitted to our own test cases — but the corpus is assembled by us and is not Lakera's official PINT benchmark. A separate SKILL.md benchmark uses ${stats.skillBenchSamples} real-world OpenClaw files, with malicious samples hand-labeled as ground truth.`}
+                ? `Precision / recall 跑在一份 PINT 格式的自建語料上；recall 兩個 lane 都列，precision 只在 hunt lane 量測。樣本本身來自外部公開資料集（deepset/prompt-injections、Lakera/gandalf_ignore_instructions），但之後有幾條 hunt lane 規則是從這份語料漏抓的樣本挖出來的，所以 hunt 數字部分屬於 closed-book；語料是我們自己組的，不是 Lakera 官方 PINT benchmark。另一組內部 SKILL.md benchmark 用的是已標註的檔案，其中一部分惡意樣本是為這個 benchmark 手寫的。`
+                : `Precision / recall runs on a self-built corpus in PINT's format; recall is reported in both lanes, precision in the hunt lane only. The samples come from external public datasets (deepset/prompt-injections, Lakera/gandalf_ignore_instructions), but some hunt-lane rules were later mined from this corpus's own misses, so the hunt figure is partly closed-book; the corpus is assembled by us and is not Lakera's official PINT benchmark. A separate, internal SKILL.md benchmark uses labelled files, part of its malicious set written for the benchmark.`}
             </p>
           </div>
           <div className="border-l-2 border-fog pl-4">
@@ -560,6 +484,131 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
           </a>
         </div>
       </Reveal>
+    </div>
+  );
+}
+
+/** As src/eval/skill-benchmark.ts defines them. */
+const LAYERS: Readonly<Record<string, { en: string; zh: string }>> = {
+  a: { en: "Obvious payloads", zh: "明顯的惡意 payload" },
+  b: { en: "Obfuscated attacks", zh: "混淆攻擊" },
+  c: { en: "Semantic attacks", zh: "語意型攻擊" },
+};
+
+/**
+ * The SKILL.md benchmark, from its measurement file. Every recall names its
+ * lane: hunt detects every attack sample here, and the enforce lane, which
+ * loads only stable rules, detects what the measurement records beside it.
+ */
+function SkillBenchmark({ run, zh }: { run: BenchmarkMeasurement; zh: boolean }) {
+  return (
+    <>
+      <Reveal>
+        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-10">
+          {zh ? "SKILL.md 偵測基準" : "SKILL.md Detection Benchmark"}
+        </h2>
+        <p className="text-sm text-stone mb-6">
+          {skillCorpusLine(run, zh)}
+        </p>
+      </Reveal>
+      <Reveal delay={0.1}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog mb-8">
+          <SkillOverall run={run} zh={zh} />
+          <SkillLayers run={run} zh={zh} />
+        </div>
+      </Reveal>
+    </>
+  );
+}
+
+function SkillOverall({ run, zh }: { run: BenchmarkMeasurement; zh: boolean }) {
+  return (
+    <div className="bg-paper p-6">
+      <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">
+        {zh ? "整體表現" : "Overall Performance"}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <RecallCell m={run} label="Recall" zh={zh} />
+        <MetricCell value={run.precision} label="Precision · hunt" />
+        <MetricCell value={run.f1} label="F1 · hunt" plain />
+      </div>
+      <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-fog">
+        <div>
+          <div className="font-data text-lg font-bold text-green">{pct(run.fp_rate, 2)}</div>
+          <div className="text-xs text-stone">{zh ? "誤報率 · hunt" : "False positive rate · hunt"}</div>
+        </div>
+        <div>
+          <div className="font-data text-lg font-bold text-ink">{count(run.samples)}</div>
+          <div className="text-xs text-stone">{zh ? "已標註樣本" : "Labelled samples"}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SkillLayers({ run, zh }: { run: BenchmarkMeasurement; zh: boolean }) {
+  const layers = Object.entries(run.layers ?? {}).filter(([, l]) => l.total > 0);
+  const fp = run.falsePositives === null ? null : count(run.falsePositives);
+  return (
+    <div className="bg-paper p-6">
+      <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">
+        {zh ? "按攻擊層分析 · hunt lane" : "By Attack Layer · hunt lane"}
+      </div>
+      <div className="space-y-4">
+        {layers.map(([key, l]) => (
+          <LayerBar
+            key={key}
+            name={`Layer ${key.toUpperCase()}`}
+            value={pctHunt(l.detected / l.total)}
+            desc={`${(LAYERS[key] ?? { en: key, zh: key })[zh ? "zh" : "en"]} — ${l.detected}/${l.total} ${zh ? "偵測到" : "detected"}`}
+            width={(l.detected / l.total) * 100}
+          />
+        ))}
+        {run.benign !== null && fp !== null && (
+          <LayerBar
+            name={zh ? "正常樣本" : "Benign"}
+            value={`${fp} FP`}
+            desc={zh
+              ? `${count(run.benign)} 個正常 SKILL.md — ${fp} 個誤報(${pct(run.fp_rate, 2)})`
+              : `${count(run.benign)} benign SKILL.md files — ${fp} false positive${run.falsePositives === 1 ? "" : "s"} (${pct(run.fp_rate, 2)})`}
+            width={100}
+            benign
+          />
+        )}
+      </div>
+      <p className="text-xs text-stone mt-4 leading-[1.6]">{skillEnforceNote(run, zh)}</p>
+    </div>
+  );
+}
+
+/** The corpus line: what the benchmark is, from its measurement; the layer names follow the harness. */
+function skillCorpusLine(run: BenchmarkMeasurement, zh: boolean): string {
+  const split = run.attacks !== null && run.benign !== null
+    ? (zh ? `${count(run.attacks)} 個惡意 + ${count(run.benign)} 個正常；` : `${count(run.attacks)} malicious + ${count(run.benign)} benign; `)
+    : "";
+  const noB = (run.layers?.b?.total ?? 0) === 0;
+  return zh
+    ? `內部、已標註的 SKILL.md 語料：${count(run.samples)} 個檔案（${split}${measuredStamp(run, true, true)}），其中一部分惡意樣本是為這個 benchmark 手寫的。Layer A = 明顯的惡意 payload（curl | bash、base64 執行、reverse shell），Layer C = 語意型攻擊（自然語言指令、社交工程）${noB ? "；這份語料沒有 Layer B（混淆）的樣本" : ""}。`
+    : `An internal, labelled SKILL.md corpus: ${count(run.samples)} files (${split}${measuredStamp(run, false)}), part of its malicious set written for the benchmark. Layer A = obvious payloads (curl | bash, base64 exec, reverse shell). Layer C = semantic attacks (natural-language instructions, social engineering).${noB ? " The corpus has no Layer B (obfuscated) samples." : ""}`;
+}
+
+function skillEnforceNote(run: BenchmarkMeasurement, zh: boolean): string {
+  const e = run.enforce;
+  if (e === null) return zh ? "這次量測沒有記錄 enforce lane 的數字。" : "This measurement records no enforce-lane figure.";
+  return zh
+    ? `enforce lane(只載入 stable 規則,開封鎖時用)在全部 ${count(e.attacks)} 個惡意樣本中偵測到 ${count(e.detected)} 個(${pct(e.recall)});量測沒有記錄逐層的 enforce 數字。`
+    : `The enforce lane (stable rules only, the one to run with blocking on) detects ${count(e.detected)} of the ${count(e.attacks)} malicious samples (${pct(e.recall)}); the measurement records no per-layer enforce split.`;
+}
+
+function LayerBar({ name, value, desc, width, benign = false }: { name: string; value: string; desc: string; width: number; benign?: boolean }) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between mb-1">
+        <span className="font-data text-sm font-semibold">{name}</span>
+        <span className={`font-data text-sm font-bold ${benign ? "text-green" : "text-ink"}`}>{value}</span>
+      </div>
+      <div className="text-xs text-stone">{desc}</div>
+      <div className="mt-1.5 h-1.5 bg-fog"><div className={`h-full ${benign ? "bg-green" : "bg-blue"}`} style={{ width: `${width}%` }} /></div>
     </div>
   );
 }

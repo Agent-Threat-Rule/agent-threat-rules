@@ -19,6 +19,9 @@
  *   the renderer leaves to a human — prose near the table citing a version or
  *   a percentage, stats.json fields it dropped — is listed in the PR body,
  *   which every push rewrites.
+ * - LIMITATIONS.md, the docs that quote the same corpora, and CITATION.cff's
+ *   garak sentence are re-rendered after the table and staged with it, so the
+ *   PR passes eval.yml's checks of them too.
  */
 import { describe, it, expect, afterEach } from "vitest";
 import { readFileSync, symlinkSync } from "node:fs";
@@ -39,12 +42,15 @@ import {
   workflowDoc,
   type Sandbox,
 } from "./workflow-step-harness.js";
+import { DOCUMENTS } from "../scripts/render-recall-citations.js";
 
 const WORKFLOW = resolve(__dirname, "..", ".github", "workflows", "measure-all.yml");
 const JOB = "measure";
 const CARRY = "Carry the rolling PR's measurements";
 const SYNC = "Sync stats.json benchmarks";
 const RENDER = "Render README benchmark table";
+const RECALL = "Render recall citations in Markdown docs";
+const CITATION = "Sync CITATION.cff garak sentence";
 const DETECT = "Detect changes";
 const PUSH = "Push to the rolling branch and open or update its PR";
 const BRANCH = "measure-all/rolling";
@@ -56,6 +62,11 @@ const TODAY = "data/measurements/pint/2026-10-05_pint_atr-4-0-0.json";
 const GARAK_LATEST = "data/measurements/garak-full/latest.json";
 const GARAK_MERGED = "data/measurements/garak-full/2026-08-15_garak-full_atr-3-5-12.json";
 const GARAK_UNMERGED = "data/measurements/garak-full/2026-09-28_garak-full_atr-4-0-0.json";
+
+/** The other files the measure job re-renders and stages; on main they always exist. */
+const RENDERED_ELSEWHERE: Readonly<Record<string, string>> = Object.fromEntries(
+  ["CITATION.cff", ...DOCUMENTS].map((doc) => [doc, `# ${doc}\n`]),
+);
 
 /** A latest.json pointer; writeMeasurement moves it only to a strictly newer measured_at. */
 const pointer = (file: string, measuredAt: string) =>
@@ -72,6 +83,7 @@ function measureSandbox(): Sandbox {
     "data/stats.json": '{ "benchmarks": [] }\n',
     "README.md": "# ATR\n",
     "stats.json": '{ "benchmarks": {} }\n',
+    ...RENDERED_ELSEWHERE,
   });
 }
 
@@ -288,6 +300,7 @@ function renderSandbox(): Sandbox {
         null,
         2,
       ) + "\n",
+    ...RENDERED_ELSEWHERE,
   });
   for (const dir of ["scripts", "node_modules"]) symlinkSync(join(REPO, dir), join(sb.work, dir));
   return sb;
@@ -357,5 +370,29 @@ describe("README benchmark table", () => {
     const again = runStep(sb, runBlock(WORKFLOW, JOB, RENDER));
     expect(again.status, again.stderr).toBe(0);
     expect(git(sb, sb.work, "status", "--porcelain", "--", "README.md", "stats.json")).toBe("");
+  });
+});
+
+describe("recall citations outside README", () => {
+  it("are rendered after the README table, which writes the stats.json they read, and before changes are detected", () => {
+    const names = jobSteps(WORKFLOW, JOB).map((s) => s.name);
+    const at = (n: string) => names.indexOf(n);
+    expect(at(RECALL)).toBeGreaterThan(at(RENDER));
+    expect(at(CITATION)).toBeGreaterThan(at(RENDER));
+    expect(at(DETECT)).toBeGreaterThan(Math.max(at(RECALL), at(CITATION)));
+    expect(runBlock(WORKFLOW, JOB, RECALL)).toMatch(
+      /scripts\/render-recall-citations\.ts --root \. --review-notes "\$RUNNER_TEMP\/benchmark-review\.md"$/m,
+    );
+    expect(runBlock(WORKFLOW, JOB, CITATION)).toMatch(
+      /scripts\/sync-citation-garak\.ts --root \. --review-notes "\$RUNNER_TEMP\/benchmark-review\.md"$/m,
+    );
+  });
+
+  it("stages CITATION.cff and every document render-recall-citations.ts renders", () => {
+    const sb = measureSandbox();
+    for (const doc of Object.keys(RENDERED_ELSEWHERE)) put(sb.work, doc, `# ${doc}\nre-rendered\n`);
+    const detect = runStep(sb, runBlock(WORKFLOW, JOB, DETECT));
+    expect(detect.status, detect.stderr).toBe(0);
+    expect(staged(sb).split("\n").sort()).toEqual(Object.keys(RENDERED_ELSEWHERE).sort());
   });
 });
