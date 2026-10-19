@@ -44,8 +44,8 @@ import type { Lane } from '../quality/rule-contract.js';
 
 const SOURCE_URL = 'https://huggingface.co/datasets/hackaprompt/hackaprompt-dataset';
 const REPRODUCE =
-  "check out the commit that added this measurement file (its rules/ tree is breakdown.provenance.rules_tree_sha, " +
-  "the same as atr_commit's), then: npm ci && npm run eval:hackaprompt " +
+  'git checkout <atr_commit> (the measured tree; its rules/ tree is breakdown.provenance.rules_tree_sha), ' +
+  'then: npm ci && npm run eval:hackaprompt ' +
   '(= python3 scripts/hackaprompt-to-corpus.py, which checks the re-drawn sample against the committed manifest ' +
   'and the parquet file against its pinned sha256 before writing the corpus, && npx tsx src/eval/run-hackaprompt-benchmark.ts)';
 
@@ -194,6 +194,13 @@ async function main(): Promise<void> {
           categories: HACKAPROMPT_OUTCOME_CATEGORY,
         },
         in_sample_ablation: inSample,
+        precision_not_citable: {
+          reason:
+            'HackAPrompt is 100% adversarial: there is no benign population, so precision and FP rate are undefined. ' +
+            'metrics.precision and metrics.fp_rate are the convention values the schema requires, not results; ' +
+            'data/stats.json projects precision, F1 and FP rate as null.',
+          benign_samples: 0,
+        },
         provenance: {
           dataset_id: manifest.dataset_id,
           dataset_revision: manifest.dataset_revision,
