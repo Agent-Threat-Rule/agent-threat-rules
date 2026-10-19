@@ -118,27 +118,28 @@ export class ShadowEvaluator {
 
   /**
    * Get rules ready for promotion.
-   * Criteria: FP rate < maxFPRate AND minimum evaluations reached.
+   * Criteria: at least `minEvaluations` evaluations, at least one match, at
+   * least `minReviewedMatches` matches with recorded feedback including one
+   * confirmed true positive, and an FP rate over the REVIEWED matches of at
+   * most `maxFPRate`. A match nobody reviewed is not evidence of precision,
+   * so a rule with no feedback is never a candidate.
    */
   getPromotionCandidates(
     maxFPRate: number = 0.001,
-    minEvaluations: number = 1000
+    minEvaluations: number = 1000,
+    minReviewedMatches: number = 1,
   ): readonly PromotionCandidate[] {
     const candidates: PromotionCandidate[] = [];
 
     for (const rule of this.rules) {
       const stat = this.stats.get(rule.id);
-      if (!stat || stat.totalEvaluations < minEvaluations) continue;
+      if (!stat || stat.totalEvaluations < minEvaluations || stat.totalMatches === 0) continue;
 
-      const fpRate = stat.totalMatches > 0
-        ? stat.confirmedFalsePositives / stat.totalMatches
-        : 0;
+      const reviewed = stat.confirmedTruePositives + stat.confirmedFalsePositives;
+      if (reviewed < Math.max(1, minReviewedMatches) || stat.confirmedTruePositives === 0) continue;
 
-      // Only promote if:
-      // 1. Has been evaluated enough times
-      // 2. FP rate is below threshold
-      // 3. Has at least some matches (not a dead rule)
-      if (fpRate <= maxFPRate && stat.totalMatches > 0) {
+      const fpRate = stat.confirmedFalsePositives / reviewed;
+      if (fpRate <= maxFPRate) {
         candidates.push({ rule, stats: { ...stat }, fpRate });
       }
     }

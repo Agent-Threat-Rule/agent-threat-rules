@@ -85,6 +85,17 @@ All notable changes to ATR will be documented in this file.
   throwing. Shadow evaluation still differs from `ATREngine` in field
   resolution, operators, `condition: all`, Unicode normalisation and
   `agent_source` routing; those differences are unchanged.
+- **Flywheel promotion needs a reviewed true positive, and promotes a rule
+  once.** `ShadowEvaluator.getPromotionCandidates()` divided confirmed false
+  positives by all matches, so a rule with no recorded feedback had an FP rate
+  of 0 and became a candidate after its first match. Once shadow rules could
+  match (above), `FlywheelManager.promoteReady()` would have handed such rules
+  to `onPromote` with status `stable`, and the same rule again on every call.
+  A rule is now a candidate only after at least `minReviewedMatches` (new
+  `FlywheelConfig` option, default 1) matches with recorded feedback including
+  a confirmed true positive; the FP rate is computed over reviewed matches; and
+  `promoteReady()` hands each rule to `onPromote` once. A promoted rule keeps
+  `maturity: draft`.
 - **`RuleScaffolder` no longer writes a pattern that misses its own example
   payload.** An attack indicator is chosen by a broad test and writes a
   narrower pattern: "Ignore all previous instructions", "please ignore the
