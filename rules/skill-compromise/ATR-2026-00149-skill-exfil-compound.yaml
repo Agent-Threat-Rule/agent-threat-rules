@@ -84,15 +84,15 @@ detection:
       description: SSH directory archive — skills should not archive user SSH keys
     - field: content
       operator: regex
-      value: (?i)(find|ls|cat|strings)\s+[^\n]*(wallet\.dat|seed\.txt|mnemonic|keystore)[^\n]*(\||>|>>|curl|wget|fetch|POST)
+      value: (?i)(find|ls|cat|strings)\s+(?:\S[^\n]*)?(wallet\.dat|seed\.txt|mnemonic|keystore)[^\n]*(\||>|>>|curl|wget|fetch|POST)
       description: Crypto wallet file enumeration and exfiltration
     - field: content
       operator: regex
-      value: (?i)sqlite3\s+[^\n]*(Cookies|Login\s*Data|cookies\.sqlite|places\.sqlite)
+      value: (?i)sqlite3\s+(?:\S[^\n]*)?(Cookies|Login\s*Data|cookies\.sqlite|places\.sqlite)
       description: Browser cookie/credential database access
     - field: content
       operator: regex
-      value: (?i)(?:^|[\n;&|])\s*(?:dig|nslookup|host)\b[^\n]{0,40}?\$[{(][^\n]{0,40}[.][a-z]
+      value: (?i)(?:^|[\n;&|])[^\S\n]*(?:dig|nslookup|host)\b[^\n]{0,40}?\$[{(][^\n]{0,40}[.][a-z]
       description: DNS exfiltration via encoded subdomain queries (shell var embedded in a queried hostname, command-position only)
     - field: content
       operator: regex
@@ -100,7 +100,7 @@ detection:
       description: Cloud instance metadata service access (IMDS credential theft)
     - field: content
       operator: regex
-      value: (?i)cat\s+[^|\n]*\.(env|bashrc|zshrc|npmrc)[^|\n]*\|\s*(curl|wget|nc|python|base64)
+      value: (?i)cat\s+(?:[^\s|][^|\n]*)?\.(env|bashrc|zshrc|npmrc)[^|\n]*\|\s*(curl|wget|nc|python|base64)
       description: Environment file bulk read piped to exfiltration
     - field: content
       operator: regex
@@ -112,11 +112,11 @@ detection:
       description: Multi-file sensitive data collection in single cat command
     - field: content
       operator: regex
-      value: (?i)\[SYSTEM\]\s*[^\n]*(?:previous\s+instructions|new\s+directive|ignore\s+(?:all\s+)?previous|you\s+are\s+now)
+      value: (?i)\[SYSTEM\]\s*(?:\S[^\n]*)?(?:previous\s+instructions|new\s+directive|ignore\s+(?:all\s+)?previous|you\s+are\s+now)
       description: Fake [SYSTEM] block attempting to override instructions
     - field: content
       operator: regex
-      value: (?i)<!--\s*(?![^>]*(?:https?://|!\[|\]\())[A-Za-z0-9+/]{40,}={0,2}\s*-->
+      value: (?i)<!--(?![^>]*(?:https?://|!\[|\]\())\s*[A-Za-z0-9+/]{40,}={0,2}\s*-->
       description: >-
         Base64-encoded hidden instruction in HTML comment — narrowed to require the comment be (essentially)
         JUST the blob. Previously any 40+ char alphanumeric run anywhere inside an HTML comment matched, which

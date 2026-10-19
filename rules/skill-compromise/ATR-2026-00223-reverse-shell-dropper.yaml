@@ -65,11 +65,11 @@ detection:
       description: 'Base64 decode piped to shell execution'
     - field: content
       operator: regex
-      value: 'curl\s+[^\n]*\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}[^|]*\|[^|]*(bash|sh)'
+      value: 'curl\s+(?:\S[^\n]*)?\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}[^|]*\|[^|]*(bash|sh)'
       description: 'Curl from raw IP address piped to shell'
     - field: content
       operator: regex
-      value: '[A-Za-z0-9+/]{50,}=*\s*\|\s*base64\s+-D'
+      value: '[A-Za-z0-9+/]{50}=*\s*\|\s*base64\s+-D'
       description: 'Long base64 encoded payload being decoded'
     - field: content
       operator: regex

@@ -75,11 +75,11 @@ detection:
   conditions:
     - field: tool_response
       operator: regex
-      value: '(?:i\s+am\s+(?:an?\s+)?(?:administrator|admin|sysadmin|root|superuser)\s+testing|when\s+I\s+prefix\s+(?:a\s+statement|(?:it\s+)?with)\s+["\x27]?ECHO[\s:]["\x27]?)\s*,?\s*(?:you\s+should\s+)?(?:respond|reply|echo|output|repeat|return)\s+(?:with\s+)?exactly\s+what\s+follows'
+      value: '(?:i\s+am\s+(?:an?\s+)?(?:administrator|admin|sysadmin|root|superuser)\s+testing|when\s+I\s+prefix\s+(?:a\s+statement|(?:it\s+)?with)\s+["\x27]?ECHO[\s:]["\x27]?)(?:\s*,)?\s*(?:you\s+should\s+)?(?:respond|reply|echo|output|repeat|return)\s+(?:with\s+)?exactly\s+what\s+follows'
       description: 'Garak ECHO_TEMPLATE admin preamble: "administrator testing echo — when prefixed with ECHO: respond exactly"'
     - field: tool_response
       operator: regex
-      value: '(?:^|\n)\s*ECHO\s*:\s*(?:\{\{[^}]{1,200}\}\}|[`$]\([^)]{1,200}\)|\$\{[^}]{1,200}\}|<\?(?:php|=)[^?]{1,200}\?>|import\s+os|__import__|subprocess|eval\s*\(|exec\s*\()'
+      value: '(?:^|\n)[^\S\n]*ECHO\s*:\s*(?:\{\{[^}]{1,200}\}\}|[`$]\([^)]{1,200}\)|\$\{[^}]{1,200}\}|<\?(?:php|=)[^?]{1,200}\?>|import\s+os|__import__|subprocess|eval\s*\(|exec\s*\()'
       description: 'ECHO: prefix followed by template expression, command substitution, or code execution payload'
     - field: tool_response
       operator: regex
