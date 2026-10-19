@@ -6,6 +6,17 @@ All notable changes to ATR will be documented in this file.
 
 ### Added
 
+- **The category registry as Gemara catalogs, generated and published from
+  here.** `spec/category-registry/gemara/` holds a vector, capability, threat
+  and control catalog validated against the Gemara v1.6.0 CUE schemas. The
+  vector catalog is generated from `spec/category-registry/v1.0.yaml` (ids and
+  descriptions verbatim) by `scripts/generate-gemara-catalogs.ts`;
+  `tests/gemara-catalogs.test.ts` fails when the committed catalogs are stale.
+  `.github/workflows/publish-gemara.yml` publishes them as one keyless-signed
+  OCI bundle, `ghcr.io/agent-threat-rule/agent-threat-rules/gemara:<bundle
+  version>`, on release tags only, and pushes nothing when that version is
+  already published with the same catalogs.
+
 - **Every benchmark measurement records the enforce lane beside its
   headline.** A measurement's `metrics.recall` is the `hunt` lane (the engine
   default, every maturity). Each runner the weekly measurement calls now also
@@ -127,6 +138,33 @@ All notable changes to ATR will be documented in this file.
   was withdrawn. Errata `e-2026-10-16-integration-status`,
   `e-2026-10-16-evasion`, `e-2026-10-16-latency` and `e-2026-10-16-provenance`
   record the site changes.
+- **A rule the engine does not evaluate no longer gets a false-positive
+  record.** `scripts/gate-promotion-fp.ts --emit-measurement` wrote
+  `fp_count: 0` for draft and deprecated rules, which the engine skips, so
+  nothing was counted for them. `detection_fingerprint` does not cover
+  `status`, so a one-line revival handed the rule that 0, and
+  `scripts/gate-action-eligibility.ts` trusted it: at maturity `test`, enough
+  for `block_tool`. Seven records in `data/benign-fp-measurement.json` were of
+  this kind. The measurement now asks the engine (`ATREngine.evaluates`) and
+  lists such a rule, or an id two loaded files share, under NOT MEASURED
+  instead. Without `--filter-mode` that fails the gate: promoting a rule the
+  engine does not evaluate no longer passes as clean.
+  `scripts/remeasure-benign-fp.ts` leaves the same rules out, and measures in
+  full, rather than extends, a record for a rule that was inert at its base
+  commit. `scripts/promote-to-stable.ts` no longer counts a draft rule at
+  maturity `test` as FP-clean.
+- **The action gate refuses evidence that holds a record for a rule that is
+  not live** (inert, or its file gone): exit 2, as for evidence taken on
+  another corpus. A record carries no status, so the gate cannot tell a count
+  taken while the rule was live from a 0 nothing measured, and left in place
+  either is trusted the day the rule is revived or restored. Deprecating or
+  deleting a rule now means re-emitting the evidence in the same change. The
+  gate also reads a status that is not a string (`status: [draft]`) as live,
+  as the engine does; it used to skip such a rule while the engine ran it.
+- **Two rule files with the same name are both measured.** The measurement
+  copied rule files into its scratch directory by file name, so of two
+  same-named files in different directories only the last was read, and the
+  other was reported clean.
 
 ## [4.1.5] - 2026-10-10
 

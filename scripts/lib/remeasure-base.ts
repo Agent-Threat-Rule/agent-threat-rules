@@ -18,6 +18,8 @@ import { corpusDigest, MEASUREMENT_CORPORA } from "../../src/quality/action-elig
 import { shapeNames } from "./corpus-event.js";
 import { loadCorpusRecords, loadCorpusTexts, type CorpusRecord } from "./benign-corpus.js";
 import { sanitizeInline } from "./fp-attribution.js";
+import { load as parseYaml } from "js-yaml";
+import { isInert } from "../gate-action-eligibility.js";
 
 export const EVIDENCE_PATH = "data/benign-fp-measurement.json";
 
@@ -78,15 +80,17 @@ export const digestOf = (root: string): string =>
 // Git
 // ---------------------------------------------------------------------------
 
-export type Git = (args: readonly string[]) => string;
+/** Runs git; `input` goes to its stdin, and `encoding` decodes its stdout (default utf-8). */
+export type Git = (args: readonly string[], input?: string, encoding?: BufferEncoding) => string;
 
 export function gitIn(root: string): Git {
-  return (args) =>
+  return (args, input, encoding = "utf-8") =>
     execFileSync("git", [...args], {
       cwd: root,
-      encoding: "utf-8",
+      encoding,
+      input,
       maxBuffer: 256 * 1024 * 1024,
-      stdio: ["ignore", "pipe", "pipe"],
+      stdio: [input === undefined ? "ignore" : "pipe", "pipe", "pipe"],
     });
 }
 
@@ -113,6 +117,63 @@ function materializeBase(git: Git, commit: string, dir: string): void {
   const tar = `${dir}.tar`;
   git(["archive", "--format=tar", "-o", tar, commit, "--", ...present]);
   execFileSync("tar", ["-xf", tar, "-C", dir], { stdio: ["ignore", "pipe", "pipe"] });
+}
+
+/**
+ * Rule ids that, at `commit`, only draft, deprecated or deprecated-maturity
+ * rule files carry: rules the engine skipped there, decided as the action gate
+ * decides it (isInert). An older gate-promotion-fp.ts still wrote each of them
+ * a 0 it never measured, so a base record for one of these ids is not a count
+ * the delta may extend.
+ *
+ * Read from the raw blobs (ls-tree, cat-file), as the base evidence is, so no
+ * export-ignore or other attribute can hide a rule file. What cannot be read
+ * that way is an error, never a rule that was not there.
+ */
+export function inertRuleIdsAt(git: Git, commit: string): ReadonlySet<string> {
+  const entries = git(["ls-tree", "-r", "-z", commit, "--", "rules"])
+    .split("\0")
+    .filter((e) => e.length > 0)
+    .map((e) => {
+      const m = /^(\d{6}) (\w+) ([0-9a-f]+)\t(.*)$/s.exec(e);
+      if (m === null) throw new Error(`unexpected git ls-tree entry: ${JSON.stringify(e.slice(0, 120))}`);
+      return { mode: m[1] ?? "", type: m[2] ?? "", sha: m[3] ?? "", path: m[4] ?? "" };
+    })
+    .filter((e) => /\.ya?ml$/.test(e.path));
+  const unreadable = entries.find((e) => e.type !== "blob" || e.mode === "120000");
+  if (unreadable !== undefined) {
+    throw new FullMeasurementRequired(
+      `${unreadable.path} at ${commit.slice(0, 12)} is a ${unreadable.mode === "120000" ? "symlink" : unreadable.type}; ` +
+        `the delta reads base rules as plain files only`,
+    );
+  }
+  if (entries.length === 0) return new Set();
+  // latin1 keeps one char per byte, so the sizes cat-file reports are offsets.
+  const out = git(["cat-file", "--batch"], `${entries.map((e) => e.sha).join("\n")}\n`, "latin1");
+  const all = new Set<string>();
+  const live = new Set<string>();
+  let at = 0;
+  for (const e of entries) {
+    const eol = out.indexOf("\n", at);
+    const header = /^([0-9a-f]+) blob (\d+)$/.exec(out.slice(at, eol));
+    if (eol < 0 || header === null || header[1] !== e.sha) {
+      throw new Error(`git cat-file could not read ${e.path} at ${commit.slice(0, 12)}`);
+    }
+    const size = Number(header[2]);
+    const text = Buffer.from(out.slice(eol + 1, eol + 1 + size), "latin1").toString("utf-8");
+    at = eol + 1 + size + 1;
+    let doc: unknown;
+    try {
+      doc = parseYaml(text);
+    } catch {
+      continue; // as readRules: a file that does not parse is not a rule the gate reads
+    }
+    const r = doc as { id?: unknown; status?: unknown; maturity?: unknown } | null;
+    if (typeof r?.id !== "string") continue;
+    all.add(r.id);
+    if (!isInert(r.status, r.maturity)) live.add(r.id);
+  }
+  return new Set([...all].filter((id) => !live.has(id)));
 }
 
 // ---------------------------------------------------------------------------
@@ -178,6 +239,8 @@ export interface Base {
   readonly commit: string;
   readonly evidence: BaseEvidence;
   readonly corpus: Corpus;
+  /** Ids the engine skipped at the base commit (inertRuleIdsAt). */
+  readonly inertRuleIds: ReadonlySet<string>;
 }
 
 export function loadBase(git: Git, ref: string, dir: string): Base {
@@ -207,7 +270,7 @@ export function loadBase(git: Git, ref: string, dir: string): Base {
       `the base evidence counts ${evidence.sampleCount} samples; the base corpus holds ${corpus.texts.length}`,
     );
   }
-  return { commit, evidence, corpus };
+  return { commit, evidence, corpus, inertRuleIds: inertRuleIdsAt(git, commit) };
 }
 
 export function addedSamples(head: Corpus, base: Corpus): readonly string[] {

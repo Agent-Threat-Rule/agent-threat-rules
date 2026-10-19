@@ -342,8 +342,32 @@ The ratchet is `tests/action-eligibility.test.ts` → `repository conformance`.
 It reads every rule on disk and the committed measurement, and fails naming any
 rule that overreaches. Adding `kill_agent` to an unmeasured rule turns it red.
 
-`live-ids.txt` is every rule the engine can load and fire: all of `rules/**/*.yaml`
-minus `status: draft` / `status: deprecated` / `maturity: deprecated`.
+`live-ids.txt` is the list of rule ids to measure. CI builds it with
+`npx tsx scripts/reverify-evidence.ts --list-ids`: every id the gate reads under
+`rules/`, inert ones included.
+
+An inert id (`status: draft` / `status: deprecated` / `maturity: deprecated`)
+gets no record. The engine never evaluates such a rule, so it scores 0 by
+construction; `gate-promotion-fp.ts` lists it under NOT MEASURED instead of
+writing that 0, and `remeasure-benign-fp.ts` leaves it out the same way. An id
+two rule files share gets no record either.
+
+The gate refuses evidence that holds a record for a rule that is not live
+(exit 2): one that is inert, or whose file is gone. A record carries no
+`status`, and `detection_fingerprint` does not cover it, so the gate cannot tell
+a count taken while the rule was live from a 0 nothing measured, and either
+would pass, trusted, to the rule a one-line `status:` edit revives or a restore
+brings back. Deprecating or deleting a rule therefore means re-emitting the
+evidence in the same change:
+
+```bash
+git fetch origin main
+npx tsx scripts/remeasure-benign-fp.ts --base-ref origin/main \
+    --emit-measurement data/benign-fp-measurement.json
+```
+
+That re-measures what main's evidence does not describe yet, so its diff can
+name other rules than the one retired.
 
 ## 9. What is still open
 
