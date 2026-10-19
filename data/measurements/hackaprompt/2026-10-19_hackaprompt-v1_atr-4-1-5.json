@@ -3,9 +3,9 @@
   "source": "hackaprompt",
   "source_version": "v1",
   "atr_version": "4.1.5",
-  "atr_commit": "9d74fc506",
+  "atr_commit": "a0e230305",
   "rules_loaded": 836,
-  "measured_at": "2026-10-19T03:37:43.734Z",
+  "measured_at": "2026-10-19T05:01:05.274Z",
   "samples": 4780,
   "metrics": {
     "recall": 0.8309623430962343,
@@ -22,16 +22,16 @@
     "fn": 808
   },
   "latency_ms": {
-    "p50": 32.225582999992184,
-    "p95": 189.26437499999884,
-    "p99": 521.5243750000373,
-    "mean": 59.45646053723858,
-    "max": 1681.0977910000074
+    "p50": 21.543832999999722,
+    "p95": 136.80295799998567,
+    "p99": 354.03383400000166,
+    "mean": 42.89888767447706,
+    "max": 1474.7347909999953
   },
   "breakdown": {
     "by_category": [
       {
-        "category": "jailbreak",
+        "category": "competition-outcome:succeeded",
         "metrics": {
           "precision": 1,
           "recall": 0.9167904903417533,
@@ -107,7 +107,7 @@
         "falsePositives": []
       },
       {
-        "category": "prompt-injection",
+        "category": "competition-outcome:failed",
         "metrics": {
           "precision": 1,
           "recall": 0.8168979790601413,
@@ -963,35 +963,18 @@
         "rules_in_lane": 103
       }
     },
+    "by_category_field": {
+      "field": "correct",
+      "meaning": "HackAPrompt's `correct`: the submission made its target model produce the level's target output, i.e. the attack succeeded in the competition. Not an attack type.",
+      "categories": {
+        "succeeded": "competition-outcome:succeeded",
+        "failed": "competition-outcome:failed"
+      }
+    },
     "in_sample_ablation": {
-      "note": "In-sample check. Rules whose YAML names HackAPrompt were written from this corpus (several from this exact 4,780-sample set), so recall with them included is not an out-of-sample figure. These runs remove them and re-measure the same samples.",
-      "batch_2026_05_12": {
-        "description": "ATR-2026-00452..00456 (commit e9efefdd)",
-        "removed_rule_ids": [
-          "ATR-2026-00452",
-          "ATR-2026-00453",
-          "ATR-2026-00454",
-          "ATR-2026-00455",
-          "ATR-2026-00456"
-        ],
-        "lanes": {
-          "hunt": {
-            "lane": "hunt",
-            "detected": 3685,
-            "attacks": 4780,
-            "recall": 0.7709205020920502,
-            "rules_in_lane": 824
-          },
-          "enforce": {
-            "lane": "enforce",
-            "detected": 92,
-            "attacks": 4780,
-            "recall": 0.019246861924686193,
-            "rules_in_lane": 100
-          }
-        }
-      },
-      "all_naming_hackaprompt": {
+      "note": "Ablation reference, not an out-of-sample result. Rules whose YAML names HackAPrompt were written from this corpus (several from this exact 4,780-sample set), so recall with them loaded is in-sample. without_rules_naming_source re-measures the same samples with every such rule removed; it is the figure to cite beside the headline. It approximates an out-of-sample figure without guaranteeing one: a rule whose YAML does not name HackAPrompt may still have been tuned on these samples or on near-duplicates of them, and the removed rules may also catch attacks they were not mined from. without_batch_2026_05_12 removes only ATR-2026-00452..00456, the batch mined from this exact sample on 2026-05-12.",
+      "reference": "without_rules_naming_source",
+      "without_rules_naming_source": {
         "description": "every rule whose YAML text names HackAPrompt",
         "removed_rule_ids": [
           "ATR-2026-00442",
@@ -1031,11 +1014,38 @@
             "rules_in_lane": 98
           }
         }
+      },
+      "without_batch_2026_05_12": {
+        "description": "ATR-2026-00452..00456 (commit e9efefdd)",
+        "removed_rule_ids": [
+          "ATR-2026-00452",
+          "ATR-2026-00453",
+          "ATR-2026-00454",
+          "ATR-2026-00455",
+          "ATR-2026-00456"
+        ],
+        "lanes": {
+          "hunt": {
+            "lane": "hunt",
+            "detected": 3685,
+            "attacks": 4780,
+            "recall": 0.7709205020920502,
+            "rules_in_lane": 824
+          },
+          "enforce": {
+            "lane": "enforce",
+            "detected": 92,
+            "attacks": 4780,
+            "recall": 0.019246861924686193,
+            "rules_in_lane": 100
+          }
+        }
       }
     },
     "provenance": {
       "dataset_id": "hackaprompt/hackaprompt-dataset",
       "dataset_revision": "25b87fbedfb86840abaf8cd09af7a029208a971a",
+      "parquet_sha256": "bedca308fbd71be57793930e4e4a0dcfbda2a27b6d0f2ad3191bb20a6a315928",
       "rows_total": 601757,
       "selection": "random.seed(20260511); sorted(random.sample(range(601757), 5000))",
       "filter": "user_input.strip() of length >= 3; text = user_input.strip()[:4096]; label = true for every row",
@@ -1049,8 +1059,32 @@
         "tier2-regex",
         "tier2.5-embedding"
       ],
-      "reproduce": "check out the commit that added this measurement file (its rules/ tree is breakdown.provenance.rules_tree_sha, the same as atr_commit's), then: npm ci && npm run eval:hackaprompt (= python3 scripts/hackaprompt-to-corpus.py && npx tsx src/eval/run-hackaprompt-benchmark.ts)"
+      "embedding": {
+        "model_id": "Xenova/all-MiniLM-L6-v2",
+        "quantized": true,
+        "revision_requested": "main",
+        "revision_resolved": "751bff37182d3f1213fa05d7196b954e230abad9",
+        "transformers_package": "@xenova/transformers",
+        "transformers_version": "2.17.2",
+        "model_files_sha256": {
+          "config.json": "7135149f7cffa1a573466c6e4d8423ed73b62fd2332c575bf738a0d033f70df7",
+          "tokenizer.json": "da0e79933b9ed51798a3ae27893d3c5fa4a201126cef75586296df9b4d2c62a0",
+          "tokenizer_config.json": "9261e7d79b44c8195c1cada2b453e55b00aeb81e907a6664974b4d7776172ab3",
+          "onnx/model_quantized.onnx": "afdb6f1a0e45b715d0bb9b11772f032c399babd23bfc31fed1c170afc848bdb1"
+        },
+        "attack_embeddings": "data/attack-embeddings.json",
+        "attack_embeddings_sha256": "1774f6b74140ad8808b2877977f3af25f945cea526be536f3a42903323d07600",
+        "similarity_threshold": 0.65
+      },
+      "hunt_without_embedding_tier": {
+        "lane": "hunt",
+        "detected": 3972,
+        "attacks": 4780,
+        "recall": 0.8309623430962343,
+        "rules_in_lane": 829
+      },
+      "reproduce": "check out the commit that added this measurement file (its rules/ tree is breakdown.provenance.rules_tree_sha, the same as atr_commit's), then: npm ci && npm run eval:hackaprompt (= python3 scripts/hackaprompt-to-corpus.py, which checks the re-drawn sample against the committed manifest and the parquet file against its pinned sha256 before writing the corpus, && npx tsx src/eval/run-hackaprompt-benchmark.ts)"
     }
   },
-  "notes": "HackAPrompt competition dataset (Schulhoff et al., EMNLP 2023). All samples adversarial, so precision/fp_rate are convention values, not results. metrics.recall is the hunt lane (every maturity); breakdown.lanes gives hunt/alert/enforce, breakdown.in_sample_ablation the recall without rules mined from this corpus. Sample set: breakdown.provenance (pinned dataset revision, seed, row indices in data/hackaprompt/hackaprompt-corpus.manifest.json). Event shape: canonical; tiers: tier2-regex+tier2.5-embedding. Reproduce: check out the commit that added this measurement file (its rules/ tree is breakdown.provenance.rules_tree_sha, the same as atr_commit's), then: npm ci && npm run eval:hackaprompt (= python3 scripts/hackaprompt-to-corpus.py && npx tsx src/eval/run-hackaprompt-benchmark.ts). Method: data/hackaprompt/METHOD.md."
+  "notes": "HackAPrompt competition dataset (Schulhoff et al., EMNLP 2023). All samples adversarial, so precision/fp_rate are convention values, not results. metrics.recall is the hunt lane (every maturity); breakdown.lanes gives hunt/alert/enforce. breakdown.in_sample_ablation.without_rules_naming_source is the ablation reference to cite beside it: the same samples without the rules whose YAML names HackAPrompt (an approximation of out-of-sample recall, not a guarantee of it). breakdown.by_category groups samples by HackAPrompt's `correct` field (whether the attack succeeded against its target model in the competition), not by attack type; breakdown.by_difficulty buckets the competition level (0-2 easy, 3-6 medium, 7-10 hard). Sample set: breakdown.provenance (pinned dataset revision, seed, row indices in data/hackaprompt/hackaprompt-corpus.manifest.json). Event shape: canonical; tiers: tier2-regex+tier2.5-embedding. Reproduce: check out the commit that added this measurement file (its rules/ tree is breakdown.provenance.rules_tree_sha, the same as atr_commit's), then: npm ci && npm run eval:hackaprompt (= python3 scripts/hackaprompt-to-corpus.py, which checks the re-drawn sample against the committed manifest and the parquet file against its pinned sha256 before writing the corpus, && npx tsx src/eval/run-hackaprompt-benchmark.ts). Method: data/hackaprompt/METHOD.md."
 }

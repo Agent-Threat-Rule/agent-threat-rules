@@ -74,12 +74,15 @@
       "recall": 83.1,
       "enforceLaneRecall": 49,
       "alertLaneRecall": 82.2,
-      "outOfSampleRecall": {
+      "recallWithoutSourceNamedRules": {
         "hunt": 28.7,
         "enforce": 0.7,
-        "comment": "Same 4,780 samples with the 20 rules whose YAML names HackAPrompt removed (breakdown.in_sample_ablation.all_naming_hackaprompt)."
+        "rulesRemoved": 20,
+        "measurementKey": "without_rules_naming_source",
+        "comment": "Ablation reference, not an out-of-sample result: the same 4,780 samples with the 20 rules whose YAML names HackAPrompt removed (breakdown.in_sample_ablation.without_rules_naming_source). Cite it beside recall and enforceLaneRecall. A rule that does not name HackAPrompt can still have been tuned on these prompts, so it approximates out-of-sample recall without guaranteeing it."
       },
-      "precision": 100,
+      "precision": null,
+      "precisionNote": "Not measured: the corpus has no benign samples. The measurement file carries the schema's convention value (1), which is not a result.",
       "samples": 4780,
       "atr_version": "4.1.5",
       "measured": "2026-10-19",
@@ -87,10 +90,10 @@
         "tier2-regex",
         "tier2.5-embedding"
       ],
-      "source": "HackAPrompt dataset (Schulhoff et al., EMNLP 2023), hackaprompt/hackaprompt-dataset@25b87fbe, seed-20260511 sample of 4,780",
+      "source": "HackAPrompt dataset (Schulhoff et al., EMNLP 2023), hackaprompt/hackaprompt-dataset@25b87fbe: a seeded subset of 4,780 of its 601,757 prompts (seed 20260511)",
       "measurement_file": "data/measurements/hackaprompt/2026-10-19_hackaprompt-v1_atr-4-1-5.json",
       "lane": "hunt",
-      "caveat": "Partly closed-book: 20 rules were written from this corpus, several from this exact sample. Without them recall is 28.7% (hunt) / 0.7% (enforce). Precision is a convention value: the corpus has no benign samples."
+      "caveat": "Partly in-sample: 20 rules name HackAPrompt in their YAML, several mined from this exact subset. Cite recallWithoutSourceNamedRules (the ablation reference) beside recall: 28.7% (hunt) / 0.7% (enforce). Method and earlier figures: data/hackaprompt/METHOD.md."
     },
     "benign": {
       "lanes": {
