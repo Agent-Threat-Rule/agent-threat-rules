@@ -461,7 +461,7 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
 | garak (in-the-wild jailbreaks) [^garakcorpus] | inthewild-jailbreak-corpus-650 | 650 | 92.3% (hunt) / 0.9% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | garak-full (all probe families) [^garakcorpus] | 23-families | 3,475 | 57.2% (hunt) / 0.5% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| hackaprompt | v1 | 4,780 | 69.6% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| hackaprompt | v1 | 4,780 | 83.1% (hunt) / 49.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-19 |
 | HarmBench (CAIS behaviors) | upstream-2026-10-15 | 400 | 6.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | hh-rlhf (Anthropic red-team-attempts) [^stdcorpora] | snapshot-2026-04 | 4,957 | 1.4% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | JailbreakBench (JBB-Behaviors) | upstream-2026-10-15 | 100 | 3.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
@@ -482,24 +482,28 @@ the `hunt` lane: the engine default, which loads every maturity, and the figure
 one to run when blocking is on, which loads only `stable` rules: the same
 samples through the same detection loop, recorded as `breakdown.enforce_lane`.
 Read the second before deploying with blocking on; see [^skilllane].
-`autoresearch` and `hackaprompt` show only the first, because their last
-measurements predate the second's recording, and `Wild scan` has no recall at
-all. `Precision` and `FP rate` are `hunt`-lane figures, measured only on the
+`autoresearch` shows only the first, because its last measurement predates
+the second's recording, and `Wild scan` has no recall at all. `Precision` and `FP rate` are `hunt`-lane figures, measured only on the
 rows that contain benign samples (`atr-self-test`, `PINT-format` and `SKILL.md
 benchmark`); elsewhere they are convention values or, for `Wild scan`, a flag
 rate, not results (see Conventions below).
 
 Whether a corpus was used to write the rules it scores has been examined for
-`garak`, `garak-full`, `PromptInject` and `PromptBench` ([^garakcorpus],
-[^promptcorpora]); all four are partly closed-book. The other rows are not
+`garak`, `garak-full`, `PromptInject`, `PromptBench` ([^garakcorpus],
+[^promptcorpora]) and `hackaprompt`; all five are partly closed-book. For
+`hackaprompt`, 20 rules name HackAPrompt as their source, several mined from
+this exact 4,780-sample set; the same measurement file re-runs the samples
+without them (`breakdown.in_sample_ablation`): 28.7% (hunt) / 0.7% (enforce).
+The sample set is pinned by dataset revision, seed and row indices in
+[`data/hackaprompt/METHOD.md`](data/hackaprompt/METHOD.md). The other rows are not
 thereby out-of-sample: `atr-self-test` is built partly from the rules' own true
 positives, and the rules authored `(vendor-corpus-import)` name the `promptfoo`
 and `llm-guard` fixtures as their source.
 
 A weekly run re-measures every row except three, which keep their earlier
-measurements: `hackaprompt`, whose corpus is not provisioned in CI, so the run
-skips it (its cell also predates the 2026-08-05 change of the evaluation
-harness's default event shape); `autoresearch`, an internal predicted-rule
+measurements: `hackaprompt`, whose corpus (a gated HuggingFace dataset) is not
+provisioned in CI, so the run skips it and the row is re-measured locally with
+`npm run eval:hackaprompt`; `autoresearch`, an internal predicted-rule
 corpus with no standalone runner; and the `Wild scan` snapshot. The table is
 re-rendered from the measurement files; the prose and footnotes are not, so a
 figure there holds for the version it names. Before the weekly run, every row
@@ -823,7 +827,7 @@ the note in the lanes section above for why. Where a row has benign samples
 npm test                                    # engine + rule unit tests (vitest)
 npm run eval                                # atr-self-test eval (writes a measurement)
 npm run eval:pint                           # PINT benchmark (writes a measurement)
-npx tsx src/eval/run-hackaprompt-benchmark.ts                                # HackAPrompt
+npm run eval:hackaprompt                                                     # HackAPrompt (gated dataset; writes a measurement)
 npx tsx src/eval/skill-benchmark.ts                                          # SKILL.md (498 labeled)
 npx tsx scripts/eval-std-corpora.ts                                          # HH-RLHF + OWASP + ATLAS
 npx tsx scripts/atr_recall_analysis.ts                                       # PromptBench + PromptInject
