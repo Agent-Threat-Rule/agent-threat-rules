@@ -34,7 +34,7 @@ import { evaluateSemanticRule } from './semantic-evaluator.js';
 import { laneAllows, requiresConfirm, type Lane } from './quality/rule-contract.js';
 import { laneFromConfig } from './enforcement.js';
 import type { SessionTracker } from './session-tracker.js';
-import { computeVerdict, modelDecisionsFromConfig, type ModelDecisions } from './verdict.js';
+import { computeVerdict, isModelDecided, modelDecisionsFromConfig, type ModelDecisions } from './verdict.js';
 import { ruleConfidence } from './rule-confidence.js';
 import type { ActionExecutor } from './action-executor.js';
 import type { SkillFingerprintStore } from './skill-fingerprint.js';
@@ -472,6 +472,15 @@ export class ATREngine {
   }
 
   /**
+   * What a model-decided match may do (config, else 'advisory'). A caller that
+   * runs evaluateAsync() and computes the verdict itself passes this on:
+   * computeVerdict(matches, { modelDecisions: engine.getModelDecisions() }).
+   */
+  getModelDecisions(): ModelDecisions {
+    return this.modelDecisions;
+  }
+
+  /**
    * Load a single rule file and add it to the engine.
    */
   addRuleFile(filePath: string): void {
@@ -600,7 +609,9 @@ export class ATREngine {
           }
         }
         matches.push(matchResult);
-        allMatchedPatterns.push(...matchResult.matchedPatterns);
+        // A judge's category and evidence are not patterns a rule matched; they
+        // must not feed pattern_frequency and other cross-event conditions.
+        if (!isModelDecided(matchResult)) allMatchedPatterns.push(...matchResult.matchedPatterns);
       }
     }
 
@@ -720,7 +731,9 @@ export class ATREngine {
           }
         }
         matches.push(matchResult);
-        allMatchedPatterns.push(...matchResult.matchedPatterns);
+        // A judge's category and evidence are not patterns a rule matched; they
+        // must not feed pattern_frequency and other cross-event conditions.
+        if (!isModelDecided(matchResult)) allMatchedPatterns.push(...matchResult.matchedPatterns);
       }
     }
 
@@ -869,6 +882,15 @@ export class ATREngine {
           return asSemanticFallback(this.evaluatePatternRule(rule, event));
         }
         return null;
+      }
+      // The judge matched (atr-method-v1.1 §6.4: a match iff its confidence clears
+      // the threshold). When the rule's own pattern fallback matches the same
+      // input, the measured regex stands behind the decision: report it as the
+      // fallback's match, which is enforced. Otherwise only the judge does, and
+      // under modelDecisions: 'advisory' its match is reported, not enforced.
+      if (this.modelDecisions === 'advisory' && rule.detection.semantic?.fallback_method === 'pattern') {
+        const corroborated = asSemanticFallback(this.evaluatePatternRule(rule, event));
+        if (corroborated) return corroborated;
       }
       const matchedPatterns = [
         ...(result.category ? [result.category] : []),
@@ -1741,7 +1763,8 @@ export class ATREngine {
     if (hasConfirmMatch) {
       const sim = embResult?.value ?? 0;
       // Note: confirmThreshold 0 disables the gate (every similarity is >= 0).
-      if (sim < (this.config.confirmThreshold ?? 0.6)) {
+      // Written so that a similarity that is not a number drops the rule too.
+      if (!(sim >= (this.config.confirmThreshold ?? 0.6))) {
         matches = matches.filter((m) => !requiresConfirm(m.rule));
         layersUsed.push('embedding-confirm');
       }

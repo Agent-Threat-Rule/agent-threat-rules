@@ -402,8 +402,9 @@ export type ScanContextType = "native" | "cross-context";
 /**
  * What decided a match. `semantic-judge` (a semantic rule's injected judge),
  * `embedding` (the Tier 2.5 similarity signal) and `semantic-layer` (the Layer 3
- * module) are decisions a model made; the rest are a rule's own deterministic
- * logic, a semantic rule's pattern fallback (`semantic-fallback`) included.
+ * module) are decisions a model made. The rest are deterministic logic: a rule's
+ * (a semantic rule's pattern fallback, `semantic-fallback`, included), an
+ * invariant's, the blacklist's or a skill fingerprint's.
  */
 export type ATRMatchDecider =
   | "pattern"
@@ -448,9 +449,13 @@ export interface ATRVerdict {
   /**
    * Matches a model decided that did not take part in the outcome, and whose
    * actions above the observe tier were not dispatched (computeVerdict's
-   * default, modelDecisions: 'advisory'). They are also in `matches`.
+   * default, modelDecisions: 'advisory'). They are also in `matches`. Present
+   * only when there is at least one; `highestSeverity` and `highestConfidence`
+   * describe the other matches, the ones the outcome came from.
    */
   readonly advisory?: readonly ATRMatch[];
+  /** The highest severity among `advisory`, present with it, for reporting. */
+  readonly advisorySeverity?: ATRSeverity;
   readonly timestamp: string;
 }
 

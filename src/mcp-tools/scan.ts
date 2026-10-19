@@ -10,6 +10,7 @@
  */
 
 import type { ATREngine } from '../engine.js';
+import { isModelDecided, observeActions } from '../verdict.js';
 import type { AgentEvent, AgentEventType } from '../types.js';
 
 export interface ScanInput {
@@ -90,6 +91,10 @@ export async function handleScan(engine: ATREngine, args: Record<string, unknown
   const filtered = verdict.matches.filter(
     (m) => (SEVERITY_ORDER[m.rule.severity] ?? 0) >= minIdx
   );
+  // A model's decision the engine reports without enforcing: its recommended
+  // actions stop at the observe tier, as the verdict's actions do.
+  const heldBack = (m: (typeof filtered)[number]): boolean =>
+    engine.getModelDecisions() === 'advisory' && isModelDecided(m);
 
   const result = {
     threats_found: filtered.length,
@@ -108,10 +113,11 @@ export async function handleScan(engine: ATREngine, args: Record<string, unknown
       confidence: Math.round(m.confidence * 100),
       description: m.rule.description,
       matched_patterns: m.matchedPatterns,
-      recommended_actions: m.rule.response.actions,
+      recommended_actions: heldBack(m) ? observeActions([m]) : m.rule.response.actions,
       // A model's decision (semantic judge, embedding, semantic layer) is reported
       // without counting toward verdict.outcome unless the engine enforces them.
       decided_by: m.decidedBy ?? null,
+      enforced: !heldBack(m),
     })),
   };
 

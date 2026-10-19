@@ -534,7 +534,7 @@ describe('ATREngine', () => {
       });
 
       expect(verdict.outcome).toBe('deny');
-      expect(verdict.advisory).toEqual([]);
+      expect(verdict.advisory).toBeUndefined();
     });
   });
 });

@@ -13,6 +13,7 @@ import type { Lane } from '../quality/rule-contract.js';
 import { scanResultToSARIF } from '../converters/sarif.js';
 import { createTCReporter, resolveTcUrl } from '../tc-reporter.js';
 import { createSemanticJudgeFromConfig } from './semantic-judge-config.js';
+import { isModelDecided, type ModelDecisions } from '../verdict.js';
 
 const SEVERITY_ORDER = ['informational', 'low', 'medium', 'high', 'critical'] as const;
 
@@ -46,6 +47,13 @@ export interface ScanOptions {
   readonly semanticModel?: string;
   readonly semanticTimeout?: string;
   readonly semanticNoJsonMode?: boolean;
+  /**
+   * What a match a model decided (here, a semantic rule's judge) may do.
+   * 'advisory' (default): listed, marked, and not counted toward --fail-on, and
+   * written to SARIF at level note with properties.enforced false. 'enforce':
+   * counted and written like any match.
+   */
+  readonly modelDecisions?: ModelDecisions;
   /**
    * Detection lane (which rule maturities may fire). Undefined means the
    * engine's built-in default; `src/cli.ts` resolves `--lane` and `ATR_LANE`
@@ -215,7 +223,9 @@ async function scanMcpEvents(
     reporter,
     semanticJudge: semantic.judge,
     ...(options.lane ? { lane: options.lane } : {}),
+    ...(options.modelDecisions ? { modelDecisions: options.modelDecisions } : {}),
   });
+  const heldBack = (m: ATRMatch): boolean => engine.getModelDecisions() === 'advisory' && isModelDecided(m);
   await engine.loadRules();
   if (semantic.enabled && !options.json && !options.sarif) {
     console.error(`${DIM}Semantic judge: enabled for method=semantic rules${RESET}`);
@@ -248,7 +258,9 @@ async function scanMcpEvents(
       allResults.push({ event, result, filtered });
       totalThreats += filtered.length;
       if (failIdx >= 0) {
-        failHits += filtered.filter((m) => SEVERITY_ORDER.indexOf(m.rule.severity) >= failIdx).length;
+        failHits += filtered.filter(
+          (m) => !heldBack(m) && SEVERITY_ORDER.indexOf(m.rule.severity) >= failIdx,
+        ).length;
       }
     }
   }
@@ -267,7 +279,7 @@ async function scanMcpEvents(
       threat_count: filtered.length,
     }));
     const version = process.env['npm_package_version'] ?? '1.0.0';
-    console.log(JSON.stringify(scanResultToSARIF(sarifResults, version), null, 2));
+    console.log(JSON.stringify(scanResultToSARIF(sarifResults, version, { heldBack }), null, 2));
     return eventsEvaluated === 0 ? 1 : failHits;
   }
 
@@ -285,7 +297,7 @@ async function scanMcpEvents(
           timestamp: event.timestamp,
           content_preview: event.content.slice(0, 100),
         },
-        matches: filtered.map(formatMatchJson),
+        matches: filtered.map((m) => formatMatchJson(m, heldBack(m))),
       })),
     }, null, 2));
     return eventsEvaluated === 0 ? 1 : failHits;
@@ -304,7 +316,7 @@ async function scanMcpEvents(
     const preview = event.content.slice(0, 80).replace(/\n/g, ' ');
     console.log(`  ${DIM}Event: [${event.type}] "${preview}..."${RESET}`);
     for (const m of filtered) {
-      printMatch(m);
+      printMatch(m, heldBack(m));
     }
     console.log('');
   }
@@ -332,7 +344,9 @@ async function scanSkillFiles(
     reporter,
     semanticJudge: semantic.judge,
     ...(options.lane ? { lane: options.lane } : {}),
+    ...(options.modelDecisions ? { modelDecisions: options.modelDecisions } : {}),
   });
+  const heldBack = (m: ATRMatch): boolean => engine.getModelDecisions() === 'advisory' && isModelDecided(m);
   await engine.loadRules();
   if (semantic.enabled && !options.json && !options.sarif) {
     console.error(`${DIM}Semantic judge: enabled for method=semantic rules${RESET}`);
@@ -364,7 +378,9 @@ async function scanSkillFiles(
       allResults.push({ file, result, filtered });
       totalThreats += filtered.length;
       if (failIdx >= 0) {
-        failHits += filtered.filter((m) => SEVERITY_ORDER.indexOf(m.rule.severity) >= failIdx).length;
+        failHits += filtered.filter(
+          (m) => !heldBack(m) && SEVERITY_ORDER.indexOf(m.rule.severity) >= failIdx,
+        ).length;
       }
     }
   }
@@ -376,7 +392,7 @@ async function scanSkillFiles(
       threat_count: filtered.length,
     }));
     const version = process.env['npm_package_version'] ?? '1.0.0';
-    console.log(JSON.stringify(scanResultToSARIF(sarifResults, version), null, 2));
+    console.log(JSON.stringify(scanResultToSARIF(sarifResults, version, { heldBack }), null, 2));
     return failHits;
   }
 
@@ -389,7 +405,7 @@ async function scanSkillFiles(
       results: allResults.map(({ file, result, filtered }) => ({
         file,
         content_hash: result.content_hash,
-        matches: filtered.map(formatMatchJson),
+        matches: filtered.map((m) => formatMatchJson(m, heldBack(m))),
       })),
     }, null, 2));
     return failHits;
@@ -406,7 +422,7 @@ async function scanSkillFiles(
     const relPath = file.replace(process.cwd() + '/', '');
     console.log(`  ${BOLD}${relPath}${RESET}`);
     for (const m of filtered) {
-      printMatch(m);
+      printMatch(m, heldBack(m));
     }
     console.log('');
   }
@@ -448,13 +464,16 @@ function walkForSkills(dir: string, out: string[]): void {
   }
 }
 
-function formatMatchJson(m: ATRMatch) {
+function formatMatchJson(m: ATRMatch, heldBack: boolean) {
   return {
     rule_id: m.rule.id,
     title: m.rule.title,
     severity: m.rule.severity,
     confidence: m.confidence,
     matched_conditions: m.matchedConditions,
+    decided_by: m.decidedBy ?? null,
+    // false: a model decided it and it does not count toward --fail-on.
+    enforced: !heldBack,
   };
 }
 
@@ -475,10 +494,11 @@ function printScanHeader(
   console.log('');
 }
 
-function printMatch(m: ATRMatch): void {
+function printMatch(m: ATRMatch, heldBack: boolean): void {
   const color = SEVERITY_COLORS[m.rule.severity] ?? '';
+  const note = heldBack ? ` ${DIM}(decided by ${m.decidedBy}: reported, not counted toward --fail-on)${RESET}` : '';
   console.log(
-    `    ${color}${m.rule.severity.toUpperCase().padEnd(13)}${RESET} ${m.rule.id} - ${m.rule.title}`,
+    `    ${color}${m.rule.severity.toUpperCase().padEnd(13)}${RESET} ${m.rule.id} - ${m.rule.title}${note}`,
   );
   console.log(
     `    ${DIM}Confidence: ${(m.confidence * 100).toFixed(0)}% | Conditions: ${m.matchedConditions.join(', ')}${RESET}`,

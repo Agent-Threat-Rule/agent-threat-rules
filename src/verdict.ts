@@ -15,24 +15,34 @@ import type {
   ATRVerdict,
   VerdictOutcome,
 } from './types.js';
-import { ACTION_TIERS, actionTier } from './quality/action-eligibility.js';
+import { ACTION_TIERS, TIERED_ACTIONS, actionTier } from './quality/action-eligibility.js';
 
 /**
- * Decisions a model made rather than a rule's own logic: a semantic rule's
- * judge, the Tier 2.5 embedding signal, the Layer 3 semantic module. The
- * benign-corpus false-positive evidence measures none of them (it runs the
- * synchronous engine, where a semantic rule is its pattern fallback), so by
- * default they are reported and not enforced.
+ * Deciders that are a rule's own deterministic logic. Every other decider is a
+ * model: a semantic rule's judge (`semantic-judge`), the Tier 2.5 embedding
+ * signal (`embedding`), the Layer 3 semantic module (`semantic-layer`), and any
+ * value this list does not know. No evidence a response tier is earned from
+ * measures a model's decisions (the benign-corpus evidence runs the synchronous
+ * engine, where a semantic rule is its pattern fallback), so by default they are
+ * reported and not enforced.
  */
-const MODEL_DECIDERS: ReadonlySet<ATRMatchDecider> = new Set<ATRMatchDecider>([
-  'semantic-judge',
-  'embedding',
-  'semantic-layer',
+const DETERMINISTIC_DECIDERS: ReadonlySet<string> = new Set<ATRMatchDecider>([
+  'pattern',
+  'signature',
+  'trace',
+  'semantic-fallback',
+  'invariant',
+  'blacklist',
+  'fingerprint',
 ]);
 
-/** Whether a model, not a rule's deterministic logic, decided this match. */
+/**
+ * Whether a model, not a rule's deterministic logic, decided this match. A match
+ * without a decider (built outside the engine, as every match was before
+ * decidedBy existed) is read as deterministic; an unknown decider as a model.
+ */
 export function isModelDecided(match: Pick<ATRMatch, 'decidedBy'>): boolean {
-  return match.decidedBy !== undefined && MODEL_DECIDERS.has(match.decidedBy);
+  return match.decidedBy !== undefined && !DETERMINISTIC_DECIDERS.has(match.decidedBy);
 }
 
 /**
@@ -154,9 +164,21 @@ function collectUniqueActions(
   return Object.freeze(actions);
 }
 
-/** The observe-tier actions of matches whose other actions are not dispatched. */
-function observeActions(matches: readonly ATRMatch[]): readonly ATRAction[] {
-  return collectUniqueActions(matches).filter((a) => actionTier(a) === ACTION_TIERS.OBSERVE);
+/**
+ * The observe-tier actions of matches whose other actions are not dispatched.
+ * Only actions the tier ladder names: actionTier() reads an unknown name as
+ * observe, and a name it does not know is not one this policy can vouch for.
+ */
+export function observeActions(matches: readonly ATRMatch[]): readonly ATRAction[] {
+  return collectUniqueActions(matches).filter(
+    (a) => TIERED_ACTIONS.includes(a) && actionTier(a) === ACTION_TIERS.OBSERVE,
+  );
+}
+
+/** Severity first, then confidence: the order computeVerdict reads matches in. */
+function bySeverityThenConfidence(a: ATRMatch, b: ATRMatch): number {
+  const bySeverity = (SEVERITY_RANK[a.rule.severity] ?? 4) - (SEVERITY_RANK[b.rule.severity] ?? 4);
+  return bySeverity !== 0 ? bySeverity : b.confidence - a.confidence;
 }
 
 /**
@@ -197,8 +219,6 @@ export function computeVerdict(
   options: VerdictOptions = {},
 ): ATRVerdict {
   const modelDecisions = modelDecisionsFromConfig(options.modelDecisions);
-  const advisory = modelDecisions === 'advisory' ? matches.filter(isModelDecided) : [];
-  const enforcing = advisory.length === 0 ? matches : matches.filter((m) => !isModelDecided(m));
 
   if (matches.length === 0) {
     return Object.freeze({
@@ -209,35 +229,43 @@ export function computeVerdict(
       highestConfidence: 0,
       actions: Object.freeze([]),
       matches: Object.freeze([]),
-      advisory: Object.freeze([]),
       timestamp: new Date().toISOString(),
     });
   }
 
-  // Matches are already sorted by the engine (severity desc, confidence desc),
-  // so the first enforcing match has the highest severity among them.
-  const highestMatch = enforcing[0];
-  const highestSeverity = highestMatch?.rule.severity ?? null;
-  const highestConfidence = highestMatch?.confidence ?? 0;
+  // Sorted here rather than trusted: not every caller sorts (the engine appends
+  // the embedding match last, and scanSkill appends decoded-payload matches).
+  // The sort is stable, so an already sorted list keeps its order.
+  const sorted = [...matches].sort(bySeverityThenConfidence);
+  const advisory = modelDecisions === 'advisory' ? sorted.filter(isModelDecided) : [];
+  const enforcing = advisory.length === 0 ? sorted : sorted.filter((m) => !isModelDecided(m));
 
+  const highestMatch = enforcing[0];
   const outcome = highestMatch ? determineOutcome(highestMatch.rule.severity, highestMatch.confidence) : 'allow';
   const actions = Object.freeze([
     ...new Set([...collectUniqueActions(enforcing), ...observeActions(advisory)]),
   ]);
+  const topAdvisory = advisory[0];
   const reason = highestMatch
     ? buildReason(highestMatch, outcome, matches.length) + advisoryNote(advisory.length)
-    : `ALLOW: ${advisory.length} model-decided match${advisory.length === 1 ? '' : 'es'} ` +
-      `reported, not enforced (modelDecisions: advisory).`;
+    : `ALLOW: ${topAdvisory!.rule.title} [${topAdvisory!.rule.severity}/` +
+      `${Math.round(topAdvisory!.confidence * 100)}% confidence, decided by ` +
+      `${topAdvisory!.decidedBy}]: ${advisory.length} model-decided ` +
+      `match${advisory.length === 1 ? '' : 'es'} reported, not enforced (modelDecisions: advisory).`;
 
   return Object.freeze({
     outcome,
     reason,
     matchCount: matches.length,
-    highestSeverity,
-    highestConfidence,
+    highestSeverity: highestMatch?.rule.severity ?? null,
+    highestConfidence: highestMatch?.confidence ?? 0,
     actions,
-    matches: Object.freeze([...matches]),
-    advisory: Object.freeze([...advisory]),
+    matches: Object.freeze(sorted),
+    // Present only when something was held back, so a verdict without a model
+    // decision has exactly the fields it always had.
+    ...(topAdvisory
+      ? { advisory: Object.freeze(advisory), advisorySeverity: topAdvisory.rule.severity }
+      : {}),
     timestamp: new Date().toISOString(),
   });
 }

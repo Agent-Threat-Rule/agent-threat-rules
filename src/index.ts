@@ -124,6 +124,8 @@ export {
   DEFAULT_BLOCKING,
   LANE_ENV_VAR,
   BLOCKING_ENV_VAR,
+  MODEL_DECISIONS_ENV_VAR,
+  parseModelDecisions,
 } from './enforcement.js';
 export type { EnvSource, EnforcementPolicy } from './enforcement.js';
 

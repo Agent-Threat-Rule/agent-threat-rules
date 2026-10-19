@@ -238,14 +238,26 @@ See `examples/semantic-judge/example.ts` for a full deterministic example.
 - `evaluateWithVerdict()` uses semantic dispatch when `semanticJudge` is configured.
 - A match the judge decided is reported, not enforced, by default: it is in
   `verdict.matches` and `verdict.advisory` (with `decidedBy: 'semantic-judge'`),
-  its observe-tier actions (`alert`, `snapshot`, `escalate`) run, and it takes no
+  its observe-tier actions (`alert`, `snapshot`, `shadow`, `escalate`) run, and it takes no
   part in `verdict.outcome`, so it never turns into `deny` or `ask` on its own.
-  Nothing measures a judge's false positives: the benign-corpus evidence runs the
-  synchronous engine, where a semantic rule is its pattern fallback. Set
-  `modelDecisions: 'enforce'` on the engine to have judge decisions count like
-  rule matches, if you accept that. A match the pattern fallback decided (no judge,
-  or the judge failed) is a deterministic decision (`decidedBy:
-  'semantic-fallback'`) and is enforced as before. The same default applies to the
-  `embeddingModule` signal and the `semanticModule` layer.
+  No evidence a response tier is earned from measures a judge: the benign-corpus
+  evidence runs the synchronous engine, where a semantic rule is its pattern
+  fallback, and the only judge figures in this repository are a 15-sample
+  validation set (`data/semantic-validation/`). Set `modelDecisions: 'enforce'`
+  on the engine to have judge decisions count like rule matches, if you accept
+  that. The same default applies to the `embeddingModule` signal and the
+  `semanticModule` layer.
+- A rule's own pattern fallback still enforces. When the judge matches and the
+  fallback's regex matches the same input, the match is reported as the
+  fallback's (`decidedBy: 'semantic-fallback'`, with the regex's confidence) and
+  enforced; with no judge, or when the judge fails, the fallback decides as
+  before. When the judge does not match, there is no match (atr-method-v1.1
+  §6.4), whatever the fallback would have said.
+- `atr scan --semantic` lists a judge-only match but does not count it toward
+  `--fail-on`, and writes it to SARIF at level `note` with
+  `properties.enforced: false`; `--model-decisions enforce` (or
+  `ATR_MODEL_DECISIONS=enforce`) counts it. The MCP scan tool reports it with
+  `enforced: false` and observe-tier recommended actions; `atr mcp` reads
+  `ATR_MODEL_DECISIONS` too.
 - CLI/MCP semantic judging should remain disabled unless explicitly configured with model credentials.
 - Adapter errors are sanitized and do not include raw prompt, input, provider body, or API key.
