@@ -222,6 +222,13 @@ All notable changes to ATR will be documented in this file.
   HANDOVER.md no longer calls PR #500 open; it was closed unmerged on
   2026-10-06.
 
+- **The integrate page gives Cisco skill-scanner PR #79's real merge time.**
+  It said #79 merged in three days ("3 days, first PR to merge"). ATR's
+  maintainer opened it on 2026-04-02, and the repository's maintainers merged
+  it 21 hours later. Recorded as erratum e-2026-10-20-cisco-merge-time. Two
+  unused strings in `website/lib/i18n.ts` said a Cisco engineer submitted #79
+  and ATR reviewed it, the other way round; they now say what happened.
+
 - **On Claude Code, the guard scans what a tool returned on PostToolUse.**
   Claude Code sends a tool's output at the top level of the PostToolUse hook
   input, as `tool_response` (checked against the shipped 2.1.280 binary).

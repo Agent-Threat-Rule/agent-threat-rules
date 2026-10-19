@@ -55,7 +55,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "proof.heading.pre": "Cisco AI Defense",
     "proof.heading.post": " merged\n34 ATR rules into its open-source skill-scanner.",
     "proof.body":
-      "Their engineer submitted a PR. We reviewed it. It merged in 3 days. 1,272 additions. Then they built a --rule-packs CLI specifically to consume ATR.",
+      "ATR's maintainer opened the pull request; the repository's maintainers merged it 21 hours later. 1,272 additions. They then added a --rule-packs CLI flag for packs such as ATR's.",
     "proof.link": "View PR #79 on GitHub",
 
     // Ecosystem
@@ -155,7 +155,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "integrate.license.title": "License & Legal",
     "integrate.cisco.title": "Case Study: How Cisco Did It",
     "integrate.cisco.body":
-      "Cisco's AI Defense team integrated ATR rules as an upstream dependency. Their engineer submitted PR #79, we reviewed it, and it merged in 3 days. They then built a --rule-packs CLI feature (PR #80) specifically to consume ATR as a first-class rule source.",
+      "Cisco AI Defense's open-source skill-scanner took ATR rules as an upstream rule pack. ATR's maintainer opened PR #79, and the repository's maintainers merged it 21 hours later. They then added a --rule-packs CLI flag (PR #80) to load packs such as ATR's.",
 
     // Contribute page
     "contribute.crystal.title": "Threat Cloud Crystallization",
@@ -432,7 +432,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "proof.heading.post":
       " \u628A 34 \u689D ATR \u898F\u5247\u5408\u4F75\u9032\u5B83\u7684\u958B\u6E90 skill-scanner\u3002",
     "proof.body":
-      "\u4ED6\u5011\u7684\u5DE5\u7A0B\u5E2B\u63D0\u4E86 PR\u3002\u6211\u5011 review \u5B8C\u30023 \u5929\u5408\u4F75\u30021,272 \u884C\u65B0\u589E\u3002\u7136\u5F8C\u4ED6\u5011\u5EFA\u4E86 --rule-packs CLI \u5C08\u9580\u6D88\u8CBB ATR\u3002",
+      "ATR \u7DAD\u8B77\u8005\u63D0\u4E86 PR\uFF0C\u8A72 repo \u7684\u7DAD\u8B77\u8005 21 \u5C0F\u6642\u5F8C\u5408\u4F75\u30021,272 \u884C\u65B0\u589E\u3002\u4E4B\u5F8C\u4ED6\u5011\u52A0\u4E86 --rule-packs CLI \u53C3\u6578\uFF0C\u7528\u4F86\u8F09\u5165 ATR \u9019\u985E\u898F\u5247\u5305\u3002",
     "proof.link": "\u5728 GitHub \u67E5\u770B PR #79",
 
     // Ecosystem
@@ -542,7 +542,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "integrate.license.title": "\u6388\u6B0A\u8207\u6CD5\u5F8B",
     "integrate.cisco.title": "\u6848\u4F8B\uff1ACisco \u600E\u9EBC\u505A\u7684",
     "integrate.cisco.body":
-      "Cisco \u7684 AI Defense \u5718\u968A\u5C07 ATR rules \u4F5C\u70BA\u4E0A\u6E38\u4F9D\u8CF4\u6574\u5408\u3002\u4ED6\u5011\u7684\u5DE5\u7A0B\u5E2B\u63D0\u4EA4\u4E86 PR #79\uff0C\u6211\u5011 review \u5B8C\uff0C3 \u5929\u5408\u4F75\u3002\u7136\u5F8C\u4ED6\u5011\u5EFA\u4E86 --rule-packs CLI\uff08PR #80\uff09\u5C08\u9580\u6D88\u8CBB ATR\u3002",
+      "Cisco AI Defense \u7684\u958B\u6E90 skill-scanner \u628A ATR \u898F\u5247\u7D0D\u70BA\u4E0A\u6E38\u898F\u5247\u5305\u3002ATR \u7DAD\u8B77\u8005\u63D0\u4E86 PR #79\uFF0C\u8A72 repo \u7684\u7DAD\u8B77\u8005 21 \u5C0F\u6642\u5F8C\u5408\u4F75\u3002\u4E4B\u5F8C\u4ED6\u5011\u52A0\u4E86 --rule-packs CLI \u53C3\u6578\uFF08PR #80\uFF09\uFF0C\u7528\u4F86\u8F09\u5165 ATR \u9019\u985E\u898F\u5247\u5305\u3002",
 
     // Contribute page
     "contribute.crystal.title": "Threat Cloud \u7D50\u6676\u6A5F\u5236",
