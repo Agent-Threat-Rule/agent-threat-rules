@@ -108,6 +108,15 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **`pyatr test` builds a test case as the event its rule declares.** It built
+  every plain `input:` case as an `llm_input` event, whatever the rule's
+  `agent_source.type`, ignored `user_input:`, `agent_output:` and
+  `tool_call:` keys and `tool_description:` as content, and skipped draft and
+  deprecated rules, so it failed 1,013 true positives in 215 rules that
+  `atr test` passes. The builder now follows `src/testcase-event.ts` and each
+  rule is tested alone with its status overridden, as `atr test` does: 984 of
+  them pass, none that passed before fails, and a rule file that cannot be
+  loaded fails its cases with the reason instead of stopping the run.
 - **SPEC §6.4 corrected: SPEC.md 1.0.1 [Compatible].** A `regex` pattern
   condition matches case-insensitively whether or not it begins with `(?i)`,
   and `m`, `s` and `x` in a leading flag group have no effect. The 1.0.0 text,
