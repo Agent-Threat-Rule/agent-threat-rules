@@ -128,23 +128,29 @@ if result.outcome == "deny":
 
 Integrate ATR rules into your scanner, SIEM, or governance toolkit.
 
-### Generic Regex Export (how Cisco did it)
+### Generic Regex Export
 
 Extract ATR patterns in a format any scanner can consume:
 
-```typescript
-import { loadRulesFromDirectory } from 'agent-threat-rules';
-import { rulesToGenericRegex } from 'agent-threat-rules/converters';
-
-const rules = loadRulesFromDirectory('./node_modules/agent-threat-rules/rules');
-const patterns = rulesToGenericRegex(rules);
-// Returns: [{ id, title, severity, category, patterns: [{ field, regex, flags }] }]
-```
-
-Or via CLI:
 ```bash
 atr convert generic-regex --output atr-patterns.json
+# [{ id, title, severity, category, patterns: [{ field, regex, flags, description }] }]
 ```
+
+Compile each pattern as `new RegExp(regex, flags)`. Following SPEC §6.4,
+`regex` is the condition without its leading flag group and `flags` is always
+`i`, or `iu` when the pattern needs Unicode mode: every condition matches
+case-insensitively, and `m`, `s` and `x` have no effect. If the regex engine
+takes the pattern as one string with inline flags only (for example Splunk's
+PCRE or Go's `regexp`), use `(?i)` followed by `regex`. The patterns are
+ECMAScript: RE2-based engines such as Go's `regexp` cannot compile the ones that
+use lookaround or backreferences (see docs/ARCHITECTURE.md §6.2), and PCRE and
+Python `re` differ in places, for example `$` also matches before a final
+newline. Where `flags` is `iu`, a PCRE-based engine needs UTF mode for the
+astral characters such a pattern contains.
+
+`rulesToGenericRegex()` is not exported by the package, from the entry point or
+a subpath, so use the CLI.
 
 ### SIEM Integration (Splunk / Elasticsearch)
 
@@ -169,7 +175,7 @@ atr scan my-config.json --format sarif --output results.sarif
 
 Upload to GitHub Code Scanning for security alerts in your PR review.
 
-**What you get:** 113 detection rules in your platform's format. Auto-updated via npm or git. Cisco-proven integration path.
+**What you get:** ATR's detection rules in your platform's format, updated through npm or git.
 
 **What the network gets:** Your platform's users become endpoints. A threat first seen by a Garak probe protects a Microsoft AGT deployment. A pattern caught by your SIEM triggers a rule that shields individual developers.
 

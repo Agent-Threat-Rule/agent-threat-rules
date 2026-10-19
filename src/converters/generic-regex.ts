@@ -5,12 +5,17 @@
  * Designed for consumption by any security tool that supports regex matching.
  * Format: JSON array of { id, title, severity, category, patterns[] }
  *
- * Used by: Cisco AI Defense, Microsoft Agent Governance Toolkit, custom integrations.
+ * Each pattern is `{ field, regex, flags, description }` for a consumer that
+ * compiles `new RegExp(regex, flags)`. Per SPEC §6.4, `regex` is the condition
+ * without its leading flag group and `flags` is always `i`, or `iu` when the
+ * pattern needs Unicode mode: every condition matches case-insensitively, and
+ * `m`, `s` and `x` have no effect.
  *
  * @module agent-threat-rules/converters/generic-regex
  */
 
 import type { ATRRule, ATRSeverity, ATRReferences } from '../types.js';
+import { regexConditionSpec } from '../regex-dialect.js';
 
 export interface GenericRegexRule {
   readonly id: string;
@@ -43,19 +48,15 @@ export function ruleToGenericRegex(rule: ATRRule): GenericRegexRule {
 
   for (const condition of conditions) {
     if ('operator' in condition && condition.operator === 'regex' && 'value' in condition && condition.value) {
-      // Extract flags from the regex (e.g. (?i) → 'i')
-      let regex = condition.value;
-      let flags = '';
-      const flagMatch = regex.match(/^\(\?([gimsuy]+)\)/);
-      if (flagMatch) {
-        flags = flagMatch[1]!;
-        regex = regex.slice(flagMatch[0].length);
-      }
+      // SPEC §6.4. This used to copy the group's letters into `flags`, so a
+      // condition without (?i) exported flags "" (case-sensitive) and (?im) or
+      // (?is) turned on multiline or dotAll in the consumer.
+      const spec = regexConditionSpec(condition.value);
 
       patterns.push({
         field: 'field' in condition ? condition.field : 'content',
-        regex,
-        flags,
+        regex: spec.source,
+        flags: spec.flags,
         description: ('description' in condition ? condition.description : '') ?? '',
       });
     }
