@@ -60,8 +60,17 @@ All notable changes to ATR will be documented in this file.
   "Open proposals". The three corpus entries linked to ATR PRs #51, #52 and
   #53, which do not contain the rules they named; they now link to the commits
   that added ATR-2026-00452..00456, 00500..00505 and 00510..00517, the second
-  no longer names NeMo-Guardrails, and figures no file in the repository
-  records were removed.
+  no longer names NeMo-Guardrails as a rule source, and every figure they and
+  the page's 2026-05-12 sprint section quote now comes from a measurement file:
+  HackAPrompt is quoted per lane on its pinned 4,780-prompt subset with the
+  in-sample caveat and the out-of-sample reference (28.7% hunt / 0.7% enforce
+  with the 20 rules naming HackAPrompt removed), the sprint's 28.6% to 66.2%
+  becomes the re-measured 28.6% to 66.0% (66.2% cannot be reproduced from any
+  committed tree), the paper is described as an EMNLP 2023 Best Paper Award
+  winner (not a nominee) on gpt-3.5-turbo, FlanT5-XXL and text-davinci-003
+  (not GPT/Claude/PaLM), and the promptfoo + llm-guard rules are quoted against
+  126 attack and 20 benign test cases extracted from pinned vendor commits.
+  Each corpus entry links its measurement file.
 
 ### Changed
 

@@ -102,14 +102,41 @@ export const HACKAPROMPT_CLOSED_BOOK = {
   zh: "部分屬於 closed-book:有規則正是從這份語料的攻擊群集寫出來的,其中幾條是 stable,所以這個數字不是樣本外成績。",
 } as const;
 
-/** A measurement taken before the enforce lane was recorded (hackaprompt, autoresearch). */
+/** A measurement taken before the enforce lane was recorded (autoresearch). */
 export const NO_ENFORCE_RECORD = {
   en: "this measurement predates the enforce-lane record, so there is no enforce figure for it",
   zh: "這次量測早於 enforce lane 開始記錄的時間,所以沒有 enforce 數字",
 } as const;
 
+/** Where the repository's files are read on GitHub: a measurement file is linked as `${REPO_BLOB_URL}${measurement_file}`. */
+export const REPO_BLOB_URL = "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/";
+
+/** The measurements behind `figures` that exist, each with its label, in the order given. */
+export function figureMeasurements(
+  stats: Pick<SiteStats, "benchmarks">,
+  figures: readonly { source: string; label: string }[],
+): readonly { m: BenchmarkMeasurement; label: string }[] {
+  return figures.flatMap(({ source, label }) => {
+    const m = findBenchmark(stats, source);
+    return m ? [{ m, label }] : [];
+  });
+}
+
 /**
- * " Current recall, hunt lane … / enforce lane …: <label> (<n> samples): <hunt> / <enforce>; …"
+ * `HackAPrompt (4,780 attack samples): 83.1% (hunt) / 49.0% (enforce)`. A
+ * corpus with benign samples counts its attack samples only, since recall is
+ * over those, and adds how many of its benign samples the hunt lane flags.
+ */
+function figurePart(m: BenchmarkMeasurement, label: string): string {
+  const size = m.attacks === null ? `${count(m.samples)} samples` : `${count(m.attacks)} attack samples`;
+  const benign = m.benign && m.falsePositives !== null
+    ? `, ${count(m.falsePositives)} of ${count(m.benign)} benign samples flagged (hunt)`
+    : "";
+  return `${label} (${size}): ${recallLanes(m)}${benign}`;
+}
+
+/**
+ * " Current recall, hunt lane … / enforce lane …: <label> (<n> attack samples): <hunt> / <enforce>; …"
  * for the given sources, read from their measurement files, or "" when none has
  * a measurement. English: the red-team entries it extends are English only.
  */
@@ -117,12 +144,9 @@ export function currentRecallSentence(
   stats: Pick<SiteStats, "benchmarks">,
   figures: readonly { source: string; label: string }[],
 ): string {
-  const found = figures.flatMap(({ source, label }) => {
-    const m = findBenchmark(stats, source);
-    return m ? [{ m, label }] : [];
-  });
+  const found = figureMeasurements(stats, figures);
   if (found.length === 0) return "";
-  const parts = found.map(({ m, label }) => `${label} (${count(m.samples)} samples): ${recallLanes(m)}`);
+  const parts = found.map(({ m, label }) => figurePart(m, label));
   const missing = found.some(({ m }) => m.enforce === null) ? `; ${NO_ENFORCE_RECORD.en}` : "";
   return (
     " Current recall, hunt lane (every rule maturity) / enforce lane (stable rules only, the one for blocking): " +

@@ -1,6 +1,6 @@
 import { Reveal } from "@/components/Reveal";
 import { loadSiteStats } from "@/lib/stats";
-import { currentRecallSentence, findBenchmark, measuredStamp, recallLanes } from "@/lib/recall";
+import { REPO_BLOB_URL, count, currentRecallSentence, figureMeasurements, findBenchmark, measuredStamp, recallLanes } from "@/lib/recall";
 import { locales, type Locale } from "@/lib/i18n";
 import { RED_TEAM_TOOLS } from "@/lib/red-team-tools";
 import type { Metadata } from "next";
@@ -95,6 +95,7 @@ export default async function RedTeamPage({
   const zh = locale === "zh";
   const stats = loadSiteStats();
   const garak = findBenchmark(stats, "garak");
+  const vendorSuites = findBenchmark(stats, "vendor-guardrail-suites");
 
   const inProduction = RED_TEAM_TOOLS.filter(
     (t) => t.status === "in-production" || t.status === "corpus",
@@ -430,6 +431,17 @@ export default async function RedTeamPage({
                           {t.prUrl.includes("/commit/") ? "Commit →" : "PR →"}
                         </a>
                       )}
+                      {figureMeasurements(stats, t.figures ?? []).map(({ m, label }) => (
+                        <a
+                          key={m.measurement_file}
+                          href={`${REPO_BLOB_URL}${m.measurement_file}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-data text-xs text-blue hover:underline"
+                        >
+                          {zh ? `${label} 量測檔 →` : `${label} measurement →`}
+                        </a>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -482,13 +494,18 @@ export default async function RedTeamPage({
           </div>
           <h2 className="font-display text-[clamp(24px,3.4vw,36px)] font-extrabold tracking-[-2px] leading-tight mb-4 max-w-[720px]">
             {zh
-              ? "5 個語料庫 · 75 條新規則 · HackAPrompt 召回率 28.6% → 66.2%（2026-05-12 該次 sprint，載入全部規則，在挖出規則的同一份語料上量測）"
-              : "5 corpora · 75 new rules · HackAPrompt recall 28.6% → 66.2% (2026-05-12 sprint, every rule loaded, measured on the corpus the rules were mined from)"}
+              ? "5 個語料庫 · 75 條新規則 · HackAPrompt 召回率 28.6% → 66.0%（2026-05-12 該次 sprint，載入全部規則，在挖出規則的同一份 4,780 筆子集上量測，屬樣本內）"
+              : "5 corpora · 75 new rules · HackAPrompt recall 28.6% → 66.0% (2026-05-12 sprint, every rule loaded, measured on the 4,780-prompt subset the rules were mined from, so in-sample)"}
           </h2>
           <p className="text-base text-stone font-light max-w-[640px] mb-4">
             {zh
               ? "2026-05-12：11 個並行 agent 消化五個外部語料庫，生成 75 條規則，均通過 6 道品質關卡，0 FP regression on benign corpus。詳細版本記錄在 /changelog。"
               : "2026-05-12: 11 parallel agents ingested five external corpora and generated 75 rules, all passing the 6-gate quality process with 0 FP regression on the benign corpus. Full version record at /changelog."}
+          </p>
+          <p className="text-base text-stone font-light max-w-[640px] mb-4">
+            {zh
+              ? "上面兩個 HackAPrompt 數字是重跑出來的：在固定的 4,780 筆子集上（固定 dataset revision 與亂數種子抽樣），分別於 sprint 前一個 commit（3a6145b7，偵測 1,368 筆）與 sprint 的發布 commit（92c0d0fe，偵測 3,154 筆）執行，載入全部規則，也就是今天 hunt lane 載入的範圍。當時公布的 66.2% 無法從任何已 commit 的版本重現，已撤回。現在的 hunt / enforce 數字與樣本外對照見上方 HackAPrompt 條目。"
+              : "Both HackAPrompt figures are re-runs on a fixed 4,780-prompt subset (a seeded sample at a pinned dataset revision): at the commit before the sprint (3a6145b7, 1,368 detected) and at the sprint's release commit (92c0d0fe, 3,154 detected), with every rule loaded, which is what the hunt lane loads today. The 66.2% published at the time cannot be reproduced from any committed tree and is withdrawn. Current hunt and enforce figures, and the out-of-sample reference, are in the HackAPrompt entry above."}
           </p>
           <p className="text-base text-stone font-light max-w-[640px] mb-10">
             {zh
@@ -499,8 +516,8 @@ export default async function RedTeamPage({
         <Reveal delay={0.1}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-fog mb-8">
             {[
-              { corpus: "HackAPrompt", samples: "4,780", rules: "5", ruleIds: "ATR-2026-00452..00456", recall: zh ? "28.6% → 66.2%（該 sprint 當時，載入全部規則，樣本內）" : "28.6% → 66.2% (at the time of that sprint, every rule loaded, in-sample)" },
-              { corpus: zh ? "Vendor test suites" : "Vendor test suites", samples: "94", rules: "6", ruleIds: "ATR-2026-00500..00505", recall: "" },
+              { corpus: "HackAPrompt", samples: zh ? "4,780（601,757 筆中以固定種子抽出的子集）" : "4,780 (seeded subset of 601,757)", rules: "5", ruleIds: "ATR-2026-00452..00456", recall: zh ? "28.6% → 66.0%（hunt，載入全部規則，樣本內；於 3a6145b7 與 92c0d0fe 重跑）" : "28.6% → 66.0% (hunt, every rule loaded, in-sample; re-run at 3a6145b7 and 92c0d0fe)" },
+              { corpus: "promptfoo + llm-guard", samples: zh ? "94（2026-05-12 匯入，含 6 筆 NeMo Guardrails；79 筆可在廠商 repo 原文找到）" : "94 (2026-05-12 import, 6 of them NeMo Guardrails; 79 found verbatim in the vendor repos)", rules: "6", ruleIds: "ATR-2026-00500..00505", recall: vendorSuites ? (zh ? `${recallLanes(vendorSuites)}（${count(vendorSuites.attacks ?? vendorSuites.samples)} 筆固定版本的廠商攻擊案例，部分屬樣本內；${measuredStamp(vendorSuites, true, true)}）` : `${recallLanes(vendorSuites)} (${count(vendorSuites.attacks ?? vendorSuites.samples)} pinned vendor attack cases, partly in-sample; ${measuredStamp(vendorSuites, false)})`) : "" },
               { corpus: "PromptInject", samples: zh ? "全語料庫" : "full corpus", rules: "4", ruleIds: "ATR-2026-00506..00509", recall: "" },
               { corpus: "OWASP LLM Top 10 + ATLAS PoCs", samples: zh ? "8 標準分類" : "8 standard categories", rules: "8", ruleIds: "ATR-2026-00510..00517", recall: "" },
               { corpus: zh ? "Garak in-the-wild jailbreak" : "Garak in-the-wild jailbreak", samples: "650", rules: zh ? "已有覆蓋" : "existing coverage", ruleIds: garak ? (zh ? `${recallLanes(garak)} recall（${measuredStamp(garak, true, true)}；部分屬 closed-book）` : `${recallLanes(garak)} recall (${measuredStamp(garak, false)}; partly closed-book)`) : "", recall: "" },
