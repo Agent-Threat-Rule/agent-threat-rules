@@ -9,6 +9,7 @@
  */
 
 import type { ATRRule, ATRMatch, AgentEvent } from './types.js';
+import { compileRegexCondition, safeRegexTest } from './engine.js';
 
 interface ShadowRuleStats {
   readonly ruleId: string;
@@ -29,7 +30,8 @@ export interface PromotionCandidate {
 export class ShadowEvaluator {
   private readonly rules: ATRRule[] = [];
   private readonly stats = new Map<string, ShadowRuleStats>();
-  private readonly compiledPatterns = new Map<string, RegExp>();
+  /** Compiled per condition value; null for a value the engine would not compile. */
+  private readonly compiledPatterns = new Map<string, RegExp | null>();
 
   /** Add an experimental rule for shadow evaluation */
   addRule(rule: ATRRule): void {
@@ -57,7 +59,10 @@ export class ShadowEvaluator {
       stat.totalEvaluations++;
       stat.lastSeen = Date.now();
 
-      // Simple regex evaluation for shadow rules
+      // Each condition value is compiled as ATREngine compiles an array-format
+      // regex condition (SPEC §6.4): the leading (?i) group removed, then the
+      // ReDoS gate. A value that fails either never matches, as in the engine,
+      // and inputs past the engine's length limit are not tested.
       const detection = rule.detection;
       const conditions = Array.isArray(detection.conditions)
         ? detection.conditions
@@ -66,23 +71,21 @@ export class ShadowEvaluator {
       let matched = false;
       for (const cond of conditions) {
         const c = cond as unknown as Record<string, unknown>;
-        const value = c['value'] as string;
-        const field = c['field'] as string;
-        if (!value || !field) continue;
+        const value = c['value'];
+        const field = c['field'];
+        // A YAML scalar such as `value: 2024` loads as a number; the engine only
+        // compiles string values, so a shadow rule must not throw on one.
+        if (typeof value !== 'string' || typeof field !== 'string' || !value || !field) continue;
 
         const text = event.fields?.[field] ?? event.content ?? '';
-        try {
-          let regex = this.compiledPatterns.get(value);
-          if (!regex) {
-            regex = new RegExp(value, 'i');
-            this.compiledPatterns.set(value, regex);
-          }
-          if (regex.test(text)) {
-            matched = true;
-            break;
-          }
-        } catch {
-          // Invalid regex
+        let regex = this.compiledPatterns.get(value);
+        if (regex === undefined) {
+          regex = compileRegexCondition(value, rule.id);
+          this.compiledPatterns.set(value, regex);
+        }
+        if (regex && safeRegexTest(regex, text)) {
+          matched = true;
+          break;
         }
       }
 
