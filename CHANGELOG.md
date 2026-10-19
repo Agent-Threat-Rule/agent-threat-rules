@@ -61,16 +61,27 @@ All notable changes to ATR will be documented in this file.
   #53, which do not contain the rules they named; they now link to the commits
   that added ATR-2026-00452..00456, 00500..00505 and 00510..00517, the second
   no longer names NeMo-Guardrails as a rule source, and every figure they and
-  the page's 2026-05-12 sprint section quote now comes from a measurement file:
-  HackAPrompt is quoted per lane on its pinned 4,780-prompt subset with the
-  in-sample caveat and the out-of-sample reference (28.7% hunt / 0.7% enforce
-  with the 20 rules naming HackAPrompt removed), the sprint's 28.6% to 66.2%
-  becomes the re-measured 28.6% to 66.0% (66.2% cannot be reproduced from any
-  committed tree), the paper is described as an EMNLP 2023 Best Paper Award
-  winner (not a nominee) on gpt-3.5-turbo, FlanT5-XXL and text-davinci-003
-  (not GPT/Claude/PaLM), and the promptfoo + llm-guard rules are quoted against
-  126 attack and 20 benign test cases extracted from pinned vendor commits.
-  Each corpus entry links its measurement file.
+  the page's 2026-05-12 sprint section quote now comes from a measurement file
+  or a committed re-run record. HackAPrompt is quoted per lane on its pinned
+  4,780-prompt subset, followed by its ablation reference (the same prompts
+  without the rules whose YAML names HackAPrompt), read from
+  `breakdown.in_sample_ablation` of the measurement file and called what it is,
+  an approximation of out-of-sample recall rather than an out-of-sample result;
+  the vendor-suite entry is followed by its own. The sprint's 28.6% to 66.2%
+  becomes the re-measured 28.6% to 66.0%: 66.2% could not be reproduced at the
+  sprint commits `e9efefdd` and `92c0d0fe` (66.0% at best), and the 28.6% is
+  itself in-sample. The paper is described as listed under Best Paper Awards at
+  EMNLP 2023, on gpt-3.5-turbo, FlanT5-XXL and text-davinci-003 (not
+  GPT/Claude/PaLM). The 2026-05-12 import is described as 79 of 94 samples
+  occurring verbatim in the vendor file they name. The sprint added 71 rule
+  files, not 75 (the 2.2.0 entry also counted four earlier CVE rules), and the
+  claims that the sprint's and the 2026-06 mega-scan's rules all passed the
+  quality gate with 0 benign FP are replaced by the gate re-run on 2026-10-19
+  (`data/gate-reruns/2026-10-19_red-team-rule-batches.json`): at 92c0d0fe, 10
+  of the 71 failed (own true positives) and none flagged a benign SKILL.md file;
+  at current main, 33 of 71 and 4 of 29 fail, and 26 and 3 flag at least one
+  benign sample, none of them in the enforce lane. Each corpus entry links its
+  measurement file.
 
 ### Changed
 

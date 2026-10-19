@@ -123,16 +123,31 @@ export function figureMeasurements(
 }
 
 /**
+ * `, and 28.7% (hunt) / 0.7% (enforce) without the 20 rules whose YAML names it
+ * (the ablation reference …)`, from breakdown.in_sample_ablation of the
+ * measurement file; "" when the measurement records no ablation.
+ */
+export function ablationClause(m: Pick<BenchmarkMeasurement, "ablation">): string {
+  const a = m.ablation;
+  if (!a) return "";
+  return (
+    `, and ${pctHunt(a.hunt.recall)} (hunt) / ${pct(a.enforce.recall)} (enforce) without the ${count(a.rulesRemoved)} ` +
+    "rules whose YAML names it (the ablation reference: it approximates an out-of-sample figure but does not guarantee one)"
+  );
+}
+
+/**
  * `HackAPrompt (4,780 attack samples): 83.1% (hunt) / 49.0% (enforce)`. A
  * corpus with benign samples counts its attack samples only, since recall is
- * over those, and adds how many of its benign samples the hunt lane flags.
+ * over those, and adds how many of its benign samples the hunt lane flags. A
+ * measurement that records an in-sample ablation adds its reference figure.
  */
 function figurePart(m: BenchmarkMeasurement, label: string): string {
   const size = m.attacks === null ? `${count(m.samples)} samples` : `${count(m.attacks)} attack samples`;
   const benign = m.benign && m.falsePositives !== null
     ? `, ${count(m.falsePositives)} of ${count(m.benign)} benign samples flagged (hunt)`
     : "";
-  return `${label} (${size}): ${recallLanes(m)}${benign}`;
+  return `${label} (${size}): ${recallLanes(m)}${benign}${ablationClause(m)}`;
 }
 
 /**
