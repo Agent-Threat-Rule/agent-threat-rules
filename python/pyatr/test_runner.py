@@ -109,6 +109,13 @@ _RUNTIME_SOURCE_TYPE: dict[str, str] = {
 }
 
 
+# The tool name a tool event carries when its test case names none
+# (UNNAMED_TOOL in src/testcase-event.ts). src/hook-handler.ts fills tool_name
+# from the host's tool call; a name no rule is written for stands in for it,
+# so a tool_name condition does not read the case's payload as the name.
+UNNAMED_TOOL = "atr-test-tool"
+
+
 def _as_text(value: Any) -> str:
     """A test-case value as text: strings as-is, anything else as compact JSON."""
     if value is None:
@@ -138,6 +145,12 @@ def _build_event_from_test_case(case: dict[str, Any], rule: dict[str, Any]) -> A
     left `field: tool_response` and `field: tool_args` conditions unresolvable,
     so those rules failed their own true positives here while the TypeScript
     engine passed them.
+
+    This is the TypeScript builder's default "wide" field set, the one `atr
+    test` decides a case on. Its "runtime" field set only feeds the report of
+    true positives that match no runtime-shaped event, so it is not ported.
+    Nor is its trace parsing: pyatr has no trace evaluator, so the true
+    positives of `method: trace` rules fail here.
     """
     raw_input = case.get("input")
     if raw_input is None:
@@ -183,6 +196,7 @@ def _build_event_from_test_case(case: dict[str, Any], rule: dict[str, Any]) -> A
     source_type = str(declared or "llm_io")
     source_type = _RUNTIME_SOURCE_TYPE.get(source_type, source_type)
     event_type = _SOURCE_TO_EVENT.get(source_type, "llm_input")
+    tool_event = event_type in ("tool_call", "tool_response")
 
     if tool_response and event_type == "tool_response":
         content = tool_response
@@ -201,22 +215,27 @@ def _build_event_from_test_case(case: dict[str, Any], rule: dict[str, Any]) -> A
         fields["agent_output"] = agent_output
     if tool_description:
         fields["tool_description"] = tool_description
-    # Always set, even empty, as the TS builder does, so the content is not read
-    # as a tool name. pyatr's engine honours an empty field; the TS engine
-    # treats it as absent and, on a tool_call event, whose default field there
-    # is tool_name, reads the content instead.
-    fields["tool_name"] = tool_name
+    # A tool event always names its tool, UNNAMED_TOOL when the case does not,
+    # so a tool_name condition does not read the case's payload as the name.
+    fields["tool_name"] = tool_name or (UNNAMED_TOOL if tool_event else "")
     # Production integrations always pass tool_args; only the input text stands
     # in for it, never a tool response.
     if tool_args or text:
         fields["tool_args"] = tool_args or text
     fields["content"] = content
-    fields["agent_message"] = content
+    # A case that names its own agent_message keeps it.
+    fields["agent_message"] = agent_message or content
 
+    # The TS builder sets some of these to "" (tool_name on a non-tool event,
+    # content and agent_message on a case with no payload). Its engine treats
+    # an empty field as absent and matches nothing on it; pyatr's engine
+    # evaluates any field that is present, so a condition whose pattern matches
+    # "" would fire here and not there. Leaving the empty ones out gives both
+    # engines the same reading.
     return AgentEvent(
         content=content,
         event_type=event_type,
-        fields=fields,
+        fields={name: value for name, value in fields.items() if value},
     )
 
 
