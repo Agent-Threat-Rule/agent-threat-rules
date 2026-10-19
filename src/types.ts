@@ -514,6 +514,12 @@ export interface HookInput {
   readonly hook_event_name?: "PreToolUse" | "PostToolUse";
   readonly tool_name: string;
   readonly tool_input: Readonly<Record<string, unknown>>;
+  /**
+   * The tool's output, on PostToolUse. Claude Code sends it here, at the top
+   * level, as the tool's own output object (its shape depends on the tool);
+   * src/hook-tool-output.ts reads its text.
+   */
+  readonly tool_response?: unknown;
   readonly session_id?: string;
   readonly timestamp?: string;
 }

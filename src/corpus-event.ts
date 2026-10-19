@@ -216,9 +216,14 @@ function preToolJsonBoth(text: string): AgentEvent {
 }
 
 /**
- * Shape 4 — PostToolUse. src/hook-handler.ts:64-69: the tool has already run,
- * its output lands in tool_response, and tool_args is still the JSON-encoded
- * argument object.
+ * Shape 4 — PostToolUse, JSON-encoded. The tool has already run. This is the
+ * event src/hook-handler.ts built from { tool_input: { output: text } } before it
+ * read the output into content: content and tool_args the JSON of the input,
+ * tool_response the raw text. The hook now builds two events instead, and the
+ * set still covers both. With an output (Claude Code's top-level tool_response,
+ * or tool_input.output), content and tool_response hold the raw text, which shape
+ * 1 presents to every rule. Without one, content is the JSON of the input and no
+ * tool_response is set; for an input that holds the sample, that JSON is here.
  *
  * This shape is NOT redundant with shapes 2-3, and the reason is the engine's
  * source-type filter. A `tool_call` event only evaluates rules whose
