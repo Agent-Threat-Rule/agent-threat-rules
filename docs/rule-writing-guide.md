@@ -356,8 +356,11 @@ event type. `atr test` runs each passing true positive again on what the
 producers put on an event of each type the engine runs the rule on, and as a
 skill document, and lists one that matches none of them under `harnessOnly` in
 `atr test --json` (and under "Harness-only" in the text report). It still counts
-as passed. Naming a field in the case clears the listing without checking that
-any event carries the payload there, so name the field it really arrives in.
+as passed there, and `tests/testcase-runtime-parity-rules.test.ts`, which runs
+every rule's true positives except those of a type the engine withholds (which
+`atr test` reports as unevaluable), fails on it. Naming a field in the case
+clears both without checking that any event carries the payload there, so name
+the field it really arrives in.
 
 ### Evasion tests
 

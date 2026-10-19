@@ -32,7 +32,9 @@ All notable changes to ATR will be documented in this file.
   ATR-2026-01610's two cases declared as `user_input` match their `llm_input`
   event only through the input copied into `tool_args`; the engine also runs
   `llm_io` rules on `tool_response` events, where the hook fills `tool_args`,
-  and there they match.
+  and there they match. `tests/testcase-runtime-parity-rules.test.ts` runs every
+  rule's true positives the way `atr test` does, leaving out a type the engine
+  withholds as `atr test` does, and fails on one.
 
 - **Every benchmark measurement records the enforce lane beside its
   headline.** A measurement's `metrics.recall` is the `hunt` lane (the engine
