@@ -254,8 +254,11 @@ function postToolJson(text: string): AgentEvent {
  *     can match one and not the other.
  *   - RULE ADMISSION: the engine filters rules by agent_source.type against the
  *     event type. mcp_exchange (shape 1) is filtered against nothing, so every
- *     rule runs; tool_call (2-3) admits tool_call + mcp_exchange rules;
- *     tool_response (4) admits mcp_exchange + llm_io rules.
+ *     rule runs; tool_call (2-3) admits tool_call + mcp_exchange rules (and
+ *     skill_lifecycle, skill_permission and skill_chain); tool_response (4)
+ *     admits mcp_exchange + llm_io rules (and context_window). The extended
+ *     types follow RUNTIME_SOURCE_TYPE in src/engine.ts; memory_access is
+ *     withheld there, so only shape 1 runs it.
  *
  * Deliberately omitted: `llm_input` / `llm_output` / `multi_agent_message`
  * events. Shape 1 already carries user_input / agent_output / agent_message
