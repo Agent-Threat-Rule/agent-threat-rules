@@ -179,6 +179,15 @@ Is the threat in user/LLM text?
 | `skill_permission` | Over-permissioned skills, scope escalation, boundary violations |
 | `skill_chain` | Multi-skill attack chains, tool-call laundering across skills |
 
+Where the reference engine runs each type: the first five match an event type
+of their own. `context_window` runs where `llm_io` rules run, and the `skill_*`
+types where `tool_call` rules run (`RUNTIME_SOURCE_TYPE` in `src/engine.ts`).
+`memory_access` runs on no typed event yet (`WITHHELD_SOURCE_TYPES`, which gives
+the reason): such a rule reaches neither `atr guard` nor the framework adapters,
+only an untyped event and a skill scan, and `atr test` reports its cases as
+unevaluable. `tests/engine-extended-source-types.test.ts` lists the rules of
+that type by id, so a new one fails it until the type is mapped.
+
 ---
 
 ## Regex Best Practices

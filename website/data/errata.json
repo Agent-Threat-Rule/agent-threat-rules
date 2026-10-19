@@ -1,6 +1,15 @@
 {
-  "lastUpdated": "2026-10-16",
+  "lastUpdated": "2026-10-19",
   "entries": [
+    {
+      "id": "e-2026-10-19-regex-dialect",
+      "version": "3.5.12–4.1.5",
+      "section": "SPEC.md §6.4 Regular-Expression Dialect (ATR Core 1.0.0)",
+      "summary_en": "SPEC.md 1.0.0 §6.4, as revised on 2026-07-19, said: \"A conforming Engine MUST strip that leading group from the pattern and apply the corresponding RegExp flags (i, m, s).\" Read that way, a pattern without (?i) is case-sensitive, and (?s) and (?m) switch on dotAll and multiline mode. The reference engine and pyATR do neither: they remove the group, match every regex condition case-insensitively, and ignore m, s and x. Seven true-positive fixtures of the conformance suite, unchanged since 2026-05-16, need case-insensitive matching, so an engine built to that sentence could not pass Section 12. SPEC.md 1.0.1 states the reference engine's behavior; no rule, no fixture and no reference-engine match changed. The Sigma exporter no longer copies m and s into the patterns it writes; other exports that still follow the 1.0.0 wording are listed in issue #698.",
+      "summary_zh": "SPEC.md 1.0.0 第 6.4 節（2026-07-19 修訂）原文：「A conforming Engine MUST strip that leading group from the pattern and apply the corresponding RegExp flags (i, m, s).」照這句話，沒有 (?i) 的 pattern 會區分大小寫，(?s) 與 (?m) 會開啟 dotAll 與 multiline 模式。參考引擎與 pyATR 都不是這樣運作：它們移除該群組後，所有 regex 條件一律不分大小寫比對，m、s、x 不起作用。conformance 測試套件中有七個自 2026-05-16 起未變動的 true-positive fixture 需要不分大小寫比對，照這句話實作的引擎無法通過第 12 節。SPEC.md 1.0.1 改為描述參考引擎的實際行為；沒有任何規則、fixture 或參考引擎的比對結果因此改變。Sigma 匯出工具已不再把 m 與 s 複製進輸出的 pattern；其他仍照 1.0.0 文字的匯出工具列在 issue #698。",
+      "date": "2026-10-19",
+      "url": "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/698"
+    },
     {
       "id": "e-2026-10-16-integration-status",
       "version": "4.1.5",

@@ -1,8 +1,9 @@
 # ATR Core Specification
 
-Version: 1.0.0
+Version: 1.0.1
 Status: Draft
-Date: 2026-05-16
+Date: 2026-10-19
+Previous version: 1.0.0 (2026-05-16)
 License: MIT
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
 Numbering Authority: ATR Technical Committee (transitional BDFL until TSC seated)
@@ -24,7 +25,7 @@ specification is an ATR-compatible engine.
 
 ## 2. Status of This Document
 
-This is a Draft of ATR Core v1.0.0. Distribution is unlimited. The Draft is
+This is a Draft of ATR Core v1.0.1. Distribution is unlimited. The Draft is
 stable for implementation. Changes prior to Final status will be limited to
 editorial corrections and clarifications that do not alter rule wire format or
 evaluation outcome.
@@ -278,17 +279,51 @@ matching), but MUST NOT report such a Rule as conformant at Level L2/L3.
 
 ### 6.4 Regular-Expression Dialect
 
-`regex` operands are ECMAScript (`RegExp`) patterns with one required
-preprocessing rule: a pattern MAY begin with an inline global-flag group
-matching `^\(\?[ims]+\)` (for example `(?i)` or `(?is)`). A conforming Engine
-MUST strip that leading group from the pattern and apply the corresponding
-`RegExp` flags (`i`, `m`, `s`). This inline-flag form is used by a large
-majority of the Corpus and is therefore normative: an Engine that compiles the
-pattern literally as ECMAScript — where a leading `(?i)` raises a syntax error —
-is non-conforming. Patterns are applied across the entire Input field, not
-line-by-line, unless the pattern itself constrains position. Engines SHOULD
-reject patterns whose worst-case matching is super-linear (ReDoS) rather than
-evaluate them.
+The `value` of a pattern condition whose `operator` is `regex` (Section 6.1) is
+an ECMAScript (`RegExp`) pattern, compiled and applied as follows.
+
+1. **Leading flag group.** A pattern MAY begin with an inline flag group
+   matching `^\(\?[imsx]+\)`, for example `(?i)` or `(?is)`. A conforming
+   Engine MUST remove that group and compile the rest of the pattern as an
+   ECMAScript `RegExp` with the `i` flag, adding the `u` flag exactly when the
+   rest contains `\u{`, `\p{` or a character above U+FFFF. An Engine that
+   compiles the whole pattern as ECMAScript, where a leading `(?i)` raises a
+   syntax error, is non-conforming. Only a group at the very start of the
+   pattern is removed.
+2. **Letter case.** A conforming Engine MUST match these patterns
+   case-insensitively, whether or not they begin with `(?i)`, and a
+   `case_sensitive` key on such a condition has no effect. A pattern written
+   without `(?i)` therefore matches every ASCII capitalisation of what it
+   spells, and `[A-Z]` also matches `a` to `z`. Authors MAY still write `(?i)`
+   so that a pattern reads the way it behaves.
+3. **Other letters.** The letters `m`, `s` and `x` in a leading flag group have
+   no effect, and a conforming Engine MUST NOT apply multiline, dotAll or
+   extended mode because of them. A pattern is applied to the entire Input
+   field, not line by line: `^` and `$` match only at the start and end of the
+   field, and `.` does not match a line terminator. A Rule that needs a line
+   start, or a character that may be a line terminator, writes it into the
+   pattern, for example `(?:^|\n)` or `[\s\S]`. These statements apply to the
+   value the Engine tests, including a Unicode-normalised copy of the field if
+   the Engine tests one.
+4. **Modifier groups.** Items 2 and 3 describe a pattern as a whole. A modifier
+   group such as `(?i:…)`, `(?-i:…)`, `(?m:…)` or `(?s:…)` is a syntax error
+   before ECMAScript 2025 and, where a runtime accepts it, changes letter case,
+   `^` and `$`, or `.` within its own span. A Rule SHOULD NOT contain one.
+
+Engines SHOULD reject patterns whose worst-case matching is super-linear
+(ReDoS) rather than evaluate them.
+
+> **Correction (2026-10-19), non-normative.** From 2026-07-19 (#340) until
+> this correction, SPEC.md 1.0.0 said here that a conforming Engine "MUST strip
+> that leading group from the pattern and apply the corresponding `RegExp`
+> flags (`i`, `m`, `s`)". That made a pattern without `(?i)` case-sensitive and
+> gave `(?s)` and `(?m)` their dotAll and multiline meaning. The reference
+> Engine and pyATR do neither, and the true-positive fixtures of the
+> Conformance Test Suite (Section 12) require case-insensitive matching.
+> Version 1.0.1 also admits `x` in the group, which both Engines already
+> removed, and states when the `u` flag applies. See Appendix D, issue #698 and
+> erratum `e-2026-10-19-regex-dialect`
+> (https://agentthreatrule.org/en/errata#erratum-e-2026-10-19-regex-dialect).
 
 ### 6.5 Determinism
 
@@ -556,3 +591,10 @@ Author/Change controller: Same as B.1.
 | Required ≥5 TP + ≥5 TN per Rule (was prior community practice) | This document |
 | Specified Match output schema | This document |
 | Added IANA media type registration request | This document |
+
+## Appendix D. Revision History
+
+| Version | Date | Change |
+|---------|------|--------|
+| 1.0.1 | 2026-10-19 | Section 6.4 corrected, compatible with 1.0.0 Engines that pass the Conformance Test Suite: every `regex` pattern condition matches case-insensitively, `m`, `s` and `x` in a leading flag group have no effect, the group may contain `x`, the `u` flag applies exactly when the pattern needs it, and a Rule SHOULD NOT contain a modifier group. The 1.0.0 text of 2026-07-19 (#340) said an Engine applies the flags that group names. No rule, no Conformance Test Suite fixture and no Match produced by the reference Engine changed. Issue #698; erratum `e-2026-10-19-regex-dialect`. |
+| 1.0.0 | 2026-05-16 | Initial Draft. Revised in place on 2026-05-28, 2026-07-19 (#340) and 2026-10-16 (#677) without a version change; the repository history has each revision. |
