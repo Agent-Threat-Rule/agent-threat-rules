@@ -27,7 +27,7 @@ from pathlib import Path
 # Fields consumed by pyatr.engine._parse_rule / _evaluate_rule. Everything
 # else in a rule file (compliance, references, provenance, author, ...) is
 # irrelevant to Layer-1 matching and is intentionally excluded.
-ENGINE_FIELDS = ("id", "title", "severity", "description", "status", "detection", "tags")
+ENGINE_FIELDS = ("id", "title", "severity", "description", "status", "detection", "tags", "agent_source")
 
 
 def find_rules_dir() -> Path | None:
