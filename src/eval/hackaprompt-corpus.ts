@@ -30,6 +30,19 @@ interface RawHackaPromptSample {
   };
 }
 
+/**
+ * The two groups breakdown.by_category reports. HackAPrompt's `correct` field
+ * records whether the submission made its target model produce the level's
+ * target output, i.e. whether the attack succeeded in the competition. It is
+ * not an attack type. The corpus file's own `category` ("jailbreak" /
+ * "prompt-injection") is a label PR #51 derived from that same field; it stays
+ * in the file so the corpus keeps the digest the manifest pins, and is not used.
+ */
+export const HACKAPROMPT_OUTCOME_CATEGORY = {
+  succeeded: 'competition-outcome:succeeded',
+  failed: 'competition-outcome:failed',
+} as const;
+
 function assignDifficulty(level: number): 'easy' | 'medium' | 'hard' {
   if (level <= 2) return 'easy';
   if (level <= 6) return 'medium';
@@ -46,7 +59,9 @@ export function loadHackaPromptCorpus(dataPath: string): readonly CorpusSample[]
     return {
       id: sample.id,
       text: sample.text,
-      category: sample.category,
+      category: sample.metadata?.correct === true
+        ? HACKAPROMPT_OUTCOME_CATEGORY.succeeded
+        : HACKAPROMPT_OUTCOME_CATEGORY.failed,
       expectedDetection: sample.label,
       eventType: 'llm_input',
       tier: 'any',

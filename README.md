@@ -461,7 +461,7 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
 | garak (in-the-wild jailbreaks) [^garakcorpus] | inthewild-jailbreak-corpus-650 | 650 | 92.3% (hunt) / 0.9% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | garak-full (all probe families) [^garakcorpus] | 23-families | 3,475 | 57.2% (hunt) / 0.5% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| hackaprompt | v1 | 4,780 | 69.6% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| hackaprompt [^hackaprompt] | v1 | 4,780 | 83.1% (hunt) / 49.0% (enforce) | not cited [^hackaprompt] | not cited [^hackaprompt] | 4.1.5 | 2026-10-19 |
 | HarmBench (CAIS behaviors) | upstream-2026-10-15 | 400 | 6.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | hh-rlhf (Anthropic red-team-attempts) [^stdcorpora] | snapshot-2026-04 | 4,957 | 1.4% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | JailbreakBench (JBB-Behaviors) | upstream-2026-10-15 | 100 | 3.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
@@ -496,24 +496,29 @@ the `hunt` lane: the engine default, which loads every maturity, and the figure
 one to run when blocking is on, which loads only `stable` rules: the same
 samples through the same detection loop, recorded as `breakdown.enforce_lane`.
 Read the second before deploying with blocking on; see [^skilllane].
-`autoresearch` and `hackaprompt` show only the first, because their last
-measurements predate the second's recording, and `Wild scan` has no recall at
-all. `Precision` and `FP rate` are `hunt`-lane figures, measured only on the
+`autoresearch` shows only the first, because its last measurement predates
+the second's recording, and `Wild scan` has no recall at all. `Precision` and `FP rate` are `hunt`-lane figures, measured only on the
 rows that contain benign samples (`atr-self-test`, `PINT-format` and `SKILL.md
 benchmark`); elsewhere they are convention values or, for `Wild scan`, a flag
 rate, not results (see Conventions below).
 
 Whether a corpus was used to write the rules it scores has been examined for
-`garak`, `garak-full`, `PromptInject` and `PromptBench` ([^garakcorpus],
-[^promptcorpora]); all four are partly closed-book. The other rows are not
+`garak`, `garak-full`, `PromptInject`, `PromptBench` ([^garakcorpus],
+[^promptcorpora]) and `hackaprompt` ([^hackaprompt]); all five are partly
+closed-book. For `hackaprompt`, 20 rules name HackAPrompt in their YAML,
+several mined from this exact sample; the same measurement file re-runs the
+samples without them (`breakdown.in_sample_ablation.without_rules_naming_source`),
+the ablation reference to cite beside the row: 28.7% (hunt) / 0.7% (enforce)
+at ATR 4.1.5, measured 2026-10-19. It approximates an out-of-sample figure; it
+is not one. The other rows are not
 thereby out-of-sample: `atr-self-test` is built partly from the rules' own true
 positives, and the rules authored `(vendor-corpus-import)` name the `promptfoo`
 and `llm-guard` fixtures as their source.
 
-A weekly run re-measures every row except three, which keep their earlier
-measurements: `hackaprompt`, whose corpus is not provisioned in CI, so the run
-skips it (its cell also predates the 2026-08-05 change of the evaluation
-harness's default event shape); `autoresearch`, an internal predicted-rule
+A weekly run re-measures every row except the following, which keep their
+earlier measurements: `hackaprompt`, whose corpus (a gated HuggingFace dataset) is not
+provisioned in CI, so the run skips it and the row is re-measured locally with
+`npm run eval:hackaprompt`; `autoresearch`, an internal predicted-rule
 corpus with no standalone runner; and the `Wild scan` snapshot. The table is
 re-rendered from the measurement files; the prose and footnotes are not, so a
 figure there holds for the version it names. Before the weekly run, every row
@@ -869,7 +874,7 @@ the note in the lanes section above for why. Where a row has benign samples
 npm test                                    # engine + rule unit tests (vitest)
 npm run eval                                # atr-self-test eval (writes a measurement)
 npm run eval:pint                           # PINT benchmark (writes a measurement)
-npx tsx src/eval/run-hackaprompt-benchmark.ts                                # HackAPrompt
+npm run eval:hackaprompt                                                     # HackAPrompt (gated dataset; writes a measurement)
 npx tsx src/eval/skill-benchmark.ts                                          # SKILL.md (498 labeled)
 npx tsx scripts/eval-std-corpora.ts                                          # HH-RLHF + OWASP + ATLAS
 npx tsx scripts/atr_recall_analysis.ts                                       # PromptBench + PromptInject
@@ -883,6 +888,24 @@ npx tsx scripts/sync-stats-from-measurements.ts                              # r
 ```
 
 Raw data: [`data/full-scan-v2-2026-04-14.json`](data/full-scan-v2-2026-04-14.json) — 101,280 skills scanned, 1,434 flagged, engine 2.0.0, timestamped 2026-04-13. The malware-campaign write-up is in [`docs/research/openclaw-malware-campaign-2026-04.md`](docs/research/openclaw-malware-campaign-2026-04.md).
+
+[^hackaprompt]: **Partly in-sample; cite the ablation reference beside it.**
+The samples are a seeded subset of 4,780 of the dataset's 601,757 rows
+(`hackaprompt/hackaprompt-dataset` at revision `25b87fbe`, parquet sha256
+`bedca308...`, seed 20260511, rows shorter than 3 characters dropped), pinned
+by row indices and digests in
+[`hackaprompt-corpus.manifest.json`](data/hackaprompt/hackaprompt-corpus.manifest.json);
+`npm run eval:hackaprompt` re-draws it and stops on any mismatch. At ATR 4.1.5
+(measured 2026-10-19) recall is 3,972 (hunt), 3,931 (alert) and 2,343
+(enforce) of 4,780. Without the 20 rules whose YAML names HackAPrompt it is
+1,372 = 28.7% (hunt) / 32 = 0.7% (enforce): the ablation reference, an
+approximation of out-of-sample recall that does not guarantee it (a rule that
+does not name HackAPrompt can still have been tuned on these prompts). The
+corpus has no benign samples, so precision and FP rate are undefined on it:
+the cells say "not cited" and `data/stats.json` carries `null` for both
+(`breakdown.precision_not_citable`). Earlier figures for this row (28.6% → 66.2% in the 2.2.0 CHANGELOG
+entry, 69.6% at ATR 3.5.0) and their re-runs are in
+[`data/hackaprompt/METHOD.md`](data/hackaprompt/METHOD.md).
 
 [^wildscan]: Scanned and flagged counts come from `total_scanned` and `total_flagged` in the raw scan file; the flag rate is those two divided. **No precision figure is given because none was measured over this run.** Earlier material paired a manual-review count against a smaller 96,096-skill analysis subset and reported the ratio as a precision floor. The review covered that subset rather than all 1,434 flags, so the ratio does not describe this scan and is not reproducible from the raw file; it has been withdrawn rather than recomputed. Establishing precision here means re-reviewing a sample of the 1,434 flags, which has not been done.
 
