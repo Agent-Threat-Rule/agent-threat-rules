@@ -22,11 +22,14 @@ All notable changes to ATR will be documented in this file.
   `scripts/lib/github-link-state.mjs`) checks every listed state against
   GitHub, and `.github/workflows/verify-status-claims.yml` runs it when the
   list or the checker changes and weekly; a failure on main opens one tracking
-  issue, which the next green run closes. On a pull request, a claim whose
-  state changes must come with an edit to every file the base branch's list
-  named for it, so the list cannot move on while the files keep the old state.
-  The open state of usnistgov/oscal-content#338 alone is stated in twelve
-  files. The /red-team page is left to the check proposed in #691.
+  issue, which the next green run closes. On a pull request that edits the
+  list, the job also requires every file the base branch's list named for a
+  claim whose state changed, or that left the list or a claim's files, to be
+  edited in the same pull request (a pure rename is not an edit). It can see
+  that each file was edited, not what the edit says, and the job is not a
+  required check. The open state of usnistgov/oscal-content#338 alone is
+  stated in twelve files. The /red-team page is left to the check proposed in
+  #691.
 
 - **The category registry as Gemara catalogs, generated and published from
   here.** `spec/category-registry/gemara/` holds a vector, capability, threat
@@ -228,8 +231,9 @@ All notable changes to ATR will be documented in this file.
 - **The integrate page gives Cisco skill-scanner PR #79's real merge time.**
   It said #79 merged in three days ("3 days, first PR to merge"), and from
   2026-04-07 to 2026-05-23 it also said a Cisco engineer submitted #79 and ATR
-  reviewed it. ATR's maintainer opened it on 2026-04-02, and the repository's
-  maintainers merged it 21 hours later. Recorded as erratum
+  reviewed it; the home page told the same account until 2026-06-14. ATR's
+  maintainer opened it on 2026-04-02, and the repository's maintainers merged
+  it 21 hours later. Recorded as erratum
   e-2026-10-20-cisco-merge-time. Two strings in `website/lib/i18n.ts` that no
   page renders today still told the reversed account; they now say what
   happened.

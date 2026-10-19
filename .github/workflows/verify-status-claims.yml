@@ -58,9 +58,10 @@ jobs:
 
       # Stdlib only, so no npm install. GITHUB_TOKEN lifts the 60 req/h
       # unauthenticated API limit; an API error counts as a failure, not a pass.
-      # On a pull request, BASE_SHA is the base branch's commit: a claim whose
-      # state the pull request changes must come with every file the base list
-      # named for it, so the files cannot keep saying the old state.
+      # On a pull request, BASE_SHA is the base branch's commit: every file the
+      # base list named for a claim whose state changed, or that left the list
+      # or a claim's files, must be edited in the same pull request. Only that
+      # the file was edited is checked, not what the edit says.
       - name: Check every status claim against GitHub
         id: verify
         shell: bash

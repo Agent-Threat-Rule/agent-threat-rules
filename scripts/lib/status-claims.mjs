@@ -317,11 +317,12 @@ export function fileProblems(registry, { files, read, adoptersText = '', openOnl
 }
 
 /**
- * Every claim whose state changed, or that left the list, since `base` (the
- * list on the base branch) must come with an edit to each file the base list
- * named for it. The files say the state in words; a state changed in the list
- * alone (to quiet the weekly check) would leave them saying the old one.
- * `changedFiles` are the paths the change touches.
+ * The files say a claim's state in words, so a change to the list must come
+ * with the files: compared with `base` (the list on the base branch), every
+ * file the base list named for a claim whose state changed, or that left the
+ * list, and every file dropped from a claim's files, must be among
+ * `changedFiles` (the paths the change edits; a pure rename is not an edit).
+ * That a file was edited is all this can see: not what the edit says.
  */
 export function stateChangeProblems(base, head, changedFiles) {
   const now = new Map(head.claims.map((claim) => [claimKey(claim.url), claim]));
@@ -329,11 +330,16 @@ export function stateChangeProblems(base, head, changedFiles) {
   return base.claims.flatMap((before) => {
     const key = claimKey(before.url);
     const after = now.get(key);
-    if (after !== undefined && after.state === before.state) return [];
-    const what = after === undefined ? 'was removed from the list' : `changed from ${before.state} to ${after.state}`;
+    const fix = '; update what it says (or remove the mention) in the same change';
+    if (after === undefined || after.state !== before.state) {
+      const what = after === undefined ? 'was removed from the list' : `changed from ${before.state} to ${after.state}`;
+      return before.files
+        .filter((file) => !touched.has(file))
+        .map((file) => `${file}: ${key} ${what}, but this file, which the list named for it, is unchanged${fix}`);
+    }
     return before.files
-      .filter((file) => !touched.has(file))
-      .map((file) => `${file}: ${key} ${what}, but this file, which the list named for it, is unchanged; update what it says (or remove the mention) in the same change`);
+      .filter((file) => !after.files.includes(file) && !touched.has(file))
+      .map((file) => `${file}: dropped from ${key}'s files, but unchanged${fix}, or keep it listed`);
   });
 }
 

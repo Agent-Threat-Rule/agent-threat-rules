@@ -152,7 +152,8 @@ describe("scanKeys", () => {
           "a/b/c#3",
           "example.com/page#12",
           "spec/SPEC.md#6.4",
-          "see docs/SPEC.md#3 and README.mdx#2",
+          "see docs/SPEC.md#3, docs/README.mdx#2 and docs/NOTES.MD#4",
+          "section o/r#6.4 of the spec",
         ].join("\n"),
       ),
     ).toEqual([]);
@@ -225,6 +226,21 @@ describe("stateChangeProblems", () => {
     expect(stateChangeProblems(before, after("merged"), ["README.md", "website/a.tsx", "docs/b.md"])).toEqual([]);
   });
 
+  it("reads the files the base list named, so dropping one in the same change does not excuse it", () => {
+    expect(stateChangeProblems(before, after("merged", ["README.md"]), ["README.md"])).toEqual([
+      expect.stringMatching(/website\/a\.tsx: usnistgov\/oscal-content#338 changed from open to merged/),
+      expect.stringMatching(/docs\/b\.md: usnistgov\/oscal-content#338 changed from open to merged/),
+    ]);
+  });
+
+  it("asks for a file dropped from a claim's files even when the state stays, so a later change cannot skip it", () => {
+    // The two-step route: drop the files nobody scans, then change the state.
+    expect(stateChangeProblems(before, after("open", ["README.md", "website/a.tsx"]), [])).toEqual([
+      expect.stringMatching(/docs\/b\.md: dropped from usnistgov\/oscal-content#338's files, but unchanged/),
+    ]);
+    expect(stateChangeProblems(before, after("open", ["README.md", "website/a.tsx"]), ["docs/b.md"])).toEqual([]);
+  });
+
   it("asks the same when a claim leaves the list, and nothing of a new claim", () => {
     const fresh: Registry = { claims: [claim("https://github.com/o/new/pull/1", "open", ["README.md"])] };
     expect(stateChangeProblems(before, fresh, ["README.md"])).toEqual([
@@ -260,6 +276,14 @@ describe("fileProblems", () => {
     expect(fileProblems(base, repo({ "README.md": OPEN, "page.tsx": MERGED, "actors.ts": text }))).toEqual([
       expect.stringMatching(/actors\.ts: links nousresearch\/hermes-agent#9809\b.*not listed/),
     ]);
+  });
+
+  it("reads refs in text stored as \\u escapes", () => {
+    const reg: Registry = { claims: [claim(OPEN, "open", ["README.md"], ["\uFF08#1\uFF09"])] };
+    const zh = "\\u5169\\u4EFD\\uFF08#1\\uFF09\\u7B49\\u5F85\\u5BE9\\u67E5";
+    expect(fileProblems(reg, repo({ "README.md": OPEN, "i18n.ts": zh }))).toEqual([expect.stringMatching(/i18n\.ts: mentions "（#1）"/)]);
+    const listed: Registry = { claims: [claim(OPEN, "open", ["README.md", "i18n.ts"], ["\uFF08#1\uFF09"])] };
+    expect(fileProblems(listed, repo({ "README.md": OPEN, "i18n.ts": zh }))).toEqual([]);
   });
 
   it("does not take PR #12 for a mention of PR #1", () => {

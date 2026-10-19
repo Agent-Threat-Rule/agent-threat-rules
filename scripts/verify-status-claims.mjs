@@ -20,11 +20,12 @@
  *   - unverified GitHub could not be asked (rate limit, 5xx, network, bad body).
  *                Not a pass: re-run with GITHUB_TOKEN set before editing.
  *
- * With --base <commit> (the workflow passes a pull request's base), a claim
- * whose state changed since that commit's list, or that left the list, must
- * come with an edit to every file that list named for it: the files say the
- * state in words, and a state changed in the list alone would leave them
- * saying the old one.
+ * With --base <commit> (the workflow passes a pull request's base), every file
+ * that commit's list named for a claim whose state has changed since, or that
+ * left the list or a claim's files, must have been edited since (a pure rename
+ * is not an edit). The files say the state in words, and a state changed in
+ * the list alone would leave them saying the old one. This sees that a file
+ * was edited, not what the edit says.
  *
  * Exit 0 when the list, the files and GitHub agree; 1 otherwise; 2 on a bad
  * argument. --offline skips the GitHub step. Auth: set GITHUB_TOKEN to avoid
@@ -111,8 +112,15 @@ function readBase(root, base) {
     return { error: `the list at ${base} is not JSON` };
   }
   if (validateRegistry(list).length > 0) return { error: `the list at ${base} is malformed` };
-  // Against the working tree, so uncommitted edits count; both sides of a rename.
-  const changed = git('diff', '--name-only', '--no-renames', base).split('\n').filter(Boolean);
+  // Against the working tree, so uncommitted edits count. A pure rename (R100)
+  // leaves the text as it was, so neither of its paths counts as edited.
+  const changed = git('diff', '--name-status', '-M', base)
+    .split('\n')
+    .filter(Boolean)
+    .flatMap((line) => {
+      const [status, ...paths] = line.split('\t');
+      return status === 'R100' ? [] : paths;
+    });
   return { list, changed };
 }
 

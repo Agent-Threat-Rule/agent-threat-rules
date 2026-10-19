@@ -164,15 +164,17 @@ describe("main", () => {
   });
 });
 
-/** A git repository holding fixture(GOOD) at one commit; returns the root and that commit. */
-function gitFixture(): { root: string; base: string } {
-  const root = fixture(GOOD);
-  const env = { ...process.env, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_NOSYSTEM: "1", GIT_AUTHOR_NAME: "f", GIT_AUTHOR_EMAIL: "f@example.invalid", GIT_COMMITTER_NAME: "f", GIT_COMMITTER_EMAIL: "f@example.invalid" };
-  const git = (...args: string[]) => execFileSync("git", args, { cwd: root, env, encoding: "utf8" }).trim();
-  git("init", "--quiet", "-b", "main");
-  git("add", "-A");
-  git("commit", "--quiet", "-m", "base");
-  return { root, base: git("rev-parse", "HEAD") };
+// Isolated from the user's git config (signing, hooks).
+const GIT_ENV = { ...process.env, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_NOSYSTEM: "1", GIT_AUTHOR_NAME: "f", GIT_AUTHOR_EMAIL: "f@example.invalid", GIT_COMMITTER_NAME: "f", GIT_COMMITTER_EMAIL: "f@example.invalid" };
+const gitIn = (root: string, ...args: string[]) => execFileSync("git", args, { cwd: root, env: GIT_ENV, encoding: "utf8" }).trim();
+
+/** A git repository holding fixture(registry, files) at one commit; returns the root and that commit. */
+function gitFixture(registry: unknown = GOOD, files: Record<string, string> = {}): { root: string; base: string } {
+  const root = fixture(registry, files);
+  gitIn(root, "init", "--quiet", "-b", "main");
+  gitIn(root, "add", "-A");
+  gitIn(root, "commit", "--quiet", "-m", "base");
+  return { root, base: gitIn(root, "rev-parse", "HEAD") };
 }
 
 describe("main --base: a changed state needs its files changed too", () => {
@@ -194,16 +196,35 @@ describe("main --base: a changed state needs its files changed too", () => {
     expect(await main({ root, base, offline: true })).toBe(0);
   });
 
-  it("fails closed on a base it cannot read, and has nothing to compare when the base has no list", async () => {
+  it("does not count a file that was only renamed: its text still says the old state", async () => {
+    const out = quiet();
+    const page = "website/app/page.tsx";
+    const { root, base } = gitFixture({ claims: [GOOD.claims[0], { ...GOOD.claims[1], files: ["README.md", page] }] }, { [page]: CLOSED });
+    gitIn(root, "mv", page, "website/app/moved.tsx");
+    const moved = { claims: [GOOD.claims[0], { ...GOOD.claims[1], state: "open", files: ["README.md", "website/app/moved.tsx"] }] };
+    writeFileSync(join(root, "website/data/status-claims.json"), JSON.stringify(moved));
+    writeFileSync(join(root, "README.md"), `# x\n### Under maintainer review (open PRs)\n\n${OPEN}\n${CLOSED}\n`);
+    expect(await main({ root, base, offline: true })).toBe(1);
+    expect(out.join("\n")).toMatch(/website\/app\/page\.tsx: o\/closed#2 changed from closed to open/);
+    writeFileSync(join(root, "website/app/moved.tsx"), `${CLOSED} reopened`);
+    expect(await main({ root, base, offline: true })).toBe(0);
+  });
+
+  it("fails closed on a base it cannot read, or whose list is broken, and has nothing to compare when the base has no list", async () => {
     const out = quiet();
     const { root } = gitFixture();
     expect(await main({ root, base: "0000000000000000000000000000000000000000", offline: true })).toBe(1);
     expect(out.join("\n")).toMatch(/cannot read the base commit/);
+    for (const [broken, message] of [["{ not json", /is not JSON/], [JSON.stringify({ claims: [] }), /is malformed/]] as const) {
+      const bad = gitFixture(broken);
+      writeFileSync(join(bad.root, "website/data/status-claims.json"), JSON.stringify(GOOD));
+      expect(await main({ root: bad.root, base: bad.base, offline: true }), String(message)).toBe(1);
+      expect(out.join("\n")).toMatch(message);
+    }
     const fresh = gitFixture();
-    execFileSync("git", ["rm", "--quiet", "--cached", "website/data/status-claims.json"], { cwd: fresh.root });
-    execFileSync("git", ["-c", "user.name=f", "-c", "user.email=f@example.invalid", "commit", "--quiet", "-m", "no list"], { cwd: fresh.root });
-    const noList = execFileSync("git", ["rev-parse", "HEAD"], { cwd: fresh.root, encoding: "utf8" }).trim();
-    expect(await main({ root: fresh.root, base: noList, offline: true })).toBe(0);
+    gitIn(fresh.root, "rm", "--quiet", "--cached", "website/data/status-claims.json");
+    gitIn(fresh.root, "commit", "--quiet", "-m", "no list");
+    expect(await main({ root: fresh.root, base: gitIn(fresh.root, "rev-parse", "HEAD"), offline: true })).toBe(0);
   });
 });
 
@@ -222,9 +243,11 @@ describe("running the script", () => {
     const res = spawnSync(process.execPath, [SCRIPT, "--ofline"], { encoding: "utf8" });
     expect(res.status).toBe(2);
     expect(res.stderr).toMatch(/unknown argument "--ofline"/);
-    const bare = spawnSync(process.execPath, [SCRIPT, "--offline", "--base"], { encoding: "utf8" });
-    expect(bare.status).toBe(2);
-    expect(bare.stderr).toMatch(/--base needs a commit/);
+    for (const args of [["--offline", "--base"], ["--base", "-x"], ["--base", "--output=/tmp/x"]]) {
+      const bad = spawnSync(process.execPath, [SCRIPT, ...args], { encoding: "utf8" });
+      expect(bad.status, args.join(" ")).toBe(2);
+      expect(bad.stderr).toMatch(/--base needs a commit/);
+    }
   });
 });
 
