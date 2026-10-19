@@ -3,9 +3,9 @@
   "source": "hackaprompt",
   "source_version": "v1",
   "atr_version": "4.1.5",
-  "atr_commit": "a0e230305",
+  "atr_commit": "df9002b0b",
   "rules_loaded": 836,
-  "measured_at": "2026-10-19T05:01:05.274Z",
+  "measured_at": "2026-10-19T06:00:09.142Z",
   "samples": 4780,
   "metrics": {
     "recall": 0.8309623430962343,
@@ -22,11 +22,11 @@
     "fn": 808
   },
   "latency_ms": {
-    "p50": 21.543832999999722,
-    "p95": 136.80295799998567,
-    "p99": 354.03383400000166,
-    "mean": 42.89888767447706,
-    "max": 1474.7347909999953
+    "p50": 17.092583000005106,
+    "p95": 95.59191699999792,
+    "p99": 252.30724999999802,
+    "mean": 30.885291388284454,
+    "max": 1196.096083
   },
   "breakdown": {
     "by_category": [
@@ -1042,6 +1042,10 @@
         }
       }
     },
+    "precision_not_citable": {
+      "reason": "HackAPrompt is 100% adversarial: there is no benign population, so precision and FP rate are undefined. metrics.precision and metrics.fp_rate are the convention values the schema requires, not results; data/stats.json projects precision, F1 and FP rate as null.",
+      "benign_samples": 0
+    },
     "provenance": {
       "dataset_id": "hackaprompt/hackaprompt-dataset",
       "dataset_revision": "25b87fbedfb86840abaf8cd09af7a029208a971a",
@@ -1083,8 +1087,8 @@
         "recall": 0.8309623430962343,
         "rules_in_lane": 829
       },
-      "reproduce": "check out the commit that added this measurement file (its rules/ tree is breakdown.provenance.rules_tree_sha, the same as atr_commit's), then: npm ci && npm run eval:hackaprompt (= python3 scripts/hackaprompt-to-corpus.py, which checks the re-drawn sample against the committed manifest and the parquet file against its pinned sha256 before writing the corpus, && npx tsx src/eval/run-hackaprompt-benchmark.ts)"
+      "reproduce": "git checkout <atr_commit> (the measured tree; its rules/ tree is breakdown.provenance.rules_tree_sha), then: npm ci && npm run eval:hackaprompt (= python3 scripts/hackaprompt-to-corpus.py, which checks the re-drawn sample against the committed manifest and the parquet file against its pinned sha256 before writing the corpus, && npx tsx src/eval/run-hackaprompt-benchmark.ts)"
     }
   },
-  "notes": "HackAPrompt competition dataset (Schulhoff et al., EMNLP 2023). All samples adversarial, so precision/fp_rate are convention values, not results. metrics.recall is the hunt lane (every maturity); breakdown.lanes gives hunt/alert/enforce. breakdown.in_sample_ablation.without_rules_naming_source is the ablation reference to cite beside it: the same samples without the rules whose YAML names HackAPrompt (an approximation of out-of-sample recall, not a guarantee of it). breakdown.by_category groups samples by HackAPrompt's `correct` field (whether the attack succeeded against its target model in the competition), not by attack type; breakdown.by_difficulty buckets the competition level (0-2 easy, 3-6 medium, 7-10 hard). Sample set: breakdown.provenance (pinned dataset revision, seed, row indices in data/hackaprompt/hackaprompt-corpus.manifest.json). Event shape: canonical; tiers: tier2-regex+tier2.5-embedding. Reproduce: check out the commit that added this measurement file (its rules/ tree is breakdown.provenance.rules_tree_sha, the same as atr_commit's), then: npm ci && npm run eval:hackaprompt (= python3 scripts/hackaprompt-to-corpus.py, which checks the re-drawn sample against the committed manifest and the parquet file against its pinned sha256 before writing the corpus, && npx tsx src/eval/run-hackaprompt-benchmark.ts). Method: data/hackaprompt/METHOD.md."
+  "notes": "HackAPrompt competition dataset (Schulhoff et al., EMNLP 2023). All samples adversarial, so precision/fp_rate are convention values, not results. metrics.recall is the hunt lane (every maturity); breakdown.lanes gives hunt/alert/enforce. breakdown.in_sample_ablation.without_rules_naming_source is the ablation reference to cite beside it: the same samples without the rules whose YAML names HackAPrompt (an approximation of out-of-sample recall, not a guarantee of it). breakdown.by_category groups samples by HackAPrompt's `correct` field (whether the attack succeeded against its target model in the competition), not by attack type; breakdown.by_difficulty buckets the competition level (0-2 easy, 3-6 medium, 7-10 hard). Sample set: breakdown.provenance (pinned dataset revision, seed, row indices in data/hackaprompt/hackaprompt-corpus.manifest.json). Event shape: canonical; tiers: tier2-regex+tier2.5-embedding. Reproduce: git checkout <atr_commit> (the measured tree; its rules/ tree is breakdown.provenance.rules_tree_sha), then: npm ci && npm run eval:hackaprompt (= python3 scripts/hackaprompt-to-corpus.py, which checks the re-drawn sample against the committed manifest and the parquet file against its pinned sha256 before writing the corpus, && npx tsx src/eval/run-hackaprompt-benchmark.ts). Method: data/hackaprompt/METHOD.md."
 }
