@@ -17,6 +17,34 @@ import type { AgentEvent, ATRRule, ATRTrace } from "./types.js";
 export const UNNAMED_TOOL = 'atr-test-tool';
 
 /**
+ * Which fields buildEventFromTestCase fills.
+ *
+ *   wide     every alias a rule might read the payload from, whatever the event
+ *            type: the input is also offered as user_input and as tool_args, and
+ *            content as agent_message. The default: atr test, the case-sensitivity
+ *            gate and scripts/validate-rule-testcases.ts run a case on it.
+ *   runtime  what this repository's producers put on an event of the type:
+ *            content; each field the case names, taken as given (whether a
+ *            producer fills it is not checked), user_input counting as the input
+ *            it is an alias of; user_input on an llm_input event; and on a tool
+ *            event, the tool_name and tool_args src/hook-handler.ts fills (the
+ *            case's own, or UNNAMED_TOOL and the input). It approximates the
+ *            hook, whose PostToolUse content is the JSON of the tool's input, with
+ *            the tool's output read only from tool_input.output or .response:
+ *            here a case's tool_response is the content, as the engine reads a
+ *            tool_response event. The MCP scan tool (src/mcp-tools/scan.ts) copies
+ *            its content into user_input, agent_output and tool_response on any
+ *            type; that is not modelled.
+ */
+export type TestCaseFields = 'wide' | 'runtime';
+
+export interface TestCaseEventOptions {
+  readonly fields?: TestCaseFields;
+  /** Build an event of this type instead of the one the rule's agent_source names. */
+  readonly type?: AgentEvent['type'];
+}
+
+/**
  * Build the AgentEvent a declared test case describes.
  *
  * Extracted from src/cli.ts so scripts/validate-rule-testcases.ts can use the
@@ -40,6 +68,7 @@ export const UNNAMED_TOOL = 'atr-test-tool';
 export function buildEventFromTestCase(
   tc: Record<string, unknown>,
   rule: ATRRule,
+  options: TestCaseEventOptions = {},
 ): AgentEvent {
   // Stringify any object values
   const str = (v: unknown): string => {
@@ -114,7 +143,7 @@ export function buildEventFromTestCase(
     ? RUNTIME_SOURCE_TYPE[sourceType]
     : sourceType;
 
-  const type: AgentEvent['type'] = SOURCE_TO_EVENT[baseSourceType] ?? 'llm_input';
+  const type: AgentEvent['type'] = options.type ?? SOURCE_TO_EVENT[baseSourceType] ?? 'llm_input';
   const toolEvent = type === 'tool_call' || type === 'tool_response';
 
   // NOTE: previously, a tool_call rule with a plain-string TP was downgraded to
@@ -205,9 +234,139 @@ export function buildEventFromTestCase(
     type,
     timestamp: new Date().toISOString(),
     content,
-    fields,
+    fields:
+      options.fields === 'runtime'
+        ? runtimeFields({ type, toolEvent, content, input, toolName, toolArgs, toolResponse, agentOutput, agentMessage, toolDescription })
+        : fields,
     sessionId: 'test-session',
     agentId: 'test-agent',
     ...(trace ? { trace } : {}),
   };
+}
+
+interface CaseValues {
+  readonly type: AgentEvent['type'];
+  readonly toolEvent: boolean;
+  readonly content: string;
+  readonly input: string;
+  readonly toolName: string;
+  readonly toolArgs: string;
+  readonly toolResponse: string;
+  readonly agentOutput: string;
+  readonly agentMessage: string;
+  readonly toolDescription: string;
+}
+
+/**
+ * The "runtime" field set (TestCaseFields): content; each field the case names,
+ * with the value it names; the input as user_input on an llm_input event, and on
+ * no other, since `user_input:` in a case is the input's alias; and for a tool
+ * event, a tool name and tool arguments, which src/hook-handler.ts fills on
+ * PreToolUse and PostToolUse alike (the case's own, or UNNAMED_TOOL and the input).
+ */
+function runtimeFields(v: CaseValues): Record<string, string> {
+  const entries: ReadonlyArray<readonly [string, string]> = [
+    ['content', v.content],
+    ['user_input', v.type === 'llm_input' ? v.input : ''],
+    ['tool_response', v.toolResponse],
+    ['agent_output', v.agentOutput],
+    ['agent_message', v.agentMessage],
+    ['tool_description', v.toolDescription],
+    ['tool_name', v.toolName || (v.toolEvent ? UNNAMED_TOOL : '')],
+    ['tool_args', v.toolArgs || (v.toolEvent ? v.input : '')],
+  ];
+  return Object.fromEntries(entries.filter(([, value]) => value !== ''));
+}
+
+/**
+ * Every type an AgentEvent can have. The engine's source filter decides which of
+ * them a rule runs on: an llm_io rule also runs on tool_response events, an
+ * mcp_exchange rule on tool_call events, and every rule on an mcp_exchange event
+ * (src/cli/scan-handler.ts builds those), whose type maps to no source. An
+ * extended agent_source type runs where its base type does (RUNTIME_SOURCE_TYPE
+ * in src/engine.ts), and one the engine withholds (WITHHELD_SOURCE_TYPES) on an
+ * mcp_exchange event alone.
+ */
+const EVENT_TYPES: readonly AgentEvent['type'][] = [
+  'llm_input',
+  'llm_output',
+  'tool_call',
+  'tool_response',
+  'agent_behavior',
+  'multi_agent_message',
+  'mcp_exchange',
+];
+
+/**
+ * The rule as `atr test` puts it in the engine: status experimental, so a draft
+ * or deprecated rule is not skipped. Its agent_source.type stays as declared:
+ * the engine maps an extended type itself (RUNTIME_SOURCE_TYPE in
+ * src/engine.ts), and atr test reports a rule of a type the engine withholds
+ * (WITHHELD_SOURCE_TYPES) as unevaluable rather than running its cases.
+ */
+export function asTestedRule(rule: ATRRule): ATRRule {
+  return { ...rule, status: 'experimental' };
+}
+
+/** The slice of ATREngine a test case is run on. */
+export interface TestCaseEngine {
+  evaluate(event: AgentEvent): readonly { readonly rule: { readonly id: string } }[];
+  scanSkill(text: string): readonly { readonly rule: { readonly id: string } }[];
+}
+
+/**
+ * `atr test`'s verdict on one case: the wide event the case describes through
+ * evaluate(), or the case's text through scanSkill(). The engine holds the rule;
+ * the rule passed here routes the event.
+ */
+export function caseMatches(engine: TestCaseEngine, rule: ATRRule, tc: Record<string, unknown>): boolean {
+  const document = String(tc['input'] ?? tc['tool_response'] ?? tc['agent_output'] ?? '');
+  return firesOn(engine, rule, buildEventFromTestCase(tc, rule)) || skillMatches(engine, rule, document);
+}
+
+/**
+ * Whether a case matches an event shaped the way this repository's producers
+ * shape one: for every event type, the runtime field set (a tool event as the
+ * hook builds it, any other with the content, each with the fields the case
+ * names), or the case's text as a skill document, user_input included as the
+ * input's alias. A true positive that passes caseMatches and not this matches
+ * only through a value the wide event copies into a field. Not modelled: the
+ * MCP scan tool's copy of its content into user_input, agent_output and
+ * tool_response on any type, and an events file src/cli/scan-handler.ts passes
+ * on as written.
+ */
+export function caseMatchesAtRuntime(engine: TestCaseEngine, rule: ATRRule, tc: Record<string, unknown>): boolean {
+  const document = String(tc['input'] ?? tc['user_input'] ?? tc['tool_response'] ?? tc['agent_output'] ?? '');
+  return (
+    EVENT_TYPES.some((type) => firesOn(engine, rule, buildEventFromTestCase(tc, rule, { fields: 'runtime', type }))) ||
+    skillMatches(engine, rule, document)
+  );
+}
+
+function firesOn(engine: TestCaseEngine, rule: ATRRule, event: AgentEvent): boolean {
+  return engine.evaluate(event).some((m) => m.rule.id === rule.id);
+}
+
+function skillMatches(engine: TestCaseEngine, rule: ATRRule, document: string): boolean {
+  return document !== '' && engine.scanSkill(document).some((m) => m.rule.id === rule.id);
+}
+
+/** The fields a report names a case by, in the order it looks for one. */
+const LABEL_FIELDS = [
+  'input',
+  'user_input',
+  'tool_args',
+  'tool_response',
+  'agent_output',
+  'tool_description',
+  'agent_message',
+  'content',
+  'tool_call',
+] as const;
+
+/** The payload a report shows for a case: the first it declares, an object as JSON. */
+export function caseLabel(tc: Record<string, unknown>): string {
+  const value = LABEL_FIELDS.map((key) => tc[key]).find((v) => v !== undefined && v !== null && v !== '');
+  if (value === undefined) return '';
+  return typeof value === 'string' ? value : JSON.stringify(value);
 }

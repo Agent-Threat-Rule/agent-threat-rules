@@ -17,6 +17,23 @@ All notable changes to ATR will be documented in this file.
   version>`, on release tags only, and pushes nothing when that version is
   already published with the same catalogs.
 
+- **`atr test` reports a true positive that matches only through a copy the
+  test event makes.** The test event offers a case's input under every alias a
+  rule might read, whatever the event type: as `user_input` and `tool_args`, and
+  its content as `agent_message`. `buildEventFromTestCase` gains a `runtime`
+  field set, which holds what this repository's producers put on an event of the
+  type: content, the fields the case names (taken as given), `user_input` on an
+  `llm_input` event, and on a tool event the `tool_name` and `tool_args`
+  `src/hook-handler.ts` fills. `caseMatchesAtRuntime` runs a case on that set
+  for every event type, the engine's source filter deciding which of them the
+  rule runs on, or as a skill document. `atr test` lists a passing true positive
+  that matches none of them under `harnessOnly` (JSON) and "Harness-only"
+  (text); it still counts as passed. No true positive on main is one.
+  ATR-2026-01610's two cases declared as `user_input` match their `llm_input`
+  event only through the input copied into `tool_args`; the engine also runs
+  `llm_io` rules on `tool_response` events, where the hook fills `tool_args`,
+  and there they match.
+
 - **Every benchmark measurement records the enforce lane beside its
   headline.** A measurement's `metrics.recall` is the `hunt` lane (the engine
   default, every maturity). Each runner the weekly measurement calls now also
