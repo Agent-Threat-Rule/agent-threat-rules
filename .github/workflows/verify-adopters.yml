@@ -5,7 +5,9 @@ name: Verify Adopters Evidence
 # shipped must be MERGED, in-review must be OPEN, plain links must resolve.
 # The refreshed data/adopters-verification.json is auto-committed (same bot
 # convention as reconcile-stats); a non-zero drift count fails the run so
-# drift surfaces as a red check instead of rotting silently.
+# drift surfaces as a red check instead of rotting silently. A red check alone
+# rotted anyway (four in a row, 2026-10-12 to 10-15, nobody looked), so a
+# failure on main also opens one tracking issue, and the next green run closes it.
 
 on:
   schedule:
@@ -16,10 +18,18 @@ on:
     paths:
       - 'ADOPTERS.md'
       - 'scripts/verify-adopters.mjs'
+      - '.github/workflows/verify-adopters.yml'
 
 permissions:
   contents: write
   actions: write
+  issues: write
+
+# One verification at a time: two runs committing the same file would race
+# each other's push.
+concurrency:
+  group: verify-adopters
+  cancel-in-progress: false
 
 jobs:
   verify:
@@ -58,8 +68,21 @@ jobs:
           git config user.email "bot@agentthreatrule.org"
           git add data/adopters-verification.json
           git commit -m "chore(adopters): auto re-verify evidence links"
-          git push origin main
-          echo "committed=true" >> "$GITHUB_OUTPUT"
+          # main can move between checkout and push (a merge, another bot's
+          # commit). A plain push was then rejected and failed the run with
+          # nothing wrong in ADOPTERS.md (2026-10-07, 2026-10-15). Rebase this
+          # one-file commit onto the moved main and retry; give up after three.
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "committed=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "push rejected (attempt ${attempt}); rebasing onto origin/main"
+            git fetch --quiet origin main
+            git rebase origin/main
+          done
+          echo "could not push the refreshed verification data after 3 attempts" >&2
+          exit 1
 
       # Pushes made with the default GITHUB_TOKEN deliberately do not fire
       # push-triggered workflows (GitHub recursion guard), so the bot commit
@@ -79,4 +102,48 @@ jobs:
           if [ "${drift}" != "0" ]; then
             echo "ADOPTERS.md declares a status that GitHub no longer supports — fix the entries listed in data/adopters-verification.json drift[]"
             exit 1
+          fi
+
+      - name: Open or update the tracking issue
+        if: failure() && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="ADOPTERS.md evidence no longer matches GitHub"
+          drift="$(node -e '
+            let d;
+            try { d = JSON.parse(require("fs").readFileSync("data/adopters-verification.json", "utf8")); } catch { process.exit(0); }
+            for (const x of d.drift || []) {
+              console.log("- " + x.name + ": declared " + x.declared + ", observed " + x.observed + (x.content ? ", content " + x.content : ""));
+            }
+          ')"
+          body="$(printf '%s\n' \
+            "verify-adopters failed on ${GITHUB_EVENT_NAME}." \
+            "" \
+            "Run: ${RUN_URL}" \
+            "" \
+            "Entries whose declared status GitHub no longer supports:" \
+            "${drift:-none recorded, so the failure was elsewhere in the run (for example the push of the refreshed data); see the run.}")"
+          existing="$(gh issue list --state open --label auto-generated --search "$title in:title" --json number --jq '.[0].number // empty')"
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body" --label auto-generated
+          fi
+
+      - name: Close the tracking issue once evidence matches again
+        if: success() && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="ADOPTERS.md evidence no longer matches GitHub"
+          existing="$(gh issue list --state open --label auto-generated --search "$title in:title" --json number --jq '.[0].number // empty')"
+          if [ -n "$existing" ]; then
+            gh issue close "$existing" --comment "Every ADOPTERS.md evidence link matches GitHub again: ${RUN_URL}"
           fi
