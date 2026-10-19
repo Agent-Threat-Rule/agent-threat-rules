@@ -16,8 +16,10 @@ from pyatr.engine import ATREngine, _read_bundled_rules
 
 
 def _ensure_bundle() -> None:
-    """Generate the bundle if a fresh checkout hasn't produced one yet."""
-    if _read_bundled_rules():
+    """Generate the bundle if a checkout has none yet, or one written before
+    bundle_rules.py kept agent_source (the engine needs it on tool responses)."""
+    rules = _read_bundled_rules()
+    if any("agent_source" in r for r in rules):
         return
     script = Path(__file__).resolve().parents[1] / "scripts" / "bundle_rules.py"
     spec = importlib.util.spec_from_file_location("bundle_rules", script)

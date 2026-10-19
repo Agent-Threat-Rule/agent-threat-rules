@@ -420,24 +420,28 @@ class TestToolResponseResolvesModelFacingFields:
     def test_rules_run_on_tool_responses_read_tool_output(self, field: str, source_type: str) -> None:
         assert self._ids(field, {"type": source_type}) == ["TEST-FIELD"]
 
+    @pytest.mark.parametrize("field", ["user_input", "agent_output"])
     @pytest.mark.parametrize("agent_source", [
         {"type": "tool_call"},
         {"type": "memory_access"},
         {"type": "multi_agent_comm"},
         {"type": "skill_chain"},
+        {"type": "skill_lifecycle"},
+        {"type": "skill_permission"},
+        {"type": "agent_trace"},
         {"type": ["llm_io"]},
         {},
         "llm_io",
         None,
     ])
-    def test_other_rules_do_not(self, agent_source: Any) -> None:
-        assert self._ids("user_input", agent_source) == []
+    def test_other_rules_do_not(self, field: str, agent_source: Any) -> None:
+        assert self._ids(field, agent_source) == []
 
     @pytest.mark.parametrize("field", ["user_input", "agent_output"])
     def test_explicit_field_still_wins(self, field: str) -> None:
         assert self._ids(field, {"type": "llm_io"}, **{field: "hello"}) == []
 
-    @pytest.mark.parametrize("event_type", ["tool_call", "multi_agent_message"])
+    @pytest.mark.parametrize("event_type", ["tool_call", "llm_output", "multi_agent_message"])
     def test_other_event_types_unchanged(self, event_type: str) -> None:
         assert self._ids("user_input", {"type": "llm_io"}, event_type=event_type) == []
 
