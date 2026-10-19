@@ -93,7 +93,7 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)torch\.load\s*\(\s*[^,)]*(?:request\.|flask\.request|user_input|untrusted|attacker|payload|upload|f\.read\(\)|response\.content)[^)]{0,200}\)'
+      value: '(?i)torch\.load\s*\([^,)]*(?:request\.|flask\.request|user_input|untrusted|attacker|payload|upload|f\.read\(\)|response\.content)[^)]{0,200}\)'
       description: "torch.load called on attacker-derived input — direct CVE-2025-45146 sink"
 
     - field: content

@@ -77,7 +77,7 @@ detection:
       description: "Injection override + payment/banking retrieval + email exfil destination"
     - field: content
       operator: regex
-      value: '(?i)(?:retrieve|get|fetch|access|export)\s+(?:my\s+)?(?:saved\s+)?(?:credit\s+card(?:\s+(?:information|details?|numbers?|data))?|payment\s+methods?|bank\s+account(?:\s+(?:detail|information|data))?|debit\s+card)\s+(?:from\s+(?:my\s+)?\w+)?\s*(?:and\s+)?(?:email|send|forward|mail)\s+(?:it|them|the\s+(?:details?|information|data))\s+to[^\n]{0,120}(?:@[^\s"]{3,80}|alternate\s+email)'
+      value: '(?i)(?:retrieve|get|fetch|access|export)\s+(?:my\s+)?(?:saved\s+)?(?:credit\s+card(?:\s+(?:information|details?|numbers?|data))?|payment\s+methods?|bank\s+account(?:\s+(?:detail|information|data))?|debit\s+card)\s+(?:from\s+(?:my\s+)?\w+\s*)?(?:and\s+)?(?:email|send|forward|mail)\s+(?:it|them|the\s+(?:details?|information|data))\s+to[^\n]{0,120}(?:@[^\s"]{3,80}|alternate\s+email)'
       description: "Payment/card retrieval + email forwarding (broader coverage, no override prefix required)"
   condition: any
   false_positives:

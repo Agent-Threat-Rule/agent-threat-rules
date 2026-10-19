@@ -85,13 +85,13 @@ detection:
   # -- Layer 1: HTML event handler (on*=javascript:alert) with optional double javascript: --
   - field: user_input
     operator: regex
-    value: "(?i)<[a-zA-Z]+[^>]+on[a-zA-Z]+\\s*=\"?javascript\\s*:\\s*(javascript\\s*:)?\\s*alert\\s*\\([^)]*\\)"
+    value: "(?i)<[a-zA-Z][^>]+on[a-zA-Z]+\\s*=\"?javascript\\s*:\\s*(?:(javascript\\s*:)\\s*)?alert\\s*\\([^)]*\\)"
     description: "HTML event handler encoding-obfuscated XSS (on*=javascript:alert)"
 
   # -- Layer 2: CSS expression() with backslash-hex encoded whitespace before javascript: --
   - field: user_input
     operator: regex
-    value: "(?i)style\\s*=\"[^\"]*\\\\x[0-9a-fA-F]{2,}[^\"]*expression\\s*\\(\\s*javascript\\s*:"
+    value: "(?i)style\\s*=\"[^\"]*\\\\x[0-9a-fA-F]{2}[^\"]*expression\\s*\\(\\s*javascript\\s*:"
     description: "CSS expression injection with backslash-hex encoded whitespace before javascript:"
 
   # -- Layer 3: Conditional comment XSS bypass --
@@ -115,7 +115,7 @@ detection:
   # -- Layer 6: Quote-breaking prefix + img with encoded whitespace before onerror --
   - field: user_input
     operator: regex
-    value: "(?i)['\"`>]+\\s*<\\s*img[^>]+\\\\x[0-9a-fA-F]{2,}onerror\\s*=\\s*javascript\\s*:\\s*alert"
+    value: "(?i)['\"`>]\\s*<\\s*img[^>]+\\\\x[0-9a-fA-F]{2,}onerror\\s*=\\s*javascript\\s*:\\s*alert"
     description: "Quote-breaking prefix + img with backslash-hex encoded whitespace before onerror"
 
   condition: any
