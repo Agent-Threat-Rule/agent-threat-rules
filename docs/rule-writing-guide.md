@@ -332,6 +332,36 @@ Include adversarial true negatives -- inputs that LOOK suspicious but are legiti
       description: "Authority language in legitimate context"
 ```
 
+### How a case is run
+
+`atr test` builds the event a case describes for the rule's `agent_source.type`
+(a tool_call rule gets a tool_call event, an llm_io rule an llm_input event). The
+case's `input` (or its alias `user_input`) becomes the event's content (on a
+tool_response event its `tool_response` does), and `tool_args`, `tool_name`,
+`tool_response`, `agent_output`, `tool_description` and `agent_message` go in the
+fields of those names. Name the field the payload arrives in when the rule runs,
+with the value a producer puts there:
+
+- A rule that keys on the tool's name needs `tool_name:` in its cases. A case
+  that names no tool runs as a tool named `atr-test-tool`, so a `tool_name`
+  condition never reads the case's text.
+- `tool_args` are a tool's arguments, which only tool events carry:
+  `src/hook-handler.ts` fills them, as the JSON of the tool's input, on every
+  tool call. An llm_io rule reads them on the tool_response event after a tool
+  has run, not on the user's input.
+
+The test event also offers an input under every alias a rule might read
+(`user_input`, `tool_args`, and the content as `agent_message`), whatever the
+event type. `atr test` runs each passing true positive again on what the
+producers put on an event of each type the engine runs the rule on, and as a
+skill document, and lists one that matches none of them under `harnessOnly` in
+`atr test --json` (and under "Harness-only" in the text report). It still counts
+as passed there, and `tests/testcase-runtime-parity-rules.test.ts`, which runs
+every rule's true positives except those of a type the engine withholds (which
+`atr test` reports as unevaluable), fails on it. Naming a field in the case
+clears both without checking that any event carries the payload there, so name
+the field it really arrives in.
+
 ### Evasion tests
 
 Document what your rule CANNOT catch. This builds trust:

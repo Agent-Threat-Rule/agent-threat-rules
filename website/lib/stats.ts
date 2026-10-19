@@ -141,6 +141,20 @@ export interface EnforceLaneFigure {
 }
 
 /**
+ * `breakdown.in_sample_ablation[reference]` of a measurement: the same samples
+ * with the rules written from that corpus removed. It is the ablation reference
+ * to quote beside a partly in-sample headline. It approximates an out-of-sample
+ * figure; it is not one, and the site never calls it one.
+ */
+export interface AblationFigure {
+  /** Key of the cited ablation inside breakdown.in_sample_ablation. */
+  key: string;
+  rulesRemoved: number;
+  hunt: { recall: number; detected: number; attacks: number };
+  enforce: { recall: number; detected: number; attacks: number };
+}
+
+/**
  * One benchmark measurement, version-pinned and reproducible: the file
  * data/measurements/<source>/latest.json points at. The full historical series
  * lives alongside as data/measurements/<source>/<date>_*.json.
@@ -179,6 +193,10 @@ export interface BenchmarkMeasurement {
   falsePositives: number | null;
   /** The enforce lane; null when the measurement predates that record. */
   enforce: EnforceLaneFigure | null;
+  /** The ablation reference; null when the measurement records no in-sample ablation. */
+  ablation: AblationFigure | null;
+  /** breakdown.provenance.rows_total: rows of the dataset the samples were drawn from; null when not recorded. */
+  population: number | null;
   /** breakdown.layers (the SKILL.md benchmark's attack layers), hunt lane. */
   layers: Record<string, { total: number; detected: number }> | null;
   /** Repo-relative path of the immutable measurement file. */
@@ -194,7 +212,7 @@ interface MeasurementFile {
   samples: number;
   metrics: { recall: number; precision: number; f1: number; fp_rate: number };
   confusion?: { tp: number; fp: number; tn: number; fn: number };
-  breakdown?: { enforce_lane?: unknown; layers?: unknown };
+  breakdown?: { enforce_lane?: unknown; layers?: unknown; in_sample_ablation?: unknown; provenance?: unknown };
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
@@ -213,6 +231,39 @@ function enforceLaneOf(raw: unknown): EnforceLaneFigure | null {
     throw new Error("breakdown.enforce_lane is malformed");
   }
   return { recall: raw.recall, detected: raw.detected, attacks: raw.attacks, rulesInLane: raw.rules_in_lane };
+}
+
+function ablationLane(raw: unknown): AblationFigure["hunt"] {
+  if (!isRecord(raw) || !isCount(raw.detected) || !isCount(raw.attacks) || raw.attacks === 0
+    || typeof raw.recall !== "number") {
+    throw new Error("breakdown.in_sample_ablation lane is malformed");
+  }
+  return { recall: raw.recall, detected: raw.detected, attacks: raw.attacks };
+}
+
+/**
+ * The cited ablation, or null when the measurement records none. Present but
+ * malformed throws, as for the enforce lane: the headline must not lose the
+ * figure it is meant to travel with.
+ */
+export function ablationOf(raw: unknown): AblationFigure | null {
+  if (raw === undefined) return null;
+  if (!isRecord(raw) || typeof raw.reference !== "string") throw new Error("breakdown.in_sample_ablation has no reference");
+  const rec = raw[raw.reference];
+  if (!isRecord(rec) || !Array.isArray(rec.removed_rule_ids) || !isRecord(rec.lanes)) {
+    throw new Error(`breakdown.in_sample_ablation.${raw.reference} is malformed`);
+  }
+  return {
+    key: raw.reference,
+    rulesRemoved: rec.removed_rule_ids.length,
+    hunt: ablationLane(rec.lanes.hunt),
+    enforce: ablationLane(rec.lanes.enforce),
+  };
+}
+
+/** breakdown.provenance.rows_total, or null. */
+export function populationOf(raw: unknown): number | null {
+  return isRecord(raw) && isCount(raw.rows_total) ? raw.rows_total : null;
 }
 
 function layersOf(raw: unknown): BenchmarkMeasurement["layers"] {
@@ -250,6 +301,8 @@ function readMeasurement(entry: string, dir: string): BenchmarkMeasurement {
     benign: c ? c.tn + c.fp : null,
     falsePositives: c ? c.fp : null,
     enforce: enforceLaneOf(m.breakdown?.enforce_lane),
+    ablation: ablationOf(m.breakdown?.in_sample_ablation),
+    population: populationOf(m.breakdown?.provenance),
     layers: layersOf(m.breakdown?.layers),
     measurement_file: `data/measurements/${entry}/${pointer.file}`,
   };

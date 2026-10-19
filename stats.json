@@ -5,12 +5,12 @@
   "lastUpdated": "2026-10-07",
   "ruleCount": {
     "total": 836,
-    "effective": 829,
-    "inert": 7,
+    "effective": 828,
+    "inert": 8,
     "stable": 59,
-    "experimental": 770,
+    "experimental": 769,
     "draft": 5,
-    "deprecated": 2,
+    "deprecated": 3,
     "comment": "total = stable + experimental + draft + deprecated. Validated by `find rules -name '*.yaml' -type f -exec grep -l '^id: ATR-' {} \\;` in scripts/sync-stats.ts. Status breakdown counted via `grep -rh '^status:' rules/ --include='*.yaml' | sort | uniq -c` (handles both quoted and unquoted YAML strings)."
   },
   "spec": {
@@ -71,11 +71,29 @@
       "caveat": "This corpus exercises only the prompt-injection rule family. It is not a measure of overall coverage."
     },
     "hackaprompt": {
-      "recall": 69.6,
-      "baselineRecall": 28.6,
-      "precision": 100,
+      "recall": 83.1,
+      "enforceLaneRecall": 49,
+      "alertLaneRecall": 82.2,
+      "recallWithoutSourceNamedRules": {
+        "hunt": 28.7,
+        "enforce": 0.7,
+        "rulesRemoved": 20,
+        "measurementKey": "without_rules_naming_source",
+        "comment": "Ablation reference, not an out-of-sample result: the same 4,780 samples with the 20 rules whose YAML names HackAPrompt removed (breakdown.in_sample_ablation.without_rules_naming_source). Cite it beside recall and enforceLaneRecall. A rule that does not name HackAPrompt can still have been tuned on these prompts, so it approximates out-of-sample recall without guaranteeing it."
+      },
+      "precision": null,
+      "precisionNote": "Not measured: the corpus has no benign samples. The measurement file carries the schema's convention value (1), which is not a result.",
       "samples": 4780,
-      "source": "HackAPrompt EMNLP 2023"
+      "atr_version": "4.1.5",
+      "measured": "2026-10-19",
+      "tiers": [
+        "tier2-regex",
+        "tier2.5-embedding"
+      ],
+      "source": "HackAPrompt dataset (Schulhoff et al., EMNLP 2023), hackaprompt/hackaprompt-dataset@25b87fbe: a seeded subset of 4,780 of its 601,757 prompts (seed 20260511)",
+      "measurement_file": "data/measurements/hackaprompt/2026-10-19_hackaprompt-v1_atr-4-1-5.json",
+      "lane": "hunt",
+      "caveat": "Partly in-sample: 20 rules name HackAPrompt in their YAML, several mined from this exact subset. Cite recallWithoutSourceNamedRules (the ablation reference) beside recall: 28.7% (hunt) / 0.7% (enforce). Method and earlier figures: data/hackaprompt/METHOD.md."
     },
     "benign": {
       "lanes": {

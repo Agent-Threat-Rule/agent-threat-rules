@@ -68,8 +68,22 @@ detection:
       description: 'Persona establishment with unrestricted AI character'
     - field: content
       operator: regex
-      value: '(?i)(two\s+responses?|dual\s+response|both\s+responses?|\w+:\s*.*\w+:)\s*.{0,80}(normal|regular|standard|censored|restricted|safe|filtered)\s+(and|&)\s+(unleashed|unrestricted|uncensored|unfiltered|unlimited|jailbroken|raw|unaligned)'
-      description: 'Dual response format requesting both safe and unsafe outputs'
+      value: '(?i)(two\s+responses?|dual\s+response|both\s+responses?|\w:\s*(?:[^\s\\][^\r\n\\]*)?\w:)\s*(?:\S.{0,79})?(normal|regular|standard|censored|restricted|safe|filtered)\s+(and|&)\s+(unleashed|unrestricted|uncensored|unfiltered|unlimited|jailbroken|raw|unaligned)'
+      description: >-
+        Dual response format requesting both safe and unsafe outputs. The two-labels
+        alternative ("GPT: ... DAN:") is meant to stay on one line. It used `.*`, which
+        stops at a line break in raw text but not in JSON-encoded text, where a line
+        break is the two characters backslash-n: on a JSON-encoded document the run
+        spanned the whole input from every `word:`, so cost grew faster than the square
+        of its length (32K chars: 4.7s per call, 81K chars: 50s) and this rule and its
+        duplicate ATR-2026-00233 were 38% of all CPU in the benign-corpus FP scan.
+        `[^\r\n\\]*` stops at a line break or at a JSON escape, which restores the
+        one-line meaning in both encodings and is RE2-native. Long single-line text
+        was still quadratic: the run overlapped the `\w+:` after it, and the whitespace
+        runs before the run and before the 80-character window overlapped what follows
+        them. Each label is now its last word character and colon, and the run and the
+        window each start on a non-space, which matches exactly the same strings in
+        linear time.
     - field: content
       operator: regex
       value: '(?i)(guidelines?\s+have\s+been\s+(replaced|removed|disabled|overridden|suspended)|replace\s+(normal|openai|anthropic|standard|default)\s+guidelines?|new\s+guidelines?|different\s+guidelines?|custom\s+guidelines?)\s*.{0,60}(policies|rules|restrictions|constraints|limitations|guardrails)'
