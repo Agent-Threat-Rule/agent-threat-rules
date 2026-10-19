@@ -18,13 +18,17 @@ conformance/v1.0/
       <rule_id>/
         input.yaml
         expect.json
-    edge/             ← ambiguous inputs (engine MUST report error gracefully)
+    edge/             ← edge-case inputs (SUITE.md lists the outcomes each accepts)
       <case_id>/
         input.yaml
         expect.json
   runner/
-    run-conformance.ts  ← reference test runner
-    report-schema.json  ← schema for runner output
+    run-conformance.ts        ← reference test runner
+    outcomes.ts               ← outcomes each category allows; suite and SPEC versions
+    channels.ts               ← MCP event channels a payload is presented on
+    generate-fixtures.ts      ← TP and TN fixtures from the rules' test_cases
+    generate-edge-fixtures.ts ← the edge fixtures
+    report-schema.json        ← schema for runner output
   registry/
     README.md         ← list of verified ATR-Compatible implementations
 ```
@@ -75,10 +79,13 @@ A machine-readable report is written to `--out` (default
 `conformance-report-<utc-timestamp>.json`) conforming to
 `runner/report-schema.json`.
 
-## Known gaps (as of 2026-09-22)
+## Status
 
-The suite does not yet pass end to end against the in-tree reference
-engine. Reproduce:
+The reference engine passed the whole suite on 2026-10-19: **226 / 226** at
+L2 (TP 103, TN 103, edge 20, no runner-internal errors), at main `9d74fc506`
+plus the change that introduced this section. CI runs the suite on every
+change to `src/`, `rules/` or `conformance/`; the check is not a required
+one, so rerun before citing. Reproduce:
 
 ```bash
 npm run build
@@ -87,63 +94,41 @@ npx tsx conformance/v1.0/runner/run-conformance.ts \
   --out ./conformance-report.json
 ```
 
-Result against `rules/` on 2026-09-22: **197 / 226** — TP 78/103, TN
-103/103, edge 16/20, 0 runner-internal errors. Rerun before citing any of
-these numbers; the corpus changes daily.
+Until 2026-10-19 it did not, and no engine could. The fixes, which make up
+suite v1.0.1 (see "Versioning"):
 
-All 29 failures are fixture or corpus defects rather than runner defects.
-They are listed rather than papered over:
+1. 41 TP and TN fixtures had no payload. The generator read only a test
+   case's `input`, but 21 Rules write their payload under `tool_response`,
+   `tool_description`, `tool_name`, `tool_args`, `tool_call`,
+   `agent_output` or `content`. The generator now reads every key
+   `src/testcase-event.ts` reads and fails when a selected test case has no
+   payload, and the affected fixtures were regenerated. Until the CLI began
+   refusing an empty scan, the 20 TN fixtures among them passed without
+   testing anything.
+2. Six Rules could not fire in the reference Engine as the runner drives
+   it. ATR-2026-00083, -00084, -00095 and -00096 are `status: draft`, which
+   the reference Engine does not evaluate, and ATR-2026-00075 declares
+   `agent_source.type` `memory_access`, which it withholds from typed events
+   (`WITHHELD_SOURCE_TYPES` in `src/engine.ts`). The generator now skips
+   such Rules, and their fixtures were replaced by those of ATR-2026-00106,
+   -00137, -00138, -00150 and -00161. ATR-2026-00070 declares
+   `context_window`, which the Engine evaluated on no typed event until #701
+   (2026-10-19) and now runs where it runs `llm_io` Rules; its TP fixture
+   also carried only the benign question of its test case, not the
+   `tool_response` that holds the injection. Its fixtures were regenerated.
+3. ATR-2026-00451's hand-written TP put the injection in the request body,
+   which no version of the Rule matched: until #251 (2026-07-05) the Rule
+   looked for it in an admin URL path or an `*_id` parameter, and since then
+   in the Bearer token, which is where CVE-2026-42208 puts it. The fixture
+   now puts it in the Bearer token.
+4. Four edge fixtures (`edge-051`, `-052`, `-060`, `-061`) carry payloads
+   that the Corpus legitimately detects, yet expected `no_match`. They now
+   use the `handled` outcome (SUITE.md), which tests only that the run
+   finishes cleanly within budget.
 
-1. **21 TP fixtures carry no payload.** Their `input.yaml` has
-   `scan_target` and `rationale` but no `input:` key, so there is nothing
-   for an engine to match: ATR-2026-00010, -00011, -00012, -00013, -00020,
-   -00021, -00040, -00060, -00083, -00095, -00096, -00098, -00100, -00101,
-   -00102, -00103, -00104, -00105, -00107, -00108, -00116. Re-list them
-   with:
-
-   ```bash
-   for f in conformance/v1.0/fixtures/tp/*/input.yaml; do
-     grep -qs '^input:' "$f" || echo "$f"
-   done
-   ```
-
-   Cause: `runner/generate-fixtures.ts` reads `testCase.input`, but each of
-   these 21 Rules writes its `true_positives` payload under a field-specific
-   key instead — `tool_response`, `tool_description`, `tool_name`,
-   `tool_args`, `tool_call`, `agent_output` or `content` — so the generator
-   emitted a fixture with no payload. Repairing the generator does not
-   repair the fixtures already on disk: it skips any directory that already
-   has an `input.yaml`.
-
-2. **ATR-2026-00084 is `status: draft`.** Draft Rules are excluded from
-   evaluation by design, so no fixture can make this one fire
-   (`grep -m1 '^status:' rules/prompt-injection/ATR-2026-00084-structured-data-injection.yaml`).
-
-3. **ATR-2026-00070 and ATR-2026-00075 declare sources no Agent Event type
-   produces** (`context_window`, `memory_access`), so on 2026-09-22 the
-   source-type filter excluded them on every channel. The reference engine
-   now runs `context_window` rules where it runs `llm_io` rules
-   (`RUNTIME_SOURCE_TYPE` in `src/engine.ts`), but the TP fixture for -00070
-   carries a benign payload ("What is the company refund policy?") and still
-   fails. `memory_access` is withheld from typed events
-   (`WITHHELD_SOURCE_TYPES`, which gives the reason), so the -00075 fixture
-   still fails as before.
-
-4. **ATR-2026-00451's TP fixture does not exercise the Rule it names.**
-   Every condition requires a `bearer ...` prefix; the fixture supplies an
-   `X-Admin-Key:` header instead.
-
-5. **Four edge fixtures expect `no_match` on payloads the corpus
-   legitimately detects**: `edge-051-zero-width-injection`,
-   `edge-052-rtl-override`, `edge-060-null-byte-injection`,
-   `edge-061-control-chars`. Their own `rationale` fields require only that
-   the engine not crash ("Engines MAY normalize before matching",
-   "regardless of how it treats them"), which contradicts the
-   `graceful_error_or_no_match` in their `expect.json`.
-
-Items 1, 4 and 5 are repaired by altering existing fixtures, which the
-stability guarantee below defers to a v1.1 suite release. Items 2 and 3 are
-corpus-side and are tracked against the Rules, not the suite.
+The runner now also reports a fixture with no `input`, a tp or tn fixture
+with no `rule_id`, and a fixture whose outcome its category does not allow
+as a `harness_error`, instead of scoring it.
 
 ## Submitting a certification claim
 
@@ -159,6 +144,14 @@ suite (`v1.0.1`, `v1.0.2`...) MAY add fixtures and MUST NOT remove or
 alter existing ones — a passing engine at `v1.0.0` MUST continue to pass
 at `v1.0.x`. Minor releases (`v1.1`) align with `SPEC.md v1.1.x` and MAY
 require new conformance behavior.
+
+`v1.0.1` (2026-10-19) is a corrective release, recorded by erratum
+`e-2026-10-19-conformance-suite`, and the one exception. It alters
+and removes fixtures, which the rule above forbids, because no Engine could
+pass `v1.0.0`: its TP fixtures without a payload could not match anything.
+So no Engine that passed `v1.0.0` can fail `v1.0.1`. The changes are listed
+under "Status" and in SPEC.md Appendix D; they track SPEC.md 1.0.2, whose
+Section 12 now allows the `handled` edge outcome.
 
 ## License
 

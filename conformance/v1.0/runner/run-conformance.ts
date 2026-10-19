@@ -34,30 +34,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const SUITE_ROOT = join(__dirname, '..');
 const FIXTURE_ROOT = join(SUITE_ROOT, 'fixtures');
 
-const SUITE_VERSION = 'v1.0.0';
-const SPEC_VERSION = '1.0.0';
 
 /** Fixed so two runs of the same fixture produce byte-identical engine input. */
 const FIXTURE_TIMESTAMP = '2026-01-01T00:00:00Z';
 
-/**
- * MCP event channels a `scan_target: mcp` payload is presented on.
- *
- * A fixture declares a scan target, not a channel, so the runner materialises
- * the payload once per channel and asks the engine about the batch. A TP
- * fixture passes when the Rule fires on at least one channel; a TN fixture
- * passes only when it fires on none — the same normalisation, applied in both
- * directions, so it cannot be used to launder a false positive.
- */
-const MCP_CHANNELS = [
-  'llm_input',
-  'llm_output',
-  'tool_call',
-  'tool_response',
-  'multi_agent_message',
-] as const;
-
-type Outcome = 'match' | 'no_match' | 'graceful_error' | 'graceful_error_or_no_match';
+import { MCP_CHANNELS } from './channels.js';
+import { ALLOWED_OUTCOMES, SUITE_VERSION, SPEC_VERSION, type Outcome } from './outcomes.js';
 type ObservedKind = 'match' | 'no_match' | 'graceful_error' | 'engine_error' | 'harness_error';
 type Category = 'tp' | 'tn' | 'edge';
 
@@ -208,7 +190,12 @@ function loadFixture(fixturePath: string): Fixture {
   }
   const record = doc as Record<string, unknown>;
   const scanTarget = typeof record['scan_target'] === 'string' ? (record['scan_target'] as string) : 'mcp';
-  return { scanTarget, input: record['input'] ?? null };
+  // SUITE.md: `input` is mandatory. A fixture without one is a broken fixture;
+  // scoring it would test the engine on an empty event.
+  if (!('input' in record) || record['input'] === null || record['input'] === undefined) {
+    throw new Error('input.yaml has no input payload');
+  }
+  return { scanTarget, input: record['input'] };
 }
 
 function stringifyFields(map: Record<string, unknown>): Record<string, string> {
@@ -462,7 +449,9 @@ function evaluateEdge(expected: ExpectFile, observed: Observation): Omit<Fixture
       ? ['graceful_error']
       : expected.outcome === 'no_match'
         ? ['no_match']
-        : ['no_match', 'graceful_error'];
+        : expected.outcome === 'handled'
+          ? ['match', 'no_match', 'graceful_error']
+          : ['no_match', 'graceful_error'];
   const allowed = expected.error_kind_allowed ?? [];
   const required = expected.error_kind_must_include ?? [];
   const errorText = (observed.error ?? '').toLowerCase();
@@ -510,6 +499,15 @@ function main(): void {
       let fixture: Fixture;
       try {
         expected = loadExpect(fixturePath);
+        // A tp or tn fixture without rule_id would accept a match from any rule.
+        if (category !== 'edge' && !expected.rule_id) {
+          throw new Error(`expect.json has no rule_id (required for ${category} fixtures)`);
+        }
+        if (!ALLOWED_OUTCOMES[category].includes(expected.outcome)) {
+          throw new Error(
+            `expect.json outcome "${String(expected.outcome)}" is not allowed for ${category} fixtures (${ALLOWED_OUTCOMES[category].join(', ')})`,
+          );
+        }
         fixture = loadFixture(fixturePath);
       } catch (e) {
         const message = `${relative}: ${(e as Error).message}`;
