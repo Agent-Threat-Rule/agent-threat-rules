@@ -13,17 +13,20 @@ All notable changes to ATR will be documented in this file.
   files give it (open, closed or merged), the files that give it, and refs for
   files that name it without a link ("PR #338"). `tests/status-claims.test.ts`,
   in npm test, fails when a scanned file links or names (owner/repo#N) a pull
-  request or issue the list does not cover for that file, unless it is a merged
-  pull request ADOPTERS.md gives as shipped evidence; when a listed file no
-  longer mentions its claim; when README's "Under maintainer review" section
-  lists anything but open claims; and when an actor page's report status
-  differs from the list. `scripts/verify-status-claims.mjs` (standard library
-  only, on `scripts/lib/github-link-state.mjs`) checks every listed state
-  against GitHub, and `.github/workflows/verify-status-claims.yml` runs it when
-  the list or the checker changes and weekly; a failure on main opens one
-  tracking issue, which the next green run closes. The open state of
-  usnistgov/oscal-content#338 alone is stated in twelve files. The /red-team
-  page is left to the check proposed in #691.
+  request or issue in another repository that the list does not cover for that
+  file, unless it is a merged pull request ADOPTERS.md gives as shipped
+  evidence; when a listed file no longer mentions its claim; when README's
+  "Under maintainer review" section lists anything but open claims; and when
+  an actor page's report status differs from the list.
+  `scripts/verify-status-claims.mjs` (standard library only, on
+  `scripts/lib/github-link-state.mjs`) checks every listed state against
+  GitHub, and `.github/workflows/verify-status-claims.yml` runs it when the
+  list or the checker changes and weekly; a failure on main opens one tracking
+  issue, which the next green run closes. On a pull request, a claim whose
+  state changes must come with an edit to every file the base branch's list
+  named for it, so the list cannot move on while the files keep the old state.
+  The open state of usnistgov/oscal-content#338 alone is stated in twelve
+  files. The /red-team page is left to the check proposed in #691.
 
 - **The category registry as Gemara catalogs, generated and published from
   here.** `spec/category-registry/gemara/` holds a vector, capability, threat
@@ -223,11 +226,13 @@ All notable changes to ATR will be documented in this file.
   2026-10-06.
 
 - **The integrate page gives Cisco skill-scanner PR #79's real merge time.**
-  It said #79 merged in three days ("3 days, first PR to merge"). ATR's
-  maintainer opened it on 2026-04-02, and the repository's maintainers merged
-  it 21 hours later. Recorded as erratum e-2026-10-20-cisco-merge-time. Two
-  unused strings in `website/lib/i18n.ts` said a Cisco engineer submitted #79
-  and ATR reviewed it, the other way round; they now say what happened.
+  It said #79 merged in three days ("3 days, first PR to merge"), and from
+  2026-04-07 to 2026-05-23 it also said a Cisco engineer submitted #79 and ATR
+  reviewed it. ATR's maintainer opened it on 2026-04-02, and the repository's
+  maintainers merged it 21 hours later. Recorded as erratum
+  e-2026-10-20-cisco-merge-time. Two strings in `website/lib/i18n.ts` that no
+  page renders today still told the reversed account; they now say what
+  happened.
 
 - **On Claude Code, the guard scans what a tool returned on PostToolUse.**
   Claude Code sends a tool's output at the top level of the PostToolUse hook

@@ -43,8 +43,12 @@ export const SCOPE = {
     'website/app/[locale]/red-team/page.tsx':
       'the red-team list has a check of its own in review (PR #691), which moves it to website/data/red-team-tools.json',
     'website/data/red-team-tools.json': 'see the red-team page',
+    'website/lib/red-team-tools.ts': 'see the red-team page (the list\'s loader in #691)',
   },
 };
+
+/** This repository: its own pull requests and issues are not another repository's state. */
+const OWN_REPO = 'agent-threat-rule/agent-threat-rules';
 
 const TOP_FIELDS = new Set(['$comment', 'claims']);
 const FIELDS = new Set(['url', 'state', 'files', 'refs']);
@@ -141,14 +145,20 @@ export function validateRegistry(doc) {
 // host whose name ends in github.com (api., gist.).
 const LINK = /(?:https?:\/\/)?(?<![\w.-])(?:www\.)?github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)\/(?:pull|issues)\/(\d+)/gi;
 // owner/repo#N in prose. Not inside a longer path or name, and not a markdown
-// anchor such as ARCHITECTURE.md#2-layers.
-const SHORT_REF = /(?<![\w./-])([A-Za-z0-9-]+)\/([A-Za-z0-9_.-]+)#(\d+)(?![\w-])/g;
+// anchor: ARCHITECTURE.md#2-layers, SPEC.md#3, SPEC.md#6.4.
+const SHORT_REF = /(?<![\w./-])([A-Za-z0-9-]+)\/([A-Za-z0-9_.-]+)(?<!\.[mM][dD][xX]?)#(\d+)(?![\w-]|\.\d)/g;
+
+/** Text with its \uXXXX escapes decoded: website/lib/i18n.ts stores Chinese that way. */
+export function decodeEscapes(text) {
+  return text.replace(/\\u([0-9A-Fa-f]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
 
 /** The owner/repo#N key of every pull request or issue a text links or names. */
 export function scanKeys(text) {
+  const plain = decodeEscapes(text);
   const keys = new Set();
   for (const re of [LINK, SHORT_REF]) {
-    for (const m of text.matchAll(re)) keys.add(`${m[1].toLowerCase()}/${m[2].toLowerCase()}#${Number(m[3])}`);
+    for (const m of plain.matchAll(re)) keys.add(`${m[1].toLowerCase()}/${m[2].toLowerCase()}#${Number(m[3])}`);
   }
   return keys;
 }
@@ -176,10 +186,13 @@ function firstUrl(evidence) {
   return bare ? bare[0] : undefined;
 }
 
+/** The tier headings scripts/verify-adopters.mjs reads; it checks nothing under any other. */
+const ADOPTERS_TIERS = ['Tier S', 'Tier 1', 'Tier 2', 'Tier 3', 'Tier 4'];
+
 /**
  * Keys of the pull requests ADOPTERS.md gives as evidence for a shipped entry,
- * under the "## Tier" headings only (not the schema example or removed
- * entries). Status defaults to shipped, as in verify-adopters.mjs.
+ * under the tiers verify-adopters.mjs reads (not the schema example or removed
+ * entries). Status defaults to shipped, as there.
  */
 export function adoptersShippedKeys(text) {
   const keys = new Set();
@@ -197,7 +210,7 @@ export function adoptersShippedKeys(text) {
   for (const line of text.split('\n')) {
     if (line.startsWith('## ')) {
       flush();
-      inTier = /^## Tier\b/.test(line);
+      inTier = ADOPTERS_TIERS.some((tier) => line.slice(3).startsWith(tier));
     } else if (line.startsWith('### ')) {
       flush();
       block = inTier ? [] : null;
@@ -239,7 +252,7 @@ function unlistedLinkProblems(files, text, byKey, shipped) {
   return files.flatMap((file) => {
     const t = text(file);
     if (t === null) return [];
-    return [...scanKeys(t)].flatMap((key) => {
+    return [...scanKeys(t)].filter((key) => !key.startsWith(`${OWN_REPO}#`)).flatMap((key) => {
       const claim = byKey.get(key);
       if (claim === undefined) {
         return shipped.has(key)
@@ -288,7 +301,10 @@ function openOnlyProblems(sections, text, byKey) {
 export function fileProblems(registry, { files, read, adoptersText = '', openOnlySections = OPEN_ONLY_SECTIONS }) {
   const cache = new Map();
   const text = (path) => {
-    if (!cache.has(path)) cache.set(path, read(path));
+    if (!cache.has(path)) {
+      const raw = read(path);
+      cache.set(path, raw === null ? null : decodeEscapes(raw));
+    }
     return cache.get(path);
   };
   const byKey = new Map(registry.claims.map((claim) => [claimKey(claim.url), claim]));
@@ -298,6 +314,27 @@ export function fileProblems(registry, { files, read, adoptersText = '', openOnl
     ...unlistedRefProblems(files, text, registry.claims),
     ...openOnlyProblems(openOnlySections, text, byKey),
   ];
+}
+
+/**
+ * Every claim whose state changed, or that left the list, since `base` (the
+ * list on the base branch) must come with an edit to each file the base list
+ * named for it. The files say the state in words; a state changed in the list
+ * alone (to quiet the weekly check) would leave them saying the old one.
+ * `changedFiles` are the paths the change touches.
+ */
+export function stateChangeProblems(base, head, changedFiles) {
+  const now = new Map(head.claims.map((claim) => [claimKey(claim.url), claim]));
+  const touched = new Set(changedFiles);
+  return base.claims.flatMap((before) => {
+    const key = claimKey(before.url);
+    const after = now.get(key);
+    if (after !== undefined && after.state === before.state) return [];
+    const what = after === undefined ? 'was removed from the list' : `changed from ${before.state} to ${after.state}`;
+    return before.files
+      .filter((file) => !touched.has(file))
+      .map((file) => `${file}: ${key} ${what}, but this file, which the list named for it, is unchanged; update what it says (or remove the mention) in the same change`);
+  });
 }
 
 function walk(root, dir) {

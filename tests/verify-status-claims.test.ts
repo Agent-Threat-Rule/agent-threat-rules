@@ -12,13 +12,14 @@
  */
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import yaml from "js-yaml";
 // @ts-expect-error -- stdlib-only .mjs script, no type declarations (it runs in
 // CI without npm install, so it must not depend on the TypeScript toolchain).
 import { main, report, verifyClaims } from "../scripts/verify-status-claims.mjs";
+import { HAS_JQ, cleanSandboxes, ghCalls, runBlock, runStep, sandbox, type Sandbox } from "./workflow-step-harness.js";
 
 const REPO_ROOT = resolve(__dirname, "..");
 const SCRIPT = join(REPO_ROOT, "scripts", "verify-status-claims.mjs");
@@ -148,11 +149,61 @@ describe("main", () => {
     expect(out.join("\n")).toMatch(/website\/app\/page\.tsx: links o\/unlisted#9/);
   });
 
+  it("fails when README's review section lists a claim that is not open", async () => {
+    const out = quiet();
+    const readme = `# x\n### Under maintainer review (open PRs)\n\n${OPEN}\n${CLOSED}\n`;
+    expect(await main({ root: fixture(GOOD, { "README.md": readme }), offline: true })).toBe(1);
+    expect(out.join("\n")).toMatch(/lists o\/closed#2, which is closed, not open/);
+  });
+
   it("checks only the list and the files with --offline", async () => {
     quiet();
     const gh = fakeGitHub({});
     expect(await main({ root: fixture(GOOD), offline: true, fetchImpl: gh.impl })).toBe(0);
     expect(gh.asked).toEqual([]);
+  });
+});
+
+/** A git repository holding fixture(GOOD) at one commit; returns the root and that commit. */
+function gitFixture(): { root: string; base: string } {
+  const root = fixture(GOOD);
+  const env = { ...process.env, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_NOSYSTEM: "1", GIT_AUTHOR_NAME: "f", GIT_AUTHOR_EMAIL: "f@example.invalid", GIT_COMMITTER_NAME: "f", GIT_COMMITTER_EMAIL: "f@example.invalid" };
+  const git = (...args: string[]) => execFileSync("git", args, { cwd: root, env, encoding: "utf8" }).trim();
+  git("init", "--quiet", "-b", "main");
+  git("add", "-A");
+  git("commit", "--quiet", "-m", "base");
+  return { root, base: git("rev-parse", "HEAD") };
+}
+
+describe("main --base: a changed state needs its files changed too", () => {
+  const reopened = { claims: [GOOD.claims[0], { ...GOOD.claims[1], state: "open" }] };
+
+  it("fails when the list changes a state and a file it named is left as it was", async () => {
+    const out = quiet();
+    const { root, base } = gitFixture();
+    writeFileSync(join(root, "website/data/status-claims.json"), JSON.stringify(reopened));
+    expect(await main({ root, base, offline: true })).toBe(1);
+    expect(out.join("\n")).toMatch(/README\.md: o\/closed#2 changed from closed to open, but this file\b.* is unchanged/);
+  });
+
+  it("passes when every file the list named changed with it", async () => {
+    quiet();
+    const { root, base } = gitFixture();
+    writeFileSync(join(root, "website/data/status-claims.json"), JSON.stringify(reopened));
+    writeFileSync(join(root, "README.md"), `# x\n### Under maintainer review (open PRs)\n\n${OPEN}\n${CLOSED}\n`);
+    expect(await main({ root, base, offline: true })).toBe(0);
+  });
+
+  it("fails closed on a base it cannot read, and has nothing to compare when the base has no list", async () => {
+    const out = quiet();
+    const { root } = gitFixture();
+    expect(await main({ root, base: "0000000000000000000000000000000000000000", offline: true })).toBe(1);
+    expect(out.join("\n")).toMatch(/cannot read the base commit/);
+    const fresh = gitFixture();
+    execFileSync("git", ["rm", "--quiet", "--cached", "website/data/status-claims.json"], { cwd: fresh.root });
+    execFileSync("git", ["-c", "user.name=f", "-c", "user.email=f@example.invalid", "commit", "--quiet", "-m", "no list"], { cwd: fresh.root });
+    const noList = execFileSync("git", ["rev-parse", "HEAD"], { cwd: fresh.root, encoding: "utf8" }).trim();
+    expect(await main({ root: fresh.root, base: noList, offline: true })).toBe(0);
   });
 });
 
@@ -171,6 +222,9 @@ describe("running the script", () => {
     const res = spawnSync(process.execPath, [SCRIPT, "--ofline"], { encoding: "utf8" });
     expect(res.status).toBe(2);
     expect(res.stderr).toMatch(/unknown argument "--ofline"/);
+    const bare = spawnSync(process.execPath, [SCRIPT, "--offline", "--base"], { encoding: "utf8" });
+    expect(bare.status).toBe(2);
+    expect(bare.stderr).toMatch(/--base needs a commit/);
   });
 });
 
@@ -203,7 +257,14 @@ describe("verify-status-claims.yml", () => {
   it("keeps the checker's exit code through tee", () => {
     const verify = steps.find((s) => s.id === "verify");
     expect(verify?.run).toMatch(/set -o pipefail/);
-    expect(verify?.run).toMatch(/node scripts\/verify-status-claims\.mjs 2>&1 \| tee /);
+    expect(verify?.run).toMatch(/node scripts\/verify-status-claims\.mjs[^\n]*2>&1 \| tee /);
+  });
+
+  it("on a pull request, compares the list with the base branch's", () => {
+    const verify = steps.find((s) => s.id === "verify");
+    expect(verify?.env?.BASE_SHA).toBe("${{ github.event.pull_request.base.sha }}");
+    expect(verify?.run).toContain('git fetch --quiet --depth=1 origin "$BASE_SHA"');
+    expect(verify?.run).toContain('node scripts/verify-status-claims.mjs --base "$BASE_SHA" 2>&1 | tee "$RUNNER_TEMP/status-claims.txt"');
   });
 
   it("files a failure of the check on main as one tracking issue, and closes it on a green run on main", () => {
@@ -221,5 +282,49 @@ describe("verify-status-claims.yml", () => {
       expect(s?.run).toContain('title="Status claims no longer match GitHub"');
       expect(s?.run).toContain(lookup);
     }
+  });
+});
+
+describe.skipIf(!HAS_JQ)("verify-status-claims.yml: failures are filed and closed", () => {
+  const open = runBlock(WORKFLOW, "verify", "Open or update the tracking issue");
+  const close = runBlock(WORKFLOW, "verify", "Close the tracking issue once every claim matches again");
+  const TITLE = "Status claims no longer match GitHub";
+  const OURS = { number: 42, title: TITLE, labels: ["auto-generated"], state: "OPEN" };
+  // A real open issue on the repository, also labelled auto-generated.
+  const UNRELATED = { number: 82, title: "ATR: proposals awaiting human PoC", labels: ["auto-generated"], state: "OPEN" };
+  const REPORT = "[FAIL]  https://github.com/o/r/pull/1 — claimed open, observed merged; files: README.md\n";
+
+  /** The checker's report where the workflow tees it, and the open issues gh can find. */
+  function env(sb: Sandbox, list: object[] = []): Record<string, string> {
+    writeFileSync(join(sb.root, "status-claims.txt"), REPORT);
+    const file = join(sb.root, "issues.json");
+    writeFileSync(file, JSON.stringify(list));
+    return { FAKE_GH_ISSUES: file, GITHUB_EVENT_NAME: "schedule", RUN_URL: "https://example.invalid/run/1" };
+  }
+
+  afterEach(cleanSandboxes);
+
+  it("opens one issue carrying the checker's report", () => {
+    const sb = sandbox("status-wf-", { "README.md": "x\n" });
+    const res = runStep(sb, open, env(sb));
+    expect(res.status, res.stderr).toBe(0);
+    expect(ghCalls(sb)).toMatch(/issue create --title Status claims no longer match GitHub[\s\S]*claimed open, observed merged[\s\S]*--label auto-generated/);
+  });
+
+  it("rewrites the open issue, and never touches another auto-generated one", () => {
+    const sb = sandbox("status-wf-", { "README.md": "x\n" });
+    expect(runStep(sb, open, env(sb, [UNRELATED, OURS])).status).toBe(0);
+    expect(ghCalls(sb)).toMatch(/issue edit 42 /);
+    expect(ghCalls(sb)).not.toMatch(/issue (create|edit 82|close)/);
+  });
+
+  it("closes its own issue on a green run, and only its own", () => {
+    const sb = sandbox("status-wf-", { "README.md": "x\n" });
+    expect(runStep(sb, close, env(sb, [UNRELATED, OURS])).status).toBe(0);
+    expect(ghCalls(sb)).toMatch(/issue close 42 /);
+    expect(ghCalls(sb)).not.toMatch(/issue close 82/);
+    const quiet = sandbox("status-wf-", { "README.md": "x\n" });
+    expect(runStep(quiet, close, env(quiet, [UNRELATED])).status).toBe(0);
+    expect(ghCalls(quiet)).not.toMatch(/issue close/);
   });
 });

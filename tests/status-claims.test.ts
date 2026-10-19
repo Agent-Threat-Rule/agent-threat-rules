@@ -19,8 +19,9 @@
  *     - the actor pages' report statuses are the states on the list.
  */
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import {
   OPEN_ONLY_SECTIONS,
   REGISTRY_PATH,
@@ -29,6 +30,7 @@ import {
   listScopedFiles,
   scanKeys,
   sectionText,
+  stateChangeProblems,
   validateRegistry,
   // @ts-expect-error -- stdlib-only .mjs module, no type declarations (the
   // workflow runs it without npm install).
@@ -120,6 +122,14 @@ describe("scanKeys", () => {
   it("finds pull requests and issues by link, whatever the link's form", () => {
     expect(keys("[x](https://github.com/O/R/pull/5) and https://www.github.com/o/r/issues/5#c1 and https://github.com/o/r/pull/5/files")).toEqual(["o/r#5"]);
     expect(keys('href="https://github.com/a/b/issues/12"')).toEqual(["a/b#12"]);
+    // Each form on its own, so no form can hide behind another with the same key.
+    expect(keys("https://www.github.com/c/d/pull/3")).toEqual(["c/d#3"]);
+    expect(keys("HTTPS://GitHub.COM/E/F/PULL/4")).toEqual(["e/f#4"]);
+    expect(keys("http://github.com/g/h/issues/6")).toEqual(["g/h#6"]);
+  });
+
+  it("reads text stored as \\u escapes, as website/lib/i18n.ts stores Chinese", () => {
+    expect(keys("\\u3002github.com/o/r/pull/5 \\u3001o/s#6")).toEqual(["o/r#5", "o/s#6"]);
   });
 
   it("finds a link written without its scheme, but not an API or other host's path", () => {
@@ -129,6 +139,7 @@ describe("scanKeys", () => {
 
   it("finds owner/repo#N references written without a link", () => {
     expect(keys("offered as usnistgov/oscal-content#338, awaiting review (see o/r#9).")).toEqual(["o/r#9", "usnistgov/oscal-content#338"]);
+    expect(keys("vercel/next.js#123 and socketio/socket.io#7.")).toEqual(["socketio/socket.io#7", "vercel/next.js#123"]);
   });
 
   it("ignores commits, files, anchors and paths that only look like references", () => {
@@ -140,6 +151,8 @@ describe("scanKeys", () => {
           "[arch](docs/ARCHITECTURE.md#2-layers)",
           "a/b/c#3",
           "example.com/page#12",
+          "spec/SPEC.md#6.4",
+          "see docs/SPEC.md#3 and README.mdx#2",
         ].join("\n"),
       ),
     ).toEqual([]);
@@ -161,15 +174,23 @@ describe("adoptersShippedKeys", () => {
     "- **Status**: in-review",
     "### No status",
     "- **Evidence**: [merged PR](https://github.com/A/Default/pull/3)",
+    "### Shipped issue",
+    "- **Evidence**: <https://github.com/a/issue/issues/5>",
+    "- **Status**: shipped",
+    "## Tier 5 — not a tier verify-adopters reads",
+    "### Unread",
+    "- **Evidence**: <https://github.com/a/unread/pull/6>",
     "## Removed entries",
     "### Gone",
     "- **Evidence**: <https://github.com/a/removed/pull/4>",
     "- **Status**: shipped",
   ].join("\n");
 
-  it("collects shipped evidence under the tier headings only", () => {
-    // Status defaults to shipped, as in scripts/verify-adopters.mjs; the schema
-    // example and removed entries are not adopters.
+  it("collects shipped pull-request evidence under the tiers verify-adopters reads", () => {
+    // Status defaults to shipped, as in scripts/verify-adopters.mjs. The schema
+    // example, removed entries and a tier verify-adopters does not read are
+    // not checked there, so they exempt nothing here; nor does an issue, which
+    // verify-adopters holds to OPEN, a state that can change.
     expect([...adoptersShippedKeys(adopters)].sort()).toEqual(["a/default#3", "a/shipped#1"]);
   });
 });
@@ -183,6 +204,33 @@ describe("sectionText", () => {
 
   it("returns null when the heading is gone", () => {
     expect(sectionText(md, "### Under maintainer review")).toBeNull();
+  });
+});
+
+describe("stateChangeProblems", () => {
+  const URL = "https://github.com/usnistgov/oscal-content/pull/338";
+  const before: Registry = { claims: [claim(URL, "open", ["README.md", "website/a.tsx", "docs/b.md"])] };
+  const after = (state: string, files = ["README.md", "website/a.tsx", "docs/b.md"]): Registry => ({ claims: [claim(URL, state, files)] });
+
+  it("lets a claim keep its state without touching its files", () => {
+    expect(stateChangeProblems(before, after("open"), [])).toEqual([]);
+  });
+
+  it("asks for every file the list named when a state changes, so the wording cannot be left behind", () => {
+    // The reviewer's case: #338 set to merged and README fixed, eleven files still saying "awaiting NIST review".
+    expect(stateChangeProblems(before, after("merged", ["website/a.tsx", "docs/b.md"]), ["README.md", "website/data/status-claims.json"])).toEqual([
+      expect.stringMatching(/website\/a\.tsx: usnistgov\/oscal-content#338 changed from open to merged, but this file\b.* is unchanged/),
+      expect.stringMatching(/docs\/b\.md: usnistgov\/oscal-content#338 changed from open to merged/),
+    ]);
+    expect(stateChangeProblems(before, after("merged"), ["README.md", "website/a.tsx", "docs/b.md"])).toEqual([]);
+  });
+
+  it("asks the same when a claim leaves the list, and nothing of a new claim", () => {
+    const fresh: Registry = { claims: [claim("https://github.com/o/new/pull/1", "open", ["README.md"])] };
+    expect(stateChangeProblems(before, fresh, ["README.md"])).toEqual([
+      expect.stringMatching(/website\/a\.tsx: usnistgov\/oscal-content#338 was removed from the list/),
+      expect.stringMatching(/docs\/b\.md: usnistgov\/oscal-content#338 was removed from the list/),
+    ]);
   });
 });
 
@@ -218,6 +266,11 @@ describe("fileProblems", () => {
     const reg: Registry = { claims: [claim(OPEN, "open", ["README.md"], ["PR #1"])] };
     expect(fileProblems(reg, repo({ "README.md": OPEN, "other.tsx": "see PR #12 and PR #100" }))).toEqual([]);
     expect(fileProblems(reg, repo({ "README.md": "only PR #12" }))).toEqual([expect.stringMatching(/README\.md: listed for .*mentions neither/)]);
+  });
+
+  it("leaves this repository's own pull requests and issues alone: they are not another repository's state", () => {
+    const own = "see https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/698 and Agent-Threat-Rule/agent-threat-rules#500";
+    expect(fileProblems(base, repo({ "README.md": OPEN, "page.tsx": MERGED, "errata.tsx": own }))).toEqual([]);
   });
 
   it("covers an owner/repo#N reference the same way as a link", () => {
@@ -313,6 +366,27 @@ function actorReportProblems(actors: ThreatActor[], registry: Registry): string[
 describe("the committed repository", () => {
   it("has a well-formed list", () => {
     expect(validateRegistry(loadRegistry())).toEqual([]);
+  });
+
+  it("skips the red-team list in every form #691 gives it, build output and dependencies", () => {
+    const root = mkdtempSync(join(tmpdir(), "status-scope-"));
+    for (const rel of [
+      "README.md",
+      "website/lib/x.ts",
+      "website/lib/red-team-tools.ts",
+      "website/data/red-team-tools.json",
+      "website/app/[locale]/red-team/page.tsx",
+      "website/data/errata.json",
+      "website/data/status-claims.json",
+      "website/public/feed.json",
+      "website/node_modules/m/index.js",
+      "website/.next/page.js",
+      "website/package-lock.json",
+    ]) {
+      mkdirSync(dirname(join(root, rel)), { recursive: true });
+      writeFileSync(join(root, rel), "x");
+    }
+    expect(listScopedFiles(root)).toEqual(["README.md", "website/lib/x.ts"]);
   });
 
   it("scans the pages people read as current, and skips dated records and the red-team list", () => {

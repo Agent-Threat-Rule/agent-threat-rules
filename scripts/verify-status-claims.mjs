@@ -20,17 +20,31 @@
  *   - unverified GitHub could not be asked (rate limit, 5xx, network, bad body).
  *                Not a pass: re-run with GITHUB_TOKEN set before editing.
  *
- * Exit 0 when the list, the files and GitHub agree; 1 otherwise; 2 on an
- * unknown argument. --offline skips step 2. Auth: set GITHUB_TOKEN to avoid
+ * With --base <commit> (the workflow passes a pull request's base), a claim
+ * whose state changed since that commit's list, or that left the list, must
+ * come with an edit to every file that list named for it: the files say the
+ * state in words, and a state changed in the list alone would leave them
+ * saying the old one.
+ *
+ * Exit 0 when the list, the files and GitHub agree; 1 otherwise; 2 on a bad
+ * argument. --offline skips the GitHub step. Auth: set GITHUB_TOKEN to avoid
  * the 60 req/h unauthenticated limit.
- * Run: node scripts/verify-status-claims.mjs [--offline]
+ * Run: node scripts/verify-status-claims.mjs [--offline] [--base <commit>]
  */
 
+import { execFileSync } from 'node:child_process';
 import { readFileSync, realpathSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { classifyLink, failureKind, fetchState } from './lib/github-link-state.mjs';
-import { OPEN_ONLY_SECTIONS, REGISTRY_PATH, fileProblems, listScopedFiles, validateRegistry } from './lib/status-claims.mjs';
+import {
+  OPEN_ONLY_SECTIONS,
+  REGISTRY_PATH,
+  fileProblems,
+  listScopedFiles,
+  stateChangeProblems,
+  validateRegistry,
+} from './lib/status-claims.mjs';
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -72,12 +86,42 @@ export function report(results) {
   return 1;
 }
 
+/**
+ * The list at `base` and the paths changed since then, read with git in root:
+ * { list, changed }, with list null when `base` has no list (it is new), or
+ * { error } when the commit or its list cannot be read.
+ */
+function readBase(root, base) {
+  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  try {
+    git('cat-file', '-e', `${base}^{commit}`);
+  } catch {
+    return { error: `cannot read the base commit ${base}` };
+  }
+  let text;
+  try {
+    text = git('show', `${base}:${REGISTRY_PATH}`);
+  } catch {
+    return { list: null, changed: [] };
+  }
+  let list;
+  try {
+    list = JSON.parse(text);
+  } catch {
+    return { error: `the list at ${base} is not JSON` };
+  }
+  if (validateRegistry(list).length > 0) return { error: `the list at ${base} is malformed` };
+  // Against the working tree, so uncommitted edits count; both sides of a rename.
+  const changed = git('diff', '--name-only', '--no-renames', base).split('\n').filter(Boolean);
+  return { list, changed };
+}
+
 function printProblems(heading, problems) {
   console.error(`[status-claims] ${heading}:`);
   for (const p of problems) console.error(`  - ${p}`);
 }
 
-/** options: root (repository root), offline, and fetchState's options. */
+/** options: root (repository root), offline, base, and fetchState's options. */
 export async function main(options = {}) {
   const root = options.root ?? REPO_ROOT;
   const read = (path) => {
@@ -110,6 +154,19 @@ export async function main(options = {}) {
     return 1;
   }
   console.log(`${registry.claims.length} status claims; the files and the list agree.`);
+  if (options.base !== undefined) {
+    const base = readBase(root, options.base);
+    if (base.error !== undefined) {
+      console.error(`[status-claims] ${base.error}`);
+      return 1;
+    }
+    const changes = base.list === null ? [] : stateChangeProblems(base.list, registry, base.changed);
+    if (changes.length > 0) {
+      printProblems(`states changed since ${options.base} without their files`, changes);
+      return 1;
+    }
+    console.log(base.list === null ? `No list at ${options.base}; no states to compare.` : `Every state changed since ${options.base} came with its files.`);
+  }
   if (options.offline) return 0;
   return report(await verifyClaims(registry.claims, options));
 }
@@ -124,13 +181,31 @@ function invokedDirectly() {
   }
 }
 
+/** { offline, base } from the command line, or { error }. */
+function parseArgs(argv) {
+  let options = { offline: false };
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--offline') {
+      options = { ...options, offline: true };
+    } else if (argv[i] === '--base') {
+      const base = argv[i + 1];
+      // Never let the value reach git as an option.
+      if (base === undefined || base.startsWith('-')) return { error: '--base needs a commit' };
+      options = { ...options, base };
+      i++;
+    } else {
+      return { error: `unknown argument "${argv[i]}" (options: --offline, --base <commit>)` };
+    }
+  }
+  return options;
+}
+
 if (invokedDirectly()) {
-  const args = process.argv.slice(2);
-  const unknown = args.filter((a) => a !== '--offline');
-  if (unknown.length > 0) {
-    console.error(`[status-claims] unknown argument "${unknown[0]}" (the only option is --offline)`);
+  const options = parseArgs(process.argv.slice(2));
+  if (options.error !== undefined) {
+    console.error(`[status-claims] ${options.error}`);
     process.exitCode = 2;
   } else {
-    process.exitCode = await main({ offline: args.includes('--offline') });
+    process.exitCode = await main(options);
   }
 }

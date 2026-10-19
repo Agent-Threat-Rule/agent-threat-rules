@@ -58,14 +58,23 @@ jobs:
 
       # Stdlib only, so no npm install. GITHUB_TOKEN lifts the 60 req/h
       # unauthenticated API limit; an API error counts as a failure, not a pass.
+      # On a pull request, BASE_SHA is the base branch's commit: a claim whose
+      # state the pull request changes must come with every file the base list
+      # named for it, so the files cannot keep saying the old state.
       - name: Check every status claim against GitHub
         id: verify
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -o pipefail
-          node scripts/verify-status-claims.mjs 2>&1 | tee "$RUNNER_TEMP/status-claims.txt"
+          if [ -n "$BASE_SHA" ]; then
+            git fetch --quiet --depth=1 origin "$BASE_SHA"
+            node scripts/verify-status-claims.mjs --base "$BASE_SHA" 2>&1 | tee "$RUNNER_TEMP/status-claims.txt"
+          else
+            node scripts/verify-status-claims.mjs 2>&1 | tee "$RUNNER_TEMP/status-claims.txt"
+          fi
 
       - name: Open or update the tracking issue
         if: failure() && steps.verify.outcome == 'failure' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
