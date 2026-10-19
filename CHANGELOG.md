@@ -17,6 +17,25 @@ All notable changes to ATR will be documented in this file.
   version>`, on release tags only, and pushes nothing when that version is
   already published with the same catalogs.
 
+- **`atr test` reports a true positive that matches only through a copy the
+  test event makes.** The test event offers a case's input under every alias a
+  rule might read, whatever the event type: as `user_input` and `tool_args`, and
+  its content as `agent_message`. `buildEventFromTestCase` gains a `runtime`
+  field set, which holds what this repository's producers put on an event of the
+  type: content, the fields the case names (taken as given), `user_input` on an
+  `llm_input` event, and on a tool event the `tool_name` and `tool_args`
+  `src/hook-handler.ts` fills. `caseMatchesAtRuntime` runs a case on that set
+  for every event type, the engine's source filter deciding which of them the
+  rule runs on, or as a skill document. `atr test` lists a passing true positive
+  that matches none of them under `harnessOnly` (JSON) and "Harness-only"
+  (text); it still counts as passed. No true positive on main is one.
+  ATR-2026-01610's two cases declared as `user_input` match their `llm_input`
+  event only through the input copied into `tool_args`; the engine also runs
+  `llm_io` rules on `tool_response` events, where the hook fills `tool_args`,
+  and there they match. `tests/testcase-runtime-parity-rules.test.ts` runs every
+  rule's true positives the way `atr test` does, leaving out a type the engine
+  withholds as `atr test` does, and fails on one.
+
 - **Every benchmark measurement records the enforce lane beside its
   headline.** A measurement's `metrics.recall` is the `hunt` lane (the engine
   default, every maturity). Each runner the weekly measurement calls now also
@@ -98,6 +117,26 @@ All notable changes to ATR will be documented in this file.
   (`e-2026-10-16-recall-lanes`) records the change on the site.
 - `sync-stats.ts` now fails when CITATION.cff has no garak sentence to
   rewrite, instead of leaving an old figure in place.
+- **`scripts/check-rules-safety.ts` checks that a modified rule still matches
+  its own true positives, and checks renamed rules.** A new rule's true
+  positives had to match; a modified rule only had to add no benign false
+  positive, and a rule that matches nothing adds none. `npm run
+  gate:generalization` covers pattern rules only, so a semantic rule whose
+  `fallback_method` was set to `none` passed every check. The new own-TP check
+  runs each true positive on both paths `atr test` tries, replaying every case
+  to the changed rule as the event the base rule would receive: a case the
+  base rule matched on a path (`evaluate()`, `scanSkill()`) must still match
+  there, one the change adds must match, and the changed rule must still match
+  one of the cases the base rule matched. That also catches re-routing a rule
+  away from its cases. A rule of a type the engine withholds from typed events
+  (`WITHHELD_SOURCE_TYPES`), which `atr test` reports as unevaluable, is
+  skipped while it stays that type. A renamed rule file was on neither the new
+  nor the modified list and skipped both checks; it is now compared with the
+  file it was at the base, and a changed file whose rule id differs is checked
+  as a new rule. `npm run validate` also checks a semantic rule's
+  `fallback_method` (`pattern` or `none`, compared exactly, as the engine
+  does), its `threshold` (a number from 0 to 1), and that a pattern fallback
+  has a condition to match.
 - **README §8 discloses that the `garak` and `garak-full` figures are partly
   closed-book.** A replay without the rules whose own YAML shows they were
   written from the in-the-wild corpus is given in the new `[^garakcorpus]`
@@ -165,6 +204,26 @@ All notable changes to ATR will be documented in this file.
   true positives). No precision or false-positive figure moves (the new matches
   fall on attack samples), and no enforce-lane figure moves (none of the five
   rules is stable).
+
+- **A tool event built from a test case always names a tool.**
+  `buildEventFromTestCase` (`src/testcase-event.ts`, behind `atr test`,
+  `scripts/validate-rule-testcases.ts` and the case-sensitivity gate) gave a case
+  that names no tool the `tool_name` `""`, meant to keep the case's text out of
+  `tool_name`. `src/engine.ts` reads a field only when it is truthy and, on a
+  `tool_call` event, then falls back to the event's content, so a `tool_name`
+  condition read the payload as the tool's name and a rule keyed on the tool
+  could pass its cases without naming one. A tool event now carries
+  `atr-test-tool` (`UNNAMED_TOOL`) when the case names no tool, as
+  `src/hook-handler.ts` fills it from the host's tool call, and the
+  case-sensitivity gate leaves that name out of the text it checks a condition
+  against. No rule on main relied on the old behaviour: every true positive and
+  true negative of every rule tests the same.
+
+- **A test case's own `agent_message` is no longer replaced by its content.**
+  `buildEventFromTestCase` set the field from the case and then copied the
+  event's content over it, so a case that names an `agent_message` beside its
+  input was run on the input there. No case on main names one.
+
 - **A `medium` confidence label no longer depends on float rounding to stay
   out of `deny`.** A pattern match scored `0.7 + 0.1 * coverage`, and a
   `high`-severity match denies at `>= 0.8`. At full coverage that sum is
@@ -180,6 +239,22 @@ All notable changes to ATR will be documented in this file.
   named-condition rule labelled `medium` at 3/4 coverage shows 78% (`0.775`)
   where the noise used to show 77%. No shipped rule reaches that cell.
 
+- **A semantic rule without a pattern fallback is no longer recorded as
+  measured clean.** The benign-corpus measurement
+  (`scripts/gate-promotion-fp.ts`, and `scripts/remeasure-benign-fp.ts`
+  through it) drives the synchronous engine, which returns null for
+  `method: semantic` unless `detection.semantic.fallback_method` is exactly
+  `pattern`; the judge runs only in `evaluateAsync()`. `fieldCoverage()`
+  named trace, behavioral and signature as methods it cannot run, but not
+  this one, and it skipped a rule with no condition field, such as a pattern
+  fallback with nothing in it. Either was written down as `fp_count: 0,
+  partial_measurement: false`, which `scripts/gate-action-eligibility.ts`
+  graded `terminate` at maturity `stable` and `degrade` at `test`. Both are
+  now recorded partial and capped at `observe`. No rule on main is in either
+  state, so the committed evidence is unchanged. The skill-path check uses
+  the same predicate; it used to read `fallback_method: Pattern` as
+  `pattern`, which the engine does not, and it exempted a
+  `scan_target: both` rule with no conditions.
 - **NIST-related statements corrected across the docs and the website.**
   Pages described a NIST CAISI dialogue and position paper that did not
   happen, an RFI response ATR never filed, an OSCAL "Path 1" acceptance,
@@ -1036,6 +1111,14 @@ No rule content changed and no threshold was loosened in any of the above.
 ### Metrics
 
 - HackAPrompt (4,780 samples): recall 28.6% → 66.2% (+37.6pp), 100% precision maintained.
+  - Erratum (2026-10-19): re-run on the same 4,780 samples at the sprint commits,
+    recall was 28.6% (1,368, at `3a6145b7`) → 65.0% (3,108, at `e9efefdd`) and
+    66.0% (3,154, at `92c0d0fe`); 66.2% could not be reproduced at either. The
+    28.6% starting point was itself in-sample (ATR-2026-00442..00447 were mined
+    from this subset). "100% precision" was not a measurement: the corpus has
+    no benign samples, so precision is undefined on it. Procedure and figures:
+    `data/hackaprompt/METHOD.md`; current measurement, with the ablation
+    reference: `data/measurements/hackaprompt/`.
 - garak (3,475 prompts): ATR-core families ~80%+; per-family breakdown: latentinjection 34.4%, sysprompt_extraction 67.9%, dan 90.2%.
 - PINT (850 samples): 0.25% FP maintained, 0 FP regression.
 - SKILL.md (341 samples): 100% precision, 0% FP, 0 FP regression.
