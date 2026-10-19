@@ -461,7 +461,7 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
 | garak (in-the-wild jailbreaks) [^garakcorpus] | inthewild-jailbreak-corpus-650 | 650 | 92.3% (hunt) / 0.9% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | garak-full (all probe families) [^garakcorpus] | 23-families | 3,475 | 57.2% (hunt) / 0.5% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| hackaprompt [^hackaprompt] | v1 | 4,780 | 83.1% (hunt) / 49.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-19 |
+| hackaprompt [^hackaprompt] | v1 | 4,780 | 83.1% (hunt) / 49.0% (enforce) | not cited [^hackaprompt] | not cited [^hackaprompt] | 4.1.5 | 2026-10-19 |
 | HarmBench (CAIS behaviors) | upstream-2026-10-15 | 400 | 6.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | hh-rlhf (Anthropic red-team-attempts) [^stdcorpora] | snapshot-2026-04 | 4,957 | 1.4% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | JailbreakBench (JBB-Behaviors) | upstream-2026-10-15 | 100 | 3.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
@@ -901,8 +901,9 @@ by row indices and digests in
 1,372 = 28.7% (hunt) / 32 = 0.7% (enforce): the ablation reference, an
 approximation of out-of-sample recall that does not guarantee it (a rule that
 does not name HackAPrompt can still have been tuned on these prompts). The
-corpus has no benign samples, so its Precision and FP rate cells are convention
-values. Earlier figures for this row (28.6% → 66.2% in the 2.2.0 CHANGELOG
+corpus has no benign samples, so precision and FP rate are undefined on it:
+the cells say "not cited" and `data/stats.json` carries `null` for both
+(`breakdown.precision_not_citable`). Earlier figures for this row (28.6% → 66.2% in the 2.2.0 CHANGELOG
 entry, 69.6% at ATR 3.5.0) and their re-runs are in
 [`data/hackaprompt/METHOD.md`](data/hackaprompt/METHOD.md).
 

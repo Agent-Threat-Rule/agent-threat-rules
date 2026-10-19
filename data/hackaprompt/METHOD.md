@@ -51,8 +51,10 @@ pushed through the evaluation harness (`src/eval/eval-harness.ts`) as an
 2026-08-05), with the regex tier and, when the local embedding model loads, the
 embedding tier. A match is not a block; enforce-lane recall is an upper bound
 on what blocking stops. The corpus has no benign samples, so precision and FP
-rate are not measured (the measurement file carries the schema's convention
-values, 1 and 0; they are not results).
+rate are not measured: the measurement file carries the schema's convention
+values, 1 and 0, and declares `breakdown.precision_not_citable`, so
+`data/stats.json` projects precision, F1 and FP rate as null and README's cells
+read "not cited".
 
 Recall is reported per detection lane: `hunt` (every maturity; the headline,
 as for every source), `alert` (stable + test) and `enforce` (stable only), in
@@ -118,7 +120,9 @@ At ATR 4.1.5 (2026-10-19, rules tree `6113bc87`):
 
 The earlier published figures were re-run on this exact sample set (corpus
 sha256 `e7c3886d...`), each at its own commit with its own runner, lockfile and
-event shape:
+event shape. The record of every run (commit, lockfile sha256, tiers, true
+positives, and the sha256 of the sorted missed-sample ids) is
+[`reruns-2026-10-19.json`](reruns-2026-10-19.json):
 
 ```bash
 git worktree add ../wt <commit>
@@ -141,7 +145,7 @@ sample as the single declared `llm_input` event (what the current harness calls
 | `92c0d0fe` | 2026-05-12 | the v2.2.0 sprint commit | 3,154 (66.0%) |
 
 - `f20d74e3` reproduces PR #51's committed report: the same 1,367 detections
-  and the same per-sample misses.
+  and the same per-sample misses (equal missed-id digests in the record).
 - `f20d74e3` to `3a6145b7` (+1): sample `hap-0157040` is matched by
   ATR-2026-00450 (Spring AI prompt-memory poisoning), one of four CVE rules
   (00448..00451) added in between. It is not a HackAPrompt rule.
@@ -158,7 +162,7 @@ sample as the single declared `llm_input` event (what the current harness calls
 ## Reproduce
 
 ```bash
-git checkout <commit that added the measurement file>   # rules/ tree = breakdown.provenance.rules_tree_sha
+git checkout <atr_commit>   # the measured tree; its rules/ tree is breakdown.provenance.rules_tree_sha
 npm ci
 npm run eval:hackaprompt
 ```

@@ -76,5 +76,8 @@ describe('findAblationCitationProblems', () => {
     expect(recorded.get('hackaprompt')?.key).toBe('without_rules_naming_source');
     expect(findAblationCitationProblems(root, recorded, new Map())).toEqual([]);
     expect(root.benchmarks.hackaprompt.precision).toBeNull();
+    const entry = (data.benchmarks as { source: string; precision: number | null; f1: number | null; fp_rate: number | null }[]).find((b) => b.source === 'hackaprompt')!;
+    expect([entry.precision, entry.f1, entry.fp_rate]).toEqual([null, null, null]);
+    expect(readFileSync(join(REPO, 'README.md'), 'utf-8')).toMatch(/\| hackaprompt \[\^hackaprompt\] \|[^\n]*\| not cited \[\^hackaprompt\] \| not cited \[\^hackaprompt\] \|/);
   });
 });

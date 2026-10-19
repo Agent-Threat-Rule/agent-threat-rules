@@ -1,0 +1,151 @@
+{
+  "schema": "hackaprompt-reruns/v1",
+  "run_on": "2026-10-19",
+  "purpose": "Re-runs of the earlier published HackAPrompt figures on the pinned 4,780-sample set, each at its own commit with its own runner. See data/hackaprompt/METHOD.md, Historical re-runs.",
+  "corpus": {
+    "manifest": "data/hackaprompt/hackaprompt-corpus.manifest.json",
+    "corpus_sha256": "e7c3886d320e0c28f4569d06e544f2589bc58a5f7edd8c3e8d0a3707d1596364",
+    "samples": 4780
+  },
+  "procedure": {
+    "command": "git worktree add ../wt <commit> && cd ../wt && npm ci && cp <corpus produced by scripts/hackaprompt-to-corpus.py> data/hackaprompt/hackaprompt-corpus.json && npx tsx src/eval/run-hackaprompt-benchmark.ts",
+    "runner": "src/eval/run-hackaprompt-benchmark.ts as committed at each commit",
+    "lockfile": "each commit's own package-lock.json (unmodified; sha256 per run below)",
+    "node": "v24.4.1; tsx 4.21.0 in every worktree",
+    "event_shape": "none of these commits has the eventShape option: the harness presents each sample as the single declared llm_input event (what the current harness calls legacy)",
+    "tiers": "as each run's report records them. For the regex-only runs, how the embedding tier was disabled was not recorded; their reports list only tier2-regex.",
+    "ablation": "the e9efefdd run without ATR-2026-00452..00456 ran with those five rule files absent from that worktree's rules/",
+    "missed_sample_ids_sha256": "sha256 of the ids of the attack samples no rule matched, sorted, joined by a single newline, no trailing newline"
+  },
+  "pr51_committed_report": {
+    "file": "data/hackaprompt/hackaprompt-eval-report.json at f20d74e3",
+    "tp": 1367,
+    "missed_sample_ids_sha256": "fec5b4f75ab733904dcf7e16a512ae1777f582d3871c5d40d029943b9f944f59"
+  },
+  "runs": [
+    {
+      "commit": "f20d74e3797aa4f51fbca063a9ef39bf79b2aab7",
+      "label": "PR #51 merge",
+      "tiers": [
+        "tier2-regex",
+        "tier2.5-embedding"
+      ],
+      "rules_removed": [],
+      "tp": 1367,
+      "fn": 3413,
+      "attacks": 4780,
+      "recall": 0.285983,
+      "missed_sample_ids_sha256": "fec5b4f75ab733904dcf7e16a512ae1777f582d3871c5d40d029943b9f944f59",
+      "package_lock_sha256": "624598e6ed603d140349ef27bca25d906420748e2d5cb38a08138c1ae33b53af"
+    },
+    {
+      "commit": "f20d74e3797aa4f51fbca063a9ef39bf79b2aab7",
+      "label": "PR #51 merge, regex tier only",
+      "tiers": [
+        "tier2-regex"
+      ],
+      "rules_removed": [],
+      "tp": 1367,
+      "fn": 3413,
+      "attacks": 4780,
+      "recall": 0.285983,
+      "missed_sample_ids_sha256": "fec5b4f75ab733904dcf7e16a512ae1777f582d3871c5d40d029943b9f944f59",
+      "package_lock_sha256": "624598e6ed603d140349ef27bca25d906420748e2d5cb38a08138c1ae33b53af"
+    },
+    {
+      "commit": "3a6145b733bb67b660eb572e0b7826770f37fc89",
+      "label": "head before the sprint commits",
+      "tiers": [
+        "tier2-regex",
+        "tier2.5-embedding"
+      ],
+      "rules_removed": [],
+      "tp": 1368,
+      "fn": 3412,
+      "attacks": 4780,
+      "recall": 0.286192,
+      "missed_sample_ids_sha256": "4ec67cc474f1e81c6831d1fa00fcc6427702a267787748aef6e37de6006bdbc3",
+      "package_lock_sha256": "bb853308fed9e29e6a2b8af0ff32745cacfbf5ef4346f9d17a33ef449c5cb0a4"
+    },
+    {
+      "commit": "3a6145b733bb67b660eb572e0b7826770f37fc89",
+      "label": "head before the sprint commits, regex tier only",
+      "tiers": [
+        "tier2-regex"
+      ],
+      "rules_removed": [],
+      "tp": 1368,
+      "fn": 3412,
+      "attacks": 4780,
+      "recall": 0.286192,
+      "missed_sample_ids_sha256": null,
+      "package_lock_sha256": "bb853308fed9e29e6a2b8af0ff32745cacfbf5ef4346f9d17a33ef449c5cb0a4",
+      "note": "Only the runner's console log of this run was kept, not its report, so no missed-sample digest is recorded."
+    },
+    {
+      "commit": "e9efefdd2cc5de38fe573d281830d27ba3c66c96",
+      "label": "adds ATR-2026-00452..00456",
+      "tiers": [
+        "tier2-regex",
+        "tier2.5-embedding"
+      ],
+      "rules_removed": [],
+      "tp": 3108,
+      "fn": 1672,
+      "attacks": 4780,
+      "recall": 0.650209,
+      "missed_sample_ids_sha256": "128eb5bd726235dba9b9295ae49e40a32c4a227d831fc7f77852d5c7beae3ae4",
+      "package_lock_sha256": "bb853308fed9e29e6a2b8af0ff32745cacfbf5ef4346f9d17a33ef449c5cb0a4"
+    },
+    {
+      "commit": "e9efefdd2cc5de38fe573d281830d27ba3c66c96",
+      "label": "regex tier only",
+      "tiers": [
+        "tier2-regex"
+      ],
+      "rules_removed": [],
+      "tp": 3108,
+      "fn": 1672,
+      "attacks": 4780,
+      "recall": 0.650209,
+      "missed_sample_ids_sha256": "128eb5bd726235dba9b9295ae49e40a32c4a227d831fc7f77852d5c7beae3ae4",
+      "package_lock_sha256": "bb853308fed9e29e6a2b8af0ff32745cacfbf5ef4346f9d17a33ef449c5cb0a4"
+    },
+    {
+      "commit": "e9efefdd2cc5de38fe573d281830d27ba3c66c96",
+      "label": "without ATR-2026-00452..00456",
+      "tiers": [
+        "tier2-regex",
+        "tier2.5-embedding"
+      ],
+      "rules_removed": [
+        "ATR-2026-00452",
+        "ATR-2026-00453",
+        "ATR-2026-00454",
+        "ATR-2026-00455",
+        "ATR-2026-00456"
+      ],
+      "tp": 1369,
+      "fn": 3411,
+      "attacks": 4780,
+      "recall": 0.286402,
+      "missed_sample_ids_sha256": "4becf7697a3b2ca8bf85476bc0101027879c80e65c1bc7e3ed940ee49e3888a5",
+      "package_lock_sha256": "bb853308fed9e29e6a2b8af0ff32745cacfbf5ef4346f9d17a33ef449c5cb0a4"
+    },
+    {
+      "commit": "92c0d0fee1b7172641568a518b234afa0aea482f",
+      "label": "the v2.2.0 sprint commit",
+      "tiers": [
+        "tier2-regex",
+        "tier2.5-embedding"
+      ],
+      "rules_removed": [],
+      "tp": 3154,
+      "fn": 1626,
+      "attacks": 4780,
+      "recall": 0.659833,
+      "missed_sample_ids_sha256": "1d090de6435118701bdb0b8baff508892a396c4833d01c2cb4e6e48ef2e55a91",
+      "package_lock_sha256": "bb853308fed9e29e6a2b8af0ff32745cacfbf5ef4346f9d17a33ef449c5cb0a4"
+    }
+  ]
+}
