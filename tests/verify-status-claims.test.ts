@@ -206,16 +206,20 @@ describe("verify-status-claims.yml", () => {
     expect(verify?.run).toMatch(/node scripts\/verify-status-claims\.mjs 2>&1 \| tee /);
   });
 
-  it("files a failure on main as one tracking issue, and closes it on a green run", () => {
+  it("files a failure of the check on main as one tracking issue, and closes it on a green run on main", () => {
+    // Exact strings: a looser match let `always() && ...` through in #724's review.
     const open = step(/^Open or update the tracking issue/);
     const close = step(/^Close the tracking issue/);
-    expect(open?.if).toMatch(/failure\(\) && steps\.verify\.outcome == 'failure'/);
-    expect(close?.if).toMatch(/success\(\)/);
-    for (const s of [open, close]) {
-      expect(s?.if).toMatch(/github\.event_name != 'pull_request'/);
-      expect(s?.if).toMatch(/github\.ref == 'refs\/heads\/main'/);
-      expect(s?.run).toMatch(/gh issue list --state open --label auto-generated/);
+    expect(open?.if).toBe("failure() && steps.verify.outcome == 'failure' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'");
+    expect(close?.if).toBe("success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'");
+    expect(open?.run).toContain('gh issue create --title "$title" --body "$body" --label auto-generated');
+  });
+
+  it("looks up only its own open issue: open, labelled auto-generated, with its title", () => {
+    const lookup = `gh issue list --state open --label auto-generated --search "$title in:title" --json number --jq '.[0].number // empty'`;
+    for (const s of [step(/^Open or update the tracking issue/), step(/^Close the tracking issue/)]) {
+      expect(s?.run).toContain('title="Status claims no longer match GitHub"');
+      expect(s?.run).toContain(lookup);
     }
-    expect(open?.run).toMatch(/gh issue create --title "\$title" --body "\$body" --label auto-generated/);
   });
 });
