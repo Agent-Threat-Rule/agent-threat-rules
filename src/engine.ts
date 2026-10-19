@@ -972,8 +972,7 @@ export class ATREngine {
           return false;
         }
         // Fallback: compile on the fly (ReDoS-gated — see safeCompile)
-        const spec = regexConditionSpec(value);
-        const regex = safeCompile(spec.source, spec.flags);
+        const regex = compileRegexCondition(value);
         if (regex && testNormalisedThenRaw(regex, fieldValue, rawFieldValue)) {
           if (suppressInCodeBlocks && codeRanges.length > 0 && isInsideCodeBlock(fieldValue, regex, codeRanges)) {
             return false;
@@ -1568,8 +1567,7 @@ export class ATREngine {
       for (let i = 0; i < conditions.length; i++) {
         const cond = conditions[i] as unknown as Record<string, unknown>;
         if (cond['operator'] === 'regex' && typeof cond['value'] === 'string') {
-          const spec = regexConditionSpec(cond['value'] as string);
-          const compiledRe = safeCompile(spec.source, spec.flags, rule.id);
+          const compiledRe = compileRegexCondition(cond['value'] as string, rule.id);
           if (compiledRe) ruleMap.set(String(i), [compiledRe]);
         }
       }
@@ -1968,8 +1966,9 @@ export interface RegexConditionSpec {
 
 /**
  * The engine's single definition of how an array-format `operator: regex`
- * condition is compiled. Both compile sites in ATREngine call it (compilePatterns()
- * and the on-the-fly fallback in evaluateArrayCondition()), and
+ * condition is compiled (SPEC §6.4). Both compile sites in ATREngine reach it
+ * through compileRegexCondition() (compilePatterns() and the on-the-fly fallback
+ * in evaluateArrayCondition()), so does ShadowEvaluator, and
  * scripts/gate-case-sensitivity.ts imports it, because it has to see each pattern
  * exactly as the engine does. That gate used to keep its own copy of this logic,
  * and the copy went stale when needsUnicodeFlag() started setting `u` for astral
@@ -1984,6 +1983,21 @@ export function regexConditionSpec(value: string): RegexConditionSpec {
   const inline = LEADING_INLINE_FLAGS.exec(value);
   const source = normalizeRegex(value);
   return { source, inlineFlags: inline?.[1] ?? '', flags: needsUnicodeFlag(source) ? 'iu' : 'i' };
+}
+
+/**
+ * Compile an array-format `operator: regex` value the way the engine does: the
+ * leading flag group handled by regexConditionSpec(), then the ReDoS gate in
+ * safeCompile(). Returns null for a pattern the gate rejects or that does not
+ * compile; such a condition never matches. Exported for code outside
+ * ATREngine, such as ShadowEvaluator and RuleScaffolder, that must compile a
+ * condition exactly as the engine does.
+ *
+ * @internal Not re-exported from the package entry point.
+ */
+export function compileRegexCondition(value: string, ruleId?: string): RegExp | null {
+  const spec = regexConditionSpec(value);
+  return safeCompile(spec.source, spec.flags, ruleId);
 }
 
 /**
@@ -2197,8 +2211,11 @@ const MAX_EVAL_LENGTH = 100_000;
 /**
  * Safely test a regex pattern against input with length limits.
  * Returns false if input exceeds MAX_EVAL_LENGTH to prevent ReDoS.
+ * Exported so ShadowEvaluator and RuleScaffolder apply the same limit as the engine.
+ *
+ * @internal Not re-exported from the package entry point.
  */
-function safeRegexTest(regex: RegExp, input: string): boolean {
+export function safeRegexTest(regex: RegExp, input: string): boolean {
   if (input.length > MAX_EVAL_LENGTH) return false;
   return regex.test(input);
 }

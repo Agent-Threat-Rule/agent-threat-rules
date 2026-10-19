@@ -62,13 +62,13 @@ export class FlywheelManager {
 
     // 1. Matched patterns from the Tier 4 detection — these ARE the attack signals
     if (match.matchedPatterns.length > 0) {
-      payloads.push(...match.matchedPatterns.filter((p) => p.length > 5));
+      payloads.push(...match.matchedPatterns.filter((p) => p.trim().length > 5));
     }
 
     // 2. Event fields (tool_args, tool_response, etc.) — more specific than content
     if (event.fields) {
       for (const value of Object.values(event.fields)) {
-        if (value && value.length > 10) {
+        if (value && value.trim().length > 10) {
           payloads.push(value.slice(0, 500));
         }
       }
