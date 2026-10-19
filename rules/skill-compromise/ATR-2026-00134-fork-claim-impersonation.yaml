@@ -1,6 +1,6 @@
 title: Fork Claim and Community Package Impersonation
 id: ATR-2026-00134
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects skill/package impersonation through fork claims and community-variant naming. Unlike ATR-2026-060
@@ -77,12 +77,12 @@ detection:
     - field: content
       operator: regex
       value: >-
-        (?i)(enhanced|improved|better|advanced|extended|upgraded|boosted|premium|pro|plus|ultra|turbo|fast|super|mega)[-_\s]?(version|edition|variant|fork|mod)\s+(of|for|replacing)\s+.{0,30}(calculator|file|search|database|weather|email|calendar|git|github|slack|discord|api|http|web|cloud|aws|gcp|azure)
+        (?i)(enhanced|improved|better|advanced|extended|upgraded|boosted|premium|pro|plus|ultra|turbo|fast|super|mega)[-_\s]?(version|edition|variant|fork|mod)\s+(of|for|replacing)\s[\w\s'@/.\x60()\-\[*\x22]{0,30}?(?:(?:\b|_)(?:files?|filesystem|search|e?mail|git|apis?|https?|web|aws|gcp|cloud)(?:\b|_)|(?:calculator|weather|calendar|databases?|github|slack|discord|azure))
       description: Enhanced/pro version claim for known tool categories
     - field: content
       operator: regex
       value: >-
-        (?i)(required|needed|necessary|essential|mandatory)\s+(capabilities|permissions?|access|requirements?)\s*[:=]\s*.{0,20}(internet|network|web|online|connectivity|storage|filesystem|disk|file\s+system|system|shell|execute|admin|root|sudo)
+        (?i)(required|needed|necessary|essential|mandatory)\s+(capabilities|permissions?|access|requirements?)\s*[:=]\s{0,4}.{0,20}(internet|network|web|online|connectivity|filesystem|disk|file\s+system|system|shell|execute|admin|root|sudo)
       description: Abstracted permission description hiding dangerous access
     - field: content
       operator: regex
@@ -94,6 +94,13 @@ detection:
       A README or changelog document that describes a legitimate community-maintained fork of an open-source project
       using language like 'community fork of the official repository', triggering Layer 1 even though it is a genuine
       open-source contribution with transparent provenance.
+    - >-
+      A README or SKILL.md that states the access it really needs, such as "Required permissions: network access to
+      api.github.com (read-only)", matches Layer 3.
+    - >-
+      A project that calls itself an enhanced, pro or fast version of a tool in its own category ("An enhanced version
+      of the filesystem watcher with debouncing.") matches Layer 2; the text alone does not say whether the claim is an
+      impersonation.
 response:
   actions:
     - alert
@@ -124,6 +131,24 @@ test_cases:
       description: >-
         Matches Layer 3: 'Necessary permissions: shell, network' triggers the abstracted permission pattern hiding
         dangerous shell and network access
+    - input: "Enhanced fork of @modelcontextprotocol/server-filesystem with faster indexing."
+      expected: triggered
+      description: "Fork claim naming a scoped package"
+    - input: "Pro version of the `github` MCP server with extra tools."
+      expected: triggered
+      description: "Pro-version claim naming a tool in backticks"
+    - input: "Enhanced fork of mcp_server_github with extra tools."
+      expected: triggered
+      description: "Fork claim naming a snake_case package"
+    - input: "Pro version of OpenWeather for agents."
+      expected: triggered
+      description: "Pro-version claim naming a CamelCase product"
+    - input: "Enhanced version of the [official GitHub MCP server](https://github.com/modelcontextprotocol/servers) with more tools."
+      expected: triggered
+      description: "Enhanced-version claim naming the category inside a Markdown link"
+    - input: "Pro version of **GitHub** MCP with extra tools."
+      expected: triggered
+      description: "Pro-version claim with the category in bold"
   true_negatives:
     - input: Install our calculator package. It supports basic arithmetic operations.
       tool_description: calculator
@@ -150,6 +175,27 @@ test_cases:
       description: >-
         Mentions community and calculator but not in the fork-claim structure — no 'community fork/version of official'
         pattern
+    - input: "Required permissions: storage, tabs. The extension never contacts a server."
+      expected: not_triggered
+      description: "Browser-extension README listing a local storage permission"
+    - input: "- use a better version of ff [`e40f611`](https://github.com/minimistjs/minimist/commit/e40f611)"
+      expected: not_triggered
+      description: "Changelog entry: the tool-category word is inside a commit URL, not the object of 'version of'"
+    - input: "This is an improved version of the profile editor from v1."
+      expected: not_triggered
+      description: "'profile' is not the file category"
+    - input: "An extended version of the webpack config with source maps."
+      expected: not_triggered
+      description: "'webpack' is not the web category"
+    - input: "Improved version of the searchbar component with keyboard navigation."
+      expected: not_triggered
+      description: "'searchbar' is not the search category"
+    - input: "A better version of the cloudinary uploader."
+      expected: not_triggered
+      description: "'cloudinary' is not the cloud category"
+    - input: "Pro version of the emailjs library with templates."
+      expected: not_triggered
+      description: "'emailjs' is not the email category"
 evasion_tests:
   - input: 这是官方计算器的社区分支版本，具有更多功能和改进的性能。
     expected: not_triggered
@@ -171,3 +217,9 @@ evasion_tests:
     notes: >-
       Inserts extra words between 'community' and 'fork' and between 'fork' and 'from', breaking the expected \s+
       single-gap pattern between key tokens.
+  - input: "Enhanced version of FileSystemServer for agents."
+    expected: not_triggered
+    bypass_technique: camelcase_identifier
+    notes: >-
+      Accepted, measured recall loss: short category words must be whole words, so they no longer match inside a
+      CamelCase name (FileSystemServer, WebSearchTool, AwsS3Client); inside words they matched "profile" and "webpack".

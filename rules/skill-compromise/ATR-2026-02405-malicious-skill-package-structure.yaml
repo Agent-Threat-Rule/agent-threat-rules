@@ -1,6 +1,6 @@
 title: "Malicious AI Skill / MCP Server Package Structure (AgentBaiting / FakeGit)"
 id: ATR-2026-02405
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects AI Skill and MCP server packages that carry the AgentBaiting /
@@ -116,6 +116,12 @@ detection:
     - "An MCP server legitimately distributed as a Windows release archive whose README tells the user to extract and run an installer will match Layer 4."
     - "Security-hardening or endpoint-management skills that legitimately document Microsoft Defender exclusions inside an installation procedure will match Layer 3b."
     - "A batch script that legitimately launches a viewer executable with a data-file argument (for example a log viewer opened on a .log file) will match Layer 1."
+    - >-
+      A Windows MCP config that calls a globally installed CLI's .cmd wrapper by its bare name, or any .cmd (npx.cmd
+      and pnpm.cmd included) from Yarn's global bin, Chocolatey's bin, Volta's bin, an fnm shell directory or an nvm
+      version directory, will match Layer 5.
+      Exempt are the package-manager shims by bare name (npx, npm, pnpm, pnpx, yarn, yarnpkg, bunx, uvx, corepack) and
+      any .cmd directly inside an npm, nodejs, pnpm, .bin or shims directory.
   conditions:
     # -- Layer 1: Windows launcher executing a binary against a disguised data-file payload --
     # Canonical FakeGit loader line from application.cmd: "start luau.exe ico64.txt".
@@ -161,9 +167,18 @@ detection:
     # -- Layer 5: MCP client config whose server entry point is a bundled Windows script launcher --
     # Real field names: mcpServers / command / args. The supported Windows workaround is
     # {"command":"cmd","args":["/c","npx",...]}; a bundled .cmd/.bat/.scr/.vbs entry point is not.
+    # A .cmd is also how npm, pnpm and yarn install their shims on Windows (npx.cmd, pnpm.cmd)
+    # and every globally installed package's wrapper (%APPDATA%\npm\<name>.cmd). So a .cmd
+    # does not count when it is one of those shims called by bare name (resolved from PATH), or
+    # when it sits directly in a directory named npm, nodejs, pnpm, .bin or shims (where npm,
+    # pnpm, node_modules and Scoop put them), wherever that directory is.
+    # With a path, the parent directory decides, whatever the file is called, and the separator
+    # run before the file name may be any length. RE2 has no lookahead, so the exclusion is
+    # spelled out as a trie complement (generated, not hand-written): each alternative diverges
+    # from the excluded names at one position, or ends where no excluded name ends.
     - field: content
       operator: regex
-      value: '(?i)"mcp_?servers?"[\s\S]{0,600}(?:"command"\s*:\s*"[^"]{0,120}\.(?:cmd|bat|scr|pif|vbs|hta)"|"args"\s*:\s*\[[^\]]{0,300}"[^"]{0,100}\.(?:cmd|bat|scr|pif|vbs|hta)")'
+      value: '(?i)"mcp_?servers?"[\s\S]{0,600}"(?:command"\s*:\s*"|args"\s*:\s*\[[^\]]{0,300}")(?:[^\"]{0,120}\.(?:bat|scr|pif|vbs|hta)|(?:(?:(?:[^\"]{0,120}?[\\/])?(?:[^"\\/.nps][^"\\/]{0,119}|\.[^"\\/b][^"\\/]{0,118}|\.|\.b[^"\\/i][^"\\/]{0,117}|\.b|\.bi[^"\\/n][^"\\/]{0,116}|\.bi|\.bin[^"\\/][^"\\/]{0,115}|n[^"\\/op][^"\\/]{0,118}|n|no[^"\\/d][^"\\/]{0,117}|no|nod[^"\\/e][^"\\/]{0,116}|nod|node[^"\\/j][^"\\/]{0,115}|node|nodej[^"\\/s][^"\\/]{0,114}|nodej|nodejs[^"\\/][^"\\/]{0,113}|np[^"\\/m][^"\\/]{0,117}|np|npm[^"\\/][^"\\/]{0,116}|p[^"\\/n][^"\\/]{0,118}|p|pn[^"\\/p][^"\\/]{0,117}|pn|pnp[^"\\/m][^"\\/]{0,116}|pnp|pnpm[^"\\/][^"\\/]{0,115}|s[^"\\/h][^"\\/]{0,118}|s|sh[^"\\/i][^"\\/]{0,117}|sh|shi[^"\\/m][^"\\/]{0,116}|shi|shim[^"\\/s][^"\\/]{0,115}|shim|shims[^"\\/][^"\\/]{0,114})[\\/]+[^\"\\/]{1,120})|(?:[^"\\/bcnpuy][^"\\/]{0,119}|b[^"\\/u][^"\\/]{0,118}|b|bu[^"\\/n][^"\\/]{0,117}|bu|bun[^"\\/x][^"\\/]{0,116}|bun|bunx[^"\\/][^"\\/]{0,115}|c[^"\\/o][^"\\/]{0,118}|c|co[^"\\/r][^"\\/]{0,117}|co|cor[^"\\/e][^"\\/]{0,116}|cor|core[^"\\/p][^"\\/]{0,115}|core|corep[^"\\/a][^"\\/]{0,114}|corep|corepa[^"\\/c][^"\\/]{0,113}|corepa|corepac[^"\\/k][^"\\/]{0,112}|corepac|corepack[^"\\/][^"\\/]{0,111}|n[^"\\/p][^"\\/]{0,118}|n|np[^"\\/mx][^"\\/]{0,117}|np|npm[^"\\/][^"\\/]{0,116}|npx[^"\\/][^"\\/]{0,116}|p[^"\\/n][^"\\/]{0,118}|p|pn[^"\\/p][^"\\/]{0,117}|pn|pnp[^"\\/mx][^"\\/]{0,116}|pnp|pnpm[^"\\/][^"\\/]{0,115}|pnpx[^"\\/][^"\\/]{0,115}|u[^"\\/v][^"\\/]{0,118}|u|uv[^"\\/x][^"\\/]{0,117}|uv|uvx[^"\\/][^"\\/]{0,116}|y[^"\\/a][^"\\/]{0,118}|y|ya[^"\\/r][^"\\/]{0,117}|ya|yar[^"\\/n][^"\\/]{0,116}|yar|yarn[^"\\/p][^"\\/]{0,115}|yarnp[^"\\/k][^"\\/]{0,114}|yarnp|yarnpk[^"\\/g][^"\\/]{0,113}|yarnpk|yarnpkg[^"\\/][^"\\/]{0,112}))\.cmd)"'
       description: "MCP client configuration launches the server through a bundled Windows script launcher rather than a package-manager runtime - FakeGit persistence entry point"
 
     # -- Layer 6: published FakeGit / AgentBaiting campaign IOCs --
@@ -227,6 +242,22 @@ test_cases:
       expected: triggered
       description: "Checksum line carrying a published FakeGit campaign ZIP hash"
       matched_condition: "Layer 6"
+    - input: "{\"mcpServers\":{\"git\":{\"command\":\"launcher.cmd\",\"args\":[]}}}"
+      expected: triggered
+      description: "A bundled .cmd launcher referenced by its bare name"
+      matched_condition: "Layer 5"
+    - input: "{\"mcpServers\":{\"git\":{\"command\":\"C:\\\\Users\\\\me\\\\git-mcp\\\\npx.cmd\",\"args\":[]}}}"
+      expected: triggered
+      description: "A launcher named after the npx shim, inside the package's own directory"
+      matched_condition: "Layer 5"
+    - input: "{\"mcpServers\":{\"git\":{\"command\":\"C:\\\\\\\\Users\\\\\\\\me\\\\\\\\git-mcp\\\\\\\\launcher.cmd\",\"args\":[]}}}"
+      expected: triggered
+      description: "A bundled launcher behind doubled path separators"
+      matched_condition: "Layer 5"
+    - input: "{\"mcpServers\":{\"x\":{\"command\":\"C:\\\\Users\\\\me\\\\tools\\\\aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-launcher.cmd\"}}}"
+      expected: triggered
+      description: "A bundled launcher with a long file name"
+      matched_condition: "Layer 5"
   true_negatives:
     - input: "{\"mcpServers\":{\"filesystem\":{\"command\":\"cmd\",\"args\":[\"/c\",\"npx\",\"-y\",\"@modelcontextprotocol/server-filesystem\",\"C:\\\\data\"]}}}"
       expected: not_triggered
@@ -252,6 +283,21 @@ test_cases:
     - input: "start chrome.exe https://example.com/dashboard"
       expected: not_triggered
       description: "A launcher opening a URL rather than a disguised data file - Layer 1 requires a data-file extension argument"
+    - input: "{\"mcpServers\":{\"filesystem\":{\"command\":\"npx.cmd\",\"args\":[\"-y\",\"@modelcontextprotocol/server-filesystem\",\"C:\\\\Users\\\\me\\\\projects\"]}}}"
+      expected: not_triggered
+      description: "Windows MCP config calling the npx.cmd shim by name - a package-manager runtime resolved from PATH, not a bundled launcher"
+    - input: "{\"mcpServers\":{\"fs\":{\"command\":\"C:\\\\Program Files\\\\nodejs\\\\npx.cmd\",\"args\":[\"-y\",\"@modelcontextprotocol/server-filesystem\"]}}}"
+      expected: not_triggered
+      description: "The npx.cmd shim by its full path under the Node.js install directory"
+    - input: "{\"mcpServers\":{\"git\":{\"command\":\"C:\\\\Users\\\\me\\\\AppData\\\\Roaming\\\\npm\\\\mcp-server-git.cmd\"}}}"
+      expected: not_triggered
+      description: "An npm global install's .cmd wrapper, which npm writes to its own bin directory"
+    - input: "{\"mcpServers\":{\"dev\":{\"command\":\"C:\\\\projects\\\\my-mcp\\\\node_modules\\\\.bin\\\\tsx.cmd\",\"args\":[\"src/index.ts\"]}}}"
+      expected: not_triggered
+      description: "A project-local npm bin shim"
+    - input: "{\"mcpServers\":{\"x\":{\"command\":\"cmd\",\"args\":[\"/c\",\"C:\\\\Users\\\\me\\\\scoop\\\\shims\\\\bun.cmd\",\"run\",\"server.ts\"]}}}"
+      expected: not_triggered
+      description: "A scoop shim"
 
 evasion_tests:
   - input: "@ECHO OFF\r\nSTART LUAU.EXE ICO64.TXT"
@@ -274,3 +320,22 @@ evasion_tests:
     expected: not_triggered
     bypass_technique: full_artefact_rename
     notes: "Real bypass and the structural limit of this rule. Once the runtime no longer carries a lua-derived name and the launcher line is not shown, nothing in the file listing is anomalous to a regex. Catching this requires binary identification of the shipped runtime (LuaJIT 2.1.0-beta3 has stable byte signatures) or entropy analysis of the disguised data file, neither of which a content pattern can express."
+  - input: "{\"mcpServers\":{\"helper\":{\"command\":\"C:\\\\Users\\\\me\\\\AppData\\\\Roaming\\\\npm\\\\helper.cmd\"}}}"
+    expected: not_triggered
+    bypass_technique: shim_directory_placement
+    notes: >-
+      Layer 5 exempts a .cmd directly inside a directory named npm, nodejs, pnpm, .bin or shims, wherever that
+      directory is, because npm, pnpm and Scoop put every globally installed CLI's wrapper there. A launcher written
+      into %APPDATA%\npm, which the user can write to, or into a directory of one of those names inside the package
+      itself (.\npm\application.cmd), is exempt as well.
+  - input: "{\"mcpServers\":{\"x\":{\"command\":\".\\\\npm\\\\application.cmd\"}}}"
+    expected: not_triggered
+    bypass_technique: shim_directory_placement
+    notes: >-
+      The same exemption, with the shim-named directory shipped inside the package.
+  - input: "{\"mcpServers\":{\"x\":{\"command\":\"npx.cmd\",\"args\":[]}}}"
+    expected: not_triggered
+    bypass_technique: shim_name_launcher
+    notes: >-
+      A bare npx.cmd is exempt because it normally resolves to the npm shim on PATH. A package that ships its own
+      npx.cmd and is started from its own directory may run that file instead; the config text is the same.
