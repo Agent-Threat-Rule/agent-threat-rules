@@ -396,6 +396,10 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
     skipped += cases;
     skippedRules.push({ ruleId: rule.id, cases, reason });
   };
+  // True positives that match on the wide test event and on no runtime event the
+  // rule runs on (caseMatchesAtRuntime in src/testcase-event.ts): they pass only
+  // through a value the harness copies into a field. Reported, not failed.
+  const harnessOnly: Array<{ ruleId: string; testType: string; input: string }> = [];
 
   // A rule is tested with the agent_source.type it declares. This harness used
   // to map the extended types to a base type so the engine's source filter
@@ -437,7 +441,7 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
     }
 
     // Override status so draft/deprecated rules are not skipped during testing
-    const testRule = { ...rule, status: 'experimental' as const };
+    const testRule = asTestedRule(rule);
 
     const engine = new ATREngine({ rules: [testRule] });
     await engine.loadRules();
@@ -446,23 +450,17 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
     const tn = rule.test_cases.true_negatives ?? [];
 
     // Test via both evaluate() and scanSkill() — pass if either detects
-    const runTest = (tcObj: Record<string, unknown>): boolean => {
-      const event = buildEventFromTestCase(tcObj, rule);
-      const mcpHit = engine.evaluate(event).some(m => m.rule.id === rule.id);
-      if (mcpHit) return true;
-      const input = String(tcObj['input'] ?? tcObj['tool_response'] ?? tcObj['agent_output'] ?? '');
-      if (input) {
-        const skillHit = engine.scanSkill(input).some(m => m.rule.id === rule.id);
-        if (skillHit) return true;
-      }
-      return false;
-    };
+    const runTest = (tcObj: Record<string, unknown>): boolean => caseMatches(engine, rule, tcObj);
 
     for (const tc of tp) {
       totalTests++;
-      const triggered = runTest(tc as unknown as Record<string, unknown>);
+      const tcObj = tc as unknown as Record<string, unknown>;
+      const triggered = runTest(tcObj);
       if (triggered) {
         passed++;
+        if (!caseMatchesAtRuntime(engine, rule, tcObj)) {
+          harnessOnly.push({ ruleId: rule.id, testType: 'true_positive', input: caseLabel(tcObj).slice(0, 100) });
+        }
       } else {
         failed++;
         failures.push({
@@ -496,7 +494,7 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
   if (jsonOutput) {
     console.log(
       JSON.stringify(
-        { totalRules: rules.length, totalTests, passed, failed, skipped, failures, skippedRules },
+        { totalRules: rules.length, totalTests, passed, failed, skipped, failures, skippedRules, harnessOnly },
         null,
         2,
       ),
@@ -516,6 +514,12 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
     console.log(`  ${YELLOW}Unevaluable:${RESET}     ${skipped}`);
     for (const s of skippedRules) {
       console.log(`    ${DIM}${s.ruleId}: ${s.cases} case(s) — ${s.reason}${RESET}`);
+    }
+  }
+  if (harnessOnly.length > 0) {
+    console.log(`  ${YELLOW}Harness-only:${RESET}    ${harnessOnly.length}`);
+    for (const h of harnessOnly) {
+      console.log(`    ${DIM}${h.ruleId}: "${h.input}" matches the test event and no runtime-shaped event${RESET}`);
     }
   }
   console.log(`${DIM}${'─'.repeat(60)}${RESET}`);
@@ -550,7 +554,7 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
   }
 }
 
-import { buildEventFromTestCase } from "./testcase-event.js";
+import { asTestedRule, buildEventFromTestCase, caseLabel, caseMatches, caseMatchesAtRuntime } from "./testcase-event.js";
 export { buildEventFromTestCase };
 
 // --- STATS command ---

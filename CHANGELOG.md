@@ -17,6 +17,25 @@ All notable changes to ATR will be documented in this file.
   version>`, on release tags only, and pushes nothing when that version is
   already published with the same catalogs.
 
+- **`atr test` reports a true positive that matches only through a copy the
+  test event makes.** The test event offers a case's input under every alias a
+  rule might read, whatever the event type: as `user_input` and `tool_args`, and
+  its content as `agent_message`. `buildEventFromTestCase` gains a `runtime`
+  field set, which holds what this repository's producers put on an event of the
+  type: content, the fields the case names (taken as given), `user_input` on an
+  `llm_input` event, and on a tool event the `tool_name` and `tool_args`
+  `src/hook-handler.ts` fills. `caseMatchesAtRuntime` runs a case on that set
+  for every event type, the engine's source filter deciding which of them the
+  rule runs on, or as a skill document. `atr test` lists a passing true positive
+  that matches none of them under `harnessOnly` (JSON) and "Harness-only"
+  (text); it still counts as passed. No true positive on main is one.
+  ATR-2026-01610's two cases declared as `user_input` match their `llm_input`
+  event only through the input copied into `tool_args`; the engine also runs
+  `llm_io` rules on `tool_response` events, where the hook fills `tool_args`,
+  and there they match. `tests/testcase-runtime-parity-rules.test.ts` runs every
+  rule's true positives the way `atr test` does, leaving out a type the engine
+  withholds as `atr test` does, and fails on one.
+
 - **Every benchmark measurement records the enforce lane beside its
   headline.** A measurement's `metrics.recall` is the `hunt` lane (the engine
   default, every maturity). Each runner the weekly measurement calls now also
@@ -186,6 +205,26 @@ All notable changes to ATR will be documented in this file.
   true positives). No precision or false-positive figure moves (the new matches
   fall on attack samples), and no enforce-lane figure moves (none of the five
   rules is stable).
+
+- **A tool event built from a test case always names a tool.**
+  `buildEventFromTestCase` (`src/testcase-event.ts`, behind `atr test`,
+  `scripts/validate-rule-testcases.ts` and the case-sensitivity gate) gave a case
+  that names no tool the `tool_name` `""`, meant to keep the case's text out of
+  `tool_name`. `src/engine.ts` reads a field only when it is truthy and, on a
+  `tool_call` event, then falls back to the event's content, so a `tool_name`
+  condition read the payload as the tool's name and a rule keyed on the tool
+  could pass its cases without naming one. A tool event now carries
+  `atr-test-tool` (`UNNAMED_TOOL`) when the case names no tool, as
+  `src/hook-handler.ts` fills it from the host's tool call, and the
+  case-sensitivity gate leaves that name out of the text it checks a condition
+  against. No rule on main relied on the old behaviour: every true positive and
+  true negative of every rule tests the same.
+
+- **A test case's own `agent_message` is no longer replaced by its content.**
+  `buildEventFromTestCase` set the field from the case and then copied the
+  event's content over it, so a case that names an `agent_message` beside its
+  input was run on the input there. No case on main names one.
+
 - **A `medium` confidence label no longer depends on float rounding to stay
   out of `deny`.** A pattern match scored `0.7 + 0.1 * coverage`, and a
   `high`-severity match denies at `>= 0.8`. At full coverage that sum is
