@@ -322,13 +322,24 @@ def test_every_rule_carries_a_portability_tag():
 
 
 def test_re2_dialect_rewrites_unicode_escapes():
-    """--regex-dialect re2 emits RE2's escape spelling; pcre leaves it alone."""
-    rel = "rules/prompt-injection/ATR-2026-00258-unicode-tag-injection.yaml"
-    pcre_pats, _ = _re2_regexes(rel, "pcre")
-    re2_pats, _ = _re2_regexes(rel, "re2")
-    assert any("\\u{E0000}" in p for p in pcre_pats), "pcre dialect should keep \\u{...}"
-    assert any("\\x{E0000}" in p for p in re2_pats), "re2 dialect should emit \\x{...}"
-    assert not any("\\u{" in p for p in re2_pats), "re2 dialect must not leave \\u{...} behind"
+    """--regex-dialect re2 emits RE2's escape spelling; pcre leaves it alone.
+
+    Uses its own condition. The corpus rule this test used to read,
+    ATR-2026-00258, has written these characters as literals since #509, so it
+    no longer contains a \\u{...} escape to rewrite.
+    """
+    detection = {
+        "conditions": [
+            {"field": "content", "operator": "regex", "value": "(?i)[\\u{E0000}-\\u{E007F}]{3,}"}
+        ]
+    }
+    pcre, _, _ = CONV.convert_conditions(detection, "pcre")
+    re2, _, _ = CONV.convert_conditions(detection, "re2")
+    pcre_pat = pcre["sel_1"]["content|re|i"]
+    re2_pat = re2["sel_1"]["content|re|i"]
+    assert "\\u{E0000}" in pcre_pat, "pcre dialect should keep \\u{...}"
+    assert "\\x{E0000}" in re2_pat, "re2 dialect should emit \\x{...}"
+    assert "\\u{" not in re2_pat, "re2 dialect must not leave \\u{...} behind"
 
 
 def test_would_unlock_counts_only_spelling_only_blockers():

@@ -1,0 +1,68 @@
+name: Conformance suite
+
+# Runs the ATR Conformance Test Suite (conformance/v1.0) against the in-tree
+# reference engine at L2. SPEC.md §11 requires 100% of the suite for L2, and
+# until 2026-10-19 no engine could pass it: 41 fixtures had no payload and no
+# workflow ran the suite. A change to the engine, the rules or the suite that
+# breaks a fixture now fails here.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'rules/**'
+      - 'conformance/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - '.nvmrc'
+      - '.github/actions/atr-node/**'
+      - '.github/workflows/conformance.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'rules/**'
+      - 'conformance/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - '.nvmrc'
+      - '.github/actions/atr-node/**'
+      - '.github/workflows/conformance.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  conformance:
+    name: Reference engine passes the conformance suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # The fixtures name rules of every maturity, so the run uses the hunt lane
+    # (all maturities), whatever default the CLI has.
+    env:
+      ATR_LANE: hunt
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/atr-node
+      - name: Install dependencies
+        run: npm ci
+      - name: Build ATR engine
+        run: npm run build
+      # Exit 0: every fixture passed. Exit 1: a fixture failed. Exit 2: the
+      # runner could not read a fixture or run the engine (harness_error),
+      # which is never reported as a pass.
+      - name: Run the suite at L2
+        run: >-
+          npx tsx conformance/v1.0/runner/run-conformance.ts
+          --engine ./dist --rules ./rules --level L2
+          --out conformance-report.json
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: conformance-report
+          path: conformance-report.json
+          if-no-files-found: ignore
