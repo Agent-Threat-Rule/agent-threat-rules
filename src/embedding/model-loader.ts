@@ -21,7 +21,9 @@ export interface EmbeddingModel {
   readonly isLoaded: boolean;
 }
 
-const MODEL_NAME = 'Xenova/all-MiniLM-L6-v2';
+/** HuggingFace model id the embedding tier loads (transformers.js resolves revision `main`). */
+export const EMBEDDING_MODEL_ID = 'Xenova/all-MiniLM-L6-v2';
+const MODEL_NAME = EMBEDDING_MODEL_ID;
 const DIMENSION = 384;
 
 export class TransformersJSModel implements EmbeddingModel {

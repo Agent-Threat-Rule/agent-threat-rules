@@ -25,6 +25,7 @@ export interface HackaPromptManifest {
   readonly dataset_id: string;
   readonly dataset_revision: string;
   readonly split: string;
+  readonly parquet_sha256: string;
   readonly rows_total: number;
   readonly selection: string;
   readonly seed: number | null;
@@ -55,7 +56,7 @@ export function loadManifest(path: string): HackaPromptManifest {
     throw new Error(`HackAPrompt manifest not found: ${path} (run scripts/hackaprompt-to-corpus.py)`);
   }
   const m = JSON.parse(readFileSync(path, 'utf-8')) as HackaPromptManifest;
-  for (const key of ['dataset_id', 'dataset_revision', 'corpus_sha256', 'sample_ids_sha256'] as const) {
+  for (const key of ['dataset_id', 'dataset_revision', 'parquet_sha256', 'corpus_sha256', 'sample_ids_sha256'] as const) {
     if (typeof m[key] !== 'string' || m[key].length === 0) {
       throw new Error(`HackAPrompt manifest ${path}: missing ${key}`);
     }

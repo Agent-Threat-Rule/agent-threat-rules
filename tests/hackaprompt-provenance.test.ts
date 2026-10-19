@@ -9,6 +9,7 @@ import {
   sha256File,
   verifyCorpusAgainstManifest,
 } from '../src/eval/hackaprompt-provenance.js';
+import { HACKAPROMPT_OUTCOME_CATEGORY, loadHackaPromptCorpus } from '../src/eval/hackaprompt-corpus.js';
 
 function fixture(): { root: string; rules: string } {
   const root = mkdtempSync(join(tmpdir(), 'hap-prov-test-'));
@@ -25,6 +26,7 @@ function manifestFor(corpusPath: string, samples: number) {
     dataset_id: 'hackaprompt/hackaprompt-dataset',
     dataset_revision: 'rev',
     split: 'train',
+    parquet_sha256: 'p',
     rows_total: 10,
     selection: 'x',
     seed: 1,
@@ -84,5 +86,17 @@ describe('hackaprompt provenance', () => {
     expect(m.samples).toBe(4780);
     expect(m.seed).toBe(20260511);
     expect(m.corpus_sha256).toBe('e7c3886d320e0c28f4569d06e544f2589bc58a5f7edd8c3e8d0a3707d1596364');
+  });
+
+  it("groups samples by HackAPrompt's `correct` outcome, not by the corpus file's legacy category label", () => {
+    const { root } = fixture();
+    const corpus = join(root, 'corpus.json');
+    const row = (id: string, category: string, correct: boolean) =>
+      ({ id, text: 'x', category, label: true, source: 'hackaprompt', language: 'en', metadata: { level: 1, correct } });
+    writeFileSync(corpus, JSON.stringify([row('hap-1', 'jailbreak', true), row('hap-2', 'prompt-injection', false)]));
+    expect(loadHackaPromptCorpus(corpus).map((s) => s.category)).toEqual([
+      HACKAPROMPT_OUTCOME_CATEGORY.succeeded,
+      HACKAPROMPT_OUTCOME_CATEGORY.failed,
+    ]);
   });
 });

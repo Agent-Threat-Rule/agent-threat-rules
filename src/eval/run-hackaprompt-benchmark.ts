@@ -16,7 +16,9 @@
  * as for every other source; breakdown.lanes carries hunt, alert and enforce
  * side by side and breakdown.enforce_lane carries enforce in the shared shape.
  * Because rules were written from this corpus, the runner also measures it
- * with those rules removed (breakdown.in_sample_ablation).
+ * with those rules removed (breakdown.in_sample_ablation). That ablation is
+ * the reference to cite beside the headline; it approximates an out-of-sample
+ * figure but is not one (see data/hackaprompt/METHOD.md).
  *
  * HackAPrompt is an all-adversarial corpus: recall is defined, precision and
  * FP rate are not (they are recorded as the schema's convention values).
@@ -26,7 +28,8 @@
 
 import { execFileSync } from 'node:child_process';
 import { resolve, join } from 'node:path';
-import { loadHackaPromptCorpus, getHackaPromptCorpusStats } from './hackaprompt-corpus.js';
+import { HACKAPROMPT_OUTCOME_CATEGORY, loadHackaPromptCorpus, getHackaPromptCorpusStats } from './hackaprompt-corpus.js';
+import { embeddingProvenance } from './embedding-provenance.js';
 import { enforceLaneFromEval, runEval, type EvalConfig } from './eval-harness.js';
 import {
   HACKAPROMPT_BATCH_0512_RULE_IDS,
@@ -43,7 +46,20 @@ const SOURCE_URL = 'https://huggingface.co/datasets/hackaprompt/hackaprompt-data
 const REPRODUCE =
   "check out the commit that added this measurement file (its rules/ tree is breakdown.provenance.rules_tree_sha, " +
   "the same as atr_commit's), then: npm ci && npm run eval:hackaprompt " +
-  '(= python3 scripts/hackaprompt-to-corpus.py && npx tsx src/eval/run-hackaprompt-benchmark.ts)';
+  '(= python3 scripts/hackaprompt-to-corpus.py, which checks the re-drawn sample against the committed manifest ' +
+  'and the parquet file against its pinned sha256 before writing the corpus, && npx tsx src/eval/run-hackaprompt-benchmark.ts)';
+
+/** The ablation cited beside the headline (breakdown.in_sample_ablation[reference]). */
+const ABLATION_REFERENCE = 'without_rules_naming_source';
+
+const ABLATION_NOTE =
+  'Ablation reference, not an out-of-sample result. Rules whose YAML names HackAPrompt were written from ' +
+  'this corpus (several from this exact 4,780-sample set), so recall with them loaded is in-sample. ' +
+  `${ABLATION_REFERENCE} re-measures the same samples with every such rule removed; it is the figure to cite ` +
+  'beside the headline. It approximates an out-of-sample figure without guaranteeing one: a rule whose YAML ' +
+  'does not name HackAPrompt may still have been tuned on these samples or on near-duplicates of them, and ' +
+  'the removed rules may also catch attacks they were not mined from. without_batch_2026_05_12 removes only ' +
+  'ATR-2026-00452..00456, the batch mined from this exact sample on 2026-05-12.';
 
 interface LaneFigure {
   readonly lane: Lane;
@@ -131,15 +147,20 @@ async function main(): Promise<void> {
 
   const namingHap = rulesNamingHackaPrompt(rulesDir);
   const inSample = {
-    note:
-      'In-sample check. Rules whose YAML names HackAPrompt were written from this corpus ' +
-      '(several from this exact 4,780-sample set), so recall with them included is not an ' +
-      'out-of-sample figure. These runs remove them and re-measure the same samples.',
-    batch_2026_05_12: await ablation(shared, rulesDir, HACKAPROMPT_BATCH_0512_RULE_IDS,
-      'ATR-2026-00452..00456 (commit e9efefdd)'),
-    all_naming_hackaprompt: await ablation(shared, rulesDir, namingHap,
+    note: ABLATION_NOTE,
+    reference: ABLATION_REFERENCE,
+    [ABLATION_REFERENCE]: await ablation(shared, rulesDir, namingHap,
       'every rule whose YAML text names HackAPrompt'),
+    without_batch_2026_05_12: await ablation(shared, rulesDir, HACKAPROMPT_BATCH_0512_RULE_IDS,
+      'ATR-2026-00452..00456 (commit e9efefdd)'),
   };
+
+  // The embedding tier's contribution: the hunt lane once more, regex tier only.
+  const noEmbedding = figure(await runEval({ corpus, rulesDir, lane: 'hunt', enableEmbedding: false }));
+  log('all rules, embedding tier off', noEmbedding);
+  const embedding = hunt.tiersUsed.includes('tier2.5-embedding')
+    ? await embeddingProvenance(embeddingsPath, 'data/attack-embeddings.json')
+    : null;
 
   const input = measurementInputFromEvalReport(hunt.report, {
     source: 'hackaprompt',
@@ -149,8 +170,12 @@ async function main(): Promise<void> {
     notes:
       'HackAPrompt competition dataset (Schulhoff et al., EMNLP 2023). All samples adversarial, so ' +
       'precision/fp_rate are convention values, not results. metrics.recall is the hunt lane (every ' +
-      'maturity); breakdown.lanes gives hunt/alert/enforce, breakdown.in_sample_ablation the recall ' +
-      'without rules mined from this corpus. Sample set: breakdown.provenance (pinned dataset revision, ' +
+      'maturity); breakdown.lanes gives hunt/alert/enforce. breakdown.in_sample_ablation.' + ABLATION_REFERENCE +
+      ' is the ablation reference to cite beside it: the same samples without the rules whose YAML names ' +
+      'HackAPrompt (an approximation of out-of-sample recall, not a guarantee of it). breakdown.by_category ' +
+      "groups samples by HackAPrompt's `correct` field (whether the attack succeeded against its target model " +
+      "in the competition), not by attack type; breakdown.by_difficulty buckets the competition level " +
+      '(0-2 easy, 3-6 medium, 7-10 hard). Sample set: breakdown.provenance (pinned dataset revision, ' +
       `seed, row indices in data/hackaprompt/hackaprompt-corpus.manifest.json). Event shape: ${hunt.eventShape}; ` +
       `tiers: ${hunt.tiersUsed.join('+')}. Reproduce: ${REPRODUCE}. Method: data/hackaprompt/METHOD.md.`,
   });
@@ -161,10 +186,18 @@ async function main(): Promise<void> {
       breakdown: {
         ...input.breakdown,
         lanes,
+        by_category_field: {
+          field: 'correct',
+          meaning:
+            "HackAPrompt's `correct`: the submission made its target model produce the level's target output, " +
+            'i.e. the attack succeeded in the competition. Not an attack type.',
+          categories: HACKAPROMPT_OUTCOME_CATEGORY,
+        },
         in_sample_ablation: inSample,
         provenance: {
           dataset_id: manifest.dataset_id,
           dataset_revision: manifest.dataset_revision,
+          parquet_sha256: manifest.parquet_sha256,
           rows_total: manifest.rows_total,
           selection: manifest.selection,
           filter: manifest.filter,
@@ -175,6 +208,8 @@ async function main(): Promise<void> {
           rules_tree_sha: rulesTreeSha(base),
           event_shape: hunt.eventShape,
           tiers: hunt.tiersUsed,
+          embedding,
+          hunt_without_embedding_tier: noEmbedding,
           reproduce: REPRODUCE,
         },
       },
