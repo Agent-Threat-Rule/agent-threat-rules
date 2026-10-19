@@ -2,6 +2,21 @@ import { RUNTIME_SOURCE_TYPE } from "./engine.js";
 import type { AgentEvent, ATRRule, ATRTrace } from "./types.js";
 
 /**
+ * The tool name a tool event carries when its test case names no tool.
+ *
+ * A host's tool call reaches the engine through src/hook-handler.ts, which
+ * fills tool_name from the host's payload. An empty string did not stand in for
+ * that: src/engine.ts resolveField reads a field only when it is truthy, and on
+ * a tool_call event it then falls back to event.content, so a tool_name
+ * condition read the case's payload as if it were the tool's name. A name no
+ * rule is written for fills the field, as the hook does, and keeps the case's
+ * text out of it. A case whose rule keys on the tool names the tool. (The MCP
+ * scan tool, src/mcp-tools/scan.ts, builds an event of the type its caller
+ * names and sets no tool_name, so the fallback still applies there.)
+ */
+export const UNNAMED_TOOL = 'atr-test-tool';
+
+/**
  * Build the AgentEvent a declared test case describes.
  *
  * Extracted from src/cli.ts so scripts/validate-rule-testcases.ts can use the
@@ -99,7 +114,8 @@ export function buildEventFromTestCase(
     ? RUNTIME_SOURCE_TYPE[sourceType]
     : sourceType;
 
-  let type: AgentEvent['type'] = SOURCE_TO_EVENT[baseSourceType] ?? 'llm_input';
+  const type: AgentEvent['type'] = SOURCE_TO_EVENT[baseSourceType] ?? 'llm_input';
+  const toolEvent = type === 'tool_call' || type === 'tool_response';
 
   // NOTE: previously, a tool_call rule with a plain-string TP was downgraded to
   // an llm_input event. That mis-tested tool_call-native rules: a shell command or
@@ -108,9 +124,9 @@ export function buildEventFromTestCase(
   // so the rule's own documented attack tested as not_triggered (false failure that
   // silently left broken rules in the enforce lane). We now keep the native
   // tool_call type — the string flows in via `content` (below), and tool_name is
-  // pinned to "" (below) so the engine's tool_name fallback never treats the
-  // content as a tool name. Plain-string TPs of tool_call rules therefore test in
-  // their real (native) context.
+  // pinned to UNNAMED_TOOL (below) so the engine's tool_name fallback never
+  // treats the content as a tool name. Plain-string TPs of tool_call rules
+  // therefore test in their real (native) context.
 
   // Determine the primary content based on what the rule conditions check
   // Problem 2 & 3: For rules that check tool_response, the tool_response
@@ -131,9 +147,10 @@ export function buildEventFromTestCase(
   if (agentOutput) fields['agent_output'] = agentOutput;
   if (agentMessage) fields['agent_message'] = agentMessage;
   if (toolDescription) fields['tool_description'] = toolDescription;
-  // Always set tool_name (even empty) to prevent engine fallback
-  // from using event.content as tool_name for tool_call events
-  fields['tool_name'] = toolName;
+  // A tool event always names its tool (UNNAMED_TOOL when the case does not).
+  // The empty string this used to set did not prevent the engine's fallback
+  // from reading event.content as the tool_name of a tool_call event.
+  fields['tool_name'] = toolName || (toolEvent ? UNNAMED_TOOL : '');
   // Production ALWAYS populates tool_args: src/hook-handler.ts builds
   // `tool_args: JSON.stringify(toolInput)` for BOTH the PreToolUse (tool_call)
   // and the PostToolUse (tool_response) event. The engine resolves this field as
