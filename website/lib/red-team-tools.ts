@@ -6,8 +6,9 @@
  * used to be written by hand inside the page: NVIDIA/garak#1676 stayed listed
  * as under review for ten weeks after it was withdrawn. scripts/verify-red-team-links.mjs
  * now re-checks every link against GitHub in CI (in-review must be open,
- * in-production and corpus must be merged, and an in-production entry's
- * stillPresent file must still mention ATR). Edit the JSON, not the page.
+ * in-production must be a merged PR, corpus a merged PR or a commit on the
+ * default branch, and the stillPresent file of an in-production or corpus
+ * entry must still hold its text). Edit the JSON, not the page.
  */
 import raw from "@/data/red-team-tools.json";
 
@@ -19,8 +20,9 @@ export interface RedTeamTool {
   readonly org: string;
   readonly status: RedTeamStatus;
   readonly homepage: string;
+  /** The PR or issue behind the status; for a corpus entry it may be a commit URL instead. */
   readonly prUrl?: string;
-  /** `<path> contains "<text>"` on the linked repo's default branch; checked in CI for in-production entries. */
+  /** `<path> contains "<text>"` on the linked repo's default branch; required and checked in CI for in-production and corpus entries. */
   readonly stillPresent?: string;
   readonly hook: string;
   readonly what_atr_did: string;

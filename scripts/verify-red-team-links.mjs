@@ -13,9 +13,17 @@
  *   - in-production -> the linked PR must be MERGED, and the file named in
  *                      `stillPresent` must still mention ATR upstream (a merged
  *                      PR can be reverted the next day)
- *   - corpus        -> the linked PR must be MERGED
+ *   - corpus        -> the link is a MERGED PR, or a commit reachable from
+ *                      the repository's default branch (rules promoted by a
+ *                      direct push have no PR), and the file named in
+ *                      `stillPresent` must still contain the given text. A
+ *                      merged PR or a commit only shows that something landed,
+ *                      not that it is the evidence the entry claims: the
+ *                      three corpus entries once linked to unrelated PRs and
+ *                      would have passed a merged-only check.
  * A merged PR still filed under in-review is drift too: it belongs under
- * in-production.
+ * in-production. `prUrl` keeps its name for all three, though under corpus it
+ * may hold a commit URL.
  *
  * It cannot tell an open proposal nobody answers from one under active review:
  * six of the seven proposals #688 removed were open and unanswered until their
@@ -44,6 +52,7 @@ export const STATUSES = ['in-production', 'in-review', 'corpus'];
 const REQUIRED_FIELDS = ['name', 'org', 'status', 'homepage', 'hook', 'what_atr_did'];
 const ALLOWED_FIELDS = new Set([...REQUIRED_FIELDS, 'prUrl', 'figures', 'stillPresent']);
 const NAME = /^[A-Za-z0-9_.-]+$/;
+const SHA = /^[0-9a-f]{7,40}$/i;
 const TIMEOUT_MS = 20_000;
 const RETRIES = 2;
 
@@ -51,11 +60,15 @@ const RETRIES = 2;
 const EXPECTED = {
   'in-review': { pr: 'open', issue: 'open' },
   'in-production': { pr: 'merged' },
-  corpus: { pr: 'merged' },
+  corpus: { pr: 'merged', commit: 'reachable' },
 };
+
+/** Statuses whose entries must carry a stillPresent assertion. */
+const NEEDS_ASSERTION = new Set(['in-production', 'corpus']);
 
 /**
  * { kind: 'pr' | 'issue', owner, repo, number } for a GitHub PR or issue URL,
+ * { kind: 'commit', owner, repo, sha } for a GitHub commit URL (7-40 hex),
  * else { kind: 'other' }. Accepts what people paste: a query, a fragment, a
  * trailing /files, www. or an upper-case host.
  */
@@ -70,7 +83,11 @@ export function classifyLink(url) {
   if (parsed.protocol !== 'https:' || host !== 'github.com') return { kind: 'other' };
   const [owner, repo, type, num] = parsed.pathname.split('/').filter(Boolean);
   const named = (s) => typeof s === 'string' && NAME.test(s) && s !== '.' && s !== '..';
-  if (!named(owner) || !named(repo) || !/^\d+$/.test(num ?? '')) return { kind: 'other' };
+  if (!named(owner) || !named(repo)) return { kind: 'other' };
+  if (type === 'commit') {
+    return SHA.test(num ?? '') ? { kind: 'commit', owner, repo, sha: num.toLowerCase() } : { kind: 'other' };
+  }
+  if (!/^\d+$/.test(num ?? '')) return { kind: 'other' };
   if (type !== 'pull' && type !== 'issues') return { kind: 'other' };
   return { kind: type === 'pull' ? 'pr' : 'issue', owner, repo, number: Number(num) };
 }
@@ -96,15 +113,18 @@ function linkProblems(tool, label) {
   if (tool.status === 'in-review' && kind === 'other') {
     return [`${label}: in-review needs a prUrl that is a GitHub pull request or issue`];
   }
-  if ((tool.status === 'in-production' || tool.status === 'corpus') && kind !== 'pr') {
-    return [`${label}: ${tool.status} needs a prUrl that is the merged pull request`];
+  if (tool.status === 'in-production' && kind !== 'pr') {
+    return [`${label}: in-production needs a prUrl that is the merged pull request`];
+  }
+  if (tool.status === 'corpus' && kind !== 'pr' && kind !== 'commit') {
+    return [`${label}: corpus needs a prUrl that is the merged pull request or a GitHub commit URL`];
   }
   return [];
 }
 
 function stillPresentProblems(tool, label) {
-  if (tool.status === 'in-production' && tool.stillPresent === undefined) {
-    return [`${label}: in-production needs stillPresent ('<path> contains "<text>"'): a merged PR can be reverted`];
+  if (NEEDS_ASSERTION.has(tool.status) && tool.stillPresent === undefined) {
+    return [`${label}: ${tool.status} needs stillPresent ('<path> contains "<text>"'): a merged PR or a commit does not show what it contains, and can be reverted`];
   }
   if (tool.stillPresent !== undefined && parseStillPresent(tool.stillPresent) === null) {
     return [`${label}: stillPresent must read '<path> contains "<text>"', with a repository-relative path (no spaces, no . or .. segments)`];
@@ -181,8 +201,25 @@ async function getJson(path, { fetchImpl, sleep, retries }) {
   return { error };
 }
 
-/** 'open' | 'closed' | 'merged', or an error string from getJson. */
+/**
+ * 'reachable' when the commit is on the default branch (compare default...sha
+ * says behind or identical), 'unreachable' when it exists elsewhere, or an
+ * error string from getJson (api-404 when the repo or the commit is missing).
+ */
+async function fetchCommitState(link, opts) {
+  const repo = await getJson(`/repos/${link.owner}/${link.repo}`, opts);
+  if (repo.error) return repo.error;
+  if (typeof repo.body.default_branch !== 'string') return 'bad-response';
+  const branch = encodeURIComponent(repo.body.default_branch);
+  const cmp = await getJson(`/repos/${link.owner}/${link.repo}/compare/${branch}...${link.sha}?per_page=1`, opts);
+  if (cmp.error) return cmp.error;
+  if (typeof cmp.body.status !== 'string') return 'bad-response';
+  return cmp.body.status === 'behind' || cmp.body.status === 'identical' ? 'reachable' : 'unreachable';
+}
+
+/** 'open' | 'closed' | 'merged' | 'reachable' | 'unreachable', or an error string from getJson. */
 async function fetchState(link, opts) {
+  if (link.kind === 'commit') return fetchCommitState(link, opts);
   const endpoint = link.kind === 'pr' ? 'pulls' : 'issues';
   const { body, error } = await getJson(`/repos/${link.owner}/${link.repo}/${endpoint}/${link.number}`, opts);
   if (error) return error;
@@ -213,7 +250,7 @@ async function verifyOne(tool, opts) {
   const spec = parseStillPresent(tool.stillPresent);
   if (!stateOk) return { ...base, kind: link.kind, observed, ok: false };
   if (spec === null) {
-    const needsAssertion = tool.status === 'in-production';
+    const needsAssertion = NEEDS_ASSERTION.has(tool.status);
     return { ...base, kind: link.kind, observed, content: needsAssertion ? 'no-assertion' : null, ok: !needsAssertion };
   }
   const content = await fetchStillPresent(link, spec, opts);
@@ -241,8 +278,8 @@ export function failureKind(result) {
 }
 
 const ADVICE = {
-  drift: 'GitHub disagrees with the declared status. Fix website/data/red-team-tools.json: move a merged proposal to in-production, remove a closed one, and remove an in-production entry whose upstream file no longer mentions ATR.',
-  gone: 'The linked PR, issue, repository or stillPresent file no longer exists (a PR link to an issue also 404s). Remove the entry or point it at the right URL.',
+  drift: 'GitHub disagrees with the declared status. Fix website/data/red-team-tools.json: move a merged proposal to in-production, remove a closed one, remove an in-production entry whose upstream file no longer mentions ATR, and fix a corpus entry whose commit is not on the default branch or whose stillPresent file no longer holds the text.',
+  gone: 'The linked PR, issue, commit, repository or stillPresent file no longer exists (a PR link to an issue also 404s). Remove the entry or point it at the right URL.',
   unverified: 'GitHub could not be asked (rate limit, server error, network, or a response that cannot be read, such as a file over 1 MB). This is not a pass: re-run with a valid GITHUB_TOKEN before editing the list. api-401 means the token itself was rejected.',
 };
 

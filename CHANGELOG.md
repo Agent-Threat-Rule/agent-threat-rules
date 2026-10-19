@@ -49,14 +49,19 @@ All notable changes to ATR will be documented in this file.
   `website/data/red-team-tools.json`. `scripts/verify-red-team-links.mjs`, run
   by `verify-red-team-links.yml` when the list or the checker changes and
   weekly, fails when an in-review entry's PR or issue is no longer open, an
-  in-production or corpus entry's PR is not merged, or an in-production
-  entry's upstream file no longer mentions ATR. It reports drift, links that
-  are gone, and lookups GitHub could not answer separately, and counts none of
-  them as a pass; a failure on main or on the schedule opens a tracking issue.
+  in-production entry's PR is not merged, a corpus entry's link is neither a
+  merged PR nor a commit on the default branch, or the `stillPresent` file an
+  in-production or corpus entry must name no longer holds its text. It
+  reports drift, links that are gone, and lookups GitHub could not answer
+  separately, and counts none of them as a pass; a failure on main or on the schedule opens a tracking issue.
   It would have flagged NVIDIA/garak#1676 within a week of its withdrawal on
   2026-08-04, instead of the ten weeks it stayed listed before #688. It cannot
   flag an open proposal nobody answers, which is why the page calls that group
-  "Open proposals".
+  "Open proposals". The three corpus entries linked to ATR PRs #51, #52 and
+  #53, which do not contain the rules they named; they now link to the commits
+  that added ATR-2026-00452..00456, 00500..00505 and 00510..00517, the second
+  no longer names NeMo-Guardrails, and figures no file in the repository
+  records were removed.
 
 ### Changed
 

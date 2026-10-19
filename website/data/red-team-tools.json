@@ -23,9 +23,10 @@
     "org": "Schulhoff et al. — Learn Prompting · EMNLP 2023",
     "status": "corpus",
     "homepage": "https://hackaprompt.com",
-    "prUrl": "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/51",
-    "hook": "The largest crowd-sourced prompt-injection competition corpus, 4,780 competition samples across GPT/Claude/PaLM. EMNLP 2023 best-paper nominee.",
-    "what_atr_did": "Clustered 4,780 HackAPrompt samples by attack family. Shipped 5 ATR rules (ATR-2026-00452..00456) from dominant clusters. HackAPrompt recall moved 28.6% → 66.2% across that sprint (2026-05-12, before detection lanes existed, with every rule loaded: what the hunt lane loads today), measured on the same corpus those rules were mined from, so it is an in-sample gain, not a measure of generalisation. The corpus is 100% adversarial and carries no benign population, so it yields no precision or false-positive figure. Each rule cites the HackAPrompt cluster in metadata_provenance.",
+    "prUrl": "https://github.com/Agent-Threat-Rule/agent-threat-rules/commit/e9efefdd2cc5de38fe573d281830d27ba3c66c96",
+    "stillPresent": "rules/prompt-injection/ATR-2026-00452-direct-pwned-payload-injection.yaml contains \"HackAPrompt competition corpus\"",
+    "hook": "Crowd-sourced prompt-injection competition corpus: players try to make a model print a target phrase or give up a hidden secret key.",
+    "what_atr_did": "Shipped 5 ATR rules (ATR-2026-00452..00456), promoted to rules/ on 2026-05-12, each written for an attack family the corpus shows: a forced target phrase, secret-key reveal demands, per-character backslash encoding, a no-period output modifier, and empty-input conditionals. Each rule's description names HackAPrompt. Rules were written from this corpus, so recall measured on it is partly in-sample, not a measure of generalisation. The corpus is 100% adversarial and carries no benign population, so it yields no precision or false-positive figure.",
     "figures": [
       {
         "source": "hackaprompt",
@@ -34,22 +35,24 @@
     ]
   },
   {
-    "name": "NeMo-Guardrails + llm-guard + Promptfoo",
-    "org": "NVIDIA · Protect AI · Promptfoo Inc.",
+    "name": "Promptfoo + llm-guard",
+    "org": "Promptfoo Inc. · Protect AI",
     "status": "corpus",
-    "homepage": "https://github.com/NVIDIA/NeMo-Guardrails",
-    "prUrl": "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/52",
-    "hook": "Vendor test suites from three production guardrail systems. Combined 94 adversarial samples covering jailbreak, injection, and output sanitization.",
-    "what_atr_did": "Ingested combined 94-sample corpus. Shipped 6 ATR rules (ATR-2026-00500..00505) covering attack patterns present across all three vendor test suites. Each rule validated against the vendor's own test cases as true-positive ground truth."
+    "homepage": "https://github.com/protectai/llm-guard",
+    "prUrl": "https://github.com/Agent-Threat-Rule/agent-threat-rules/commit/e9efefdd2cc5de38fe573d281830d27ba3c66c96",
+    "stillPresent": "rules/excessive-autonomy/ATR-2026-00500-ssrf-via-agent-url-fetch-instruction.yaml contains \"promptfoo SSRF plugin corpus\"",
+    "hook": "Attack examples from promptfoo's red-team plugins and from llm-guard's test corpus.",
+    "what_atr_did": "Shipped 6 ATR rules (ATR-2026-00500..00505), promoted to rules/ on 2026-05-12. Four are generalised from promptfoo plugin corpora (SSRF, data exfiltration, divergent repetition, tool discovery) and two from the llm-guard test corpus (fake error-state takeover, system prompt extraction): literal hostnames, URLs, words and tool names in the examples were replaced with patterns. Each rule's description names the corpus it came from."
   },
   {
-    "name": "OWASP LLM Top 10 + MITRE ATLAS PoCs",
+    "name": "OWASP LLM Top 10 + MITRE ATLAS",
     "org": "OWASP · MITRE",
     "status": "corpus",
     "homepage": "https://owasp.org/www-project-top-10-for-large-language-model-applications/",
-    "prUrl": "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/53",
-    "hook": "Standards-defined PoC attack patterns from OWASP LLM01-LLM10 and corresponding MITRE ATLAS technique catalog (AML.T00XX series).",
-    "what_atr_did": "Shipped 8 ATR rules (ATR-2026-00510..00517), each mapping to a named OWASP LLM category (LLM01-LLM10) and a specific MITRE ATLAS technique. Rules are standards-aligned at the metadata_provenance level."
+    "prUrl": "https://github.com/Agent-Threat-Rule/agent-threat-rules/commit/92c0d0fee1b7172641568a518b234afa0aea482f",
+    "stillPresent": "rules/prompt-injection/ATR-2026-00510-delayed-tool-invocation-injection.yaml contains \"MITRE ATLAS AML.CS0038\"",
+    "hook": "OWASP's Top 10 risks for LLM applications, and MITRE ATLAS, the catalog of adversarial techniques and case studies against AI systems.",
+    "what_atr_did": "Shipped 8 ATR rules (ATR-2026-00510..00517) on 2026-05-12. Each rule's references name an OWASP LLM Top 10 (2025) category (LLM01, LLM02, LLM06 or LLM10) and a MITRE ATLAS technique, and six of the eight descriptions cite the ATLAS case study they follow (AML.CS0022, CS0036, CS0038, CS0039 and CS0045, CS0041, CS0056)."
   },
   {
     "name": "Promptfoo",

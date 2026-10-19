@@ -427,7 +427,7 @@ export default async function RedTeamPage({
                           rel="noopener noreferrer"
                           className="font-data text-xs text-blue hover:underline"
                         >
-                          {zh ? "PR →" : "PR →"}
+                          {t.prUrl.includes("/commit/") ? "Commit →" : "PR →"}
                         </a>
                       )}
                     </div>

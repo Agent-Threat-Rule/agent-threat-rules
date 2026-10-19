@@ -12,7 +12,10 @@
  *     - in-review     -> the linked PR or issue must be OPEN
  *     - in-production -> the linked PR must be MERGED and its stillPresent
  *                        file must still mention ATR upstream
- *     - corpus        -> the linked PR must be MERGED
+ *     - corpus        -> a MERGED PR, or a commit reachable from the
+ *                        default branch, and its stillPresent file must still
+ *                        hold the text (the corpus entries once linked to
+ *                        unrelated merged PRs and passed a merged-only check)
  *   A failure is drift (fix the list), gone (404/410) or unverified (GitHub
  *   could not be asked). Unverified is never a pass.
  *
@@ -84,6 +87,14 @@ const pyrit = tool("in-production", "https://github.com/microsoft/PyRIT/pull/171
 const review = tool("in-review", "https://github.com/QData/TextAttack/issues/824", "TextAttack");
 const closedProposal = tool("in-review", "https://github.com/NVIDIA/garak/pull/1676", "garak");
 const MERGED = { body: { state: "closed", merged_at: "2026-05-27T13:10:48Z" } };
+const SHA = "e9efefdd2cc5de38fe573d281830d27ba3c66c96";
+const COMMIT_URL = `https://github.com/Agent-Threat-Rule/agent-threat-rules/commit/${SHA}`;
+const CORPUS_SPEC = 'rules/x/ATR-2026-00452.yaml contains "HackAPrompt"';
+const corpus = tool("corpus", COMMIT_URL, "HackAPrompt", { stillPresent: CORPUS_SPEC });
+const ATR_API = `${API}/Agent-Threat-Rule/agent-threat-rules`;
+const COMPARE = `${ATR_API}/compare/main...${SHA}?per_page=1`;
+const RULE_FILE = `${ATR_API}/contents/rules/x/ATR-2026-00452.yaml`;
+const REPO_BODY = { body: { default_branch: "main" } };
 
 describe("classifyLink", () => {
   it("recognises a pull request and an issue", () => {
@@ -105,6 +116,18 @@ describe("classifyLink", () => {
       "https://www.github.com/promptfoo/promptfoo/pull/8529",
     ]) {
       expect(classifyLink(url)).toEqual({ kind: "pr", owner: "promptfoo", repo: "promptfoo", number: 8529 });
+    }
+  });
+
+  it("recognises a commit, short or full, in any case", () => {
+    expect(classifyLink(COMMIT_URL)).toEqual({ kind: "commit", owner: "Agent-Threat-Rule", repo: "agent-threat-rules", sha: SHA });
+    expect(classifyLink("https://github.com/a/b/commit/E9EFEFD")).toEqual({ kind: "commit", owner: "a", repo: "b", sha: "e9efefd" });
+    expect(classifyLink(`${COMMIT_URL}#diff-1`).kind).toBe("commit");
+  });
+
+  it("rejects a commit URL whose sha is not 7-40 hex", () => {
+    for (const sha of ["e9efef", "g9efefdd2", `${SHA}0`, ""]) {
+      expect(classifyLink(`https://github.com/a/b/commit/${sha}`).kind).toBe("other");
     }
   });
 
@@ -143,6 +166,13 @@ describe("verdict", () => {
     expect(verdict("in-production", "issue", "open")).toBe(false);
   });
 
+  it("corpus also accepts a commit on the default branch; nothing else does", () => {
+    expect(verdict("corpus", "commit", "reachable")).toBe(true);
+    expect(verdict("corpus", "commit", "unreachable")).toBe(false);
+    expect(verdict("in-production", "commit", "reachable")).toBe(false);
+    expect(verdict("in-review", "commit", "reachable")).toBe(false);
+  });
+
   it("an API error or an unverifiable link is never ok", () => {
     expect(verdict("in-review", "pr", "api-403")).toBe(false);
     expect(verdict("in-production", "pr", "network-error")).toBe(false);
@@ -152,7 +182,8 @@ describe("verdict", () => {
 
 describe("validateTools", () => {
   it("accepts well-formed entries", () => {
-    expect(validateTools([review, pyrit, tool("corpus", "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/51", "HackAPrompt")])).toEqual([]);
+    const prCorpus = tool("corpus", "https://github.com/a/b/pull/51", "Corpus", { stillPresent: CORPUS_SPEC });
+    expect(validateTools([review, pyrit, corpus, prCorpus])).toEqual([]);
   });
 
   it("rejects an empty list: a checker that checks nothing must not pass", () => {
@@ -174,7 +205,14 @@ describe("validateTools", () => {
   it("needs a pull request behind in-production and corpus", () => {
     const issueBacked = tool("in-production", "https://github.com/a/b/issues/3", "X", { stillPresent: PYRIT_SPEC });
     expect(validateTools([issueBacked]).join("\n")).toMatch(/pull request/);
-    expect(validateTools([tool("corpus", "https://hackaprompt.com", "Y")]).join("\n")).toMatch(/pull request/);
+    expect(validateTools([tool("corpus", "https://hackaprompt.com", "Y", { stillPresent: CORPUS_SPEC })]).join("\n")).toMatch(/pull request or a GitHub commit/);
+    expect(validateTools([tool("in-production", COMMIT_URL, "Z", { stillPresent: PYRIT_SPEC })]).join("\n")).toMatch(/merged pull request/);
+  });
+
+  it("needs a stillPresent on every corpus entry, PR- or commit-backed", () => {
+    const { stillPresent: _spec, ...bare } = corpus;
+    expect(validateTools([bare]).join("\n")).toMatch(/corpus needs stillPresent/);
+    expect(validateTools([tool("corpus", "https://github.com/a/b/pull/2", "P")]).join("\n")).toMatch(/corpus needs stillPresent/);
   });
 
   it("needs a well-formed stillPresent on in-production", () => {
@@ -261,6 +299,68 @@ describe("verifyTools", () => {
     const { stillPresent: _spec, ...unasserted } = pyrit;
     const { impl } = fakeFetch({ [`${API}/microsoft/PyRIT/pulls/1715`]: MERGED });
     const [result] = await verifyTools([unasserted], impl, NO_WAIT);
+    expect(result).toMatchObject({ content: "no-assertion", ok: false });
+  });
+
+  it("passes a corpus commit reachable from the default branch whose rule file still holds the text", async () => {
+    for (const status of ["behind", "identical"]) {
+      const { impl, calls } = fakeFetch({
+        [ATR_API]: REPO_BODY,
+        [COMPARE]: { body: { status } },
+        [RULE_FILE]: file("description: HackAPrompt competition corpus"),
+      });
+      const [result] = await verifyTools([corpus], impl, NO_WAIT);
+      expect(result).toMatchObject({ kind: "commit", observed: "reachable", content: "present", ok: true });
+      expect(calls).toEqual([ATR_API, COMPARE, RULE_FILE]);
+    }
+  });
+
+  it("flags a corpus commit that is not on the default branch, without reading the file", async () => {
+    for (const status of ["ahead", "diverged"]) {
+      const { impl, calls } = fakeFetch({ [ATR_API]: REPO_BODY, [COMPARE]: { body: { status } } });
+      const [result] = await verifyTools([corpus], impl, NO_WAIT);
+      expect(result).toMatchObject({ observed: "unreachable", ok: false });
+      expect(failureKind(result)).toBe("drift");
+      expect(calls).toEqual([ATR_API, COMPARE]);
+    }
+  });
+
+  it("calls a missing commit or repository gone", async () => {
+    const noCommit = fakeFetch({ [ATR_API]: REPO_BODY, [COMPARE]: { status: 404 } });
+    const [a] = await verifyTools([corpus], noCommit.impl, NO_WAIT);
+    expect(a).toMatchObject({ observed: "api-404", ok: false });
+    expect(failureKind(a)).toBe("gone");
+    const noRepo = fakeFetch({});
+    const [b] = await verifyTools([corpus], noRepo.impl, NO_WAIT);
+    expect(b).toMatchObject({ observed: "api-404", ok: false });
+    expect(failureKind(b)).toBe("gone");
+    expect(noRepo.calls).toEqual([ATR_API]);
+  });
+
+  it("flags a reachable corpus commit whose rule file lost the text", async () => {
+    const { impl } = fakeFetch({ [ATR_API]: REPO_BODY, [COMPARE]: { body: { status: "behind" } }, [RULE_FILE]: file("nothing") });
+    const [result] = await verifyTools([corpus], impl, NO_WAIT);
+    expect(result).toMatchObject({ content: "absent", ok: false });
+    expect(failureKind(result)).toBe("drift");
+  });
+
+  it("treats an unreadable repository or compare answer as unverified", async () => {
+    for (const table of [
+      { [ATR_API]: { status: 403 } },
+      { [ATR_API]: { body: {} } },
+      { [ATR_API]: REPO_BODY, [COMPARE]: { status: 502 } },
+      { [ATR_API]: REPO_BODY, [COMPARE]: { body: {} } },
+    ] as Record<string, Reply>[]) {
+      const [result] = await verifyTools([corpus], fakeFetch(table).impl, NO_WAIT);
+      expect(result.ok).toBe(false);
+      expect(failureKind(result)).toBe("unverified");
+    }
+  });
+
+  it("never passes a corpus entry on its link state alone", async () => {
+    const { stillPresent: _spec, ...bare } = corpus;
+    const { impl } = fakeFetch({ [ATR_API]: REPO_BODY, [COMPARE]: { body: { status: "behind" } } });
+    const [result] = await verifyTools([bare], impl, NO_WAIT);
     expect(result).toMatchObject({ content: "no-assertion", ok: false });
   });
 
