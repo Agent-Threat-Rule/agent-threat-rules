@@ -24,6 +24,9 @@ jobs:
     name: Publish pyATR
     runs-on: ubuntu-latest
     environment: pypi
+    env:
+      # Whether the tag push below can start the publishing run; see the hand-off step.
+      HAS_REPO_TOKEN: ${{ secrets.ATR_REPO_TOKEN != '' }}
 
     steps:
       # Pushes to main from this workflow go out as ATR_REPO_TOKEN rather than the
@@ -71,6 +74,22 @@ jobs:
           git push origin "pyatr-v$NEW"
           echo "VERSION=$NEW" >> "$GITHUB_ENV"
 
+      - name: Hand off to the tag-triggered run
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          # The tag pushed above starts this workflow again, on the tag, and that run
+          # tests, bundles, builds, uploads and creates the release. This run used to
+          # do all of that too, so the same version was uploaded twice and the later
+          # upload got PyPI's 400 for an existing file (pyatr 0.3.1, 2026-10-15).
+          # Only a push with a personal token starts a workflow. With the GITHUB_TOKEN
+          # fallback the tag push starts nothing, so fail here rather than report a
+          # release that never happens.
+          if [ "$HAS_REPO_TOKEN" != "true" ]; then
+            echo "::error::ATR_REPO_TOKEN is not set, so pushing pyatr-v$VERSION cannot start the publishing run. Push that tag with a personal token to publish it."
+            exit 1
+          fi
+          echo "Tagged pyatr-v$VERSION; the run on that tag publishes it."
+
       - name: Get version from tag
         if: ${{ github.event_name == 'push' }}
         run: |
@@ -78,26 +97,31 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: Install pyATR deps + run tests
+        if: ${{ github.event_name == 'push' }}
         working-directory: python
         run: |
           pip install -e ".[dev]"
           python -m pytest tests/ -v
 
       - name: Bundle rules into package
+        if: ${{ github.event_name == 'push' }}
         working-directory: python
         run: python scripts/bundle_rules.py
 
       - name: Build sdist + wheel
+        if: ${{ github.event_name == 'push' }}
         working-directory: python
         run: python -m build
 
       - name: Verify built package
+        if: ${{ github.event_name == 'push' }}
         working-directory: python
         run: |
           python -m twine check dist/*
           ls -la dist/
 
       - name: Publish to PyPI
+        if: ${{ github.event_name == 'push' }}
         working-directory: python
         env:
           TWINE_USERNAME: __token__
@@ -105,6 +129,7 @@ jobs:
         run: python -m twine upload dist/*
 
       - name: Create GitHub release
+        if: ${{ github.event_name == 'push' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

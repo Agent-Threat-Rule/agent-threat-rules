@@ -6,6 +6,17 @@ All notable changes to ATR will be documented in this file.
 
 ### Added
 
+- **The category registry as Gemara catalogs, generated and published from
+  here.** `spec/category-registry/gemara/` holds a vector, capability, threat
+  and control catalog validated against the Gemara v1.6.0 CUE schemas. The
+  vector catalog is generated from `spec/category-registry/v1.0.yaml` (ids and
+  descriptions verbatim) by `scripts/generate-gemara-catalogs.ts`;
+  `tests/gemara-catalogs.test.ts` fails when the committed catalogs are stale.
+  `.github/workflows/publish-gemara.yml` publishes them as one keyless-signed
+  OCI bundle, `ghcr.io/agent-threat-rule/agent-threat-rules/gemara:<bundle
+  version>`, on release tags only, and pushes nothing when that version is
+  already published with the same catalogs.
+
 - **Every benchmark measurement records the enforce lane beside its
   headline.** A measurement's `metrics.recall` is the `hunt` lane (the engine
   default, every maturity). Each runner the weekly measurement calls now also
@@ -17,9 +28,41 @@ All notable changes to ATR will be documented in this file.
   `scripts/check-benchmark-citations.ts` fails CI when either disagrees with
   the measurement or leaves the enforce figure out. Before this, the enforce
   figures in README were one-off replays.
+- **Recall figures outside README are rendered from the measurement files.**
+  `scripts/render-recall-citations.ts` fills the figures between recall
+  markers in `LIMITATIONS.md` and the `docs/owasp-pr/` texts, from the file each
+  source's `latest.json` points at, in both lanes (every rendering is held to
+  the rule README's table is checked by). `scripts/sync-citation-garak.ts`
+  generates the garak sentence in `CITATION.cff` from root `stats.json`, with
+  both lanes and the closed-book caveat. The weekly measurement run re-renders
+  and stages both and lists what it could not render in the rolling PR's body;
+  CI (`eval.yml`) fails on a stale or unrenderable figure.
+- **`scripts/bench-evaluate-latency.ts` times single `ATREngine.evaluate()`
+  calls** in the hunt and enforce lanes on three committed corpora of
+  different input length, so the latency wording in LIMITATIONS.md and
+  THREAT-MODEL.md can be checked on any hardware. The `latency_ms` blocks in
+  `data/measurements/` time whole corpus samples (several event shapes, a
+  skill scan and, when installed, an embedding pass) inside a full benchmark
+  run, and are not comparable.
 
 ### Changed
 
+- **Every recall figure the site, LIMITATIONS.md, CITATION.cff and the docs
+  above take from the measurement files now names its lane** and gives the
+  enforce figure wherever the measurement records one. Figures no measurement
+  file records are labelled instead: the about page's historical garak figure
+  as taken with every rule loaded, the neutral-benchmarks post's runs as having
+  no recorded lane. The website reads `breakdown.enforce_lane` from the measurement
+  files (home, coverage, research, red-team, garak integration, ATD and
+  sovereign-AI pages, the PINT blog post); it no longer reads recall
+  from the old eval report files or their typed fallbacks, and no longer
+  hydrates recall in the browser. The garak figures carry the closed-book
+  caveat, and so now do the PINT-format and HackAPrompt figures, which have
+  rules mined from them too. The SKILL.md benchmark is described as the
+  internal, labelled corpus it is, with the harness's layer names. An erratum
+  (`e-2026-10-16-recall-lanes`) records the change on the site.
+- `sync-stats.ts` now fails when CITATION.cff has no garak sentence to
+  rewrite, instead of leaving an old figure in place.
 - **README §8 discloses that the `garak` and `garak-full` figures are partly
   closed-book.** A replay without the rules whose own YAML shows they were
   written from the in-the-wild corpus is given in the new `[^garakcorpus]`
@@ -30,6 +73,41 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **SPEC §6.4 corrected: SPEC.md 1.0.1 [Compatible].** A `regex` pattern
+  condition matches case-insensitively whether or not it begins with `(?i)`,
+  and `m`, `s` and `x` in a leading flag group have no effect. The 1.0.0 text,
+  added on 2026-07-19 (#340), said an engine applies the flags named in that
+  group, which made a pattern without `(?i)` case-sensitive and gave `(?s)`
+  and `(?m)` their dotAll and multiline meaning. Compatible: an engine that
+  passes the conformance suite needs no change, because its true-positive
+  fixtures already require case-insensitive matching; an implementation built
+  to the 1.0.0 wording does. 1.0.1 also admits `x` in the group, which both
+  engines already removed, says when the `u` flag applies, advises against
+  modifier groups such as `(?-i:...)`, and adds a revision history (Appendix
+  D). Issue #698 has the evidence; erratum `e-2026-10-19-regex-dialect`
+  records the error. `tests/spec-regex-dialect.test.ts` and pyATR's
+  `TestRegexDialectSpec64` pin the statements. `scripts/generate-sigma.py` no
+  longer copies `m` and `s` from that group into exported Sigma patterns,
+  where a backend would honour them; of the three rules on main that carry
+  such a group, only ATR-2026-00450's `(?im)^...` condition matched
+  differently because of it. Other exports that still follow the 1.0.0
+  wording are listed in #698.
+
+- **A `medium` confidence label no longer depends on float rounding to stay
+  out of `deny`.** A pattern match scored `0.7 + 0.1 * coverage`, and a
+  `high`-severity match denies at `>= 0.8`. At full coverage that sum is
+  `0.7999999999999999` in IEEE doubles, so the verdict was `ask` only because
+  of the rounding direction; the same quantity as an integer percentage is
+  `0.8`. Label-derived confidence is now computed in one place
+  (`src/rule-confidence.ts`) on a basis-point scale, and a label below the
+  deny threshold is capped one basis point under it. No verdict or
+  auto-response decision changes. The raw `confidence` of a `medium` match at
+  full coverage is `0.7999` instead of `0.7999999999999999`, and other
+  partial-coverage values lose trailing float noise (`0.9500000000000001`
+  becomes `0.95`). One displayed percentage moves as a result: a
+  named-condition rule labelled `medium` at 3/4 coverage shows 78% (`0.775`)
+  where the noise used to show 77%. No shipped rule reaches that cell.
+
 - **NIST-related statements corrected across the docs and the website.**
   Pages described a NIST CAISI dialogue and position paper that did not
   happen, an RFI response ATR never filed, an OSCAL "Path 1" acceptance,
@@ -39,6 +117,34 @@ All notable changes to ATR will be documented in this file.
   is described as what it is: open, reworked against NIST's AI RMF catalog,
   awaiting NIST review. The website changelog page now shows the notes on
   historical entries, which it used to drop.
+- **Integration status, provenance, evasion and latency claims corrected.**
+  The red-team page listed seven proposals as under review that their ATR
+  author had withdrawn unmerged (NVIDIA/garak#1676 on 2026-08-04; HarmBench,
+  AgentDojo, JailbreakBench, Counterfit, PromptInject and Damn Vulnerable MCP
+  Server on 2026-10-14 and 15, six of them never answered). They are removed,
+  along with the lapsed "On deck" schedule, and the garak, sovereign-AI,
+  responsible-use, integrate and STANDARDIZATION-STATUS surfaces no longer
+  call the garak integration or any OWASP PR open. The garak page and the
+  contributor docs (QUALITY-GATE.md, TSC-ONBOARDING.md, REVIEWER-GUIDE.md,
+  RULE-PRODUCTION.md, the issue-to-proposal PR text) no longer describe
+  auto-merge, which has been off since 2026-06-03. The red-team and governance
+  pages no longer promise a `metadata_provenance.discovered_by` field no rule
+  has, and the home, red-team, about and quality-standard pages no longer
+  credit daily auto-crystallization for growth that came from CVE sweeps,
+  benchmark-miss mining and contributors. The sovereign-AI page no longer says
+  ATR detects intent and cannot be evaded; LIMITATIONS.md and the
+  responsible-use, integrate and research pages no longer say every rule
+  carries evasion tests or that there are 64; LIMITATIONS.md and
+  THREAT-MODEL.md now agree that the optional judge and embedding modules ship
+  but are off by default. "Sub-millisecond", "< 5ms", "5ms pattern match" and
+  "Done in 47ms" are replaced by how evaluation cost scales; the OpenShell
+  example is marked as a sketch of a proposal OpenShell closed, and its
+  timeouts now exceed a one-shot cold start. CITATION.cff no longer calls the
+  rules hand-authored and says what the safety gate checks for added and
+  changed rules; the OWASP PR text drops its 76-rule count and notes the PR
+  was withdrawn. Errata `e-2026-10-16-integration-status`,
+  `e-2026-10-16-evasion`, `e-2026-10-16-latency` and `e-2026-10-16-provenance`
+  record the site changes.
 - **A rule the engine does not evaluate no longer gets a false-positive
   record.** `scripts/gate-promotion-fp.ts --emit-measurement` wrote
   `fp_count: 0` for draft and deprecated rules, which the engine skips, so
@@ -1051,7 +1157,7 @@ No rule content changed and no threshold was loosened in any of the above.
 - Wild scan (96K): 1.35% flag rate, 751 confirmed malware
 - OWASP Agentic Top 10: 10/10 coverage
 - MITRE ATLAS: 100/113 rules mapped
-- SAFE-MCP: 91.8% technique coverage
+- SAFE-MCP: technique coverage figure (withdrawn 2026-10: it was not backed by rule-level data; see docs/SAFE-MCP-MAPPING.md)
 - Avg scan latency: 14ms per file
 
 ### Ecosystem

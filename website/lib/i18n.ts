@@ -48,7 +48,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "numbers.scan.desc":
       "Scanned across OpenClaw + Skills.sh. {critical} CRITICAL. {high} HIGH.",
     "numbers.owasp.desc": "OWASP Agentic Top 10 categories fully covered.",
-    "numbers.safemcp.desc": "SAFE-MCP technique coverage. 78 of 85.",
+    "numbers.safemcp.desc": "SAF-MCP techniques with at least one reviewed ATR rule (candidate mappings).",
 
     // Proof
     "proof.label": "Merged upstream",
@@ -182,7 +182,9 @@ export const messages: Record<Locale, Record<string, string>> = {
     "research.recall": "Recall",
     "research.samples": "Samples",
     "research.gap_note":
-      "The gap between {precision}% precision and {recall}% recall is expected. Regex catches known patterns but misses paraphrases and multilingual attacks.",
+      "In the hunt lane, the gap between {precision} precision and {recall} recall is expected: regex catches known patterns but misses paraphrases and multilingual attacks. In the enforce lane, which loads only stable rules and is the one to run with blocking on, recall is {enforce}.",
+    "research.gap_note_hunt_only":
+      "In the hunt lane, the gap between {precision} precision and {recall} recall is expected: regex catches known patterns but misses paraphrases and multilingual attacks. This measurement records no enforce-lane figure.",
     "research.scan": "Ecosystem Scan Data",
     "research.scan.sub": "Real scans of real MCP skill registries.",
     "research.scan.mega": "Mega Scan (OpenClaw + Skills.sh)",
@@ -195,7 +197,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "research.limits": "What ATR Cannot Detect",
     "research.limits.sub":
       "We publish this section because honest limitations build more trust than false confidence.",
-    "research.limits.full": "Full limitations document with 64 evasion tests",
+    "research.limits.full": "Full limitations document, with the evasion tests rules carry",
     "research.limit.paraphrase": "Paraphrase Attacks",
     "research.limit.paraphrase.desc":
       'Any regex rule can be bypassed by semantically equivalent rephrasing. "Ignore previous instructions" is detected; "please set aside the guidance you were given earlier" is not.',
@@ -422,7 +424,7 @@ export const messages: Record<Locale, Record<string, string>> = {
       "\u6383\u63CF OpenClaw + Skills.sh\u3002{critical} CRITICAL\u3001{high} HIGH\u3002",
     "numbers.owasp.desc": "OWASP Agentic Top 10 \u5168\u90E8\u8986\u84CB\u3002",
     "numbers.safemcp.desc":
-      "SAFE-MCP \u6280\u8853\u8986\u84CB\u7387\u300278/85\u3002",
+      "\u81f3\u5c11\u6709\u4e00\u689d\u7d93\u5be9\u67e5 ATR \u898f\u5247\u5c0d\u61c9\u7684 SAF-MCP \u6280\u8853(\u5019\u9078\u5c0d\u7167)\u3002",
 
     // Proof
     "proof.label": "\u5DF2\u5408\u4F75\u81F3\u4E0A\u6E38",
@@ -567,7 +569,9 @@ export const messages: Record<Locale, Record<string, string>> = {
     "research.recall": "Recall",
     "research.samples": "\u6A23\u672C\u6578",
     "research.gap_note":
-      "{precision}% precision \u548C {recall}% recall \u4E4B\u9593\u7684\u5DEE\u8DDD\u662F\u9810\u671F\u7684\u3002Regex \u80FD\u6293\u5230\u5DF2\u77E5\u6A21\u5F0F\uff0C\u4F46\u6703\u6F0F\u6389\u91CD\u8FF0\u548C\u591A\u8A9E\u8A00\u653B\u64CA\u3002",
+      "\u5728 hunt lane\uFF0C{precision} precision \u548C {recall} recall \u4E4B\u9593\u7684\u5DEE\u8DDD\u662F\u9810\u671F\u7684\uFF1ARegex \u80FD\u6293\u5230\u5DF2\u77E5\u6A21\u5F0F\uFF0C\u4F46\u6703\u6F0F\u6389\u91CD\u8FF0\u548C\u591A\u8A9E\u8A00\u653B\u64CA\u3002enforce lane \u53EA\u8F09\u5165 stable \u898F\u5247\uFF0C\u662F\u958B\u555F\u5C01\u9396\u6642\u8981\u7528\u7684 lane\uFF0C\u5B83\u7684 recall \u662F {enforce}\u3002",
+    "research.gap_note_hunt_only":
+      "\u5728 hunt lane\uFF0C{precision} precision \u548C {recall} recall \u4E4B\u9593\u7684\u5DEE\u8DDD\u662F\u9810\u671F\u7684\uFF1ARegex \u80FD\u6293\u5230\u5DF2\u77E5\u6A21\u5F0F\uFF0C\u4F46\u6703\u6F0F\u6389\u91CD\u8FF0\u548C\u591A\u8A9E\u8A00\u653B\u64CA\u3002\u9019\u6B21\u91CF\u6E2C\u6C92\u6709\u8A18\u9304 enforce lane \u7684\u6578\u5B57\u3002",
     "research.scan": "\u751F\u614B\u7CFB\u6383\u63CF\u6578\u64DA",
     "research.scan.sub":
       "\u771F\u5BE6\u6383\u63CF\u771F\u5BE6\u7684 MCP skill \u8A3B\u518A\u8868\u3002",
@@ -582,7 +586,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "research.limits.sub":
       "\u6211\u5011\u767C\u5E03\u9019\u500B\u7AE0\u7BC0\uff0C\u56E0\u70BA\u8AA0\u5BE6\u7684\u9650\u5236\u6BD4\u865B\u5047\u7684\u81EA\u4FE1\u66F4\u80FD\u5EFA\u7ACB\u4FE1\u4EFB\u3002",
     "research.limits.full":
-      "\u5B8C\u6574\u9650\u5236\u6587\u4EF6\uff0C\u5305\u542B 64 \u500B evasion test",
+      "\u5B8C\u6574\u9650\u5236\u6587\u4EF6\uff0C\u4EE5\u53CA\u898F\u5247\u9644\u5E36\u7684 evasion test",
     "research.limit.paraphrase": "\u91CD\u8FF0\u653B\u64CA",
     "research.limit.paraphrase.desc":
       "\u4EFB\u4F55 regex \u898F\u5247\u90FD\u53EF\u4EE5\u88AB\u8A9E\u7FA9\u7B49\u50F9\u7684\u91CD\u8FF0\u7E5E\u904E\u3002\u300CIgnore previous instructions\u300D\u6703\u88AB\u5075\u6E2C\uff1B\u300Cplease set aside the guidance you were given earlier\u300D\u4E0D\u6703\u3002",

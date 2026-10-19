@@ -1,6 +1,55 @@
 {
-  "lastUpdated": "2026-09-22",
+  "lastUpdated": "2026-10-19",
   "entries": [
+    {
+      "id": "e-2026-10-19-regex-dialect",
+      "version": "3.5.12–4.1.5",
+      "section": "SPEC.md §6.4 Regular-Expression Dialect (ATR Core 1.0.0)",
+      "summary_en": "SPEC.md 1.0.0 §6.4, as revised on 2026-07-19, said: \"A conforming Engine MUST strip that leading group from the pattern and apply the corresponding RegExp flags (i, m, s).\" Read that way, a pattern without (?i) is case-sensitive, and (?s) and (?m) switch on dotAll and multiline mode. The reference engine and pyATR do neither: they remove the group, match every regex condition case-insensitively, and ignore m, s and x. Seven true-positive fixtures of the conformance suite, unchanged since 2026-05-16, need case-insensitive matching, so an engine built to that sentence could not pass Section 12. SPEC.md 1.0.1 states the reference engine's behavior; no rule, no fixture and no reference-engine match changed. The Sigma exporter no longer copies m and s into the patterns it writes; other exports that still follow the 1.0.0 wording are listed in issue #698.",
+      "summary_zh": "SPEC.md 1.0.0 第 6.4 節（2026-07-19 修訂）原文：「A conforming Engine MUST strip that leading group from the pattern and apply the corresponding RegExp flags (i, m, s).」照這句話，沒有 (?i) 的 pattern 會區分大小寫，(?s) 與 (?m) 會開啟 dotAll 與 multiline 模式。參考引擎與 pyATR 都不是這樣運作：它們移除該群組後，所有 regex 條件一律不分大小寫比對，m、s、x 不起作用。conformance 測試套件中有七個自 2026-05-16 起未變動的 true-positive fixture 需要不分大小寫比對，照這句話實作的引擎無法通過第 12 節。SPEC.md 1.0.1 改為描述參考引擎的實際行為；沒有任何規則、fixture 或參考引擎的比對結果因此改變。Sigma 匯出工具已不再把 m 與 s 複製進輸出的 pattern；其他仍照 1.0.0 文字的匯出工具列在 issue #698。",
+      "date": "2026-10-19",
+      "url": "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/698"
+    },
+    {
+      "id": "e-2026-10-16-integration-status",
+      "version": "4.1.5",
+      "section": "Site-wide — integration and proposal status",
+      "summary_en": "The red-team page listed seven proposals as under review. No maintainer had replied to six of them (HarmBench #93, AgentDojo #160, JailbreakBench #48, Counterfit #96, PromptInject #9, Damn Vulnerable MCP Server #29), and the seventh, NVIDIA garak PR #1676, had sat in changes-requested since April. None was merged: their ATR author withdrew garak #1676 on 2026-08-04 and the other six on 2026-10-14 and 2026-10-15. They are removed, and the garak, sovereign-AI and responsible-use pages no longer describe the garak integration as open; the sovereign-AI page also drops a garak \"32/32\" mapping figure that had no source. The integrate page said OWASP PRs were under review; none is open. The red-team page's \"On deck\" schedule listed filing dates in May and June that had passed, most of them without a filing, and is removed. The garak page said rule PRs are auto-merged; the repository has auto-merge turned off and a maintainer merges each one. It also linked a bridge script that had been moved out of the public repository, and now says so.",
+      "summary_zh": "red-team 頁把七個提案列為「審查中」。其中六個（HarmBench #93、AgentDojo #160、JailbreakBench #48、Counterfit #96、PromptInject #9、Damn Vulnerable MCP Server #29）從來沒有維護者回覆，第七個 NVIDIA garak PR #1676 從四月起停在 changes-requested。七個都沒有合併：ATR 作者在 2026-08-04 撤回 garak #1676，其餘六個在 2026-10-14 與 2026-10-15 撤回。這些已從頁面移除；garak、主權 AI 與負責任使用三頁也不再把 garak 整合寫成進行中，主權 AI 頁並拿掉沒有出處的 garak「32/32」對應數字。integrate 頁說 OWASP PR 審查中，其實沒有任何一個還開著。red-team 頁的「下一波」排程列的是五、六月的送出日期，日期已過、多數沒有送出，整段移除。garak 頁說規則 PR 會自動合併；repo 已關閉 auto-merge，每個 PR 都由維護者合併。這一頁原本連到一支已移出公開 repo 的橋接腳本，現在照實說明。",
+      "date": "2026-10-16"
+    },
+    {
+      "id": "e-2026-10-16-evasion",
+      "version": "4.1.5",
+      "section": "Site-wide — detection method and evasion",
+      "summary_en": "The sovereign-AI page said ATR detects behavioral intent rather than string signatures and that attackers cannot evade it. Almost every ATR rule is a set of regular expressions (a few also define an optional model judge, which the engine calls only when an operator configures one), and paraphrased, translated or encoded payloads can slip past them. The responsible-use and integrate pages said ATR documents 64 evasion techniques in per-rule evasion_tests fields, and the research page linked to \"64 evasion tests\"; fewer than half of the rules carry evasion tests, and 64 was the count from March 2026.",
+      "summary_zh": "主權 AI 頁說 ATR 偵測的是行為意圖而不是字串特徵，攻擊者無法繞過。ATR 的規則幾乎都是 regex（少數規則另外定義了選用的模型判斷，只有使用者自行設定時引擎才會呼叫），改寫、翻譯或編碼過的 payload 都可能繞過。負責任使用頁與 integrate 頁說 ATR 在各規則的 evasion_tests 欄位記錄了 64 種繞過手法，research 頁的連結也寫「64 個 evasion test」；其實不到一半的規則附有 evasion tests，64 是 2026 年 3 月時的數字。",
+      "date": "2026-10-16"
+    },
+    {
+      "id": "e-2026-10-16-latency",
+      "version": "4.1.5",
+      "section": "Site-wide — latency and dependencies",
+      "summary_en": "The site gave ATR's latency as sub-millisecond, under 5 ms, a 5 ms pattern match, or a 47 ms scan. The cost of one evaluation grows with the length of the input and with the number of rules in the lane: with every rule loaded, the median call takes about a millisecond for a short prompt and tens of milliseconds for a multi-kilobyte SKILL.md file, and a one-shot run first spends hundreds of milliseconds to about a second starting Node and loading the rules. scripts/bench-evaluate-latency.ts measures it on your hardware. The site also called the package dependency-free; it has two runtime dependencies.",
+      "summary_zh": "網站把 ATR 的延遲寫成不到一毫秒、低於 5ms、5ms 的 pattern match，或 47ms 完成一次掃描。每次評估的耗時會隨輸入長度和該 lane 的規則數增加：載入全部規則時，短 prompt 的中位數約一毫秒，數 KB 的 SKILL.md 檔要數十毫秒；單次執行還要先花數百毫秒到約一秒啟動 Node、載入規則。scripts/bench-evaluate-latency.ts 可以在你的硬體上實測。網站也說這個套件沒有任何相依套件；它有兩個執行期相依套件。",
+      "date": "2026-10-16"
+    },
+    {
+      "id": "e-2026-10-16-provenance",
+      "version": "4.1.5",
+      "section": "Site-wide — rule provenance and growth",
+      "summary_en": "The red-team and governance pages said every rule records its discoverer in metadata_provenance.discovered_by; no rule has that field. Every rule has an author line and a stable ID, and 378 of 836 record their source in metadata_provenance. The home, red-team, about and quality-standard pages said the standard grows from 462 rules through daily auto-crystallization. None of the 374 rules added since v3.1.0 (2026-06-04) came from crystallization; they came from CVE and advisory sweeps, benchmark-miss mining and contributors, and each reached main through a pull request a maintainer merged. The about page also said v2.0.11's rules covered the full NVIDIA garak probe corpus; many were written from it.",
+      "summary_zh": "red-team 頁與治理頁說每條規則都在 metadata_provenance.discovered_by 記錄發現者；其實沒有任何一條規則有這個欄位。每條規則都有 author 欄位和固定的 ID，836 條中有 378 條在 metadata_provenance 記錄來源。首頁、red-team、關於與品質標準四頁說標準靠每日自動結晶從 462 條長大；v3.1.0（2026-06-04）之後新增的 374 條規則沒有一條來自結晶，而是來自 CVE 與安全公告掃描、benchmark 漏報挖掘與貢獻者，每一條都經由維護者合併的 pull request 進入 main。關於頁也說 v2.0.11 的規則涵蓋完整的 NVIDIA garak probe corpus；其實是其中不少條從它寫出來。",
+      "date": "2026-10-16"
+    },
+    {
+      "id": "e-2026-10-16-recall-lanes",
+      "version": "4.1.5",
+      "section": "§8 Evaluation — recall lanes",
+      "summary_en": "Recall figures on this site, in LIMITATIONS.md and in CITATION.cff were quoted as one number: the hunt lane, the engine default that loads every rule maturity, without the enforce lane, the one to run with blocking on, which loads only stable rules and detects far fewer of the same attacks. Most were also typed by hand at ATR 3.5.12. Every recall read from the measurement files now names its lane, gives the enforce figure where the measurement records one, and is read at build time from the file each latest.json points at. The garak, PINT-format and HackAPrompt figures are now marked partly closed-book: rules were written from those corpora, so their hunt figures are not out-of-sample results.",
+      "summary_zh": "本站、LIMITATIONS.md 與 CITATION.cff 上的召回率過去都只列一個數字：hunt 車道（引擎預設，載入所有成熟度的規則），沒有列 enforce 車道（開啟封鎖時要用、只載入 stable 規則，在同一批攻擊上偵測到的少得多）。其中多數還是在 ATR 3.5.12 時手寫的。現在凡是從量測檔讀出的召回率都標明車道，量測有記錄的就並列 enforce 數字，並在建置時從各 latest.json 指向的量測檔讀取。garak、PINT 格式與 HackAPrompt 的數字現在都標為部分 closed-book：有規則正是從這些語料寫出來的，所以它們的 hunt 數字不是樣本外成績。",
+      "date": "2026-10-16"
+    },
     {
       "id": "e-2026-09-22-lane-fp",
       "version": "3.5.0",

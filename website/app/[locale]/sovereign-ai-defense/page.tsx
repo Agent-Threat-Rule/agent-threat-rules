@@ -1,6 +1,7 @@
 import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { loadSiteStats } from "@/lib/stats";
+import { count, findBenchmark, measuredStamp, pct, pctHunt } from "@/lib/recall";
 import type { Metadata } from "next";
 
 export function generateStaticParams() {
@@ -49,6 +50,7 @@ export default async function SovereignAIDefensePage({
   const ENC_URL = zh ? ENCODED_URL_ZH : ENCODED_URL_EN;
   const stats = loadSiteStats();
   const ruleCount = stats.ruleCount;
+  const garak = findBenchmark(stats, "garak");
 
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[880px] mx-auto">
@@ -120,30 +122,30 @@ export default async function SovereignAIDefensePage({
 
       {/* Stats bar */}
       <Reveal delay={0.2}>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-[2px] bg-fog border border-fog mt-9">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-fog border border-fog mt-9">
           <StatCell
             label="RULES"
             value={String(ruleCount)}
             unit={zh ? " 條" : ""}
             note={zh ? "MIT 授權 · 規則數即時讀自 rules/" : "MIT licensed · count read live from rules/"}
           />
-          <StatCell
-            label="GARAK RECALL"
-            value="92.3"
-            unit="%"
-            note={zh ? "650 in-the-wild · 全 3,475 樣本 57.2% · ATR 3.5.12,2026-08-15" : "650 in-the-wild · 57.2% on full 3,475 · ATR 3.5.12, 2026-08-15"}
-          />
+          {garak && (
+            <StatCell
+              label="GARAK RECALL · HUNT"
+              value={pctHunt(garak.recall).replace("%", "")}
+              unit="%"
+              note={
+                zh
+                  ? `enforce lane(封鎖用,只載 stable 規則)${garak.enforce ? pct(garak.enforce.recall) : "未記錄"} · ${count(garak.samples)} in-the-wild · ${measuredStamp(garak, true)} · 部分屬 closed-book:有不少規則是從這份語料寫出來的`
+                  : `enforce lane (for blocking, stable rules only) ${garak.enforce ? pct(garak.enforce.recall) : "not recorded"} · ${count(garak.samples)} in-the-wild · ${measuredStamp(garak, false)} · partly closed-book: many rules were written from this corpus`
+              }
+            />
+          )}
           <StatCell
             label="FALSE POSITIVE"
             value={zh ? "待重測" : "withdrawn"}
             unit=""
             note={zh ? "各車道誤報率已撤回 · 等待重新量測" : "per-lane FP rates withdrawn · awaiting re-measurement"}
-          />
-          <StatCell
-            label="GARAK MAPPING"
-            value="32"
-            unit="/32"
-            note={zh ? "ATR 側對應覆蓋 · garak PR #1676 審查中" : "ATR-side mapping coverage · garak PR #1676 open"}
           />
         </div>
       </Reveal>
@@ -326,22 +328,30 @@ export default async function SovereignAIDefensePage({
         </h2>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh
-            ? `MIT License · ${ruleCount} 條行為規則 · Protocol-agnostic · Behavioral-based。從真實攻擊情資產生,對應 NVIDIA garak、OWASP Agentic、MITRE ATLAS 三大標準 taxonomy。任何國家可採用,任何組織可貢獻,沒有地緣政治風險,沒有 vendor lock-in。`
-            : `MIT License · ${ruleCount} behavioral rules · protocol-agnostic · behavior-based. Derived from real attack corpora, classified to NVIDIA garak / OWASP Agentic / MITRE ATLAS taxonomies. Adoptable by any country, contributable by any organization. No geopolitical risk. No vendor lock-in.`}
+            ? `MIT License · ${ruleCount} 條偵測規則 · Protocol-agnostic。從真實攻擊情資產生,對應 NVIDIA garak、OWASP Agentic 與 MITRE ATLAS 的分類。任何國家可採用,任何組織可貢獻,沒有地緣政治風險,沒有 vendor lock-in。`
+            : `MIT License · ${ruleCount} detection rules · protocol-agnostic. Derived from real attack corpora, classified to NVIDIA garak / OWASP Agentic / MITRE ATLAS taxonomies. Adoptable by any country, contributable by any organization. No geopolitical risk. No vendor lock-in.`}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (
             <>
-              ATR 抓的是<strong className="text-ink">攻擊的行為意圖</strong>，不是字串特徵。
-              攻擊者改 prompt、改 payload、改包裝都無法繞過，因為偵測的是<strong className="text-ink">因果結構</strong>。
-              每次攻擊都必須重新設計整條攻擊鏈，成本指數級上升。
+              {"ATR 的規則幾乎都是 regex，比對 agent 讀進來的內容和它做的動作：prompt、tool call、skill 檔、MCP 流量。一條規則只抓得到 pattern 涵蓋的寫法，抓不到攻擊背後的意圖，所以"}
+              <strong className="text-ink">可以被繞過</strong>
+              {"：改寫、翻譯或編碼過的 payload 都可能抓不到。不到一半的規則附有 evasion tests，記下已知的繞過寫法與結果；"}
+              <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" className="text-blue hover:underline">LIMITATIONS.md</a>
+              {" 列出 regex 偵測不到的範圍。找到繞過手法的人可以送 probe，維護者可以把它寫成新規則，或擴充既有規則來涵蓋，並以固定的規則 ID 發布。"}
             </>
           ) : (
             <>
-              ATR detects <strong className="text-ink">behavioral intent</strong>, not string signatures.
-              Attackers who rephrase prompts, repackage payloads, or restructure attack chains cannot evade it,
-              because the detection target is the <strong className="text-ink">causal structure of the attack</strong>.
-              Each attack has to be redesigned — cost rises exponentially.
+              Almost every ATR rule is a set of regular expressions matched against what an agent
+              reads and does: prompts, tool calls, skill files, MCP traffic. A rule catches the
+              phrasings its patterns cover, not the intent behind them, so it{" "}
+              <strong className="text-ink">can be evaded</strong>: a paraphrased, translated or
+              encoded payload can slip past it. Fewer than half of the rules carry evasion tests,
+              which record known bypass attempts and whether each gets through, and{" "}
+              <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" className="text-blue hover:underline">LIMITATIONS.md</a> sets out
+              what regex cannot detect. Someone who finds a bypass can submit it as a probe, and a
+              maintainer can turn it into a new rule, or extend an existing one to cover it, under
+              a stable ID.
             </>
           )}
         </p>

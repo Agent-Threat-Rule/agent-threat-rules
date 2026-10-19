@@ -457,7 +457,7 @@ If `detection.condition` is absent, the default is `any of *` — Rule matches i
 
 ### 8.5 Evaluation Determinism
 
-Trace evaluation MUST be deterministic for a fixed Trace input. Engines MUST NOT introduce randomization, time-of-day branching, or sampling into Trace evaluation. This is identical to SPEC §6.4 and applies normatively.
+Trace evaluation MUST be deterministic for a fixed Trace input. Engines MUST NOT introduce randomization, time-of-day branching, or sampling into Trace evaluation. This is identical to SPEC §6.5 and applies normatively.
 
 ### 8.6 Performance Considerations
 
