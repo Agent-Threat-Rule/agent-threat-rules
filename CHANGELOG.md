@@ -422,10 +422,15 @@ All notable changes to ATR will be documented in this file.
   `data/adopters-verification.json` straight to main with a plain push, which
   was rejected whenever another commit landed first, failing the run with
   nothing wrong in ADOPTERS.md (2026-10-07, 2026-10-15). It now rebases its
-  one-file commit onto the moved main and retries, at most three times, and
-  runs one verification at a time. Four red runs in a row (2026-10-12 to
-  10-15) went unnoticed for days; a failure on main now opens one tracking
-  issue, or rewrites the open one, and the next green run closes it.
+  one-file commit onto the moved main and retries, at most three times; runs
+  one verification at a time per branch; and checks out the branch tip rather
+  than the triggering commit, so a run that waited behind another starts from
+  the data the other pushed instead of conflicting with it (the 2026-10-07
+  shape: two adopter merges, each run writing the same file). A conflict with
+  a hand edit of the generated file still fails the run. Four red runs in a
+  row (2026-10-12 to 10-15) went unnoticed for days; a failure on main now
+  opens one tracking issue, or rewrites the open one, and the next green run
+  closes it. The issue lists drift only from a verification that finished.
 
 ## [4.1.5] - 2026-10-10
 

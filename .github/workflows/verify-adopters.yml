@@ -25,10 +25,11 @@ permissions:
   actions: write
   issues: write
 
-# One verification at a time: two runs committing the same file would race
-# each other's push.
+# One verification at a time per branch: two runs committing the same file
+# would race each other's push. Keyed by ref, so a dispatch from another branch
+# cannot replace a run waiting on main.
 concurrency:
-  group: verify-adopters
+  group: verify-adopters-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -42,15 +43,22 @@ jobs:
       # checks of its own, so once `main` requires them this push is refused, and the
       # failure lands late in the job after the release work is already done.
       # ATR_REPO_TOKEN belongs to a repository admin, who is on the bypass list.
+      # Check out the branch tip, not the commit that triggered the run. A run
+      # that waited behind another would otherwise start from its own trigger
+      # commit, without the data commit the run before it pushed, and its rebase
+      # would conflict on the generated file: the newer ADOPTERS.md loses. That is
+      # the 2026-10-07 pair of runs, two adopter merges apart.
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref }}
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Re-verify every evidence link
+        id: verify
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/verify-adopters.mjs
@@ -72,6 +80,7 @@ jobs:
           # commit). A plain push was then rejected and failed the run with
           # nothing wrong in ADOPTERS.md (2026-10-07, 2026-10-15). Rebase this
           # one-file commit onto the moved main and retry; give up after three.
+          # A conflict (the generated file edited on main meanwhile) still fails.
           for attempt in 1 2 3; do
             if git push origin HEAD:main; then
               echo "committed=true" >> "$GITHUB_OUTPUT"
@@ -80,6 +89,11 @@ jobs:
             echo "push rejected (attempt ${attempt}); rebasing onto origin/main"
             git fetch --quiet origin main
             git rebase origin/main
+            if [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ]; then
+              echo "main already has this verification data; nothing to push"
+              echo "committed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
           done
           echo "could not push the refreshed verification data after 3 attempts" >&2
           exit 1
@@ -110,23 +124,30 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
         run: |
           set -euo pipefail
           title="ADOPTERS.md evidence no longer matches GitHub"
-          drift="$(node -e '
-            let d;
-            try { d = JSON.parse(require("fs").readFileSync("data/adopters-verification.json", "utf8")); } catch { process.exit(0); }
-            for (const x of d.drift || []) {
-              console.log("- " + x.name + ": declared " + x.declared + ", observed " + x.observed + (x.content ? ", content " + x.content : ""));
-            }
-          ')"
+          if [ "$VERIFY_OUTCOME" != "success" ]; then
+            # The data file is then the last committed one, not this run's.
+            found="none listed: the verification itself did not finish (${VERIFY_OUTCOME}), so data/adopters-verification.json is not this run's; see the run."
+          else
+            drift="$(node -e '
+              let d;
+              try { d = JSON.parse(require("fs").readFileSync("data/adopters-verification.json", "utf8")); } catch { process.exit(0); }
+              for (const x of d.drift || []) {
+                console.log("- " + x.name + ": declared " + x.declared + ", observed " + x.observed + (x.content ? ", content " + x.content : ""));
+              }
+            ')"
+            found="${drift:-none recorded, so the failure was elsewhere in the run (for example the push of the refreshed data); see the run.}"
+          fi
           body="$(printf '%s\n' \
             "verify-adopters failed on ${GITHUB_EVENT_NAME}." \
             "" \
             "Run: ${RUN_URL}" \
             "" \
             "Entries whose declared status GitHub no longer supports:" \
-            "${drift:-none recorded, so the failure was elsewhere in the run (for example the push of the refreshed data); see the run.}")"
+            "$found")"
           existing="$(gh issue list --state open --label auto-generated --search "$title in:title" --json number --jq '.[0].number // empty')"
           if [ -n "$existing" ]; then
             gh issue edit "$existing" --body "$body"
