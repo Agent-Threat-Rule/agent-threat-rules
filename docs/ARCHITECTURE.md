@@ -139,13 +139,22 @@ field is `type` on the TypeScript side and `event_type` on the Python side —
 they are the same concept with different spellings.
 
 `evaluateRaw` maps `event.type` through `EVENT_TYPE_TO_SOURCE` and skips any
-rule whose `agent_source.type` differs, with three documented exceptions
-(`src/engine.ts`, the source-type filter block): `mcp_exchange` rules also run
-on `tool_call` events; `llm_io` rules also run on tool responses, because a
-poisoned tool/RAG output is the primary indirect-injection channel and the
-payload never appears in a direct `llm_input`; and `method: trace` rules run
-whenever the event actually carries a trace. When `scanContext` is `skill` the
-source-type filter is skipped entirely and all rules fire.
+rule whose `agent_source.type` differs (`sourceAdmits` in `src/engine.ts`, one
+definition for both evaluation paths). The extended types name what a rule
+reads rather than an event stream, so `RUNTIME_SOURCE_TYPE` first maps them to
+the source type whose events carry that data: `context_window` to `llm_io`,
+`skill_lifecycle`, `skill_permission` and `skill_chain` to `tool_call`. Before
+that table existed no event type matched them and those rules never ran on a
+typed event. `memory_access` is withheld for now (`WITHHELD_SOURCE_TYPES`, with
+the reason), so its rules still run only on an `mcp_exchange` event and in a
+skill scan, and `atr test` reports their cases as unevaluable. Three documented exceptions
+follow: `mcp_exchange` rules also run on `tool_call` events; `llm_io` rules also
+run on tool responses, because a poisoned tool/RAG output is the primary
+indirect-injection channel and the payload never appears in a direct
+`llm_input`; and `method: trace` rules run whenever the event actually carries a
+trace. An `mcp_exchange` event has no source type and admits every rule. When
+`scanContext` is `skill` the source-type filter is skipped entirely and all
+rules fire.
 
 Three call shapes:
 

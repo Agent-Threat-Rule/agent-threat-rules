@@ -134,11 +134,15 @@
  * WHAT IT STILL CANNOT SEE
  *   The same regex declared under a source type the eval corpus never emits.
  *   Measured: moved from llm_io to agent_trace it drops from 1st of 671 to
- *   670th, because the engine skips it on every sample. Six evaluable rules live
- *   there today (memory_access 2, context_window 2, skill_lifecycle 2). They are
- *   excluded from the metric rather than scored at a fictitious 0.1x, and any
- *   NEW arrival is printed as a warning on every run, so the hole is visible
- *   instead of merely documented. Closing it means widening src/eval/corpus.ts.
+ *   670th, because the engine skips it on every sample. The trace rules live
+ *   there today, and the memory_access rules, a type the engine withholds from
+ *   typed events (WITHHELD_SOURCE_TYPES in src/engine.ts). They are excluded
+ *   from the metric rather than scored at a fictitious 0.1x, and any NEW arrival
+ *   is printed as a warning on every run, so the hole is visible instead of
+ *   merely documented. Closing it means widening src/eval/corpus.ts. (The
+ *   context_window and skill_* rules used to be there too: the engine skipped
+ *   those types on every typed event until it admitted them where their data
+ *   arrives, RUNTIME_SOURCE_TYPE.)
  *
  * WHERE THE MEASUREMENT LIVES
  *   scripts/lib/rule-latency-profile.ts. It produces a Profile and knows nothing

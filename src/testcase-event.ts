@@ -1,3 +1,4 @@
+import { RUNTIME_SOURCE_TYPE } from "./engine.js";
 import type { AgentEvent, ATRRule, ATRTrace } from "./types.js";
 
 /**
@@ -91,14 +92,14 @@ export function buildEventFromTestCase(
     mcp_exchange: 'tool_response',
     agent_behavior: 'agent_behavior',
     multi_agent_comm: 'multi_agent_message',
-    context_window: 'llm_input',
-    memory_access: 'llm_input',
-    skill_lifecycle: 'tool_call',
-    skill_permission: 'tool_call',
-    skill_chain: 'tool_call',
   };
+  // An extended type (context_window, skill_lifecycle, ...) is built as an event
+  // of the base type the engine admits it on (RUNTIME_SOURCE_TYPE).
+  const baseSourceType = Object.hasOwn(RUNTIME_SOURCE_TYPE, sourceType)
+    ? RUNTIME_SOURCE_TYPE[sourceType]
+    : sourceType;
 
-  let type: AgentEvent['type'] = SOURCE_TO_EVENT[sourceType] ?? 'llm_input';
+  let type: AgentEvent['type'] = SOURCE_TO_EVENT[baseSourceType] ?? 'llm_input';
 
   // NOTE: previously, a tool_call rule with a plain-string TP was downgraded to
   // an llm_input event. That mis-tested tool_call-native rules: a shell command or
