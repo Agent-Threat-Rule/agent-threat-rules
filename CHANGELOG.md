@@ -66,6 +66,36 @@ All notable changes to ATR will be documented in this file.
 
 ### Changed
 
+- **A match a model decided is reported, not enforced, unless the integrator
+  opts in.** Three engine paths turn a model's output into a match: a semantic
+  rule's `semanticJudge`, the `embeddingModule` similarity signal (which in the
+  hunt and alert lanes could produce a critical `block_input` match), and the
+  `semanticModule` layer. No evidence a response tier is earned from measures
+  them: the benign-corpus evidence runs the synchronous engine, where a semantic
+  rule is its pattern fallback, and neither the embedding module nor the
+  semantic layer. Every match now carries `decidedBy`, and
+  `computeVerdict()` keeps a model-decided one out of the outcome and dispatches
+  only its observe-tier actions; it is listed in the new `verdict.advisory`
+  (with `verdict.advisorySeverity`), and `highestSeverity` and
+  `highestConfidence` now describe the matches the outcome came from. A
+  semantic rule whose judge matches is enforced when the rule's own pattern
+  fallback matches the same input (reported as the fallback's match); a judge
+  match the fallback does not corroborate is advisory. Rule, invariant,
+  blacklist and fingerprint matches decide as before. `modelDecisions:
+  'enforce'` on the engine (or on `computeVerdict`) restores the previous
+  behaviour; any other value throws. `computeVerdict` now sorts the matches it
+  is given instead of trusting their order.
+- **`atr scan` and the MCP server follow the same default.** `atr scan
+  --semantic` lists a judge-only match but leaves it out of `--fail-on`, and
+  writes it to SARIF at level `note` with `properties.enforced: false`, which the
+  GitHub Action no longer counts toward `fail-on-finding`. JSON and SARIF output
+  name what decided each match (`decided_by`). The MCP scan tool reports a
+  judge-only match with outcome `allow`, `enforced: false` and observe-tier
+  recommended actions. `--model-decisions enforce` or
+  `ATR_MODEL_DECISIONS=enforce` restores counting for `atr scan` and `atr mcp`.
+  `atr guard` and the bundled adapters wire no model, so nothing they do
+  changes.
+
 - **The ReDoS gate now times long inputs, every branch of an alternation
   and input tiled with a pattern's own openers, and its baseline grew from 9
   to 439 conditions because of it.** Nothing got slower; the gate started

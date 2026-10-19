@@ -21,10 +21,13 @@ import { cmdScanUnified } from './cli/scan-handler.js';
 import {
   BLOCKING_ENV_VAR,
   LANE_ENV_VAR,
+  MODEL_DECISIONS_ENV_VAR,
   parseLane,
+  parseModelDecisions,
   resolveEnforcementPolicy,
   type EnforcementPolicy,
 } from './enforcement.js';
+import type { ModelDecisions } from './verdict.js';
 import { LANES, type Lane } from './quality/rule-contract.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -96,6 +99,10 @@ ${BOLD}Options:${RESET}
   --lane <lane>    Detection lane: enforce (stable rules only) | alert
                    (stable+test) | hunt (all maturities). Overrides ATR_LANE.
                    Default: hunt.
+  --model-decisions <mode>
+                   advisory (default) | enforce. What a match a model decided
+                   (a semantic rule's judge) may do: advisory lists it but does
+                   not count it toward --fail-on. Overrides ATR_MODEL_DECISIONS.
   --blocking       Allow ATR to block. OFF BY DEFAULT: without it the guard
                    reports detections but emits no permissionDecision and runs
                    no response action above the observe tier. Overrides
@@ -180,6 +187,36 @@ function parseArgs(argv: string[]): { command: string; target: string; options: 
  * typed at a prompt by someone who will see the exit code — unlike an inherited
  * environment variable, which degrades instead. See resolvePolicyAndReport.
  */
+/**
+ * What a model-decided match may do, for the commands that can wire a model
+ * (scan, mcp): --model-decisions, else ATR_MODEL_DECISIONS, else advisory. A
+ * mistyped flag exits, as --lane does. A bad environment value falls back to
+ * advisory, the setting that enforces less, and says so.
+ */
+function readModelDecisionsOption(options: Record<string, string>): ModelDecisions {
+  const raw = options['model-decisions'];
+  if (raw !== undefined && raw.trim() !== '') {
+    const parsed = parseModelDecisions(raw);
+    if (parsed === null) {
+      console.error(`${RED}Error: Invalid --model-decisions "${raw}". Expected one of: advisory, enforce.${RESET}`);
+      process.exit(1);
+    }
+    return parsed;
+  }
+  const fromEnv = process.env[MODEL_DECISIONS_ENV_VAR];
+  if (fromEnv !== undefined && fromEnv.trim() !== '') {
+    const parsed = parseModelDecisions(fromEnv);
+    if (parsed === null) {
+      console.error(
+        `${YELLOW}Warning: Invalid ${MODEL_DECISIONS_ENV_VAR}="${fromEnv}"; using advisory.${RESET}`,
+      );
+      return 'advisory';
+    }
+    return parsed;
+  }
+  return 'advisory';
+}
+
 function readLaneOption(options: Record<string, string>): Lane | undefined {
   const raw = options['lane'];
   if (raw === undefined || raw.trim() === '') return undefined;
@@ -656,8 +693,9 @@ async function cmdGuard(options: Record<string, string>): Promise<void> {
 
 async function cmdMcp(): Promise<void> {
   const { startMCPServer } = await import('./mcp-server.js');
-  // The MCP server never blocks, so only the lane half of the policy applies.
-  await startMCPServer({ lane: resolvePolicyAndReport({}).lane });
+  // The MCP server never blocks, so only the lane half of the policy applies,
+  // plus what its scan tool reports as a model's decision.
+  await startMCPServer({ lane: resolvePolicyAndReport({}).lane, modelDecisions: readModelDecisionsOption({}) });
 }
 
 // --- SCAFFOLD command ---
@@ -1232,6 +1270,7 @@ async function main(): Promise<void> {
         semanticTimeout: options['semantic-timeout'],
         semanticNoJsonMode: options['semantic-no-json-mode'] === 'true',
         lane: scanLane(),
+        modelDecisions: readModelDecisionsOption(options),
       });
       break;
     case 'scan-skill':
@@ -1250,6 +1289,7 @@ async function main(): Promise<void> {
         semanticTimeout: options['semantic-timeout'],
         semanticNoJsonMode: options['semantic-no-json-mode'] === 'true',
         lane: scanLane(),
+        modelDecisions: readModelDecisionsOption(options),
       });
       break;
     case 'validate':
