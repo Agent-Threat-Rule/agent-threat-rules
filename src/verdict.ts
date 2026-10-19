@@ -9,11 +9,54 @@
 
 import type {
   ATRMatch,
+  ATRMatchDecider,
   ATRSeverity,
   ATRAction,
   ATRVerdict,
   VerdictOutcome,
 } from './types.js';
+import { ACTION_TIERS, actionTier } from './quality/action-eligibility.js';
+
+/**
+ * Decisions a model made rather than a rule's own logic: a semantic rule's
+ * judge, the Tier 2.5 embedding signal, the Layer 3 semantic module. The
+ * benign-corpus false-positive evidence measures none of them (it runs the
+ * synchronous engine, where a semantic rule is its pattern fallback), so by
+ * default they are reported and not enforced.
+ */
+const MODEL_DECIDERS: ReadonlySet<ATRMatchDecider> = new Set<ATRMatchDecider>([
+  'semantic-judge',
+  'embedding',
+  'semantic-layer',
+]);
+
+/** Whether a model, not a rule's deterministic logic, decided this match. */
+export function isModelDecided(match: Pick<ATRMatch, 'decidedBy'>): boolean {
+  return match.decidedBy !== undefined && MODEL_DECIDERS.has(match.decidedBy);
+}
+
+/**
+ * What a model-decided match may do.
+ *   'advisory' (default): it is reported and its observe-tier actions run, but
+ *     it takes no part in the outcome and its actions above observe are not
+ *     dispatched.
+ *   'enforce': it counts like any other match. Its false-positive rate has not
+ *     been measured; choose this only if you accept that.
+ */
+export type ModelDecisions = 'advisory' | 'enforce';
+
+export interface VerdictOptions {
+  readonly modelDecisions?: ModelDecisions;
+}
+
+/** Read a modelDecisions setting, refusing anything but the two values. */
+export function modelDecisionsFromConfig(value: unknown): ModelDecisions {
+  if (value === undefined) return 'advisory';
+  if (value === 'advisory' || value === 'enforce') return value;
+  throw new TypeError(
+    `modelDecisions must be 'advisory' or 'enforce', not ${JSON.stringify(value)}`,
+  );
+}
 
 /** Severity rank from most severe (0) to least severe (4) */
 export const SEVERITY_RANK: Readonly<Record<ATRSeverity, number>> = {
@@ -111,6 +154,11 @@ function collectUniqueActions(
   return Object.freeze(actions);
 }
 
+/** The observe-tier actions of matches whose other actions are not dispatched. */
+function observeActions(matches: readonly ATRMatch[]): readonly ATRAction[] {
+  return collectUniqueActions(matches).filter((a) => actionTier(a) === ACTION_TIERS.OBSERVE);
+}
+
 /**
  * Build a human-readable reason string from the highest severity match.
  */
@@ -136,12 +184,22 @@ function buildReason(
 /**
  * Compute a verdict from an array of ATR matches.
  *
+ * A match a model decided (isModelDecided) is reported but, unless
+ * options.modelDecisions is 'enforce', takes no part in the outcome, and of its
+ * actions only the observe tier is dispatched: no benign-corpus measurement
+ * stands behind a model's decision. Every other match counts as before.
+ *
  * This is a pure function -- no side effects, no mutation.
  * Returns a frozen ATRVerdict object.
  */
 export function computeVerdict(
-  matches: readonly ATRMatch[]
+  matches: readonly ATRMatch[],
+  options: VerdictOptions = {},
 ): ATRVerdict {
+  const modelDecisions = modelDecisionsFromConfig(options.modelDecisions);
+  const advisory = modelDecisions === 'advisory' ? matches.filter(isModelDecided) : [];
+  const enforcing = advisory.length === 0 ? matches : matches.filter((m) => !isModelDecided(m));
+
   if (matches.length === 0) {
     return Object.freeze({
       outcome: 'allow' as const,
@@ -151,19 +209,25 @@ export function computeVerdict(
       highestConfidence: 0,
       actions: Object.freeze([]),
       matches: Object.freeze([]),
+      advisory: Object.freeze([]),
       timestamp: new Date().toISOString(),
     });
   }
 
-  // Matches are already sorted by the engine (severity desc, confidence desc).
-  // The first match has the highest severity.
-  const highestMatch = matches[0]!;
-  const highestSeverity = highestMatch.rule.severity;
-  const highestConfidence = highestMatch.confidence;
+  // Matches are already sorted by the engine (severity desc, confidence desc),
+  // so the first enforcing match has the highest severity among them.
+  const highestMatch = enforcing[0];
+  const highestSeverity = highestMatch?.rule.severity ?? null;
+  const highestConfidence = highestMatch?.confidence ?? 0;
 
-  const outcome = determineOutcome(highestSeverity, highestConfidence);
-  const actions = collectUniqueActions(matches);
-  const reason = buildReason(highestMatch, outcome, matches.length);
+  const outcome = highestMatch ? determineOutcome(highestMatch.rule.severity, highestMatch.confidence) : 'allow';
+  const actions = Object.freeze([
+    ...new Set([...collectUniqueActions(enforcing), ...observeActions(advisory)]),
+  ]);
+  const reason = highestMatch
+    ? buildReason(highestMatch, outcome, matches.length) + advisoryNote(advisory.length)
+    : `ALLOW: ${advisory.length} model-decided match${advisory.length === 1 ? '' : 'es'} ` +
+      `reported, not enforced (modelDecisions: advisory).`;
 
   return Object.freeze({
     outcome,
@@ -173,6 +237,11 @@ export function computeVerdict(
     highestConfidence,
     actions,
     matches: Object.freeze([...matches]),
+    advisory: Object.freeze([...advisory]),
     timestamp: new Date().toISOString(),
   });
+}
+
+function advisoryNote(count: number): string {
+  return count === 0 ? '' : `; ${count} model-decided match${count === 1 ? '' : 'es'} reported, not enforced`;
 }

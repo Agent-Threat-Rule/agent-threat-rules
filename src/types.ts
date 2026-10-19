@@ -399,6 +399,24 @@ export type ATRSemanticJudge = (args: {
 /** Result when an ATR rule matches an event */
 export type ScanContextType = "native" | "cross-context";
 
+/**
+ * What decided a match. `semantic-judge` (a semantic rule's injected judge),
+ * `embedding` (the Tier 2.5 similarity signal) and `semantic-layer` (the Layer 3
+ * module) are decisions a model made; the rest are a rule's own deterministic
+ * logic, a semantic rule's pattern fallback (`semantic-fallback`) included.
+ */
+export type ATRMatchDecider =
+  | "pattern"
+  | "signature"
+  | "trace"
+  | "semantic-fallback"
+  | "semantic-judge"
+  | "embedding"
+  | "semantic-layer"
+  | "invariant"
+  | "blacklist"
+  | "fingerprint";
+
 export interface ATRMatch {
   rule: ATRRule;
   matchedConditions: string[];
@@ -408,6 +426,11 @@ export interface ATRMatch {
   /** Whether this match is native (rule designed for this scan path) or cross-context
    *  (e.g., MCP rule firing on SKILL.md content with confidence downweight). */
   scan_context: ScanContextType;
+  /**
+   * What decided the match. Every match the engine builds sets it. A match built
+   * elsewhere without it is read as a rule's deterministic decision.
+   */
+  decidedBy?: ATRMatchDecider;
 }
 
 /** Verdict outcome from evaluating matched rules */
@@ -422,6 +445,12 @@ export interface ATRVerdict {
   readonly highestConfidence: number;
   readonly actions: readonly ATRAction[];
   readonly matches: readonly ATRMatch[];
+  /**
+   * Matches a model decided that did not take part in the outcome, and whose
+   * actions above the observe tier were not dispatched (computeVerdict's
+   * default, modelDecisions: 'advisory'). They are also in `matches`.
+   */
+  readonly advisory?: readonly ATRMatch[];
   readonly timestamp: string;
 }
 

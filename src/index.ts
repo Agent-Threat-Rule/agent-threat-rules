@@ -93,7 +93,8 @@ export type { FlywheelConfig } from './flywheel.js';
 // ── Integration Helpers (for products built on ATR) ─────────────
 // These help products like LlamaFirewall, etc. build
 // protection layers on top of ATR detection results.
-export { computeVerdict, SEVERITY_RANK, isAutoResponseEnabled } from './verdict.js';
+export { computeVerdict, SEVERITY_RANK, isAutoResponseEnabled, isModelDecided } from './verdict.js';
+export type { ModelDecisions, VerdictOptions } from './verdict.js';
 export { ActionExecutor } from './action-executor.js';
 export type { ActionExecutorConfig } from './action-executor.js';
 export { DefaultAdapter } from './adapters/default-adapter.js';
@@ -132,6 +133,7 @@ export * as quality from './quality/index.js';
 export type {
   ATRRule,
   ATRMatch,
+  ATRMatchDecider,
   AgentEvent,
   AgentEventType,
   ATRAction,

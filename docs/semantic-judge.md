@@ -236,5 +236,16 @@ See `examples/semantic-judge/example.ts` for a full deterministic example.
 - `evaluate()` stays synchronous and pattern-only.
 - Use `evaluateAsync()` for rule-level semantic judging.
 - `evaluateWithVerdict()` uses semantic dispatch when `semanticJudge` is configured.
+- A match the judge decided is reported, not enforced, by default: it is in
+  `verdict.matches` and `verdict.advisory` (with `decidedBy: 'semantic-judge'`),
+  its observe-tier actions (`alert`, `snapshot`, `escalate`) run, and it takes no
+  part in `verdict.outcome`, so it never turns into `deny` or `ask` on its own.
+  Nothing measures a judge's false positives: the benign-corpus evidence runs the
+  synchronous engine, where a semantic rule is its pattern fallback. Set
+  `modelDecisions: 'enforce'` on the engine to have judge decisions count like
+  rule matches, if you accept that. A match the pattern fallback decided (no judge,
+  or the judge failed) is a deterministic decision (`decidedBy:
+  'semantic-fallback'`) and is enforced as before. The same default applies to the
+  `embeddingModule` signal and the `semanticModule` layer.
 - CLI/MCP semantic judging should remain disabled unless explicitly configured with model credentials.
 - Adapter errors are sanitized and do not include raw prompt, input, provider body, or API key.

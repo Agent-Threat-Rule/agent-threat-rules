@@ -162,7 +162,7 @@ Three call shapes:
 |---|---|---|
 | `evaluate(event)` | sync, regex only. In enforce/alert it **drops** `confirm: embedding` rules, because the confirmation is async and an unconfirmed broad rule must not block. | fast advisory scanning |
 | `evaluateAsync(event)` | same walk, plus the async semantic judge | semantic rules |
-| `evaluateWithVerdict(event, executor?)` | `evaluate` + embedding confirm + `computeVerdict` + optional action dispatch. Returns `{verdict, actionResults, layersUsed}`. | enforce/alert deployments |
+| `evaluateWithVerdict(event, executor?)` | `evaluate` + embedding confirm + `computeVerdict` + optional action dispatch. Returns `{verdict, actionResults, layersUsed}`. A match a model decided (semantic judge, embedding signal, semantic layer) is reported in `verdict.advisory` and runs only its observe-tier actions, unless the engine is built with `modelDecisions: 'enforce'`. | enforce/alert deployments |
 
 `scanSkill(content)` / `scanSkillFull(content, filePath?)` are the SKILL.md
 entry points, and they are not just `evaluate` with a different event:

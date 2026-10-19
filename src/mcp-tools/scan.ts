@@ -109,6 +109,9 @@ export async function handleScan(engine: ATREngine, args: Record<string, unknown
       description: m.rule.description,
       matched_patterns: m.matchedPatterns,
       recommended_actions: m.rule.response.actions,
+      // A model's decision (semantic judge, embedding, semantic layer) is reported
+      // without counting toward verdict.outcome unless the engine enforces them.
+      decided_by: m.decidedBy ?? null,
     })),
   };
 

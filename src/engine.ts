@@ -34,7 +34,7 @@ import { evaluateSemanticRule } from './semantic-evaluator.js';
 import { laneAllows, requiresConfirm, type Lane } from './quality/rule-contract.js';
 import { laneFromConfig } from './enforcement.js';
 import type { SessionTracker } from './session-tracker.js';
-import { computeVerdict } from './verdict.js';
+import { computeVerdict, modelDecisionsFromConfig, type ModelDecisions } from './verdict.js';
 import { ruleConfidence } from './rule-confidence.js';
 import type { ActionExecutor } from './action-executor.js';
 import type { SkillFingerprintStore } from './skill-fingerprint.js';
@@ -326,6 +326,24 @@ export interface ATREngineConfig {
    * (they are too broad to block without confirmation). Default 0.6.
    */
   confirmThreshold?: number;
+  /**
+   * What a match a model decided may do in evaluateWithVerdict(): a semantic
+   * rule's semanticJudge, the embeddingModule signal, the semanticModule layer.
+   *   'advisory' (default): reported, observe-tier actions only, no part in the
+   *     verdict's outcome.
+   *   'enforce': counts like a rule's own match. No benign-corpus measurement
+   *     stands behind a model's decision; choose it only if you accept that.
+   * Any other value throws at construction time.
+   */
+  modelDecisions?: ModelDecisions;
+}
+
+/**
+ * A semantic rule's pattern fallback decided this match: the rule's own regex,
+ * not its judge, so it counts as a deterministic decision.
+ */
+function asSemanticFallback(match: ATRMatch | null): ATRMatch | null {
+  return match === null ? null : { ...match, decidedBy: 'semantic-fallback' };
 }
 
 export class ATREngine {
@@ -350,6 +368,7 @@ export class ATREngine {
    * lifetime.
    */
   private readonly lane: Lane;
+  private readonly modelDecisions: ModelDecisions;
 
   /**
    * Find bundled rules directory shipped with the npm package.
@@ -374,6 +393,7 @@ export class ATREngine {
     // Config only — never the environment. An embedder's detection breadth must
     // not depend on a variable someone exported in a shell profile.
     this.lane = laneFromConfig(config.lane);
+    this.modelDecisions = modelDecisionsFromConfig(config.modelDecisions);
 
     // Initialize Layer 3 semantic module if config provided
     if (config.semanticModule) {
@@ -783,6 +803,7 @@ export class ATREngine {
         confidence: ruleConfidence(rule.tags.confidence, 0),
         timestamp: new Date().toISOString(),
         scan_context: 'native' as const,
+        decidedBy: 'trace' as const,
       };
     }
 
@@ -793,7 +814,7 @@ export class ATREngine {
       // If the rule has fallback_method=pattern, evaluate pattern conditions
       // synchronously. Otherwise skip because the judge path is async-only.
       if (detection.semantic?.fallback_method === 'pattern') {
-        return this.evaluatePatternRule(rule, event);
+        return asSemanticFallback(this.evaluatePatternRule(rule, event));
       }
       return null;
     }
@@ -845,7 +866,7 @@ export class ATREngine {
       const result = await evaluateSemanticRule(rule, event.content, { judge: effectiveJudge });
       if (!result.matched) {
         if (result.reason?.includes('fallback_pattern')) {
-          return this.evaluatePatternRule(rule, event);
+          return asSemanticFallback(this.evaluatePatternRule(rule, event));
         }
         return null;
       }
@@ -860,6 +881,7 @@ export class ATREngine {
         confidence: result.confidence ?? 0.5,
         timestamp: new Date().toISOString(),
         scan_context: 'native' as const,
+        decidedBy: 'semantic-judge' as const,
       };
     }
     // For non-semantic methods, fall back to sync path.
@@ -901,6 +923,7 @@ export class ATREngine {
       confidence: 1.0, // exact match
       timestamp: new Date().toISOString(),
       scan_context: 'native' as const,
+      decidedBy: 'signature' as const,
     };
   }
 
@@ -950,6 +973,7 @@ export class ATREngine {
       confidence,
       timestamp: new Date().toISOString(),
       scan_context: 'native' as const,
+      decidedBy: 'pattern' as const,
     };
   }
 
@@ -1101,6 +1125,7 @@ export class ATREngine {
       confidence,
       timestamp: new Date().toISOString(),
       scan_context: 'native' as const,
+      decidedBy: 'pattern' as const,
     };
   }
 
@@ -1725,7 +1750,8 @@ export class ATREngine {
     // Additive Tier 2.5 signal: a high-similarity input surfaced as an embedding-only
     // match. EXCLUDED from the enforce lane — an embedding-only signal must never
     // produce a block there (only deterministic stable rules can block in enforce).
-    // Available in alert/hunt as an advisory signal.
+    // In alert/hunt it is a model's decision (decidedBy: 'embedding'), which
+    // computeVerdict reports without enforcing unless modelDecisions is 'enforce'.
     if (lane !== 'enforce' && embResult && embResult.value >= 0.65) {
       const severity = embResult.value >= 0.95 ? 'critical' as const
         : embResult.value >= 0.88 ? 'high' as const
@@ -1754,6 +1780,7 @@ export class ATREngine {
         confidence: embResult.value,
         timestamp: new Date().toISOString(),
         scan_context: 'native' as const,
+        decidedBy: 'embedding' as const,
       };
       matches = [...matches, syntheticMatch];
     }
@@ -1782,7 +1809,7 @@ export class ATREngine {
       }
     }
 
-    const verdict = computeVerdict(matches);
+    const verdict = computeVerdict(matches, { modelDecisions: this.modelDecisions });
 
     let actionResults: readonly ActionResult[] = Object.freeze([]);
 

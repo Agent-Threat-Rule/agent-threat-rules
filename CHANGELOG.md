@@ -47,6 +47,23 @@ All notable changes to ATR will be documented in this file.
 
 ### Changed
 
+- **A match a model decided is reported, not enforced, unless the integrator
+  opts in.** Three engine paths turn a model's output into a match: a semantic
+  rule's `semanticJudge`, the `embeddingModule` similarity signal (which in the
+  hunt and alert lanes could produce a critical `block_input` match), and the
+  `semanticModule` layer. Nothing measures their false positives: the
+  benign-corpus evidence runs the synchronous engine, where a semantic rule is
+  its pattern fallback. Every match now carries `decidedBy`, and
+  `computeVerdict()` keeps a model-decided one out of the outcome and dispatches
+  only its observe-tier actions; it is listed in the new `verdict.advisory`. A
+  semantic rule's pattern fallback, and every rule, invariant, blacklist and
+  fingerprint match, decide as before. `modelDecisions: 'enforce'` on the
+  engine (or on `computeVerdict`) restores the previous behaviour; any other
+  value throws. `atr guard` and the bundled adapters wire no model, so nothing
+  they do changes. The MCP server's scan tool, when started with a judge, reports
+  a judge-decided match with outcome `allow` and says why in the reason; every
+  match it lists now names what decided it (`decided_by`).
+
 - **The ReDoS gate now times long inputs, every branch of an alternation
   and input tiled with a pattern's own openers, and its baseline grew from 9
   to 439 conditions because of it.** Nothing got slower; the gate started

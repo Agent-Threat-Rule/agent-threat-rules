@@ -415,8 +415,13 @@ name other rules than the one retired.
 - A semantic rule that falls back to pattern is measured on that fallback, and
   graded on it like a pattern rule. With a judge configured the judge decides,
   and the fallback runs only when the judge is unavailable or fails, so the
-  recorded number describes the fallback rather than the judge. Which tier a
-  judge-decided rule may earn is not settled.
+  recorded number describes the fallback rather than the judge. **Partly
+  addressed (Unreleased):** a match a model decided (a semantic rule's judge, the
+  embedding signal, the Layer 3 semantic module; `decidedBy` on the match) is now
+  reported and not enforced unless the integrator sets `modelDecisions:
+  'enforce'`: it takes no part in the verdict's outcome, and only its
+  observe-tier actions are dispatched. A judge-decided match earning a tier from
+  evidence needs a measured reference judge, which does not exist yet.
 - The verdict path (`severity` + `confidence` → `permissionDecision`) has no
   precision input at all. That is a second, larger line: it _would_ change what
   the engine blocks, so it needs its own recall analysis and is out of scope here.
