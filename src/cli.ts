@@ -13,7 +13,7 @@ import { readFileSync, writeFileSync, readdirSync, existsSync, statSync, mkdirSy
 import { resolve, dirname, join, sep } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { ATREngine } from './engine.js';
+import { ATREngine, WITHHELD_SOURCE_TYPES } from './engine.js';
 import { loadRuleFile, loadRulesFromDirectory, validateRule } from './loader.js';
 import type { AgentEvent, ATRMatch, ATRRule, ATRTrace } from './types.js';
 import { generateBadgeSvg, generateBadgeEndpoint, lookupPackageScan, generateBadgeMarkdown } from './badge.js';
@@ -352,17 +352,21 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
   let skipped = 0;
   const failures: Array<{ ruleId: string; testType: string; input: string; expected: string; got: string }> = [];
   const skippedRules: Array<{ ruleId: string; cases: number; reason: string }> = [];
-
-  // Map extended agent_source types to basic event-compatible source types
-  // so the engine's source type filter doesn't skip rules during testing.
-  // The engine only recognizes: llm_io, tool_call, mcp_exchange, agent_behavior, multi_agent_comm
-  const EXTENDED_SOURCE_TO_BASE: Record<string, string> = {
-    context_window: 'llm_io',
-    memory_access: 'llm_io',
-    skill_lifecycle: 'tool_call',
-    skill_permission: 'tool_call',
-    skill_chain: 'tool_call',
+  const markUnevaluable = (rule: ATRRule, reason: string): void => {
+    const cases =
+      (rule.test_cases?.true_positives?.length ?? 0) + (rule.test_cases?.true_negatives?.length ?? 0);
+    totalTests += cases;
+    skipped += cases;
+    skippedRules.push({ ruleId: rule.id, cases, reason });
   };
+
+  // A rule is tested with the agent_source.type it declares. This harness used
+  // to map the extended types to a base type so the engine's source filter
+  // would admit them, which the engine itself did not do: those rules passed
+  // here and never ran on the events src/hook-handler.ts builds. The engine now
+  // admits them itself (RUNTIME_SOURCE_TYPE in src/engine.ts), so what passes
+  // here is what it runs. A type it withholds (WITHHELD_SOURCE_TYPES) is
+  // reported as unevaluable below.
 
   for (const rule of rules) {
     if (!rule.test_cases) continue;
@@ -377,26 +381,26 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
     // silently. (method=trace is different: it has a real evaluation path
     // below, so its cases still run.)
     if (rule.detection?.method === 'behavioral') {
-      const cases =
-        (rule.test_cases.true_positives?.length ?? 0) + (rule.test_cases.true_negatives?.length ?? 0);
-      totalTests += cases;
-      skipped += cases;
-      skippedRules.push({ ruleId: rule.id, cases, reason: 'method=behavioral requires a streaming evaluator' });
+      markUnevaluable(rule, 'method=behavioral requires a streaming evaluator');
       continue;
     }
 
-    // For testing, normalize extended source types so the engine doesn't filter them out
-    const originalSourceType = rule.agent_source?.type;
-    const baseSourceType = EXTENDED_SOURCE_TO_BASE[originalSourceType ?? ''];
+    // A rule whose agent_source.type the engine withholds from typed events runs
+    // only on an event with no source type and in a SKILL.md scan, not on the
+    // events its cases describe. Passing its cases on a mapped event would say
+    // it runs where it does not; failing them would blame the rule for the
+    // engine's choice. Count them as unevaluable, with the engine's reason.
+    const sourceType = rule.agent_source?.type;
+    if (typeof sourceType === 'string' && Object.hasOwn(WITHHELD_SOURCE_TYPES, sourceType)) {
+      markUnevaluable(
+        rule,
+        `agent_source.type ${sourceType} does not run on typed events yet: ${WITHHELD_SOURCE_TYPES[sourceType]}`,
+      );
+      continue;
+    }
 
     // Override status so draft/deprecated rules are not skipped during testing
-    const testRule = {
-      ...rule,
-      status: 'experimental' as const,
-      ...(baseSourceType
-        ? { agent_source: { ...rule.agent_source, type: baseSourceType as ATRRule['agent_source']['type'] } }
-        : {}),
-    };
+    const testRule = { ...rule, status: 'experimental' as const };
 
     const engine = new ATREngine({ rules: [testRule] });
     await engine.loadRules();

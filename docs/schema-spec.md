@@ -311,6 +311,14 @@ Defines what kind of agent data this rule inspects. Analogous to Sigma's `logsou
 | `skill_permission` | Skill permission requests | `content`, `tool_name` |
 | `skill_chain` | Multi-skill execution sequences | `content`, `tool_name` |
 
+No event carries `context_window`, `memory_access` or a `skill_*` type of its
+own. The reference engine runs a `context_window` rule where it runs `llm_io`
+rules (LLM input and output, and tool responses), and a `skill_lifecycle`,
+`skill_permission` or `skill_chain` rule where it runs `tool_call` rules
+(`RUNTIME_SOURCE_TYPE` in `src/engine.ts`). It does not yet run a
+`memory_access` rule on a typed event (`WITHHELD_SOURCE_TYPES`, which gives the
+reason); such a rule runs on an event with no source type and in a skill scan.
+
 ### agent_source.framework
 
 | Property | Value |
