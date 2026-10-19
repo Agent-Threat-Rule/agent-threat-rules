@@ -107,11 +107,12 @@ detection:
         the same args (multi-step access-then-obfuscate-then-egress chain). A bare
         startup-style dotenv reference no longer fires alone; the dangerous egress half
         is now required to flag this composite data-egress signal. Anchored with ^: the
-        pattern is two lookaheads and nothing else, so it can only match at offset 0
-        anyway, but unanchored the engine retried both [\s\S]* scans from every start
-        offset, which is quadratic in input length (32K chars: 1.3s per call, 64K: 2.6s)
-        and was 16% of all CPU in the benign-corpus FP scan. Anchored it is linear and
-        returns the same verdict for every input.
+        pattern is two lookaheads that each begin with [\s\S]*, so if both hold at some
+        offset they also hold at offset 0, but unanchored the engine retried both scans
+        from every start offset, which is quadratic in input length (each doubling took
+        about four times as long: in V8 0.8s at 32K chars, 3.4s at 64K) and was 16% of
+        all CPU in the benign-corpus FP scan. Anchored it is linear and returns the same
+        verdict for every input.
   condition: any
   false_positives:
     - "Legitimate backup or migration workflows that read, compress, and transfer files"
