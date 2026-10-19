@@ -1,0 +1,108 @@
+name: Verify Status Claims
+
+# README.md, DEPLOYMENTS.md, STANDARDIZATION-STATUS.md and the website state the
+# current state of pull requests and issues in other repositories by hand, and
+# nothing checked them: the three /threats actor pages showed
+# NousResearch/hermes-agent#9809 as OPEN for six months after it closed on
+# 2026-04-15. Each such link is now a claim in website/data/status-claims.json,
+# with the state the files give it and the files that give it. npm test holds
+# the files and the list to each other; this job holds the list to GitHub, when
+# the list or the checker changes and weekly, because the linked repositories
+# move on their own. A failed claim names every file that states it.
+#
+# A red scheduled run is easy to miss (verify-adopters had four in a row,
+# 2026-10-12 to 10-15), so a failure on main opens one tracking issue (or
+# rewrites the open one), and the next green run on main closes it. The issue
+# carries the auto-generated label, and the lookup filters on it so a person's
+# issue with a similar title is never overwritten.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'website/data/status-claims.json'
+      - 'scripts/verify-status-claims.mjs'
+      - 'scripts/lib/status-claims.mjs'
+      - 'scripts/lib/github-link-state.mjs'
+      - '.github/workflows/verify-status-claims.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'website/data/status-claims.json'
+      - 'scripts/verify-status-claims.mjs'
+      - 'scripts/lib/status-claims.mjs'
+      - 'scripts/lib/github-link-state.mjs'
+      - '.github/workflows/verify-status-claims.yml'
+  schedule:
+    - cron: '30 3 * * 1' # weekly, Monday 03:30 UTC, after verify-adopters
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      # Stdlib only, so no npm install. GITHUB_TOKEN lifts the 60 req/h
+      # unauthenticated API limit; an API error counts as a failure, not a pass.
+      - name: Check every status claim against GitHub
+        id: verify
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -o pipefail
+          node scripts/verify-status-claims.mjs 2>&1 | tee "$RUNNER_TEMP/status-claims.txt"
+
+      - name: Open or update the tracking issue
+        if: failure() && steps.verify.outcome == 'failure' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="Status claims no longer match GitHub"
+          existing="$(gh issue list --state open --label auto-generated --search "$title in:title" --json number --jq '.[0].number // empty')"
+          body="$(printf '%s\n' \
+            "scripts/verify-status-claims.mjs failed on ${GITHUB_EVENT_NAME}. Fix the files each failed claim lists," \
+            "then website/data/status-claims.json; or re-run the workflow if every failure is listed as" \
+            "unverified (a GitHub API problem, not drift)." \
+            "" \
+            "Run: ${RUN_URL}" \
+            "" \
+            '```' \
+            "$(cat "$RUNNER_TEMP/status-claims.txt")" \
+            '```')"
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body" --label auto-generated
+          fi
+
+      - name: Close the tracking issue once every claim matches again
+        if: success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="Status claims no longer match GitHub"
+          existing="$(gh issue list --state open --label auto-generated --search "$title in:title" --json number --jq '.[0].number // empty')"
+          if [ -n "$existing" ]; then
+            gh issue close "$existing" --comment "Every status claim matches GitHub again: ${RUN_URL}"
+          fi

@@ -6,6 +6,25 @@ All notable changes to ATR will be documented in this file.
 
 ### Added
 
+- **Hand-written pull request and issue states are checked against GitHub.**
+  README.md, DEPLOYMENTS.md, STANDARDIZATION-STATUS.md and the website state
+  the current state of pull requests and issues in other repositories by hand.
+  `website/data/status-claims.json` lists each such link with the state the
+  files give it (open, closed or merged), the files that give it, and refs for
+  files that name it without a link ("PR #338"). `tests/status-claims.test.ts`,
+  in npm test, fails when a scanned file links or names (owner/repo#N) a pull
+  request or issue the list does not cover for that file, unless it is a merged
+  pull request ADOPTERS.md gives as shipped evidence; when a listed file no
+  longer mentions its claim; when README's "Under maintainer review" section
+  lists anything but open claims; and when an actor page's report status
+  differs from the list. `scripts/verify-status-claims.mjs` (standard library
+  only, on `scripts/lib/github-link-state.mjs`) checks every listed state
+  against GitHub, and `.github/workflows/verify-status-claims.yml` runs it when
+  the list or the checker changes and weekly; a failure on main opens one
+  tracking issue, which the next green run closes. The open state of
+  usnistgov/oscal-content#338 alone is stated in twelve files. The /red-team
+  page is left to the check proposed in #691.
+
 - **The category registry as Gemara catalogs, generated and published from
   here.** `spec/category-registry/gemara/` holds a vector, capability, threat
   and control catalog validated against the Gemara v1.6.0 CUE schemas. The
@@ -195,6 +214,13 @@ All notable changes to ATR will be documented in this file.
   block, a 3.5.11 figure nothing has written since #600 and nothing reads.
 
 ### Fixed
+
+- **The threat-actor pages show NousResearch hermes-agent #9809 as closed.**
+  The three /threats pages gave the campaign's disclosure issue the status
+  OPEN from the day they were added; NousResearch had closed it as completed
+  on 2026-04-15. Recorded as erratum e-2026-10-20-actor-report-status.
+  HANDOVER.md no longer calls PR #500 open; it was closed unmerged on
+  2026-10-06.
 
 - **On Claude Code, the guard scans what a tool returned on PostToolUse.**
   Claude Code sends a tool's output at the top level of the PostToolUse hook

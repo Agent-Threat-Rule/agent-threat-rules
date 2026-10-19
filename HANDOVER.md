@@ -306,8 +306,9 @@ Two things did not follow automatically:
   to close and reopen them — a human event is what triggers the workflows — or an
   empty commit pushed to each branch. Nothing will happen to them on its own.
 
-PR #500 proposed the rolling-branch fix back on 2026-08-23 and is still open,
-overtaken by #587. Check whether it still carries anything before closing it.
+PR #500 proposed the rolling-branch fix back on 2026-08-23 and was overtaken by
+#587 (merged 2026-09-22), which stopped atd-ingest opening a PR a day. #500 was
+closed unmerged on 2026-10-06, after this note was written.
 
 A note on the shape of this backlog rather than its size: #500's checks were green
 and it was still not mergeable, because `main` advances several times a day and a
