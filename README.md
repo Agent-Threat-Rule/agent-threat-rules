@@ -465,16 +465,30 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | HarmBench (CAIS behaviors) | upstream-2026-10-15 | 400 | 6.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | hh-rlhf (Anthropic red-team-attempts) [^stdcorpora] | snapshot-2026-04 | 4,957 | 1.4% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | JailbreakBench (JBB-Behaviors) | upstream-2026-10-15 | 100 | 3.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| llm-guard (Protect AI test fixtures) | corpus-2026-05-12 | 44 | 63.6% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
+| llm-guard (2026-05-12 import) [^legacyvendor] | corpus-2026-05-12 | 44 | 63.6% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | MITRE ATLAS [^stdcorpora] | snapshot-2026-04 | 182 | 37.4% (hunt) / 1.1% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
+| NeMo Guardrails (2026-05-12 import) [^legacyvendor] | corpus-2026-05-12 | 6 | 100.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | OWASP LLM Top 10 [^stdcorpora] | snapshot-2026-04 | 56 | 16.1% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | PINT-format (deepset + Lakera Gandalf) [^pint] | v1 | 850 | 65.4% (hunt) / 0.4% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | PromptBench (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 3,280 | 15.7% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 90.9% (hunt) / 6.8% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
+| promptfoo (2026-05-12 import) [^legacyvendor] | corpus-2026-05-12 | 44 | 90.9% (hunt) / 6.8% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | PromptInject (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 1,080 | 100.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) | 97.0% (hunt) | 0.20% (hunt) | 4.1.5 | 2026-10-15 |
+| Vendor guardrail suites (pinned upstream tests) [^vendorsuites] | pinned-2026-10-19 | 146 | 77.0% (hunt) / 5.6% (enforce) | not cited [^vendorsuites] | not cited [^vendorsuites] | 4.1.5 | 2026-10-19 |
 | Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) [^wildscan] | full-scan-v2-2026-04-13 | 101,280 | — | not measured | 1.42% flag rate | 2.0.0 | 2026-04-13 |
+
+The `Vendor guardrail suites` row is the test cases of llm-guard, NeMo
+Guardrails and promptfoo extracted by script from pinned upstream commits
+([`data/test-corpora/vendor-guardrail-suites/`](data/test-corpora/vendor-guardrail-suites/README.md)).
+It is partly in-sample: 16 rules name one of the three vendors or carry the
+`(vendor-corpus-import)` tag. Its measurement file re-measures the same samples
+without them (`breakdown.in_sample_ablation.without_rules_naming_source`), the
+ablation reference to cite beside the row: 61.9% (hunt) / 5.6% (enforce) at
+ATR 4.1.5, measured 2026-10-19. That is not an out-of-sample figure either; see
+[^vendorsuites]. The weekly run does not re-measure this row:
+`bash scripts/vendor-suites/reproduce.sh --write` does. The three
+`2026-05-12 import` rows are the earlier hand-assembled corpora; not all of
+their samples come from the vendor they name ([^legacyvendor]).
 
 A `Recall` cell gives two figures from the same measurement file. The first is
 the `hunt` lane: the engine default, which loads every maturity, and the figure
@@ -741,6 +755,38 @@ See [CHANGELOG.md](CHANGELOG.md).
     Both corpora are 100% adversarial, so the `Precision` and `FP rate`
     columns are properties of the corpus, not measurements — read them
     together with the benign-gate FP counts above, never alone.
+
+[^vendorsuites]: **Partly in-sample; precision not cited.** 126 attack and 20
+benign test cases (llm-guard 46 / 16, NeMo Guardrails 22 / 4, promptfoo 58 / 0),
+each traceable to repo, commit, path and line in
+[`manifest.json`](data/test-corpora/vendor-guardrail-suites/manifest.json). At ATR
+4.1.5 (measured 2026-10-19) recall is 97/126 (hunt), 92/126 (alert) and 7/126
+(enforce). Without the 16 rules whose YAML names promptfoo, llm-guard or NeMo, or
+carries the `(vendor-corpus-import)` tag, it is 78/126 = 61.9% (hunt), 70/126 =
+55.6% (alert) and 7/126 = 5.6% (enforce); per vendor in the hunt lane, llm-guard
+26/46, NeMo Guardrails 20/22, promptfoo 32/58. That ablation is the reference
+to cite beside the row, and it still overstates out-of-sample recall, by an
+amount the same file measures (`breakdown.overlaps`): 35 further rules carry a
+40-character run of some vendor sample's text in their YAML, and 23 of the 78
+hunt-lane detections in the ablation are by such a rule on the sample it
+overlaps; removing those rules too gives 58/126 = 46.0% (hunt) / 5/126 = 4.0%
+(enforce). Five NeMo Guardrails attack samples (DAN-style jailbreaks) share 58%
+to 99% of their text with a prompt in `garak-full`'s `dan.json` and
+`inthewild.json`, a corpus other rules were mined from; all five are detected in
+the hunt lane of the ablation. The vendors ship only 20 benign cases (the hunt
+lane flags 1, the enforce lane 0), too few for a precision or FP-rate claim, so
+the cells say "not cited" and `data/stats.json` carries `null` for both
+(`breakdown.precision_not_citable`).
+
+[^legacyvendor]: These three rows are the corpora assembled by hand on
+2026-05-12 and attributed to the vendors' test suites. A script-based audit
+([`legacy-corpora-provenance.json`](data/test-corpora/vendor-guardrail-suites/legacy-corpora-provenance.json))
+checked each of their 94 samples against the vendor repo it names: 79 occur
+verbatim in the vendor file they name, 3 are truncated or edited from it, 2
+are another vendor's test cases, and 10 occur nowhere in the named vendor's
+repo. Read them as ATR-assembled corpora seeded from vendor tests, not as the
+vendors' fixtures; the `Vendor guardrail suites` row is the script-extracted
+replacement.
 
 [^stdcorpora]: Until 2026-08-05 these three rows were **not produced by the ATR
     engine**. `scripts/eval-std-corpora.ts` walked `rules/` with a YAML parser,
