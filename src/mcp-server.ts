@@ -8,6 +8,7 @@
  * @module agent-threat-rules/mcp-server
  */
 
+import type { ModelDecisions } from './verdict.js';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
@@ -212,6 +213,13 @@ export interface MCPServerOptions {
    * `atr mcp` reads the environment and passes the result here.
    */
   readonly lane?: Lane;
+  /**
+   * What the scan tool reports a model-decided match (a semantic rule's judge)
+   * as: 'advisory' (default) leaves it out of the verdict's outcome and its
+   * recommended actions above the observe tier; 'enforce' counts it like any
+   * match. Explicit only, like lane; `atr mcp` reads ATR_MODEL_DECISIONS.
+   */
+  readonly modelDecisions?: ModelDecisions;
 }
 
 export async function createMCPServer(options: MCPServerOptions = {}): Promise<Server> {
@@ -223,6 +231,7 @@ export async function createMCPServer(options: MCPServerOptions = {}): Promise<S
     rulesDir: RULES_DIR,
     semanticJudge: semantic.judge,
     ...(options.lane ? { lane: options.lane } : {}),
+    ...(options.modelDecisions ? { modelDecisions: options.modelDecisions } : {}),
   });
   const ruleCount = await engine.loadRules();
   process.stderr.write(`[atr-mcp] lane=${engine.getLane()} (detection only, never blocks)\n`);

@@ -118,7 +118,10 @@ runs:
           const fs = require('fs');
           try {
             const sarif = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
-            const count = (sarif.runs || []).reduce((a, r) => a + (r.results || []).length, 0);
+            // A result written with properties.enforced false is a model's decision
+            // the scan reports without enforcing (atr scan --model-decisions advisory).
+            const counted = (r) => (r.results || []).filter((x) => !(x.properties && x.properties.enforced === false)).length;
+            const count = (sarif.runs || []).reduce((a, r) => a + counted(r), 0);
             console.log(count);
           } catch { console.log(0); }
         " "$ATR_SARIF_FILE")

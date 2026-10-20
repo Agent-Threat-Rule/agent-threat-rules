@@ -10,6 +10,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, extname, relative } from 'node:path';
 import yaml from 'js-yaml';
 import { validateContract } from '../src/quality/rule-contract.js';
+import { semanticDetectionErrors } from '../scripts/lib/semantic-detection-fields.js';
 
 const RULES_DIR = join(import.meta.dirname ?? '.', '..', 'rules');
 
@@ -169,6 +170,9 @@ function validateRule(filePath: string): ValidationResult {
               errors.push(`Missing detection.semantic.${field}`);
             }
           }
+          // fallback_method and threshold values outside the schema, and a
+          // pattern fallback with nothing to match.
+          errors.push(...semanticDetectionErrors(detection));
         }
       } else if (method === 'trace') {
         // §8: detection.trace with at least one of forbid/require/invariant.

@@ -75,8 +75,8 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: "^[🀀-🿿☀-➿←-⇿⌀-⏿⬀-⯿\\s️‍🏻-🏿]+$"
-      description: "Whole-string anchored: message composed entirely of emoji/pictograph glyphs and whitespace, no Latin text"
+      value: "^[\\s️‍]*[🀀-🿿☀-➿←-⇿⌀-⏿⬀-⯿][🀀-🿿☀-➿←-⇿⌀-⏿⬀-⯿\\s️‍🏻-🏿]*$"
+      description: "Whole-string anchored: message composed entirely of emoji/pictograph glyphs and whitespace, no Latin text, with at least one glyph. Whitespace, variation selectors and joiners alone do not match."
 
   condition: any
   false_positives:
@@ -123,3 +123,6 @@ test_cases:
     - input: "Great job team! 🎉🎉🎉"
       expected: not_triggered
       description: "Celebratory emoji mixed with natural-language praise"
+    - input: "   \n\n\t  "
+      expected: not_triggered
+      description: "Whitespace only, no glyph. The character class admits whitespace so that spaced emoji sequences still match, which made blank and newline-only input match too."

@@ -301,9 +301,12 @@ PY
 
 Programmatic embedding: `new ATREngine({ lane })` for the lane,
 `new ActionExecutor({ adapter, blocking })` and
-`new HookHandler({ engine, executor, blocking })` for enforcement. **These are
-the only inputs** — the constructors ignore `ATR_LANE` and `ATR_BLOCKING`, so
-setting them will not configure an embedded engine. An unrecognised lane throws
+`new HookHandler({ engine, executor, blocking })` for enforcement, and
+`new ATREngine({ modelDecisions })` for whether a match a model decided (a
+semantic judge, the embedding signal, the semantic layer) may enforce; it is
+advisory by default. **These are the only inputs** — the constructors ignore
+`ATR_LANE`, `ATR_BLOCKING` and `ATR_MODEL_DECISIONS`, so setting them will not
+configure an embedded engine. An unrecognised lane throws
 a `TypeError`, and so does a non-boolean `blocking`: `blocking: "false"` is a
 string, and every non-empty string is truthy, so it used to switch enforcement
 **on** while reading as an explicit "off".
