@@ -536,15 +536,15 @@ jobs:
               <div className="text-sm text-stone">{locale === "zh" ? "PoC (#79) → 規則包 (#99)" : "PoC (#79) → rule pack (#99)"}</div>
             </div>
             <div>
-              <div className="font-data text-3xl font-bold text-ink mb-1">{locale === "zh" ? "3 天" : "3 days"}</div>
-              <div className="text-sm text-stone">{locale === "zh" ? "首次提交到合併" : "first PR to merge"}</div>
+              <div className="font-data text-3xl font-bold text-ink mb-1">{locale === "zh" ? "21 小時" : "21 hours"}</div>
+              <div className="text-sm text-stone">{locale === "zh" ? "PR #79 從開啟到合併" : "PR #79, opened to merged"}</div>
             </div>
           </div>
           <div className="px-6 pb-6">
             <p className="text-sm text-graphite leading-relaxed mb-4">
               {locale === "zh"
-                ? <>Cisco AI Defense 團隊維護的開源 repo <span className="font-data">cisco-ai-defense/skill-scanner</span> 把 ATR 規則整合為上游依賴。第一個 PR #79(2026-04-03)合併 34 條 PoC 規則,3 天內 merge。隨後 PR #80 建置 <span className="font-data">--rule-packs</span> CLI 把 ATR 作為第一級規則來源。PR #99(2026-04-22)把 ATR 規則集合併進該 repo。這是開源 repo 的已合併 PR,不是 Cisco 商業產品的出貨聲明。</>
-                : <>The Cisco AI Defense team&apos;s open-source repo <span className="font-data">cisco-ai-defense/skill-scanner</span> integrated ATR rules as an upstream dependency. The first PR #79 (2026-04-03) merged a 34-rule PoC in three days. Follow-up PR #80 built the <span className="font-data">--rule-packs</span> CLI to consume ATR as a first-class rule source. PR #99 (2026-04-22) merged the ATR rule pack into that repo. This is a merged pull request in an open-source repository, not a shipping claim about a Cisco commercial product.</>}
+                ? <>Cisco AI Defense 團隊維護的開源 repo <span className="font-data">cisco-ai-defense/skill-scanner</span> 把 ATR 規則整合為上游依賴。第一個 PR #79 由 ATR 維護者提出,內含 34 條 PoC 規則,2026-04-03 由該 repo 的維護者合併,距開啟 21 小時。隨後 PR #80 建置 <span className="font-data">--rule-packs</span> CLI 把 ATR 作為第一級規則來源。PR #99(2026-04-22)把 ATR 規則集合併進該 repo。這是開源 repo 的已合併 PR,不是 Cisco 商業產品的出貨聲明。</>
+                : <>The Cisco AI Defense team&apos;s open-source repo <span className="font-data">cisco-ai-defense/skill-scanner</span> integrated ATR rules as an upstream dependency. The first, PR #79, was opened by ATR&apos;s maintainer with a 34-rule PoC and merged by the repo&apos;s maintainers on 2026-04-03, 21 hours after it was opened. Follow-up PR #80 built the <span className="font-data">--rule-packs</span> CLI to consume ATR as a first-class rule source. PR #99 (2026-04-22) merged the ATR rule pack into that repo. This is a merged pull request in an open-source repository, not a shipping claim about a Cisco commercial product.</>}
             </p>
             <div className="flex flex-wrap gap-4">
               <a href="https://github.com/cisco-ai-defense/skill-scanner/pull/79" target="_blank" rel="noopener noreferrer" className="font-data text-sm text-blue hover:underline">
