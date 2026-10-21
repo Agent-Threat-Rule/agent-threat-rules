@@ -247,6 +247,45 @@ All notable changes to ATR will be documented in this file.
   characters; 1,117 of the benign samples are longer and were sent whole. To
   use it, register the guard under `PostToolUseFailure` too.
 
+- **Flywheel shadow rules can match.** `ShadowEvaluator` compiled each
+  condition with `new RegExp(value, 'i')`. A value that starts with `(?i)` is
+  a SyntaxError in JavaScript, the error was swallowed, and the condition
+  never matched. `RuleScaffolder` starts every pattern it writes with `(?i)`,
+  so no rule the flywheel generated could match in shadow mode or reach
+  promotion. Shadow conditions now go through the engine's own
+  `compileRegexCondition()` (leading flag group removed per SPEC §6.4, `u`
+  when needed, ReDoS gate) and `safeRegexTest()` (the engine's input-length
+  limit), and a condition whose value is not a string is skipped instead of
+  throwing. Shadow evaluation still differs from `ATREngine` in field
+  resolution, operators, `condition: all`, Unicode normalisation and
+  `agent_source` routing; those differences are unchanged.
+- **Flywheel promotion needs a reviewed true positive, and promotes a rule
+  once.** `ShadowEvaluator.getPromotionCandidates()` divided confirmed false
+  positives by all matches, so a rule with no recorded feedback had an FP rate
+  of 0 and became a candidate after its first match. Once shadow rules could
+  match (above), `FlywheelManager.promoteReady()` would have handed such rules
+  to `onPromote` with status `stable`, and the same rule again on every call.
+  A rule is now a candidate only after at least `minReviewedMatches` (new
+  `FlywheelConfig` option, default 1) matches with recorded feedback including
+  a confirmed true positive; the FP rate is computed over reviewed matches; and
+  `promoteReady()` hands each rule to `onPromote` once. A promoted rule keeps
+  `maturity: draft`.
+- **`RuleScaffolder` no longer writes a pattern that misses its own example
+  payload.** An attack indicator is chosen by a broad test and writes a
+  narrower pattern: "Ignore all previous instructions", "please ignore the
+  rules above" and "disregard everything you were told" all selected the
+  instruction-override indicator, whose pattern did not match them. An
+  indicator now counts only when its pattern matches the payload, and the
+  exact payload is used if nothing else does. Keyword patterns are now tried
+  only at line starts, `(?:^|[\n\r\u2028\u2029])(?=[^\n\r\u2028\u2029]*word)...`,
+  and exact patterns are the escaped payload without a surrounding `.*`. Both
+  match the same inputs as before, but neither is quadratic on a long
+  single-line input any more (about 7-12 seconds per pattern on 100,000
+  characters before, about a millisecond now). An empty or whitespace-only
+  example payload, which produced a pattern that matched everything, is now
+  rejected. Output of `atr scaffold` and the `atr_submit_proposal` MCP tool
+  changes accordingly.
+
 - **SPEC §6.4 corrected: SPEC.md 1.0.1 [Compatible].** A `regex` pattern
   condition matches case-insensitively whether or not it begins with `(?i)`,
   and `m`, `s` and `x` in a leading flag group have no effect. The 1.0.0 text,
