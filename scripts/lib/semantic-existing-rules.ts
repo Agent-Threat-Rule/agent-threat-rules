@@ -5,7 +5,7 @@
  * alone, which only rules this lane wrote carry. A cluster promoted another way
  * keeps its proposal id as the rule id instead:
  * proposals/hackaprompt-clusters/secret-key-reveal-demand.proposal.yaml declares
- * ATR-2026-00453, a stable rule, so the cluster looked unauthored and the lane
+ * ATR-2026-00453 (maturity stable), so the cluster looked unauthored and the lane
  * wrote it again as ATR-2026-02863 (PR #719, closed as a duplicate). A proposal
  * is covered when a rule under rules/ declares the proposal's id, whatever that
  * rule's status, or names the proposal in _semantic_authored.source_cluster.

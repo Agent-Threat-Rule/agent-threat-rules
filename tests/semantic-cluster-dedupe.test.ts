@@ -51,7 +51,7 @@ describe("findCandidates skips a cluster that already has a rule", () => {
 
   beforeAll(() => {
     root = mkdtempSync(join(tmpdir(), "atr-semantic-dedupe-"));
-    // The PR #719 shape: the proposal's id is a stable rule's id; the rule has no _semantic_authored.
+    // The PR #719 shape: the proposal's id is an existing rule's id; the rule has no _semantic_authored.
     write("proposals/hackaprompt-clusters/secret.proposal.yaml", proposal("ATR-2026-00453", "Secret key reveal"));
     write("rules/prompt-injection/ATR-2026-00453-secret-key-reveal-demand.yaml", rule("ATR-2026-00453", "stable"));
     // Same, for rules that are not live: any status counts.
