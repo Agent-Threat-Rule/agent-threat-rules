@@ -118,6 +118,7 @@ export function runFingerprintLayer(
       confidence,
       timestamp: new Date(anomaly.timestamp).toISOString(),
       scan_context: 'native' as const,
+      decidedBy: 'fingerprint' as const,
     });
   }
 
@@ -179,8 +180,10 @@ export function createSemanticModuleFromConfig(
  * Run Layer 3 semantic analysis and return upgraded/new matches.
  *
  * The semantic module is called with `analyze_threat` to get a threat score.
- * If the score is >= 0.7, a synthetic high-severity match is produced.
- * If the score is 0.4-0.7, existing matches may have confidence boosted.
+ * If the score is >= 0.7, a synthetic high-severity match is produced (critical
+ * from 0.9); below that nothing is added. The match is a model's decision
+ * (decidedBy: 'semantic-layer'), which computeVerdict reports without enforcing
+ * unless modelDecisions is 'enforce'.
  */
 export async function runSemanticLayer(
   semanticModule: SemanticModule,
@@ -233,6 +236,7 @@ export async function runSemanticLayer(
       confidence: result.value,
       timestamp: new Date().toISOString(),
       scan_context: 'native' as const,
+      decidedBy: 'semantic-layer' as const,
     });
   }
 

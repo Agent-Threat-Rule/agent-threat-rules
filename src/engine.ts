@@ -34,7 +34,7 @@ import { evaluateSemanticRule } from './semantic-evaluator.js';
 import { laneAllows, requiresConfirm, type Lane } from './quality/rule-contract.js';
 import { laneFromConfig } from './enforcement.js';
 import type { SessionTracker } from './session-tracker.js';
-import { computeVerdict } from './verdict.js';
+import { computeVerdict, isModelDecided, modelDecisionsFromConfig, type ModelDecisions } from './verdict.js';
 import { ruleConfidence } from './rule-confidence.js';
 import type { ActionExecutor } from './action-executor.js';
 import type { SkillFingerprintStore } from './skill-fingerprint.js';
@@ -137,14 +137,103 @@ export function decodeBase64Blocks(content: string): string[] {
 }
 
 /** Map agent event types to ATR source types */
-const EVENT_TYPE_TO_SOURCE: Record<string, string> = {
+export const EVENT_TYPE_TO_SOURCE: Readonly<Record<string, string>> = Object.freeze({
   llm_input: 'llm_io',
   llm_output: 'llm_io',
   tool_call: 'tool_call',
   tool_response: 'mcp_exchange',
   agent_behavior: 'agent_behavior',
   multi_agent_message: 'multi_agent_comm',
-};
+});
+
+/**
+ * agent_source types that name what a rule reads rather than a stream of
+ * events of their own (spec/atr-schema.yaml), mapped to the source type whose
+ * events carry that data: a context window reaches the model as LLM input or
+ * as tool output, so those rules run where llm_io rules run; a skill is
+ * installed, granted permissions and chained through tool calls, so those
+ * rules run where tool_call rules run. memory_access is left out for now
+ * (WITHHELD_SOURCE_TYPES).
+ *
+ * No event type maps to them in EVENT_TYPE_TO_SOURCE, so the source filter used
+ * to skip them on every typed event: on the tool_call and tool_response events
+ * src/hook-handler.ts builds, such a rule never ran, while `atr test` mapped its
+ * type to a base type and passed its cases. Only an event with no source type
+ * (mcp_exchange) or a SKILL.md scan reached it. `atr test` now leaves the type
+ * alone: what it runs is what the engine admits.
+ */
+export const RUNTIME_SOURCE_TYPE: Readonly<Record<string, string>> = Object.freeze({
+  context_window: 'llm_io',
+  skill_lifecycle: 'tool_call',
+  skill_permission: 'tool_call',
+  skill_chain: 'tool_call',
+});
+
+/**
+ * Extended agent_source types left out of RUNTIME_SOURCE_TYPE for now, each
+ * with the reason. A rule of such a type still runs only on an event with no
+ * source type and in a SKILL.md scan. `atr test` reports its cases as
+ * unevaluable with this reason instead of passing them on an event the engine
+ * skips the rule on.
+ *
+ * memory_access reads what context_window reads, an agent's memory as it
+ * reaches the model, and would map to llm_io. Its rules (ATR-2026-00075 and
+ * -01155 today) were written for memory writes, and 00075 also matches standing
+ * instructions in an ordinary chat turn ("From now on, always answer in
+ * French."). On llm_input events the adapters that block by default would
+ * refuse those messages: the Mastra ATRProcessor aborts on high and critical
+ * in the hunt lane, and the OpenShell filter denies at high. Map it once those
+ * rules match memory writes only, measured on chat-turn data.
+ */
+export const WITHHELD_SOURCE_TYPES: Readonly<Record<string, string>> = Object.freeze({
+  memory_access:
+    'its rules also match standing instructions in ordinary chat turns, which adapters that block by default would refuse',
+});
+
+/**
+ * Whether a rule of this agent_source.type runs on an event of this source
+ * type: the rule's source type (after RUNTIME_SOURCE_TYPE) is the event's, or
+ * one of two documented exceptions holds. An event type with no source type
+ * (mcp_exchange) admits every rule, whatever its agent_source holds; on a typed
+ * event a type that is not a string is admitted by nothing.
+ * sourceAdmits() adds the trace exception.
+ */
+export function sourceTypeAdmits(ruleSourceType: unknown, eventSourceType: string | undefined): boolean {
+  if (!eventSourceType) return true;
+  if (typeof ruleSourceType !== 'string') return false;
+  const source = Object.hasOwn(RUNTIME_SOURCE_TYPE, ruleSourceType)
+    ? RUNTIME_SOURCE_TYPE[ruleSourceType]
+    : ruleSourceType;
+  if (source === eventSourceType) return true;
+  // mcp_exchange rules also match tool_call events.
+  if (source === 'mcp_exchange' && eventSourceType === 'tool_call') return true;
+  // Indirect prompt injection: llm_io (prompt-injection) rules must also run on
+  // tool_response events. A poisoned tool / MCP / RAG output is the primary
+  // indirect-injection channel — the payload never appears in a direct
+  // llm_input, it rides in on tool output the model then reads. tool_response
+  // maps to source type 'mcp_exchange', so without this the entire llm_io
+  // family was silently skipped on every tool response. (Field resolution
+  // routes event.content into user_input/agent_output for tool_response events
+  // — see resolveField.)
+  return source === 'llm_io' && eventSourceType === 'mcp_exchange';
+}
+
+/**
+ * Whether the source-type filter admits a rule on an event: sourceTypeAdmits(),
+ * or a trace-method rule on an event that carries a trace. One definition for
+ * evaluateRaw() and evaluateAsync().
+ */
+function sourceAdmits(rule: ATRRule, eventSourceType: string | undefined, event: AgentEvent): boolean {
+  // agent_source?. : the loader requires only id, title and detection, and a
+  // rule without agent_source must not abort the whole evaluation.
+  if (sourceTypeAdmits(rule.agent_source?.type, eventSourceType)) return true;
+  // Trace-method rules declare agent_source.type: agent_trace, which maps to no
+  // event source type and would always be filtered out. Evaluate them whenever
+  // the event actually carries a trace payload; evaluateRule still returns null
+  // if the trace primitives don't fire, and ordinary (non-trace) events are
+  // unaffected because event.trace is undefined.
+  return rule.detection?.method === 'trace' && event.trace !== undefined;
+}
 
 /** Map agent event types to default field names */
 const EVENT_TYPE_TO_FIELD: Record<string, string> = {
@@ -237,6 +326,24 @@ export interface ATREngineConfig {
    * (they are too broad to block without confirmation). Default 0.6.
    */
   confirmThreshold?: number;
+  /**
+   * What a match a model decided may do in evaluateWithVerdict(): a semantic
+   * rule's semanticJudge, the embeddingModule signal, the semanticModule layer.
+   *   'advisory' (default): reported, observe-tier actions only, no part in the
+   *     verdict's outcome.
+   *   'enforce': counts like a rule's own match. No benign-corpus measurement
+   *     stands behind a model's decision; choose it only if you accept that.
+   * Any other value throws at construction time.
+   */
+  modelDecisions?: ModelDecisions;
+}
+
+/**
+ * A semantic rule's pattern fallback decided this match: the rule's own regex,
+ * not its judge, so it counts as a deterministic decision.
+ */
+function asSemanticFallback(match: ATRMatch | null): ATRMatch | null {
+  return match === null ? null : { ...match, decidedBy: 'semantic-fallback' };
 }
 
 export class ATREngine {
@@ -261,6 +368,7 @@ export class ATREngine {
    * lifetime.
    */
   private readonly lane: Lane;
+  private readonly modelDecisions: ModelDecisions;
 
   /**
    * Find bundled rules directory shipped with the npm package.
@@ -285,6 +393,7 @@ export class ATREngine {
     // Config only — never the environment. An embedder's detection breadth must
     // not depend on a variable someone exported in a shell profile.
     this.lane = laneFromConfig(config.lane);
+    this.modelDecisions = modelDecisionsFromConfig(config.modelDecisions);
 
     // Initialize Layer 3 semantic module if config provided
     if (config.semanticModule) {
@@ -360,6 +469,15 @@ export class ATREngine {
   /** Active detection lane (config, else 'hunt'). Diagnostics/tests. */
   getLane(): Lane {
     return this.lane;
+  }
+
+  /**
+   * What a model-decided match may do (config, else 'advisory'). A caller that
+   * runs evaluateAsync() and computes the verdict itself passes this on:
+   * computeVerdict(matches, { modelDecisions: engine.getModelDecisions() }).
+   */
+  getModelDecisions(): ModelDecisions {
+    return this.modelDecisions;
   }
 
   /**
@@ -444,30 +562,8 @@ export class ATREngine {
       if (!this.evaluates(rule)) continue;
 
       // Source type filtering: skip rules that don't apply to this event type
-      // When scanContext is 'skill', skip source-type filtering — all rules fire
-      if (!isSkillContext && eventSourceType && rule.agent_source.type !== eventSourceType) {
-        // Allow mcp_exchange rules to also match tool_call events
-        const mcpOverTool = rule.agent_source.type === 'mcp_exchange' && eventSourceType === 'tool_call';
-        // Indirect prompt injection: llm_io (prompt-injection) rules must also
-        // run on tool_response events. A poisoned tool / MCP / RAG output is the
-        // primary indirect-injection channel — the payload never appears in a
-        // direct llm_input, it rides in on tool output the model then reads.
-        // tool_response maps to source type 'mcp_exchange', so without this the
-        // entire llm_io family was silently skipped on every tool response.
-        // (Field resolution routes event.content into user_input/agent_output
-        // for tool_response events — see getFieldValue.)
-        const llmIoOverToolResponse =
-          rule.agent_source.type === 'llm_io' && eventSourceType === 'mcp_exchange';
-        // Trace-method rules declare agent_source.type: agent_trace, which maps
-        // to no event source type and would always be filtered out. Evaluate
-        // them whenever the event actually carries a trace payload; evaluateRule
-        // still returns null if the trace primitives don't fire, and ordinary
-        // (non-trace) events are unaffected because event.trace is undefined.
-        const traceWithPayload = rule.detection?.method === 'trace' && event.trace !== undefined;
-        if (!mcpOverTool && !llmIoOverToolResponse && !traceWithPayload) {
-          continue;
-        }
-      }
+      // (sourceAdmits). When scanContext is 'skill', skip it — all rules fire.
+      if (!isSkillContext && !sourceAdmits(rule, eventSourceType, event)) continue;
 
       // Whether the skill compound gate below applies to this rule. Hoisted so
       // the pre-check and the gate itself read one expression.
@@ -513,7 +609,9 @@ export class ATREngine {
           }
         }
         matches.push(matchResult);
-        allMatchedPatterns.push(...matchResult.matchedPatterns);
+        // A judge's category and evidence are not patterns a rule matched; they
+        // must not feed pattern_frequency and other cross-event conditions.
+        if (!isModelDecided(matchResult)) allMatchedPatterns.push(...matchResult.matchedPatterns);
       }
     }
 
@@ -613,19 +711,8 @@ export class ATREngine {
     for (const rule of this.rules) {
       if (!this.evaluates(rule)) continue;
 
-      if (!isSkillContext && eventSourceType && rule.agent_source.type !== eventSourceType) {
-        const mcpOverTool = rule.agent_source.type === 'mcp_exchange' && eventSourceType === 'tool_call';
-        // Indirect prompt injection: llm_io rules also run on tool_response
-        // (source type mcp_exchange) — poisoned tool/MCP/RAG output. See the
-        // matching note in evaluateRaw().
-        const llmIoOverToolResponse =
-          rule.agent_source.type === 'llm_io' && eventSourceType === 'mcp_exchange';
-        // Trace-method rules are source-agnostic — evaluate when a trace is present.
-        const traceWithPayload = rule.detection?.method === 'trace' && event.trace !== undefined;
-        if (!mcpOverTool && !llmIoOverToolResponse && !traceWithPayload) {
-          continue;
-        }
-      }
+      // Same source-type filter as evaluateRaw() (sourceAdmits).
+      if (!isSkillContext && !sourceAdmits(rule, eventSourceType, event)) continue;
 
       // Same hoisted predicate and pre-check as evaluateRaw().
       const skillGated =
@@ -644,7 +731,9 @@ export class ATREngine {
           }
         }
         matches.push(matchResult);
-        allMatchedPatterns.push(...matchResult.matchedPatterns);
+        // A judge's category and evidence are not patterns a rule matched; they
+        // must not feed pattern_frequency and other cross-event conditions.
+        if (!isModelDecided(matchResult)) allMatchedPatterns.push(...matchResult.matchedPatterns);
       }
     }
 
@@ -727,6 +816,7 @@ export class ATREngine {
         confidence: ruleConfidence(rule.tags.confidence, 0),
         timestamp: new Date().toISOString(),
         scan_context: 'native' as const,
+        decidedBy: 'trace' as const,
       };
     }
 
@@ -737,7 +827,7 @@ export class ATREngine {
       // If the rule has fallback_method=pattern, evaluate pattern conditions
       // synchronously. Otherwise skip because the judge path is async-only.
       if (detection.semantic?.fallback_method === 'pattern') {
-        return this.evaluatePatternRule(rule, event);
+        return asSemanticFallback(this.evaluatePatternRule(rule, event));
       }
       return null;
     }
@@ -789,9 +879,18 @@ export class ATREngine {
       const result = await evaluateSemanticRule(rule, event.content, { judge: effectiveJudge });
       if (!result.matched) {
         if (result.reason?.includes('fallback_pattern')) {
-          return this.evaluatePatternRule(rule, event);
+          return asSemanticFallback(this.evaluatePatternRule(rule, event));
         }
         return null;
+      }
+      // The judge matched (atr-method-v1.1 §6.4: a match iff its confidence clears
+      // the threshold). When the rule's own pattern fallback matches the same
+      // input, the measured regex stands behind the decision: report it as the
+      // fallback's match, which is enforced. Otherwise only the judge does, and
+      // under modelDecisions: 'advisory' its match is reported, not enforced.
+      if (this.modelDecisions === 'advisory' && rule.detection.semantic?.fallback_method === 'pattern') {
+        const corroborated = asSemanticFallback(this.evaluatePatternRule(rule, event));
+        if (corroborated) return corroborated;
       }
       const matchedPatterns = [
         ...(result.category ? [result.category] : []),
@@ -804,6 +903,7 @@ export class ATREngine {
         confidence: result.confidence ?? 0.5,
         timestamp: new Date().toISOString(),
         scan_context: 'native' as const,
+        decidedBy: 'semantic-judge' as const,
       };
     }
     // For non-semantic methods, fall back to sync path.
@@ -845,6 +945,7 @@ export class ATREngine {
       confidence: 1.0, // exact match
       timestamp: new Date().toISOString(),
       scan_context: 'native' as const,
+      decidedBy: 'signature' as const,
     };
   }
 
@@ -894,6 +995,7 @@ export class ATREngine {
       confidence,
       timestamp: new Date().toISOString(),
       scan_context: 'native' as const,
+      decidedBy: 'pattern' as const,
     };
   }
 
@@ -1044,6 +1146,7 @@ export class ATREngine {
       confidence,
       timestamp: new Date().toISOString(),
       scan_context: 'native' as const,
+      decidedBy: 'pattern' as const,
     };
   }
 
@@ -1658,7 +1761,8 @@ export class ATREngine {
     if (hasConfirmMatch) {
       const sim = embResult?.value ?? 0;
       // Note: confirmThreshold 0 disables the gate (every similarity is >= 0).
-      if (sim < (this.config.confirmThreshold ?? 0.6)) {
+      // Written so that a similarity that is not a number drops the rule too.
+      if (!(sim >= (this.config.confirmThreshold ?? 0.6))) {
         matches = matches.filter((m) => !requiresConfirm(m.rule));
         layersUsed.push('embedding-confirm');
       }
@@ -1667,7 +1771,8 @@ export class ATREngine {
     // Additive Tier 2.5 signal: a high-similarity input surfaced as an embedding-only
     // match. EXCLUDED from the enforce lane — an embedding-only signal must never
     // produce a block there (only deterministic stable rules can block in enforce).
-    // Available in alert/hunt as an advisory signal.
+    // In alert/hunt it is a model's decision (decidedBy: 'embedding'), which
+    // computeVerdict reports without enforcing unless modelDecisions is 'enforce'.
     if (lane !== 'enforce' && embResult && embResult.value >= 0.65) {
       const severity = embResult.value >= 0.95 ? 'critical' as const
         : embResult.value >= 0.88 ? 'high' as const
@@ -1696,6 +1801,7 @@ export class ATREngine {
         confidence: embResult.value,
         timestamp: new Date().toISOString(),
         scan_context: 'native' as const,
+        decidedBy: 'embedding' as const,
       };
       matches = [...matches, syntheticMatch];
     }
@@ -1724,7 +1830,7 @@ export class ATREngine {
       }
     }
 
-    const verdict = computeVerdict(matches);
+    const verdict = computeVerdict(matches, { modelDecisions: this.modelDecisions });
 
     let actionResults: readonly ActionResult[] = Object.freeze([]);
 

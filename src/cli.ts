@@ -13,7 +13,7 @@ import { readFileSync, writeFileSync, readdirSync, existsSync, statSync, mkdirSy
 import { resolve, dirname, join, sep } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { ATREngine } from './engine.js';
+import { ATREngine, WITHHELD_SOURCE_TYPES } from './engine.js';
 import { loadRuleFile, loadRulesFromDirectory, validateRule } from './loader.js';
 import type { AgentEvent, ATRMatch, ATRRule, ATRTrace } from './types.js';
 import { generateBadgeSvg, generateBadgeEndpoint, lookupPackageScan, generateBadgeMarkdown } from './badge.js';
@@ -21,10 +21,13 @@ import { cmdScanUnified } from './cli/scan-handler.js';
 import {
   BLOCKING_ENV_VAR,
   LANE_ENV_VAR,
+  MODEL_DECISIONS_ENV_VAR,
   parseLane,
+  parseModelDecisions,
   resolveEnforcementPolicy,
   type EnforcementPolicy,
 } from './enforcement.js';
+import type { ModelDecisions } from './verdict.js';
 import { LANES, type Lane } from './quality/rule-contract.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -96,6 +99,10 @@ ${BOLD}Options:${RESET}
   --lane <lane>    Detection lane: enforce (stable rules only) | alert
                    (stable+test) | hunt (all maturities). Overrides ATR_LANE.
                    Default: hunt.
+  --model-decisions <mode>
+                   advisory (default) | enforce. What a match a model decided
+                   (a semantic rule's judge) may do: advisory lists it but does
+                   not count it toward --fail-on. Overrides ATR_MODEL_DECISIONS.
   --blocking       Allow ATR to block. OFF BY DEFAULT: without it the guard
                    reports detections but emits no permissionDecision and runs
                    no response action above the observe tier. Overrides
@@ -180,6 +187,36 @@ function parseArgs(argv: string[]): { command: string; target: string; options: 
  * typed at a prompt by someone who will see the exit code — unlike an inherited
  * environment variable, which degrades instead. See resolvePolicyAndReport.
  */
+/**
+ * What a model-decided match may do, for the commands that can wire a model
+ * (scan, mcp): --model-decisions, else ATR_MODEL_DECISIONS, else advisory. A
+ * mistyped flag exits, as --lane does. A bad environment value falls back to
+ * advisory, the setting that enforces less, and says so.
+ */
+function readModelDecisionsOption(options: Record<string, string>): ModelDecisions {
+  const raw = options['model-decisions'];
+  if (raw !== undefined && raw.trim() !== '') {
+    const parsed = parseModelDecisions(raw);
+    if (parsed === null) {
+      console.error(`${RED}Error: Invalid --model-decisions "${raw}". Expected one of: advisory, enforce.${RESET}`);
+      process.exit(1);
+    }
+    return parsed;
+  }
+  const fromEnv = process.env[MODEL_DECISIONS_ENV_VAR];
+  if (fromEnv !== undefined && fromEnv.trim() !== '') {
+    const parsed = parseModelDecisions(fromEnv);
+    if (parsed === null) {
+      console.error(
+        `${YELLOW}Warning: Invalid ${MODEL_DECISIONS_ENV_VAR}="${fromEnv}"; using advisory.${RESET}`,
+      );
+      return 'advisory';
+    }
+    return parsed;
+  }
+  return 'advisory';
+}
+
 function readLaneOption(options: Record<string, string>): Lane | undefined {
   const raw = options['lane'];
   if (raw === undefined || raw.trim() === '') return undefined;
@@ -352,17 +389,25 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
   let skipped = 0;
   const failures: Array<{ ruleId: string; testType: string; input: string; expected: string; got: string }> = [];
   const skippedRules: Array<{ ruleId: string; cases: number; reason: string }> = [];
-
-  // Map extended agent_source types to basic event-compatible source types
-  // so the engine's source type filter doesn't skip rules during testing.
-  // The engine only recognizes: llm_io, tool_call, mcp_exchange, agent_behavior, multi_agent_comm
-  const EXTENDED_SOURCE_TO_BASE: Record<string, string> = {
-    context_window: 'llm_io',
-    memory_access: 'llm_io',
-    skill_lifecycle: 'tool_call',
-    skill_permission: 'tool_call',
-    skill_chain: 'tool_call',
+  const markUnevaluable = (rule: ATRRule, reason: string): void => {
+    const cases =
+      (rule.test_cases?.true_positives?.length ?? 0) + (rule.test_cases?.true_negatives?.length ?? 0);
+    totalTests += cases;
+    skipped += cases;
+    skippedRules.push({ ruleId: rule.id, cases, reason });
   };
+  // True positives that match on the wide test event and on no runtime event the
+  // rule runs on (caseMatchesAtRuntime in src/testcase-event.ts): they pass only
+  // through a value the harness copies into a field. Reported, not failed.
+  const harnessOnly: Array<{ ruleId: string; testType: string; input: string }> = [];
+
+  // A rule is tested with the agent_source.type it declares. This harness used
+  // to map the extended types to a base type so the engine's source filter
+  // would admit them, which the engine itself did not do: those rules passed
+  // here and never ran on the events src/hook-handler.ts builds. The engine now
+  // admits them itself (RUNTIME_SOURCE_TYPE in src/engine.ts), so what passes
+  // here is what it runs. A type it withholds (WITHHELD_SOURCE_TYPES) is
+  // reported as unevaluable below.
 
   for (const rule of rules) {
     if (!rule.test_cases) continue;
@@ -377,26 +422,26 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
     // silently. (method=trace is different: it has a real evaluation path
     // below, so its cases still run.)
     if (rule.detection?.method === 'behavioral') {
-      const cases =
-        (rule.test_cases.true_positives?.length ?? 0) + (rule.test_cases.true_negatives?.length ?? 0);
-      totalTests += cases;
-      skipped += cases;
-      skippedRules.push({ ruleId: rule.id, cases, reason: 'method=behavioral requires a streaming evaluator' });
+      markUnevaluable(rule, 'method=behavioral requires a streaming evaluator');
       continue;
     }
 
-    // For testing, normalize extended source types so the engine doesn't filter them out
-    const originalSourceType = rule.agent_source?.type;
-    const baseSourceType = EXTENDED_SOURCE_TO_BASE[originalSourceType ?? ''];
+    // A rule whose agent_source.type the engine withholds from typed events runs
+    // only on an event with no source type and in a SKILL.md scan, not on the
+    // events its cases describe. Passing its cases on a mapped event would say
+    // it runs where it does not; failing them would blame the rule for the
+    // engine's choice. Count them as unevaluable, with the engine's reason.
+    const sourceType = rule.agent_source?.type;
+    if (typeof sourceType === 'string' && Object.hasOwn(WITHHELD_SOURCE_TYPES, sourceType)) {
+      markUnevaluable(
+        rule,
+        `agent_source.type ${sourceType} does not run on typed events yet: ${WITHHELD_SOURCE_TYPES[sourceType]}`,
+      );
+      continue;
+    }
 
     // Override status so draft/deprecated rules are not skipped during testing
-    const testRule = {
-      ...rule,
-      status: 'experimental' as const,
-      ...(baseSourceType
-        ? { agent_source: { ...rule.agent_source, type: baseSourceType as ATRRule['agent_source']['type'] } }
-        : {}),
-    };
+    const testRule = asTestedRule(rule);
 
     const engine = new ATREngine({ rules: [testRule] });
     await engine.loadRules();
@@ -405,23 +450,17 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
     const tn = rule.test_cases.true_negatives ?? [];
 
     // Test via both evaluate() and scanSkill() — pass if either detects
-    const runTest = (tcObj: Record<string, unknown>): boolean => {
-      const event = buildEventFromTestCase(tcObj, rule);
-      const mcpHit = engine.evaluate(event).some(m => m.rule.id === rule.id);
-      if (mcpHit) return true;
-      const input = String(tcObj['input'] ?? tcObj['tool_response'] ?? tcObj['agent_output'] ?? '');
-      if (input) {
-        const skillHit = engine.scanSkill(input).some(m => m.rule.id === rule.id);
-        if (skillHit) return true;
-      }
-      return false;
-    };
+    const runTest = (tcObj: Record<string, unknown>): boolean => caseMatches(engine, rule, tcObj);
 
     for (const tc of tp) {
       totalTests++;
-      const triggered = runTest(tc as unknown as Record<string, unknown>);
+      const tcObj = tc as unknown as Record<string, unknown>;
+      const triggered = runTest(tcObj);
       if (triggered) {
         passed++;
+        if (!caseMatchesAtRuntime(engine, rule, tcObj)) {
+          harnessOnly.push({ ruleId: rule.id, testType: 'true_positive', input: caseLabel(tcObj).slice(0, 100) });
+        }
       } else {
         failed++;
         failures.push({
@@ -455,7 +494,7 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
   if (jsonOutput) {
     console.log(
       JSON.stringify(
-        { totalRules: rules.length, totalTests, passed, failed, skipped, failures, skippedRules },
+        { totalRules: rules.length, totalTests, passed, failed, skipped, failures, skippedRules, harnessOnly },
         null,
         2,
       ),
@@ -475,6 +514,12 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
     console.log(`  ${YELLOW}Unevaluable:${RESET}     ${skipped}`);
     for (const s of skippedRules) {
       console.log(`    ${DIM}${s.ruleId}: ${s.cases} case(s) — ${s.reason}${RESET}`);
+    }
+  }
+  if (harnessOnly.length > 0) {
+    console.log(`  ${YELLOW}Harness-only:${RESET}    ${harnessOnly.length}`);
+    for (const h of harnessOnly) {
+      console.log(`    ${DIM}${h.ruleId}: "${h.input}" matches the test event and no runtime-shaped event${RESET}`);
     }
   }
   console.log(`${DIM}${'─'.repeat(60)}${RESET}`);
@@ -509,7 +554,7 @@ async function cmdTest(target: string, options: Record<string, string>): Promise
   }
 }
 
-import { buildEventFromTestCase } from "./testcase-event.js";
+import { asTestedRule, buildEventFromTestCase, caseLabel, caseMatches, caseMatchesAtRuntime } from "./testcase-event.js";
 export { buildEventFromTestCase };
 
 // --- STATS command ---
@@ -648,8 +693,9 @@ async function cmdGuard(options: Record<string, string>): Promise<void> {
 
 async function cmdMcp(): Promise<void> {
   const { startMCPServer } = await import('./mcp-server.js');
-  // The MCP server never blocks, so only the lane half of the policy applies.
-  await startMCPServer({ lane: resolvePolicyAndReport({}).lane });
+  // The MCP server never blocks, so only the lane half of the policy applies,
+  // plus what its scan tool reports as a model's decision.
+  await startMCPServer({ lane: resolvePolicyAndReport({}).lane, modelDecisions: readModelDecisionsOption({}) });
 }
 
 // --- SCAFFOLD command ---
@@ -1224,6 +1270,7 @@ async function main(): Promise<void> {
         semanticTimeout: options['semantic-timeout'],
         semanticNoJsonMode: options['semantic-no-json-mode'] === 'true',
         lane: scanLane(),
+        modelDecisions: readModelDecisionsOption(options),
       });
       break;
     case 'scan-skill':
@@ -1242,6 +1289,7 @@ async function main(): Promise<void> {
         semanticTimeout: options['semantic-timeout'],
         semanticNoJsonMode: options['semantic-no-json-mode'] === 'true',
         lane: scanLane(),
+        modelDecisions: readModelDecisionsOption(options),
       });
       break;
     case 'validate':

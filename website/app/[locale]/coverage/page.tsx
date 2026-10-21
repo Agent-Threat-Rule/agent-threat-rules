@@ -13,6 +13,7 @@ import {
   measuredStamp,
   recallLanes,
 } from "@/lib/recall";
+import { ABLATION_EXPLAINED, ablationLanes } from "@/lib/ablation";
 import { Reveal } from "@/components/Reveal";
 import { CountUp } from "@/components/CountUp";
 import { StatsHydrator } from "@/components/StatsHydrator";
@@ -209,6 +210,16 @@ function hackapromptNote(stats: SiteStats, zh: boolean): Note | null {
   const hack = findBenchmark(stats, "hackaprompt");
   if (!hack) return null;
   const none = hack.enforce === null;
+  const ablation = ablationLanes(hack);
+  if (ablation !== null && hack.ablation !== null && hack.population !== null) {
+    const n = hack.ablation.rulesRemoved;
+    return {
+      name: `HackAPrompt (${count(hack.samples)} samples)`,
+      verdict: zh
+        ? `ATR 在 HackAPrompt 競賽 ${count(hack.population)} 個 prompt 中以固定種子抽出的 ${count(hack.samples)} 個樣本上，召回率是 ${recallLanes(hack)}（${measuredStamp(hack, true, true)}）${none ? `；${toFullWidth(NO_ENFORCE_RECORD.zh)}` : ""}。這份子集部分屬於樣本內：有 ${n} 條規則的 YAML 註明出自 HackAPrompt，其中幾條正是從這份子集挖出來的；拿掉這 ${n} 條後，同一批樣本的召回率是 ${ablation}，${toFullWidth(ABLATION_EXPLAINED.zh)}。這份語料 100% 對抗性、沒有良性樣本，所以它算不出 precision 或誤報率——別把它當精準度證據。`
+        : `Recall on a seeded subset of ${count(hack.samples)} of the ${count(hack.population)} HackAPrompt competition prompts is ${recallLanes(hack)} (${measuredStamp(hack, false)})${none ? `; ${NO_ENFORCE_RECORD.en}` : ""}. The subset is partly in-sample: ${n} rules name HackAPrompt in their YAML, several mined from this subset. Without those ${n} rules the same samples score ${ablation}: ${ABLATION_EXPLAINED.en}. The corpus is 100% adversarial with no benign population, so it cannot yield a precision or false-positive figure — do not read it as precision evidence.`,
+    };
+  }
   return {
     name: `HackAPrompt (${count(hack.samples)} samples)`,
     verdict: zh

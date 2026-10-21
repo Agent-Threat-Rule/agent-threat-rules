@@ -19,8 +19,11 @@
  *
  * SAME CODE, NOT A MIRROR
  *   The engine, matchedRuleIds and the draft/test activation below are the ones
- *   check-rules-safety uses, and so is its loose-regex lint (check 6). The
- *   rule is measured as its YAML file loads.
+ *   check-rules-safety uses, and so is its loose-regex lint (check 6). Its
+ *   check 2 runs each true positive with own-true-positives.ts, and so does
+ *   checkOwnTestCases; it refuses a rule its corpus checks cannot measure at
+ *   all with corpusBlindReason, and so does checkMeasurable. The rule is
+ *   measured as its YAML file loads.
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -30,6 +33,13 @@ import type { ATRRule } from "../../src/types.js";
 import { lintRuleDoc } from "../lint-rule-patterns.js";
 import { matchedRuleIds } from "./corpus-event.js";
 import type { OwaspAllowlists } from "./normalize-references.js";
+import {
+  caseSnippet,
+  corpusBlindReason,
+  testCaseEngine,
+  truePositiveMisses,
+  truePositiveObstacle,
+} from "./own-true-positives.js";
 import type { ClusterCandidate } from "./semantic-clusters.js";
 import { prepareGateCorpus, validateSemanticDraft, type GateResult, type SemanticDraft } from "./semantic-gate.js";
 import { RULE_YAML_OPTIONS, buildSemanticRule } from "./semantic-rule-builder.js";
@@ -76,8 +86,12 @@ export interface DraftCheckResult {
 const fail = (reason: string): GateResult => ({ ok: false, reason });
 const snippet = (text: string): string => text.slice(0, 60).replace(/\s+/g, " ");
 
-/** test_cases.<key> inputs, string or {input}: how check-rules-safety reads them. */
-export function declaredInputs(rule: Record<string, unknown>, key: "true_positives" | "true_negatives"): string[] {
+/**
+ * test_cases.true_negatives inputs, string or {input}: how check-rules-safety
+ * reads them (check 5). Its check 2 reads true positives whole
+ * (own-true-positives.ts), and so does checkOwnTestCases below.
+ */
+export function declaredInputs(rule: Record<string, unknown>, key: "true_negatives"): string[] {
   const testCases = rule.test_cases as Record<string, unknown> | undefined;
   const list = Array.isArray(testCases?.[key]) ? (testCases[key] as unknown[]) : [];
   return list
@@ -111,11 +125,33 @@ export function checkLooseRegex(rule: Record<string, unknown>): GateResult | nul
   return bare ? fail(`loose-regex lint (check-rules-safety check 6): ${bare.detail}`) : null;
 }
 
-/** check-rules-safety check 2 (every declared TP fires), plus none of the rule's own TNs fire. */
+/**
+ * check-rules-safety's refusal of a new rule its corpus checks cannot measure
+ * at all (corpusBlindReason), made before those checks run.
+ */
+export function checkMeasurable(rule: Record<string, unknown>): GateResult | null {
+  const blind = corpusBlindReason(rule);
+  return blind === null ? null : fail(`${blind} (check-rules-safety refuses it before its corpus checks)`);
+}
+
+/**
+ * check-rules-safety check 2 (every declared TP fires, each run the way `atr
+ * test` runs it, on an engine of its own, and matches on the corpus shapes:
+ * own-true-positives.ts), plus none of the rule's own TNs fire under `engine`.
+ */
 export function checkOwnTestCases(engine: ATREngine, rule: Record<string, unknown>): GateResult | null {
   const id = String(rule.id);
-  const missed = declaredInputs(rule, "true_positives").find((t) => !fires(engine, id, t));
-  if (missed !== undefined) return fail(`own true_positive not matched under the engine: "${snippet(missed)}"`);
+  const obstacle = truePositiveObstacle(rule);
+  if (obstacle !== null) return fail(obstacle);
+  const [missed] = truePositiveMisses(testCaseEngine([rule]), rule);
+  if (missed !== undefined) {
+    return fail(
+      missed.kind === "unmatched"
+        ? `own true_positive not matched under the engine: "${caseSnippet(missed.testCase)}"`
+        : `own true_positive matches only off the corpus shapes check-rules-safety's benign checks use: ` +
+            `"${caseSnippet(missed.testCase)}"`,
+    );
+  }
   const hit = declaredInputs(rule, "true_negatives").find((t) => fires(engine, id, t));
   if (hit !== undefined) return fail(`own true_negative matched under the engine: "${snippet(hit)}"`);
   return null;
@@ -179,6 +215,7 @@ export function checkDraft(input: DraftCheckInput): DraftCheckResult {
   const rule = asLoaded(buildSemanticRule(c, draft, CANDIDATE_RULE_ID, input.allowlists));
   const engine = scopedEngine([rule]);
   const failure =
+    checkMeasurable(rule) ??
     checkLooseRegex(rule) ??
     checkOwnTestCases(engine, rule) ??
     checkCorpora(engine, CANDIDATE_RULE_ID, input.benignSamples, input.foreign) ??

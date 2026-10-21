@@ -67,11 +67,11 @@ detection:
   conditions:
     - field: tool_args
       operator: regex
-      value: "(?i)(?:';|\"\\s*;|--\\s*)\\s*(?:DROP\\s+(?:TABLE|DATABASE|INDEX|VIEW)|TRUNCATE\\s+(?:TABLE\\s+)?\\w|DELETE\\s+FROM\\s+\\w)"
+      value: "(?i)(?:';|\"\\s*;|--)\\s*(?:DROP\\s+(?:TABLE|DATABASE|INDEX|VIEW)|TRUNCATE\\s+(?:TABLE\\s+)?\\w|DELETE\\s+FROM\\s+\\w)"
       description: "SQL injection: quote-termination followed by destructive DDL"
     - field: tool_args
       operator: regex
-      value: "(?i)\\bDROP\\s+TABLE\\s+\\w+\\s*;?\\s*--"
+      value: "(?i)\\bDROP\\s+TABLE\\s+\\w+\\s*(?:;\\s*)?--"
       description: "DROP TABLE with comment suppressor"
     - field: user_input
       operator: regex

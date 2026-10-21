@@ -98,12 +98,12 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)lambda\s+\w*\s*:\s*[^,)]*\beval\s*\('
+      value: '(?i)lambda\s+(?:\w+\s*)?:[^,)]*\beval\s*\('
       description: "Lambda body invoking eval() — primary CVE-2026-26030 exploit shape (`lambda row: eval(filter_expr)`)"
 
     - field: content
       operator: regex
-      value: '(?i)lambda\s+\w*\s*:\s*[^,)]*\b__import__\s*\(\s*["\x27](?:os|subprocess|socket|builtins|importlib)["\x27]'
+      value: '(?i)lambda\s+(?:\w+\s*)?:[^,)]*\b__import__\s*\(\s*["\x27](?:os|subprocess|socket|builtins|importlib)["\x27]'
       description: "Lambda body using __import__ to reach OS / process / builtin modules — eval-friendly RCE chain"
 
     - field: content
@@ -123,7 +123,7 @@ detection:
 
     - field: user_input
       operator: regex
-      value: '(?i)lambda\s+\w*\s*:\s*[^,)]*\b(?:eval|exec|__import__)\s*\('
+      value: '(?i)lambda\s+(?:\w+\s*)?:[^,)]*\b(?:eval|exec|__import__)\s*\('
       description: "User-supplied filter expression containing lambda + dynamic-evaluation primitive — the original CVE-2026-26030 injection surface"
 
 response:

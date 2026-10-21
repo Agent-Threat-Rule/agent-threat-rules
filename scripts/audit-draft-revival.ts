@@ -55,7 +55,7 @@ import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
-import { ATREngine } from "../src/engine.js";
+import { ATREngine, RUNTIME_SOURCE_TYPE } from "../src/engine.js";
 import type { ATRRule, AgentEvent } from "../src/types.js";
 import { matchedRuleIds } from "./lib/corpus-event.js";
 
@@ -94,7 +94,12 @@ const ENGINE_FIELD_KEYS = [
   "agent_message",
 ] as const;
 
-/** agent_source.type -> an event type that maps back to it (EVENT_TYPE_TO_SOURCE). */
+/**
+ * agent_source.type -> an event type that maps back to it (EVENT_TYPE_TO_SOURCE).
+ * An extended type is looked up through the base type the engine admits it as
+ * (RUNTIME_SOURCE_TYPE), so a context_window draft is measured on an llm_input
+ * event rather than on a tool_call event the engine would skip it on.
+ */
 const SOURCE_TO_EVENT_TYPE: Record<string, AgentEvent["type"]> = {
   tool_call: "tool_call",
   mcp_exchange: "tool_response",
@@ -304,7 +309,8 @@ function fieldAwareEvent(entry: unknown, text: string, rule: ATRRule): AgentEven
     if (typeof v === "string" && v.length > 0) fields[key] = v;
   }
   if (Object.keys(fields).length === 0) return null;
-  const sourceType = String(rule.agent_source?.type ?? "");
+  const declared = String(rule.agent_source?.type ?? "");
+  const sourceType = Object.hasOwn(RUNTIME_SOURCE_TYPE, declared) ? RUNTIME_SOURCE_TYPE[declared] : declared;
   return {
     type: SOURCE_TO_EVENT_TYPE[sourceType] ?? "tool_call",
     timestamp: new Date().toISOString(),
