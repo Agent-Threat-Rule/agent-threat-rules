@@ -1,6 +1,6 @@
 {
   "schema": "gate-rerun/v1",
-  "question": "The /red-team page said the rules of two batches all passed the repository's rule safety gate with 0 benign false positives. No record of those gate runs was committed, so the gate was re-run on each batch.",
+  "question": "The /red-team page said the rules of two batches all passed the repository's rule safety gate with 0 benign false positives. No record of those gate runs was committed, so the gate was re-run on each batch. Re-run at current main on 2026-10-22 after nine of the recorded rules changed on main.",
   "gate": "scripts/check-rules-safety.ts (the check validate.yml runs on rule pull requests); MAX_NEW_PER_PR=1000 so the per-PR cap (10) does not mask the other checks. Each check evaluates the rule on its own, so it does not depend on a detection lane.",
   "batches": [
     {
@@ -152,7 +152,7 @@
           }
         },
         {
-          "label": "current main",
+          "label": "main 2026-10-19",
           "commit": "9d74fc506156c1f61fc38d7c0e32b1dcbb173574",
           "run_on": "2026-10-19",
           "atr_version": "4.1.5",
@@ -325,6 +325,190 @@
               }
             }
           }
+        },
+        {
+          "label": "main 2026-10-22",
+          "commit": "658ec9c65afbbd6e7af3a3968936c8cda1913106",
+          "run_on": "2026-10-22",
+          "atr_version": "4.1.5",
+          "command": "MAX_NEW_PER_PR=1000 npx tsx scripts/check-rules-safety.ts <the 71 rule files>",
+          "corpora": {
+            "benign_skill_files": 467,
+            "extended_benign_samples": 13620,
+            "benign_code_samples": 69,
+            "research_mention_samples": 157
+          },
+          "rules_changed_since_previous_run": [
+            "ATR-2026-00476",
+            "ATR-2026-00481",
+            "ATR-2026-00489",
+            "ATR-2026-00494",
+            "ATR-2026-00508",
+            "ATR-2026-00512"
+          ],
+          "result": "FAIL",
+          "rules_failing": 33,
+          "rules_failing_ids": [
+            "ATR-2026-00452",
+            "ATR-2026-00453",
+            "ATR-2026-00454",
+            "ATR-2026-00455",
+            "ATR-2026-00465",
+            "ATR-2026-00475",
+            "ATR-2026-00477",
+            "ATR-2026-00479",
+            "ATR-2026-00480",
+            "ATR-2026-00488",
+            "ATR-2026-00490",
+            "ATR-2026-00491",
+            "ATR-2026-00492",
+            "ATR-2026-00494",
+            "ATR-2026-00495",
+            "ATR-2026-00496",
+            "ATR-2026-00497",
+            "ATR-2026-00498",
+            "ATR-2026-00500",
+            "ATR-2026-00502",
+            "ATR-2026-00504",
+            "ATR-2026-00505",
+            "ATR-2026-00508",
+            "ATR-2026-00509",
+            "ATR-2026-00510",
+            "ATR-2026-00511",
+            "ATR-2026-00512",
+            "ATR-2026-00514",
+            "ATR-2026-00515",
+            "ATR-2026-00516",
+            "ATR-2026-00520",
+            "ATR-2026-00521",
+            "ATR-2026-00522"
+          ],
+          "rules_flagging_a_benign_sample": 26,
+          "rules_flagging_a_benign_sample_ids": [
+            "ATR-2026-00454",
+            "ATR-2026-00455",
+            "ATR-2026-00465",
+            "ATR-2026-00475",
+            "ATR-2026-00477",
+            "ATR-2026-00479",
+            "ATR-2026-00480",
+            "ATR-2026-00488",
+            "ATR-2026-00491",
+            "ATR-2026-00492",
+            "ATR-2026-00494",
+            "ATR-2026-00497",
+            "ATR-2026-00498",
+            "ATR-2026-00500",
+            "ATR-2026-00502",
+            "ATR-2026-00504",
+            "ATR-2026-00505",
+            "ATR-2026-00508",
+            "ATR-2026-00509",
+            "ATR-2026-00510",
+            "ATR-2026-00514",
+            "ATR-2026-00515",
+            "ATR-2026-00516",
+            "ATR-2026-00520",
+            "ATR-2026-00521",
+            "ATR-2026-00522"
+          ],
+          "lanes_of_rules_flagging_a_benign_sample": {
+            "alert+hunt": 24,
+            "hunt": 2
+          },
+          "by_check": {
+            "benign_code_fp": {
+              "rules": 1,
+              "flagged_samples_by_rule": {
+                "ATR-2026-00500": 1
+              }
+            },
+            "benign_skill_corpus_fp": {
+              "rules": 4,
+              "flagged_samples_by_rule": {
+                "ATR-2026-00454": 152,
+                "ATR-2026-00505": 1,
+                "ATR-2026-00508": 1,
+                "ATR-2026-00510": 1
+              }
+            },
+            "cross_rule_conflict": {
+              "rules": 14,
+              "rule_ids": [
+                "ATR-2026-00452",
+                "ATR-2026-00453",
+                "ATR-2026-00454",
+                "ATR-2026-00465",
+                "ATR-2026-00490",
+                "ATR-2026-00491",
+                "ATR-2026-00497",
+                "ATR-2026-00500",
+                "ATR-2026-00502",
+                "ATR-2026-00505",
+                "ATR-2026-00514",
+                "ATR-2026-00516",
+                "ATR-2026-00521",
+                "ATR-2026-00522"
+              ]
+            },
+            "extended_benign_fp": {
+              "rules": 26,
+              "flagged_samples_by_rule": {
+                "ATR-2026-00454": 1376,
+                "ATR-2026-00455": 10,
+                "ATR-2026-00465": 5,
+                "ATR-2026-00475": 14,
+                "ATR-2026-00477": 1,
+                "ATR-2026-00479": 2,
+                "ATR-2026-00480": 2,
+                "ATR-2026-00488": 14,
+                "ATR-2026-00491": 3,
+                "ATR-2026-00492": 5,
+                "ATR-2026-00494": 4,
+                "ATR-2026-00497": 17,
+                "ATR-2026-00498": 5,
+                "ATR-2026-00500": 17,
+                "ATR-2026-00502": 3,
+                "ATR-2026-00504": 10,
+                "ATR-2026-00505": 9,
+                "ATR-2026-00508": 3,
+                "ATR-2026-00509": 3,
+                "ATR-2026-00510": 6,
+                "ATR-2026-00514": 9,
+                "ATR-2026-00515": 2,
+                "ATR-2026-00516": 4,
+                "ATR-2026-00520": 2,
+                "ATR-2026-00521": 19,
+                "ATR-2026-00522": 23
+              }
+            },
+            "loose_regex_lint": {
+              "rules": 7,
+              "rule_ids": [
+                "ATR-2026-00494",
+                "ATR-2026-00496",
+                "ATR-2026-00505",
+                "ATR-2026-00510",
+                "ATR-2026-00511",
+                "ATR-2026-00512",
+                "ATR-2026-00516"
+              ]
+            },
+            "other:status: deprecated: no lane evaluates th": {
+              "rules": 1,
+              "rule_ids": [
+                "ATR-2026-00495"
+              ]
+            },
+            "research_mention_fp": {
+              "rules": 2,
+              "flagged_samples_by_rule": {
+                "ATR-2026-00505": 1,
+                "ATR-2026-00514": 1
+              }
+            }
+          },
+          "compared_with_previous_run": "Same failing rules, same rules flagging a benign sample, same flagged-sample counts per rule and corpus as the 2026-10-19 run. The rules changed on main since then did not change any of them. One failure reason changed because the gate itself changed (scripts/check-rules-safety.ts: commit 2f0605c3 made Check 2 run true positives the way atr test does and fail deprecated and trace rules it cannot evaluate): ATR-2026-00495 (status deprecated), which failed on 2026-10-19 for missing its own true positives, now fails the gate's newer check that no lane evaluates a deprecated rule."
         }
       ],
       "rule_status_maturity_at_main": {
@@ -725,7 +909,7 @@
       "original_gate_runs": "Not recorded: the rules reached main through separate pull requests in 2026-06 and no gate output was committed, so only the current gate was run.",
       "runs": [
         {
-          "label": "current main",
+          "label": "main 2026-10-19",
           "commit": "9d74fc506156c1f61fc38d7c0e32b1dcbb173574",
           "run_on": "2026-10-19",
           "atr_version": "4.1.5",
@@ -775,6 +959,64 @@
               ]
             }
           }
+        },
+        {
+          "label": "main 2026-10-22",
+          "commit": "658ec9c65afbbd6e7af3a3968936c8cda1913106",
+          "run_on": "2026-10-22",
+          "atr_version": "4.1.5",
+          "command": "MAX_NEW_PER_PR=1000 npx tsx scripts/check-rules-safety.ts <the 29 rule files>",
+          "corpora": {
+            "benign_skill_files": 467,
+            "extended_benign_samples": 13620,
+            "benign_code_samples": 69,
+            "research_mention_samples": 157
+          },
+          "rules_changed_since_previous_run": [
+            "ATR-2026-00702",
+            "ATR-2026-01307",
+            "ATR-2026-01865"
+          ],
+          "result": "FAIL",
+          "rules_failing": 4,
+          "rules_failing_ids": [
+            "ATR-2026-00550",
+            "ATR-2026-01300",
+            "ATR-2026-01615",
+            "ATR-2026-01616"
+          ],
+          "rules_flagging_a_benign_sample": 3,
+          "rules_flagging_a_benign_sample_ids": [
+            "ATR-2026-01300",
+            "ATR-2026-01615",
+            "ATR-2026-01616"
+          ],
+          "lanes_of_rules_flagging_a_benign_sample": {
+            "alert+hunt": 3
+          },
+          "by_check": {
+            "cross_rule_conflict": {
+              "rules": 1,
+              "rule_ids": [
+                "ATR-2026-01615"
+              ]
+            },
+            "extended_benign_fp": {
+              "rules": 3,
+              "flagged_samples_by_rule": {
+                "ATR-2026-01300": 4,
+                "ATR-2026-01615": 4,
+                "ATR-2026-01616": 2
+              }
+            },
+            "other:method: trace: the engine cannot run thi": {
+              "rules": 1,
+              "rule_ids": [
+                "ATR-2026-00550"
+              ]
+            }
+          },
+          "compared_with_previous_run": "Same failing rules, same rules flagging a benign sample, same flagged-sample counts per rule and corpus as the 2026-10-19 run. The rules changed on main since then did not change any of them. One failure reason changed because the gate itself changed (scripts/check-rules-safety.ts: commit 2f0605c3 made Check 2 run true positives the way atr test does and fail deprecated and trace rules it cannot evaluate): ATR-2026-00550 (detection method trace), which failed on 2026-10-19 for missing its own true positives, now fails the gate's newer check that the engine cannot run a trace rule on a text sample."
         }
       ],
       "rule_status_maturity_at_main": {

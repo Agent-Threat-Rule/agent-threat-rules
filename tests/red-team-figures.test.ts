@@ -14,6 +14,12 @@ import { ablationOf, type BenchmarkMeasurement } from "../website/lib/stats.js";
 const REPO = join(import.meta.dirname, "..");
 const read = (...p: string[]) => readFileSync(join(REPO, ...p), "utf-8");
 
+/** The newest run on main of a batch in the gate re-run record (labels are "main <date>"). */
+function latestMainRun<T extends { label: string; run_on: string }>(runs: readonly T[]): T {
+  const main = runs.filter((r) => r.label.startsWith("main ")).sort((a, b) => a.run_on.localeCompare(b.run_on));
+  return main[main.length - 1]!;
+}
+
 function latest(source: string): { file: string; m: { breakdown: Record<string, unknown> } } {
   const dir = join(REPO, "data", "measurements", source);
   const { file } = JSON.parse(read("data", "measurements", source, "latest.json")) as { file: string };
@@ -71,18 +77,26 @@ describe("red-team figures", () => {
   it("the sprint and mega-scan gate figures on the page are the committed re-run record's", () => {
     const page = read("website", "app", "[locale]", "red-team", "page.tsx");
     const record = JSON.parse(read("data", "gate-reruns", "2026-10-19_red-team-rule-batches.json")) as {
-      batches: { rules: { count: number }; runs: { label: string; rules_failing: number; rules_flagging_a_benign_sample: number; lanes_of_rules_flagging_a_benign_sample?: Record<string, number> }[] }[];
+      batches: { rules: { count: number }; runs: { label: string; run_on: string; commit: string; rules_failing: number; rules_flagging_a_benign_sample: number; lanes_of_rules_flagging_a_benign_sample?: Record<string, number> }[] }[];
     };
     expect(page).toContain("data/gate-reruns/2026-10-19_red-team-rule-batches.json");
     const [sprint, mega] = record.batches;
     const then = sprint!.runs.find((r) => r.label === "as of the sprint")!;
-    const now = sprint!.runs.find((r) => r.label === "current main")!;
+    const now = latestMainRun(sprint!.runs);
     expect(page).toContain(`added ${sprint!.rules.count} rule files`);
     expect(page).toContain(`${then.rules_failing} fail, all for missing one of their own true positives`);
     expect(page).toContain(`${now.rules_failing} fail; ${now.rules_flagging_a_benign_sample} flag at least one benign sample`);
     expect(page).toContain(`${now.lanes_of_rules_flagging_a_benign_sample!["alert+hunt"]} load in the alert and hunt lanes, ${now.lanes_of_rules_flagging_a_benign_sample!["hunt"]} in the hunt lane only`);
     expect(page).toContain(`None of the ${mega!.rules.count} flags any`);
-    expect(page).toContain(`${mega!.runs[0]!.rules_failing} fail, ${mega!.runs[0]!.rules_flagging_a_benign_sample} of them flagging`);
+    const megaNow = latestMainRun(mega!.runs);
+    expect(page).toContain(`${megaNow.rules_failing} fail, ${megaNow.rules_flagging_a_benign_sample} of them flagging`);
+    // The page names the run it quotes: its date and commit.
+    for (const r of [now, megaNow]) {
+      expect(page).toContain(`main ${r.commit.slice(0, 8)}`);
+      expect(page).toContain(r.run_on);
+    }
+    const sprintMains = sprint!.runs.filter((r) => r.label.startsWith("main "));
+    expect(sprintMains.length).toBeGreaterThanOrEqual(2);
     expect(page).not.toMatch(/all passing the 6-gate quality process|All 75 rules passed|All passed the 6-gate/);
   });
 
@@ -98,12 +112,12 @@ describe("red-team figures", () => {
 
   it("the page's benign-FP magnitudes and mega-scan maturities are the re-run record's", () => {
     const page = read("website", "app", "[locale]", "red-team", "page.tsx");
-    type Run = { label: string; by_check: Record<string, { flagged_samples_by_rule?: Record<string, number> }>; corpora: Record<string, number> };
+    type Run = { label: string; run_on: string; by_check: Record<string, { flagged_samples_by_rule?: Record<string, number> }>; corpora: Record<string, number> };
     const record = JSON.parse(read("data", "gate-reruns", "2026-10-19_red-team-rule-batches.json")) as {
       batches: { runs: Run[]; rule_status_maturity_at_main: Record<string, { maturity: string }> }[];
     };
     const [sprint, mega] = record.batches;
-    const now = sprint!.runs.find((r) => r.label === "current main")!;
+    const now = latestMainRun(sprint!.runs);
     const flagged = (check: string) => now.by_check[check]?.flagged_samples_by_rule ?? {};
     const skill = flagged("benign_skill_corpus_fp")["ATR-2026-00454"]!;
     const extended = flagged("extended_benign_fp")["ATR-2026-00454"]!;
@@ -138,4 +152,21 @@ describe("red-team figures", () => {
     const hack = ablationOf(latest("hackaprompt").m.breakdown.in_sample_ablation)!;
     expect(ablationClause({ source: "hackaprompt", ablation: hack })).toContain(`without the ${hack.rulesRemoved} rules whose YAML names it`);
   });
+
+  it("says the latest gate run matched the previous one only while the record shows it did", () => {
+    const page = read("website", "app", "[locale]", "red-team", "page.tsx");
+    type Run = { label: string; run_on: string; rules_failing_ids: string[]; rules_flagging_a_benign_sample_ids: string[];
+      by_check: Record<string, { flagged_samples_by_rule?: Record<string, number> }> };
+    const record = JSON.parse(read("data", "gate-reruns", "2026-10-19_red-team-rule-batches.json")) as { batches: { runs: Run[] }[] };
+    const fp = (r: Run) => JSON.stringify(Object.entries(r.by_check).filter(([k]) => k.endsWith("_fp")).sort());
+    for (const b of record.batches) {
+      const mains = b.runs.filter((r) => r.label.startsWith("main ")).sort((x, y) => x.run_on.localeCompare(y.run_on));
+      const [prev, last] = mains.slice(-2);
+      expect(last!.rules_failing_ids).toEqual(prev!.rules_failing_ids);
+      expect(last!.rules_flagging_a_benign_sample_ids).toEqual(prev!.rules_flagging_a_benign_sample_ids);
+      expect(fp(last!)).toBe(fp(prev!));
+      expect(page).toContain(prev!.run_on);
+    }
+  });
 });
+

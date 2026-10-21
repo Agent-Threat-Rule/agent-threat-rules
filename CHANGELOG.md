@@ -96,10 +96,12 @@ All notable changes to ATR will be documented in this file.
   files, not 75 (the 2.2.0 entry also counted four earlier CVE rules), and the
   claims that the sprint's and the 2026-06 mega-scan's rules all passed the
   quality gate with 0 benign FP are replaced by the gate re-run on 2026-10-19
-  (`data/gate-reruns/2026-10-19_red-team-rule-batches.json`): at 92c0d0fe, 10
-  of the 71 failed (own true positives) and none flagged a benign SKILL.md file;
-  at current main, 33 of 71 and 4 of 29 fail, and 26 and 3 flag at least one
-  benign sample, none of them in the enforce lane. Each corpus entry links its
+  and again on 2026-10-22 (`data/gate-reruns/2026-10-19_red-team-rule-batches.json`):
+  at 92c0d0fe, 10 of the 71 failed (own true positives) and none flagged a benign
+  SKILL.md file; at main 658ec9c6 on 2026-10-22, 33 of 71 and 4 of 29 fail, and
+  26 and 3 flag at least one benign sample, none of them in the enforce lane,
+  the same as at 9d74fc50 on 2026-10-19 although nine of the recorded rules
+  changed in between. Each corpus entry links its
   measurement file.
 
 ### Changed
