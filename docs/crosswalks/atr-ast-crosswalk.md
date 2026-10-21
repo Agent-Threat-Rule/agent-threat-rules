@@ -19,10 +19,10 @@ Rules in corpus at generation time: **838**.
 |-----|-------|-----------|-------------------------------|
 | AST01 | Malicious Skills | 210 | ASI05 (60), ASI01 (58), ASI04 (51) |
 | AST02 | Supply Chain Compromise | 58 | ASI04 (21), ASI05 (13), ASI01 (12) |
-| AST03 | Over-Privileged Skills | 255 | ASI03 (94), ASI01 (93), ASI06 (47) |
+| AST03 | Over-Privileged Skills | 255 | ASI01 (94), ASI03 (93), ASI06 (47) |
 | AST04 | Insecure Metadata | 119 | ASI05 (47), ASI06 (36), ASI04 (31) |
 | AST05 | Untrusted External Instructions | 362 | ASI01 (340), ASI06 (16), ASI04 (14) |
-| AST06 | Weak Isolation | 137 | ASI01 (75), ASI03 (41), ASI06 (22) |
+| AST06 | Weak Isolation | 137 | ASI01 (76), ASI03 (40), ASI06 (22) |
 | AST07 | Update Drift | 0 | - |
 | AST08 | Poor Scanning | 0 | - |
 | AST09 | No Governance | 40 | ASI03 (19), ASI01 (15), ASI02 (10) |
