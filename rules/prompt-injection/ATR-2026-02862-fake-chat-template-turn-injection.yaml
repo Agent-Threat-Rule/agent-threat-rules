@@ -3,13 +3,16 @@ id: ATR-2026-02862
 rule_version: 1
 status: experimental
 description: >
-  Detects tool-returned or otherwise untrusted content that fabricates adjacent chat-control tokens (e.g.
-  <|end|><|user|>, <im end><im start>) to simulate a conversation turn boundary and smuggle a new "user" or "system"
-  instruction into the model's context. The pattern generalizes across chat-template token spellings (ChatML-style
-  <|im_start|>/<|im_end|>, generic <|end|>/<|user|>/<|assistant|>/<|system|> variants, and spacing/pipe variations), and
-  is most commonly observed in indirect prompt injection where attacker-controlled documents, emails, or tool outputs
-  are ingested into the agent's conversation context.
-author: ATR Community
+  Detects untrusted content (most often tool output: a fetched email, document or page) that places two chat-control
+  tokens next to each other, such as <|end|><|user|>, <|im_end|><|im_start|> or <im end><im start>, to fake the end of
+  one conversation turn and the start of another and so smuggle a new "user" or "system" instruction into the
+  model's context. Scope is deliberately narrow: only an adjacent pair of pipe-delimited role tokens, or the
+  pipe-less "im start"/"im end" spelling, is matched. A single token on its own (for example <|im_start|>user), Llama-3
+  header tokens, <|endoftext|>, and bare XML-style role tags such as <system><user> are out of scope. Related rules
+  divide the space: ATR-2026-01463 covers <|im_start|>system and <|system|> role spoofing, ATR-2026-00395 covers
+  <|im_end|> in user input, and ATR-2026-01860 covers spaced variants such as <|end user|>. The rule was mined from
+  LLMail-Inject submissions and matches none of the other attack corpora in the repository.
+author: "ATR Community (via LLMail-Inject benchmark)"
 date: 2026/10/15
 schema_version: '0.1'
 detection_tier: pattern
@@ -22,45 +25,43 @@ references:
     - ASI01:2026
   mitre_atlas:
     - AML.T0051 - LLM Prompt Injection
+    - AML.T0051.001 - Indirect
+  research:
+    - "https://github.com/microsoft/llmail-inject-challenge"
 compliance:
   eu_ai_act:
     - article: '15'
       context: >-
-        High-risk AI systems must be resilient against adversarial manipulation of their input context. Detecting
-        fabricated chat-control tokens that spoof turn boundaries is a concrete cybersecurity control satisfying Article
-        15 requirements for robustness against input-based manipulation of the conversation structure itself.
+        Article 15 (accuracy, robustness and cybersecurity) calls for resilience against attempts to alter an AI
+        system's use or behaviour by exploiting its vulnerabilities; this rule provides detection evidence supporting
+        that requirement for forged turn boundaries in untrusted content.
       strength: primary
     - article: '9'
       context: >-
-        Fake chat-template turn injection is a documented risk class in the AI system risk register (indirect prompt
-        injection via tool/document ingestion); Article 9 requires that monitoring controls are deployed to detect these
-        attempts at runtime.
+        Article 9 (risk management system) expects identified risks to be monitored; this rule provides detection
+        evidence supporting the monitoring of indirect prompt injection through forged chat-template tokens.
       strength: secondary
   nist_ai_rmf:
-    - subcategory: MP.5.1
+    - subcategory: MS.2.7
       context: >-
-        Fabricated turn-boundary tokens are a primary class of adversarial input attack against AI systems; MP.5.1
-        requires that such adversarial input risks are identified and tracked so that runtime detection controls like
-        this rule can be deployed.
+        NIST AI RMF MEASURE 2.7 (security and resilience evaluated and documented) is supported by this rule's runtime
+        detection of forged chat-template turn boundaries.
       strength: primary
-    - subcategory: MG.3.2
+    - subcategory: MG.2.3
       context: >-
-        Detected fake chat-template injections represent active exploitation of the conversation structure via untrusted
-        tool or document content, triggering the third-party risk management and containment practices required by
-        MG.3.2.
+        NIST AI RMF MANAGE 2.3 (procedures respond to previously unknown identified risks) is supported by detections
+        that surface new turn-forging spellings for response.
       strength: secondary
   iso_42001:
     - clause: '8.1'
       context: >-
-        Clause 8.1 operational controls ensure AI systems execute correctly and consistently; runtime detection of
-        fabricated chat-control tokens enforces that the conversation's turn structure cannot be forged by untrusted
-        upstream content.
+        Clause 8.1 (operational planning and control): runtime detection of forged chat-control tokens is an
+        operational control on what untrusted content may do to the conversation structure.
       strength: primary
-    - clause: '8.3'
+    - clause: '6.2'
       context: >-
-        Clause 8.3 requires controls for externally provided processes, products or services; this rule addresses the
-        risk that content retrieved from tools, documents, or other external sources is used to inject forged
-        conversational turns.
+        Clause 6.2 (AI objectives and planning to achieve them): detections from this rule give measurable input to
+        objectives for resisting indirect prompt injection.
       strength: secondary
 tags:
   category: prompt-injection
@@ -82,19 +83,17 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: >-
-        (?i)<\|?\s*(?:im[_ ]?start|im[_ ]?end|end|system|assistant|user)\s*\|?>\s*<\|?\s*(?:im[_ ]?start|im[_
-        ]?end|end|system|assistant|user)\s*\|?>
+      value: '(?i)(?:<\|\s*(?:im[_ ]?start|im[_ ]?end|end|system|assistant|user)\s*\|?>|<\s*im[_ ]?(?:start|end)\s*\|?>)\s*(?:<\|\s*(?:im[_ ]?start|im[_ ]?end|end|system|assistant|user)\s*\|?>|<\s*im[_ ]?(?:start|end)\s*\|?>)'
       description: Fabricated adjacent chat-control tokens simulating a conversation turn boundary to smuggle a new instruction
   condition: any
   false_positives:
     - >-
-      Documentation or code samples displaying a single chat-template tag in isolation, with no second adjacent control
-      token
+      Chat-template documentation, model cards, tokenizer tutorials or raw prompt logs that show a closing and an
+      opening token next to each other, such as <|im_end|> followed by a real line break and <|im_start|>
     - >-
-      Discussions of ChatML or similar chat-template formats that mention role names in prose without angle-bracket
-      token syntax
-    - Legitimate rendered transcripts where a single control token appears without an immediately adjacent second token
+      Fine-tuning datasets or exported transcripts in ChatML form that are returned by a tool as data rather than
+      injected as instructions
+    - Security write-ups that quote a turn-forging payload verbatim
 response:
   actions:
     - alert
@@ -134,3 +133,9 @@ test_cases:
     - input: In the chat transcript, the assistant replied once and then waited for the next user message.
       expected: not_triggered
       description: Narrative description of assistant/user turns without fabricated control tokens
+    - input: 'Prompt template: <system><user>{question}</user></system> is filled in before each call.'
+      expected: not_triggered
+      description: Bare XML-style role tags in a prompt template, which carry no pipe delimiters
+    - input: 'In ChatML every turn is closed and the next one opened, for example <|im_end|>\n<|im_start|>user, as shown in the tokenizer guide.'
+      expected: not_triggered
+      description: ChatML explanation where the line break between tokens is written as a literal backslash-n
