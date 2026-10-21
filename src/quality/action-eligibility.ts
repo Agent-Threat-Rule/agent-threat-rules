@@ -193,8 +193,10 @@ export interface FpEvidence {
   readonly sampleCount?: number;
   /**
    * True when the harness reported that some of the rule's declared conditions
-   * could not be exercised at all (fieldCoverage / trace / behavioral). A partial
-   * measurement bounds nothing, so it is treated as no measurement.
+   * could not be exercised at all (fieldCoverage: a field no sample fills, or a
+   * method the synchronous engine cannot run — trace, behavioral, signature, or
+   * semantic without a pattern fallback). A partial measurement that found
+   * nothing bounds nothing, so it is treated as no measurement.
    */
   readonly partial?: boolean;
   /**

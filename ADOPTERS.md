@@ -133,9 +133,10 @@ Listed when the integration code has been merged or released.
 ### AG2 (AutoGen)
 - **Org**: AG2 (ag2ai)
 - **Type**: adapter
-- **Integration**: `ATRGuardrail` contrib capability that scans tool output and LLM input against the ATR ruleset via the `pyatr` engine; merged into the ag2-classic framework and since maintained by an AG2 maintainer
-- **Evidence**: <https://github.com/ag2ai/ag2classic/blob/main/autogen/agentchat/contrib/capabilities/atr_guardrail.py>
-- **Since**: 2026-06-28
+- **Integration**: `ATRGuardrail` contrib capability that scans tool output and LLM input against the ATR ruleset via the `pyatr` engine; contributed to the ag2-classic framework by the ATR maintainer, who agreed to maintain it, and reviewed, amended and merged by AG2 maintainer marklysze
+- **Evidence**: <https://github.com/ag2ai/ag2-classic/pull/108> and <https://github.com/ag2ai/ag2-classic/blob/main/autogen/agentchat/contrib/capabilities/atr_guardrail.py>
+- **Since**: 2026-07-02
+- **Still-present**: autogen/agentchat/contrib/capabilities/atr_guardrail.py contains "Agent Threat Rules"
 - **Status**: shipped
 
 ### BerriAI LiteLLM
@@ -255,6 +256,15 @@ Listed when the integration code has been merged or released.
 - **Since**: 2026-09-15
 - **Status**: shipped
 - **Categories**: prompt-injection, tool-poisoning, context-exfiltration, agent-manipulation, privilege-escalation, excessive-autonomy, data-poisoning, model-abuse, skill-compromise
+
+### Tencent AI-Infra-Guard
+- **Org**: Tencent Zhuque Lab
+- **Type**: category-subset
+- **Integration**: MCP threat-detection prompt templates covering ATR attack classes, contributed by the ATR maintainer and merged by an AI-Infra-Guard maintainer into the scanner's `data/mcp/` ruleset in its own `prompt_template` schema, with `ATR (Agent Threat Rules)` as the author of each added file
+- **Evidence**: <https://github.com/Tencent/AI-Infra-Guard/pull/422> and <https://github.com/Tencent/AI-Infra-Guard/pull/469>
+- **Since**: 2026-06-23
+- **Still-present**: data/mcp/mcp_credential_exfiltration.yaml contains "Agent Threat Rules"
+- **Status**: shipped
 
 ## Tier 3 — Documentation references & awesome-lists
 

@@ -238,6 +238,13 @@ describe('Engine + Embedding Module integration', () => {
 
     const { verdict, layersUsed } = await engine.evaluateWithVerdict(event);
     expect(layersUsed).toContain('tier2.5-embedding');
-    expect(verdict.outcome).not.toBe('allow'); // should be ask or deny
+    // A model decided this match: reported, not enforced, by default
+    // (tests/model-decisions-advisory.test.ts).
+    expect(verdict.outcome).toBe('allow');
+    expect(verdict.advisory?.map((m) => m.decidedBy)).toEqual(['embedding']);
+
+    const enforcing = new ATREngine({ rules: [], embeddingModule, modelDecisions: 'enforce' });
+    const { verdict: enforced } = await enforcing.evaluateWithVerdict(event);
+    expect(enforced.outcome).not.toBe('allow'); // ask or deny, as before
   });
 });

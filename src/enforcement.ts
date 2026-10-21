@@ -89,6 +89,7 @@
  * @module agent-threat-rules/enforcement
  */
 
+import type { ModelDecisions } from './verdict.js';
 import { LANES, type Lane } from './quality/rule-contract.js';
 import { ACTION_TIERS, actionTier } from './quality/action-eligibility.js';
 
@@ -97,6 +98,18 @@ export const LANE_ENV_VAR = 'ATR_LANE';
 
 /** Environment variable enabling blocking (the operator directive). */
 export const BLOCKING_ENV_VAR = 'ATR_BLOCKING';
+
+/** Environment variable the CLI reads for what a model-decided match may do. */
+export const MODEL_DECISIONS_ENV_VAR = 'ATR_MODEL_DECISIONS';
+
+/**
+ * Parse a modelDecisions value as a person types it (any case, padding).
+ * Returns null for anything that is not 'advisory' or 'enforce'.
+ */
+export function parseModelDecisions(value: string): ModelDecisions | null {
+  const normalized = value.trim().toLowerCase();
+  return normalized === 'advisory' || normalized === 'enforce' ? normalized : null;
+}
 
 /**
  * Lane used when neither config nor environment says otherwise.

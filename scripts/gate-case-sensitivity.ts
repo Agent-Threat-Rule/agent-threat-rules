@@ -99,7 +99,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isReDoSSafe, regexConditionSpec, type RegexConditionSpec } from "../src/engine.js";
 import { loadRuleFile } from "../src/loader.js";
-import { buildEventFromTestCase } from "../src/testcase-event.js";
+import { UNNAMED_TOOL, buildEventFromTestCase } from "../src/testcase-event.js";
 import type { ATRRule } from "../src/types.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -199,8 +199,10 @@ export function benignSamples(rule: ATRRule): readonly BenignSample[] {
           ? (entry as Record<string, unknown>)
           : {};
     const event = buildEventFromTestCase(tc, rule);
+    // UNNAMED_TOOL is the name the harness gives a tool the case does not name,
+    // not text the case wrote, so it is no sample of what the rule must let pass.
     const texts = [event.content, ...Object.values(event.fields ?? {})].filter(
-      (t): t is string => typeof t === "string" && t.length > 0,
+      (t): t is string => typeof t === "string" && t.length > 0 && t !== UNNAMED_TOOL,
     );
     return { index, texts: [...new Set(texts)] };
   });

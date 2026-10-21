@@ -30,6 +30,7 @@
 import { createInterface } from 'node:readline';
 import type {
   AgentEvent,
+  HookEventName,
   HookInput,
   HookOutput,
   VerdictOutcome,
@@ -37,6 +38,7 @@ import type {
 import type { ATREngine } from './engine.js';
 import type { ActionExecutor } from './action-executor.js';
 import { blockingFromConfig } from './enforcement.js';
+import { toolOutputText } from './hook-tool-output.js';
 
 /** Default evaluation timeout in milliseconds */
 const DEFAULT_TIMEOUT_MS = 5_000;
@@ -90,27 +92,32 @@ function hookInputToEvent(input: HookInput): AgentEvent {
   // tool_response. Measured: the same PreToolUse payload produced event.type
   // tool_response under hook_event_name and tool_call under ATR's own `hook`.
   // Rules admitted only on tool_call could not fire on any real event.
-  const isPreTool = hookEventOf(input) === 'PreToolUse';
+  const hookEvent = hookEventOf(input);
+  const isPreTool = hookEvent === 'PreToolUse';
   const type = isPreTool ? 'tool_call' : 'tool_response';
 
   const toolInput = input.tool_input ?? {};
-  const content = typeof toolInput['content'] === 'string'
+  const inputText = typeof toolInput['content'] === 'string'
     ? toolInput['content']
     : JSON.stringify(toolInput);
+  // After the tool runs, the event is about what it returned: the engine reads
+  // a tool_response event's content as the text the model ingests (llm_io rules
+  // run on it as indirect prompt injection). Without an output, the input
+  // stands in, as it did for every PostToolUse event before Claude Code's
+  // tool_response was read.
+  const output = isPreTool
+    ? ''
+    : hookEvent === 'PostToolUseFailure'
+      ? failedCallOutput(input, toolInput)
+      : postToolOutput(input, toolInput);
+  const content = output !== '' ? output : inputText;
 
   const fields: Record<string, string> = {
     tool_name: input.tool_name ?? '',
     tool_args: JSON.stringify(toolInput),
     content,
+    ...(output !== '' ? { tool_response: output } : {}),
   };
-
-  // For PostToolUse, include output/response if present
-  if (!isPreTool) {
-    const output = toolInput['output'] ?? toolInput['response'];
-    if (typeof output === 'string') {
-      fields['tool_response'] = output;
-    }
-  }
 
   return Object.freeze({
     type,
@@ -119,6 +126,53 @@ function hookInputToEvent(input: HookInput): AgentEvent {
     fields: Object.freeze(fields),
     sessionId: input.session_id,
   });
+}
+
+/**
+ * The text of the tool's output on a PostToolUse input.
+ *
+ * Claude Code sends it at the top level, as tool_response (checked against the
+ * shipped 2.1.280 binary, whose PostToolUse input is { hook_event_name,
+ * tool_name, tool_input, tool_response, tool_use_id, duration_ms, ... }). Only
+ * tool_input.output and tool_input.response were read before, where Claude Code
+ * never puts a tool's output, so its PostToolUse events carried the tool's input
+ * and nothing it returned. Those two keys are still read, for a host that sends
+ * the output there; the host's own tool_response wins when it holds text.
+ */
+function postToolOutput(input: HookInput, toolInput: Readonly<Record<string, unknown>>): string {
+  const fromHost = toolOutputText(input.tool_name ?? '', input.tool_response, toolInput);
+  if (fromHost !== '') return fromHost;
+  const legacy = toolInput['output'] ?? toolInput['response'];
+  return typeof legacy === 'string' ? legacy : '';
+}
+
+/**
+ * What Claude Code puts ahead of a failed shell command's stderr and stdout: the
+ * `Exit code N` line, then, for a command it aborted, its abort note. Either ends
+ * the text when the command printed nothing.
+ */
+const FAILURE_PREAMBLE = /^Exit code -?\d+(?:\r?\n<error>Command was aborted before completion<\/error>)?(?:\r?\n|$)/;
+
+/**
+ * The text of a failed tool call's error, on a PostToolUseFailure input.
+ *
+ * When a tool call fails, a Bash command whose exit code Claude Code counts as a
+ * failure among them (most non-zero codes; grep's exit 1 is not one), Claude
+ * Code sends PostToolUseFailure instead of PostToolUse: { tool_name, tool_input,
+ * tool_use_id, error, is_interrupt, duration_ms }, with no tool_response. The
+ * shipped 2.1.280 builds error as the model sees the failure: for a shell
+ * command `Exit code N`, its abort note when it aborted the command, then the
+ * command's stderr and stdout, trimmed, and middle-truncated to about 10,000
+ * characters. That preamble is Claude Code's, not the command's, and is left
+ * out, for any tool whose error starts with it, so a pattern anchored at the
+ * start reads the output; a command that printed nothing leaves no text, and the
+ * event is built from the input, as an output-less PostToolUse is. An error that
+ * is not a string, which 2.1.280 never sends, is read as a tool output.
+ */
+function failedCallOutput(input: HookInput, toolInput: Readonly<Record<string, unknown>>): string {
+  const error = input.error;
+  if (typeof error === 'string') return error.replace(FAILURE_PREAMBLE, '');
+  return toolOutputText(input.tool_name ?? '', error, toolInput);
 }
 
 /**
@@ -217,15 +271,21 @@ export function toClaudeCodePreToolUse(
  *
  * ADVISORY MODE (the default): the sentinel is never set, and the findings
  * still travel in atr_decision / atr_reason / matched_rules.
+ *
+ * PostToolUseFailure takes the same contract under its own name: the 2.1.280
+ * binary turns `decision: 'block'` into a blocking error it shows the model for
+ * that event as for PostToolUse, and its hookSpecificOutput carries only
+ * hookEventName and an optional additionalContext.
  */
 export function toClaudeCodePostToolUse(
   output: HookOutput,
-  options: HookContractOptions = {}
+  options: HookContractOptions = {},
+  hookEventName: 'PostToolUse' | 'PostToolUseFailure' = 'PostToolUse'
 ): Record<string, unknown> {
   const blocking = options.blocking ?? false;
   const block = blocking && (output.decision === 'deny' || output.decision === 'ask');
   return {
-    hookSpecificOutput: { hookEventName: 'PostToolUse' },
+    hookSpecificOutput: { hookEventName },
     ...(blocking ? {} : { atr_advisory: true }),
     atr_decision: output.decision,
     ...(blocking ? {} : { atr_reason: output.reason ?? output.message ?? '' }),
@@ -325,6 +385,14 @@ export class HookHandler {
   }
 
   /**
+   * Handle a PostToolUseFailure hook event: a tool call that failed. Scans the
+   * call's error, which carries a failed command's output.
+   */
+  async handlePostToolUseFailure(input: HookInput): Promise<HookOutput> {
+    return this.handlePostToolUse(input);
+  }
+
+  /**
    * Start a stdio JSON-lines loop.
    *
    * Reads one JSON object per line from stdin, dispatches to the
@@ -348,11 +416,12 @@ export class HookHandler {
       // the tool runs. (The error path itself fail-OPENS to allow unless
       // failOpen: false — see handleError; the header comment on this module is
       // the accurate one.)
-      let hookType: HookInput['hook'] = 'PreToolUse';
+      let hookType: HookEventName = 'PreToolUse';
 
       try {
         const input = JSON.parse(trimmed) as HookInput;
-        if (hookEventOf(input) === 'PostToolUse') hookType = 'PostToolUse';
+        const named = hookEventOf(input);
+        if (named === 'PostToolUse' || named === 'PostToolUseFailure') hookType = named;
         output = await this.dispatch(input);
       } catch (err) {
         output = this.handleError(err);
@@ -364,9 +433,9 @@ export class HookHandler {
       const payload =
         format === 'generic'
           ? (output as unknown as Record<string, unknown>)
-          : hookType === 'PostToolUse'
-            ? toClaudeCodePostToolUse(output, contractOptions)
-            : toClaudeCodePreToolUse(output, contractOptions);
+          : hookType === 'PreToolUse'
+            ? toClaudeCodePreToolUse(output, contractOptions)
+            : toClaudeCodePostToolUse(output, contractOptions, hookType);
 
       process.stdout.write(JSON.stringify(payload) + '\n');
     }
@@ -381,6 +450,8 @@ export class HookHandler {
         return this.handlePreToolUse(input);
       case 'PostToolUse':
         return this.handlePostToolUse(input);
+      case 'PostToolUseFailure':
+        return this.handlePostToolUseFailure(input);
       default:
         return allowOutput(`Unknown hook type: ${String(hookEventOf(input))}`);
     }

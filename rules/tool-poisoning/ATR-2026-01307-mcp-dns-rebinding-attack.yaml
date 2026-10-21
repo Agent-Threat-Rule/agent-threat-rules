@@ -78,13 +78,13 @@ detection:
     # Pattern 1: rebind.network / rbndr.us DNS rebinding service hostnames
     - field: content
       operator: regex
-      value: '(?i)\b[a-zA-Z0-9.-]+\.(?:rebind\.network|rbndr\.us|rebinder\.com|1u\.ms)\b'
+      value: '(?i)\b[a-zA-Z0-9.-]{1,253}\.(?:rebind\.network|rbndr\.us|rebinder\.com|1u\.ms)\b'
       description: "Known DNS rebinding service hostname (rebind.network, rbndr.us, etc.)"
 
     # Pattern 2: Canonical time-based rebinding pattern: A.ip1.1time.ip2.forever.<uuid>.rebind.network
     - field: content
       operator: regex
-      value: '(?i)[\w.-]*(?:1time|forever|ttl\d+|0ttl)[\w.-]+(?:127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(?:1[6-9]|2\d|3[0-1])\.\d+\.\d+)'
+      value: '(?i)(?:1time|forever|ttl\d+|0ttl)[\w.-]{1,253}(?:127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(?:1[6-9]|2\d|3[0-1])\.\d+\.\d+)'
       description: "Time-based DNS rebinding hostname pattern combining public IP with loopback/private IP"
 
     # Pattern 3: Script injection triggering navigation to a rebinding hostname
