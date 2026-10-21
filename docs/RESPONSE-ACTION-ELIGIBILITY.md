@@ -261,6 +261,17 @@ the rate it observed, reported as a lower bound, and can never reach `terminate`
 5,352 samples. Discarding that as "incomplete" would have been the polite reading
 and the wrong one.
 
+The second case also covers a rule the harness cannot run at all. Every
+benign-corpus measurement drives the synchronous engine, whose `evaluateRule()`
+returns null for `method: trace` without a span DAG, for `method: behavioral`
+always, and for `method: semantic` unless `detection.semantic.fallback_method` is
+exactly `pattern` (the judge runs only in `evaluateAsync()`). Such a rule scores
+0 on every sample, so its record says `partial_measurement: true` and it lands in
+this cell. Two more are recorded the same way: a rule with no condition field,
+which leaves a sample nothing to reach, and `method: signature`, which matches
+only a field value equal to one of its indicators, something a benign sample
+practically never is.
+
 The third is the "green CI expires" rule made mechanical. A false-positive count
 is a measurement **of a detection**, not of a rule id: edit the conditions and
 the number on file describes a rule that no longer exists. The fingerprint covers
@@ -342,8 +353,32 @@ The ratchet is `tests/action-eligibility.test.ts` → `repository conformance`.
 It reads every rule on disk and the committed measurement, and fails naming any
 rule that overreaches. Adding `kill_agent` to an unmeasured rule turns it red.
 
-`live-ids.txt` is every rule the engine can load and fire: all of `rules/**/*.yaml`
-minus `status: draft` / `status: deprecated` / `maturity: deprecated`.
+`live-ids.txt` is the list of rule ids to measure. CI builds it with
+`npx tsx scripts/reverify-evidence.ts --list-ids`: every id the gate reads under
+`rules/`, inert ones included.
+
+An inert id (`status: draft` / `status: deprecated` / `maturity: deprecated`)
+gets no record. The engine never evaluates such a rule, so it scores 0 by
+construction; `gate-promotion-fp.ts` lists it under NOT MEASURED instead of
+writing that 0, and `remeasure-benign-fp.ts` leaves it out the same way. An id
+two rule files share gets no record either.
+
+The gate refuses evidence that holds a record for a rule that is not live
+(exit 2): one that is inert, or whose file is gone. A record carries no
+`status`, and `detection_fingerprint` does not cover it, so the gate cannot tell
+a count taken while the rule was live from a 0 nothing measured, and either
+would pass, trusted, to the rule a one-line `status:` edit revives or a restore
+brings back. Deprecating or deleting a rule therefore means re-emitting the
+evidence in the same change:
+
+```bash
+git fetch origin main
+npx tsx scripts/remeasure-benign-fp.ts --base-ref origin/main \
+    --emit-measurement data/benign-fp-measurement.json
+```
+
+That re-measures what main's evidence does not describe yet, so its diff can
+name other rules than the one retired.
 
 ## 9. What is still open
 
@@ -377,6 +412,16 @@ minus `status: draft` / `status: deprecated` / `maturity: deprecated`.
   `allow`, including an `~/.ssh/id_rsa` exfiltration to a remote host. ATR now
   emits a decision only to restrain (`deny` / `ask`); an `allow` verdict omits
   the whole `hookSpecificOutput` envelope and the host keeps its own prompt.
+- A semantic rule that falls back to pattern is measured on that fallback, and
+  graded on it like a pattern rule. With a judge configured the judge decides,
+  and the fallback runs only when the judge is unavailable or fails, so the
+  recorded number describes the fallback rather than the judge. **Partly
+  addressed (Unreleased):** a match a model decided (a semantic rule's judge, the
+  embedding signal, the Layer 3 semantic module; `decidedBy` on the match) is now
+  reported and not enforced unless the integrator sets `modelDecisions:
+  'enforce'`: it takes no part in the verdict's outcome, and only its
+  observe-tier actions are dispatched. A judge-decided match earning a tier from
+  evidence needs a measured reference judge, which does not exist yet.
 - The verdict path (`severity` + `confidence` → `permissionDecision`) has no
   precision input at all. That is a second, larger line: it _would_ change what
   the engine blocks, so it needs its own recall analysis and is out of scope here.

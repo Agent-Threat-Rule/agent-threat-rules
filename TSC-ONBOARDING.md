@@ -106,7 +106,7 @@ PRs. TSC review is expected for:
 | `needs-tsc-review` | At least one TSC member's review required before merge |
 | `tsc-approved` | TSC approval threshold met per Charter §5 |
 | `tsc-blocked` | A TSC member has raised an objection; resolution required before merge |
-| `auto-mergeable` | CI safety gate passed; eligible for `gh pr merge --auto` |
+| `auto-mergeable` | Retired on 2026-06-03. Nothing merges automatically (the repository has auto-merge turned off); a maintainer has to merge each PR |
 | `needs-human-review` | CI safety gate failed; awaits maintainer judgement |
 
 ### 5.3 Time expectations

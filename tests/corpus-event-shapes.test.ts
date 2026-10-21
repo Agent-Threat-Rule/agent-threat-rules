@@ -371,6 +371,49 @@ describe("fieldCoverage — 'clean' must never quietly mean 'never looked at'", 
     expect(fieldCoverage([rule("F", ["content"], "any", "behavioral")])[0]?.zeroMeasurement).toBe(true);
   });
 
+  it("calls a semantic rule zero-measurement unless it falls back to exactly `pattern`", () => {
+    const semantic = (id: string, block?: { fallback_method?: unknown }): RuleLike => ({
+      id,
+      detection: {
+        condition: "any",
+        method: "semantic",
+        ...(block === undefined ? {} : { semantic: block }),
+        conditions: [{ field: "content", operator: "regex", value: "x" }],
+      },
+    });
+    // The synchronous evaluate() path runs no judge: without a pattern fallback
+    // the rule returns null on every sample, whatever its conditions say.
+    for (const blind of [
+      semantic("H"),
+      semantic("I", {}),
+      semantic("J", { fallback_method: "none" }),
+      semantic("K", { fallback_method: "Pattern" }),
+    ]) {
+      const [c] = fieldCoverage([blind]);
+      expect(c?.zeroMeasurement, blind.id).toBe(true);
+      expect(c?.method, blind.id).toBe("semantic-no-pattern-fallback");
+    }
+    // With the fallback it runs the same conditions a pattern rule runs.
+    expect(fieldCoverage([semantic("L", { fallback_method: "pattern" })])).toEqual([]);
+  });
+
+  it("calls a rule that declares no condition field zero-measurement, whatever its method", () => {
+    const empty = (id: string, conditions: unknown, method?: string): RuleLike => ({
+      id,
+      detection: {
+        condition: "any",
+        conditions,
+        ...(method === undefined ? {} : { method, semantic: { fallback_method: "pattern" } }),
+      },
+    });
+    // A pattern fallback with nothing in it is no fallback at all.
+    for (const r of [empty("M", []), empty("N", {}), empty("O", [], "semantic")]) {
+      const [c] = fieldCoverage([r]);
+      expect(c?.zeroMeasurement, r.id).toBe(true);
+      expect(c?.method, r.id).toBe(null);
+    }
+  });
+
   it("reads both the array and the named-map condition formats", () => {
     const named: RuleLike = {
       id: "G",
@@ -510,6 +553,7 @@ describe("harnesses import the canonical shape set — they do not mirror it", (
     "scripts/promote-to-stable.ts",
     "scripts/audit-draft-revival.ts",
     "scripts/validate-rule-testcases.ts",
+    "scripts/remeasure-benign-fp.ts",
     "src/eval/eval-harness.ts",
   ] as const;
 

@@ -1,5 +1,13 @@
 import type { Metadata } from 'next';
 import { loadSiteStats } from '@/lib/stats';
+import {
+  GARAK_BOTH_CLOSED_BOOK,
+  LANES_EXPLAINED,
+  commonStamp,
+  count,
+  findBenchmark,
+  recallLanes,
+} from '@/lib/recall';
 import { locales, type Locale } from '@/lib/i18n';
 
 export function generateStaticParams() {
@@ -9,7 +17,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: 'NVIDIA garak × ATR — ATR',
   description:
-    'A red-team standard feeds a detection standard. NVIDIA garak finds the attack; ATR turns it into a versioned, MIT-licensed detection rule. Two standards interoperate instead of duplicating each other (integration PR #1676, open).',
+    "A red-team tool feeds a detection standard. NVIDIA garak finds attacks; ATR has written detection rules from garak's probe corpus. garak does not ship ATR: garak PR #1676, which proposed ATR detectors for garak, was withdrawn by its ATR author on 2026-08-04 without being merged.",
 };
 
 export default async function GarakIntegratePage({
@@ -21,6 +29,8 @@ export default async function GarakIntegratePage({
   const locale = (locales.includes(raw as Locale) ? raw : 'en') as Locale;
   const zh = locale === 'zh';
   const stats = loadSiteStats();
+  const garak = findBenchmark(stats, 'garak');
+  const full = findBenchmark(stats, 'garak-full');
   const ruleCountStr = `${stats.ruleCount} rules today`.padEnd(25);
 
   return (
@@ -28,8 +38,8 @@ export default async function GarakIntegratePage({
       <h1 className="text-3xl font-bold">NVIDIA garak × ATR</h1>
       <p className="mt-2 text-neutral-400">
         {zh
-          ? 'garak 是紅隊的標準,ATR 是偵測的標準。一個找到攻擊,另一個把它變成一條版本化、MIT 授權的偵測規則。標準之間互餵,不重造彼此——每個 probe 的來源都留在 author 欄位。'
-          : "garak is a standard for red teaming; ATR is a standard for detection. One finds the attack, the other turns it into a versioned, MIT-licensed detection rule. Standards feed each other instead of reinventing each other — every probe's provenance stays on the author line."}
+          ? 'garak 是紅隊工具,ATR 是偵測標準。一個找到攻擊,另一個把它變成一條版本化、MIT 授權的偵測規則,ATR 因此不必另造一套攻擊語料——每個 probe 的來源都留在 author 欄位。'
+          : "garak is a red-teaming tool; ATR is a detection standard. One finds the attack, the other turns it into a versioned, MIT-licensed detection rule, so ATR does not have to build its own attack corpus — every probe's provenance stays on the author line."}
       </p>
 
       <section className="mt-10 space-y-3">
@@ -43,7 +53,7 @@ export default async function GarakIntegratePage({
               在 LLM 層找攻擊。ATR 在 agent 層防禦(tool calls、skills、MCP)。同一個攻擊
               payload,兩個不同的偵測面——一個標準量它能不能突破模型,另一個標準量它能不能
               在真實 agent 成品上被攔下來。橋接只是一支 Python 腳本:garak 報告進來,ATR 提案
-              出去,結晶 loop 處理其餘的事。一條在這裡寫下的規則,下游每個消費 ATR 的引擎都收得到。
+              出去,結晶 loop 起草規則,再由維護者審查。一條在這裡寫下的規則,下游每個消費 ATR 的引擎都收得到。
             </>
           ) : (
             <>
@@ -51,7 +61,7 @@ export default async function GarakIntegratePage({
               MCP). One attack payload, two detection surfaces — one standard measures whether it
               breaks the model, the other measures whether it can be caught on a real agent artifact.
               The bridge is just a Python script: garak reports in, ATR proposals out, the
-              crystallisation loop does the rest. A rule written here reaches every engine that
+              crystallisation loop drafts rules and a maintainer reviews them. A rule written here reaches every engine that
               consumes ATR downstream.
             </>
           )}
@@ -64,9 +74,10 @@ Probes claude-3.7                    ${ruleCountStr}npm: agent-threat-rules
 Probes gpt-5                 ──▶     +auto-crystallised       PyPI: pyatr
 Probes gemini-2-pro                  from garak evidence      your CI pipeline
 Writes report.jsonl                  canary 24h
-                                     auto-merge
+                                     maintainer review
 
-garak PR status: integration PR #1676 OPEN (under maintainer review, not merged)`}
+garak PR #1676 (ATR detectors inside garak): withdrawn by its ATR author on
+2026-08-04, not merged. garak does not ship ATR.`}
         </pre>
       </section>
 
@@ -90,10 +101,9 @@ garak PR status: integration PR #1676 OPEN (under maintainer review, not merged)
             )}
           </li>
           <li>
-            {zh ? '抓 pipe 腳本:它在 ATR repo 裡。' : 'Fetch the pipe script: it lives in the ATR repo.'}{' '}
-            <code className="rounded bg-neutral-800 px-1 break-all">
-              curl -O https://raw.githubusercontent.com/Agent-Threat-Rule/agent-threat-rules/main/scripts/garak-to-tc.py
-            </code>
+            {zh
+              ? '橋接腳本 garak-to-tc.py 已於 2026-06-20 移出公開 repo,目前沒有公開提供。'
+              : 'The bridge script, garak-to-tc.py, was moved out of the public repository on 2026-06-20 and is not published at the moment.'}
           </li>
           <li>
             {zh ? '在環境變數設定 key:' : 'Set the key in your environment:'}{' '}
@@ -112,14 +122,14 @@ garak PR status: integration PR #1676 OPEN (under maintainer review, not merged)
 {`# Native garak JSONL report
 python3 garak-to-tc.py \\
     --input ~/.local/share/garak/runs/2026-04-18-claude-3-7/report.jsonl \\
-    --partner-name  nvidia-airt \\
+    --partner-name  your-org \\
     --target-model  claude-3-7-sonnet \\
     --garak-version 0.14.1
 
 # Or ATR-style eval (from scripts/eval-garak.sh in this repo)
 python3 garak-to-tc.py \\
     --input data/garak-benchmark/garak-eval-report.json \\
-    --partner-name  nvidia-airt \\
+    --partner-name  your-org \\
     --dry-run   # inspect before submitting`}
         </pre>
       </section>
@@ -201,22 +211,22 @@ python3 garak-to-tc.py \\
           </li>
           <li>
             {zh
-              ? '規則進入 24h canary。每個在野的 ATR 整合 client 收到取樣劑量(~10%)。若任何 client 回報誤判,規則自動隔離。'
-              : 'Rule enters 24h canary. Every ATR-integrated client in the field gets a sampling dose (~10%). If any client reports false positives, the rule is quarantined automatically.'}
+              ? '規則在 Threat Cloud 上進入 24h canary。'
+              : 'Rule enters a 24h canary on Threat Cloud.'}
           </li>
           <li>
             {zh ? (
               <>
                 通過 canary → 安全閘門(良性 skill 語料 0 FP、test_cases 齊備、每個 PR ≤10 條規則;
                 語料以 <code>data/skill-benchmark/benign/</code> 為準,閘會遞迴讀取其下所有 .md)→
-                自動 merge 進 <code>agent-threat-rules</code> main →{' '}
+                以 PR 送進 <code>agent-threat-rules</code> main,由維護者審查後手動 merge(repo 已關閉 auto-merge)→{' '}
                 隨下一個版本發布(CI 在 npm 上 stage,維護者以 2FA 核准)→ 每個下游消費者在下次安裝時升級。
               </>
             ) : (
               <>
                 Survives canary → safety gate (0 FP on the benign skill corpus, test_cases present,
-                ≤ 10 rules per PR; the gate reads every `.md` under
-                <code>data/skill-benchmark/benign/</code>, subdirectories included) → auto-merged into <code>agent-threat-rules</code> main →
+                ≤ 10 rules per PR; the gate reads every <code>.md</code> file under{' '}
+                <code>data/skill-benchmark/benign/</code>, subdirectories included) → opened as a PR against <code>agent-threat-rules</code> main, which a maintainer reviews and merges by hand (the repository has auto-merge turned off) →
                 ships in the next release, which CI stages on npm and a maintainer approves with 2FA →
                 every downstream consumer upgrades on next install.
               </>
@@ -225,13 +235,13 @@ python3 garak-to-tc.py \\
           <li>
             {zh ? (
               <>
-                每條產出的規則都帶 <code>author: nvidia-airt (via garak vX.Y.Z)</code> 與{' '}
+                每條產出的規則都帶 <code>author: your-org (via garak vX.Y.Z)</code> 與{' '}
                 <code>metadata_provenance.garak_probe: &lt;probe-id&gt;</code>。歸屬永久且機器可讀。
               </>
             ) : (
               <>
                 Every resulting rule carries{' '}
-                <code>author: nvidia-airt (via garak vX.Y.Z)</code> and{' '}
+                <code>author: your-org (via garak vX.Y.Z)</code> and{' '}
                 <code>metadata_provenance.garak_probe: &lt;probe-id&gt;</code>. Attribution is
                 permanent and machine-readable.
               </>
@@ -279,23 +289,33 @@ python3 garak-to-tc.py \\
           <li>
             {zh ? (
               <>
-                每次 POST 之間預設 100ms 延遲,跑完約一分鐘。兩個數字都公開:在 garak 公開
-                in-the-wild jailbreak 集(650 筆)上,recall 是 92.3%;在完整 garak 語料
-                (3,475 筆,涵蓋全部 probe 家族)上,recall 是 57.2%(皆為 ATR 3.5.12,量測於
-                2026-08-15)。落差是刻意的——regex
-                偵測層不去打某些 probe 家族(例如純語意越獄),硬塞只會換來脆弱簽章與誤報。
-                列出較低的那個數字,是因為一個標準的可信度,取決於它願不願意公開自己最差的數字。
+                每次 POST 之間預設 100ms 延遲,跑完約一分鐘。
+                {garak && full && (
+                  <>
+                    {`兩份語料、兩個 lane 的數字都公開:在 garak 公開 in-the-wild jailbreak 集(${count(garak.samples)} 筆)上,recall 是 ${recallLanes(garak)};在完整 garak 語料(${count(full.samples)} 筆,涵蓋全部 probe 家族)上是 ${recallLanes(full)}(${commonStamp([garak, full], true)})。`}
+                    {LANES_EXPLAINED.zh}
+                    {GARAK_BOTH_CLOSED_BOOK.zh}
+                    {"兩份語料之間的落差,一部分是刻意的——regex 偵測層不去打某些 probe 家族(例如純語意越獄),硬塞只會換來脆弱簽章與誤報;另一部分是 in-the-wild 的數字有不少靠的是從那份語料寫出來的規則。較低的數字也照樣列出,是因為一個標準的可信度,取決於它願不願意公開自己最差的數字。"}
+                  </>
+                )}
               </>
             ) : (
               <>
-                Default 100ms delay between POSTs; a run takes about a minute. Both figures are
-                published. On the public garak in-the-wild jailbreak set (650 samples) recall is
-                92.3%; on the full garak corpus (3,475 samples, every probe family) recall is 57.2%
-                — both at ATR 3.5.12, measured 2026-08-15.
-                The gap is deliberate — the regex detection layer does not chase some probe families
-                (pure semantic jailbreaks, for instance); forcing it to would buy brittle signatures
-                and false positives. We report the lower number because a standard earns trust by
-                publishing its worst figure, not hiding it.
+                Default 100ms delay between POSTs; a run takes about a minute.{' '}
+                {garak && full && (
+                  <>
+                    Both corpora are published, in both lanes. On the public garak in-the-wild
+                    jailbreak set ({count(garak.samples)} samples) recall is {recallLanes(garak)}; on the
+                    full garak corpus ({count(full.samples)} samples, every probe family) it is{' '}
+                    {recallLanes(full)} ({commonStamp([garak, full], false)}). {LANES_EXPLAINED.en}{' '}
+                    {GARAK_BOTH_CLOSED_BOOK.en}{' '}
+                    Part of the gap between the two corpora is deliberate — the regex detection layer does
+                    not chase some probe families (pure semantic jailbreaks, for instance); forcing it to
+                    would buy brittle signatures and false positives. Part of it is that the in-the-wild
+                    figure rests partly on rules written from that corpus. We report the lower figures too,
+                    because a standard earns trust by publishing its worst numbers, not hiding them.
+                  </>
+                )}
               </>
             )}
           </li>
@@ -348,13 +368,13 @@ python3 garak-to-tc.py \\
           <li>
             <a
               className="underline"
-              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/scripts/garak-to-tc.py"
+              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/scripts/garak-miss-to-proposals.ts"
             >
-              scripts/garak-to-tc.py
+              scripts/garak-miss-to-proposals.ts
             </a>{' '}
             {zh
-              ? '— 原始碼,300 行,除 Python stdlib 外無依賴'
-              : '— source, 300 lines, no dependencies beyond Python stdlib'}
+              ? '— 公開 repo 裡的管線:把 ATR 在 garak benchmark 上漏掉的 prompt 變成規則提案'
+              : '— the pipeline in the public repository that turns the prompts ATR misses on the garak benchmark into rule proposals'}
           </li>
         </ul>
       </section>

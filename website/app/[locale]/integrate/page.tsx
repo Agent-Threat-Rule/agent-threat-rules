@@ -168,8 +168,8 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
           <div className="p-6">
             <p className="text-sm text-graphite mb-4 leading-relaxed">
               {locale === "zh"
-                ? "不需要註冊、不需要 API key。一行指令掃描你的 SKILL.md 或 MCP config——你在本機跑的這份 YAML,正是已合併進 Cisco 與 Microsoft 開源工具的同一份規則。"
-                : "No signup, no API key. One command scans your SKILL.md or MCP config — the same YAML you run locally is the same ruleset merged into Cisco's and Microsoft's open-source tooling."}
+                ? "不需要註冊、不需要 API key。一行指令掃描你的 SKILL.md 或 MCP config——你在本機跑的這份 YAML,正是已合併進 Cisco 與 Gen Digital 開源工具的同一份規則。"
+                : "No signup, no API key. One command scans your SKILL.md or MCP config — the same YAML you run locally is the same ruleset merged into Cisco's and Gen Digital's open-source tooling."}
             </p>
             <div className="space-y-3">
               <div>
@@ -193,8 +193,8 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
             </div>
             <p className="text-xs text-mist mt-4">
               {locale === "zh"
-                ? `${stats.ruleCount} 條規則 · ${stats.categoryCount} 個威脅類別 · < 5ms 延遲 · 零依賴 · MIT 授權`
-                : `${stats.ruleCount} rules · ${stats.categoryCount} threat categories · < 5ms latency · zero dependencies · MIT license`}
+                ? `${stats.ruleCount} 條規則 · ${stats.categoryCount} 個威脅類別 · 預設在本機程序內執行、不連網 · MIT 授權`
+                : `${stats.ruleCount} rules · ${stats.categoryCount} threat categories · runs in process, no network calls by default · MIT license`}
             </p>
           </div>
         </div>
@@ -289,8 +289,8 @@ jobs:
               </p>
               <p className="text-xs text-mist mt-2 leading-[1.7]">
                 {locale === "zh"
-                  ? "採用形式不只 GitHub Action——Cisco AI Defense 的開源 skill-scanner (PR #79 PoC + PR #99) 以 rule-packs CLI 整合規則集;Microsoft AGT (PR #908 PoC + PR #1277) 以 PolicyDocument 格式整合規則(提 PR 時為 287 條,後續每週自動同步至 ATR main);Gen Digital Sage (PR #33) 整套規則包進 agentic-AI 風險評分層。這三筆算「上游採用」,憑據都是公開 repo 裡已合併的 PR,不屬於 Action 使用統計。"
-                  : "Adoption forms vary — Cisco AI Defense's open-source skill-scanner (PR #79 PoC + PR #99) consumes the rule pack via a rule-packs CLI; Microsoft AGT (PR #908 PoC + PR #1277) integrates rules as PolicyDocument (287 rules at time of PR, auto-synced to ATR main since via a weekly workflow); Gen Digital Sage (PR #33) ships the rule pack inside the agentic-AI risk-scoring layer. These three count as upstream adoption, each evidenced by a merged pull request in a public repository, and are separate from Action usage."}
+                  ? "採用形式不只 GitHub Action——Cisco AI Defense 的開源 skill-scanner (PR #79 PoC + PR #99) 以 rule-packs CLI 整合規則集;Microsoft AGT (PR #2308 + PR #3025) 以範例目錄示範匯入 ATR 規則並透過 ACS annotator 執行(早期 PR #908 / #1277 的規則包 YAML 已不在 repo);Gen Digital Sage (PR #33) 整套規則包進 agentic-AI 風險評分層。這三筆算「上游採用」,憑據都是公開 repo 裡已合併的 PR,不屬於 Action 使用統計。"
+                  : "Adoption forms vary — Cisco AI Defense's open-source skill-scanner (PR #79 PoC + PR #99) consumes the rule pack via a rule-packs CLI; Microsoft AGT (PR #2308 + PR #3025) carries example directories that import ATR rules and run them through an ACS annotator (the rule-pack YAML from earlier PRs #908 / #1277 is no longer in the repo); Gen Digital Sage (PR #33) ships the rule pack inside the agentic-AI risk-scoring layer. These three count as upstream adoption, each evidenced by a merged pull request in a public repository, and are separate from Action usage."}
               </p>
             </div>
           </div>
@@ -362,10 +362,10 @@ jobs:
               {[
                 { label: locale === "zh" ? "覆蓋範圍" : "Coverage", atr: locale === "zh" ? `${stats.ruleCount} 條規則，${stats.cveCount} 個 CVE 對應，${stats.categoryCount} 個威脅類別` : `${stats.ruleCount} rules, ${stats.cveCount} CVEs mapped, ${stats.categoryCount} threat categories`, own: locale === "zh" ? "需要自行建立規則庫" : "You build your own rule set" },
                 { label: locale === "zh" ? "新攻擊反應" : "New attack response", atr: locale === "zh" ? "社群與 CI 流程持續新增規則,目標數小時內產出(選用的 Threat Cloud 可加速回報)" : "Community + CI pipeline add rules continuously, targeting hours (optional Threat Cloud can speed up reporting)", own: locale === "zh" ? "取決於你團隊的頻寬" : "Depends on your team's bandwidth" },
-                { label: locale === "zh" ? "繞過測試" : "Evasion testing", atr: locale === "zh" ? "64 種已記錄的繞過技術，規則附帶 evasion_tests" : "64 documented evasion techniques, with per-rule evasion_tests", own: locale === "zh" ? "需要額外投入時間建立" : "Requires dedicated effort to build" },
+                { label: locale === "zh" ? "繞過測試" : "Evasion testing", atr: locale === "zh" ? "不到一半的規則附有 evasion_tests，記錄已知的繞過手法" : "Evasion tests on fewer than half of the rules, recording known bypasses", own: locale === "zh" ? "需要額外投入時間建立" : "Requires dedicated effort to build" },
                 { label: locale === "zh" ? "OWASP / MITRE 對應" : "OWASP / MITRE mapping", atr: locale === "zh" ? "內建。Agentic 10/10 + 每條規則對應 MITRE ATLAS" : "Pre-built. 10/10 Agentic + MITRE ATLAS per rule", own: locale === "zh" ? "數小時的手動對應工作" : "Hours of manual mapping work" },
                 { label: locale === "zh" ? "維護成本" : "Maintenance", atr: locale === "zh" ? "社群維護。MIT 授權。零成本。" : "Community-maintained. MIT. Zero cost.", own: locale === "zh" ? "需要持續的人力投入" : "Requires ongoing engineering effort" },
-                { label: locale === "zh" ? "生態系" : "Ecosystem", atr: locale === "zh" ? "Cisco、Microsoft、MISP 的開源專案已合併整合，OWASP PR 審查中" : "Merged into Cisco's, Microsoft's and MISP's open-source projects; OWASP PRs under review", own: locale === "zh" ? "獨立維護，無共享規則" : "Maintained independently, no shared rules" },
+                { label: locale === "zh" ? "生態系" : "Ecosystem", atr: locale === "zh" ? "Cisco、Microsoft、MISP 的開源專案已合併整合" : "Merged into Cisco's, Microsoft's and MISP's open-source projects", own: locale === "zh" ? "獨立維護，無共享規則" : "Maintained independently, no shared rules" },
               ].map((row) => (
                 <div key={row.label} className="bg-paper text-sm">
                   {/* Desktop: 3-column */}

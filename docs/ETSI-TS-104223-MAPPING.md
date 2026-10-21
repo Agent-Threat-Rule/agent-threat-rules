@@ -4,7 +4,7 @@ Version: 0.1.0 (INTERNAL DRAFT — not published)
 Status: Draft alignment mapping for ETSI TS 104 223 V1.1.1 and the UK NCSC/DSIT AI Cyber Security Code of Practice
 Date: 2026-06-12
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
-Mapped corpus: Agent Threat Rules v3.5.8 (830 rules / 10 categories; disk == data/stats.json on 2026-07-12)
+Mapped corpus: Agent Threat Rules v3.5.8 (836 rules / 10 categories; disk == data/stats.json on 2026-07-12)
 Reference frameworks:
   - ETSI TS 104 223 V1.1.1 (2025-04) "Securing Artificial Intelligence (SAI); Baseline Cyber Security Requirements for AI Models and Systems"
   - UK AI Cyber Security Code of Practice (DSIT / NCSC), "Code of practice for the cyber security of AI"
@@ -243,7 +243,8 @@ hardening is out of scope.
   two frameworks share the 13 principles but number provisions differently.
 - This mapping cites provisions where ATR supplies evidence; it does not claim
   full provision coverage of either framework.
-- Rule counts move daily via auto-crystallize and ecosystem PRs. The counts here
+- Rule counts move often (CVE and advisory sweeps, benchmark-miss mining,
+  contributor PRs). The counts here
   (462 total / category counts in §4.4) were `find rules -name "*.yaml" | wc -l` and
   data/stats.json on 2026-06-12. Re-verify before any external citation.
 

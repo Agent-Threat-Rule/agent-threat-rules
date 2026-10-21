@@ -39,7 +39,8 @@
  *   - not covered: a fresh record for a rule the evidence has no record of
  *   - detection changed: the record's fingerprint is not the rule's on disk
  *   - removed: a record for a rule id no file on disk carries
- *   - inert: a changed record for a draft/deprecated rule (the gate skips those)
+ *   - inert: a record for a draft/deprecated rule, which no measurement writes
+ *   (the action gate refuses evidence holding either of these two: exit 2)
  *   - metadata: same detection and numbers, stale maturity/skill_path_unmeasured
  *
  * Usage:
@@ -222,7 +223,8 @@ export function classifyEvidence(
     }
     const liveRules = live.get(id);
     if (liveRules === undefined) {
-      // Only inert rules carry this id: the gate skips them, so the record grants nothing today.
+      // Only inert rules carry this id. No measurement records one, and the action
+      // gate refuses evidence that holds such a record; the refresh drops it.
       if (f === undefined || !sameRecord(c, f)) inert.push({ id, committed: c, fresh: f });
       continue;
     }
@@ -342,11 +344,11 @@ export function renderReport(d: EvidenceDiff, committed: Measurement, fresh: Mea
       d.detectionChanged.map((x) => `${x.id}: recorded ${rec(x.committed)}, measured now ${rec(x.fresh)}`),
     ),
     ...section(
-      "Records for rule ids no file on disk carries",
+      "Records for rule ids no file on disk carries — the action gate refuses evidence that holds one; this refresh drops them",
       d.removed.map((x) => `${x.id}: recorded ${rec(x.committed)}`),
     ),
     ...section(
-      "Changed records for draft or deprecated rules (the gate skips these)",
+      "Records for draft or deprecated rules — no measurement writes these, and the action gate refuses evidence that holds one; this refresh drops them",
       d.inert.map((x) => `${x.id}: recorded ${rec(x.committed)}, measured now ${rec(x.fresh)}`),
     ),
     ...section(

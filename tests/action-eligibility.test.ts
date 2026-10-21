@@ -16,7 +16,9 @@
  * the repository test failed naming that rule, and the change was reverted.
  */
 import { describe, it, expect } from "vitest";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { spawnSync } from "node:child_process";
 import { join, resolve, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { load as parseYaml } from "js-yaml";
@@ -34,7 +36,14 @@ import {
   TIERED_ACTIONS,
 } from "../src/quality/action-eligibility.js";
 import { ACTION_METHOD_MAP } from "../src/action-executor.js";
-import { findViolations, isInert } from "../scripts/gate-action-eligibility.js";
+import {
+  EXIT_NO_EVIDENCE,
+  findViolations,
+  isInert,
+  readRules,
+  recordsWithoutLiveRule,
+} from "../scripts/gate-action-eligibility.js";
+import { ATREngine } from "../src/engine.js";
 import { rewriteActions } from "../scripts/downgrade-unearned-actions.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -347,6 +356,38 @@ describe("gate", () => {
     expect(v[0]!.unearned).toEqual(["block_tool"]);
   });
 
+  it("names every record that belongs to no live rule, and only those", () => {
+    const record = { fp_count: 0, maturity: "test", detection_fingerprint: "aaaa", partial_measurement: false };
+    const evidence = {
+      sample_count: 5352,
+      rules: {
+        "ATR-TEST-0001": record,
+        "ATR-TEST-0002": record,
+        "ATR-TEST-0003": record,
+        "ATR-TEST-0004": record,
+      },
+    };
+    const rules = [
+      rule({ id: "ATR-TEST-0001", status: "draft" }),
+      rule({ id: "ATR-TEST-0002" }),
+      rule({ id: "ATR-TEST-0003", maturity: "deprecated" }),
+    ];
+    expect(recordsWithoutLiveRule(rules, evidence)).toEqual([
+      { id: "ATR-TEST-0001", reason: "draft or deprecated" },
+      { id: "ATR-TEST-0003", reason: "draft or deprecated" },
+      { id: "ATR-TEST-0004", reason: "no rule file carries this id" },
+    ]);
+    // An id a live file also carries is that live rule's record.
+    const alsoLive = [...rules, rule({ id: "ATR-TEST-0001", file: "rules/y.yaml" })];
+    expect(recordsWithoutLiveRule(alsoLive, evidence).map((x) => x.id)).toEqual(["ATR-TEST-0003", "ATR-TEST-0004"]);
+  });
+
+  it("reads status the way the engine does: only a string can make a rule inert", () => {
+    expect(isInert(["draft"], "test")).toBe(false);
+    expect(isInert("draft", ["deprecated"])).toBe(true);
+    expect(isInert({ status: "draft" }, "deprecated")).toBe(true);
+  });
+
   it("skips rules the engine never loads", () => {
     expect(isInert("draft", "test")).toBe(true);
     expect(isInert("deprecated", "test")).toBe(true);
@@ -468,5 +509,58 @@ describe("repository conformance", () => {
       .map((v) => `${v.id}: ${v.unearned.join(",")} — ${v.decision.reason}`)
       .join("\n");
     expect(rendered).toBe("");
+  });
+
+  it("the committed evidence holds records for live rules only", () => {
+    const measurement = JSON.parse(
+      readFileSync(join(REPO_ROOT, "data/benign-fp-measurement.json"), "utf-8"),
+    ) as Parameters<typeof recordsWithoutLiveRule>[1];
+    expect(recordsWithoutLiveRule(readRules(join(REPO_ROOT, "rules")), measurement)).toEqual([]);
+  });
+
+  // The harvest workflow reads the gate's exit code: 1 is a finding and still
+  // opens a PR, anything else is a pipeline error. A record for a rule that is
+  // not live must stay on the "no verdict" side.
+  it("the gate refuses, with exit 2, evidence that holds a record for a rule that is not live", () => {
+    const committed = JSON.parse(
+      readFileSync(join(REPO_ROOT, "data/benign-fp-measurement.json"), "utf-8"),
+    ) as { rules: Record<string, unknown> };
+    const inert = readRules(join(REPO_ROOT, "rules")).find((r) => isInert(r.status, r.maturity));
+    expect(inert).toBeDefined();
+    const dir = mkdtempSync(join(tmpdir(), "atr-action-gate-"));
+    try {
+      const forged = join(dir, "measurement.json");
+      const zero = { fp_count: 0, maturity: "test", detection_fingerprint: inert!.fingerprint, partial_measurement: false };
+      writeFileSync(forged, JSON.stringify({ ...committed, rules: { ...committed.rules, [inert!.id]: zero } }));
+      const r = spawnSync("npx", ["tsx", "scripts/gate-action-eligibility.ts", "--measurement", forged], {
+        cwd: REPO_ROOT,
+        encoding: "utf-8",
+        timeout: 120_000,
+      });
+      expect(r.status).toBe(EXIT_NO_EVIDENCE);
+      expect(r.stderr).toContain(`${inert!.id} (draft or deprecated)`);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  // isInert() is the gate's copy of the engine's skip decision in the hunt lane,
+  // the lane the measurement runs in. If the two drift, the gate trusts or skips
+  // a record the measurement did not write, and recordsWithoutLiveRule() above
+  // guards the wrong set.
+  it("calls a rule inert exactly when the measuring engine does not evaluate it", async () => {
+    const engine = new ATREngine({ rulesDir: join(REPO_ROOT, "rules") });
+    await engine.loadRules();
+    expect(engine.getLane()).toBe("hunt");
+    const loaded = engine.getRules();
+    const disagree = loaded
+      .filter((r) => engine.evaluates(r) === isInert(r.status ?? null, r.maturity ?? null))
+      .map((r) => `${r.id}: status ${String(r.status)}, maturity ${String(r.maturity)}`);
+    expect(disagree).toEqual([]);
+    expect(loaded.filter((r) => !engine.evaluates(r)).length).toBeGreaterThan(0);
+    const gateIds = new Set(readRules(join(REPO_ROOT, "rules")).map((r) => r.id));
+    const engineIds = new Set(loaded.map((r) => r.id));
+    expect([...gateIds].filter((id) => !engineIds.has(id))).toEqual([]);
+    expect([...engineIds].filter((id) => !gateIds.has(id))).toEqual([]);
   });
 });

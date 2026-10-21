@@ -78,14 +78,16 @@ field (custom values, all under `product: ai_agent`):
    This is the single biggest caveat.
 
 2. **Case-insensitivity relies on `re|i` backend support.** ATR regex matching is
-   case-insensitive by default, whether or not a source pattern carries inline
-   `(?i)`. The converter therefore emits Sigma's `re|i` sub-flag unless the ATR
-   condition explicitly sets `case_sensitive: true`. A leading inline `(?i)` is
-   stripped as a normalisation step, not treated as the source of ATR's runtime
-   semantics. A handful of patterns with other combined inline flags (`(?is)`
-   etc.) keep the remaining flag inline; inline-flag support varies by backend.
+   case-insensitive whether or not a source pattern carries inline `(?i)`
+   (SPEC §6.4). The converter therefore emits Sigma's `re|i` sub-flag. A
+   condition that sets `case_sensitive: true` is emitted as a case-sensitive
+   `re`; that is an option of this converter, and the ATR engine ignores the
+   key on these conditions. A leading inline flag group made only of `i`, `m`,
+   `s` and `x` is dropped whole, because SPEC §6.4 gives `m`, `s` and `x` no
+   effect; a group with any other letter keeps everything but its `i`,
+   verbatim, subject to backend support.
 
-3. **Regex flavor.** ATR patterns are Python `re`. Sigma `re` is documented as
+3. **Regex flavor.** ATR patterns are ECMAScript (SPEC §6.4). Sigma `re` is documented as
    PCRE-ish but the effective flavor is the *target backend's* regex engine
    after pySigma translation. Exotic constructs (lookbehind, named groups,
    backreferences) may not survive every backend. The converter does not

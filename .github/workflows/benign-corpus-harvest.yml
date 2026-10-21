@@ -23,6 +23,10 @@ name: Benign Corpus Harvest
 #     is idempotent (dedups by source_id), so a quiet week is the honest
 #     expected outcome, not a bug. This deliberately avoids the maturity-promote
 #     daily-no-op-PR anti-pattern.
+#   - The PR carries the response-action evidence re-measured on the grown
+#     corpus (scripts/remeasure-benign-fp.ts: unchanged rules on the new samples
+#     only, the rest in full), and its body names, per rule, the new samples the
+#     rule fires on, so a reviewer can judge the samples before any rule.
 
 on:
   workflow_dispatch:
@@ -82,6 +86,93 @@ jobs:
         if: inputs.dry_run == true
         run: echo "dry_run=true — fetched + reported, no write, no PR."
 
+      - name: Re-measure the action evidence on the grown corpus
+        id: remeasure
+        if: inputs.dry_run != true
+        # A budget of its own. The delta re-measure of #652's 308 samples took 164 s and 444 s
+        # in two runs on a shared workstation that, under its load, ran this measurement at
+        # about CI speed (calibrated against the 2026-10-13 full re-verify: 11,408 s for 13,848
+        # samples). 45 minutes is six times the slower run. A step past its budget is killed and
+        # fails the job; without one it would run on until a job timeout cancelled it, and a
+        # cancelled run turns nothing red (the daily re-verify was cancelled for weeks that way).
+        timeout-minutes: 45
+        # No PAT in this step's environment: it runs the npm dependency tree for minutes, and
+        # the PAT the next step opens the PR with has no business being readable by that tree.
+        # (actions/checkout still leaves GITHUB_TOKEN in .git/config; the PAT is what is kept
+        # out of reach here.)
+        run: |
+          set -eo pipefail
+          if [ -z "$(git status --porcelain data/benign-corpus-extended/)" ]; then
+            echo "No new benign samples on disk; nothing to re-measure."
+            exit 0
+          fi
+          # The response-action gate binds its evidence to a digest of the benign corpus, so a
+          # harvest that grows the corpus without re-measuring can never pass it. #652 failed
+          # exactly that way on 2026-10-11 ("the measurement was taken on a different corpus").
+          #
+          # A full re-measure is every rule on every sample: three to four hours on CI. A rule
+          # whose detection has not changed since main's evidence only needs this week's new
+          # samples measured. scripts/remeasure-benign-fp.ts measures those on the new samples,
+          # the rest in full, and writes evidence identical to a full run. It refuses (exit 4)
+          # when main's evidence cannot be extended, and writes nothing unless it succeeds, so
+          # the old evidence never ships next to new samples.
+          #
+          # --max-full-rules 100: a rule measured in full costs about 14 s on CI (11,408 s for 829
+          # rules in that re-verify), so 100 is about 25 minutes. More stale rules than that exit
+          # 4, with the remedy named, before the budget above runs out.
+          REPORT="$RUNNER_TEMP/fp-attribution.json"
+          echo "::group::Delta re-measure (scripts/remeasure-benign-fp.ts)"
+          status=0
+          npx tsx scripts/remeasure-benign-fp.ts \
+            --base-ref HEAD \
+            --emit-measurement data/benign-fp-measurement.json \
+            --report "$REPORT" \
+            --max-full-rules 100 || status=$?
+          echo "::endgroup::"
+          if [ "$status" != 0 ]; then
+            echo "::error::the delta re-measure exited $status and wrote nothing; the group above says why. Exit 4 means main's evidence cannot be extended and needs a full re-measure first."
+            exit 1
+          fi
+          # The gate's verdict on the new evidence, read from its exit code, not guessed:
+          #   0  pass.
+          #   1  a finding: a rule now carries an action the evidence no longer earns. The PR
+          #      still opens; its body names the new samples behind each such rule.
+          #   *  no verdict at all (2: the evidence is missing, unreadable, for another
+          #      corpus, or holds a record for a rule that is not live). A pipeline error,
+          #      not a finding about the samples: fail, open nothing.
+          GATE_OUT="$RUNNER_TEMP/action-gate.txt"
+          GATE_JSON="$RUNNER_TEMP/action-gate.json"
+          SECTION="$RUNNER_TEMP/fp-attribution.md"
+          gate_status=0
+          npx tsx scripts/gate-action-eligibility.ts > "$GATE_OUT" 2>&1 || gate_status=$?
+          cat "$GATE_OUT"
+          case "$gate_status" in
+            0) verdict=pass ;;
+            1)
+              verdict=fail
+              # Again with --json, for the ids of the failing rules. It must agree on the verdict.
+              json_status=0
+              npx tsx scripts/gate-action-eligibility.ts --json > "$GATE_JSON" || json_status=$?
+              if [ "$json_status" != 1 ]; then
+                echo "::error::gate-action-eligibility.ts exited 1, then $json_status with --json: no consistent verdict, so no PR is opened."
+                exit 1
+              fi
+              ;;
+            *)
+              echo "::error::gate-action-eligibility.ts exited $gate_status: no verdict on the re-measured evidence. That is a pipeline error, not a finding about the new samples, so no PR is opened."
+              exit 1
+              ;;
+          esac
+          # Per rule, the new samples it fires on: capped for the PR body, in full in this log.
+          echo "::group::Every rule that fires on a new sample (the PR body lists the first few)"
+          if [ "$verdict" = "fail" ]; then
+            npx tsx scripts/render-fp-attribution.ts --report "$REPORT" --gate-json "$GATE_JSON" --out "$SECTION"
+          else
+            npx tsx scripts/render-fp-attribution.ts --report "$REPORT" --out "$SECTION"
+          fi
+          echo "::endgroup::"
+          echo "gate=$verdict" >> "$GITHUB_OUTPUT"
+
       - name: Open review PR
         if: inputs.dry_run != true
         env:
@@ -92,12 +183,37 @@ jobs:
           # On 2026-09-22, 64 checks across 8 branches were sitting unrun, some for 16 days.
           # Opening with a PAT makes a real user the author, so the PR's own CI runs.
           GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
+          # The response-action gate's verdict on the evidence the previous step re-measured.
+          GATE: ${{ steps.remeasure.outputs.gate }}
         run: |
           set -eo pipefail
           # Only commit + PR if benign samples ACTUALLY changed on disk.
           if git diff --quiet data/benign-corpus-extended/ 2>/dev/null && [ -z "$(git status --porcelain data/benign-corpus-extended/)" ]; then
             echo "No new benign samples on disk; nothing to PR. Quiet week = expected."
             exit 0
+          fi
+          # Everything that can stop this step is checked before anything leaves the runner: a
+          # failure after the force-push below would leave the branch moved and no PR saying why.
+          case "$GATE" in
+            pass|fail) ;;
+            *)
+              echo "::error::the re-measure step reported gate='$GATE', not pass or fail; refusing to push or open a PR."
+              exit 1
+              ;;
+          esac
+          GATE_OUT="$RUNNER_TEMP/action-gate.txt"
+          SECTION="$RUNNER_TEMP/fp-attribution.md"
+          for f in "$GATE_OUT" "$SECTION"; do
+            if [ ! -s "$f" ]; then
+              echo "::error::$f is missing or empty; refusing to push or open a PR without the re-measured evidence's summary."
+              exit 1
+            fi
+          done
+          echo "Response-action gate on the re-measured evidence: $GATE"
+          if [ "$GATE" = "fail" ]; then
+            echo "::group::Response-action gate output"
+            cat "$GATE_OUT"
+            echo "::endgroup::"
           fi
           DATE=$(date -u +%Y-%m-%d)
           # One rolling branch, force-pushed each run, not one per run. The output of this
@@ -107,13 +223,12 @@ jobs:
           BRANCH="benign-corpus/rolling"
           # honest counts for the PR body
           ADDED=$(git diff --numstat data/benign-corpus-extended/ | awk '{a+=$1} END {print a+0}')
-          git config user.name "ATR Corpus Bot"
-          git config user.email "corpus-bot@agentthreatrule.org"
-          git push origin --delete "$BRANCH" 2>/dev/null || true
-          git checkout -B "$BRANCH"
-          git add data/benign-corpus-extended/
-          git commit -m "chore(corpus): weekly benign harvest $DATE — +$ADDED samples (arxiv/npm/pypi)"
-          git push --force-with-lease origin "$BRANCH" || git push --force origin "$BRANCH"
+          TITLE="chore(corpus): weekly benign harvest $DATE (+$ADDED samples)"
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          # The gate output goes into the body cut to its first lines, and the cut says so.
+          MAX_GATE_LINES=40
+          GATE_LINES=$(wc -l < "$GATE_OUT" | tr -d ' ')
+          BODY="$RUNNER_TEMP/corpus-pr-body.md"
           {
             echo "Weekly benign-corpus harvest for $DATE — +$ADDED new benign samples."
             echo ""
@@ -122,17 +237,61 @@ jobs:
             echo "WHY THIS NEEDS HUMAN REVIEW: a benign sample can only ever REMOVE a rule from the enforce lane (if the rule FPs on it). A poisoned 'benign' sample would therefore suppress the rule that catches it. Skim the diff and confirm the harvested text is genuinely benign academic/package prose, not attack payloads mislabelled as benign, before merging."
             echo ""
             echo "Low-risk otherwise: this only broadens the FP test surface the maturity gate scans against — it adds no rules and blocks no traffic."
-          } > /tmp/corpus-pr-body.md
+            echo ""
+            if [ "$GATE" = "pass" ]; then
+              echo "Response-action evidence: re-measured on the grown corpus and committed here with the samples (data/benign-fp-measurement.json). The response-action gate passes on it."
+            else
+              echo "Response-action evidence: re-measured on the grown corpus and committed here with the samples (data/benign-fp-measurement.json). The response-action gate FAILS on it: rules that carry block actions now false-positive on some of the new samples, so on this evidence those actions are no longer earned."
+              echo ""
+              echo "Do not start by demoting rules. Each sample below is third-party text, and a poisoned 'benign' sample is exactly how a detection gets switched off. First decide whether each sample belongs in the benign corpus at all. If it does not, drop it from this branch and re-measure (commands at the end). Only a sample that is genuinely benign makes the rule wrong about it, and only then are the rule's block actions demoted, in a separately reviewed PR: demotion is a rule change and is deliberately not done here."
+            fi
+            echo ""
+            cat "$SECTION"
+            if [ "$GATE" = "fail" ]; then
+              echo ""
+              if [ "$GATE_LINES" -gt "$MAX_GATE_LINES" ]; then
+                echo "Gate output (first $MAX_GATE_LINES of $GATE_LINES lines):"
+              else
+                echo "Gate output:"
+              fi
+              echo ""
+              head -n "$MAX_GATE_LINES" "$GATE_OUT" | sed 's/^/    /'
+              if [ "$GATE_LINES" -gt "$MAX_GATE_LINES" ]; then
+                echo "    … $((GATE_LINES - MAX_GATE_LINES)) more lines, in the job log"
+              fi
+            fi
+            echo ""
+            echo "The lists above are capped; the job log has them in full: $RUN_URL"
+            echo ""
+            echo "To drop a sample and re-measure this branch (minutes, not the hours of a full measurement): check out the branch, fetch origin/main, delete the sample's line from data/benign-corpus-extended/, then run"
+            echo ""
+            echo "    npx tsx scripts/remeasure-benign-fp.ts --base-ref origin/main --emit-measurement data/benign-fp-measurement.json --report /tmp/fp-attribution.json"
+            echo "    npx tsx scripts/gate-action-eligibility.ts"
+            echo ""
+            echo "and commit data/benign-corpus-extended/ and data/benign-fp-measurement.json together. Exit 4 from the first command means main's corpus or evidence moved since this harvest: merge origin/main into the branch first."
+          } > "$BODY"
+          git config user.name "ATR Corpus Bot"
+          git config user.email "corpus-bot@agentthreatrule.org"
+          git push origin --delete "$BRANCH" 2>/dev/null || true
+          git checkout -B "$BRANCH"
+          git add data/benign-corpus-extended/ data/benign-fp-measurement.json
+          git commit -m "chore(corpus): weekly benign harvest $DATE — +$ADDED samples (arxiv/npm/pypi)"
+          git push --force-with-lease origin "$BRANCH" || git push --force origin "$BRANCH"
           # Rolling branch: reuse the open PR if there is one. Without this, the second
           # run on the rolling branch fails because `gh pr create` refuses a duplicate.
           EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
           if [ -n "$EXISTING" ]; then
-            echo "Rolling PR #$EXISTING already open; force-pushed $BRANCH, not opening a second."
+            # The branch now holds this run's samples and evidence, so the title and description
+            # that describe them move with it. REST, not `gh pr edit`: that command's query reads
+            # the PR's review requests, and with this PAT it fails ("Resource not accessible by
+            # personal access token") whenever a team review is requested.
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/pulls/$EXISTING" -f "title=$TITLE" -F "body=@$BODY" --silent
+            echo "Rolling PR #$EXISTING already open; force-pushed $BRANCH and refreshed its title and description."
           else
             gh pr create \
               --base main --head "$BRANCH" \
-              --title "chore(corpus): weekly benign harvest $DATE (+$ADDED samples)" \
-              --body-file /tmp/corpus-pr-body.md \
+              --title "$TITLE" \
+              --body-file "$BODY" \
               --label "needs-human-review" \
               --draft
           fi

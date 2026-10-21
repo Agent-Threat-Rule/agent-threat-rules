@@ -361,7 +361,7 @@ function main(): void {
   lines.push("- EU AI Act -- per-rule `compliance.eu_ai_act[]` (Article 9, Article 15)");
   lines.push("- ISO/IEC 42001 -- per-rule `compliance.iso_42001[]`");
   lines.push("- OWASP LLM Top 10 (2025) -- per-rule `compliance.owasp_llm[]`");
-  lines.push("- SAFE-MCP -- see [SAFE-MCP-MAPPING.md](SAFE-MCP-MAPPING.md) (78/85 techniques, 91.8%)");
+  lines.push("- SAF-MCP -- see [SAFE-MCP-MAPPING.md](SAFE-MCP-MAPPING.md) (reviewed candidate mappings against SAF Framework Model v2)");
   lines.push("- OWASP Agentic Skills Top 10 (AST) -- see [OWASP-AST10-MAPPING.md](OWASP-AST10-MAPPING.md) (skill supply chain framework)");
   lines.push("- OWASP Agentic AI Maturity Model -- see [OWASP-AGENTIC-MATURITY-MAPPING.md](OWASP-AGENTIC-MATURITY-MAPPING.md) (which ASI detections substantiate governance maturity)");
   lines.push("");

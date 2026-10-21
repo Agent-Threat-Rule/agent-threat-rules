@@ -232,7 +232,10 @@ disease from the other direction: `agent_source.type: multi_agent_comm` is only
 admitted by an event of type `multi_agent_message`, which `atr guard` never
 emits. `ATR-2026-00134` (3 wild hits) declares `agent_source.type:
 skill_lifecycle`, which maps to no event source type at all — it fires only in
-skill scans (5/5 under `scanSkill()`, 0/5 under both runtime shapes).
+skill scans (5/5 under `scanSkill()`, 0/5 under both runtime shapes). (Later
+note: the engine now runs `skill_lifecycle` rules where it runs `tool_call`
+rules, `RUNTIME_SOURCE_TYPE` in `src/engine.ts`, so this rule also runs on
+PreToolUse tool calls. The counts in this section predate that.)
 
 ### 3.3 The guard mistypes PreToolUse events under the spelling the host sends
 

@@ -201,9 +201,10 @@ For batch PRs, apply a simplified checklist:
 - [ ] All rules have at least 1 true positive and 1 true negative that pass `atr test`
 - [ ] FP check against 432 benign skills: 0 new false positives introduced
 
-PRs labeled `auto-mergeable` by the TC pipeline may be merged by the BDFL without
-detailed line-by-line review, provided the automated safety check passed. PRs labeled
-`needs-human-review` require full checklist review.
+The `auto-mergeable` label was retired on 2026-06-03 (521b4b0e): rule PRs from the
+TC pipeline get the same human review as any other. A passing safety gate shortens
+review but does not replace it. PRs labeled `needs-human-review` require full
+checklist review.
 
 ---
 

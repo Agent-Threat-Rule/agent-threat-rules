@@ -457,7 +457,7 @@ If `detection.condition` is absent, the default is `any of *` — Rule matches i
 
 ### 8.5 Evaluation Determinism
 
-Trace evaluation MUST be deterministic for a fixed Trace input. Engines MUST NOT introduce randomization, time-of-day branching, or sampling into Trace evaluation. This is identical to SPEC §6.4 and applies normatively.
+Trace evaluation MUST be deterministic for a fixed Trace input. Engines MUST NOT introduce randomization, time-of-day branching, or sampling into Trace evaluation. This is identical to SPEC §6.5 and applies normatively.
 
 ### 8.6 Performance Considerations
 
@@ -508,7 +508,7 @@ This is the inverse direction of §6.5's calibration workflow: §6.5 ensures the
 
 Rules MAY declare `references.nist_csf` and `references.etsi_ts_104223` to align with the two major sovereign cybersecurity frameworks for AI agents:
 
-- `nist_csf`: NIST CSF 2.0 subcategory IDs (e.g., `DE.CM-09`, `PR.IR-01`). Required for citation in NIST IR 8596 Cyber AI Profile Informative References.
+- `nist_csf`: NIST CSF 2.0 subcategory IDs (e.g., `DE.CM-09`, `PR.IR-01`). Needed if a mapping is ever offered as a NIST IR 8596 Cyber AI Profile Informative Reference.
 - `etsi_ts_104223`: ETSI TS 104 223 principle/sub-principle IDs (e.g., `P4.3`). ETSI TS 104 223 upstreamed UK NCSC's AI Cyber Code of Practice; this binding lets ATR Rules be cited in NCSC Implementation Guides.
 
 Both fields are arrays of strings to permit multi-framework alignment per Rule.

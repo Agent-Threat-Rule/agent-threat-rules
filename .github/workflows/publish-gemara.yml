@@ -1,0 +1,269 @@
+name: Publish Gemara catalogs
+
+# Publishes the Gemara catalogs in spec/category-registry/gemara/ (generated
+# from the category registry by scripts/generate-gemara-catalogs.ts) as one
+# signed OCI bundle on GHCR.
+#
+# WHEN IT RUNS
+#
+# By hand from a release tag ("Run workflow", "Use workflow from" set to the
+# tag). Release tags (vX.Y.Z) also start it, but those runs are skipped until
+# the repository variable GEMARA_PUBLISH_ON_TAGS is set to "true". Release tags
+# are created automatically, so the first publish is always a deliberate manual
+# run; set the variable only after that run succeeded and the GHCR package was
+# made public. Never on a push to main: merging a change to the catalogs
+# publishes nothing.
+#
+# The bundle carries its own version (bundle.version in
+# spec/category-registry/gemara/src/editorial.yaml), stamped as metadata.version
+# on every catalog and used as the OCI tag. Release tags follow rule churn; the
+# bundle does not. A release tag whose catalogs are already published under
+# their version pushes nothing. A release tag whose catalogs changed without a
+# version bump fails here, before anything is pushed: a published version is
+# never overwritten.
+#
+# WHAT IT PUBLISHES
+#
+#   ghcr.io/<owner>/<repo>/gemara:<bundle version>   (owner/repo lowercased)
+#   e.g. ghcr.io/agent-threat-rule/agent-threat-rules/gemara:1.0.0
+#
+# The root artifact is atr-detection-control-catalog.yaml. Its `imports` reach
+# the threat catalog, whose `imports` reach the capability and vector catalogs,
+# each through a mapping-reference url to a sibling file; that is the graph
+# the publish action's Assemble step walks, so all four land in one bundle.
+#
+# TRUST
+#
+# Keyless. The publish action signs the pushed digest with cosign using this
+# job's GitHub OIDC token (id-token: write) and then verifies that signature
+# against this workflow file on a release tag. No signing key or secret is
+# stored anywhere. Anyone can check it:
+#
+#   cosign verify ghcr.io/agent-threat-rule/agent-threat-rules/gemara:<version> \
+#     --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+#     --certificate-identity-regexp \
+#       '^https://github\.com/Agent-Threat-Rule/agent-threat-rules/\.github/workflows/publish-gemara\.yml@refs/tags/v'
+#
+# The job that installs npm dependencies holds no write permission. The job
+# holding packages: write and id-token: write runs no npm. Every action in this
+# file is pinned to a commit SHA; the publish action installs its own tools
+# (cue, the grc CLI, cosign) inside that job.
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      first_publish:
+        description: >-
+          First publish only: treat a registry "denied"/"unauthorized" answer as
+          "package does not exist yet". Leave off for every later run.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-gemara
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify catalogs at the release tag
+    # Skipped (not failed) on release tags until GEMARA_PUBLISH_ON_TAGS is
+    # "true"; publish needs verify, so it is skipped too.
+    if: github.event_name == 'workflow_dispatch' || vars.GEMARA_PUBLISH_ON_TAGS == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Require a release tag
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          if ! printf '%s' "$REF" | grep -Eq '^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Publishing runs from a release tag (refs/tags/vX.Y.Z), not $REF. Dispatch it with 'Use workflow from' set to the tag."
+            exit 1
+          fi
+
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      # Anyone who can push a tag can name it vX.Y.Z; only a commit already on
+      # main is published, so a tag on a side branch cannot carry catalogs that
+      # never passed review.
+      - name: Require the tagged commit to be on main
+        run: |
+          git fetch --quiet origin main
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::error::The tagged commit is not on main; not publishing."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies (no lifecycle scripts)
+        run: npm ci --ignore-scripts
+
+      - name: Catalogs match the generator
+        run: npx tsx scripts/generate-gemara-catalogs.ts --check
+
+      - name: Read the bundle version
+        id: version
+        run: |
+          version="$(npx tsx scripts/generate-gemara-catalogs.ts --print-version)"
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Bundle version '$version' is not MAJOR.MINOR.PATCH."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: cue-lang/setup-cue@a93fa358375740cd8b0078f76355512b9208acb1 # v1.0.1
+        with:
+          version: v0.17.1
+
+      # The schemas the catalogs declare (bundle.gemara-version), fetched by tag
+      # and held to the commit that tag pointed at when this was written, so a
+      # moved tag fails here instead of validating against something else.
+      - name: Fetch the Gemara v1.6.0 schemas
+        env:
+          GEMARA_TAG: v1.6.0
+          GEMARA_SHA: 14a8b1c02e1b7152781c0af7b6bcd07012f9763c
+        run: |
+          git clone --quiet --depth 1 --branch "$GEMARA_TAG" https://github.com/gemaraproj/gemara.git "$RUNNER_TEMP/gemara"
+          actual="$(git -C "$RUNNER_TEMP/gemara" rev-parse HEAD)"
+          if [ "$actual" != "$GEMARA_SHA" ]; then
+            echo "::error::gemara $GEMARA_TAG is $actual, expected $GEMARA_SHA."
+            exit 1
+          fi
+
+      - name: Validate every catalog against the Gemara CUE schemas
+        run: scripts/validate-gemara-catalogs.sh "$RUNNER_TEMP/gemara"
+
+  publish:
+    name: Publish signed OCI bundle
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    env:
+      CATALOG_DIR: spec/category-registry/gemara
+      ROOT_FILE: atr-detection-control-catalog.yaml
+      VERSION: ${{ needs.verify.outputs.version }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Name the OCI repository
+        id: repo
+        run: |
+          path="$(printf '%s/gemara' "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')"
+          echo "path=$path" >> "$GITHUB_OUTPUT"
+          echo "ref=ghcr.io/$path" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        # Pinned to a commit SHA: this step receives GITHUB_TOKEN with packages:write.
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: oras-project/setup-oras@005458ad77f1c8facd38a094e4af2e69e5607ff4 # v2.0.2
+        with:
+          version: 1.2.0
+
+      # Layer titles and digests are the catalog file names and the sha256 of
+      # their bytes, so a published bundle can be compared with the checkout
+      # without pulling it. Same files: nothing to do. Different files under the
+      # same version: stop, because pushing would overwrite a published tag.
+      - name: Check whether this version is already published
+        id: gate
+        env:
+          REPO_REF: ${{ steps.repo.outputs.ref }}
+          FIRST_PUBLISH: ${{ inputs.first_publish == true && 'true' || 'false' }}
+        run: |
+          tag_ref="$REPO_REF:$VERSION"
+          err="$RUNNER_TEMP/oras-fetch.err"
+          local_layers="$(cd "$CATALOG_DIR" && for f in *.yaml; do printf '%s sha256:%s\n' "$f" "$(sha256sum "$f" | cut -d' ' -f1)"; done | sort)"
+          if manifest="$(oras manifest fetch "$tag_ref" 2>"$err")"; then
+            remote_layers="$(printf '%s' "$manifest" | jq -r '.layers[] | "\(.annotations["org.opencontainers.image.title"]) \(.digest)"' | sort)"
+            if [ "$remote_layers" = "$local_layers" ]; then
+              # Same catalogs. A run that pushed them but failed to sign would
+              # otherwise look finished forever, so require the cosign signature.
+              digest="$(oras resolve "$tag_ref")"
+              if ! oras manifest fetch "$REPO_REF:${digest/:/-}.sig" >/dev/null 2>&1; then
+                echo "::error::$tag_ref is published but has no cosign signature ($REPO_REF:${digest/:/-}.sig). Sign it, or delete the tag and re-run."
+                exit 1
+              fi
+              echo "::notice::$tag_ref is already published and signed with these exact catalogs. Nothing to push."
+              echo "publish=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "::error::$tag_ref is already published with different catalogs. Bump bundle.version in $CATALOG_DIR/src/editorial.yaml and regenerate; a published version is never overwritten."
+            diff <(printf '%s\n' "$remote_layers") <(printf '%s\n' "$local_layers") || true
+            exit 1
+          fi
+          if grep -Eqi 'manifest unknown|name unknown' "$err"; then
+            echo "::notice::$tag_ref is not published yet."
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # An auth failure can hide a tag that exists. Only the first publish,
+          # dispatched by hand with first_publish, reads it as "no package yet".
+          if [ "$FIRST_PUBLISH" = "true" ] && grep -Eqi 'denied|unauthorized' "$err"; then
+            echo "::warning::$tag_ref: registry answered denied/unauthorized; first_publish set, publishing."
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "::error::Could not read $tag_ref from the registry; not publishing."
+          cat "$err"
+          exit 1
+
+      - name: Publish, sign and verify
+        id: publish
+        if: steps.gate.outputs.publish == 'true'
+        uses: gemaraproj/gemara-publish-action@49c89f444fb8ca411ab1d2cc85d103a11101526c # v0.2.1
+        with:
+          registry: ghcr.io
+          repository: ${{ steps.repo.outputs.path }}
+          tag: ${{ env.VERSION }}
+          working_directory: ${{ env.CATALOG_DIR }}
+          file: ${{ env.ROOT_FILE }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          validate: "true"
+          sign_source: "true"
+          verify_source: "true"
+          promote_to_destination: "false"
+          allowed_identity_regex: ${{ format('^https://github\.com/{0}/\.github/workflows/publish-gemara\.yml@refs/tags/v[0-9]', github.repository) }}
+
+      - name: Record what was published
+        if: steps.gate.outputs.publish == 'true'
+        env:
+          REPO_REF: ${{ steps.repo.outputs.ref }}
+          SOURCE_REF: ${{ steps.publish.outputs.source_ref }}
+          VERIFIED: ${{ steps.publish.outputs.verified_source }}
+        run: |
+          {
+            echo "### Gemara bundle $VERSION"
+            echo
+            echo "- tag: \`$REPO_REF:$VERSION\`"
+            echo "- digest: \`$SOURCE_REF\`"
+            echo "- keyless signature verified: \`$VERIFIED\`"
+            echo "- mapping-reference url: \`oci://$REPO_REF:$VERSION\`"
+          } >> "$GITHUB_STEP_SUMMARY"

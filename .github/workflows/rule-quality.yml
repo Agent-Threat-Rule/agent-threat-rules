@@ -5,6 +5,17 @@ on:
     branches: [main]
     paths:
       - 'rules/**'
+      # The case-sensitivity job below also judges the whole corpus when its
+      # own inputs change: the gate, its baseline, and the engine code it takes
+      # its verdict from (how a condition compiles, how a test case becomes
+      # text, how a rule file loads). quality-check skips its rule steps when
+      # no rule changed, so these paths cost it a checkout and a build.
+      - 'scripts/gate-case-sensitivity.ts'
+      - 'data/case-sensitivity-baseline.json'
+      - 'src/engine.ts'
+      - 'src/testcase-event.ts'
+      - 'src/loader.ts'
+      - '.github/workflows/rule-quality.yml'
 
 jobs:
   quality-check:
@@ -310,3 +321,37 @@ jobs:
             exit 1
           fi
           echo "All quality checks passed (schema + tests + skill benchmark + PINT)."
+
+  # src/engine.ts compiles every array-format regex condition with flag i,
+  # whether or not the pattern says (?i), so letter case keeps nothing out. This
+  # job fails when a rule has a condition that, read as written, keeps one of the
+  # rule's own true_negatives out only by letter case -- a condition that does not
+  # do what it says. RATCHET, same shape as rule-status-gate.yml and
+  # re2-portability.yml: the whole corpus is compared against
+  # data/case-sensitivity-baseline.json, so recorded debt passes and only new or
+  # worse findings fail. A job of its own, so a failure here never skips the
+  # benchmark and PINT steps above, and vice versa.
+  case-sensitivity:
+    name: Rule regexes must not rely on letter case
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      # No fetch-depth: 0 -- the gate compares against a committed baseline,
+      # not against a base ref, so a shallow checkout is enough.
+      - uses: actions/checkout@v5
+
+      # The verdict is regex semantics, so run it on the Node the engine's tests
+      # and measurement jobs pin (.nvmrc).
+      - uses: ./.github/actions/atr-node
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Exit 1: a condition outside the baseline keeps a benign sample out only
+      # by letter case, a baselined rule gained such a condition, or a rule file
+      # could not be loaded. Exit 2: the gate could not run (bad flags, corrupt
+      # baseline) -- never reported as a pass.
+      - name: Case-sensitivity ratchet
+        run: npx tsx scripts/gate-case-sensitivity.ts

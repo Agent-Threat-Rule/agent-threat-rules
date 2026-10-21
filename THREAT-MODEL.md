@@ -156,9 +156,9 @@ ATR-2026-00003 covers known jailbreak framings, but novel creative frames evade 
 
 ATR's long-term architecture is a three-tier detection pipeline. Each tier addresses limitations that the previous tier cannot.
 
-### Layer 1: Pattern Matching (v0.1 -- current)
+### Layer 1: Pattern Matching (current)
 
-Regex and threshold-based detection. Sub-millisecond per event, deterministic, zero external dependencies. Catches known attack signatures and structural anomalies. This is the entire current release.
+Regex and threshold-based detection, evaluated in process with no network or model calls. Deterministic. The cost of one evaluation grows with the length of the input and with the number of rules in the lane: with every rule loaded, the median call takes about a millisecond for a short prompt and tens of milliseconds for a multi-kilobyte SKILL.md file (`scripts/bench-evaluate-latency.ts`; details in LIMITATIONS.md). Catches known attack signatures and structural anomalies. This is what the engine runs by default; Layers 2 and 3 below ship as optional components that run only when an integrator wires them in.
 
 **Strengths:** Fast, predictable, no infrastructure requirements, auditable rules.
 
@@ -181,6 +181,8 @@ An LLM evaluates suspicious content flagged by Layer 1 or Layer 2. Intended for 
 **Limits:** Highest latency (seconds, not milliseconds). Highest cost. Introduces a dependency on model availability. The judge model itself may be susceptible to adversarial input.
 
 The tiers are additive. A production deployment runs all three, with Layer 1 handling the fast path (block obvious attacks immediately) and Layer 3 handling the slow path (evaluate ambiguous cases with higher confidence).
+
+By default a decision a model made (the Layer 3 judge, a semantic rule's judge, the Tier 2.5 embedding signal) is reported and not enforced: it takes no part in the verdict's outcome and only its observe-tier actions run. No evidence a response tier is earned from measures a model's false positives, and the judge reads attacker-controlled text. An integrator who accepts that sets `modelDecisions: 'enforce'` on the engine. A semantic rule's judge decision that the rule's own pattern fallback corroborates on the same input is enforced as that regex's match.
 
 ## Deployment Recommendations
 

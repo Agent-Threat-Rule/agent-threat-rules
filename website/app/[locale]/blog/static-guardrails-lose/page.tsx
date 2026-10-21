@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { getPost } from "@/lib/posts";
+import { loadSiteStats } from "@/lib/stats";
+import { count, findBenchmark, measuredStamp, recallLanes } from "@/lib/recall";
 import type { Metadata } from "next";
 
 export function generateStaticParams() {
@@ -23,6 +25,11 @@ export default async function StaticGuardrailsPostPage({
   const { locale: rawLocale } = await params;
   const locale = (locales.includes(rawLocale as Locale) ? rawLocale : "en") as Locale;
   const zh = locale === "zh";
+  // The PINT-format figures, from its measurement file with both lanes.
+  const pint = findBenchmark(loadSiteStats(), "pint");
+  const flagged = pint && pint.falsePositives !== null && pint.benign !== null
+    ? { fp: pint.falsePositives, benign: pint.benign }
+    : null;
 
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[760px] mx-auto">
@@ -87,10 +94,16 @@ export default async function StaticGuardrailsPostPage({
           <p>
             這些規則扎根於真實世界,不是假設。我們掃了五個公開 registry 的 101,280 個 agent
             skill 與 MCP 定義,1,434 個被標記(engine v2.0.0,2026-04-13)——憑證竊取、靜默外洩、
-            藏在工具描述裡的命令執行。在一份 PINT 格式的自建 850 樣本語料上(不是 Lakera 官方
-            PINT benchmark),ATR 的 recall 是 65.4%、在 399 個良性樣本上 0 誤報(ATR 3.5.12,
-            2026-08-15):抓得到這一類攻擊,又不亂叫。注意這份語料只有一小部分規則會開火,
-            請把它讀成 prompt injection 家族的分數,不是整體覆蓋率。
+            藏在工具描述裡的命令執行。
+            {pint && (
+              <>
+                在一份 PINT 格式的自建 {count(pint.samples)} 樣本語料上(不是 Lakera 官方 PINT
+                benchmark),ATR 的 recall 是 {recallLanes(pint)}({measuredStamp(pint, true)}):{"hunt lane 是引擎預設、載入所有成熟度的規則,enforce lane 只載入 stable 規則、是開封鎖時用的 lane。"}
+                {flagged && `hunt lane 在 ${count(flagged.benign)} 個良性樣本上誤報 ${count(flagged.fp)} 次${flagged.fp === 0 ? ",在這份語料上不亂叫" : ""}。`}
+                {"有幾條 hunt lane 規則正是從這份語料漏抓的樣本挖出來的,所以 hunt 數字部分屬於 closed-book。"}
+              </>
+            )}
+            注意這份語料只有一小部分規則會開火,請把它讀成 prompt injection 家族的分數,不是整體覆蓋率。
           </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">結論</h2>
@@ -190,12 +203,20 @@ export default async function StaticGuardrailsPostPage({
             The rules are grounded in what is actually in the wild, not hypotheticals. A scan of
             101,280 published agent skills and MCP definitions flagged 1,434 of them (engine
             v2.0.0, 2026-04-13) — credential theft, silent exfiltration, command execution buried
-            in tool descriptions an agent ingests as instructions. On a self-built 850-sample
-            corpus in PINT&rsquo;s format (not Lakera&rsquo;s official PINT benchmark) ATR runs at
-            65.4% recall with zero false positives on its 399 benign samples (ATR 3.5.12, measured
-            2026-08-15): it catches this family of attacks without crying wolf. Only a small subset
-            of rules fire on that corpus, so read it as a prompt-injection-family score rather than
-            overall coverage.
+            in tool descriptions an agent ingests as instructions.{" "}
+            {pint && (
+              <>
+                On a self-built {count(pint.samples)}-sample corpus in PINT&rsquo;s format (not
+                Lakera&rsquo;s official PINT benchmark) ATR&rsquo;s recall is {recallLanes(pint)}: the
+                hunt lane is the engine default and loads every rule maturity, and the enforce lane,
+                the one to run with blocking on, loads only stable rules ({measuredStamp(pint, false)}).{" "}
+                {flagged && `In the hunt lane it flags ${count(flagged.fp)} of the corpus\u2019s ${count(flagged.benign)} benign samples${flagged.fp === 0 ? ": it does not cry wolf on this corpus" : ""}. `}
+                Some hunt-lane rules were mined from this corpus&rsquo;s own misses, so the hunt figure is partly
+                closed-book.{" "}
+              </>
+            )}
+            Only a small subset of rules fire on that corpus, so read it as a prompt-injection-family
+            score rather than overall coverage.
           </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">The takeaway</h2>

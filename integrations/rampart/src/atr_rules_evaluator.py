@@ -5,8 +5,9 @@ Loads detection rules from the Agent Threat Rules (ATR) corpus
 as a RAMPART evaluator that asserts on rule violations.
 
 ATR is an MIT-licensed open detection corpus (425+ rules across 10
-categories) for AI agent threats. It is in production at Microsoft
-Agent Governance Toolkit, Cisco AI Defense, MISP CIRCL, and others.
+categories) for AI agent threats. It has been merged into public
+repositories at Cisco AI Defense, MISP CIRCL, Microsoft Agent Governance
+Toolkit (example directories), and others.
 This evaluator lets RAMPART users plug ATR rules into pytest-native
 red-team flows without re-implementing rule logic.
 
@@ -27,10 +28,11 @@ Usage:
 
 References:
 - ATR repo: https://github.com/Agent-Threat-Rule/agent-threat-rules
-- Microsoft AGT precedent: microsoft/agent-governance-toolkit#1277 (ATR
-  287-rule expansion merged 2026-04-26); #1981 (Copilot SWE Agent +
-  ATR v2.1.2 closed CVE-disclosure-to-detection loop in 2h 16m
-  2026-05-11).
+- Microsoft AGT: ATR example directories (microsoft/agent-governance-toolkit
+  #2308, #3025); #1981 (Copilot SWE Agent regression fixtures, opened
+  after an AGT maintainer assigned it #1937, an ATR maintainer's issue
+  mapping two CVEs to ATR rules; ATR v2.1.2 shipped the matching rules
+  the same day, 2026-05-11).
 """
 
 from __future__ import annotations

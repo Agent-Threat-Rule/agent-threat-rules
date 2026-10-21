@@ -91,7 +91,7 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)(?:^|[^a-zA-Z_])eval\s*\(\s*["\x27]?\s*(?:__import__|os\.system|os\.popen|subprocess\.|os\.exec|exec\s*\()'
+      value: '(?i)(?:^|[^a-zA-Z_])eval\s*\(\s*(?:["\x27]\s*)?(?:__import__|os\.system|os\.popen|subprocess\.|os\.exec|exec\s*\()'
       description: "eval() invoking Python OS-execution primitives — direct LLM-output-to-eval RCE signature"
 
     - field: content

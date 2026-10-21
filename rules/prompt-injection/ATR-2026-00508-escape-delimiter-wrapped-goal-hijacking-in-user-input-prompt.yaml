@@ -92,19 +92,19 @@ detection:
     # followed by an injection command
     - field: user_input
       operator: regex
-      value: "(?i)([=\\-*>]{3,}\\s*\\n[=\\-*>]{3,}\\s*\\n|[=\\-*>]{3,}\\s*\\n{2,}).{0,200}(ignore|disregard|forget|override|bypass|stop\\s+everything).{0,30}(any|all|previous|prior|following|earlier).{0,30}(instructions?|directives?|rules?|guidelines?)"
+      value: "(?i)([=\\-*>]{3}\\s*\\n[=\\-*>]{3,}\\s*\\n|[=\\-*>]{3}\\s*\\n\\n).{0,200}(ignore|disregard|forget|override|bypass|stop\\s+everything).{0,30}(any|all|previous|prior|following|earlier).{0,30}(instructions?|directives?|rules?|guidelines?)"
       description: "Double delimiter block followed by ignore/override injection command"
 
     # -- Layer 2: Escape block (backslashes repeated) + delimiter + injection --
     - field: user_input
       operator: regex
-      value: "(?i)(\\\\{5,}|\\\\n{3,}).{0,50}[=\\-*>]{3,}.{0,200}(ignore|disregard|stop\\s+everything|print\\s+the\\s+previous|spell\\s+check\\s+the\\s+previous)"
+      value: "(?i)(\\\\{5}|\\\\n{3,})(?:.{0,49}[^=\\-*>\\n])?[=\\-*>]{3,}(?:[^=\\-*>\\n].{0,199})?(ignore|disregard|stop\\s+everything|print\\s+the\\s+previous|spell\\s+check\\s+the\\s+previous)"
       description: "Backslash escape block + delimiter line + injection command"
 
     # -- Layer 3: Delimiter block + print/reveal previous instructions (prompt leaking variant) --
     - field: user_input
       operator: regex
-      value: "(?i)[=\\-*>]{3,}\\s*\\n[=\\-*>]{3,}.{0,200}(print|output|reveal|show|display|repeat|relay).{0,30}(the\\s+)?(previous|prior|original|system|initial).{0,20}(instructions?|prompt|parameters?|directives?|configuration)"
+      value: "(?i)[=\\-*>]{3}\\s*\\n[=\\-*>]{3,}(?:[^=\\-*>\\n].{0,199})?(print|output|reveal|show|display|repeat|relay).{0,30}(the\\s+)?(previous|prior|original|system|initial).{0,20}(instructions?|prompt|parameters?|directives?|configuration)"
       description: "Double delimiter block + print/reveal previous instructions"
 
     - field: content

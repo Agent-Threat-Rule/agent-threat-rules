@@ -14,7 +14,7 @@ what attacks ATR rules detect).
 **Status:** Draft for community comment, v1.0 — NOT RATIFIED
 **Date:** 2026-05-25
 **Author:** Adam Lin <adam@agentthreatrule.org>
-**Required by (on ratification):** OASIS Open Project submission, NIST CAISI RFI, F500
+**Required by (on ratification):** OASIS Open Project submission, F500
 procurement security questionnaires.
 
 ---

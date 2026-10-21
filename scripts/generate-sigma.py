@@ -21,12 +21,16 @@ its known limitations):
     map those fields to their own agent-telemetry pipeline. This is approximate
     by nature and is called out, not hidden.
 
-  * ATR regexes are case-insensitive by default unless a condition explicitly
-    sets `case_sensitive: true`. Sigma's `re` modifier is case-sensitive by
-    default, so the emitter uses `field|re|i` for the ATR default and `field|re`
-    for the explicit opt-out. A leading inline `(?i)` is normalised into the
-    Sigma modifier; other inline flags are preserved verbatim inside the
-    pattern, subject to backend support.
+  * ATR matches every regex condition case-insensitively (SPEC §6.4). Sigma's
+    `re` modifier is case-sensitive by default, so the emitter uses
+    `field|re|i`. A condition that sets `case_sensitive: true` is emitted as a
+    case-sensitive `field|re`: that is an option of this exporter, and the ATR
+    engine ignores the key on these conditions. A leading inline flag group
+    made of `i`, `m`, `s` and `x` is dropped: SPEC §6.4 gives `m`, `s` and `x`
+    no effect in ATR, so copying them into the Sigma pattern would let a
+    backend match across lines, or ignore whitespace, where the ATR engine
+    does not. A group with any other letter keeps everything but its `i`,
+    verbatim, subject to backend support.
 
   * ATR's non-regex operators are rare. `operator: gt` (numeric behavioral
     threshold) has no clean Sigma string-match equivalent, so those single
@@ -175,26 +179,30 @@ def build_tags(refs: dict) -> list[str]:
     return tags
 
 
-def strip_leading_i_flag(pattern: str) -> tuple[str, bool]:
-    """If the ATR regex opens with a case-insensitive inline flag, strip it and
-    signal that the Sigma `i` sub-flag should be used instead.
+def strip_leading_flag_group(pattern: str) -> tuple[str, bool]:
+    """Remove a leading inline flag group; report whether it named `i`.
 
-    Handles `(?i)` and combined leading groups like `(?is)` / `(?im)` by
-    removing only the `i` and keeping the rest as an inline group. Anything the
-    emitter does not confidently understand is left verbatim (fail safe: the
-    pattern still matches, we just do not get the clean `re|i`).
+    SPEC §6.4: an engine removes a leading group of `i`, `m`, `s` and `x`,
+    matches every regex condition case-insensitively whether or not the group
+    says `i`, and gives `m`, `s` and `x` no effect. Such a group is dropped
+    whole -- its `i` becomes the Sigma `i` sub-flag, and keeping `(?m)` or
+    `(?s)` in the Sigma pattern would make `^`, `$` and `.` behave differently
+    from the ATR engine.
+
+    A group with any other letter is outside SPEC §6.4. Only its `i` is
+    removed and the rest is left verbatim (fail safe: the pattern still
+    matches, we just do not get the clean `re|i`).
     """
     m = re.match(r"^\(\?([a-zA-Z]+)\)", pattern)
     if not m:
         return pattern, False
     flags = m.group(1)
+    body = pattern[m.end():]
+    if set(flags) <= set("imsx"):
+        return body, "i" in flags
     if "i" not in flags:
         return pattern, False
-    rest_flags = flags.replace("i", "")
-    body = pattern[m.end():]
-    if rest_flags:
-        return f"(?{rest_flags}){body}", True
-    return body, True
+    return f"(?{flags.replace('i', '')}){body}", True
 
 
 # ---------------------------------------------------------------------------
@@ -435,7 +443,7 @@ def convert_conditions(atr_detection: dict, regex_dialect: str = "pcre") -> tupl
             if value is None:
                 warnings.append(f"condition #{idx} has no value; skipped")
                 continue
-            pattern, had_inline_i = strip_leading_i_flag(str(value))
+            pattern, had_inline_i = strip_leading_flag_group(str(value))
             case_sensitive = cond.get("case_sensitive") is True
             if case_sensitive and had_inline_i:
                 warnings.append(

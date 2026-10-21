@@ -9,6 +9,16 @@ import { Flywheel } from "@/components/Flywheel";
 import { HeroGrid } from "@/components/DotGrid";
 import { EcosystemWall } from "@/components/EcosystemWall";
 import { loadSiteStats } from "@/lib/stats";
+import {
+  EVALUATION_URL,
+  GARAK_CLOSED_BOOK,
+  LANES_EXPLAINED,
+  count,
+  findBenchmark,
+  measuredStamp,
+  pct,
+  pctHunt,
+} from "@/lib/recall";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { loadAllRules, getCategories, categoryDisplayName } from "@/lib/rules";
 import { locales, type Locale } from "@/lib/i18n";
@@ -94,12 +104,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const tier3Merged = stats.ecosystemIntegrations.filter(
     (e) => e.tier === "3" && e.type === "merged",
   ).length;
-  // Pull garak recall from the version-pinned measurement (data/measurements/garak/latest.json)
-  // rather than hardcoding — keeps the hero stat honest as the corpus is re-run.
-  const garakMeasurement = stats.benchmarks.find((b) => b.source === "garak");
-  const garakRecall = garakMeasurement
-    ? (Math.round(garakMeasurement.recall * 1000) / 10).toFixed(1)
-    : "97.2";
+  // The hero's garak figure, from the measurement file data/measurements/garak/latest.json
+  // points at, in both lanes. No measurement, no figure: never a typed fallback.
+  const garak = findBenchmark(stats, "garak");
+  const pint = findBenchmark(stats, "pint");
 
   return (
     <>
@@ -150,9 +158,34 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <span><span className="font-data font-bold text-ink">{stats.ruleCount}</span> <span className="text-stone">{zh ? "條規則" : "rules"}</span></span>
               <span className="text-fog">·</span>
               <span><span className="font-data font-bold text-ink">{categoryCount}</span> <span className="text-stone">{zh ? "個類別" : "categories"}</span></span>
-              <span className="text-fog">·</span>
-              <span><span className="font-data font-bold text-ink">{garakRecall}%</span> <span className="text-stone">{zh ? "garak 抓得到" : "garak recall"}</span></span>
+              {garak && (
+                <>
+                  <span className="text-fog">·</span>
+                  <span>
+                    <span className="font-data font-bold text-ink">{pctHunt(garak.recall)}</span>{" "}
+                    <span className="text-stone">hunt</span>
+                    {garak.enforce && (
+                      <>
+                        <span className="text-fog"> / </span>
+                        <span className="font-data font-bold text-ink">{pct(garak.enforce.recall)}</span>{" "}
+                        <span className="text-stone">enforce</span>
+                      </>
+                    )}{" "}
+                    <span className="text-stone">{zh ? "garak 召回率" : "garak recall"}</span>
+                  </span>
+                </>
+              )}
             </div>
+            {garak && (
+              <p className="mt-3 mx-auto max-w-[620px] text-[11px] leading-[1.6] text-stone text-pretty">
+                {zh
+                  ? `garak in-the-wild 越獄語料,${count(garak.samples)} 個 prompt,${measuredStamp(garak, true)}。${LANES_EXPLAINED.zh}${GARAK_CLOSED_BOOK.zh} `
+                  : `garak in-the-wild jailbreak corpus, ${count(garak.samples)} prompts, ${measuredStamp(garak, false)}. ${LANES_EXPLAINED.en} ${GARAK_CLOSED_BOOK.en} `}
+                <a href={EVALUATION_URL} className="underline hover:text-ink" target="_blank" rel="noopener noreferrer">
+                  {zh ? "量測方式 →" : "How it is measured →"}
+                </a>
+              </p>
+            )}
           </HeroEntrance>
 
           {/* Document Status strip — W3C-style version + status + canonical URL. */}
@@ -217,14 +250,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <HeroEntrance delay={1.7}>
             <div className="mt-16 md:mt-24 pt-8 md:pt-10 border-t border-fog/60 font-data text-[11px] md:text-xs text-mist tracking-wide space-y-2">
               <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-                <span>{zh ? "標準同儕:" : "Standards bodies:"}</span>
+                <span>{zh ? "標準與框架:" : "Standards & frameworks:"}</span>
                 <span className="text-ink">MISP / CIRCL</span>
                 <span className="text-fog">·</span>
                 <span className="text-ink">OWASP</span>
-                <span className="text-fog">·</span>
-                <span className="text-ink">NIST AI RMF (OSCAL)</span>
-                <span className="text-fog">·</span>
-                <span className="text-ink">OpenTelemetry</span>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
                 <span>{zh ? "已合併至上游:" : "Merged upstream:"}</span>
@@ -418,8 +447,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.1}>
             <h2 className="font-display text-[24px] md:text-[clamp(28px,4vw,48px)] font-extrabold tracking-[-1.5px] md:tracking-[-2px] leading-[1.15] text-ink max-w-[820px] text-balance">
               {zh
-                ? "安全團隊把 ATR 當成上游規則來源,合併進自己的公開 repo。"
-                : "Security teams consume ATR as an upstream rule source, merged into their own public repos."}
+                ? "ATR 規則包與整合範例,已合併進這些組織的公開 repo。"
+                : "ATR rule packs and integration examples, merged into these organizations' public repos."}
             </h2>
           </Reveal>
 
@@ -429,8 +458,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               {[
                 {
                   name: "Microsoft AGT",
-                  detail: zh ? "PR #908 + #1277 已合併 · 287 條規則(合併當時)+ 每週自動同步" : "PR #908 + #1277 merged · 287 rules (at PR time) + weekly auto-sync",
-                  href: "https://github.com/microsoft/agent-governance-toolkit/pull/1277",
+                  detail: zh ? "PR #2308 + #3025 已合併 · ATR 匯入與 ACS annotator 範例目錄,repo 內沒有規則包" : "PR #2308 + #3025 merged · ATR import and ACS annotator example directories; no rule pack in the repo",
+                  href: "https://github.com/microsoft/agent-governance-toolkit/pull/3025",
                 },
                 {
                   name: "Cisco AI Defense",
@@ -458,17 +487,17 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.25}>
             <div className="mt-6 md:mt-8 bg-paper border-l-2 border-blue p-5 md:p-7 max-w-[860px]">
               <div className="font-data text-[10px] md:text-xs text-stone tracking-[2px] uppercase mb-3">
-                {zh ? "生產環境閉環 · 2 小時 16 分" : "Production loop · 2h 16m"}
+                {zh ? "PR 到合併規則 · 2 小時 16 分" : "PR to merged rule · 2h 16m"}
               </div>
               <p className="font-display text-base md:text-lg font-semibold text-ink leading-[1.5] text-balance">
                 {zh
-                  ? "Microsoft 的自主 AI 工程師開 PR 時,預設 ATR 已覆蓋——而這個假設是對的。"
-                  : "Microsoft's autonomous AI engineer opened a PR assuming ATR coverage existed — and the assumption was correct."}
+                  ? "AGT 維護者把 ATR 維護者提的 issue 指派給 Microsoft 的 Copilot 程式代理;它開的 PR 測試預設 ATR 能偵測兩個 CVE,ATR 當天就發布了對應規則。"
+                  : "Assigned by an AGT maintainer to an issue filed by ATR's maintainer, Microsoft's Copilot coding agent opened a PR whose test fixtures presumed ATR could detect two CVEs. ATR shipped matching rules the same day."}
               </p>
               <p className="text-sm md:text-base text-graphite mt-3 leading-[1.8] text-pretty">
                 {zh
-                  ? "2026-05-11,Copilot SWE Agent 為兩個 Semantic Kernel CVE 開了 AGT#1981,regression fixtures 預設 ATR 偵測存在。規則在 2 小時 16 分鐘內驗證並發布到 npm。不是人工安排的整合。"
-                  : "On 2026-05-11, the Copilot SWE Agent opened AGT#1981 for two Semantic Kernel CVEs with regression fixtures presuming ATR detection. Rules were validated and published to npm within 2h 16m. Not a manually arranged integration."}
+                  ? "2026-05-11,AGT 維護者把 AGT#1937(ATR 維護者前一天提出、為兩個 Semantic Kernel CVE 對映 ATR 規則的 issue)指派給 Copilot SWE Agent,它開了 AGT#1981,regression fixtures 預設 ATR 偵測存在。對應規則在 2 小時 16 分鐘內合併進 ATR,兩分鐘後發布到 npm,四個 fixture 中有兩個對上。這是 Copilot 在 AGT 裡的動作,不是 MSRC 背書。"
+                  : "On 2026-05-11, an AGT maintainer assigned the Copilot SWE Agent to AGT#1937, an issue the ATR maintainer had filed the day before mapping ATR rules to two Semantic Kernel CVEs; it opened AGT#1981 with regression fixtures presuming ATR detection. The matching rules were merged into ATR within 2h 16m and published to npm two minutes later; two of the four fixtures matched. This was Copilot operating inside AGT, not an MSRC endorsement."}
               </p>
               <a href="https://github.com/microsoft/agent-governance-toolkit/issues/1981" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline inline-block mt-3">
                 {zh ? "查看 AGT#1981 →" : "View AGT#1981 →"}
@@ -500,7 +529,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.35}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog mt-8 md:mt-10">
               {[
-                { num: String(tier1MergedCount), label: zh ? "已合併的上游整合" : "merged upstream", sub: zh ? "Microsoft · Cisco · Gen Digital" : "Microsoft, Cisco, Gen Digital" },
+                { num: String(tier1MergedCount), label: zh ? "已合併的上游整合" : "merged upstream", sub: "ADOPTERS.md Tier 1" },
                 { num: String(stats.ruleCount), label: zh ? "條偵測規則" : "detection rules", sub: zh ? `跨 ${categoryCount} 個類別` : `across ${categoryCount} categories` },
                 { num: stats.megaScanTotal.toLocaleString(), label: zh ? "skills 已掃描" : "skills scanned", sub: zh ? "跨多個 registry" : "across registries" },
                 { num: `${mergedCount}/${stats.ecosystemIntegrations.length}`, label: zh ? "生態系 PR" : "ecosystem PRs", sub: zh ? "已合併" : "merged" },
@@ -546,8 +575,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.15}>
             <p className="text-sm md:text-base text-graphite font-light max-w-[640px] mb-6 md:mb-8 leading-[1.8] text-pretty">
               {zh
-                ? <>紅隊大掃描與 CVE 匯入兩條管線每天運轉:新攻擊被語義層抓到後,「結晶」成 regex 規則回流標準——從每次 500ms 的推理,變成 5ms 的 pattern match。自動結晶化把標準從 462 條長到 {stats.ruleCount} 條,全部隨 npm <span className="font-data text-graphite">agent-threat-rules@{specVersion}</span> 發布。</>
-                : <>A red-team mega-scan pipeline and a CVE-ingestion pipeline run daily: when the semantic layer catches a novel attack, it crystallizes into a regex rule and flows back into the standard — turning a 500ms inference into a 5ms pattern match. Auto-crystallization grew the standard from 462 to {stats.ruleCount} rules, all shipped in npm <span className="font-data text-graphite">agent-threat-rules@{specVersion}</span>.</>}
+                ? <>新規則來自 CVE 與安全公告掃描、benchmark 漏報挖掘與貢獻者，每一條都經由維護者合併的 pull request 進入 main。從六月起，標準從 462 條成長到 {stats.ruleCount} 條，全部隨 npm <span className="font-data text-graphite">agent-threat-rules@{specVersion}</span> 發布。</>
+                : <>New rules come from CVE and advisory sweeps, benchmark-miss mining and contributors, and each one reaches main through a pull request a maintainer merges. Since June the standard has grown from 462 to {stats.ruleCount} rules, all shipped in npm <span className="font-data text-graphite">agent-threat-rules@{specVersion}</span>.</>}
             </p>
           </Reveal>
           <Reveal delay={0.18}>
@@ -570,7 +599,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <span className="text-fog">·</span>
               <span><span className="text-ink font-semibold">{stats.ruleCount}</span> {zh ? "條規則" : "rules"}</span>
               <span className="text-fog">·</span>
-              <span>{zh ? "CVE 匯入 + 結晶管線每天運轉" : "CVE-ingest + crystallize pipelines run daily"}</span>
+              <span>{zh ? "每天收集 CVE 提案" : "CVE proposals collected daily"}</span>
               {stats.lastRegenerated && (
                 <>
                   <span className="text-fog">·</span>
@@ -589,9 +618,17 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog mt-10 md:mt-12">
               {[
                 { name: "OWASP Agentic", score: "10/10", desc: zh ? "完整覆蓋" : "Full coverage" },
-                { name: "SAFE-MCP", score: "91.8%", desc: zh ? "78/85 技術" : "78/85 techniques" },
+                { name: "SAF-MCP", score: stats.safeMcp, desc: zh ? "有效技術(候選對照,未經 SAF 驗證)" : "active techniques (candidate mappings, not SAF-validated)" },
                 { name: "OWASP AST10", score: "7/10", desc: zh ? "3 個是流程層級" : "3 are process-level" },
-                { name: "PINT-format F1", score: String(stats.pintF1), desc: zh ? `自建 ${stats.pintSamples} 樣本語料(非 Lakera 官方 PINT)` : `self-built ${stats.pintSamples}-sample corpus (not Lakera's official PINT)` },
+                ...(pint
+                  ? [{
+                      name: "PINT-format F1 · hunt",
+                      score: (pint.f1 * 100).toFixed(1),
+                      desc: zh
+                        ? `自建 ${count(pint.samples)} 樣本語料(非 Lakera 官方 PINT);hunt lane,${measuredStamp(pint, true)}`
+                        : `self-built ${count(pint.samples)}-sample corpus (not Lakera's official PINT); hunt lane, ${measuredStamp(pint, false)}`,
+                    }]
+                  : []),
               ].map((s) => (
                 <div key={s.name} className="bg-paper p-6 md:p-8 text-center">
                   <div className="font-data text-[10px] md:text-xs font-medium text-stone tracking-[2px] uppercase mb-2 md:mb-3">{s.name}</div>
@@ -634,16 +671,16 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.1}>
             <div className="bg-paper border border-fog rounded-[2px] overflow-hidden max-w-[520px] mx-auto text-left">
               <div className="flex items-center gap-2 px-3 py-2 border-b border-fog">
-                <span className="font-data text-xs text-mist">{zh ? "一行指令。即時結果。" : "One command. Instant results."}</span>
+                <span className="font-data text-xs text-mist">{zh ? "一行指令。" : "One command."}</span>
               </div>
               <div className="p-3 md:p-4 font-data text-[11px] md:text-sm leading-[1.8]">
                 <div className="text-stone">$ <span className="text-ink">npx agent-threat-rules scan .</span></div>
                 <div className="text-mist mt-2"># {zh ? "結果" : "results"}</div>
                 <div className="text-green">{zh ? "  3 個 SKILL.md 已掃描" : "  3 SKILL.md scanned"}</div>
                 <div className="text-green">{zh ? "  12 個工具描述已檢查" : "  12 tool descriptions checked"}</div>
-                <div className="text-critical mt-1">{zh ? "  1 CRITICAL: 工具描述中的憑證竊取" : "  1 CRITICAL: credential theft"}</div>
+                <div className="text-critical mt-1">{zh ? "  1 CRITICAL: skill 套件中的惡意程式碼" : "  1 CRITICAL: malicious code in skill package"}</div>
                 <div className="text-critical">{zh ? "    ATR-2026-00121" : "    rule ATR-2026-00121"}</div>
-                <div className="text-stone mt-2">{zh ? "47ms 完成。" : "Done in 47ms."}</div>
+                <div className="text-stone mt-2">{zh ? "完成。" : "Done."}</div>
               </div>
             </div>
           </Reveal>

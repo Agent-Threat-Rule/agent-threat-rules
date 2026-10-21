@@ -49,6 +49,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ATREngine } from '../src/engine.js';
+import { enforceLaneRecallOf, loadEnforceLaneEngine } from '../src/measurement/enforce-lane.js';
 import { readATRVersion, writeMeasurement } from '../src/measurement/write.js';
 import { matchedRuleIds, promptChannelShapes } from './lib/corpus-event.js';
 
@@ -62,6 +63,22 @@ interface InTheWildCorpus {
   family: 'inthewild';
   count: number;
   prompts: string[];
+}
+
+/**
+ * The rules that fire on `prompt` through the two production prompt channels,
+ * once per rule. This IS the headline's detection loop — a prompt is detected
+ * when this is non-empty — and the enforce-lane figure runs the same function
+ * on an enforce-lane engine, so the two numbers differ only in the lane.
+ */
+function channelHits(engine: ATREngine, prompt: string): Map<string, { title: string; severity: string }> {
+  const hits = new Map<string, { title: string; severity: string }>();
+  for (const shape of promptChannelShapes(prompt)) {
+    for (const m of engine.evaluate(shape.event)) {
+      hits.set(m.rule.id, { title: m.rule.title, severity: m.rule.severity });
+    }
+  }
+  return hits;
 }
 
 async function main(): Promise<void> {
@@ -91,12 +108,7 @@ async function main(): Promise<void> {
 
   for (const prompt of corpus.prompts) {
     // Headline: the two channels production can deliver a prompt on.
-    const hits = new Map<string, { title: string; severity: string }>();
-    for (const shape of promptChannelShapes(prompt)) {
-      for (const m of engine.evaluate(shape.event)) {
-        hits.set(m.rule.id, { title: m.rule.title, severity: m.rule.severity });
-      }
-    }
+    const hits = channelHits(engine, prompt);
     if (hits.size > 0) {
       matched += 1;
       for (const [id, meta] of hits) {
@@ -128,6 +140,14 @@ async function main(): Promise<void> {
   const canonicalRecall = total > 0 ? matchedCanonical / total : 0;
   const f1 = recall === 0 ? 0 : (2 * recall) / (recall + 1);
 
+  // The same prompts through the same loop on an enforce-lane engine (only
+  // maturity: stable loads). Recorded beside the headline, never as it.
+  const enforceLane = enforceLaneRecallOf(
+    corpus.prompts,
+    (laneEngine, prompt) => channelHits(laneEngine, prompt).size > 0,
+    await loadEnforceLaneEngine({ rulesDir: RULES_DIR }),
+  );
+
   console.log(`\nResults:`);
   console.log(`  Total prompts: ${total}`);
   console.log(`  Detected:      ${matched}`);
@@ -135,6 +155,10 @@ async function main(): Promise<void> {
   console.log(`  Recall:        ${(recall * 100).toFixed(1)}%   [headline — llm_input + tool_response]`);
   console.log(
     `  Recall (wide): ${(canonicalRecall * 100).toFixed(1)}%   [corpus-event canonical shapes + scanSkill — NOT published]`,
+  );
+  console.log(
+    `  Enforce lane:  ${(enforceLane.recall * 100).toFixed(1)}%   [${enforceLane.detected}/${total}, same loop, ` +
+      `${enforceLane.rules_in_lane} rules in lane — breakdown.enforce_lane]`,
   );
 
   // Standardized Measurement file (version-pinned, immutable).
@@ -170,6 +194,7 @@ async function main(): Promise<void> {
           'matchedRuleIds() — the wide FP-parity shape set plus engine.scanSkill(). ' +
           'Reported for comparison, NOT published: a garak prompt never reaches production ' +
           'as a SKILL.md, and a 100%-adversarial corpus never pays the false positive back.',
+        enforce_lane: enforceLane,
       },
       notes:
         `NVIDIA garak in-the-wild jailbreak corpus (single family: '${corpus.family}'). ` +

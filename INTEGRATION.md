@@ -110,6 +110,8 @@ await engine.loadRules();
 const matches = await engine.evaluateAsync(event);
 ```
 
+Each match says what decided it (`decidedBy`). A judge's decision is `semantic-judge`, and nothing measures a judge's false positives, so `evaluateWithVerdict()` reports such a match without enforcing it unless the engine is built with `modelDecisions: 'enforce'`. If you act on `evaluateAsync()` matches yourself, do the same: `isModelDecided(match)` names them, and `computeVerdict(matches, { modelDecisions: engine.getModelDecisions() })` applies the engine's setting.
+
 See [`docs/semantic-judge.md`](docs/semantic-judge.md) for the judge contract, provider-agnostic prompt, local model setup, and deterministic test example.
 
 ## Quick Integration (Python)

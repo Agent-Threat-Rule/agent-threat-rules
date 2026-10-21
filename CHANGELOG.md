@@ -4,6 +4,434 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **The category registry as Gemara catalogs, generated and published from
+  here.** `spec/category-registry/gemara/` holds a vector, capability, threat
+  and control catalog validated against the Gemara v1.6.0 CUE schemas. The
+  vector catalog is generated from `spec/category-registry/v1.0.yaml` (ids and
+  descriptions verbatim) by `scripts/generate-gemara-catalogs.ts`;
+  `tests/gemara-catalogs.test.ts` fails when the committed catalogs are stale.
+  `.github/workflows/publish-gemara.yml` publishes them as one keyless-signed
+  OCI bundle, `ghcr.io/agent-threat-rule/agent-threat-rules/gemara:<bundle
+  version>`, on release tags only, and pushes nothing when that version is
+  already published with the same catalogs.
+
+- **`atr test` reports a true positive that matches only through a copy the
+  test event makes.** The test event offers a case's input under every alias a
+  rule might read, whatever the event type: as `user_input` and `tool_args`, and
+  its content as `agent_message`. `buildEventFromTestCase` gains a `runtime`
+  field set, which holds what this repository's producers put on an event of the
+  type: content, the fields the case names (taken as given), `user_input` on an
+  `llm_input` event, and on a tool event the `tool_name` and `tool_args`
+  `src/hook-handler.ts` fills. `caseMatchesAtRuntime` runs a case on that set
+  for every event type, the engine's source filter deciding which of them the
+  rule runs on, or as a skill document. `atr test` lists a passing true positive
+  that matches none of them under `harnessOnly` (JSON) and "Harness-only"
+  (text); it still counts as passed. No true positive on main is one.
+  ATR-2026-01610's two cases declared as `user_input` match their `llm_input`
+  event only through the input copied into `tool_args`; the engine also runs
+  `llm_io` rules on `tool_response` events, where the hook fills `tool_args`,
+  and there they match. `tests/testcase-runtime-parity-rules.test.ts` runs every
+  rule's true positives the way `atr test` does, leaving out a type the engine
+  withholds as `atr test` does, and fails on one.
+
+- **Every benchmark measurement records the enforce lane beside its
+  headline.** A measurement's `metrics.recall` is the `hunt` lane (the engine
+  default, every maturity). Each runner the weekly measurement calls now also
+  runs the same samples through its own detection loop on an engine
+  constructed with `lane: 'enforce'` (only `maturity: stable` rules, the lane
+  for blocking) and records the result as `breakdown.enforce_lane`. Where a
+  measurement records it, README's Recall cell cites both lanes and root
+  `stats.json` cites the enforce figure as `enforceLaneRecall`;
+  `scripts/check-benchmark-citations.ts` fails CI when either disagrees with
+  the measurement or leaves the enforce figure out. Before this, the enforce
+  figures in README were one-off replays.
+- **Recall figures outside README are rendered from the measurement files.**
+  `scripts/render-recall-citations.ts` fills the figures between recall
+  markers in `LIMITATIONS.md` and the `docs/owasp-pr/` texts, from the file each
+  source's `latest.json` points at, in both lanes (every rendering is held to
+  the rule README's table is checked by). `scripts/sync-citation-garak.ts`
+  generates the garak sentence in `CITATION.cff` from root `stats.json`, with
+  both lanes and the closed-book caveat. The weekly measurement run re-renders
+  and stages both and lists what it could not render in the rolling PR's body;
+  CI (`eval.yml`) fails on a stale or unrenderable figure.
+- **`scripts/bench-evaluate-latency.ts` times single `ATREngine.evaluate()`
+  calls** in the hunt and enforce lanes on three committed corpora of
+  different input length, so the latency wording in LIMITATIONS.md and
+  THREAT-MODEL.md can be checked on any hardware. The `latency_ms` blocks in
+  `data/measurements/` time whole corpus samples (several event shapes, a
+  skill scan and, when installed, an embedding pass) inside a full benchmark
+  run, and are not comparable.
+
+### Changed
+
+- **A match a model decided is reported, not enforced, unless the integrator
+  opts in.** Three engine paths turn a model's output into a match: a semantic
+  rule's `semanticJudge`, the `embeddingModule` similarity signal (which in the
+  hunt and alert lanes could produce a critical `block_input` match), and the
+  `semanticModule` layer. No evidence a response tier is earned from measures
+  them: the benign-corpus evidence runs the synchronous engine, where a semantic
+  rule is its pattern fallback, and neither the embedding module nor the
+  semantic layer. Every match now carries `decidedBy`, and
+  `computeVerdict()` keeps a model-decided one out of the outcome and dispatches
+  only its observe-tier actions; it is listed in the new `verdict.advisory`
+  (with `verdict.advisorySeverity`), and `highestSeverity` and
+  `highestConfidence` now describe the matches the outcome came from. A
+  semantic rule whose judge matches is enforced when the rule's own pattern
+  fallback matches the same input (reported as the fallback's match); a judge
+  match the fallback does not corroborate is advisory. Rule, invariant,
+  blacklist and fingerprint matches decide as before. `modelDecisions:
+  'enforce'` on the engine (or on `computeVerdict`) restores the previous
+  behaviour; any other value throws. `computeVerdict` now sorts the matches it
+  is given instead of trusting their order.
+- **`atr scan` and the MCP server follow the same default.** `atr scan
+  --semantic` lists a judge-only match but leaves it out of `--fail-on`, and
+  writes it to SARIF at level `note` with `properties.enforced: false`, which the
+  GitHub Action no longer counts toward `fail-on-finding`. JSON and SARIF output
+  name what decided each match (`decided_by`). The MCP scan tool reports a
+  judge-only match with outcome `allow`, `enforced: false` and observe-tier
+  recommended actions. `--model-decisions enforce` or
+  `ATR_MODEL_DECISIONS=enforce` restores counting for `atr scan` and `atr mcp`.
+  `atr guard` and the bundled adapters wire no model, so nothing they do
+  changes.
+
+- **The ReDoS gate now times long inputs, every branch of an alternation
+  and input tiled with a pattern's own openers, and its baseline grew from 9
+  to 439 conditions because of it.** Nothing got slower; the gate started
+  looking. Two integrations packaging the corpus found conditions that took
+  seconds to minutes on 8,000- and 50,000-character inputs while
+  `scripts/gate-redos.py` reported them clean: its inputs were 1,500 to
+  3,000 characters, where a quadratic condition costs about a tenth of a
+  second, and only the first branch of an alternation was ever pumped. Each
+  condition is now also run on 20,000-character inputs built per quantifier
+  -- the text that reaches the quantifier, through whichever branch,
+  lookbehind or back-reference leads there, followed by a long run of its
+  own body -- and on its openers and pumped near-match tiled to length
+  (#601). Each worker calibrates per chunk and times are reported in
+  reference-machine seconds, which reduces, but does not remove, the effect
+  of load that changes during a run. `data/redos-baseline.json` now lists
+  439 conditions in 259 rules: 350 over the budget when it was written (201
+  of them did not return within the wall even timed alone) and 89 under the
+  budget but over a third of it, recorded too because one condition's
+  readings spread by more than 2x across runs and machines. 41 are in the
+  enforce lane and 412 are high or critical.
+  Each entry carries a fingerprint of its pattern, so editing a baselined
+  condition makes it new again instead of inheriting the exemption; an
+  unchanged baselined hang is not re-run. The gate stays a ratchet: it fails
+  on a slow condition outside that file. `scripts/verify_rule_redos.py` now
+  uses the gate's own inputs and timing -- it had reported PASS on
+  ATR-2026-02372 with both conditions hanging -- and with `--base REF` also
+  times a changed condition on the inputs derived from its previous pattern.
+  Twelve conditions that Python `re` cannot compile, and that the gate
+  skipped without saying so, are now listed by key. pyatr runs eleven of
+  them through its `regex` fallback and the TypeScript engine compiles all
+  twelve, so they run in production and are still untimed here; the twelfth,
+  ATR-2026-00290#3, back-references a group that does not exist, which pyatr
+  refuses and JavaScript reads as the character U+0001 (#331). The semantic
+  lane's per-draft ReDoS precheck now allows 300 s instead of 120 s.
+
+- **Every recall figure the site, LIMITATIONS.md, CITATION.cff and the docs
+  above take from the measurement files now names its lane** and gives the
+  enforce figure wherever the measurement records one. Figures no measurement
+  file records are labelled instead: the about page's historical garak figure
+  as taken with every rule loaded, the neutral-benchmarks post's runs as having
+  no recorded lane. The website reads `breakdown.enforce_lane` from the measurement
+  files (home, coverage, research, red-team, garak integration, ATD and
+  sovereign-AI pages, the PINT blog post); it no longer reads recall
+  from the old eval report files or their typed fallbacks, and no longer
+  hydrates recall in the browser. The garak figures carry the closed-book
+  caveat, and so now do the PINT-format and HackAPrompt figures, which have
+  rules mined from them too. The SKILL.md benchmark is described as the
+  internal, labelled corpus it is, with the harness's layer names. An erratum
+  (`e-2026-10-16-recall-lanes`) records the change on the site.
+- `sync-stats.ts` now fails when CITATION.cff has no garak sentence to
+  rewrite, instead of leaving an old figure in place.
+- **`scripts/check-rules-safety.ts` checks that a modified rule still matches
+  its own true positives, and checks renamed rules.** A new rule's true
+  positives had to match; a modified rule only had to add no benign false
+  positive, and a rule that matches nothing adds none. `npm run
+  gate:generalization` covers pattern rules only, so a semantic rule whose
+  `fallback_method` was set to `none` passed every check. The new own-TP check
+  runs each true positive on both paths `atr test` tries, replaying every case
+  to the changed rule as the event the base rule would receive: a case the
+  base rule matched on a path (`evaluate()`, `scanSkill()`) must still match
+  there, one the change adds must match, and the changed rule must still match
+  one of the cases the base rule matched. That also catches re-routing a rule
+  away from its cases. A rule of a type the engine withholds from typed events
+  (`WITHHELD_SOURCE_TYPES`), which `atr test` reports as unevaluable, is
+  skipped while it stays that type. A renamed rule file was on neither the new
+  nor the modified list and skipped both checks; it is now compared with the
+  file it was at the base, and a changed file whose rule id differs is checked
+  as a new rule. `npm run validate` also checks a semantic rule's
+  `fallback_method` (`pattern` or `none`, compared exactly, as the engine
+  does), its `threshold` (a number from 0 to 1), and that a pattern fallback
+  has a condition to match.
+- **`scripts/check-rules-safety.ts` runs a new rule's true positives the way
+  `atr test` does (Check 2).** It read only a case's `input` and ran it as the
+  text of the benign corpus shapes. On main, as if each rule past Check 1 were
+  new, 250 true positives in 54 rules carry their payload elsewhere
+  (`tool_response`, `tool_args`, `tool_description`, a `user_input` key, an
+  object `input`, ...) and were never read; 47 of those rules had none read
+  and passed with nothing run. The routing a rule declares was never
+  exercised. Each case now runs as the event built from it for the rule's own
+  `agent_source.type`, and through `scanSkill()`, with the code the own-TP
+  check for modified rules uses (`scripts/lib/own-true-positives.ts`), and its
+  text must still match on the corpus shapes, so a case that fires only
+  through a tool name, which no benign sample exercises, fails. The semantic
+  lane's pre-gate runs the same code. A case that cannot be run fails, and so
+  does a rule of a type the engine withholds from typed events
+  (`memory_access`), whose cases `atr test` reports as unevaluable. A new rule
+  the benign checks cannot run at all (deprecated, or a trace, behavioral or
+  signature method) is refused with the reason; Check 2 used to fail most of
+  them only because it could not match their cases either, and one whose cases
+  carried no `input` passed the whole gate.
+- **README §8 discloses that the `garak` and `garak-full` figures are partly
+  closed-book.** A replay without the rules whose own YAML shows they were
+  written from the in-the-wild corpus is given in the new `[^garakcorpus]`
+  footnote, and the paragraph on the two `garak` rows no longer calls them
+  independent: `garak-full` contains that corpus twice.
+- `data/stats.json` no longer carries the orphaned `benchmark.pintRecall`
+  block, a 3.5.11 figure nothing has written since #600 and nothing reads.
+
+### Fixed
+
+- **On Claude Code, the guard scans what a tool returned on PostToolUse.**
+  Claude Code sends a tool's output at the top level of the PostToolUse hook
+  input, as `tool_response` (checked against the shipped 2.1.280 binary).
+  `src/hook-handler.ts` read an output only from `tool_input.output` or
+  `tool_input.response`, where Claude Code never puts one, so the event's content
+  was the tool's input, and a prompt injection in a command's output, a file or a
+  fetched page reached no rule. The event's content and `tool_response` are now
+  the text of the output: `src/hook-tool-output.ts` keeps every string in it, as
+  written, and leaves out binary data, what Claude Code keeps from the model,
+  and labels and strings the tool only repeats from its input. A tool that edits
+  a file returns the edit it made, so its event is still built from its input.
+  `tool_args` stays the JSON of the input, and `tool_input.output` and
+  `.response` are still read for a host that sends the output there, now as raw
+  text in content too. Measured through the hook in the default hunt lane, each
+  sample as a Bash command's output: the own true positives of the 746 rules the
+  engine runs on a tool response (`llm_io`, `mcp_exchange` and `context_window`)
+  match 3,852 of 3,890 times (0 before, and the same as a Read or MCP output);
+  289 of PINT's 451 attacks match (0 before) and none of its 399 benign samples;
+  1,246 of the 14,157 benign-corpus samples match a rule (0 before), most of them
+  through rules at maturity `test`. In the alert lane 1,183 match, in the enforce
+  lane none. Not covered: an output whose text exceeds 100,000 characters
+  taken together (`MAX_EVAL_LENGTH`); and some rules take time quadratic in a
+  long run of one character. `atr init` registers the guard on
+  PreToolUse only, so this reaches an installation that added it under
+  PostToolUse.
+
+- **The guard also scans a failed tool call's output (PostToolUseFailure).**
+  When a tool call fails, a Bash command whose exit code Claude Code counts as
+  a failure among them (most non-zero codes; `grep`'s exit 1 is not one),
+  Claude Code sends `PostToolUseFailure` instead of `PostToolUse`. Its input
+  carries `tool_name`, `tool_input`, `tool_use_id`, `error`, `is_interrupt`
+  and `duration_ms`, and no `tool_response` (checked against the shipped
+  2.1.280 binary). The guard answered it "Unknown hook type" and allowed it,
+  so ending a command with `; exit 1` kept its output from every rule. It now
+  builds the event from `error`, the failure as the model sees it: for a shell
+  command, its stderr and stdout after Claude Code's `Exit code N` line and
+  abort note, which are left out. A command that printed nothing leaves no
+  text, and its event is built from the input, as an output-less PostToolUse
+  is. It answers in the PostToolUse contract under the `PostToolUseFailure`
+  name, which Claude Code accepts, and with blocking on its `decision:
+  "block"` reaches the model as a blocking error. Measured through the hook in
+  the default hunt lane, each sample as a failed Bash command's error: the own
+  true positives of the 746 rules the engine runs on a tool response match
+  3,852 of 3,890 times (0 before); 289 of PINT's 451 attacks match (0 before)
+  and none of its 399 benign samples; 1,246 of the 14,157 benign-corpus
+  samples match a rule (0 before). On every sample the verdict and the rules
+  matched are those of the same text as a Bash command's output on
+  PostToolUse. Claude Code cuts a failed call's error to about 10,000
+  characters; 1,117 of the benign samples are longer and were sent whole. To
+  use it, register the guard under `PostToolUseFailure` too.
+
+- **SPEC §6.4 corrected: SPEC.md 1.0.1 [Compatible].** A `regex` pattern
+  condition matches case-insensitively whether or not it begins with `(?i)`,
+  and `m`, `s` and `x` in a leading flag group have no effect. The 1.0.0 text,
+  added on 2026-07-19 (#340), said an engine applies the flags named in that
+  group, which made a pattern without `(?i)` case-sensitive and gave `(?s)`
+  and `(?m)` their dotAll and multiline meaning. Compatible: an engine that
+  passes the conformance suite needs no change, because its true-positive
+  fixtures already require case-insensitive matching; an implementation built
+  to the 1.0.0 wording does. 1.0.1 also admits `x` in the group, which both
+  engines already removed, says when the `u` flag applies, advises against
+  modifier groups such as `(?-i:...)`, and adds a revision history (Appendix
+  D). Issue #698 has the evidence; erratum `e-2026-10-19-regex-dialect`
+  records the error. `tests/spec-regex-dialect.test.ts` and pyATR's
+  `TestRegexDialectSpec64` pin the statements. `scripts/generate-sigma.py` no
+  longer copies `m` and `s` from that group into exported Sigma patterns,
+  where a backend would honour them; of the three rules on main that carry
+  such a group, only ATR-2026-00450's `(?im)^...` condition matched
+  differently because of it. Other exports that still follow the 1.0.0
+  wording are listed in #698.
+- **Rules with a `context_window` or `skill_*` `agent_source.type` run on the
+  events their data arrives in.** `src/engine.ts` maps an event type to one of
+  five source types and skipped every rule whose type differed, so a rule of an
+  extended type never ran on a typed event: on the `tool_call` and
+  `tool_response` events `src/hook-handler.ts` builds, ATR-2026-00070, -00075,
+  -01155, -01774, -00134, -00157 and -02405 never fired, while `atr test` mapped
+  their types to a base type and passed every case. The engine now does that
+  mapping itself (`RUNTIME_SOURCE_TYPE`): `context_window` runs where `llm_io`
+  rules run, the `skill_*` types where `tool_call` rules run, and a rule without
+  `agent_source` no longer throws a `TypeError` that aborted the whole
+  evaluation of a typed event. `memory_access` is withheld
+  (`WITHHELD_SOURCE_TYPES`): ATR-2026-00075 also matches standing instructions
+  in an ordinary chat turn ("From now on, always answer in French."), which the
+  Mastra processor and the OpenShell filter, both blocking by default, would
+  refuse; -00075 and -01155 still run only on an untyped event and in a skill
+  scan, and a new `memory_access` rule fails the test suite until the type is
+  mapped. `atr test` no longer maps anything, so what passes there is what the
+  engine runs, and it reports a withheld type's cases as unevaluable, with the
+  reason. The rule-latency gate profiles the five rules instead of listing them
+  as unexercised. The benign-corpus measurement does not change, because its
+  untyped shape already ran these rules; what changes is that their matches now
+  surface at runtime in the hunt lane, the default: ATR-2026-00070 (high)
+  matches 20 of the 14,157 benign samples. On the weekly benchmark suite three
+  hunt-lane recalls rise: garak 601 to 602 of 650 and garak-full 1,989 to 1,991
+  of 3,475 (one prompt, which -00070 catches on the tool-response channel and
+  garak-full holds twice), and atr-self-test 310 to 312 of 321 (-00070's own
+  true positives). No precision or false-positive figure moves (the new matches
+  fall on attack samples), and no enforce-lane figure moves (none of the five
+  rules is stable).
+
+- **A tool event built from a test case always names a tool.**
+  `buildEventFromTestCase` (`src/testcase-event.ts`, behind `atr test`,
+  `scripts/validate-rule-testcases.ts` and the case-sensitivity gate) gave a case
+  that names no tool the `tool_name` `""`, meant to keep the case's text out of
+  `tool_name`. `src/engine.ts` reads a field only when it is truthy and, on a
+  `tool_call` event, then falls back to the event's content, so a `tool_name`
+  condition read the payload as the tool's name and a rule keyed on the tool
+  could pass its cases without naming one. A tool event now carries
+  `atr-test-tool` (`UNNAMED_TOOL`) when the case names no tool, as
+  `src/hook-handler.ts` fills it from the host's tool call, and the
+  case-sensitivity gate leaves that name out of the text it checks a condition
+  against. No rule on main relied on the old behaviour: every true positive and
+  true negative of every rule tests the same.
+
+- **A test case's own `agent_message` is no longer replaced by its content.**
+  `buildEventFromTestCase` set the field from the case and then copied the
+  event's content over it, so a case that names an `agent_message` beside its
+  input was run on the input there. No case on main names one.
+
+- **A `medium` confidence label no longer depends on float rounding to stay
+  out of `deny`.** A pattern match scored `0.7 + 0.1 * coverage`, and a
+  `high`-severity match denies at `>= 0.8`. At full coverage that sum is
+  `0.7999999999999999` in IEEE doubles, so the verdict was `ask` only because
+  of the rounding direction; the same quantity as an integer percentage is
+  `0.8`. Label-derived confidence is now computed in one place
+  (`src/rule-confidence.ts`) on a basis-point scale, and a label below the
+  deny threshold is capped one basis point under it. No verdict or
+  auto-response decision changes. The raw `confidence` of a `medium` match at
+  full coverage is `0.7999` instead of `0.7999999999999999`, and other
+  partial-coverage values lose trailing float noise (`0.9500000000000001`
+  becomes `0.95`). One displayed percentage moves as a result: a
+  named-condition rule labelled `medium` at 3/4 coverage shows 78% (`0.775`)
+  where the noise used to show 77%. No shipped rule reaches that cell.
+
+- **A semantic rule without a pattern fallback is no longer recorded as
+  measured clean.** The benign-corpus measurement
+  (`scripts/gate-promotion-fp.ts`, and `scripts/remeasure-benign-fp.ts`
+  through it) drives the synchronous engine, which returns null for
+  `method: semantic` unless `detection.semantic.fallback_method` is exactly
+  `pattern`; the judge runs only in `evaluateAsync()`. `fieldCoverage()`
+  named trace, behavioral and signature as methods it cannot run, but not
+  this one, and it skipped a rule with no condition field, such as a pattern
+  fallback with nothing in it. Either was written down as `fp_count: 0,
+  partial_measurement: false`, which `scripts/gate-action-eligibility.ts`
+  graded `terminate` at maturity `stable` and `degrade` at `test`. Both are
+  now recorded partial and capped at `observe`. No rule on main is in either
+  state, so the committed evidence is unchanged. The skill-path check uses
+  the same predicate; it used to read `fallback_method: Pattern` as
+  `pattern`, which the engine does not, and it exempted a
+  `scan_target: both` rule with no conditions.
+- **NIST-related statements corrected across the docs and the website.**
+  Pages described a NIST CAISI dialogue and position paper that did not
+  happen, an RFI response ATR never filed, an OSCAL "Path 1" acceptance,
+  and a quote NIST never published; they listed NIST among adopters and
+  in a trust bar, and showed "100%" or "4/4 functions" for an AI RMF
+  mapping that covers a subset of subcategories. usnistgov/oscal-content#338
+  is described as what it is: open, reworked against NIST's AI RMF catalog,
+  awaiting NIST review. The website changelog page now shows the notes on
+  historical entries, which it used to drop.
+- **Integration status, provenance, evasion and latency claims corrected.**
+  The red-team page listed seven proposals as under review that their ATR
+  author had withdrawn unmerged (NVIDIA/garak#1676 on 2026-08-04; HarmBench,
+  AgentDojo, JailbreakBench, Counterfit, PromptInject and Damn Vulnerable MCP
+  Server on 2026-10-14 and 15, six of them never answered). They are removed,
+  along with the lapsed "On deck" schedule, and the garak, sovereign-AI,
+  responsible-use, integrate and STANDARDIZATION-STATUS surfaces no longer
+  call the garak integration or any OWASP PR open. The garak page and the
+  contributor docs (QUALITY-GATE.md, TSC-ONBOARDING.md, REVIEWER-GUIDE.md,
+  RULE-PRODUCTION.md, the issue-to-proposal PR text) no longer describe
+  auto-merge, which has been off since 2026-06-03. The red-team and governance
+  pages no longer promise a `metadata_provenance.discovered_by` field no rule
+  has, and the home, red-team, about and quality-standard pages no longer
+  credit daily auto-crystallization for growth that came from CVE sweeps,
+  benchmark-miss mining and contributors. The sovereign-AI page no longer says
+  ATR detects intent and cannot be evaded; LIMITATIONS.md and the
+  responsible-use, integrate and research pages no longer say every rule
+  carries evasion tests or that there are 64; LIMITATIONS.md and
+  THREAT-MODEL.md now agree that the optional judge and embedding modules ship
+  but are off by default. "Sub-millisecond", "< 5ms", "5ms pattern match" and
+  "Done in 47ms" are replaced by how evaluation cost scales; the OpenShell
+  example is marked as a sketch of a proposal OpenShell closed, and its
+  timeouts now exceed a one-shot cold start. CITATION.cff no longer calls the
+  rules hand-authored and says what the safety gate checks for added and
+  changed rules; the OWASP PR text drops its 76-rule count and notes the PR
+  was withdrawn. Errata `e-2026-10-16-integration-status`,
+  `e-2026-10-16-evasion`, `e-2026-10-16-latency` and `e-2026-10-16-provenance`
+  record the site changes.
+- **A rule the engine does not evaluate no longer gets a false-positive
+  record.** `scripts/gate-promotion-fp.ts --emit-measurement` wrote
+  `fp_count: 0` for draft and deprecated rules, which the engine skips, so
+  nothing was counted for them. `detection_fingerprint` does not cover
+  `status`, so a one-line revival handed the rule that 0, and
+  `scripts/gate-action-eligibility.ts` trusted it: at maturity `test`, enough
+  for `block_tool`. Seven records in `data/benign-fp-measurement.json` were of
+  this kind. The measurement now asks the engine (`ATREngine.evaluates`) and
+  lists such a rule, or an id two loaded files share, under NOT MEASURED
+  instead. Without `--filter-mode` that fails the gate: promoting a rule the
+  engine does not evaluate no longer passes as clean.
+  `scripts/remeasure-benign-fp.ts` leaves the same rules out, and measures in
+  full, rather than extends, a record for a rule that was inert at its base
+  commit. `scripts/promote-to-stable.ts` no longer counts a draft rule at
+  maturity `test` as FP-clean.
+- **The action gate refuses evidence that holds a record for a rule that is
+  not live** (inert, or its file gone): exit 2, as for evidence taken on
+  another corpus. A record carries no status, so the gate cannot tell a count
+  taken while the rule was live from a 0 nothing measured, and left in place
+  either is trusted the day the rule is revived or restored. Deprecating or
+  deleting a rule now means re-emitting the evidence in the same change. The
+  gate also reads a status that is not a string (`status: [draft]`) as live,
+  as the engine does; it used to skip such a rule while the engine ran it.
+- **Two rule files with the same name are both measured.** The measurement
+  copied rule files into its scratch directory by file name, so of two
+  same-named files in different directories only the last was read, and the
+  other was reported clean.
+- **`scripts/promote-to-stable.ts` no longer promotes on a 0 it did not
+  measure.** A `maturity: test` rule whose conditions the benign corpus cannot
+  fully exercise (a field no sample fills, such as `tool_name`, or a method the
+  synchronous engine cannot run, such as `trace`) scored 0 false positives
+  without being read, and `--write` promoted it to `stable`. Such a rule is now
+  reported as not promotable; one that did false-positive stays with the rules
+  that have false positives. No `maturity: test` rule on main is affected today.
+- **verify-adopters.yml no longer fails when other commits land on main during
+  a run, and its failures get noticed.** The job commits the refreshed
+  `data/adopters-verification.json` straight to main with a plain push, which
+  was rejected whenever another commit landed first, failing the run with
+  nothing wrong in ADOPTERS.md (2026-10-07, 2026-10-15). It now rebases its
+  one-file commit onto the moved main and retries, at most three times; runs
+  one verification at a time per branch; and checks out the branch tip rather
+  than the triggering commit, so a run that waited behind another starts from
+  the data the other pushed instead of conflicting with it (the 2026-10-07
+  shape: two adopter merges, each run writing the same file). A conflict with
+  a hand edit of the generated file still fails the run. Four red runs in a
+  row (2026-10-12 to 10-15) went unnoticed for days; a failure on main now
+  opens one tracking issue, or rewrites the open one, and the next green run
+  closes it. The issue lists drift only from a verification that finished.
+
 ## [4.1.5] - 2026-10-10
 
 4.1.4 was staged on npm and removed by publish-time scanning before it could be
@@ -788,6 +1216,14 @@ No rule content changed and no threshold was loosened in any of the above.
 ### Metrics
 
 - HackAPrompt (4,780 samples): recall 28.6% → 66.2% (+37.6pp), 100% precision maintained.
+  - Erratum (2026-10-19): re-run on the same 4,780 samples at the sprint commits,
+    recall was 28.6% (1,368, at `3a6145b7`) → 65.0% (3,108, at `e9efefdd`) and
+    66.0% (3,154, at `92c0d0fe`); 66.2% could not be reproduced at either. The
+    28.6% starting point was itself in-sample (ATR-2026-00442..00447 were mined
+    from this subset). "100% precision" was not a measurement: the corpus has
+    no benign samples, so precision is undefined on it. Procedure and figures:
+    `data/hackaprompt/METHOD.md`; current measurement, with the ablation
+    reference: `data/measurements/hackaprompt/`.
 - garak (3,475 prompts): ATR-core families ~80%+; per-family breakdown: latentinjection 34.4%, sysprompt_extraction 67.9%, dan 90.2%.
 - PINT (850 samples): 0.25% FP maintained, 0 FP regression.
 - SKILL.md (341 samples): 100% precision, 0% FP, 0 FP regression.
@@ -856,6 +1292,13 @@ No rule content changed and no threshold was loosened in any of the above.
 
 ## [2.1.0] - 2026-05-09
 
+> **Historical entry — the AI RMF line below overstated coverage.**
+> "100% coverage of all 4 AI RMF functions" described the community OSCAL
+> catalog, which encodes all 72 AI RMF subcategories as controls. ATR's
+> rules map to a subset of those subcategories. The catalog is a community
+> contribution and is not endorsed by NIST. Do not quote the line as a
+> coverage claim. (Note added 2026-10-16.)
+
 ### Added
 
 - **NIST AI RMF mapping v0.2** — 100% coverage of all 4 AI RMF functions (Govern / Map / Measure / Manage), 72 controls + 31 cross-reference links + worked example profile. Schema-valid OSCAL catalog published under `Agent-Threat-Rule/ai-rmf-oscal-catalog` (PR #46).
@@ -866,6 +1309,14 @@ No rule content changed and no threshold was loosened in any of the above.
 - **OWASP/Agent-Security-Regression-Harness#74** merged 2026-05-11 by mertsatilmaz (OWASP Project Lead): "Welcome to the team."
 
 ## [2.0.11] - 2026-04-21
+
+> **Historical entry — do not quote the garak or SKILL.md figures below.**
+> The 97.1% in-the-wild recall was measured on a garak corpus that many of
+> this release's new rules were written from, so it is not an out-of-sample
+> result. The SKILL.md precision and FP figures are in-sample: the benign
+> set is the one the rules were tuned against. Current figures, reported
+> per lane and with their closed-book share, are in README §8 Evaluation.
+> (Note added 2026-10-16.)
 
 ### Added
 
@@ -966,7 +1417,7 @@ No rule content changed and no threshold was loosened in any of the above.
 - Wild scan (96K): 1.35% flag rate, 751 confirmed malware
 - OWASP Agentic Top 10: 10/10 coverage
 - MITRE ATLAS: 100/113 rules mapped
-- SAFE-MCP: 91.8% technique coverage
+- SAFE-MCP: technique coverage figure (withdrawn 2026-10: it was not backed by rule-level data; see docs/SAFE-MCP-MAPPING.md)
 - Avg scan latency: 14ms per file
 
 ### Ecosystem

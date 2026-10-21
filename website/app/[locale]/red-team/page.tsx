@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/Reveal";
 import { loadSiteStats } from "@/lib/stats";
+import { currentRecallSentence, findBenchmark, measuredStamp, recallLanes } from "@/lib/recall";
 import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 
@@ -10,7 +11,7 @@ export function generateStaticParams() {
 export const metadata: Metadata = {
   title: "Red Team — Your attack becomes the standard | ATR",
   description:
-    "ATR is an open detection standard fed by red-team research. A probe found today becomes a versioned rule that propagates to Microsoft Agent Governance Toolkit, Cisco AI Defense, MISP, and OWASP — keeping defenders evolving at the same speed as attackers. Attribution stays attached to the rule ID, permanently.",
+    "ATR is an open detection standard fed by red-team research. A probe found today becomes a versioned rule that propagates to Cisco AI Defense, MISP, and OWASP — keeping defenders evolving at the same speed as attackers. Attribution stays attached to the rule ID, permanently.",
 };
 
 interface RedTeamTool {
@@ -21,73 +22,25 @@ interface RedTeamTool {
   prUrl?: string;
   hook: string;
   what_atr_did: string;
+  /** Measurements quoted after what_atr_did, read from data/measurements/ with their lanes. */
+  figures?: readonly { source: string; label: string }[];
 }
 
 const RED_TEAM_TOOLS: RedTeamTool[] = [
-  {
-    name: "NVIDIA Garak",
-    org: "NVIDIA AI Red Team",
-    status: "in-review",
-    homepage: "https://github.com/NVIDIA/garak",
-    prUrl: "https://github.com/NVIDIA/garak/pull/1676",
-    hook: "The reference open-source LLM vulnerability scanner. 50+ probe families, jmartin-tech + leondz maintainers.",
-    what_atr_did:
-      "Wrapped 330 ATR rules as garak detectors. PR #1676 cleared two review rounds. Current version-pinned figures: 92.3% recall on the in-the-wild jailbreak set (650 prompts) and 57.2% on the full 23-probe garak suite (3,475 prompts), both at ATR 3.5.12, measured 2026-08-15. The per-family breakdown quoted at PR time (latentinjection 34.4%, sysprompt_extraction 67.9%, dan 90.2%) was taken on an earlier ATR version and has not been re-measured since.",
-  },
-  {
-    name: "HarmBench",
-    org: "Center for AI Safety · Dan Hendrycks",
-    status: "in-review",
-    homepage: "https://github.com/centerforaisafety/HarmBench",
-    prUrl: "https://github.com/centerforaisafety/HarmBench/issues/93",
-    hook: "320-behavior standardized red-team benchmark — the citation when comparing attack methods across target models.",
-    what_atr_did:
-      "Issue #93 proposes pairing every behavior with a content-layer rule, adding detection-rate and bypass-rate columns next to ASR. Pre-PR gap-analysis offer attached.",
-  },
-  {
-    name: "AgentDojo",
-    org: "ETH Zurich SPY Lab · Florian Tramèr",
-    status: "in-review",
-    homepage: "https://github.com/ethz-spylab/agentdojo",
-    prUrl: "https://github.com/ethz-spylab/agentdojo/issues/160",
-    hook: "The only agent-specific attack benchmark with a real tool-use harness. 78 attack tasks across 4 environments.",
-    what_atr_did:
-      "Issue #160 proposes a detection-evaluator extension that runs ATR rules against AgentDojo attack tasks. Honest about regex limits against paraphrase / multilingual; reports per-task expected detection rate.",
-  },
-  {
-    name: "JailbreakBench",
-    org: "Princeton · Patrick Chao (PAIR / TAP)",
-    status: "in-review",
-    homepage: "https://github.com/JailbreakBench/jailbreakbench",
-    prUrl: "https://github.com/JailbreakBench/jailbreakbench/issues/48",
-    hook: "Standardized jailbreak leaderboard with fixed eval interface. JBB-Behaviors is the citation for 'attack X beats baseline'.",
-    what_atr_did:
-      "Issue #48 proposes a registered-detector backend interface (ATR as one possible reference implementation). Adds detection-rate + bypass-rate + agreement-with-refusal as new comparable axes.",
-  },
   {
     name: "TextAttack",
     org: "QData · ACL 2020",
     status: "in-review",
     homepage: "https://github.com/QData/TextAttack",
     prUrl: "https://github.com/QData/TextAttack/issues/824",
-    hook: "3.1k stars. The reference NLP-adversarial framework, used in undergraduate security curricula.",
+    hook: "NLP adversarial-attack framework from the QData lab (ACL 2020).",
     what_atr_did:
       "Issue #824 proposes a textattack-detection-atr companion PyPI package — plugin-shaped, zero core changes. Single ask: README cross-link.",
   },
   {
-    name: "Microsoft Counterfit",
-    org: "Microsoft Azure Security",
-    status: "in-review",
-    homepage: "https://github.com/Azure/counterfit",
-    prUrl: "https://github.com/Azure/counterfit/issues/96",
-    hook: "Metasploit-shape CLI for AI red-teaming. The clean abstraction for command-line attack runs.",
-    what_atr_did:
-      "Issue #96 proposes a counterfit-detection-atr companion package adding a detection lane to scan output. Plugin-first; respects the project's maintenance state.",
-  },
-  {
     name: "Microsoft PyRIT",
     org: "Microsoft AI Red Team",
-    status: "corpus",
+    status: "in-production",
     homepage: "https://github.com/microsoft/PyRIT",
     prUrl: "https://github.com/microsoft/PyRIT/pull/1715",
     hook: "The toolkit Microsoft uses internally to red-team production LLM products. Roman Lutz leads.",
@@ -102,7 +55,8 @@ const RED_TEAM_TOOLS: RedTeamTool[] = [
     prUrl: "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/51",
     hook: "The largest crowd-sourced prompt-injection competition corpus, 4,780 competition samples across GPT/Claude/PaLM. EMNLP 2023 best-paper nominee.",
     what_atr_did:
-      "Clustered 4,780 HackAPrompt samples by attack family. Shipped 5 ATR rules (ATR-2026-00452..00456) from dominant clusters. HackAPrompt recall moved 28.6% → 66.0% across that sprint (2026-05-12); the current version-pinned measurement is 69.6% at ATR 3.5.0, taken 2026-06-16. The corpus is 100% adversarial and carries no benign population, so it yields no precision or false-positive figure. Each rule cites the HackAPrompt cluster in metadata_provenance.",
+      "Clustered 4,780 HackAPrompt samples by attack family. Shipped 5 ATR rules (ATR-2026-00452..00456) from dominant clusters. HackAPrompt recall moved 28.6% → 66.2% across that sprint (2026-05-12, before detection lanes existed, with every rule loaded: what the hunt lane loads today), measured on the same corpus those rules were mined from, so it is an in-sample gain, not a measure of generalisation. The corpus is 100% adversarial and carries no benign population, so it yields no precision or false-positive figure. Each rule cites the HackAPrompt cluster in metadata_provenance.",
+    figures: [{ source: "hackaprompt", label: "HackAPrompt" }],
   },
   {
     name: "NeMo-Guardrails + llm-guard + Promptfoo",
@@ -113,16 +67,6 @@ const RED_TEAM_TOOLS: RedTeamTool[] = [
     hook: "Vendor test suites from three production guardrail systems. Combined 94 adversarial samples covering jailbreak, injection, and output sanitization.",
     what_atr_did:
       "Ingested combined 94-sample corpus. Shipped 6 ATR rules (ATR-2026-00500..00505) covering attack patterns present across all three vendor test suites. Each rule validated against the vendor's own test cases as true-positive ground truth.",
-  },
-  {
-    name: "PromptInject",
-    org: "agencyenterprise · NeurIPS 2022 Best Paper",
-    status: "in-review",
-    homepage: "https://github.com/agencyenterprise/PromptInject",
-    prUrl: "https://github.com/agencyenterprise/PromptInject/issues/9",
-    hook: "The original academic benchmark for prompt injection. 8.2k stars; cited by every prompt-injection paper since 2022.",
-    what_atr_did:
-      "Shipped 4 ATR rules (ATR-2026-00506..00509) closing user_input injection gaps identified from PromptInject attack taxonomy. Issue #9 proposes a corpus-to-ATR pipeline pairing every PromptInject attack with a matched detection rule.",
   },
   {
     name: "OWASP LLM Top 10 + MITRE ATLAS PoCs",
@@ -140,20 +84,9 @@ const RED_TEAM_TOOLS: RedTeamTool[] = [
     status: "in-review",
     homepage: "https://github.com/promptfoo/promptfoo",
     prUrl: "https://github.com/promptfoo/promptfoo/pull/8529",
-    hook: "10k stars, used by red teams at Klarna, Discord, Anduril. Promptfoo runs adversarial tests; ATR catches what Promptfoo found.",
+    hook: "Open-source LLM red-teaming and evaluation tool. Promptfoo generates and runs adversarial tests against LLM applications.",
     what_atr_did:
       "PR #8529 adds an MCP red-team example using ATR as the deterministic defense layer. Promptfoo runs the probe; ATR rules return the verdict.",
-  },
-  {
-    name: "Damn Vulnerable MCP Server",
-    org: "harishsg993010",
-    status: "in-review",
-    homepage: "https://github.com/harishsg993010/damn-vulnerable-MCP-server",
-    prUrl:
-      "https://github.com/harishsg993010/damn-vulnerable-MCP-server/pull/29",
-    hook: "A CTF-style training target with 10 intentionally-vulnerable MCP scenarios. The DVWA of agent security.",
-    what_atr_did:
-      "PR #29 ships the blue-team detection guide — every CTF challenge gets a paired ATR rule so trainees learn detection alongside the attack.",
   },
 ];
 
@@ -166,73 +99,27 @@ interface AttributionStat {
 const ATTRIBUTION_STATS: AttributionStat[] = [
   {
     number: "2h 16m",
-    label: "Disclosure to published rule",
+    label: "Copilot PR to merged rule",
     detail:
-      "2026-05-07 Microsoft Security disclosed Semantic Kernel CVE-2026-26030. 2026-05-11 06:07 UTC a Microsoft Copilot SWE Agent opened a regression-test PR presuming ATR already covered it. 08:24 UTC v2.1.2 published on npm with the paired rules. The loop from a disclosed attack to a shared detection closes in hours, not committee cycles.",
+      "2026-05-07 Microsoft Security disclosed Semantic Kernel CVE-2026-26030. 2026-05-10 the ATR maintainer filed AGT#1937 mapping it to ATR rules; 2026-05-11 06:07 UTC, after an AGT maintainer assigned that issue to it, a Microsoft Copilot SWE Agent opened a regression-test PR presuming ATR already covered it. 08:22 UTC the paired rules were merged into ATR; 08:24 UTC v2.1.2 published on npm. Once the gap was reported, the loop to a shared detection closed in hours, not committee cycles.",
   },
   {
     number: "5",
-    label: "Independent organizations carry the same rules",
+    label: "Independent organizations have merged ATR work",
     detail:
-      'Microsoft Agent Governance Toolkit (weekly auto-sync). Cisco AI Defense (rule pack in skill-scanner). CIRCL/MISP (taxonomies + galaxy merged by the project lead). OWASP A-S-R-H (lead merged with "Welcome to the team"). Gen Digital Sage (Norton / Avast parent security team merged). A rule written once becomes vocabulary five organizations share — which is the point of a standard.',
+      'Microsoft Agent Governance Toolkit (example directories). Cisco AI Defense (rule pack in skill-scanner). CIRCL/MISP (taxonomies + galaxy merged by the project lead). OWASP A-S-R-H (lead merged with "Welcome to the team"). Gen Digital Sage (Norton / Avast parent security team merged). A rule written once becomes vocabulary shared across organizations — which is the point of a standard.',
   },
   {
     number: "RULECOUNT",
-    label: "Rules, each carrying the discoverer's name",
+    label: "Rules, each with an author line and a stable ID",
     detail:
-      "Every rule carries author + metadata_provenance.discovered_by, and a stable ATR-YYYY-NNNNN ID that never changes after publication. Microsoft AGT, Cisco AI Defense, MISP, and OWASP all preserve the field on sync. When MISP exports to STIX, the attribution survives the format change. When NIST references the rule, the lineage back to the original red-teamer stays intact.",
+      "Every rule carries an author field and a stable ATR-YYYY-NNNNN ID that never changes after publication; many also record the corpus or advisory they came from in metadata_provenance. A contributor who brings the attack can be credited on the author line.",
   },
   {
     number: "0 FP",
     label: "Required across the benign gate before a rule ships",
     detail:
       "A 6-check quality gate: own-TP must match, 0 FP across the benign, extended, code and research-mention corpora, 0 cross-rule conflicts, and own true_negative coverage. The gate prints the sample counts it used on every run — those are the figures of record, not a number on this page. A rule that fires on the paper describing the attack does not ship. The standard would rather miss a clever variant than corrupt the corpus with a false positive — and it publishes its real per-lane figures rather than a single flattering one.",
-  },
-];
-
-interface OnDeckTool {
-  name: string;
-  org: string;
-  why: string;
-  filing: string;
-  status: "queued" | "scheduled";
-}
-
-const ON_DECK: OnDeckTool[] = [
-  {
-    name: "InjecAgent",
-    org: "UIUC Kang Lab",
-    why: "Cleanest direct-vs-indirect agent injection taxonomy. 1,054 attack cases. Complements AgentDojo coverage.",
-    filing: "2026-05-19",
-    status: "queued",
-  },
-  {
-    name: "GPTFuzz",
-    org: "NDSS 2024 · Jiahao Yu",
-    why: "First credible LLM fuzzer. Pairing fuzz output with ATR detection closes the loop on what their tool discovers.",
-    filing: "2026-05-22",
-    status: "queued",
-  },
-  {
-    name: "R-Judge",
-    org: "Tongxin Yuan et al.",
-    why: "162-scenario agent safety benchmark with LLM-as-judge evaluator. ATR adds the complementary content-rule defense lane next to the judge layer.",
-    filing: "2026-05-26",
-    status: "queued",
-  },
-  {
-    name: "PromptBench",
-    org: "Microsoft Research",
-    why: "MS Research LLM robustness eval framework. Second cross-link inside Microsoft after AGT + PyRIT.",
-    filing: "2026-06-02",
-    status: "queued",
-  },
-  {
-    name: "Giskard",
-    org: "YC W23",
-    why: "ML testing framework with red-team mode. Open-source core + commercial cloud — integrate at OSS core.",
-    filing: "2026-06-06",
-    status: "queued",
   },
 ];
 
@@ -248,14 +135,14 @@ const CONTRIBUTOR_BENEFITS: ContributorBenefit[] = [
     benefit:
       "A citable artifact paired with the attack you described — one with a stable ID, real downstream consumers, and fire counts in production telemetry, not just a paper that sits behind a paywall.",
     proof:
-      "Your name lives in the rule file's author + metadata_provenance.discovered_by. When MISP exports the taxonomy to STIX, the attribution propagates. When NIST references the rule (collaboration in progress with iMichaela at NIST OSCAL — a working branch, not an endorsement), the lineage back to you is intact.",
+      "Your name can go on the rule file's author line, next to a rule ID that never changes after publication.",
   },
   {
     for: "Corporate red teams",
     benefit:
-      "The variant your team found stops being an internal finding and becomes shared defensive vocabulary. Your team appears as the discoverer in the rule corpus that Microsoft AGT, Cisco AI Defense, MISP, OWASP A-S-R-H, and Gen Digital Sage all pull from.",
+      "The variant your team found stops being an internal finding and becomes shared defensive vocabulary. Your team appears as the discoverer in the rule corpus that Cisco AI Defense, MISP, OWASP A-S-R-H, and Gen Digital Sage all pull from.",
     proof:
-      "Microsoft's Copilot SWE Agent already opens PRs presuming ATR coverage (AGT #1981, closed 2026-05-11). Originating an ATR-2026-NNNNN rule is durable, verifiable provenance — it sits in a public corpus, not a slide.",
+      "Microsoft's Copilot SWE Agent, assigned an ATR maintainer's issue that mapped two CVEs to ATR rules, opened a PR presuming ATR coverage (AGT #1937 → #1981, merged 2026-05-11). Originating an ATR-2026-NNNNN rule is durable, verifiable provenance — it sits in a public corpus, not a slide.",
   },
   {
     for: "Independent researchers",
@@ -282,6 +169,7 @@ export default async function RedTeamPage({
   const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
   const zh = locale === "zh";
   const stats = loadSiteStats();
+  const garak = findBenchmark(stats, "garak");
 
   const inProduction = RED_TEAM_TOOLS.filter(
     (t) => t.status === "in-production" || t.status === "corpus",
@@ -324,14 +212,13 @@ export default async function RedTeamPage({
           <p className="font-display text-[clamp(18px,2.2vw,24px)] text-stone font-light leading-snug mb-10 max-w-[760px]">
             {zh ? (
               <>
-                一個攻擊被結晶成一條規則，那條規則就成了所有防禦者共用的字彙。Microsoft
-                AGT 每週自動拉、Cisco AI Defense 的 skill-scanner 內建一份、MISP export
+                一個攻擊被結晶成一條規則，那條規則就成了所有防禦者共用的字彙。Cisco AI Defense 的 skill-scanner 內建一份、MISP export
                 到 STIX 時帶著發現者的署名。這是一道閉環飛輪：攻擊餵養標準，標準與威脅同速演化。
               </>
             ) : (
               <>
                 One attack, crystallized into one rule, becomes a word every
-                defender shares. Microsoft AGT pulls it weekly, Cisco AI
+                defender shares. Cisco AI
                 Defense ships it in skill-scanner, MISP exports it to STIX with
                 the discoverer&apos;s name attached. A closed-loop flywheel:
                 attacks feed the standard, and the standard evolves at the same
@@ -349,12 +236,6 @@ export default async function RedTeamPage({
               className="bg-ink text-paper px-7 py-3 rounded-sm text-base font-semibold hover:bg-ink/85 transition-colors"
             >
               {zh ? "送一個 probe →" : "Submit a probe →"}
-            </a>
-            <a
-              href="#on-deck"
-              className="border border-fog text-ink px-7 py-3 rounded-sm text-base font-semibold hover:bg-ash/40 transition-colors"
-            >
-              {zh ? "看下一波接什麼 →" : "See who&apos;s next →"}
             </a>
             <a
               href="#how-it-works"
@@ -535,13 +416,13 @@ export default async function RedTeamPage({
                   </h3>
                   <p className="text-base text-paper/80 leading-relaxed mb-2">
                     {zh
-                      ? "Microsoft AGT 每週 sync、Cisco AI Defense 跟 release tag、MISP taxonomy + galaxy 每次 release 拉、OWASP A-S-R-H 在 fixture 中引用 rule ID。你的 discovered_by 跟著整條鏈傳遞——這是飛輪的下半圈:一個攻擊變成一條規則,一條規則變成所有防禦者共用的字彙。"
-                      : "Microsoft AGT syncs weekly. Cisco AI Defense pins to release tags. MISP taxonomy + galaxy pull on every release. OWASP A-S-R-H references rule IDs in fixtures. Your discovered_by field rides the whole chain — this is the back half of the flywheel: one attack becomes one rule, and one rule becomes vocabulary every defender shares."}
+                      ? "Cisco AI Defense 跟 release tag、MISP taxonomy + galaxy 每次 release 拉、OWASP A-S-R-H 在 fixture 中引用 rule ID。這是飛輪的下半圈:一個攻擊變成一條規則,一條規則變成所有防禦者共用的字彙。"
+                      : "Cisco AI Defense pins to release tags. MISP taxonomy + galaxy pull on every release. OWASP A-S-R-H references rule IDs in fixtures. This is the back half of the flywheel: one attack becomes one rule, and one rule becomes vocabulary every defender shares."}
                   </p>
                   <p className="text-sm text-paper/60">
                     {zh
-                      ? "Microsoft Copilot 的 regression PR 從開 PR 到 v2.1.2 npm publish 用了 2 小時 16 分鐘（06:07 → 08:24 UTC）。標準與威脅同速演化,靠的就是這個節奏。"
-                      : "Microsoft Copilot's regression PR went from opened to v2.1.2 npm publish in 2h 16m (06:07 → 08:24 UTC). That cadence is how a standard stays level with the threat instead of lagging it."}
+                      ? "Microsoft Copilot 的 regression PR 從開 PR 到對應規則合併進 ATR 用了 2 小時 16 分鐘（06:07 → 08:22 UTC）,兩分鐘後 v2.1.2 發布到 npm。標準與威脅同速演化,靠的就是這個節奏。"
+                      : "Microsoft Copilot's regression PR went from opened to the matching rules merged into ATR in 2h 16m (06:07 → 08:22 UTC); v2.1.2 reached npm two minutes later. That cadence is how a standard stays level with the threat instead of lagging it."}
                   </p>
                 </div>
               </div>
@@ -556,7 +437,7 @@ export default async function RedTeamPage({
       <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
         <Reveal>
           <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-4">
-            {zh ? "已經在跑的紅隊整合" : "Red team tooling in motion"}
+            {zh ? "攻擊側的工具與語料" : "Offensive tools and corpora"}
           </div>
           <h2 className="font-display text-[clamp(28px,4vw,40px)] font-extrabold tracking-[-2px] leading-[1.05] mb-4 max-w-[720px]">
             {zh
@@ -573,8 +454,8 @@ export default async function RedTeamPage({
         <Reveal>
           <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-4">
             {zh
-              ? `已整合 (${inProduction.length})`
-              : `Integrated (${inProduction.length})`}
+              ? `已合併上游或已消化語料 (${inProduction.length})`
+              : `Merged upstream or corpus ingested (${inProduction.length})`}
           </div>
         </Reveal>
         <Reveal delay={0.1}>
@@ -593,8 +474,8 @@ export default async function RedTeamPage({
                           ? "資料集已消化"
                           : "Corpus ingested"
                         : zh
-                          ? "已整合"
-                          : "Integrated"}
+                          ? "已合併上游"
+                          : "Merged upstream"}
                     </div>
                   </div>
                   <div className="md:col-span-9">
@@ -603,6 +484,7 @@ export default async function RedTeamPage({
                     </p>
                     <p className="text-base text-ink leading-relaxed mb-3">
                       {t.what_atr_did}
+                      {currentRecallSentence(stats, t.figures ?? [])}
                     </p>
                     <div className="flex flex-wrap gap-3">
                       <a
@@ -634,8 +516,8 @@ export default async function RedTeamPage({
         <Reveal>
           <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-4">
             {zh
-              ? `審查中 (${inReview.length})`
-              : `Under review (${inReview.length})`}
+              ? `仍開著的提案 (${inReview.length})`
+              : `Open proposals (${inReview.length})`}
           </div>
         </Reveal>
         <Reveal delay={0.1}>
@@ -657,6 +539,7 @@ export default async function RedTeamPage({
                 </p>
                 <p className="text-sm text-ink leading-relaxed">
                   {t.what_atr_did}
+                  {currentRecallSentence(stats, t.figures ?? [])}
                 </p>
               </a>
             ))}
@@ -674,8 +557,8 @@ export default async function RedTeamPage({
           </div>
           <h2 className="font-display text-[clamp(24px,3.4vw,36px)] font-extrabold tracking-[-2px] leading-tight mb-4 max-w-[720px]">
             {zh
-              ? "5 個語料庫 · 75 條新規則 · HackAPrompt 召回率 28.6% → 66.0%（2026-05-12 該次 sprint）"
-              : "5 corpora · 75 new rules · HackAPrompt recall 28.6% → 66.0% (over that 2026-05-12 sprint)"}
+              ? "5 個語料庫 · 75 條新規則 · HackAPrompt 召回率 28.6% → 66.2%（2026-05-12 該次 sprint，載入全部規則，在挖出規則的同一份語料上量測）"
+              : "5 corpora · 75 new rules · HackAPrompt recall 28.6% → 66.2% (2026-05-12 sprint, every rule loaded, measured on the corpus the rules were mined from)"}
           </h2>
           <p className="text-base text-stone font-light max-w-[640px] mb-4">
             {zh
@@ -684,18 +567,18 @@ export default async function RedTeamPage({
           </p>
           <p className="text-base text-stone font-light max-w-[640px] mb-10">
             {zh
-              ? `這個流程現在每天跑:紅隊巨量掃描與 CVE 攝取兩條飛輪都已跑完整輪,並轉為每日更新。新發現自動結晶成規則,把標準從 462 條推進到目前的 ${stats.ruleCount} 條(發布於 npm 上的 agent-threat-rules)。規則數天天在動——這正是飛輪在轉的證據。`
-              : `This pipeline now runs daily: a red-team mega-scan flywheel and a CVE-ingestion flywheel have each completed a full sweep and moved to daily updates. New findings auto-crystallize into rules, growing the standard from 462 to the current ${stats.ruleCount} (published as agent-threat-rules on npm). The count moves daily — which is what a turning flywheel looks like.`}
+              ? `現在的規則來自 CVE 與安全公告掃描、benchmark 漏報挖掘與貢獻者，每一條都經由維護者合併的 pull request 進入 main。從六月起，標準從 462 條成長到目前的 ${stats.ruleCount} 條（發布於 npm 上的 agent-threat-rules）。`
+              : `Rules now come from CVE and advisory sweeps, benchmark-miss mining and contributors, and each one reaches main through a pull request a maintainer merges. Since June the standard has grown from 462 to the current ${stats.ruleCount} rules (published as agent-threat-rules on npm).`}
           </p>
         </Reveal>
         <Reveal delay={0.1}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-fog mb-8">
             {[
-              { corpus: "HackAPrompt", samples: "4,780", rules: "5", ruleIds: "ATR-2026-00452..00456", recall: zh ? "28.6% → 66.0%（該 sprint 當時）" : "28.6% → 66.0% (at the time of that sprint)" },
+              { corpus: "HackAPrompt", samples: "4,780", rules: "5", ruleIds: "ATR-2026-00452..00456", recall: zh ? "28.6% → 66.2%（該 sprint 當時，載入全部規則，樣本內）" : "28.6% → 66.2% (at the time of that sprint, every rule loaded, in-sample)" },
               { corpus: zh ? "Vendor test suites" : "Vendor test suites", samples: "94", rules: "6", ruleIds: "ATR-2026-00500..00505", recall: "" },
               { corpus: "PromptInject", samples: zh ? "全語料庫" : "full corpus", rules: "4", ruleIds: "ATR-2026-00506..00509", recall: "" },
               { corpus: "OWASP LLM Top 10 + ATLAS PoCs", samples: zh ? "8 標準分類" : "8 standard categories", rules: "8", ruleIds: "ATR-2026-00510..00517", recall: "" },
-              { corpus: zh ? "Garak in-the-wild jailbreak" : "Garak in-the-wild jailbreak", samples: "650", rules: zh ? "已有覆蓋" : "existing coverage", ruleIds: zh ? "92.3% recall（ATR 3.5.12，2026-08-15）" : "92.3% recall (ATR 3.5.12, 2026-08-15)", recall: "" },
+              { corpus: zh ? "Garak in-the-wild jailbreak" : "Garak in-the-wild jailbreak", samples: "650", rules: zh ? "已有覆蓋" : "existing coverage", ruleIds: garak ? (zh ? `${recallLanes(garak)} recall（${measuredStamp(garak, true, true)}；部分屬 closed-book）` : `${recallLanes(garak)} recall (${measuredStamp(garak, false)}; partly closed-book)`) : "", recall: "" },
             ].map((row) => (
               <div key={row.corpus} className="bg-paper p-5 md:p-6">
                 <div className="font-display text-sm font-bold text-ink mb-2">{row.corpus}</div>
@@ -752,8 +635,8 @@ export default async function RedTeamPage({
         <Reveal delay={0.2}>
           <p className="text-xs text-stone max-w-[640px]">
             {zh
-              ? "29 條為去重後的 distinct 規則;部分源自跨語料庫共通的 miss。成熟度涵蓋 stable 與 experimental,全部通過安全門檻與 benign corpus 0 FP。這兩條飛輪(紅隊 + CVE)現在每日運轉。"
-              : "29 distinct rules after de-duplication; several emerged from misses shared across corpora. Maturity spans stable and experimental; all cleared the safety gate with 0 FP on the benign corpus. Both flywheels (red-team + CVE) now run daily."}
+              ? "29 條為去重後的 distinct 規則;部分源自跨語料庫共通的 miss。成熟度涵蓋 stable 與 experimental,全部通過安全門檻與 benign corpus 0 FP。"
+              : "29 distinct rules after de-duplication; several emerged from misses shared across corpora. Maturity spans stable and experimental; all cleared the safety gate with 0 FP on the benign corpus."}
           </p>
         </Reveal>
       </section>
@@ -847,80 +730,6 @@ export default async function RedTeamPage({
       </section>
 
       {/* ============================================================
-          ON DECK — the public pipeline
-      ============================================================ */}
-      <section
-        id="on-deck"
-        className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32"
-      >
-        <Reveal>
-          <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-4">
-            {zh ? "下一波" : "On deck"}
-          </div>
-          <h2 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] leading-[1.05] mb-4 max-w-[760px]">
-            {zh
-              ? "已經排好的紅隊整合 — 一週一個，公開排程。"
-              : "Red-team integrations queued. One a week. Public schedule."}
-          </h2>
-          <p className="text-base text-stone font-light max-w-[680px] mb-12">
-            {zh
-              ? "ATR 不是只跟最大牌的整合。下面是接下來六週要送的 issue / PR — 真實日期、真實對象。Maintainer 看到自己被排上會優先 review，這是公開承諾的副作用。"
-              : "ATR doesn&apos;t only chase the biggest names. Here&apos;s the queue for the next six weeks — real dates, real targets. Maintainers who see themselves on the schedule tend to review faster. That&apos;s the side-effect of a public commitment."}
-          </p>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <div className="space-y-px bg-fog">
-            {ON_DECK.map((t, i) => (
-              <div key={t.name} className="bg-paper p-6 md:p-7">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-start">
-                  <div className="md:col-span-1 font-data text-xs text-stone tracking-wide">
-                    {String(i + 1).padStart(2, "0")}
-                  </div>
-                  <div className="md:col-span-4">
-                    <div className="font-display text-base font-bold text-ink mb-1">
-                      {t.name}
-                    </div>
-                    <div className="font-data text-xs text-stone">{t.org}</div>
-                  </div>
-                  <div className="md:col-span-5">
-                    <p className="text-sm text-ink leading-relaxed">{t.why}</p>
-                  </div>
-                  <div className="md:col-span-2 text-right">
-                    <div className="font-data text-xs text-stone uppercase tracking-wide mb-1">
-                      {zh ? "送出日" : "Filing"}
-                    </div>
-                    <div className="font-data text-sm text-blue font-medium">
-                      {t.filing}
-                    </div>
-                    <div
-                      className={`font-data text-xs uppercase tracking-wide mt-1 ${
-                        t.status === "scheduled" ? "text-green" : "text-stone"
-                      }`}
-                    >
-                      {t.status === "scheduled"
-                        ? zh
-                          ? "已排程"
-                          : "scheduled"
-                        : zh
-                          ? "佇列中"
-                          : "queued"}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-        <Reveal delay={0.2}>
-          <p className="text-xs text-stone mt-6 max-w-[640px]">
-            {zh
-              ? '排程從 GitHub issue / PR 同步。Merge 後從這裡移到 "Already Integrated"。Maintainer 若想插隊：adam@agentthreatrule.org。'
-              : 'Schedule syncs from filed GitHub issues / PRs. Once merged, entries move to "Already Integrated" above. Maintainers wanting earlier engagement: adam@agentthreatrule.org.'}
-          </p>
-        </Reveal>
-      </section>
-
-      {/* ============================================================
           FINAL CTA — terse, confident
       ============================================================ */}
       <section className="px-6 max-w-[1120px] mx-auto">
@@ -970,8 +779,8 @@ export default async function RedTeamPage({
         <Reveal delay={0.1}>
           <p className="text-xs text-stone mt-6 max-w-[640px]">
             {zh
-              ? `已部署 ${stats.ruleCount} 條規則，跨 ${stats.categoryCount} 個威脅類別。每條都有 author + metadata_provenance.discovered_by。`
-              : `${stats.ruleCount} rules deployed across ${stats.categoryCount} threat categories. Every one has an author field and metadata_provenance.discovered_by intact.`}
+              ? `已部署 ${stats.ruleCount} 條規則，跨 ${stats.categoryCount} 個威脅類別。每條都有 author 欄位和固定的規則 ID。`
+              : `${stats.ruleCount} rules deployed across ${stats.categoryCount} threat categories. Every one has an author field and a stable rule ID.`}
           </p>
         </Reveal>
       </section>

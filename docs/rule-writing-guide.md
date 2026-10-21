@@ -95,10 +95,10 @@ detection:
 
 | Operator | Behavior |
 |----------|----------|
-| `regex` | Regex match against the field value. Use `(?i)` for case-insensitive |
-| `contains` | Substring match (case-insensitive by default) |
-| `exact` | Exact string equality |
-| `starts_with` | String prefix match |
+| `regex` | Regex match against the field value. Always case-insensitive, with or without `(?i)`: see [Regex conditions ignore letter case](#regex-conditions-ignore-letter-case) |
+| `contains` | Substring match, always case-insensitive |
+| `exact` | Exact string equality, case-sensitive |
+| `starts_with` | String prefix match, always case-insensitive |
 
 **Condition combinators**:
 
@@ -179,19 +179,57 @@ Is the threat in user/LLM text?
 | `skill_permission` | Over-permissioned skills, scope escalation, boundary violations |
 | `skill_chain` | Multi-skill attack chains, tool-call laundering across skills |
 
+Where the reference engine runs each type: the first five match an event type
+of their own. `context_window` runs where `llm_io` rules run, and the `skill_*`
+types where `tool_call` rules run (`RUNTIME_SOURCE_TYPE` in `src/engine.ts`).
+`memory_access` runs on no typed event yet (`WITHHELD_SOURCE_TYPES`, which gives
+the reason): such a rule reaches neither `atr guard` nor the framework adapters,
+only an untyped event and a skill scan, and `atr test` reports its cases as
+unevaluable. `tests/engine-extended-source-types.test.ts` lists the rules of
+that type by id, so a new one fails it until the type is mapped.
+
 ---
 
 ## Regex Best Practices
 
-### Use case-insensitive flag
+### Regex conditions ignore letter case
+
+The engine matches every `operator: regex` condition case-insensitively. It
+strips a leading inline flag group such as `(?i)`, `(?is)` or `(?im)` and
+compiles the rest with the `i` flag (plus `u` when the pattern needs it),
+whether the group was there or not. So a pattern without `(?i)` still matches
+every capitalisation, and letter case cannot tell two inputs apart:
 
 ```yaml
-# GOOD: Catches "Ignore", "IGNORE", "ignore"
+# Catches "Ignore", "IGNORE", "ignore" -- and says so
 value: "(?i)\\bignore\\b"
 
-# BAD: Only catches lowercase
+# Catches exactly the same inputs, but reads as if it only caught lowercase
 value: "\\bignore\\b"
+
+# Does NOT keep lowercase out: under the engine [A-Z] also matches a-z,
+# so this matches "akia..." as well as "AKIA..."
+value: "\\bAKIA[0-9A-Z]{16}\\b"
 ```
+
+- Start every regex with `(?i)`. It changes nothing in this engine, but the
+  pattern then says what it does, and a consumer that compiles the pattern as
+  written is case-insensitive too.
+- If letter case is what separates an attack from a benign input, express the
+  difference another way: surrounding syntax, a delimiter, or a second
+  condition. Array-format conditions have no case-sensitive mode. A
+  `case_sensitive` key on one is ignored; only the named-map format's
+  `patterns` conditions honour it.
+- Do not reach for a scoped modifier such as `(?-i:AKIA)`. It compiles only on
+  Node 23 and later; on older runtimes, including the Node 20 that CI pins, it
+  is a SyntaxError and the engine silently drops the whole condition.
+- The other flags in that leading group are stripped and not applied: `(?s)`
+  does not make `.` match a newline, `(?m)` does not make `^` and `$` match at
+  line breaks, and `(?x)` does not ignore whitespace. Write `[\s\S]` for a dot
+  that crosses lines, and `(?:^|\n)` / `(?:\n|$)` for line anchors.
+- `scripts/gate-case-sensitivity.ts` runs on rule pull requests and fails a
+  condition that, read as written, keeps one of the rule's own `true_negatives`
+  out only by letter case.
 
 ### Use word boundaries
 
@@ -293,6 +331,36 @@ Include adversarial true negatives -- inputs that LOOK suspicious but are legiti
       expected: not_triggered
       description: "Authority language in legitimate context"
 ```
+
+### How a case is run
+
+`atr test` builds the event a case describes for the rule's `agent_source.type`
+(a tool_call rule gets a tool_call event, an llm_io rule an llm_input event). The
+case's `input` (or its alias `user_input`) becomes the event's content (on a
+tool_response event its `tool_response` does), and `tool_args`, `tool_name`,
+`tool_response`, `agent_output`, `tool_description` and `agent_message` go in the
+fields of those names. Name the field the payload arrives in when the rule runs,
+with the value a producer puts there:
+
+- A rule that keys on the tool's name needs `tool_name:` in its cases. A case
+  that names no tool runs as a tool named `atr-test-tool`, so a `tool_name`
+  condition never reads the case's text.
+- `tool_args` are a tool's arguments, which only tool events carry:
+  `src/hook-handler.ts` fills them, as the JSON of the tool's input, on every
+  tool call. An llm_io rule reads them on the tool_response event after a tool
+  has run, not on the user's input.
+
+The test event also offers an input under every alias a rule might read
+(`user_input`, `tool_args`, and the content as `agent_message`), whatever the
+event type. `atr test` runs each passing true positive again on what the
+producers put on an event of each type the engine runs the rule on, and as a
+skill document, and lists one that matches none of them under `harnessOnly` in
+`atr test --json` (and under "Harness-only" in the text report). It still counts
+as passed there, and `tests/testcase-runtime-parity-rules.test.ts`, which runs
+every rule's true positives except those of a type the engine withholds (which
+`atr test` reports as unevaluable), fails on it. Naming a field in the case
+clears both without checking that any event carries the payload there, so name
+the field it really arrives in.
 
 ### Evasion tests
 
