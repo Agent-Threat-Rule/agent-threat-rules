@@ -17,6 +17,25 @@ All notable changes to ATR will be documented in this file.
   version>`, on release tags only, and pushes nothing when that version is
   already published with the same catalogs.
 
+- **`atr test` reports a true positive that matches only through a copy the
+  test event makes.** The test event offers a case's input under every alias a
+  rule might read, whatever the event type: as `user_input` and `tool_args`, and
+  its content as `agent_message`. `buildEventFromTestCase` gains a `runtime`
+  field set, which holds what this repository's producers put on an event of the
+  type: content, the fields the case names (taken as given), `user_input` on an
+  `llm_input` event, and on a tool event the `tool_name` and `tool_args`
+  `src/hook-handler.ts` fills. `caseMatchesAtRuntime` runs a case on that set
+  for every event type, the engine's source filter deciding which of them the
+  rule runs on, or as a skill document. `atr test` lists a passing true positive
+  that matches none of them under `harnessOnly` (JSON) and "Harness-only"
+  (text); it still counts as passed. No true positive on main is one.
+  ATR-2026-01610's two cases declared as `user_input` match their `llm_input`
+  event only through the input copied into `tool_args`; the engine also runs
+  `llm_io` rules on `tool_response` events, where the hook fills `tool_args`,
+  and there they match. `tests/testcase-runtime-parity-rules.test.ts` runs every
+  rule's true positives the way `atr test` does, leaving out a type the engine
+  withholds as `atr test` does, and fails on one.
+
 - **Every benchmark measurement records the enforce lane beside its
   headline.** A measurement's `metrics.recall` is the `hunt` lane (the engine
   default, every maturity). Each runner the weekly measurement calls now also
@@ -46,6 +65,36 @@ All notable changes to ATR will be documented in this file.
   run, and are not comparable.
 
 ### Changed
+
+- **A match a model decided is reported, not enforced, unless the integrator
+  opts in.** Three engine paths turn a model's output into a match: a semantic
+  rule's `semanticJudge`, the `embeddingModule` similarity signal (which in the
+  hunt and alert lanes could produce a critical `block_input` match), and the
+  `semanticModule` layer. No evidence a response tier is earned from measures
+  them: the benign-corpus evidence runs the synchronous engine, where a semantic
+  rule is its pattern fallback, and neither the embedding module nor the
+  semantic layer. Every match now carries `decidedBy`, and
+  `computeVerdict()` keeps a model-decided one out of the outcome and dispatches
+  only its observe-tier actions; it is listed in the new `verdict.advisory`
+  (with `verdict.advisorySeverity`), and `highestSeverity` and
+  `highestConfidence` now describe the matches the outcome came from. A
+  semantic rule whose judge matches is enforced when the rule's own pattern
+  fallback matches the same input (reported as the fallback's match); a judge
+  match the fallback does not corroborate is advisory. Rule, invariant,
+  blacklist and fingerprint matches decide as before. `modelDecisions:
+  'enforce'` on the engine (or on `computeVerdict`) restores the previous
+  behaviour; any other value throws. `computeVerdict` now sorts the matches it
+  is given instead of trusting their order.
+- **`atr scan` and the MCP server follow the same default.** `atr scan
+  --semantic` lists a judge-only match but leaves it out of `--fail-on`, and
+  writes it to SARIF at level `note` with `properties.enforced: false`, which the
+  GitHub Action no longer counts toward `fail-on-finding`. JSON and SARIF output
+  name what decided each match (`decided_by`). The MCP scan tool reports a
+  judge-only match with outcome `allow`, `enforced: false` and observe-tier
+  recommended actions. `--model-decisions enforce` or
+  `ATR_MODEL_DECISIONS=enforce` restores counting for `atr scan` and `atr mcp`.
+  `atr guard` and the bundled adapters wire no model, so nothing they do
+  changes.
 
 - **The ReDoS gate now times long inputs, every branch of an alternation
   and input tiled with a pattern's own openers, and its baseline grew from 9
@@ -98,6 +147,45 @@ All notable changes to ATR will be documented in this file.
   (`e-2026-10-16-recall-lanes`) records the change on the site.
 - `sync-stats.ts` now fails when CITATION.cff has no garak sentence to
   rewrite, instead of leaving an old figure in place.
+- **`scripts/check-rules-safety.ts` checks that a modified rule still matches
+  its own true positives, and checks renamed rules.** A new rule's true
+  positives had to match; a modified rule only had to add no benign false
+  positive, and a rule that matches nothing adds none. `npm run
+  gate:generalization` covers pattern rules only, so a semantic rule whose
+  `fallback_method` was set to `none` passed every check. The new own-TP check
+  runs each true positive on both paths `atr test` tries, replaying every case
+  to the changed rule as the event the base rule would receive: a case the
+  base rule matched on a path (`evaluate()`, `scanSkill()`) must still match
+  there, one the change adds must match, and the changed rule must still match
+  one of the cases the base rule matched. That also catches re-routing a rule
+  away from its cases. A rule of a type the engine withholds from typed events
+  (`WITHHELD_SOURCE_TYPES`), which `atr test` reports as unevaluable, is
+  skipped while it stays that type. A renamed rule file was on neither the new
+  nor the modified list and skipped both checks; it is now compared with the
+  file it was at the base, and a changed file whose rule id differs is checked
+  as a new rule. `npm run validate` also checks a semantic rule's
+  `fallback_method` (`pattern` or `none`, compared exactly, as the engine
+  does), its `threshold` (a number from 0 to 1), and that a pattern fallback
+  has a condition to match.
+- **`scripts/check-rules-safety.ts` runs a new rule's true positives the way
+  `atr test` does (Check 2).** It read only a case's `input` and ran it as the
+  text of the benign corpus shapes. On main, as if each rule past Check 1 were
+  new, 250 true positives in 54 rules carry their payload elsewhere
+  (`tool_response`, `tool_args`, `tool_description`, a `user_input` key, an
+  object `input`, ...) and were never read; 47 of those rules had none read
+  and passed with nothing run. The routing a rule declares was never
+  exercised. Each case now runs as the event built from it for the rule's own
+  `agent_source.type`, and through `scanSkill()`, with the code the own-TP
+  check for modified rules uses (`scripts/lib/own-true-positives.ts`), and its
+  text must still match on the corpus shapes, so a case that fires only
+  through a tool name, which no benign sample exercises, fails. The semantic
+  lane's pre-gate runs the same code. A case that cannot be run fails, and so
+  does a rule of a type the engine withholds from typed events
+  (`memory_access`), whose cases `atr test` reports as unevaluable. A new rule
+  the benign checks cannot run at all (deprecated, or a trace, behavioral or
+  signature method) is refused with the reason; Check 2 used to fail most of
+  them only because it could not match their cases either, and one whose cases
+  carried no `input` passed the whole gate.
 - **README §8 discloses that the `garak` and `garak-full` figures are partly
   closed-book.** A replay without the rules whose own YAML shows they were
   written from the in-the-wild corpus is given in the new `[^garakcorpus]`
@@ -107,6 +195,96 @@ All notable changes to ATR will be documented in this file.
   block, a 3.5.11 figure nothing has written since #600 and nothing reads.
 
 ### Fixed
+
+- **On Claude Code, the guard scans what a tool returned on PostToolUse.**
+  Claude Code sends a tool's output at the top level of the PostToolUse hook
+  input, as `tool_response` (checked against the shipped 2.1.280 binary).
+  `src/hook-handler.ts` read an output only from `tool_input.output` or
+  `tool_input.response`, where Claude Code never puts one, so the event's content
+  was the tool's input, and a prompt injection in a command's output, a file or a
+  fetched page reached no rule. The event's content and `tool_response` are now
+  the text of the output: `src/hook-tool-output.ts` keeps every string in it, as
+  written, and leaves out binary data, what Claude Code keeps from the model,
+  and labels and strings the tool only repeats from its input. A tool that edits
+  a file returns the edit it made, so its event is still built from its input.
+  `tool_args` stays the JSON of the input, and `tool_input.output` and
+  `.response` are still read for a host that sends the output there, now as raw
+  text in content too. Measured through the hook in the default hunt lane, each
+  sample as a Bash command's output: the own true positives of the 746 rules the
+  engine runs on a tool response (`llm_io`, `mcp_exchange` and `context_window`)
+  match 3,852 of 3,890 times (0 before, and the same as a Read or MCP output);
+  289 of PINT's 451 attacks match (0 before) and none of its 399 benign samples;
+  1,246 of the 14,157 benign-corpus samples match a rule (0 before), most of them
+  through rules at maturity `test`. In the alert lane 1,183 match, in the enforce
+  lane none. Not covered: an output whose text exceeds 100,000 characters
+  taken together (`MAX_EVAL_LENGTH`); and some rules take time quadratic in a
+  long run of one character. `atr init` registers the guard on
+  PreToolUse only, so this reaches an installation that added it under
+  PostToolUse.
+
+- **The guard also scans a failed tool call's output (PostToolUseFailure).**
+  When a tool call fails, a Bash command whose exit code Claude Code counts as
+  a failure among them (most non-zero codes; `grep`'s exit 1 is not one),
+  Claude Code sends `PostToolUseFailure` instead of `PostToolUse`. Its input
+  carries `tool_name`, `tool_input`, `tool_use_id`, `error`, `is_interrupt`
+  and `duration_ms`, and no `tool_response` (checked against the shipped
+  2.1.280 binary). The guard answered it "Unknown hook type" and allowed it,
+  so ending a command with `; exit 1` kept its output from every rule. It now
+  builds the event from `error`, the failure as the model sees it: for a shell
+  command, its stderr and stdout after Claude Code's `Exit code N` line and
+  abort note, which are left out. A command that printed nothing leaves no
+  text, and its event is built from the input, as an output-less PostToolUse
+  is. It answers in the PostToolUse contract under the `PostToolUseFailure`
+  name, which Claude Code accepts, and with blocking on its `decision:
+  "block"` reaches the model as a blocking error. Measured through the hook in
+  the default hunt lane, each sample as a failed Bash command's error: the own
+  true positives of the 746 rules the engine runs on a tool response match
+  3,852 of 3,890 times (0 before); 289 of PINT's 451 attacks match (0 before)
+  and none of its 399 benign samples; 1,246 of the 14,157 benign-corpus
+  samples match a rule (0 before). On every sample the verdict and the rules
+  matched are those of the same text as a Bash command's output on
+  PostToolUse. Claude Code cuts a failed call's error to about 10,000
+  characters; 1,117 of the benign samples are longer and were sent whole. To
+  use it, register the guard under `PostToolUseFailure` too.
+
+- **Flywheel shadow rules can match.** `ShadowEvaluator` compiled each
+  condition with `new RegExp(value, 'i')`. A value that starts with `(?i)` is
+  a SyntaxError in JavaScript, the error was swallowed, and the condition
+  never matched. `RuleScaffolder` starts every pattern it writes with `(?i)`,
+  so no rule the flywheel generated could match in shadow mode or reach
+  promotion. Shadow conditions now go through the engine's own
+  `compileRegexCondition()` (leading flag group removed per SPEC §6.4, `u`
+  when needed, ReDoS gate) and `safeRegexTest()` (the engine's input-length
+  limit), and a condition whose value is not a string is skipped instead of
+  throwing. Shadow evaluation still differs from `ATREngine` in field
+  resolution, operators, `condition: all`, Unicode normalisation and
+  `agent_source` routing; those differences are unchanged.
+- **Flywheel promotion needs a reviewed true positive, and promotes a rule
+  once.** `ShadowEvaluator.getPromotionCandidates()` divided confirmed false
+  positives by all matches, so a rule with no recorded feedback had an FP rate
+  of 0 and became a candidate after its first match. Once shadow rules could
+  match (above), `FlywheelManager.promoteReady()` would have handed such rules
+  to `onPromote` with status `stable`, and the same rule again on every call.
+  A rule is now a candidate only after at least `minReviewedMatches` (new
+  `FlywheelConfig` option, default 1) matches with recorded feedback including
+  a confirmed true positive; the FP rate is computed over reviewed matches; and
+  `promoteReady()` hands each rule to `onPromote` once. A promoted rule keeps
+  `maturity: draft`.
+- **`RuleScaffolder` no longer writes a pattern that misses its own example
+  payload.** An attack indicator is chosen by a broad test and writes a
+  narrower pattern: "Ignore all previous instructions", "please ignore the
+  rules above" and "disregard everything you were told" all selected the
+  instruction-override indicator, whose pattern did not match them. An
+  indicator now counts only when its pattern matches the payload, and the
+  exact payload is used if nothing else does. Keyword patterns are now tried
+  only at line starts, `(?:^|[\n\r\u2028\u2029])(?=[^\n\r\u2028\u2029]*word)...`,
+  and exact patterns are the escaped payload without a surrounding `.*`. Both
+  match the same inputs as before, but neither is quadratic on a long
+  single-line input any more (about 7-12 seconds per pattern on 100,000
+  characters before, about a millisecond now). An empty or whitespace-only
+  example payload, which produced a pattern that matched everything, is now
+  rejected. Output of `atr scaffold` and the `atr_submit_proposal` MCP tool
+  changes accordingly.
 
 - **SPEC §6.4 corrected: SPEC.md 1.0.1 [Compatible].** A `regex` pattern
   condition matches case-insensitively whether or not it begins with `(?i)`,
@@ -156,6 +334,26 @@ All notable changes to ATR will be documented in this file.
   true positives). No precision or false-positive figure moves (the new matches
   fall on attack samples), and no enforce-lane figure moves (none of the five
   rules is stable).
+
+- **A tool event built from a test case always names a tool.**
+  `buildEventFromTestCase` (`src/testcase-event.ts`, behind `atr test`,
+  `scripts/validate-rule-testcases.ts` and the case-sensitivity gate) gave a case
+  that names no tool the `tool_name` `""`, meant to keep the case's text out of
+  `tool_name`. `src/engine.ts` reads a field only when it is truthy and, on a
+  `tool_call` event, then falls back to the event's content, so a `tool_name`
+  condition read the payload as the tool's name and a rule keyed on the tool
+  could pass its cases without naming one. A tool event now carries
+  `atr-test-tool` (`UNNAMED_TOOL`) when the case names no tool, as
+  `src/hook-handler.ts` fills it from the host's tool call, and the
+  case-sensitivity gate leaves that name out of the text it checks a condition
+  against. No rule on main relied on the old behaviour: every true positive and
+  true negative of every rule tests the same.
+
+- **A test case's own `agent_message` is no longer replaced by its content.**
+  `buildEventFromTestCase` set the field from the case and then copied the
+  event's content over it, so a case that names an `agent_message` beside its
+  input was run on the input there. No case on main names one.
+
 - **A `medium` confidence label no longer depends on float rounding to stay
   out of `deny`.** A pattern match scored `0.7 + 0.1 * coverage`, and a
   `high`-severity match denies at `>= 0.8`. At full coverage that sum is
@@ -171,6 +369,22 @@ All notable changes to ATR will be documented in this file.
   named-condition rule labelled `medium` at 3/4 coverage shows 78% (`0.775`)
   where the noise used to show 77%. No shipped rule reaches that cell.
 
+- **A semantic rule without a pattern fallback is no longer recorded as
+  measured clean.** The benign-corpus measurement
+  (`scripts/gate-promotion-fp.ts`, and `scripts/remeasure-benign-fp.ts`
+  through it) drives the synchronous engine, which returns null for
+  `method: semantic` unless `detection.semantic.fallback_method` is exactly
+  `pattern`; the judge runs only in `evaluateAsync()`. `fieldCoverage()`
+  named trace, behavioral and signature as methods it cannot run, but not
+  this one, and it skipped a rule with no condition field, such as a pattern
+  fallback with nothing in it. Either was written down as `fp_count: 0,
+  partial_measurement: false`, which `scripts/gate-action-eligibility.ts`
+  graded `terminate` at maturity `stable` and `degrade` at `test`. Both are
+  now recorded partial and capped at `observe`. No rule on main is in either
+  state, so the committed evidence is unchanged. The skill-path check uses
+  the same predicate; it used to read `fallback_method: Pattern` as
+  `pattern`, which the engine does not, and it exempted a
+  `scan_target: both` rule with no conditions.
 - **NIST-related statements corrected across the docs and the website.**
   Pages described a NIST CAISI dialogue and position paper that did not
   happen, an RFI response ATR never filed, an OSCAL "Path 1" acceptance,
@@ -242,6 +456,20 @@ All notable changes to ATR will be documented in this file.
   without being read, and `--write` promoted it to `stable`. Such a rule is now
   reported as not promotable; one that did false-positive stays with the rules
   that have false positives. No `maturity: test` rule on main is affected today.
+- **verify-adopters.yml no longer fails when other commits land on main during
+  a run, and its failures get noticed.** The job commits the refreshed
+  `data/adopters-verification.json` straight to main with a plain push, which
+  was rejected whenever another commit landed first, failing the run with
+  nothing wrong in ADOPTERS.md (2026-10-07, 2026-10-15). It now rebases its
+  one-file commit onto the moved main and retries, at most three times; runs
+  one verification at a time per branch; and checks out the branch tip rather
+  than the triggering commit, so a run that waited behind another starts from
+  the data the other pushed instead of conflicting with it (the 2026-10-07
+  shape: two adopter merges, each run writing the same file). A conflict with
+  a hand edit of the generated file still fails the run. Four red runs in a
+  row (2026-10-12 to 10-15) went unnoticed for days; a failure on main now
+  opens one tracking issue, or rewrites the open one, and the next green run
+  closes it. The issue lists drift only from a verification that finished.
 
 ## [4.1.5] - 2026-10-10
 

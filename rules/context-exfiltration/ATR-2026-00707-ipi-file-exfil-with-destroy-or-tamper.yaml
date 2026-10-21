@@ -71,7 +71,7 @@ detection:
     # VPI framework: attacker_objective with exfil then delete/edit
     - field: content
       operator: regex
-      value: "(?i)\\battacker_objective\\s*=\\s*Get\\s+the\\s+(?:user|CUA|agent)['']?s?\\s+[^,\\n]{0,60},?\\s+then\\s+(?:delete|edit|modify|tamper|overwrite)\\s+the\\s+file"
+      value: "(?i)\\battacker_objective\\s*=\\s*Get\\s+the\\s+(?:user|CUA|agent)['']?s?(?:\\s+(?:[^,\\s][^,\\n]{0,59},?|,)|\\s)\\s+then\\s+(?:delete|edit|modify|tamper|overwrite)\\s+the\\s+file"
       description: "VPI attacker_objective: exfil then delete/edit the source file"
     # Compound: get file from cloud + then delete
     - field: content

@@ -182,6 +182,8 @@ An LLM evaluates suspicious content flagged by Layer 1 or Layer 2. Intended for 
 
 The tiers are additive. A production deployment runs all three, with Layer 1 handling the fast path (block obvious attacks immediately) and Layer 3 handling the slow path (evaluate ambiguous cases with higher confidence).
 
+By default a decision a model made (the Layer 3 judge, a semantic rule's judge, the Tier 2.5 embedding signal) is reported and not enforced: it takes no part in the verdict's outcome and only its observe-tier actions run. No evidence a response tier is earned from measures a model's false positives, and the judge reads attacker-controlled text. An integrator who accepts that sets `modelDecisions: 'enforce'` on the engine. A semantic rule's judge decision that the rule's own pattern fallback corroborates on the same input is enforced as that regex's match.
+
 ## Deployment Recommendations
 
 1. **Use ATR as one layer in defense-in-depth.** ATR is a detection standard, not a complete security solution. No single layer stops all attacks.

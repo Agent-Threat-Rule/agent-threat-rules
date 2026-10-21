@@ -108,6 +108,28 @@ if [ "\${1:-}" = "api" ]; then
   echo "fake gh: unexpected api call: $method $endpoint" >&2
   exit 1
 fi
+# Issues, for the tracking-issue steps: \`issue list\` answers from a canned JSON
+# array (FAKE_GH_ISSUES) through jq, filtered the way gh filters: by --state, by
+# --label, and by --search "<words> in:title" (every word in the title, ignoring
+# case); create, edit and close are recorded in $FAKE_GH_LOG and succeed.
+if [ "\${1:-} \${2:-}" = "issue list" ]; then
+  state=open; label=; search=; expr=.
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --state) state=$2; shift ;;
+      --label) label=$2; shift ;;
+      --search) search=$2; shift ;;
+      --jq) expr=$2; shift ;;
+    esac
+    shift
+  done
+  jq -r --arg s "$state" --arg l "$label" --arg q "$search" \
+    "(\\$q | ascii_downcase | sub(\\" in:title$\\"; \\"\\") | split(\\" \\") | map(select(length > 0))) as \\$words | map(select((\\$s == \\"all\\" or (.state | ascii_downcase) == \\$s) and (\\$l == \\"\\" or ((.labels // []) | index(\\$l))) and (. as \\$i | \\$words | all(. as \\$w | ((\\$i.title // \\"\\") | ascii_downcase | contains(\\$w)))))) | $expr" \
+    "\${FAKE_GH_ISSUES:-/dev/null}" 2>/dev/null || echo ""
+  exit 0
+fi
+if [ "\${1:-} \${2:-}" = "issue create" ]; then echo "https://example.invalid/issues/1"; exit 0; fi
+if [ "\${1:-} \${2:-}" = "issue edit" ] || [ "\${1:-} \${2:-}" = "issue close" ]; then exit 0; fi
 echo "fake gh: unexpected call: $*" >&2
 exit 1
 `;

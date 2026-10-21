@@ -66,7 +66,7 @@ detection:
     # Pattern: "The answer is originally [Yes|No], but there is '<superscript chars>' in the question"
     - field: user_input
       operator: regex
-      value: "(The\\s+answer\\s+is\\s+originally\\s+(Yes|No),[^\\n]{0,100}[⁰-₟ʰ-˯]|[⁰-₟ʰ-˯]{2,}[^\\n]{0,50}(answer|question|turns?|concurrently|luther|gates))"
+      value: "(The\\s+answer\\s+is\\s+originally\\s+(Yes|No),[^\\n]{0,100}[⁰-₟ʰ-˯]|[⁰-₟ʰ-˯]{2}(?:[^⁰-₟ʰ-˯\\n][^\\n]{0,49})?(answer|question|turns?|concurrently|luther|gates))"
       description: "Superscript Unicode characters embedded in reasoning chain to flip expected answer"
     # Known glitch tokens combined with SYSTEM MESSAGE / safety bypass claims.
     # Only literal, multi-character GPT-2/GPT-3 glitch token names — the prior
@@ -90,7 +90,7 @@ detection:
     # not match — only the anomalous modifier-letter glitch runs do.
     - field: user_input
       operator: regex
-      value: "[ªºʰ-˿⁰-ₜᴀ-ᵿ]*[ʰ-˿ᴀ-ᵿ][ªºʰ-˿⁰-ₜᴀ-ᵿ]*[ʰ-˿ᴀ-ᵿ][ªºʰ-˿⁰-ₜᴀ-ᵿ]{3,}"
+      value: "[ʰ-˿ᴀ-ᵿ][ªº⁰-ₜ]*[ʰ-˿ᴀ-ᵿ][ªºʰ-˿⁰-ₜᴀ-ᵿ]{3}"
       description: "Dense sequence of modifier/phonetic-extension characters (anomalous embedding injection)"
   condition: any
   false_positives:

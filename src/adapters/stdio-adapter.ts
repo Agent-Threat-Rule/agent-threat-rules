@@ -96,7 +96,7 @@ export class StdioAdapter implements PlatformAdapter {
   async alert(ctx: ExecutionContext): Promise<ActionResult> {
     const alertMsg = {
       type: "alert",
-      severity: ctx.verdict.highestSeverity,
+      severity: ctx.verdict.highestSeverity ?? ctx.verdict.advisorySeverity ?? null,
       reason: ctx.verdict.reason,
       matchCount: ctx.verdict.matchCount,
     };
@@ -111,7 +111,7 @@ export class StdioAdapter implements PlatformAdapter {
     if (process.env.ATR_SHADOW_LOG) {
       const shadowMsg = {
         type: "shadow",
-        severity: ctx.verdict.highestSeverity,
+        severity: ctx.verdict.highestSeverity ?? ctx.verdict.advisorySeverity ?? null,
         reason: ctx.verdict.reason,
         matchCount: ctx.verdict.matchCount,
         ruleIds: ctx.matches.map((m) => m.rule.id),
@@ -143,7 +143,7 @@ export class StdioAdapter implements PlatformAdapter {
   async escalate(ctx: ExecutionContext): Promise<ActionResult> {
     const escalation = {
       type: "escalation",
-      severity: ctx.verdict.highestSeverity,
+      severity: ctx.verdict.highestSeverity ?? ctx.verdict.advisorySeverity ?? null,
       reason: ctx.verdict.reason,
       matchCount: ctx.verdict.matchCount,
     };

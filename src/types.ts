@@ -399,6 +399,25 @@ export type ATRSemanticJudge = (args: {
 /** Result when an ATR rule matches an event */
 export type ScanContextType = "native" | "cross-context";
 
+/**
+ * What decided a match. `semantic-judge` (a semantic rule's injected judge),
+ * `embedding` (the Tier 2.5 similarity signal) and `semantic-layer` (the Layer 3
+ * module) are decisions a model made. The rest are deterministic logic: a rule's
+ * (a semantic rule's pattern fallback, `semantic-fallback`, included), an
+ * invariant's, the blacklist's or a skill fingerprint's.
+ */
+export type ATRMatchDecider =
+  | "pattern"
+  | "signature"
+  | "trace"
+  | "semantic-fallback"
+  | "semantic-judge"
+  | "embedding"
+  | "semantic-layer"
+  | "invariant"
+  | "blacklist"
+  | "fingerprint";
+
 export interface ATRMatch {
   rule: ATRRule;
   matchedConditions: string[];
@@ -408,6 +427,11 @@ export interface ATRMatch {
   /** Whether this match is native (rule designed for this scan path) or cross-context
    *  (e.g., MCP rule firing on SKILL.md content with confidence downweight). */
   scan_context: ScanContextType;
+  /**
+   * What decided the match. Every match the engine builds sets it. A match built
+   * elsewhere without it is read as a rule's deterministic decision.
+   */
+  decidedBy?: ATRMatchDecider;
 }
 
 /** Verdict outcome from evaluating matched rules */
@@ -422,6 +446,16 @@ export interface ATRVerdict {
   readonly highestConfidence: number;
   readonly actions: readonly ATRAction[];
   readonly matches: readonly ATRMatch[];
+  /**
+   * Matches a model decided that did not take part in the outcome, and whose
+   * actions above the observe tier were not dispatched (computeVerdict's
+   * default, modelDecisions: 'advisory'). They are also in `matches`. Present
+   * only when there is at least one; `highestSeverity` and `highestConfidence`
+   * describe the other matches, the ones the outcome came from.
+   */
+  readonly advisory?: readonly ATRMatch[];
+  /** The highest severity among `advisory`, present with it, for reporting. */
+  readonly advisorySeverity?: ATRSeverity;
   readonly timestamp: string;
 }
 
@@ -464,6 +498,9 @@ export interface PlatformAdapter {
   killAgent(ctx: ExecutionContext): Promise<ActionResult>;
 }
 
+/** The hook events the guard answers. */
+export type HookEventName = "PreToolUse" | "PostToolUse" | "PostToolUseFailure";
+
 /**
  * Hook input from Claude Code / agent host.
  *
@@ -476,10 +513,25 @@ export interface PlatformAdapter {
  * `hookEventOf` is the single reader.
  */
 export interface HookInput {
-  readonly hook?: "PreToolUse" | "PostToolUse";
-  readonly hook_event_name?: "PreToolUse" | "PostToolUse";
+  readonly hook?: HookEventName;
+  readonly hook_event_name?: HookEventName;
   readonly tool_name: string;
   readonly tool_input: Readonly<Record<string, unknown>>;
+  /**
+   * The tool's output, on PostToolUse. Claude Code sends it here, at the top
+   * level, as the tool's own output object (its shape depends on the tool);
+   * src/hook-tool-output.ts reads its text.
+   */
+  readonly tool_response?: unknown;
+  /**
+   * Why the tool call failed, on PostToolUseFailure, which Claude Code sends in
+   * place of PostToolUse when a call fails. Claude Code 2.1.280 sends a string:
+   * for a shell command, an `Exit code N` line, its abort note when it aborted
+   * the command, then the command's stderr and stdout, trimmed and cut to about
+   * 10,000 characters.
+   */
+  readonly error?: unknown;
+  readonly is_interrupt?: boolean;
   readonly session_id?: string;
   readonly timestamp?: string;
 }

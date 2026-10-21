@@ -114,9 +114,19 @@ function fileRawDigest(inputFile: string): string | null {
  * @param toolVersion - ATR version string (e.g. "1.0.0")
  * @returns SARIF JSON object ready for serialization
  */
+export interface SarifOptions {
+  /**
+   * A match the scan reports without enforcing (a model decided it, and the scan
+   * runs with modelDecisions: advisory). Written at level note, with
+   * properties.enforced false, so a gate that counts results can leave it out.
+   */
+  readonly heldBack?: (match: ATRMatch) => boolean;
+}
+
 export function scanResultToSARIF(
   results: readonly ScanResult[],
   toolVersion: string,
+  options: SarifOptions = {},
 ): object {
   const { rules, ruleIndex } = collectRules(results);
 
@@ -182,10 +192,11 @@ export function scanResultToSARIF(
         };
       }
 
+      const heldBack = options.heldBack?.(match) === true;
       sarifResults.push({
         ruleId: match.rule.id,
         ruleIndex: idx,
-        level: severityToLevel(match.rule.severity),
+        level: heldBack ? 'note' : severityToLevel(match.rule.severity),
         message: {
           text: `${match.rule.title} (confidence: ${(match.confidence * 100).toFixed(0)}%, conditions: ${match.matchedConditions.join(', ')})`,
         },
@@ -200,6 +211,8 @@ export function scanResultToSARIF(
           // Retained alongside run.artifacts[].hashes for back-compat: anything
           // parsing today's output keeps working.
           content_hash: result.content_hash,
+          ...(match.decidedBy ? { decided_by: match.decidedBy } : {}),
+          ...(heldBack ? { enforced: false } : {}),
         },
       });
     }

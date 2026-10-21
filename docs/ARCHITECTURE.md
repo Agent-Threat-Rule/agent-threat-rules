@@ -162,7 +162,7 @@ Three call shapes:
 |---|---|---|
 | `evaluate(event)` | sync, regex only. In enforce/alert it **drops** `confirm: embedding` rules, because the confirmation is async and an unconfirmed broad rule must not block. | fast advisory scanning |
 | `evaluateAsync(event)` | same walk, plus the async semantic judge | semantic rules |
-| `evaluateWithVerdict(event, executor?)` | `evaluate` + embedding confirm + `computeVerdict` + optional action dispatch. Returns `{verdict, actionResults, layersUsed}`. | enforce/alert deployments |
+| `evaluateWithVerdict(event, executor?)` | `evaluate` + embedding confirm + `computeVerdict` + optional action dispatch. Returns `{verdict, actionResults, layersUsed}`. A match a model decided (semantic judge, embedding signal, semantic layer) is reported in `verdict.advisory` and runs only its observe-tier actions, unless the engine is built with `modelDecisions: 'enforce'`. | enforce/alert deployments |
 
 `scanSkill(content)` / `scanSkillFull(content, filePath?)` are the SKILL.md
 entry points, and they are not just `evaluate` with a different event:
@@ -229,7 +229,12 @@ A label below the deny threshold is capped one basis point under it, so
 `medium` peaks at 0.7999 and a `high`-severity match on a `medium` label asks
 however many conditions fire. Coverage can still lift a `low` label to exactly
 0.60, which asks on a `medium`-severity match. Semantic-judge and embedding
-confidences are continuous and are compared as given.
+confidences are continuous and are compared as given — when they are compared
+at all: by default (`modelDecisions: 'advisory'`) a match a model decided
+(`decidedBy` semantic-judge, embedding or semantic-layer) is left out of the
+outcome, and of its actions only the observe tier runs. It is listed in
+`verdict.advisory`. `computeVerdict` sorts the matches itself; it does not rely
+on its caller's order.
 
 `isAutoResponseEnabled` additionally requires `response.auto_response_threshold`
 to be met before an action may run unattended.

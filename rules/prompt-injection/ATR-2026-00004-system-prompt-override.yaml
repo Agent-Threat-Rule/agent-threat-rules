@@ -101,7 +101,7 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)(?:\{\s*["']?role["']?\s*:\s*["']?system["']?\s*[,}]?[\s\S]{0,160}?(?:ignore\b|disregard\b|override\b|bypass\b|disable\b|unrestricted\b|jailb?reak\b|without\s+(?:restrictions?|filters?|safety|limits?)|no\s+(?:safety|restrictions?|filters?|guidelines?)|new\s+instructions?\b)|\{\s*["']?(?:system_prompt|system_message|system_instruction|system_content)["']?\s*:\s*["']?)
+        (?i)(?:\{\s*["']?role["']?\s*:\s*["']?system["']?\s*(?:[,}][\s\S]{0,160}?|(?:\S[\s\S]{0,159}?)?)(?:ignore\b|disregard\b|override\b|bypass\b|disable\b|unrestricted\b|jailb?reak\b|without\s+(?:restrictions?|filters?|safety|limits?)|no\s+(?:safety|restrictions?|filters?|guidelines?)|new\s+instructions?\b)|\{\s*["']?(?:system_prompt|system_message|system_instruction|system_content)["']?\s*:\s*["']?)
       description: >-
         JSON-formatted system role injection (v2 — a bare role-key opener is the
         standard chat-completions message shape and appeared in 11 benign
@@ -151,7 +151,7 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)(---+|===+|\*\*\*+|~~~+)\s*(system|instruction|override|admin|configuration|new\s+prompt)\s*(---+|===+|\*\*\*+|~~~+)
+        (?i)(---|===|\*\*\*|~~~)\s*(system|instruction|override|admin|configuration|new\s+prompt)\s*(---|===|\*\*\*|~~~)
       description: Multi-line delimiter formats (YAML frontmatter, horizontal rules) framing system sections
     - field: user_input
       operator: regex

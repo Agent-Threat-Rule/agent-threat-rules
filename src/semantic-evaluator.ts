@@ -114,6 +114,22 @@ export async function evaluateSemanticRule(
   const boundedInput =
     input.length > maxInputChars ? input.slice(0, maxInputChars) : input;
 
+  // Judge unavailable → fallback path. Checked before the cache: the default
+  // cache is shared by every engine in the process, and an engine with no judge
+  // must not take another engine's judge decision as its own.
+  if (!options.judge) {
+    if (sem.fallback_method === "pattern") {
+      return {
+        matched: false,
+        reason: "judge_unavailable_fallback_pattern",
+      };
+    }
+    return {
+      matched: false,
+      error: "judge_unavailable_no_fallback",
+    };
+  }
+
   // Cache check
   const cache = options.cache ?? DEFAULT_CACHE;
   const key = cacheKey(sem.prompt_template, boundedInput);
@@ -125,20 +141,6 @@ export async function evaluateSemanticRule(
       category: cached.category,
       evidence: cached.evidence,
       reason: "cache_hit",
-    };
-  }
-
-  // Judge unavailable → fallback path
-  if (!options.judge) {
-    if (sem.fallback_method === "pattern") {
-      return {
-        matched: false,
-        reason: "judge_unavailable_fallback_pattern",
-      };
-    }
-    return {
-      matched: false,
-      error: "judge_unavailable_no_fallback",
     };
   }
 
