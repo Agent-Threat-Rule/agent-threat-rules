@@ -196,6 +196,49 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **A field longer than 100,000 characters is matched in windows instead of not
+  at all.** `safeRegexTest` in `src/engine.ts` returned false for any text over
+  `MAX_EVAL_LENGTH` (100,000 characters), so no `regex` condition matched it:
+  whoever wrote any part of a long tool output, file or message could pad it
+  past the limit and hide a payload from every rule. A longer text is now
+  searched in windows of at most `MAX_EVAL_LENGTH` characters. Each window owns
+  a region and reads `WINDOW_CONTEXT` (5,000) characters of the real text past
+  either edge, and a match counts only when it starts in the window's region, so
+  a match up to 5,000 characters long is found whole and `^`, `$`, `\b` and
+  lookbehind at a region's edge see the neighbouring text, not a cut; a match or
+  lookahead that runs on to the end of a window's slice reads it as the end of
+  the text, and a lookbehind that reaches back past the slice's start reads that
+  as the start. Up to `MAX_SCAN_LENGTH` (1,000,000 characters, the largest input
+  the MCP `atr_scan_skill` tool accepts) the text is covered end to end in at
+  most 12 windows; past it the first and the last 500,000 characters are, and
+  the middle is not. The budget applies to the text a pattern is run on, and
+  NFKC can make the normalised text far longer than the raw one (U+FDFA becomes
+  18 characters). When that takes it past the budget, the raw text is also
+  searched normalised without lengthening (zero-width and bidi characters
+  removed, confusables folded, NFKC applied where it does not lengthen), so a
+  payload the raw search misses is still read wherever the raw search reaches,
+  unless it needs a character NFKC lengthens: ligatures (U+FB06 for "st"),
+  squared abbreviations (U+33CC for "in"), U+2116 for "No", Roman numerals,
+  digraphs. The first-match position code-block suppression reads is found the
+  same way, so it no longer runs an unbounded search on a long text. A text
+  within `MAX_EVAL_LENGTH` is tested exactly as before, so no corpus result
+  changes: the longest benign-corpus sample is 81,627 characters and the longest
+  attack-corpus string 22,612. Each search a condition makes on a field (the
+  normalised text; the raw text when normalisation changed it; the text
+  normalised without lengthening in the case above; and, for a
+  code-block-suppressed rule, the normalised text once more for the match's
+  position) was one test up to 100,000 characters and none past it; it is now
+  the same test up to 100,000 characters, at most 1 + ceil((n - 95,000) /
+  90,000) window tests up to 1,000,000 and at most 12 past that, each no longer
+  than the one test. So each search by a condition that is slow on its worst
+  100,000-character input can be up to 12 times slower on a longer one, and the
+  condition, which can now make three searches where it made two, up to 18
+  times. `tests/engine-long-input.test.ts`;
+  `tests/engine-long-input-cost.test.ts` holds the bundled rule set to
+  conformance's 10-second budget on a 1,000,000-character run of one character,
+  a 300,000-character tool output of words, and a 1,000,000-character text NFKC
+  lengthens.
+
 - **On Claude Code, the guard scans what a tool returned on PostToolUse.**
   Claude Code sends a tool's output at the top level of the PostToolUse hook
   input, as `tool_response` (checked against the shipped 2.1.280 binary).
