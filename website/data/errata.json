@@ -2,6 +2,15 @@
   "lastUpdated": "2026-10-19",
   "entries": [
     {
+      "id": "e-2026-10-19-red-team-sprint",
+      "version": "2.2.0–4.1.5",
+      "section": "/red-team: 2026-05-12 sprint and 2026-06 mega-scan sections; CHANGELOG 2.2.0",
+      "summary_en": "The /red-team page and the 2.2.0 CHANGELOG entry said HackAPrompt recall rose from 28.6% to 66.2%, with 100% precision, and that the sprint's 75 rules and the mega-scan's 29 rules all passed the quality gate with 0 benign false positives. Re-run on 2026-10-19: on the same 4,780 HackAPrompt prompts, 66.2% could not be reproduced at the sprint commits e9efefdd and 92c0d0fe (65.0% and 66.0%); the 28.6% was itself in-sample, and the corpus has no benign samples, so no precision was measured. The sprint commits added 71 rule files (the 75 also counted four CVE rules added earlier the same day, in commit 80dbd0ab, before the sprint commits). No record of the gate's runs was committed; re-running it, 10 of the 71 failed at 92c0d0fe (own true positives) with none flagging a benign SKILL.md file, and at main b9d16840 on 2026-10-22 (the same as the 2026-10-19 run at 9d74fc50) 33 of 71 and 4 of 29 fail, 26 and 3 flagging at least one benign sample, none of them in the enforce lane. The page now quotes these measurements (data/gate-reruns/2026-10-19_red-team-rule-batches.json, data/hackaprompt/METHOD.md) and, beside each corpus's recall, its ablation reference from the measurement file.",
+      "summary_zh": "/red-team 頁面與 2.2.0 版 CHANGELOG 原本寫 HackAPrompt 召回率從 28.6% 升到 66.2%、precision 100%，並說該次 sprint 的 75 條規則與 2026-06 巨量掃描的 29 條規則都通過品質門檻、良性樣本 0 誤報。2026-10-19 重跑結果：在同一份 4,780 筆 HackAPrompt prompt 上，66.2% 在 sprint 的兩個 commit（e9efefdd、92c0d0fe）都無法重現（分別為 65.0% 與 66.0%）；28.6% 本身也屬樣本內；這份語料沒有良性樣本，所以根本沒有量過 precision。sprint 的兩個 commit 新增的是 71 個規則檔（75 另外算進了同一天稍早、在 sprint 之前由 commit 80dbd0ab 加入的 4 條 CVE 規則）。門檻當時的執行紀錄沒有 commit；重跑後，在 92c0d0fe 時 71 條中有 10 條未通過（true positive 沒命中），沒有一條在良性 SKILL.md 上誤報；在 2026-10-22 的 main（b9d16840）上，71 條中 33 條、29 條中 4 條未通過（與 2026-10-19 在 9d74fc50 的結果相同），其中 26 條與 3 條至少誤報 1 筆良性樣本，都不在 enforce lane。頁面現在引用這些實測（data/gate-reruns/2026-10-19_red-team-rule-batches.json、data/hackaprompt/METHOD.md），並在每個語料庫的召回率旁附上量測檔中的消融參考值。",
+      "date": "2026-10-19",
+      "url": "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/691"
+    },
+    {
       "id": "e-2026-10-19-regex-dialect",
       "version": "3.5.12–4.1.5",
       "section": "SPEC.md §6.4 Regular-Expression Dialect (ATR Core 1.0.0)",

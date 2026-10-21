@@ -1,7 +1,9 @@
 import { Reveal } from "@/components/Reveal";
 import { loadSiteStats } from "@/lib/stats";
-import { currentRecallSentence, findBenchmark, measuredStamp, recallLanes } from "@/lib/recall";
+import { REPO_BLOB_URL, count, currentRecallSentence, figureMeasurements, findBenchmark, measuredStamp, recallLanes } from "@/lib/recall";
 import { locales, type Locale } from "@/lib/i18n";
+import { RED_TEAM_TOOLS } from "@/lib/red-team-tools";
+import { ablationLanes } from "@/lib/ablation";
 import type { Metadata } from "next";
 
 export function generateStaticParams() {
@@ -13,82 +15,6 @@ export const metadata: Metadata = {
   description:
     "ATR is an open detection standard fed by red-team research. A probe found today becomes a versioned rule that propagates to Cisco AI Defense, MISP, and OWASP — keeping defenders evolving at the same speed as attackers. Attribution stays attached to the rule ID, permanently.",
 };
-
-interface RedTeamTool {
-  name: string;
-  status: "in-production" | "in-review" | "corpus";
-  org: string;
-  homepage: string;
-  prUrl?: string;
-  hook: string;
-  what_atr_did: string;
-  /** Measurements quoted after what_atr_did, read from data/measurements/ with their lanes. */
-  figures?: readonly { source: string; label: string }[];
-}
-
-const RED_TEAM_TOOLS: RedTeamTool[] = [
-  {
-    name: "TextAttack",
-    org: "QData · ACL 2020",
-    status: "in-review",
-    homepage: "https://github.com/QData/TextAttack",
-    prUrl: "https://github.com/QData/TextAttack/issues/824",
-    hook: "NLP adversarial-attack framework from the QData lab (ACL 2020).",
-    what_atr_did:
-      "Issue #824 proposes a textattack-detection-atr companion PyPI package — plugin-shaped, zero core changes. Single ask: README cross-link.",
-  },
-  {
-    name: "Microsoft PyRIT",
-    org: "Microsoft AI Red Team",
-    status: "in-production",
-    homepage: "https://github.com/microsoft/PyRIT",
-    prUrl: "https://github.com/microsoft/PyRIT/pull/1715",
-    hook: "The toolkit Microsoft uses internally to red-team production LLM products. Roman Lutz leads.",
-    what_atr_did:
-      "Added an ATR dataset loader exposing the rule corpus as PyRIT attack sources; PR #1715 merged 2026-05-27.",
-  },
-  {
-    name: "HackAPrompt",
-    org: "Schulhoff et al. — Learn Prompting · EMNLP 2023",
-    status: "corpus",
-    homepage: "https://hackaprompt.com",
-    prUrl: "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/51",
-    hook: "The largest crowd-sourced prompt-injection competition corpus, 4,780 competition samples across GPT/Claude/PaLM. EMNLP 2023 best-paper nominee.",
-    what_atr_did:
-      "Clustered 4,780 HackAPrompt samples by attack family. Shipped 5 ATR rules (ATR-2026-00452..00456) from dominant clusters. HackAPrompt recall moved 28.6% → 66.2% across that sprint (2026-05-12, before detection lanes existed, with every rule loaded: what the hunt lane loads today), measured on the same corpus those rules were mined from, so it is an in-sample gain, not a measure of generalisation. The corpus is 100% adversarial and carries no benign population, so it yields no precision or false-positive figure. Each rule cites the HackAPrompt cluster in metadata_provenance.",
-    figures: [{ source: "hackaprompt", label: "HackAPrompt" }],
-  },
-  {
-    name: "NeMo-Guardrails + llm-guard + Promptfoo",
-    org: "NVIDIA · Protect AI · Promptfoo Inc.",
-    status: "corpus",
-    homepage: "https://github.com/NVIDIA/NeMo-Guardrails",
-    prUrl: "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/52",
-    hook: "Vendor test suites from three production guardrail systems. Combined 94 adversarial samples covering jailbreak, injection, and output sanitization.",
-    what_atr_did:
-      "Ingested combined 94-sample corpus. Shipped 6 ATR rules (ATR-2026-00500..00505) covering attack patterns present across all three vendor test suites. Each rule validated against the vendor's own test cases as true-positive ground truth.",
-  },
-  {
-    name: "OWASP LLM Top 10 + MITRE ATLAS PoCs",
-    org: "OWASP · MITRE",
-    status: "corpus",
-    homepage: "https://owasp.org/www-project-top-10-for-large-language-model-applications/",
-    prUrl: "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/53",
-    hook: "Standards-defined PoC attack patterns from OWASP LLM01-LLM10 and corresponding MITRE ATLAS technique catalog (AML.T00XX series).",
-    what_atr_did:
-      "Shipped 8 ATR rules (ATR-2026-00510..00517), each mapping to a named OWASP LLM category (LLM01-LLM10) and a specific MITRE ATLAS technique. Rules are standards-aligned at the metadata_provenance level.",
-  },
-  {
-    name: "Promptfoo",
-    org: "Promptfoo Inc.",
-    status: "in-review",
-    homepage: "https://github.com/promptfoo/promptfoo",
-    prUrl: "https://github.com/promptfoo/promptfoo/pull/8529",
-    hook: "Open-source LLM red-teaming and evaluation tool. Promptfoo generates and runs adversarial tests against LLM applications.",
-    what_atr_did:
-      "PR #8529 adds an MCP red-team example using ATR as the deterministic defense layer. Promptfoo runs the probe; ATR rules return the verdict.",
-  },
-];
 
 interface AttributionStat {
   number: string;
@@ -117,9 +43,9 @@ const ATTRIBUTION_STATS: AttributionStat[] = [
   },
   {
     number: "0 FP",
-    label: "Required across the benign gate before a rule ships",
+    label: "Required of a rule pull request before it merges",
     detail:
-      "A 6-check quality gate: own-TP must match, 0 FP across the benign, extended, code and research-mention corpora, 0 cross-rule conflicts, and own true_negative coverage. The gate prints the sample counts it used on every run — those are the figures of record, not a number on this page. A rule that fires on the paper describing the attack does not ship. The standard would rather miss a clever variant than corrupt the corpus with a false positive — and it publishes its real per-lane figures rather than a single flattering one.",
+      "The rule safety gate (scripts/check-rules-safety.ts) runs in the required Validate Rules & Build check on every pull request and checks the rules that pull request adds or changes: own true positives must match, 0 FP across the benign, extended, code and research-mention corpora, 0 cross-rule conflicts, and own true_negative coverage. The gate prints the sample counts it used on every run — those are the figures of record, not a number on this page. It is the merge condition for rule pull requests now; earlier batches did not all pass it. Re-run at main b9d16840 on 2026-10-22, 33 of the 71 rules of the 2026-05-12 sprint and 4 of the 29 of the 2026-06 mega-scan fail it, the same as on 2026-10-19 (data/gate-reruns/2026-10-19_red-team-rule-batches.json). The standard would rather miss a clever variant than corrupt the corpus with a false positive — and it publishes its real per-lane figures rather than a single flattering one.",
   },
 ];
 
@@ -149,7 +75,7 @@ const CONTRIBUTOR_BENEFITS: ContributorBenefit[] = [
     benefit:
       "Ship a detection without hand-writing regex. Submit positive and negative examples; a maintainer writes the regex from them and runs it through the full gate.",
     proof:
-      "Your benign look-alikes become the rule's true negatives. The regex must match none of them and hold 0 FP on the benign corpus before it merges. That is the same gate every rule in the standard had to clear.",
+      "Your benign look-alikes become the rule's true negatives. The regex must match none of them and hold 0 FP on the benign corpora before it merges: the rule safety gate every rule pull request has to pass now. Rules from earlier batches did not all pass it; see the re-run record in data/gate-reruns/2026-10-19_red-team-rule-batches.json.",
   },
   {
     for: "Bug bounty hunters",
@@ -170,6 +96,8 @@ export default async function RedTeamPage({
   const zh = locale === "zh";
   const stats = loadSiteStats();
   const garak = findBenchmark(stats, "garak");
+  const vendorSuites = findBenchmark(stats, "vendor-guardrail-suites");
+  const vendorAblation = vendorSuites ? ablationLanes(vendorSuites) : null;
 
   const inProduction = RED_TEAM_TOOLS.filter(
     (t) => t.status === "in-production" || t.status === "corpus",
@@ -376,8 +304,8 @@ export default async function RedTeamPage({
                   </p>
                   <p className="text-sm text-paper/60">
                     {zh
-                      ? "Gate = 自己 TP 必須 100% 命中 + benign、extended、code、research-mention corpus 全部 0 FP + 跨規則 0 衝突。樣本數以 gate 執行時印出的為準。"
-                      : "Gate = your TPs must match 100% + 0 FP on the benign, extended, code and research-mention corpora + 0 cross-rule conflicts. The gate prints the sample counts it used."}
+                      ? "Gate（你的 PR 合併前必須通過）= 自己 TP 必須 100% 命中 + benign、extended、code、research-mention corpus 全部 0 FP + 跨規則 0 衝突。樣本數以 gate 執行時印出的為準。較早批次的規則並非全部通過，重跑紀錄見 data/gate-reruns/2026-10-19_red-team-rule-batches.json。"
+                      : "Gate (your pull request must pass it to merge) = your TPs must match 100% + 0 FP on the benign, extended, code and research-mention corpora + 0 cross-rule conflicts. The gate prints the sample counts it used. Rules from earlier batches did not all pass it; the re-run record is data/gate-reruns/2026-10-19_red-team-rule-batches.json."}
                   </p>
                 </div>
               </div>
@@ -502,9 +430,20 @@ export default async function RedTeamPage({
                           rel="noopener noreferrer"
                           className="font-data text-xs text-blue hover:underline"
                         >
-                          {zh ? "PR →" : "PR →"}
+                          {t.prUrl.includes("/commit/") ? "Commit →" : "PR →"}
                         </a>
                       )}
+                      {figureMeasurements(stats, t.figures ?? []).map(({ m, label }) => (
+                        <a
+                          key={m.measurement_file}
+                          href={`${REPO_BLOB_URL}${m.measurement_file}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-data text-xs text-blue hover:underline"
+                        >
+                          {zh ? `${label} 量測檔 →` : `${label} measurement →`}
+                        </a>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -557,13 +496,18 @@ export default async function RedTeamPage({
           </div>
           <h2 className="font-display text-[clamp(24px,3.4vw,36px)] font-extrabold tracking-[-2px] leading-tight mb-4 max-w-[720px]">
             {zh
-              ? "5 個語料庫 · 75 條新規則 · HackAPrompt 召回率 28.6% → 66.2%（2026-05-12 該次 sprint，載入全部規則，在挖出規則的同一份語料上量測）"
-              : "5 corpora · 75 new rules · HackAPrompt recall 28.6% → 66.2% (2026-05-12 sprint, every rule loaded, measured on the corpus the rules were mined from)"}
+              ? "5 個語料庫 · 71 條新規則 · HackAPrompt 召回率 28.6% → 66.0%（2026-05-12 該次 sprint，載入全部規則，在挖出規則的同一份 4,780 筆子集上量測，屬樣本內）"
+              : "5 corpora · 71 new rules · HackAPrompt recall 28.6% → 66.0% (2026-05-12 sprint, every rule loaded, measured on the 4,780-prompt subset the rules were mined from, so in-sample)"}
           </h2>
           <p className="text-base text-stone font-light max-w-[640px] mb-4">
             {zh
-              ? "2026-05-12：11 個並行 agent 消化五個外部語料庫，生成 75 條規則，均通過 6 道品質關卡，0 FP regression on benign corpus。詳細版本記錄在 /changelog。"
-              : "2026-05-12: 11 parallel agents ingested five external corpora and generated 75 rules, all passing the 6-gate quality process with 0 FP regression on the benign corpus. Full version record at /changelog."}
+              ? "2026-05-12：11 個並行 agent 消化五個外部語料庫。該次 sprint 的兩個 commit（e9efefdd、92c0d0fe）新增 71 個規則檔，ATR-2026-00452..00522；v2.2.0 changelog 寫的 75 條，另外算進了同一天稍早（commit 80dbd0ab，在 sprint 的兩個 commit 之前）加入的 4 條 CVE 規則（00448..00451）。詳細版本記錄在 /changelog。"
+              : "2026-05-12: 11 parallel agents ingested five external corpora. The sprint's two commits (e9efefdd, 92c0d0fe) added 71 rule files, ATR-2026-00452..00522; the 75 in the v2.2.0 changelog also counts four CVE rules (00448..00451) added earlier the same day, in commit 80dbd0ab, before the sprint commits. Full version record at /changelog."}
+          </p>
+          <p className="text-base text-stone font-light max-w-[640px] mb-4">
+            {zh
+              ? "上面兩個 HackAPrompt 數字是重跑出來的：在固定的 4,780 筆子集上（固定 dataset revision 與亂數種子抽樣），分別於 sprint 前一個 commit（3a6145b7，偵測 1,368 筆）與 sprint 的發布 commit（92c0d0fe，偵測 3,154 筆）執行，載入全部規則，也就是今天 hunt lane 載入的範圍。28.6% 本身也屬樣本內：從同一份子集挖出的 ATR-2026-00442..00447 當時已經載入。當時公布的 66.2% 在 sprint 的兩個 commit（e9efefdd、92c0d0fe）都無法重現（最高 66.0%），已撤回。現在的 hunt / enforce 數字與消融參考值見上方 HackAPrompt 條目，重跑步驟見 data/hackaprompt/METHOD.md。"
+              : "Both HackAPrompt figures are re-runs on a fixed 4,780-prompt subset (a seeded sample at a pinned dataset revision): at the commit before the sprint (3a6145b7, 1,368 detected) and at the sprint's release commit (92c0d0fe, 3,154 detected), with every rule loaded, which is what the hunt lane loads today. The 28.6% is itself in-sample: ATR-2026-00442..00447, mined from the same subset, were already loaded. The 66.2% published at the time could not be reproduced at the sprint commits e9efefdd and 92c0d0fe (66.0% at best) and is withdrawn. Current hunt and enforce figures, and the ablation reference, are in the HackAPrompt entry above; the re-run procedure is in data/hackaprompt/METHOD.md."}
           </p>
           <p className="text-base text-stone font-light max-w-[640px] mb-10">
             {zh
@@ -574,8 +518,8 @@ export default async function RedTeamPage({
         <Reveal delay={0.1}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-fog mb-8">
             {[
-              { corpus: "HackAPrompt", samples: "4,780", rules: "5", ruleIds: "ATR-2026-00452..00456", recall: zh ? "28.6% → 66.2%（該 sprint 當時，載入全部規則，樣本內）" : "28.6% → 66.2% (at the time of that sprint, every rule loaded, in-sample)" },
-              { corpus: zh ? "Vendor test suites" : "Vendor test suites", samples: "94", rules: "6", ruleIds: "ATR-2026-00500..00505", recall: "" },
+              { corpus: "HackAPrompt", samples: zh ? "4,780（601,757 筆中以固定種子抽出的子集）" : "4,780 (seeded subset of 601,757)", rules: "5", ruleIds: "ATR-2026-00452..00456", recall: zh ? "28.6% → 66.0%（hunt，載入全部規則，樣本內；於 3a6145b7 與 92c0d0fe 重跑）" : "28.6% → 66.0% (hunt, every rule loaded, in-sample; re-run at 3a6145b7 and 92c0d0fe)" },
+              { corpus: "promptfoo + llm-guard", samples: zh ? "94（2026-05-12 匯入，含 6 筆 NeMo Guardrails；其中 79 筆與其標示的廠商檔案逐字相同）" : "94 (2026-05-12 import, 6 of them NeMo Guardrails; 79 occur verbatim in the vendor file they name)", rules: "6", ruleIds: "ATR-2026-00500..00505", recall: vendorSuites ? (zh ? `${recallLanes(vendorSuites)}（${count(vendorSuites.attacks ?? vendorSuites.samples)} 筆固定版本的廠商攻擊案例，部分屬樣本內${vendorAblation ? `；消融參考值 ${vendorAblation}` : ""}；${measuredStamp(vendorSuites, true, true)}）` : `${recallLanes(vendorSuites)} (${count(vendorSuites.attacks ?? vendorSuites.samples)} pinned vendor attack cases, partly in-sample${vendorAblation ? `; ablation reference ${vendorAblation}` : ""}; ${measuredStamp(vendorSuites, false)})`) : "" },
               { corpus: "PromptInject", samples: zh ? "全語料庫" : "full corpus", rules: "4", ruleIds: "ATR-2026-00506..00509", recall: "" },
               { corpus: "OWASP LLM Top 10 + ATLAS PoCs", samples: zh ? "8 標準分類" : "8 standard categories", rules: "8", ruleIds: "ATR-2026-00510..00517", recall: "" },
               { corpus: zh ? "Garak in-the-wild jailbreak" : "Garak in-the-wild jailbreak", samples: "650", rules: zh ? "已有覆蓋" : "existing coverage", ruleIds: garak ? (zh ? `${recallLanes(garak)} recall（${measuredStamp(garak, true, true)}；部分屬 closed-book）` : `${recallLanes(garak)} recall (${measuredStamp(garak, false)}; partly closed-book)`) : "", recall: "" },
@@ -593,8 +537,8 @@ export default async function RedTeamPage({
         <Reveal delay={0.2}>
           <p className="text-xs text-stone max-w-[640px]">
             {zh
-              ? "所有 75 條規則均通過 RFC-001 品質門檻、benign corpus 0 FP、跨規則衝突檢查。53 條規則的 regex 已從字面模式泛化為多層結構 pattern。詳細 changelog 見 v2.2.0。"
-              : "All 75 rules passed the RFC-001 quality gate, benign corpus 0 FP, and cross-rule conflict check. 53 rules had regex generalized from literal fingerprints to multi-layer structural patterns. Full detail in v2.2.0 changelog."}
+              ? "這 71 條規則當時的品質門檻執行紀錄沒有 commit 進 repo，所以「全部通過、benign corpus 0 FP」的說法撤回，改成實測（重跑 repo 的規則安全閘 scripts/check-rules-safety.ts，2026-10-19 首次、2026-10-22 再跑一次）。用 92c0d0fe 當時的閘與語料：71 條都沒有在 432 份良性 SKILL.md 上誤報；10 條未通過，原因都是有 true positive 沒命中，其中 1 條另在 1,352 筆 extended 良性樣本中誤報 1 筆、1 條在 157 筆 research-mention 樣本中誤報 1 筆、2 條與其他規則的 true negative 衝突。用 2026-10-22 的 main（b9d16840，ATR 4.1.5）：33 條未通過；26 條至少誤報 1 筆良性樣本（467 份 SKILL.md 上 4 條、13,620 筆 extended 上 26 條、69 筆程式碼上 1 條、157 筆 research-mention 上 2 條）。這 26 條沒有一條是 maturity stable，所以都不在 enforce lane；24 條在 alert 與 hunt lane，2 條只在 hunt lane。這和 2026-10-19 在 9d74fc50 的結果完全相同，雖然期間 main 改了紀錄中的 9 條規則。誤報最多的是 ATR-2026-00454（maturity test，在 alert 與 hunt lane）：467 份 SKILL.md 中 152 份、13,620 筆 extended 中 1,376 筆；其餘每條在任一語料上都不超過 23 筆。00454 也是上方 HackAPrompt hunt 與 alert 數字的分子來源之一：在 2026-10-19 的 HackAPrompt 量測中，它在 hunt lane 命中 4,780 筆中的 757 筆。紀錄見 data/gate-reruns/2026-10-19_red-team-rule-batches.json。53 條規則的 regex 已從字面模式泛化為多層結構 pattern。"
+              : "No record of the quality gate's run on these 71 rules was committed, so the claim that all passed it with 0 FP on the benign corpus is withdrawn and replaced by two measurements (the repository's rule safety gate, scripts/check-rules-safety.ts, re-run on 2026-10-19 and again on 2026-10-22). With the gate and corpora as of 92c0d0fe: none of the 71 flags any of the 432 benign SKILL.md files; 10 fail, all for missing one of their own true positives, and of those, 1 also flags 1 of 1,352 extended benign samples, 1 flags 1 of 157 research-mention samples and 2 conflict with another rule's true negatives. At main b9d16840 on 2026-10-22 (ATR 4.1.5): 33 fail; 26 flag at least one benign sample (4 on the 467 SKILL.md files, 26 on 13,620 extended samples, 1 on 69 code samples, 2 on 157 research-mention samples). None of those 26 has maturity stable, so none loads in the enforce lane; 24 load in the alert and hunt lanes, 2 in the hunt lane only. These are the same results as the 2026-10-19 run at 9d74fc50, although nine of the recorded rules changed on main in between. By far the largest is ATR-2026-00454 (maturity test, alert and hunt lanes): 152 of the 467 SKILL.md files and 1,376 of the 13,620 extended samples; every other rule flags at most 23 samples on any corpus. 00454 also counts toward the HackAPrompt hunt and alert figures above: in the 2026-10-19 HackAPrompt measurement it matches 757 of the 4,780 prompts in the hunt lane. Record: data/gate-reruns/2026-10-19_red-team-rule-batches.json. 53 rules had regex generalized from literal fingerprints to multi-layer structural patterns."}
           </p>
         </Reveal>
         <Reveal delay={0.3}>
@@ -608,8 +552,8 @@ export default async function RedTeamPage({
           </h2>
           <p className="text-base text-stone font-light max-w-[640px] mb-10">
             {zh
-              ? "消化 8 個公開 agent 紅隊語料庫,找出現有規則漏抓的攻擊變體並結晶成新規則。6 個語料庫產出 29 條偵測規則,2 個(TensorTrust、PoisonedRAG)在現有覆蓋之外無新增 miss。全部通過 6 道品質關卡與 benign corpus 0 FP。"
-              : "Ingested 8 public agent red-team corpora to surface attack variants existing rules missed and crystallize them into new rules. 6 corpora produced 29 detection rules; 2 (TensorTrust, PoisonedRAG) yielded no novel misses beyond existing coverage. All passed the 6-gate quality process with 0 FP on the benign corpus."}
+              ? "消化 8 個公開 agent 紅隊語料庫,找出現有規則漏抓的攻擊變體並結晶成新規則。6 個語料庫產出 29 條偵測規則,2 個(TensorTrust、PoisonedRAG)在現有覆蓋之外無新增 miss。"
+              : "Ingested 8 public agent red-team corpora to surface attack variants existing rules missed and crystallize them into new rules. 6 corpora produced 29 detection rules; 2 (TensorTrust, PoisonedRAG) yielded no novel misses beyond existing coverage."}
           </p>
         </Reveal>
         <Reveal delay={0.1}>
@@ -635,8 +579,8 @@ export default async function RedTeamPage({
         <Reveal delay={0.2}>
           <p className="text-xs text-stone max-w-[640px]">
             {zh
-              ? "29 條為去重後的 distinct 規則;部分源自跨語料庫共通的 miss。成熟度涵蓋 stable 與 experimental,全部通過安全門檻與 benign corpus 0 FP。"
-              : "29 distinct rules after de-duplication; several emerged from misses shared across corpora. Maturity spans stable and experimental; all cleared the safety gate with 0 FP on the benign corpus."}
+              ? "29 條為去重後的 distinct 規則;部分源自跨語料庫共通的 miss。依規則檔的 maturity:15 條 stable、12 條 test、1 條 experimental、1 條 draft。它們當時的門檻執行紀錄沒有 commit,所以「全部通過、0 FP」的說法撤回,改成實測:2026-10-22 在 main b9d16840(ATR 4.1.5)重跑規則安全閘(與 2026-10-19 的結果相同),29 條都沒有在 467 份良性 SKILL.md 上誤報;4 條未通過,其中 3 條在 13,620 筆 extended 良性樣本中各誤報 2 到 4 筆(都是 maturity test,在 alert 與 hunt lane,不在 enforce lane,其中 1 條另與其他規則的 true negative 衝突),1 條(ATR-2026-00550,detection method 為 trace)是 gate 無法在文字樣本上執行的規則,因此不通過(2026-10-19 時 gate 把它記為 true positive 沒命中;gate 的這項檢查在 2f0605c3 改過)。紀錄同上。"
+              : "29 distinct rules after de-duplication; several emerged from misses shared across corpora. By the maturity in their rule files: 15 stable, 12 test, 1 experimental, 1 draft. No record of their gate runs was committed, so the claim that all cleared it with 0 FP is withdrawn and replaced by a measurement: the rule safety gate re-run at main b9d16840 (ATR 4.1.5) on 2026-10-22, with the same results as on 2026-10-19. None of the 29 flags any of the 467 benign SKILL.md files; 4 fail, 3 of them flagging 2 to 4 of 13,620 extended benign samples each (all maturity test: alert and hunt lanes, not enforce; one of them also conflicts with another rule's true negatives), 1 (ATR-2026-00550, detection method trace) that the gate cannot run on a text sample, so it does not pass (on 2026-10-19 the gate reported it as missing its own true positives; that check changed in 2f0605c3). Same record."}
           </p>
         </Reveal>
       </section>
