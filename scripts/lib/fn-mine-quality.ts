@@ -179,6 +179,15 @@ function gatedDetection(doc: Doc, regex: string): Doc {
 }
 
 /**
+ * `at` as a rule date: the UTC day, YYYY/MM/DD, the format rules/ uses.
+ */
+export function authoredRuleDate(at: Date): string {
+  const mm = String(at.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(at.getUTCDate()).padStart(2, '0');
+  return `${at.getUTCFullYear()}/${mm}/${dd}`;
+}
+
+/**
  * The authored rule as the PR's checks require it, whatever the model wrote:
  * status experimental (draft is never evaluated) at maturity test (alert lane,
  * never enforce), response actions the maturity has earned, no wild_fp_rate
@@ -186,12 +195,17 @@ function gatedDetection(doc: Doc, regex: string): Doc {
  * allowlisted ids, with the category default when none survive, and a
  * detection block that is exactly `gatedRegex` (gatedDetection). Returns a
  * new object.
+ *
+ * `date` is the day the rule is authored (`authoredAt`, UTC), never the
+ * model's: the author prompt says to copy the reference rule, and ATR-2026-02851,
+ * 02855 and 02861 shipped with its date, 2026/03/08.
  */
 export function finalizeAuthoredRule(
   doc: Doc,
   category: ATRCategory,
   allowlists: OwaspAllowlists,
   gatedRegex: string,
+  authoredAt: Date = new Date(),
 ): Record<string, unknown> {
   const { wild_fp_rate: _unmeasured, ...rest } = doc;
   const references = (doc.references && typeof doc.references === 'object' ? doc.references : {}) as Doc;
@@ -202,6 +216,7 @@ export function finalizeAuthoredRule(
   const response = earnedResponse(doc);
   return {
     ...rest,
+    date: authoredRuleDate(authoredAt),
     status: 'experimental',
     maturity: AUTHORED_MATURITY,
     references: { ...references, ...owasp },
