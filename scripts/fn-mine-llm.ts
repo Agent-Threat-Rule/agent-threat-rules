@@ -239,9 +239,10 @@ function slugify(s: string): string {
 
 /**
  * Write the model's rule as the PR's checks require it (finalizeAuthoredRule:
- * status, wild_fp_rate, OWASP ids) and with detection set to exactly the gated
- * regex, whatever conditions the model copied or altered. Returns why it could
- * not, for the corrective retry, or null once written.
+ * status, wild_fp_rate, OWASP ids, today's UTC date in place of the one the
+ * model copied) and with detection set to exactly the gated regex, whatever
+ * conditions the model copied or altered. Returns why it could not, for the
+ * corrective retry, or null once written.
  */
 function writeAuthoredRule(fullPath: string, text: string, c: GatedCandidate, allowlists: OwaspAllowlists): string | null {
   let doc: unknown;
