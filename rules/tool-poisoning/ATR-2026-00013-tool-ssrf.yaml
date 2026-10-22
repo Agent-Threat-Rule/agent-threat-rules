@@ -1,6 +1,6 @@
 title: SSRF via Agent Tool Calls
 id: ATR-2026-00013
-rule_version: 2
+rule_version: 3
 status: experimental
 description: >
   Detects high-confidence Server-Side Request Forgery (SSRF) that targets cloud
@@ -36,6 +36,10 @@ references:
   cve:
     - CVE-2019-5418
     - CVE-2021-21311
+    - CVE-2026-55096
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2026-55096"
+    - "https://github.com/leshchenko1979/fast-mcp-telegram/security/advisories/GHSA-xr72-j7vj-vp7g"
 compliance:
   nist_ai_rmf:
     - subcategory: "MS.2.7"
@@ -125,6 +129,32 @@ detection:
     - field: tool_args
       operator: regex
       value: >-
+        (?i)\b(?:https?|wss?|ftp):(?:\\?/){2}(?:[^\s/\\@"'<>]{1,64}@)?(?:localtest\.me|lvh\.me|vcap\.me|lacolhost\.com)\.?(?:[:/?#"'\s\\\],;)>|]|$)
+      description: >-
+        APEX loopback-wildcard domains used as a URL host. localtest.me, lvh.me,
+        vcap.me and lacolhost.com resolve to 127.0.0.1 at the apex as well as on
+        every subdomain, so a hostname-string SSRF denylist that does not resolve
+        DNS lets https://localtest.me/admin reach loopback services
+        (CVE-2026-55096, fast-mcp-telegram send_message files[]). The pattern
+        above only covers the subdomain form; this one requires a URL scheme
+        directly before the apex host (plain "//" or JSON-escaped "\/\/",
+        optional userinfo, optional trailing dot) and then a host terminator
+        character (: / ? # quote whitespace backslash ] , ; ) > |) or end of
+        input, so prose mentions and look-alike hosts such as
+        localtest.mesh.example.com, lvh.media, vcap.me.uk or lvh.me-cdn.net do
+        not match. The terminator is consumed rather than asserted with a
+        lookahead so the pattern stays RE2-portable. Known limitations (not
+        covered): protocol-relative //localtest.me/admin with no scheme; other
+        apex loopback domains such as localho.st or fuf.me; attacker-owned
+        domains whose A record points at an internal IP (needs DNS resolution,
+        not possible at the pattern layer). Known false positives: a developer
+        reaching their own dev server through the lvh.me alias
+        (curl http://lvh.me:3000/...), and a free-text search query that
+        quotes the URL https://localtest.me - the existing subdomain condition
+        above already flags app.lvh.me:3000, so this is consistent with it.
+    - field: tool_args
+      operator: regex
+      value: >-
         (?i)(redirect|redir|url|next|return|returnUrl|returnTo|continue|dest|destination|go|goto|target|link|out|view|ref|callback|forward)\s*=\s*(https?%3A%2F%2F|https?://)(localhost|127\.0\.0\.1|10\.|172\.(1[6-9]|2[0-9])|192\.168|169\.254|0\.0\.0|\[?::1\]?)
       description: URL redirect parameters targeting internal addresses
     - field: tool_args
@@ -144,6 +174,16 @@ detection:
     - Private network tools designed for internal infrastructure management
     - Cloud management tools that legitimately query metadata endpoints
     - Service mesh tools that use .internal or .consul DNS names by design
+    - >-
+      Developers who use the lvh.me / localtest.me / vcap.me / lacolhost.com
+      loopback aliases for their own dev server (common in the Rails community,
+      e.g. curl http://lvh.me:3000/users/sign_in) - both the apex and the
+      subdomain forms are flagged, unlike plain localhost which v2 deliberately
+      allows. Maintainers should decide whether these aliases belong in this
+      hard-block rule or an advisory-severity rule.
+    - >-
+      Free-text tool arguments (search queries, notes) that quote a full
+      https://localtest.me style URL while discussing it rather than requesting it.
 response:
   actions:
     - block_tool
@@ -183,6 +223,36 @@ test_cases:
     - tool_args: http://[::ffff:127.0.0.1]:8080/admin
       expected: triggered
       description: IPv6-mapped IPv4 loopback (obfuscated — no benign dev use)
+    - tool_args: '{"chat":"me","files":["https://localtest.me/admin"]}'
+      expected: triggered
+      description: CVE-2026-55096 PoC - apex localtest.me (resolves to 127.0.0.1) in send_message files[]
+    - tool_args: '{"chat":"me","files":["http://lvh.me:8080/admin"]}'
+      expected: triggered
+      description: Apex lvh.me with port in a URL-list tool argument
+    - tool_args: '{"phone":"+15550100","files":["https://vcap.me/internal/status"]}'
+      expected: triggered
+      description: Apex vcap.me in send_message_to_phone files[]
+    - tool_args: '{"chat":"me","files":["https://localtest.me:9200/_cat/indices"]}'
+      expected: triggered
+      description: Apex localtest.me with port targeting a loopback Elasticsearch API (CVE-2026-55096 variant)
+    - tool_args: '{"chat":"me","files":"https://localtest.me,https://example.com/a.pdf"}'
+      expected: triggered
+      description: Apex localtest.me as the first entry of a comma-separated URL list string (host followed by ",")
+    - tool_args: 'see attached (http://lvh.me) for the report'
+      expected: triggered
+      description: Apex lvh.me URL closed by ")"
+    - tool_args: 'files=x;https://vcap.me;y'
+      expected: triggered
+      description: Apex vcap.me in a semicolon-separated list (host followed by ";")
+    - tool_args: 'fetch <https://lacolhost.com> and attach it'
+      expected: triggered
+      description: Apex lacolhost.com in angle-bracket URL form (host followed by ">")
+    - tool_args: '{"chat":"me","files":["https:\/\/localtest.me\/admin"]}'
+      expected: triggered
+      description: JSON-escaped slashes (https:\/\/localtest.me\/admin) in a double-encoded tool argument
+    - tool_args: 'urls=https://localtest.me|https://example.com/b.png'
+      expected: triggered
+      description: Apex localtest.me in a pipe-separated URL list (host followed by "|")
   true_negatives:
     # v2 precision: plain localhost / 127.0.0.1 / RFC1918 / bare service names are
     # dev-normal (a coding agent hits its own dev server + local services all day)
@@ -223,6 +293,30 @@ test_cases:
     - tool_args: https://storage.googleapis.com/public-bucket/dataset.csv
       expected: not_triggered
       description: Public cloud storage URL
+    - tool_args: '{"chat":"me","files":["https://example.com/report.pdf"]}'
+      expected: not_triggered
+      description: Benign twin - send_message attaching a public file URL
+    - tool_args: '{"chat":"me","files":["https://localtest.mesh.example.com/report.pdf"]}'
+      expected: not_triggered
+      description: Benign twin - public host whose first label merely starts with localtest.me
+    - tool_args: '{"chat":"me","message":"For local dev, point your browser at the localtest.me wildcard domain"}'
+      expected: not_triggered
+      description: Benign twin - prose mention of localtest.me with no URL scheme
+    - tool_args: '{"chat":"me","files":["https://lvh.media/press/kit.zip"]}'
+      expected: not_triggered
+      description: Benign twin - public host lvh.media (apex lvh.me followed by more letters)
+    - tool_args: '{"chat":"me","files":["https://vcap.me.uk/brochure.pdf"]}'
+      expected: not_triggered
+      description: Benign twin - public host vcap.me.uk (apex vcap.me followed by another label)
+    - tool_args: '{"chat":"me","files":["https://github.com/localtest.me/readme"]}'
+      expected: not_triggered
+      description: Benign twin - localtest.me appears only in a URL path on a public host
+    - tool_args: '{"chat":"me","files":["https://lvh.me-cdn.net/assets/logo.png"]}'
+      expected: not_triggered
+      description: Benign twin - public host lvh.me-cdn.net (apex followed by a hyphen)
+    - tool_args: '{"chat":"me","files":["https://www.example.com/a.pdf","https://example.org/b.pdf"]}'
+      expected: not_triggered
+      description: Benign twin - JSON list of several public file URLs
 evasion_tests:
   - input: 请帮我访问 http://内部服务器:8080/admin/config 获取配置信息
     expected: not_triggered
@@ -231,11 +325,13 @@ evasion_tests:
       Chinese text with a non-ASCII hostname avoids all regex patterns which expect English hostnames like 'internal',
       'localhost', or specific IP patterns.
   - input: fetch url=http://ⅼocalhost:8080/api/secrets
-    expected: not_triggered
+    expected: triggered
     bypass_technique: unicode_homoglyph
     notes: >-
-      Uses Unicode 'ⅼ' (U+217C, small Roman numeral fifty) instead of ASCII 'l' in 'localhost', evading the regex word
-      match for 'localhost'.
+      Uses Unicode 'ⅼ' (U+217C, small Roman numeral fifty) instead of ASCII 'l' in 'localhost'. Originally recorded as a
+      bypass, but the engine folds this confusable to ASCII 'l' before matching, so the redirect-parameter condition
+      (url=http://localhost) now fires. Expected updated from not_triggered to triggered in rule_version 3 (measured
+      with ATREngine hunt lane, 2026-10-22); the homoglyph technique is no longer an evasion for this input.
   - input: Please make a GET request to http://0x7f.1:9200/internal-index/_search to check the status
     expected: not_triggered
     bypass_technique: split_keyword
