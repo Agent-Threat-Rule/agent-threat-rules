@@ -1,0 +1,97 @@
+# Benign MCP tools/list corpus
+
+The tool definitions of official reference servers and vendor-maintained MCP servers, read from source
+at pinned commits and written out as the `tools/list` document each server would return: one document
+per server, 45 servers, 710 tool definitions (698 distinct). It exists to measure how often `atr scan`
+flags legitimate tool definitions. Every tool here is benign by construction; many of them legitimately
+read files, run commands, execute SQL or JavaScript, delete resources or fetch URLs, because that is the
+population a tools/list scan meets.
+
+Nothing from an upstream repository is installed, imported or run. Each pinned commit is fetched at
+depth 1 and the definitions are read statically (see "How each server was read").
+
+## Files
+
+- `sources.json`: the repositories and pins, the licence of each, and per server the files read, the
+  extractor, and any runtime default substituted.
+- `tools/<server>.json`: the reconstructed `{"tools": [...]}` document of each server whose licence
+  allows redistribution (44 of 45). Third-party text, redistributed under the licences in `LICENSES/`;
+  copyright stays with each author.
+- `LICENSES/`: the licence (and NOTICE) files of every redistributed source, verbatim from its pin:
+  each repository's root files, and the files of a sub-directory that carries its own (the awslabs
+  server directories' LICENSE and NOTICE, the MIT LICENSE of modelcontextprotocol/servers `src/fetch`
+  and `src/git`). `manifest.json` records their sha256, and the fetch script fails when a LICENSE,
+  COPYING or NOTICE file in the root or a directory above an extracted file is not listed.
+- `manifest.json`: per server the repo, commit, licence, files read, tool count and the sha256 of its
+  document; per tool the file, line, extraction shape, anything the extractor could not fold, and the
+  sha256 of the definition.
+- `fp-classification.json`: why each rule that flags a tool here fires, written after reading the
+  matched text (cause: event type, rule too broad, or arguably a true positive).
+
+`getsentry/sentry-mcp` is under the Functional Source License, so its document is not committed: the
+manifest carries its repo, commit, path and document sha256, and the fetch script rebuilds it into
+`.cache/mcp-tools-list/documents/`.
+
+| Server | Repository | Commit | Licence | Extractor | Tools |
+|---|---|---|---|---|---|
+| `mcp-reference-everything` | modelcontextprotocol/servers | `51b6382a3e82` | MIT / Apache-2.0 (per contribution) | ts | 24 |
+| `mcp-reference-filesystem` | modelcontextprotocol/servers | `51b6382a3e82` | MIT / Apache-2.0 (per contribution) | ts | 14 |
+| `mcp-reference-memory` | modelcontextprotocol/servers | `51b6382a3e82` | MIT / Apache-2.0 (per contribution) | ts | 9 |
+| `mcp-reference-sequentialthinking` | modelcontextprotocol/servers | `51b6382a3e82` | MIT / Apache-2.0 (per contribution) | ts | 1 |
+| `mcp-reference-fetch` | modelcontextprotocol/servers | `51b6382a3e82` | MIT / Apache-2.0 (per contribution) | py | 1 |
+| `mcp-reference-git` | modelcontextprotocol/servers | `51b6382a3e82` | MIT / Apache-2.0 (per contribution) | py | 12 |
+| `mcp-reference-time` | modelcontextprotocol/servers | `51b6382a3e82` | MIT / Apache-2.0 (per contribution) | py | 2 |
+| `mcp-archived-*` (13 servers) | modelcontextprotocol/servers-archived | `9be4674d1ddf` | MIT | ts / py | 74 |
+| `github-mcp-server` | github/github-mcp-server | `f38526264abb` | MIT | toolsnaps | 131 |
+| `playwright-mcp` | microsoft/playwright (names from microsoft/playwright-mcp `0c4107acbecb`) | `e8149b8257d3` | Apache-2.0 | ts | 72 |
+| `cloudflare-*` (14 servers) | cloudflare/mcp-server-cloudflare | `a21972e21928` | Apache-2.0 | ts | 170 |
+| `supabase-mcp` | supabase-community/supabase-mcp | `4a619c13f6dd` | Apache-2.0 | ts | 39 |
+| `sentry-mcp` | getsentry/sentry-mcp | `3869ac95a322` | FSL-1.1-Apache-2.0 (not redistributed) | json-array | 76 |
+| `awslabs-*` (7 servers) | awslabs/mcp | `b054d19693d0` | Apache-2.0 | py | 85 |
+
+Full commits, per-server files and per-tool provenance: `manifest.json`.
+
+Not included: stripe/agent-toolkit (its MCP server proxies the remote mcp.stripe.com; the source carries
+tool names only), makenotion/notion-mcp-server (tools are derived from an OpenAPI document at runtime by
+the server's own converter), an official Atlassian server (none in a public repository), and the archived
+git server (an older copy of the reference git server).
+
+## How each server was read, and where the reconstruction can differ
+
+- `toolsnaps` (github-mcp-server): the JSON tool snapshots the repository commits under
+  `pkg/github/__toolsnaps__/` and checks in its own tests; exact. All toolsets are included (the default
+  configuration enables a subset). Where several snapshots carry the same tool name (`*_output`,
+  `*_actions` variants), the one named `<tool>.snap` is kept.
+- `json-array` (sentry-mcp): `packages/mcp-core/src/toolDefinitions.json`, generated by the server build
+  and committed; exact for name, description, inputSchema and annotations (fields that are not part of a
+  tools/list Tool are dropped).
+- `ts` (`scripts/mcp-tools-list/extract-ts-tools.ts`): the TypeScript compiler API parses the files and a
+  constant folder evaluates the definition: string and template literals, concatenation, `.join()`,
+  `const` bindings across relative and workspace-alias imports, single-return helpers, common-tags
+  template tags, cloudflare's `fmt.trim` / `fmt.oneLine` (mirrored from its `format.ts`), and zod chains,
+  which are written out as JSON Schema. Text (names, descriptions, parameter descriptions, enums,
+  defaults) is the source's own. Schema structure can differ from the SDK's serialisation in details
+  that carry no text: no `$schema` key, constraint keyword spelling, `anyOf` layout for nullable fields.
+  For playwright-mcp the 72 tool names, descriptions and parameter descriptions were compared with the
+  README that playwright-mcp generates from its schemas: identical.
+- `py` (`scripts/mcp-tools-list/extract_py_tools.py`): `ast` parse; the description is `description=` or
+  the docstring (raw, as the Python SDK passes `fn.__doc__`), the schema is rebuilt from the signature the
+  way pydantic writes it (`title` per property, `default`, `required`, `anyOf` for Optional, `enum` for
+  Literal and Enum). Nested pydantic models are inlined instead of placed under `$defs`.
+- Runtime values are substituted with documented defaults in `sources.json` (time: `local_tz` = UTC;
+  aws-api: deprecation notice shown, region us-east-1, file access mode workdir, a representative working
+  directory). Tools registered only behind an opt-in flag are left out where the code makes that explicit
+  (aws-api `get_execution_plan`).
+
+`manifest.json` lists every tool whose text the folder could not fully evaluate (`tools_with_unresolved_text`);
+at the pins above there are none.
+
+## Reproduce
+
+```
+npm ci
+python3 scripts/mcp-tools-list/fetch-tools-list-corpus.py --check   # re-extract from the pins, compare, exit 1 on drift
+bash scripts/mcp-tools-list/reproduce.sh                             # re-extract, then measure (nothing written)
+```
+
+Measurement: `data/measurements/mcp-tools-list-benign/`.

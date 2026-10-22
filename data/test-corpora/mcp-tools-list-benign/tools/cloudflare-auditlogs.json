@@ -1,0 +1,161 @@
+{
+  "tools": [
+    {
+      "name": "auditlogs_by_account_id",
+      "description": "Find all audit logs (a list of who made what change when) for a Cloudflare Account by ID.\n\t\tThis can be used to query activity on your Cloudflare account at a particular time.\n\t\tSince and before are required to look at a slice of time and are dates with or without a time up to millisecond precision e.g YYYY-MM-DDTHH:mm:ss.sssZ.\n\t\tThere can be more than one page of results and they can be paginated using the returned cursor",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "account_name": {
+            "type": "string",
+            "description": "The account name to filter audit logs by."
+          },
+          "action_result": {
+            "type": "string",
+            "enum": [
+              "success",
+              "failure",
+              ""
+            ],
+            "description": "Whether the action was a success or failure."
+          },
+          "action_type": {
+            "type": "string",
+            "enum": [
+              "create",
+              "delete",
+              "view",
+              "update",
+              "login"
+            ],
+            "description": "The type of action that was performed."
+          },
+          "actor_context": {
+            "type": "string",
+            "enum": [
+              "api",
+              "api_key",
+              "api_token",
+              "dash",
+              "oauth",
+              "origin_ca_key"
+            ],
+            "description": "The context in which the actor was operating."
+          },
+          "actor_email": {
+            "type": "string",
+            "format": "email",
+            "description": "The email of the actor who triggered the event."
+          },
+          "actor_id": {
+            "type": "string",
+            "description": "The unique identifier of the actor."
+          },
+          "actor_ip_address": {
+            "type": "string",
+            "description": "The IP address of the actor."
+          },
+          "actor_token_id": {
+            "type": "string",
+            "description": "The API token ID used by the actor."
+          },
+          "actor_token_name": {
+            "type": "string",
+            "description": "The name of the API token used by the actor."
+          },
+          "actor_type": {
+            "type": "string",
+            "enum": [
+              "cloudflare_admin",
+              "account",
+              "user",
+              "system"
+            ],
+            "description": "The type of actor (e.g., user, token)."
+          },
+          "audit_log_id": {
+            "type": "string",
+            "description": "The unique identifier of the audit log entry."
+          },
+          "raw_cf_ray_id": {
+            "type": "string",
+            "description": "The Cloudflare Ray ID associated with the request."
+          },
+          "raw_method": {
+            "type": "string",
+            "description": "The HTTP method used in the request (e.g., GET, POST)."
+          },
+          "raw_status_code": {
+            "type": "number",
+            "description": "The HTTP status code returned by the request."
+          },
+          "raw_uri": {
+            "type": "string",
+            "description": "The URI accessed in the request."
+          },
+          "resource_id": {
+            "type": "string",
+            "description": "The unique identifier of the resource affected."
+          },
+          "resource_product": {
+            "type": "string",
+            "description": "The Cloudflare product related to the resource."
+          },
+          "resource_type": {
+            "type": "string",
+            "description": "The type of resource affected."
+          },
+          "resource_scope": {
+            "type": "string",
+            "enum": [
+              "memberships",
+              "accounts",
+              "user",
+              "zones"
+            ],
+            "description": "The scope of the resource (e.g., account, zone)."
+          },
+          "zone_id": {
+            "type": "string",
+            "description": "The ID of the zone associated with the log."
+          },
+          "zone_name": {
+            "type": "string",
+            "description": "The name of the zone associated with the log."
+          },
+          "since": {
+            "type": "string",
+            "description": "The start of the time slice to look at. Can be YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ"
+          },
+          "before": {
+            "type": "string",
+            "description": "The end of the time slice to look at. Can be YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "desc",
+              "asc"
+            ],
+            "description": "The sort direction of the logs (asc or desc)."
+          },
+          "limit": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1000,
+            "description": "The number of results to return (max 1000)."
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Pagination cursor for fetching the next set of results."
+          }
+        },
+        "required": [
+          "since",
+          "before"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

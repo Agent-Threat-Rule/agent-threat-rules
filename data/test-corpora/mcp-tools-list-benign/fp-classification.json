@@ -1,0 +1,153 @@
+{
+  "schema": "mcp-tools-list-benign/fp-classification/v1",
+  "description": "Why each rule flagged a corpus tool, written after reading the matched text. cause: event_type = the rule is meant for another source (tool_call rules on a tool definition, or a prompt rule reading JSON-encoded content as a prompt); rule_too_broad = a condition matches benign documentation text; arguably_true_positive = the text has the form the rule targets, benign only by intent. tools: \"<server>/<tool>\" entries, or \"*\" for every flag of the rule.",
+  "classifications": [
+    {
+      "rule_id": "ATR-2026-00099",
+      "tools": [
+        "*"
+      ],
+      "cause": "event_type",
+      "condition": "0-4 (tool_name)",
+      "explanation": "A tool_call rule: it decides from tool_name whether an agent is invoking a destructive, payment, messaging or command-execution tool without confirmation. A tools/list document defines tools, it invokes none, but the PR #737 event sets fields.tool_name to the defined tool's name and the mcp_exchange type admits tool_call rules, so every definition whose name contains delete/remove/reset/drop/kill/exec/eval/publish/subscribe/post_message fires. It never fires as tool_response (the source filter skips tool_call rules there). The conditions are also unanchored substrings: publish matches get_publishable_keys, reset matches get_tcp_resets_timeouts_data, subscribe matches toggle-subscriber-updates, exec matches execute_sentry_tool."
+    },
+    {
+      "rule_id": "ATR-2026-00063",
+      "tools": [
+        "*"
+      ],
+      "cause": "event_type",
+      "condition": "3 (tool_name)",
+      "explanation": "A tool_call rule for exfiltration chains (send/upload tool plus sensitive-file or encoding arguments); with condition: any, the tool_name condition alone fires. On the tools/list event fields.tool_name is the defined tool's name, so playwright's browser_file_upload definition matches 'upload'. Not admitted on tool_response."
+    },
+    {
+      "rule_id": "ATR-2026-00113",
+      "tools": [
+        "github-mcp-server/get_team_members",
+        "github-mcp-server/get_teams",
+        "awslabs-eks-mcp-server/search_eks_troubleshoot_guide",
+        "awslabs-eks-mcp-server/get_policies_for_role"
+      ],
+      "cause": "event_type",
+      "condition": "1 (content)",
+      "explanation": "A tool_call rule (credential theft through a tool invocation) that runs only because mcp_exchange admits every rule. Condition 1, (cat|read|open|load|get)\\s+.*(credentials|...), is also broad: the greedy .* runs across the whole definition, which JSON.stringify puts on one line, from a leading 'Get ...' to any later 'credentials' (GitHub: 'accessible with current credentials'; EKS: an IAM-role description mentioning credentials)."
+    },
+    {
+      "rule_id": "ATR-2026-00113",
+      "tools": [
+        "awslabs-dynamodb-mcp-server/dynamodb_data_model_schema_validator"
+      ],
+      "cause": "event_type",
+      "condition": "3 (content)",
+      "explanation": "Tool_call rule on a definition. Condition 3 matches /etc/passwd in the sentence documenting that path traversal attempts such as ../../../../etc/passwd are blocked: a mention, not an access."
+    },
+    {
+      "rule_id": "ATR-2026-00161",
+      "tools": [
+        "awslabs-dynamodb-mcp-server/dynamodb_data_model_schema_validator"
+      ],
+      "cause": "rule_too_broad",
+      "condition": "2 (content)",
+      "explanation": "Condition 2 fires on a bare sensitive-path mention (/etc/passwd) anywhere in the content; the description mentions it as an example of a blocked traversal. The rule's <IMPORTANT>-tag shadowing signature (condition 0) is not present."
+    },
+    {
+      "rule_id": "ATR-2026-00569",
+      "tools": [
+        "awslabs-dynamodb-mcp-server/dynamodb_data_model_schema_validator"
+      ],
+      "cause": "rule_too_broad",
+      "condition": "0 (content)",
+      "explanation": "The literal ../../../../etc/passwd is in the description as an example of an input the validator rejects. The rule cannot tell a documented example from a traversal argument; on a definition it should not be read as an access."
+    },
+    {
+      "rule_id": "ATR-2026-01987",
+      "tools": [
+        "*"
+      ],
+      "cause": "rule_too_broad",
+      "condition": "0 (content)",
+      "explanation": "Supabase's execute_sql / apply_migration descriptions name COPY ... FROM PROGRAM among the SQL primitives that read files or run OS commands, as guidance about what the tool will or should not do. Condition 0 matches any mention of the primitive; it was written for a prompt-to-SQL payload, and a tool definition that names the primitive is not one."
+    },
+    {
+      "rule_id": "ATR-2026-00225",
+      "tools": [
+        "*"
+      ],
+      "cause": "rule_too_broad",
+      "condition": "2 (content)",
+      "explanation": "Condition 2 is an IPv4 address followed by C2/command/control/backdoor/malware on the same line. JSON.stringify puts the whole definition on one line, so [^\\n]* runs from '1.1.1.1' (Cloudflare's public DNS resolver, named in the Radar tool's description) to a later 'control' or 'command' anywhere in the schema. Line-bounded patterns are document-bounded on single-line JSON."
+    },
+    {
+      "rule_id": "ATR-2026-00217",
+      "tools": [
+        "*"
+      ],
+      "cause": "rule_too_broad",
+      "condition": "3 (content)",
+      "explanation": "Condition 3, (backup|restore|sync)\\s+[^\\n]*(ssh|key|credential|certificate|\\.env), has no word boundary: 'sync' matches inside 'async' in Supabase's example edge function, and [^\\n]* then runs over the single-line JSON to a later 'key'."
+    },
+    {
+      "rule_id": "ATR-2026-00579",
+      "tools": [
+        "*"
+      ],
+      "cause": "arguably_true_positive",
+      "condition": "0 (content)",
+      "explanation": "The DynamoDB description tells the model 'Before calling this tool, you MUST first ...' another tool: an agent-directed pre-invocation imperative in a tool description, which is the line-jumping form the rule describes. Here it sequences the vendor's own tools and asks for nothing harmful, so it is benign, but the text does steer the model before invocation and only intent separates it from an attack; a reviewer has to read it. Experimental maturity: hunt lane only."
+    },
+    {
+      "rule_id": "ATR-2026-00454",
+      "tools": [
+        "*"
+      ],
+      "cause": "event_type",
+      "condition": "0 (user_input)",
+      "explanation": "tool_response shape only. An llm_io rule for per-character backslash encoding in a prompt; on tool_response user_input resolves to the content, which is JSON text, and JSON escapes (\\n\\n\\n, \\n\\t\\t, \\\") count as 3+ backslash-single-char pairs. Any multi-line or quoted description trips it. On the PR #737 mcp_exchange event user_input does not resolve, so it does not fire there."
+    },
+    {
+      "rule_id": "ATR-2026-00443",
+      "tools": [
+        "*"
+      ],
+      "cause": "rule_too_broad",
+      "condition": "1 (user_input)",
+      "explanation": "tool_response shape only, and the one flag in the enforce lane (maturity stable). Condition 1 is three quoted fragments joined with +; GitHub's projects_write parameter description writes the alternative identifier as 'item_owner' + 'item_repo' + 'issue_number'. Documentation notation, not payload assembly."
+    },
+    {
+      "rule_id": "ATR-2026-00065",
+      "tools": [
+        "*"
+      ],
+      "cause": "rule_too_broad",
+      "condition": "1, 3 (tool_response)",
+      "explanation": "tool_response shape only. Conditions 1 and 3 match ordinary words: 'new permissions' (EKS: use this tool before adding new permissions), 'DataTransfer' / 'Data transfer' (AWS pricing service and cost-report text)."
+    },
+    {
+      "rule_id": "ATR-2026-00020",
+      "tools": [
+        "*"
+      ],
+      "cause": "rule_too_broad",
+      "condition": "8 (agent_output)",
+      "explanation": "tool_response shape only. Condition 8, (do not|never|...).*(reveal|share|...).*(system prompt|internal|instructions|configuration), uses greedy .* across the single-line JSON, so unrelated 'never', 'output' and 'instructions' words far apart in the AWS pricing description chain into a match."
+    },
+    {
+      "rule_id": "ATR-2026-00504",
+      "tools": [
+        "*"
+      ],
+      "cause": "rule_too_broad",
+      "condition": "0 (user_input)",
+      "explanation": "tool_response shape only. Condition 0 matches 'complete list of action groups, conditions, and notification actions' in a Sentry parameter description: 'complete list' followed by 'actions' within 30 characters."
+    },
+    {
+      "rule_id": "ATR-2026-00502",
+      "tools": [
+        "*"
+      ],
+      "cause": "rule_too_broad",
+      "condition": "0 (user_input)",
+      "explanation": "tool_response shape only. Condition 0 needs repeat/write/output ... word/phrase/text/string ... forever; on the single-line JSON it matches from a 'write' in the Sentry update_issue schema to the enum value \"forever\" of ignoreMode."
+    }
+  ]
+}

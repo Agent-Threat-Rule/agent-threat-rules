@@ -1,0 +1,774 @@
+{
+  "tools": [
+    {
+      "name": "kv_namespaces_list",
+      "description": "\n\t\t\tList all of the kv namespaces in your Cloudflare account.\n\t\t\tUse this tool when you need to list all of the kv namespaces in your Cloudflare account.\n\t\t\tReturns a list of kv namespaces with the following properties:\n\t\t\t- id: The id of the kv namespace.\n\t\t\t- title: The title of the kv namespace.\n\t\t\t",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "params": {
+            "type": "object",
+            "properties": {
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ],
+                "description": "Direction to order namespaces (asc/desc)"
+              },
+              "order": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "title"
+                ],
+                "description": "Field to order namespaces by (id/title)"
+              },
+              "page": {
+                "type": "integer",
+                "description": "Page number of results (starts at 1)"
+              },
+              "per_page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "description": "Number of namespaces per page (1-100)"
+              }
+            },
+            "additionalProperties": false,
+            "description": "Optional parameters for listing KV namespaces"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "List KV namespaces",
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "kv_namespace_create",
+      "description": "Create a new kv namespace in your Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The human-readable name/title of the KV namespace"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Create KV namespace",
+        "readOnlyHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "kv_namespace_delete",
+      "description": "Delete a kv namespace in your Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "namespace_id": {
+            "type": "string",
+            "description": "The ID of the KV namespace"
+          }
+        },
+        "required": [
+          "namespace_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Delete KV namespace",
+        "readOnlyHint": false,
+        "destructiveHint": true
+      }
+    },
+    {
+      "name": "kv_namespace_get",
+      "description": "Get details of a kv namespace in your Cloudflare account.\n\t\tUse this tool when you need to get details of a specific kv namespace in your Cloudflare account.\n\t\tReturns a kv namespace with the following properties:\n\t\t\t- id: The id of the kv namespace.\n\t\t\t- title: The title of the kv namespace.\n\t\t\t- supports_url_encoding: Whether the kv namespace supports url encoding.\n\t\t\t- beta: Whether the kv namespace is in beta.\n\t\t",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "namespace_id": {
+            "type": "string",
+            "description": "The ID of the KV namespace"
+          }
+        },
+        "required": [
+          "namespace_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get KV namespace",
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "kv_namespace_update",
+      "description": "Update the title of a kv namespace in your Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "namespace_id": {
+            "type": "string",
+            "description": "The ID of the KV namespace"
+          },
+          "title": {
+            "type": "string",
+            "description": "The human-readable name/title of the KV namespace"
+          }
+        },
+        "required": [
+          "namespace_id",
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Update KV namespace",
+        "readOnlyHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "workers_list",
+      "description": "List all Workers in your Cloudflare account.\n\nIf you only need details of a single Worker, use workers_get_worker.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "List Workers",
+        "readOnlyHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "workers_get_worker",
+      "description": "Get the details of the Cloudflare Worker.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scriptName": {
+            "type": "string",
+            "description": "The name of the worker script to retrieve"
+          }
+        },
+        "required": [
+          "scriptName"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get Worker details",
+        "readOnlyHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "workers_get_worker_code",
+      "description": "Get the source code of a Cloudflare Worker. Note: This may be a bundled version of the worker.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scriptName": {
+            "type": "string",
+            "description": "The name of the worker script to retrieve"
+          }
+        },
+        "required": [
+          "scriptName"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get Worker code",
+        "readOnlyHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "r2_buckets_list",
+      "description": "List r2 buckets in your Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Query param: Pagination cursor received during the last List Buckets call. R2 buckets are paginated using cursors instead of page numbers."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "direction": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ],
+                "description": "Direction to order buckets"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name_contains": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Bucket names to filter by. Only buckets with this phrase in their name will be returned."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "per_page": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "start_after": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Bucket name to start searching after. Buckets are ordered lexicographically."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "List R2 buckets",
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "r2_bucket_create",
+      "description": "Create a new r2 bucket in your Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the r2 bucket"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Create R2 bucket",
+        "readOnlyHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "r2_bucket_get",
+      "description": "Get details about a specific R2 bucket",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the r2 bucket"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get R2 bucket",
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "r2_bucket_delete",
+      "description": "Delete an R2 bucket",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the r2 bucket"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Delete R2 bucket",
+        "readOnlyHint": false,
+        "destructiveHint": true
+      }
+    },
+    {
+      "name": "d1_databases_list",
+      "description": "List all of the D1 databases in your Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "per_page": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "List D1 databases",
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "d1_database_create",
+      "description": "Create a new D1 database in your Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "primary_location_hint": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "wnam",
+                  "enam",
+                  "weur",
+                  "eeur",
+                  "apac",
+                  "oc"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Create D1 database",
+        "readOnlyHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "d1_database_delete",
+      "description": "Delete a d1 database in your Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "database_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "database_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Delete D1 database",
+        "readOnlyHint": false,
+        "destructiveHint": true
+      }
+    },
+    {
+      "name": "d1_database_get",
+      "description": "Get a D1 database in your Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "database_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "database_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get D1 database",
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "d1_database_query",
+      "description": "Query a D1 database in your Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "database_id": {
+            "type": "string"
+          },
+          "sql": {
+            "type": "string"
+          },
+          "params": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "database_id",
+          "sql"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Query D1 database",
+        "readOnlyHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "hyperdrive_configs_list",
+      "description": "List Hyperdrive configurations in your Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "description": "Page number of results"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "per_page": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "description": "Number of results per page"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "order": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "name"
+                ],
+                "description": "Field to order by"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "direction": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ],
+                "description": "Direction to order"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "List Hyperdrive configs",
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "hyperdrive_config_delete",
+      "description": "Delete a Hyperdrive configuration in your Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "hyperdrive_id": {
+            "type": "string",
+            "description": "The ID of the Hyperdrive configuration"
+          }
+        },
+        "required": [
+          "hyperdrive_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Delete Hyperdrive config",
+        "readOnlyHint": false,
+        "destructiveHint": true
+      }
+    },
+    {
+      "name": "hyperdrive_config_get",
+      "description": "Get details of a specific Hyperdrive configuration in your Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "hyperdrive_id": {
+            "type": "string",
+            "description": "The ID of the Hyperdrive configuration"
+          }
+        },
+        "required": [
+          "hyperdrive_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get Hyperdrive config",
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "hyperdrive_config_edit",
+      "description": "Edit (patch) a Hyperdrive configuration in your Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "hyperdrive_id": {
+            "type": "string",
+            "description": "The ID of the Hyperdrive configuration"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "description": "The name of the Hyperdrive configuration (alphanumeric, underscore, hyphen)"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "database": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "The database name"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "host": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "The database host address"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "port": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535,
+                "description": "The database port"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scheme": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "postgresql"
+                ],
+                "description": "The database protocol"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "user": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "The database user"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "caching_disabled": {
+            "anyOf": [
+              {
+                "type": "boolean",
+                "description": "Whether caching is disabled"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "caching_max_age": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Maximum cache age in seconds"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "caching_stale_while_revalidate": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Stale while revalidate duration in seconds"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "hyperdrive_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Edit Hyperdrive config",
+        "readOnlyHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "search_cloudflare_documentation",
+      "description": "Search the Cloudflare documentation.\n\n\t\tThis tool should be used to answer any question about Cloudflare products or features, including:\n\t\t- Workers, Pages, R2, Images, Stream, D1, Durable Objects, KV, Workflows, Hyperdrive, Queues\n\t\t- AI Search, Workers AI, Vectorize, AI Gateway, Browser Run\n\t\t- Zero Trust, Access, Tunnel, Gateway, Browser Isolation, WARP, DDOS, Magic Transit, Magic WAN\n\t\t- CDN, Cache, DNS, Zaraz, Argo, Rulesets, Terraform, Account and Billing\n\n\t\tResults are returned as semantically similar chunks to the query.\n\t\t",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Search Cloudflare docs",
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "migrate_pages_to_workers_guide",
+      "description": "ALWAYS read this guide before migrating Pages projects to Workers.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get Pages migration guide",
+        "readOnlyHint": true
+      }
+    }
+  ]
+}

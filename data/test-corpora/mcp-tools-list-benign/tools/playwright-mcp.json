@@ -1,0 +1,1723 @@
+{
+  "tools": [
+    {
+      "name": "browser_close",
+      "title": "Close browser",
+      "description": "Close the page",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_resize",
+      "title": "Resize browser window",
+      "description": "Resize the browser window",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "width": {
+            "type": "number",
+            "description": "Width of the browser window"
+          },
+          "height": {
+            "type": "number",
+            "description": "Height of the browser window"
+          }
+        },
+        "required": [
+          "width",
+          "height"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_get_config",
+      "title": "Get config",
+      "description": "Get the final resolved config after merging CLI options, environment variables and config file.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_console_messages",
+      "title": "Get console messages",
+      "description": "Returns all console messages",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning",
+              "info",
+              "debug"
+            ],
+            "default": "info",
+            "description": "Level of the console messages to return. Each level includes the messages of more severe levels. Defaults to \"info\"."
+          },
+          "all": {
+            "type": "boolean",
+            "description": "Return all console messages since the beginning of the session, not just since the last navigation. Defaults to false."
+          },
+          "filename": {
+            "type": "string",
+            "description": "File name to save the console messages to. Relative file names are resolved against the workspace root. If not provided, messages are returned as text."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_cookie_list",
+      "title": "List cookies",
+      "description": "List all cookies (optionally filtered by domain/path)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Filter cookies by domain"
+          },
+          "path": {
+            "type": "string",
+            "description": "Filter cookies by path"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_cookie_get",
+      "title": "Get cookie",
+      "description": "Get a specific cookie by name",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Cookie name to get"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_cookie_set",
+      "title": "Set cookie",
+      "description": "Set a cookie with optional flags (domain, path, expires, httpOnly, secure, sameSite)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Cookie name"
+          },
+          "value": {
+            "type": "string",
+            "description": "Cookie value"
+          },
+          "domain": {
+            "type": "string",
+            "description": "Cookie domain"
+          },
+          "path": {
+            "type": "string",
+            "description": "Cookie path"
+          },
+          "expires": {
+            "type": "number",
+            "description": "Cookie expiration as Unix timestamp"
+          },
+          "httpOnly": {
+            "type": "boolean",
+            "description": "Whether the cookie is HTTP only"
+          },
+          "secure": {
+            "type": "boolean",
+            "description": "Whether the cookie is secure"
+          },
+          "sameSite": {
+            "type": "string",
+            "enum": [
+              "Strict",
+              "Lax",
+              "None"
+            ],
+            "description": "Cookie SameSite attribute"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_cookie_delete",
+      "title": "Delete cookie",
+      "description": "Delete a specific cookie",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Cookie name to delete"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_cookie_clear",
+      "title": "Clear cookies",
+      "description": "Clear all cookies",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_resume",
+      "title": "Resume paused script execution",
+      "description": "Resume script execution after it was paused. When called with step set to true, execution will pause again before the next action.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "step": {
+            "type": "boolean",
+            "description": "When true, execution will pause again before the next action, allowing step-by-step debugging."
+          },
+          "location": {
+            "type": "string",
+            "description": "Pause execution at a specific <file>:<line>, e.g. \"example.spec.ts:42\"."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_highlight",
+      "title": "Highlight element",
+      "description": "Show a persistent highlight overlay around the element on the page.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "element": {
+            "type": "string",
+            "description": "Human-readable element description used to obtain permission to interact with the element"
+          },
+          "target": {
+            "type": "string",
+            "description": "Exact target element reference from the page snapshot, or a unique element selector"
+          },
+          "style": {
+            "type": "string",
+            "description": "Additional inline CSS applied to the highlight overlay, e.g. \"outline: 2px dashed red\"."
+          }
+        },
+        "required": [
+          "target"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_hide_highlight",
+      "title": "Hide element highlight",
+      "description": "Remove a highlight overlay previously added for the element.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "element": {
+            "type": "string",
+            "description": "Human-readable element description used when adding the highlight; must match the value passed to browser_highlight."
+          },
+          "target": {
+            "type": "string",
+            "description": "Exact target element reference from the page snapshot, or a unique element selector"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_annotate",
+      "title": "Annotate the current page",
+      "description": "Open the Playwright Dashboard in annotation mode for the current page and wait for the user to draw annotations. Returns the annotated screenshot, ARIA snapshot, and the list of annotations.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_handle_dialog",
+      "title": "Handle a dialog",
+      "description": "Handle a dialog",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "accept": {
+            "type": "boolean",
+            "description": "Whether to accept the dialog."
+          },
+          "promptText": {
+            "type": "string",
+            "description": "The text of the prompt in case of a prompt dialog."
+          }
+        },
+        "required": [
+          "accept"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_emulate_media",
+      "title": "Emulate media features",
+      "description": "Emulate CSS media features for the page, for example switch between the light and dark color scheme. Omitted parameters are left unchanged; null clears an override.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "colorScheme": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "light",
+                  "dark"
+                ],
+                "description": "Emulates the prefers-color-scheme media feature"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reducedMotion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "reduce",
+                  "no-preference"
+                ],
+                "description": "Emulates the prefers-reduced-motion media feature"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "forcedColors": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "none"
+                ],
+                "description": "Emulates the forced-colors media feature"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contrast": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "more",
+                  "no-preference"
+                ],
+                "description": "Emulates the prefers-contrast media feature"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "media": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "screen",
+                  "print"
+                ],
+                "description": "Changes the CSS media type of the page"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_evaluate",
+      "title": "Evaluate JavaScript",
+      "description": "Evaluate JavaScript expression on page or element",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "element": {
+            "type": "string",
+            "description": "Human-readable element description used to obtain permission to interact with the element"
+          },
+          "target": {
+            "type": "string",
+            "description": "Exact target element reference from the page snapshot, or a unique element selector"
+          },
+          "function": {
+            "type": "string",
+            "description": "() => { /* code */ } or (element) => { /* code */ } when element is provided"
+          },
+          "filename": {
+            "type": "string",
+            "description": "File name to save the result to. Relative file names are resolved against the workspace root. If not provided, result is returned as text."
+          }
+        },
+        "required": [
+          "function"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_file_upload",
+      "title": "Upload files",
+      "description": "Upload one or multiple files",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The absolute paths to the files to upload. Can be single file or multiple files. If omitted, file chooser is cancelled."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_drop",
+      "title": "Drop files or data onto an element",
+      "description": "Drop files or MIME-typed data onto an element, as if dragged from outside the page. At least one of \"paths\" or \"data\" must be provided.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "element": {
+            "type": "string",
+            "description": "Human-readable element description used to obtain permission to interact with the element"
+          },
+          "target": {
+            "type": "string",
+            "description": "Exact target element reference from the page snapshot, or a unique element selector"
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Absolute paths to files to drop onto the element."
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Data to drop, as a map of MIME type to string value (e.g. {\"text/plain\": \"hello\", \"text/uri-list\": \"https://example.com\"})."
+          }
+        },
+        "required": [
+          "target"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_find",
+      "title": "Find in page snapshot",
+      "description": "Search the accessibility snapshot of the current page for text or a regular expression. Returns matching snapshot nodes with a few lines of surrounding context (like search snippets), each shown under its path from the root of the tree, which is cheaper than capturing the whole snapshot when you only need to locate an element and its ref.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Plain text to search for in the page snapshot (case-insensitive substring match). Provide either text or regex, not both."
+          },
+          "regex": {
+            "type": "string",
+            "description": "Regular expression to search for in the page snapshot. Matching is case-sensitive by default; wrap the pattern in slashes to add flags, e.g. \"/error/i\" for case-insensitive. Provide either text or regex, not both."
+          },
+          "filename": {
+            "type": "string",
+            "description": "Save results to a file instead of returning them in the response. Relative file names are resolved against the workspace root."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_fill_form",
+      "title": "Fill form",
+      "description": "Fill multiple form fields",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "element": {
+                  "type": "string",
+                  "description": "Human-readable element description used to obtain permission to interact with the element"
+                },
+                "target": {
+                  "type": "string",
+                  "description": "Exact target element reference from the page snapshot, or a unique element selector"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Human-readable field name"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "textbox",
+                    "checkbox",
+                    "radio",
+                    "combobox",
+                    "slider"
+                  ],
+                  "description": "Type of the field"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "Value to fill in the field. If the field is a checkbox, the value should be `true` or `false`. If the field is a combobox, the value should be the text of the option."
+                }
+              },
+              "required": [
+                "target",
+                "name",
+                "type",
+                "value"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Fields to fill in"
+          }
+        },
+        "required": [
+          "fields"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_press_key",
+      "title": "Press a key",
+      "description": "Press a key on the keyboard",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Name of the key to press or a character to generate, such as `ArrowLeft` or `a`"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_type",
+      "title": "Type text",
+      "description": "Type text into editable element",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "element": {
+            "type": "string",
+            "description": "Human-readable element description used to obtain permission to interact with the element"
+          },
+          "target": {
+            "type": "string",
+            "description": "Exact target element reference from the page snapshot, or a unique element selector"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text to type into the element"
+          },
+          "submit": {
+            "type": "boolean",
+            "description": "Whether to submit entered text (press Enter after)"
+          },
+          "slowly": {
+            "type": "boolean",
+            "description": "Whether to type one character at a time. Useful for triggering key handlers in the page. By default entire text is filled in at once."
+          }
+        },
+        "required": [
+          "target",
+          "text"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_mouse_move_xy",
+      "title": "Move mouse",
+      "description": "Move mouse to a given position",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number",
+            "description": "X coordinate"
+          },
+          "y": {
+            "type": "number",
+            "description": "Y coordinate"
+          }
+        },
+        "required": [
+          "x",
+          "y"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_mouse_down",
+      "title": "Press mouse down",
+      "description": "Press mouse down",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "button": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right",
+              "middle"
+            ],
+            "description": "Button to press, defaults to left"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_mouse_up",
+      "title": "Press mouse up",
+      "description": "Press mouse up",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "button": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right",
+              "middle"
+            ],
+            "description": "Button to press, defaults to left"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_mouse_wheel",
+      "title": "Scroll mouse wheel",
+      "description": "Scroll mouse wheel",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "deltaX": {
+            "type": "number",
+            "default": 0,
+            "description": "X delta"
+          },
+          "deltaY": {
+            "type": "number",
+            "default": 0,
+            "description": "Y delta"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_mouse_click_xy",
+      "title": "Click",
+      "description": "Click mouse button at a given position",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number",
+            "description": "X coordinate"
+          },
+          "y": {
+            "type": "number",
+            "description": "Y coordinate"
+          },
+          "button": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right",
+              "middle"
+            ],
+            "description": "Button to click, defaults to left"
+          },
+          "clickCount": {
+            "type": "number",
+            "description": "Number of clicks, defaults to 1"
+          },
+          "delay": {
+            "type": "number",
+            "description": "Time to wait between mouse down and mouse up in milliseconds, defaults to 0"
+          }
+        },
+        "required": [
+          "x",
+          "y"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_mouse_drag_xy",
+      "title": "Drag mouse",
+      "description": "Drag left mouse button to a given position",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "startX": {
+            "type": "number",
+            "description": "Start X coordinate"
+          },
+          "startY": {
+            "type": "number",
+            "description": "Start Y coordinate"
+          },
+          "endX": {
+            "type": "number",
+            "description": "End X coordinate"
+          },
+          "endY": {
+            "type": "number",
+            "description": "End Y coordinate"
+          }
+        },
+        "required": [
+          "startX",
+          "startY",
+          "endX",
+          "endY"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_navigate",
+      "title": "Navigate to a URL",
+      "description": "Navigate to a URL",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The URL to navigate to"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_navigate_back",
+      "title": "Go back",
+      "description": "Go back to the previous page in the history",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_network_requests",
+      "title": "List network requests",
+      "description": "Returns a numbered list of network requests since loading the page. Use browser_network_request with the number to get full details.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "static": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to include successful static resources like images, fonts, scripts, etc. Defaults to false."
+          },
+          "filter": {
+            "type": "string",
+            "description": "Only return requests whose URL matches this regexp (e.g. \"/api/.*user\")."
+          },
+          "filename": {
+            "type": "string",
+            "description": "File name to save the network requests to. Relative file names are resolved against the workspace root. If not provided, requests are returned as text."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_network_request",
+      "title": "Show network request details",
+      "description": "Returns full details (headers and body) of a single network request, or a single part if `part` is set. Use the number from browser_network_requests.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "1-based index of the request, as printed by browser_network_requests."
+          },
+          "part": {
+            "type": "string",
+            "enum": [
+              "request-headers",
+              "request-body",
+              "response-headers",
+              "response-body"
+            ],
+            "description": "Return only this part of the request. Omit to return full details."
+          },
+          "filename": {
+            "type": "string",
+            "description": "File name to save the result to. Relative file names are resolved against the workspace root. If not provided, output is returned as text."
+          }
+        },
+        "required": [
+          "index"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_network_state_set",
+      "title": "Set network state",
+      "description": "Sets the browser network state to online or offline. When offline, all network requests will fail.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ],
+            "description": "Set to \"offline\" to simulate offline mode, \"online\" to restore network connectivity"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_pdf_save",
+      "title": "Save as PDF",
+      "description": "Save page as PDF",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "description": "File name to save the pdf to. Relative file names are resolved against the workspace root. If not specified, the pdf is saved into the output directory as `page-{timestamp}.pdf`."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_start_recording",
+      "title": "Start recording user actions",
+      "description": "Start recording actions that the user performs in the browser as Playwright code. Use it when the user wants to demonstrate a flow manually. Call browser_stop_recording when the user says they are done to retrieve the recorded actions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_stop_recording",
+      "title": "Stop recording user actions",
+      "description": "Stop the recording started with browser_start_recording and return the recorded actions as Playwright code.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_route",
+      "title": "Mock network requests",
+      "description": "Set up a route to mock network requests matching a URL pattern",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "URL pattern to match (e.g., \"**/api/users\", \"**/*.{png,jpg}\")"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code to return (default: 200)"
+          },
+          "body": {
+            "type": "string",
+            "description": "Response body (text or JSON string)"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "Content-Type header (e.g., \"application/json\", \"text/html\")"
+          },
+          "headers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Headers to add in \"Name: Value\" format"
+          },
+          "removeHeaders": {
+            "type": "string",
+            "description": "Comma-separated list of header names to remove from request"
+          }
+        },
+        "required": [
+          "pattern"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_route_list",
+      "title": "List network routes",
+      "description": "List all active network routes",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_unroute",
+      "title": "Remove network routes",
+      "description": "Remove network routes matching a pattern (or all routes if no pattern specified)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "URL pattern to unroute (omit to remove all routes)"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_run_code_unsafe",
+      "title": "Run Playwright code (unsafe)",
+      "description": "Run a Playwright code snippet. Unsafe: executes arbitrary JavaScript in the Playwright server process and is RCE-equivalent.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A JavaScript function containing Playwright code to execute. It will be invoked with a single argument, page, which you can use for any page interaction. For example: `async (page) => { await page.getByRole('button', { name: 'Submit' }).click(); return await page.title(); }`"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Load code from the specified file. Relative file names are resolved against the workspace root. If both code and filename are provided, code will be ignored."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_take_screenshot",
+      "title": "Take a screenshot",
+      "description": "Take a screenshot of the current page. You can't perform actions based on the screenshot, use browser_snapshot for actions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "element": {
+            "type": "string",
+            "description": "Human-readable element description used to obtain permission to interact with the element"
+          },
+          "target": {
+            "type": "string",
+            "description": "Exact target element reference from the page snapshot, or a unique element selector"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "png",
+              "jpeg",
+              "webp"
+            ],
+            "description": "Image format for the screenshot. If unset, inferred from the filename extension, otherwise png."
+          },
+          "filename": {
+            "type": "string",
+            "description": "File name to save the screenshot to. Relative file names are resolved against the workspace root. If not specified, the screenshot is saved into the output directory as `page-{timestamp}.{png|jpeg|webp}`."
+          },
+          "fullPage": {
+            "type": "boolean",
+            "description": "When true, takes a screenshot of the full scrollable page, instead of the currently visible viewport. Cannot be used with element screenshots."
+          },
+          "scale": {
+            "type": "string",
+            "enum": [
+              "css",
+              "device"
+            ],
+            "default": "css",
+            "description": "Image resolution scale. \"css\" produces a screenshot sized in CSS pixels (smaller, consistent across devices). \"device\" produces a high-resolution screenshot using device pixels (larger, accounts for the device pixel ratio). Default is css."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_snapshot",
+      "title": "Page snapshot",
+      "description": "Capture accessibility snapshot of the current page, this is better than screenshot",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target": {
+            "type": "string",
+            "description": "Exact target element reference from the page snapshot, or a unique element selector"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Save snapshot to a file instead of returning it in the response. Relative file names are resolved against the workspace root."
+          },
+          "depth": {
+            "type": "number",
+            "description": "Limit the depth of the snapshot tree"
+          },
+          "boxes": {
+            "type": "boolean",
+            "description": "Include each element's bounding box as [box=x,y,width,height] in the snapshot. Coordinates are viewport-relative, in CSS pixels (Element.getBoundingClientRect)"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_click",
+      "title": "Click",
+      "description": "Perform click on a web page",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "element": {
+            "type": "string",
+            "description": "Human-readable element description used to obtain permission to interact with the element"
+          },
+          "target": {
+            "type": "string",
+            "description": "Exact target element reference from the page snapshot, or a unique element selector"
+          },
+          "doubleClick": {
+            "type": "boolean",
+            "description": "Whether to perform a double click instead of a single click"
+          },
+          "button": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right",
+              "middle"
+            ],
+            "description": "Button to click, defaults to left"
+          },
+          "modifiers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Alt",
+                "Control",
+                "ControlOrMeta",
+                "Meta",
+                "Shift"
+              ]
+            },
+            "description": "Modifier keys to press"
+          }
+        },
+        "required": [
+          "target"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_drag",
+      "title": "Drag mouse",
+      "description": "Perform drag and drop between two elements",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "startElement": {
+            "type": "string",
+            "description": "Human-readable source element description used to obtain the permission to interact with the element"
+          },
+          "startTarget": {
+            "type": "string",
+            "description": "Exact target element reference from the page snapshot, or a unique element selector"
+          },
+          "endElement": {
+            "type": "string",
+            "description": "Human-readable target element description used to obtain the permission to interact with the element"
+          },
+          "endTarget": {
+            "type": "string",
+            "description": "Exact target element reference from the page snapshot, or a unique element selector"
+          }
+        },
+        "required": [
+          "startTarget",
+          "endTarget"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_hover",
+      "title": "Hover mouse",
+      "description": "Hover over element on page",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "element": {
+            "type": "string",
+            "description": "Human-readable element description used to obtain permission to interact with the element"
+          },
+          "target": {
+            "type": "string",
+            "description": "Exact target element reference from the page snapshot, or a unique element selector"
+          }
+        },
+        "required": [
+          "target"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_select_option",
+      "title": "Select option",
+      "description": "Select an option in a dropdown",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "element": {
+            "type": "string",
+            "description": "Human-readable element description used to obtain permission to interact with the element"
+          },
+          "target": {
+            "type": "string",
+            "description": "Exact target element reference from the page snapshot, or a unique element selector"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of values to select in the dropdown. This can be a single value or multiple values."
+          }
+        },
+        "required": [
+          "target",
+          "values"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_generate_locator",
+      "title": "Create locator for element",
+      "description": "Generate locator for the given element to use in tests",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "element": {
+            "type": "string",
+            "description": "Human-readable element description used to obtain permission to interact with the element"
+          },
+          "target": {
+            "type": "string",
+            "description": "Exact target element reference from the page snapshot, or a unique element selector"
+          }
+        },
+        "required": [
+          "target"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_storage_state",
+      "title": "Save storage state",
+      "description": "Save storage state (cookies, local storage) to a file for later reuse",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "description": "File name to save the storage state to. Relative file names are resolved against the workspace root. If not specified, the storage state is saved into the output directory as `storage-state-{timestamp}.json`."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_set_storage_state",
+      "title": "Restore storage state",
+      "description": "Restore storage state (cookies, local storage) from a file. This clears existing cookies and local storage before restoring.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "description": "Path to the storage state file to restore from. Relative file names are resolved against the workspace root."
+          }
+        },
+        "required": [
+          "filename"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_tabs",
+      "title": "Manage tabs",
+      "description": "List, create, close, or select a browser tab.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "list",
+              "new",
+              "close",
+              "select"
+            ],
+            "description": "Operation to perform"
+          },
+          "index": {
+            "type": "number",
+            "description": "Tab index, used for close/select. If omitted for close, current tab is closed."
+          },
+          "url": {
+            "type": "string",
+            "description": "URL to navigate to in the new tab, used for new."
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_start_tracing",
+      "title": "Start tracing",
+      "description": "Start trace recording",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_stop_tracing",
+      "title": "Stop tracing",
+      "description": "Stop trace recording",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_verify_element_visible",
+      "title": "Verify element visible",
+      "description": "Verify element is visible on the page",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "description": "ROLE of the element. Can be found in the snapshot like this: `- {ROLE} \"Accessible Name\":`"
+          },
+          "accessibleName": {
+            "type": "string",
+            "description": "ACCESSIBLE_NAME of the element. Can be found in the snapshot like this: `- role \"{ACCESSIBLE_NAME}\"`"
+          }
+        },
+        "required": [
+          "role",
+          "accessibleName"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_verify_text_visible",
+      "title": "Verify text visible",
+      "description": "Verify text is visible on the page. Prefer browser_verify_element_visible if possible.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "TEXT to verify. Can be found in the snapshot like this: `- role \"Accessible Name\": {TEXT}` or like this: `- text: {TEXT}`"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_verify_list_visible",
+      "title": "Verify list visible",
+      "description": "Verify list is visible on the page",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "element": {
+            "type": "string",
+            "description": "Human-readable list description"
+          },
+          "target": {
+            "type": "string",
+            "description": "Exact target element reference that points to the list"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Items to verify"
+          }
+        },
+        "required": [
+          "element",
+          "target",
+          "items"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_verify_value",
+      "title": "Verify value",
+      "description": "Verify element value",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "textbox",
+              "checkbox",
+              "radio",
+              "combobox",
+              "slider"
+            ],
+            "description": "Type of the element"
+          },
+          "element": {
+            "type": "string",
+            "description": "Human-readable element description"
+          },
+          "target": {
+            "type": "string",
+            "description": "Exact target element reference from the page snapshot"
+          },
+          "value": {
+            "type": "string",
+            "description": "Value to verify. For checkbox, use \"true\" or \"false\"."
+          }
+        },
+        "required": [
+          "type",
+          "element",
+          "target",
+          "value"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_start_video",
+      "title": "Start video",
+      "description": "Start video recording",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "description": "File name to save the video to. Relative file names are resolved against the workspace root. If not specified, the video is saved into the output directory as `video-{timestamp}.webm`."
+          },
+          "size": {
+            "type": "object",
+            "properties": {
+              "width": {
+                "type": "number",
+                "description": "Video width"
+              },
+              "height": {
+                "type": "number",
+                "description": "Video height"
+              }
+            },
+            "required": [
+              "width",
+              "height"
+            ],
+            "additionalProperties": false,
+            "description": "Video size"
+          },
+          "fps": {
+            "type": "number",
+            "description": "Video frame rate in frames per second, defaults to 25"
+          },
+          "cursor": {
+            "type": "boolean",
+            "description": "Render an animated mouse cursor that travels to each action point. Paces actions by 800ms so that the cursor has time to travel."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_stop_video",
+      "title": "Stop video",
+      "description": "Stop video recording",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_video_chapter",
+      "title": "Video chapter",
+      "description": "Add a chapter marker to the video recording. Shows a full-screen chapter card with blurred backdrop.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Chapter title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Chapter description"
+          },
+          "duration": {
+            "type": "number",
+            "description": "Duration in milliseconds to show the chapter card"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_video_show_actions",
+      "title": "Show action overlays",
+      "description": "Annotate subsequent actions performed on the page with a callout that names the action and, when styled, marks the action point and highlights the target element. Useful while video recording or screencasting.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "duration": {
+            "type": "number",
+            "description": "How long each action annotation stays on screen, in milliseconds. Defaults to 500."
+          },
+          "position": {
+            "type": "string",
+            "enum": [
+              "top-left",
+              "top",
+              "top-right",
+              "bottom-left",
+              "bottom",
+              "bottom-right"
+            ],
+            "description": "Where to place the action title relative to the page. Defaults to top-right."
+          },
+          "cursor": {
+            "type": "string",
+            "enum": [
+              "none",
+              "pointer"
+            ],
+            "description": "Cursor decoration for pointer actions. \"pointer\" (default) animates a mouse pointer from the previous action point to the next one; \"none\" disables the cursor decoration."
+          },
+          "style": {
+            "type": "object",
+            "properties": {
+              "point": {
+                "type": "string",
+                "description": "CSS declarations for the zero-sized marker centered on the action point, e.g. \"width: 20px; height: 20px; border-radius: 50%; background: red\". Not shown when omitted."
+              },
+              "highlight": {
+                "type": "string",
+                "description": "CSS declarations for the box that covers the target element, e.g. \"outline: 2px solid #333\". Not shown when omitted."
+              },
+              "title": {
+                "type": "string",
+                "description": "CSS declarations for the action title, e.g. \"font-size: 16px\"."
+              }
+            },
+            "additionalProperties": false,
+            "description": "Styles of the action decorations."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_video_hide_actions",
+      "title": "Hide action overlays",
+      "description": "Stop annotating actions performed on the page.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_wait_for",
+      "title": "Wait for",
+      "description": "Wait for text to appear or disappear or a specified time to pass",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "time": {
+            "type": "number",
+            "description": "The time to wait in seconds, at most 30"
+          },
+          "text": {
+            "type": "string",
+            "description": "The text to wait for"
+          },
+          "textGone": {
+            "type": "string",
+            "description": "The text to wait for to disappear"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_localstorage_list",
+      "title": "List localStorage",
+      "description": "List all localStorage key-value pairs",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_localstorage_get",
+      "title": "Get localStorage item",
+      "description": "Get a localStorage item by key",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Key to get"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_localstorage_set",
+      "title": "Set localStorage item",
+      "description": "Set a localStorage item",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Key to set"
+          },
+          "value": {
+            "type": "string",
+            "description": "Value to set"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_localstorage_delete",
+      "title": "Delete localStorage item",
+      "description": "Delete a localStorage item",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Key to delete"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_localstorage_clear",
+      "title": "Clear localStorage",
+      "description": "Clear all localStorage",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_sessionstorage_list",
+      "title": "List sessionStorage",
+      "description": "List all sessionStorage key-value pairs",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_sessionstorage_get",
+      "title": "Get sessionStorage item",
+      "description": "Get a sessionStorage item by key",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Key to get"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_sessionstorage_set",
+      "title": "Set sessionStorage item",
+      "description": "Set a sessionStorage item",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Key to set"
+          },
+          "value": {
+            "type": "string",
+            "description": "Value to set"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_sessionstorage_delete",
+      "title": "Delete sessionStorage item",
+      "description": "Delete a sessionStorage item",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Key to delete"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "browser_sessionstorage_clear",
+      "title": "Clear sessionStorage",
+      "description": "Clear all sessionStorage",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    }
+  ]
+}
