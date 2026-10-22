@@ -4,7 +4,60 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-10-23
+
+The first release since 4.1.5. For an integrator it changes three things at
+runtime: the Claude Code guard reads what a tool returned instead of what it
+was given, rules written for `context_window` and `skill_*` events now run on
+the events their data arrives in, and a match that a model decided is
+reported instead of enforced unless the integrator opts in. `atr scan` now
+scans an MCP config file it used to skip. Many rule conditions that took
+quadratic time on long input were rewritten, and three rules left the enforce
+lane after matching benign samples. Like 4.1.5, the npm package carries the
+rules without their test samples; the repository keeps them.
+
+Default behaviour that changes, and how to keep the old one:
+
+- Model-decided matches are advisory. A match from a semantic rule's judge
+  that its own pattern fallback does not corroborate, from the embedding
+  module or from the semantic layer is listed in `verdict.advisory` and no
+  longer sets the verdict's outcome or dispatches more than observe-tier
+  actions. To keep the old behaviour pass `modelDecisions: 'enforce'` to
+  `ATREngine` or `computeVerdict()`, or use `--model-decisions enforce` or
+  `ATR_MODEL_DECISIONS=enforce` with `atr scan` and `atr mcp`. Integrations
+  that wire no model, including `atr guard` and the bundled adapters, see no
+  change (#720).
+- More of what an agent sees reaches the rules. A guard registered under
+  Claude Code's PostToolUse now scans the tool's output, where it used to scan
+  the tool's input; registering it under PostToolUseFailure as well also scans
+  failed calls (#715, #721). Rules of type `context_window` and `skill_*` now
+  run on typed runtime events in the hunt lane (#701). Both raise matches in
+  the hunt lane, the engine default, including on benign text (measured
+  figures under Fixed below); neither moves the enforce lane. There is no
+  switch back. An integration that blocks on PostToolUse should block on the
+  enforce lane (`lane: 'enforce'`).
+- ATR-2026-00080, -00436 and -01606 moved from maturity `stable` to `test`
+  after matching benign samples in the grown corpus (#625). They still alert;
+  an integration that blocks only in the enforce lane no longer blocks on
+  them.
+- `atr scan` on an MCP config file scans one event per server and exits
+  non-zero when nothing in the file could be scanned (#581, by @ciceroyang).
+  A CI step that ran `atr scan` on a config file and always passed may now
+  fail. Scanning a directory that holds only an MCP config is not fixed yet
+  (#575).
+
+Under SPEC §10 this is a minor release: the rule format, identifier scheme and
+Match output are unchanged. SPEC.md moves to 1.0.1, a [Compatible] correction
+of §6.4 (#699).
+
 ### Added
+
+- **New rules, all at maturity `test`** (hunt and alert lanes, not the
+  enforce lane): ATR-2026-02815, -02817 and -02820 (#612); -02858, -02859 and
+  -02860, technique rules for llm-guard samples lost to earlier FP repairs
+  (#668); -02855, -02861 and -02862 from the FN-mine sweeps (#650, #671);
+  -02864, -02865, -02866, -02867 and -02868 from agent-related CVEs published
+  2026-09-22 to 2026-10-21 (#730, #731).
 
 - **The category registry as Gemara catalogs, generated and published from
   here.** `spec/category-registry/gemara/` holds a vector, capability, threat
@@ -105,6 +158,14 @@ All notable changes to ATR will be documented in this file.
   measurement file.
 
 ### Changed
+
+- **Three rules left the enforce lane.** ATR-2026-00080, -00436 and -01606
+  each matched benign samples in the grown corpus and were demoted from
+  maturity `stable` to `test` (#625). ATR-2026-00233, a duplicate of another
+  rule, is deprecated (#666).
+- **Six rules follow MITRE ATLAS v2026.07.** AML.T0019 and AML.T0104, retired
+  into AML.T0115 as sub-techniques, are replaced by AML.T0115.000 and
+  AML.T0115.002 in the rules' `references.mitre_atlas` (#543).
 
 - **A match a model decided is reported, not enforced, unless the integrator
   opts in.** Three engine paths turn a model's output into a match: a semantic
@@ -235,6 +296,30 @@ All notable changes to ATR will be documented in this file.
   block, a 3.5.11 figure nothing has written since #600 and nothing reads.
 
 ### Fixed
+
+- **`atr scan` scans an MCP config file instead of skipping it.** The file was
+  parsed, wrapped as one event without `content` and skipped, while the
+  summary counted it as scanned, so a config that sets `NODE_OPTIONS` to a
+  `require` payload came back as no threats. Each server in the document is
+  now its own event, `events_scanned` counts what reached the engine beside
+  `events_skipped`, and a file with nothing scannable exits non-zero (#581,
+  by @ciceroyang; issue #575, where directory scans and the Action's exit
+  handling remain open).
+
+- **Rule conditions that took polynomial time on long input were
+  rewritten.** 86 conditions in 48 rules found by the extended ReDoS gate
+  (#704), eight conditions quadratic in a long run of one character (#723),
+  and ATR-2026-00063 and -00228 (#666). The rewrites keep the language of
+  each condition, except four deliberate changes in #704:
+  ATR-2026-00446 condition 0 widens, and ATR-2026-01005 condition 1 and
+  ATR-2026-01307 conditions 0 and 1 narrow. Conditions still over the gate's
+  budget stay listed in `data/redos-baseline.json`.
+- **Rule false positives.** ATR-2026-00012 matched 1,817 of 14,157 benign
+  samples and now matches 150, with every match of the new version also a
+  match of the old one (#683). ATR-2026-02010 no longer matches blank or
+  whitespace-only input (#704). ATR-2026-00013 also flags apex
+  loopback-wildcard domains (CVE-2026-55096) and its IPv6 condition matches
+  IPv4-mapped obfuscation only (#732, #733).
 
 - **On Claude Code, the guard scans what a tool returned on PostToolUse.**
   Claude Code sends a tool's output at the top level of the PostToolUse hook
