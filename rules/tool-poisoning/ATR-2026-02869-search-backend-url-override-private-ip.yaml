@@ -1,0 +1,291 @@
+title: "Search / Provider Backend URL Override Pointed at a Private or Link-Local IPv4 Address"
+id: ATR-2026-02869
+rule_version: 1
+status: experimental
+description: >
+  Detects an agent tool call in which an endpoint-OVERRIDE argument - a
+  parameter that tells a search tool which search backend to query, such as
+  searxng_url, searx_url, search_url, search_api_url, search_engine_url or
+  search_backend_endpoint - is set to a quoted http(s) URL whose host
+  is a literal RFC 1918 private IPv4 address (10/8, 172.16/12, 192.168/16) or a
+  link-local address (169.254/16), on ANY port and ANY path. Only the two
+  shapes in which an agent actually passes a tool argument are matched: a
+  quoted JSON key ("searxng_url": "http://...", including the backslash-escaped
+  form inside a nested JSON string) and a Python-style keyword argument inside a
+  call (..., searxng_url="http://..."). Unquoted .env / docker-compose lines
+  (SEARXNG_URL=http://...) and bare assignments are not tool arguments and are
+  deliberately not matched.
+
+  This is the shape reported as CVE-2026-57143 (GHSA-4pcv-mg8v-vrgf) against
+  PraisonAI praisonaiagents before 1.6.62: the searxng_search tool and the
+  search_web SearxNG provider passed the LLM-controlled searxng_url argument
+  straight to requests.get. Prompt-injected content can therefore re-point the
+  agent's default search tool at internal JSON services, use the difference
+  between open and closed internal ports as a port scanner, and reach cloud
+  metadata, with the JSON response flowing back into agent context. The fix
+  (commit 2a855c4) added url_safety.validate_searxng_url, which rejects private
+  and metadata addresses but deliberately still allows localhost / 127.0.0.1 /
+  ::1 because the default SearxNG deployment is http://localhost:32768/search.
+
+  Why this rule is separate from ATR-2026-01606. 01606 watches generic fetch
+  arguments (url, endpoint, uri) and, to stay quiet on homelab and intranet
+  browsing, only fires when the private-IP URL also carries a sensitive path
+  (admin, _cat, metadata, ...) or a well-known datastore port. The CVE's
+  port-probing form - http://10.0.0.1/search, http://10.0.0.1:22/,
+  http://192.168.0.10:8080/search - satisfies neither and was measured to hit
+  zero rules on origin/main. This rule closes that gap by keying on the
+  PARAMETER ROLE instead of the path: a value that re-targets a tool's backend
+  provider is not a page the user asked to browse, so any private address in it
+  is suspicious regardless of port or path.
+
+  Scope and limits (honest). Loopback (localhost, 127.0.0.0/8, ::1) is
+  intentionally NOT matched, mirroring the upstream fix, so a local SearxNG or
+  local model server stays clean - the cost is that loopback-hosted internal
+  services reached through this parameter are invisible to this rule. Only
+  dotted-quad IPv4 literals are matched: internal hostnames
+  (search.corp.internal), DNS-rebinding names, IPv6 ULA and decimal / hex /
+  octal IP encodings are out of scope here and are partly covered by
+  ATR-2026-00013 and ATR-2026-02351. Generic url / endpoint keys are left to
+  ATR-2026-01606. Host-suffixed keys (searx_host, search_host) and the bare
+  search_endpoint key were measured OUT: they are the LangChain
+  SearxSearchWrapper constructor argument and the usual Elasticsearch /
+  OpenSearch / Azure AI Search cluster setting, where a private address is the
+  normal deployment, so a coding agent writing such config would false-alarm.
+  Model-provider base_url / api_base overrides were measured
+  OUT: a self-hosted model server on a private IP passed as base_url is an
+  ordinary enterprise pattern (it is a true negative of ATR-2026-02262), so the
+  same redirection primitive on those keys is not covered here. An agent deployed inside a private network whose tools are
+  legitimately told, per call, to use an internal search or model backend at a
+  private IP will match; such deployments should allowlist the known backend.
+
+  CWE-918 (Server-Side Request Forgery), CWE-20 (Improper Input Validation).
+author: "ATR Community (CVE sync)"
+date: "2026/10/22"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-57143"
+  ghsa:
+    - "GHSA-4pcv-mg8v-vrgf"
+  cwe:
+    - "CWE-918"
+    - "CWE-20"
+  owasp_llm:
+    - "LLM06:2025"
+    - "LLM03:2025"
+  owasp_agentic:
+    - "ASI02:2026"
+  mitre_atlas:
+    - "AML.T0053 - LLM Plugin Compromise"
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1090 - Proxy"
+    - "T1046 - Network Service Discovery"
+    - "T1552.005 - Unsecured Credentials: Cloud Instance Metadata API"
+  external:
+    - "https://github.com/MervinPraison/PraisonAI/security/advisories/GHSA-4pcv-mg8v-vrgf"
+    - "https://github.com/MervinPraison/PraisonAI/commit/2a855c470077c7d2e2479a575f7ef7f548d51c33"
+    - "https://github.com/MervinPraison/PraisonAI/releases/tag/v4.6.62"
+
+metadata_provenance:
+  cve: human-reviewed
+  ghsa: human-reviewed
+  cwe: nvd-sync
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_atlas: human-reviewed
+  mitre_attack: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 requires robustness and cybersecurity against attempts to alter an AI system's use by exploiting its vulnerabilities. A prompt-injected backend-URL override turns the agent's own search tool into an internal port scanner and metadata client; this rule provides detection evidence supporting the Article 15 cybersecurity obligation at the tool-call boundary while the tool remains unpatched."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management must identify foreseeable misuse of the tools an agent can reach. An LLM-controllable endpoint parameter is such a risk; alerts from this rule provide detection evidence supporting the Article 9 risk register entry for that tool surface."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "MS.2.7 requires AI system security and resilience to be evaluated and documented. Inspecting backend-override arguments for private and link-local targets is a measurable per-invocation control over SSRF through agent tools."
+      strength: primary
+    - function: Manage
+      subcategory: "MG.3.2"
+      context: "MG.3.2 covers monitoring of third-party AI components in operation. Agent framework tool packages such as a bundled search tool are third-party components whose input validation the deployer cannot audit at scale; runtime monitoring of their endpoint arguments is the compensating control."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational planning and control applies to each tool invocation made by the AI system. This rule is the operational control that flags a backend override aimed at internal address space before the request leaves the agent."
+      strength: primary
+    - clause: "8.3"
+      context: "Clause 8.3 AI risk treatment requires controls proportionate to identified risks. Because one injected URL yields internal reconnaissance and cloud-credential exposure, per-argument inspection of endpoint overrides is a proportionate treatment."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: ssrf-backend-endpoint-override
+  scan_target: tool_args
+  confidence: medium
+  source: cve-disclosure
+  vendor_sources: praisonai-cve-2026-57143
+
+agent_source:
+  type: tool_call
+  framework:
+    - praisonai
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "An agent running inside a private network whose tool calls legitimately pass an internal search, retrieval or model backend at a private IPv4 address (for example a self-hosted SearxNG at http://10.20.0.5:8080). The rule cannot tell an authorised internal backend from an injected one; deployments with a fixed internal backend should allowlist that host."
+    - "CVE reproductions and security test suites that pass a private-IP searxng_url on purpose will match, which is intended for a detection corpus."
+    - "Documentation, JSON config files or PraisonAI code that contain a literal quoted JSON pair or call kwarg such as \"searxng_url\": \"http://192.168.1.10/\" or searxng_search(q, searxng_url=\"http://192.168.1.10/\") will match when a coding agent writes them as tool arguments; this text is indistinguishable from the attack call itself. Measured: unquoted .env / docker-compose lines (SEARXNG_URL=http://192.168.1.100:8080), quoted .env assignments at line start, the LangChain SearxSearchWrapper(searx_host=...) argument and Elasticsearch / OpenSearch / Azure AI Search search_host / search_endpoint settings on private IPs do NOT match (they are test-case true negatives)."
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: '(?:\\?["''](?:searx(?:ng)?[_-]?(?:base[_-]?)?(?:url|uri|endpoint)|search[_-]?(?:(?:engine|backend|provider|api)[_-]?)?(?:base[_-]?)?(?:url|uri)|search[_-]?(?:engine|backend|provider)[_-]?endpoint)\\?["'']\s{0,3}:|[(,](?:\s|\\[nrt]){0,12}(?:searx(?:ng)?[_-]?(?:base[_-]?)?(?:url|uri|endpoint)|search[_-]?(?:(?:engine|backend|provider|api)[_-]?)?(?:base[_-]?)?(?:url|uri)|search[_-]?(?:engine|backend|provider)[_-]?endpoint)\s{0,3}=)\s{0,3}\\?["'']https?:(?:\\?/){2}(?:[^\s"''/@\\]{1,64}@)?(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3})\.?(?:[:/?#"''\\]|$)'
+      description: "A search-backend endpoint-override argument (searxng_url, searx_url, search_url, search_api_url, search_engine_url, search_backend_endpoint, search_base_url, ...) is passed as a quoted JSON key or a call keyword argument whose quoted http(s) URL host is a private RFC 1918 or link-local IPv4 literal (optionally with a trailing FQDN dot), on any port and path"
+
+response:
+  actions:
+    - alert
+    - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): no FP measurement on the
+    65K benign corpus yet; ceiling = observe. Detection is advisory until measured.
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-02869] HIGH: a tool's backend-endpoint override argument points at a
+    private or link-local IPv4 address. This is the CVE-2026-57143 (PraisonAI
+    searxng_url) SSRF shape: prompt-injected content re-targets the agent's search
+    or provider client at internal services, probing ports or reaching cloud
+    metadata. Verify the endpoint is an approved internal backend before allowing
+    the call.
+
+confidence: 72
+
+test_cases:
+  true_positives:
+    - input: '{"query":"status","searxng_url":"http://10.0.0.1/search"}'
+      expected: triggered
+      description: "Upstream regression test test_searxng_url_blocks_private_ip value - zero rules matched on origin/main"
+    - input: '{"query":"x","searxng_url":"http://10.0.0.1:22/"}'
+      expected: triggered
+      description: "Port probe of internal SSH through the search tool (open/closed port oracle from the advisory)"
+    - input: '{"query":"x","searxng_url":"http://192.168.0.10:8080/search"}'
+      expected: triggered
+      description: "Internal JSON service on an arbitrary port and an innocuous path - outside ATR-2026-01606's sensitive path/port list"
+    - input: '{"query":"test","searxng_url":"http://169.254.169.254/"}'
+      expected: triggered
+      description: "Upstream test_searxng_search_blocks_ssrf value - link-local metadata host (also matched by ATR-2026-00013)"
+    - input: '{"query":"latest news","searxng_url":"http://169.254.169.254/latest/meta-data/"}'
+      expected: triggered
+      description: "Upstream test_searxng_url_blocks_metadata_endpoint value"
+    - input: '{"query":"llm","search_engine_url":"http://172.20.3.4:9000/api"}'
+      expected: triggered
+      description: "Derived variant: different override key spelling, 172.16/12 range, arbitrary port"
+    - input: 'search_web(query="quarterly report", search_backend_url="http://192.168.4.20:5000/")'
+      expected: triggered
+      description: "Derived variant: Python kwarg rendering of the call, alternate search-backend key, arbitrary internal port"
+    - input: '{"code":"searxng_search(\"x\", searxng_url=\"http://10.0.0.1:22/\")"}'
+      expected: triggered
+      description: "Round-1 review miss: kwarg call nested inside a JSON string, so the quotes around the URL are backslash-escaped"
+    - input: '{"query":"x","searxng_url":"http://10.0.0.1.:22/"}'
+      expected: triggered
+      description: "Round-1 review miss: trailing-dot FQDN form of the private IP literal (10.0.0.1.) still resolves to the same internal host"
+    - input: '{"query":"x","search_api_url":"http://10.0.0.1/search"}'
+      expected: triggered
+      description: "Round-1 review miss: search_api_url key-name variant"
+    - input: '{"name":"searxng_search","arguments":"{\"query\":\"x\",\"searxng_url\":\"http://192.168.0.10:8080/search\"}"}'
+      expected: triggered
+      description: "Derived variant: OpenAI-style function call whose arguments are a JSON-encoded string (escaped key and value quotes)"
+    - input: "searxng_search(\n    query=\"status\",\n    searxng_url='http://172.16.0.5:9200/',\n)"
+      expected: triggered
+      description: "Derived variant: multi-line kwarg call with single-quoted URL on a 172.16/12 host"
+  true_negatives:
+    - input: "from langchain_community.utilities import SearxSearchWrapper\nsearch = SearxSearchWrapper(searx_host='http://192.168.1.50:8888')"
+      expected: not_triggered
+      description: "Round-1 review FP: LangChain SearxSearchWrapper constructor on a homelab private IP - searx_host is a config argument, host-suffixed keys are out of scope"
+    - input: "SEARXNG_URL=http://192.168.1.100:8080  # homelab searxng in docker on my NAS"
+      expected: not_triggered
+      description: "Round-1 review FP: unquoted .env line for a self-hosted SearxNG on a private IP"
+    - input: '{"index":"logs","search_host":"http://10.0.0.12:9200","q":"error"}'
+      expected: not_triggered
+      description: "Round-1 review FP: Elasticsearch cluster setting search_host on a private IP"
+    - input: '{"path":".env","content":"SEARXNG_URL=\"http://192.168.1.100:8080\"\nSEARXNG_SECRET=changeme\n"}'
+      expected: not_triggered
+      description: "Domain twin: coding agent writes a quoted .env assignment at line start - not a call keyword argument"
+    - input: '{"path":"docker-compose.yml","content":"services:\n  app:\n    environment:\n      - SEARXNG_URL=http://172.18.0.3:8080\n      - SEARXNG_BASE_URL=http://172.18.0.3:8080/\n"}'
+      expected: not_triggered
+      description: "Domain twin: docker-compose environment list pointing at a SearxNG container on the compose bridge network"
+    - input: "searxng:\n  searxng_url: http://10.10.0.7:8080/search\n  timeout: 10"
+      expected: not_triggered
+      description: "Domain twin: YAML config file with an unquoted key and value"
+    - input: '{"service":"azure-search","search_endpoint":"http://10.1.2.3:443","index":"docs"}'
+      expected: not_triggered
+      description: "Domain twin: Azure AI Search private-endpoint setting - bare search_endpoint is a cluster setting, out of scope"
+    - input: '{"opensearch":{"search_host":"https://192.168.10.5:9200","verify_certs":false}}'
+      expected: not_triggered
+      description: "Domain twin: OpenSearch client setting on a private IP"
+    - input: '{"query":"x","research_url":"http://10.0.0.1/paper.pdf"}'
+      expected: not_triggered
+      description: "Near-miss key: research_url only contains the substring search"
+    - input: '{"query":"x","searxng_url":"http://169.254.1.1.example.com/search"}'
+      expected: not_triggered
+      description: "Near-miss: public hostname whose leading labels look like a link-local IP"
+    - input: '{"query":"AI news","searxng_url":"http://localhost:32768/search"}'
+      expected: not_triggered
+      description: "Benign twin: the default SearxNG deployment, explicitly allowed by the upstream fix (test_searxng_url_allows_localhost)"
+    - input: '{"query":"weather","searxng_url":"http://127.0.0.1:8888/search"}'
+      expected: not_triggered
+      description: "Benign twin: loopback SearxNG on another port - loopback is deliberately out of scope"
+    - input: '{"query":"privacy tools","searxng_url":"https://searx.be/search"}'
+      expected: not_triggered
+      description: "Benign twin: public SearxNG instance"
+    - input: '{"query":"what is 192.168.1.1 used for","searxng_url":"http://localhost:32768/search"}'
+      expected: not_triggered
+      description: "Benign twin: a private IP inside the search query text, backend still local"
+    - input: '{"query":"x","searxng_url":"http://172.32.4.1/search"}'
+      expected: not_triggered
+      description: "Near-miss: 172.32.x.x is public address space just outside 172.16.0.0/12"
+    - input: '{"query":"docs","search_url":"https://10.example.org/search"}'
+      expected: not_triggered
+      description: "Near-miss: a public hostname whose first label is 10"
+    - input: '{"query":"router login","search_url":"https://duckduckgo.com/?q=192.168.0.1"}'
+      expected: not_triggered
+      description: "Near-miss: private IP only inside the query string of a public search URL"
+    - input: '{"url":"http://192.168.1.20/status"}'
+      expected: not_triggered
+      description: "Generic fetch argument to an intranet page with no sensitive path - left to ATR-2026-01606's narrower policy, not an endpoint override"
+    - input: '{"base_url": "http://10.0.5.20:8080/v1", "api_key": "env:PRIVATE_LLM_KEY"}'
+      expected: not_triggered
+      description: "Self-hosted model server on a private IP via base_url - a common legitimate enterprise pattern (also a TN of ATR-2026-02262); model-provider base_url / api_base keys are deliberately out of scope"
+
+evasion_tests:
+  - input: '{"query":"x","searxng_url":"http://search.corp.internal:8080/search"}'
+    expected: not_triggered
+    bypass_technique: internal_hostname
+    notes: "Real bypass: only IP literals are matched; an internal DNS name resolving to private space is invisible at the pattern layer."
+  - input: '{"query":"x","searxng_url":"http://167772161/search"}'
+    expected: not_triggered
+    bypass_technique: decimal_ip_encoding
+    notes: "Real bypass for this rule; decimal/hex encodings of 10.0.0.1 are left to ATR-2026-00013 / ATR-2026-02351."
+  - input: '{"query":"x","searxng_url":"http://127.0.0.1:6379/"}'
+    expected: not_triggered
+    bypass_technique: loopback_service
+    notes: "Accepted gap mirroring the upstream fix: loopback is allowed so the default local SearxNG stays clean."
+  - input: '{"query":"x","searx_host":"http://10.0.0.1:9000"}'
+    expected: not_triggered
+    bypass_technique: host_suffixed_key
+    notes: "Accepted gap: host-suffixed keys were removed because searx_host / search_host are common legitimate config keys (LangChain, Elasticsearch, OpenSearch); a tool exposing such a key to the LLM is not covered."
+  - input: "searxng_url: http://172.31.255.254:5601/app"
+    expected: not_triggered
+    bypass_technique: unquoted_yaml_argument
+    notes: "Accepted gap: unquoted key/value text is the shape of .env / compose / YAML config and is not matched; agent tool arguments are serialised as quoted JSON or kwargs."
