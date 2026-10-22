@@ -1,0 +1,138 @@
+{
+  "tools": [
+    {
+      "name": "workers_list",
+      "description": "List all Workers in your Cloudflare account.\n\nIf you only need details of a single Worker, use workers_get_worker.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "List Workers",
+        "readOnlyHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "workers_get_worker",
+      "description": "Get the details of the Cloudflare Worker.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scriptName": {
+            "type": "string",
+            "description": "The name of the worker script to retrieve"
+          }
+        },
+        "required": [
+          "scriptName"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get Worker details",
+        "readOnlyHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "workers_get_worker_code",
+      "description": "Get the source code of a Cloudflare Worker. Note: This may be a bundled version of the worker.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scriptName": {
+            "type": "string",
+            "description": "The name of the worker script to retrieve"
+          }
+        },
+        "required": [
+          "scriptName"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get Worker code",
+        "readOnlyHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "workers_builds_list_builds",
+      "description": "Use the Workers Builds API to list builds for a Cloudflare Worker.\n\nworkerId is required. Use workers_list to find a Worker's ID when needed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "workerId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The Worker ID to list builds for."
+          },
+          "page": {
+            "type": "number",
+            "default": 1,
+            "description": "The page number to return."
+          },
+          "perPage": {
+            "type": "number",
+            "default": 10,
+            "description": "The number of builds per page."
+          }
+        },
+        "required": [
+          "workerId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "List Worker builds",
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "workers_builds_get_build",
+      "description": "Get details for a specific build by its UUID.\nIncludes build and deploy commands for the build (useful for debugging build failures).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "buildUUID": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The build UUID to get details for."
+          }
+        },
+        "required": [
+          "buildUUID"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get Worker build",
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "workers_builds_get_build_logs",
+      "description": "Get logs for a Cloudflare Workers build by its explicit UUID.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "buildUUID": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The build UUID to get logs for."
+          }
+        },
+        "required": [
+          "buildUUID"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get Worker build logs",
+        "readOnlyHint": true
+      }
+    }
+  ]
+}

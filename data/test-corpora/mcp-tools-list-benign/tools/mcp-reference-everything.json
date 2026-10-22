@@ -1,0 +1,588 @@
+{
+  "tools": [
+    {
+      "name": "echo",
+      "title": "Echo Tool",
+      "description": "Echoes back the input string",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Message to echo"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get-annotated-message",
+      "title": "Get Annotated Message Tool",
+      "description": "Demonstrates how annotations can be used to provide metadata about content.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "messageType": {
+            "type": "string",
+            "enum": [
+              "error",
+              "success",
+              "debug"
+            ],
+            "description": "Type of message to demonstrate different annotation patterns"
+          },
+          "includeImage": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to include an example image"
+          }
+        },
+        "required": [
+          "messageType"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get-env",
+      "title": "Print Environment Tool",
+      "description": "Returns all environment variables, helpful for debugging MCP server configuration",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get-header-params",
+      "title": "Get Header Params Tool",
+      "description": "Returns its region argument and the Mcp-Param-Region HTTP header it arrived in. Demonstrates x-mcp-header (a 2026-07-28 Streamable HTTP client mirrors the argument into the header) and JSON Schema 2020-12 input and output schemas.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "region": {
+            "type": "string",
+            "description": "A region name, e.g. eu-west. Mirrored into the Mcp-Param-Region HTTP header.",
+            "x-mcp-header": "Region"
+          },
+          "repeat": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3,
+            "default": 1,
+            "description": "How many times to repeat the region in the result (1-3)"
+          }
+        },
+        "required": [
+          "region"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get-resource-links",
+      "title": "Get Resource Links Tool",
+      "description": "Returns up to ten resource links that reference different types of resources",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 3,
+            "description": "Number of resource links to return (1-10)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get-resource-reference",
+      "title": "Get Resource Reference Tool",
+      "description": "Returns a resource reference that can be used by MCP clients",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "resourceType": {
+            "type": "string",
+            "enum": [
+              "Text",
+              "Blob"
+            ],
+            "default": "Text"
+          },
+          "resourceId": {
+            "type": "number",
+            "default": 1,
+            "description": "ID of the text resource to fetch"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get-roots-list",
+      "title": "Get Roots List Tool",
+      "description": "Lists the current MCP roots provided by the client. Demonstrates the roots protocol capability even though this server doesn't access files. Deprecated: Roots is deprecated as of protocol version 2026-07-28. The server asks for the roots with a multi-round-trip request on every protocol version.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get-structured-content",
+      "title": "Get Structured Content Tool",
+      "description": "Returns structured content along with an output schema for client data validation",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "enum": [
+              "New York",
+              "Chicago",
+              "Los Angeles"
+            ],
+            "description": "Choose city"
+          }
+        },
+        "required": [
+          "location"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get-sum",
+      "title": "Get Sum Tool",
+      "description": "Returns the sum of two numbers",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": "number",
+            "description": "First number"
+          },
+          "b": {
+            "type": "number",
+            "description": "Second number"
+          }
+        },
+        "required": [
+          "a",
+          "b"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get-tiny-image",
+      "title": "Get Tiny Image Tool",
+      "description": "Returns a tiny MCP logo image.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "gzip-file-as-resource",
+      "title": "GZip File as Resource Tool",
+      "description": "Compresses a single file using gzip compression. Depending upon the selected output type, returns either the compressed data as a gzipped resource or a resource link, allowing it to be downloaded in a subsequent request: during the current session for a 2025-era client, or for ten minutes at a minted URI on protocol version 2026-07-28.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "default": "README.md.gz",
+            "description": "Name of the output file (at most 255 characters)"
+          },
+          "data": {
+            "type": "string",
+            "format": "uri",
+            "default": "https://raw.githubusercontent.com/modelcontextprotocol/servers/refs/heads/main/README.md",
+            "description": "URL or data URI of the file content to compress"
+          },
+          "outputType": {
+            "type": "string",
+            "enum": [
+              "resourceLink",
+              "resource"
+            ],
+            "default": "resourceLink",
+            "description": "How the resulting gzipped file should be returned. 'resourceLink' returns a link to a resource that can be read later, 'resource' returns a full resource object."
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "simulate-research-query",
+      "title": "Simulate Research Query",
+      "description": "Simulates a deep research operation that gathers, analyzes, and synthesizes information. Runs as a task on the io.modelcontextprotocol/tasks extension (protocol version 2026-07-28): the call returns a task handle, and the client polls tasks/get as the task moves through four stages. If 'ambiguous' is true and the client supports elicitation, the task pauses with status input_required until the client answers its clarification request with tasks/update.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "The research topic to investigate (at most 1,000 characters; the task keeps it until it expires)"
+          },
+          "ambiguous": {
+            "type": "boolean",
+            "default": false,
+            "description": "Simulate an ambiguous query that requires clarification (triggers input_required status)"
+          }
+        },
+        "required": [
+          "topic"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "toggle-simulated-logging",
+      "title": "Toggle Simulated Logging",
+      "description": "Toggles simulated, random-leveled logging on or off. Deprecated: 2025-era clients only, since protocol version 2026-07-28 removes logging/setLevel; use trigger-log-messages with a per-request log level instead.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "toggle-subscriber-updates",
+      "title": "Toggle Subscriber Updates",
+      "description": "Toggles simulated resource subscription updates on or off. Deprecated: 2025-era clients only, since protocol version 2026-07-28 removes resources/subscribe; use trigger-resource-update with a subscriptions/listen stream instead.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "trigger-elicitation-request-async",
+      "title": "Trigger Async Elicitation Request Tool",
+      "description": "Runs as a task on the io.modelcontextprotocol/tasks extension (protocol version 2026-07-28) that needs the user's input: the task waits in status input_required, carrying an elicitation request, until the client answers it with tasks/update, then completes with a summary of the answer.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "trigger-elicitation-request",
+      "title": "Trigger Elicitation Request Tool",
+      "description": "Trigger a Request from the Server for User Elicitation",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "trigger-list-changed",
+      "title": "Trigger List Changed Tool",
+      "description": "Sends a notifications/<list>/list_changed for the tool, prompt or resource list. On protocol version 2026-07-28 it is delivered on each subscriptions/listen stream that asked for that list; a 2025-era client receives it unsolicited.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "string",
+            "enum": [
+              "tools",
+              "prompts",
+              "resources"
+            ],
+            "description": "Which list to announce as changed"
+          }
+        },
+        "required": [
+          "list"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "trigger-log-messages",
+      "title": "Trigger Log Messages Tool",
+      "description": "Sends one log message at each logging level during the call. On protocol version 2026-07-28 only the messages at or above the level the request names in _meta (io.modelcontextprotocol/logLevel) are sent, and none if it names no level; a 2025-era client gets those at or above the level it set with logging/setLevel. Deprecated: logging is deprecated as of protocol version 2026-07-28.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "trigger-long-running-operation",
+      "title": "Trigger Long Running Operation Tool",
+      "description": "Demonstrates a long running operation with progress updates.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "duration": {
+            "type": "number",
+            "default": 10,
+            "description": "Duration of the operation in seconds"
+          },
+          "steps": {
+            "type": "number",
+            "default": 5,
+            "description": "Number of steps in the operation"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "trigger-multi-step-elicitation",
+      "title": "Trigger Multi-Step Elicitation Tool",
+      "description": "Asks the user for their name, then for a favorite color addressed to them by that name, carrying the first answer to the second round in requestState. Demonstrates multi-round-trip requests (input_required) and requestState on protocol version 2026-07-28; 2025-era clients get the same flow as elicitation requests.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "trigger-resource-update",
+      "title": "Trigger Resource Update Tool",
+      "description": "Sends a notifications/resources/updated for a resource URI. On protocol version 2026-07-28 it is delivered on each subscriptions/listen stream whose resourceSubscriptions name the URI; a 2025-era client receives it once it has called resources/subscribe for the URI.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "uri": {
+            "type": "string",
+            "description": "The URI of the resource to announce as updated, e.g. demo://resource/dynamic/text/1"
+          }
+        },
+        "required": [
+          "uri"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "trigger-sampling-request-async",
+      "title": "Trigger Async Sampling Request Tool",
+      "description": "Runs as a task on the io.modelcontextprotocol/tasks extension (protocol version 2026-07-28) that needs an LLM completion: the task waits in status input_required, carrying a sampling request, until the client answers it with tasks/update, then completes with the result. Deprecated: Sampling is deprecated as of protocol version 2026-07-28.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "maxLength": 10000,
+            "description": "The prompt to send to the LLM (at most 10,000 characters; the task keeps it until it expires)"
+          },
+          "maxTokens": {
+            "type": "number",
+            "default": 100,
+            "description": "Maximum number of tokens to generate"
+          }
+        },
+        "required": [
+          "prompt"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "trigger-sampling-request",
+      "title": "Trigger Sampling Request Tool",
+      "description": "Trigger a Request from the Server for LLM Sampling. Deprecated: Sampling is deprecated as of protocol version 2026-07-28. The server asks with a multi-round-trip request on every protocol version.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "The prompt to send to the LLM"
+          },
+          "maxTokens": {
+            "type": "number",
+            "default": 100,
+            "description": "Maximum number of tokens to generate"
+          }
+        },
+        "required": [
+          "prompt"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "trigger-url-elicitation",
+      "title": "Trigger URL Elicitation Tool",
+      "description": "Trigger a URL elicitation so the client can direct the user to a browser flow. Supports two mechanisms: the request path (elicitation/create, default) which awaits the user's response, and the error path (UrlElicitationRequiredError, -32042) which signals the client to handle URL elicitation via the error response. Set errorPath=true to use the error path. On protocol version 2026-07-28 the server instead returns the URL elicitation in-band (input_required).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URL the user should open"
+          },
+          "message": {
+            "type": "string",
+            "default": "Please open the link to complete this action.",
+            "description": "Message shown to the user before opening the URL"
+          },
+          "elicitationId": {
+            "type": "string",
+            "description": "Optional explicit elicitation ID. Defaults to a random UUID. 2025-era clients only: the 2026-07-28 in-band request carries no elicitation ID."
+          },
+          "errorPath": {
+            "type": "boolean",
+            "default": false,
+            "description": "Controls which elicitation mechanism is used. When false (default), sends an elicitation/create request (request path). When true, throws a UrlElicitationRequiredError (MCP error code -32042) so the client handles the URL elicitation via the error path rather than waiting for a response. To clear the error, satisfy the prerequisite and retry this call with the same arguments; the retry ignores errorPath and proceeds, so the client does not loop on the same error. 2025-era clients only: protocol version 2026-07-28 has no -32042 error, so there both settings use the in-band input_required flow."
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    }
+  ]
+}
