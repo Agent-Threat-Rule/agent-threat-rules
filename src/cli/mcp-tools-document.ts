@@ -30,9 +30,30 @@ function isObject(value: unknown): value is JsonObject {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
+/** Event types an AgentEvent carries (src/types.ts AgentEvent['type']). */
+const EVENT_TYPES: ReadonlySet<string> = new Set([
+  'llm_input',
+  'llm_output',
+  'tool_call',
+  'tool_response',
+  'mcp_exchange',
+  'agent_behavior',
+  'multi_agent_message',
+]);
+
+/**
+ * An object that is already an event: string `content`, or a `type` that is an event type. Such an
+ * object stays on the event path even when it also carries a `tools` array (an LLM request logged
+ * with its tool list, for example): reading it as a tools/list document would drop its content.
+ */
+function looksLikeEvent(doc: JsonObject): boolean {
+  return typeof doc['content'] === 'string' || (typeof doc['type'] === 'string' && EVENT_TYPES.has(doc['type']));
+}
+
 /** The tools array of a `tools/list` result, bare or inside a JSON-RPC envelope; else null. */
 function toolsArrayOf(doc: unknown): unknown[] | null {
   if (!isObject(doc)) return null;
+  if (looksLikeEvent(doc)) return null;
   if (Array.isArray(doc['tools'])) return doc['tools'];
   const result = doc['result'];
   if (isObject(result) && Array.isArray(result['tools'])) return result['tools'];
@@ -62,7 +83,8 @@ export function toolDefinitionToEvent(tool: JsonObject, timestamp: string): Agen
  * non-empty JSON array whose every element is one of those (a log of several responses).
  * A document that lists no tools yields an empty array, so the caller reports that nothing
  * was scanned instead of a clean result. A tools entry that is not an object yields an event
- * with no content, which the caller counts as skipped.
+ * with no content, which the caller counts as skipped. An object that is already an event (string
+ * content, or an event type) is never read as a tools/list document, tools array or not.
  */
 export function toolsDocumentToEvents(parsed: unknown): AgentEvent[] | null {
   const documents = Array.isArray(parsed) ? parsed : [parsed];

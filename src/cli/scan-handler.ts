@@ -284,14 +284,29 @@ async function scanMcpEvents(
   } else if (eventsSkipped > 0) {
     console.error(`${DIM}Warning: ${eventsSkipped} event(s) had no content and were not scanned${RESET}`);
   }
+  // On a tools/list document some rules do not run (src/tool-definition-scope.ts): say so, and how
+  // many, so "not run" cannot read as "ran and found nothing"; and name the tool of each result.
+  const scope = engine.getToolDefinitionScope();
+  const scopeReport = scope
+    ? { tool_definition_scope: true, rules_evaluated: scope.rulesEvaluated, rules_skipped_by_scope: scope.rulesSkippedByScope }
+    : {};
+  const toolNameOf = (event: AgentEvent): string | undefined =>
+    toolDefinitions ? event.fields?.['tool_name'] : undefined;
+
   if (options.sarif) {
-    const sarifResults: ScanResult[] = allResults.map(({ result, filtered }) => ({
-      ...result,
-      matches: filtered,
-      threat_count: filtered.length,
-    }));
+    const toolNames = new Map<ScanResult, string>();
+    const sarifResults: ScanResult[] = allResults.map(({ event, result, filtered }) => {
+      const scoped = { ...result, matches: filtered, threat_count: filtered.length };
+      const name = toolNameOf(event);
+      if (name !== undefined) toolNames.set(scoped, name);
+      return scoped;
+    });
     const version = process.env['npm_package_version'] ?? '1.0.0';
-    console.log(JSON.stringify(scanResultToSARIF(sarifResults, version, { heldBack }), null, 2));
+    console.log(JSON.stringify(scanResultToSARIF(sarifResults, version, {
+      heldBack,
+      ...(scope ? { runProperties: scopeReport } : {}),
+      resultProperties: (r) => (toolNames.has(r) ? { tool_name: toolNames.get(r) } : undefined),
+    }), null, 2));
     return eventsEvaluated === 0 ? 1 : failHits;
   }
 
@@ -302,20 +317,28 @@ async function scanMcpEvents(
       events_skipped: eventsSkipped,
       threats_detected: totalThreats,
       rules_loaded: engine.getRuleCount(),
-      results: allResults.map(({ event, result, filtered }) => ({
-        content_hash: result.content_hash,
-        event: {
-          type: event.type,
-          timestamp: event.timestamp,
-          content_preview: event.content.slice(0, 100),
-        },
-        matches: filtered.map((m) => formatMatchJson(m, heldBack(m))),
-      })),
+      ...scopeReport,
+      results: allResults.map(({ event, result, filtered }) => {
+        const toolName = toolNameOf(event);
+        return {
+          content_hash: result.content_hash,
+          event: {
+            type: event.type,
+            timestamp: event.timestamp,
+            ...(toolName !== undefined ? { tool_name: toolName } : {}),
+            content_preview: event.content.slice(0, 100),
+          },
+          matches: filtered.map((m) => formatMatchJson(m, heldBack(m))),
+        };
+      }),
     }, null, 2));
     return eventsEvaluated === 0 ? 1 : failHits;
   }
 
   printScanHeader('MCP', eventsEvaluated, engine.getRuleCount(), totalThreats);
+  if (scope) {
+    console.log(`${DIM}  Tool definitions: ${scope.rulesSkippedByScope} rule(s) written for a tool being called were not run; ${scope.rulesEvaluated} were.${RESET}\n`);
+  }
 
   if (totalThreats === 0) {
     console.log(eventsEvaluated === 0
@@ -326,7 +349,8 @@ async function scanMcpEvents(
 
   for (const { event, filtered } of allResults) {
     const preview = event.content.slice(0, 80).replace(/\n/g, ' ');
-    console.log(`  ${DIM}Event: [${event.type}] "${preview}..."${RESET}`);
+    const toolName = toolNameOf(event);
+    console.log(`  ${DIM}Event: [${event.type}]${toolName !== undefined ? ` tool ${toolName}` : ''} "${preview}..."${RESET}`);
     for (const m of filtered) {
       printMatch(m, heldBack(m));
     }

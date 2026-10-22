@@ -12,9 +12,11 @@
  *   - the scope is derived from each rule's agent_source and conditions: every non-tool_call rule and
  *     every rule reading tool_description stays, the identity list holds only tool_call rules that
  *     exist, and the call rules named in the measurement are out;
- *   - every true positive of a rule that reads tool_description, given as a tool description, still
- *     fires its rule on a scoped engine; the only cases that do not are tool calls with arguments
- *     (ATR-2026-00441), which are not descriptions and do not fire unscoped either;
+ *   - every true positive of a rule that reads tool_description, given as a tool's description, gives
+ *     the same result scoped and unscoped. At the time of writing 39 of 41 fire: 35 description
+ *     texts (ATR-2026-00100..00107, and one of ATR-2026-00441) and 4 ATR-2026-00441 code snippets,
+ *     through its content conditions (the scope admits a rule as a whole). The 2 that do not are
+ *     ATR-2026-00441 tool calls written as JSON with arguments, which are not definitions;
  *   - the call rules do not fire on definitions that trip them unscoped;
  *   - an engine without the option evaluates tool_call events exactly as before, hunt and enforce.
  */
@@ -116,7 +118,8 @@ describe("a scoped engine still detects poisoned tool descriptions", () => {
       }
     }
     expect(descriptions).toBeGreaterThan(30);
-    // The call-shaped cases are ATR-2026-00441's arguments-only cases (its args conditions match calls).
+    // The call-shaped cases are ATR-2026-00441's tool calls ({"tool": ..., "args": {...}}): its tool_args
+    // conditions match a call, not a definition, so they fire neither scoped nor unscoped.
     expect([...new Set(callShaped)]).toEqual(["ATR-2026-00441"]);
   }, 120_000);
 });
@@ -163,5 +166,18 @@ describe("an engine without the option is unchanged", () => {
   it("still flags a destructive tool call in the hunt lane (ATR-2026-00099)", async () => {
     const unset = await engine({ lane: "hunt" });
     expect(fired(unset, CALLS[0]!)).toContain("ATR-2026-00099");
+  });
+});
+
+describe("getToolDefinitionScope — what a scoped engine left out", () => {
+  it("is null without the option, and counts every rule the lane allows with it", async () => {
+    expect((await engine()).getToolDefinitionScope()).toBeNull();
+    const scoped = await engine({ toolDefinitions: true });
+    const unscoped = await engine();
+    const counts = scoped.getToolDefinitionScope()!;
+    const lanePassing = unscoped.getRules().filter((r) => unscoped.evaluates(r)).length;
+    expect(counts.rulesEvaluated + counts.rulesSkippedByScope).toBe(lanePassing);
+    expect(counts.rulesEvaluated).toBe(scoped.getRules().filter((r) => scoped.evaluates(r)).length);
+    expect(counts.rulesSkippedByScope).toBeGreaterThanOrEqual(CALL_RULES.length);
   });
 });

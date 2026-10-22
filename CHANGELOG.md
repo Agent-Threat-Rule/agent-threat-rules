@@ -254,15 +254,28 @@ All notable changes to ATR will be documented in this file.
   `*_reset` or `exec*`. New engine option `toolDefinitions` (`ATREngineConfig`,
   default false), which `atr scan` sets only for a tools/list document: a rule
   with `agent_source.type: tool_call` then runs only if one of its conditions
-  reads `tool_description`, or if its subject is the tool's identity
-  (`TOOL_IDENTITY_RULES` in `src/tool-definition-scope.ts`: ATR-2026-00060,
-  impersonation); every other rule runs as before. No rule file changes; hooks,
-  adapters, config documents and event files are unaffected. On 710 benign tool
-  definitions from 45 official and vendor MCP servers
-  (`data/measurements/mcp-tools-list-benign/`), flagged definitions go from 58 to
-  6 (hunt) and 57 to 5 (alert), 0 in enforce before and after; every true
-  positive of a rule that reads `tool_description`, given as a description, still
-  fires. Tests: `tests/tool-definition-scope.test.ts`.
+  reads `tool_description` (the test is per rule: such a rule runs with all its
+  conditions), or if its subject is the tool's identity (`TOOL_IDENTITY_RULES`
+  in `src/tool-definition-scope.ts`: ATR-2026-00060, impersonation); every other
+  rule runs as before. No rule file changes; hooks, adapters, config documents
+  and event files are unaffected. `atr scan --json` reports
+  `tool_definition_scope`, `rules_evaluated` and `rules_skipped_by_scope` (SARIF:
+  run properties) and the `tool_name` of each result, so a rule that was not run
+  does not read as a clean result. An event that also carries a `tools` array
+  is still scanned as an event. Documented in `docs/ARCHITECTURE.md` §3.2,
+  `docs/schema-spec.md` (agent_source.type) and `docs/rule-writing-guide.md`.
+  On 710 benign tool definitions from 45 official and vendor MCP servers,
+  flagged definitions go from 58 to 6 (hunt) and 57 to 5 (alert); enforce is 0
+  before and after, which says nothing here, since none of the rules involved is
+  stable. The true positives of the rules that read `tool_description` give the
+  same result with and without the scope: of 41, 39 fire (35 description texts,
+  and 4 ATR-2026-00441 code snippets through its content conditions) and 2 do
+  not (ATR-2026-00441 tool calls given as JSON with arguments, which are not
+  definitions). The 6 remaining hunt-lane false positives come from rules this
+  change does not touch: ATR-2026-01987, -00225, -00217, -00161 and -00569 (over-
+  broad conditions) and a form match of ATR-2026-00579 (experimental); see
+  `data/measurements/mcp-tools-list-benign/README.md`. Tests:
+  `tests/tool-definition-scope.test.ts`, `tests/cli-mcp-tools-list-scan.test.ts`.
 
 - **On Claude Code, the guard scans what a tool returned on PostToolUse.**
   Claude Code sends a tool's output at the top level of the PostToolUse hook

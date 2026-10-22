@@ -483,6 +483,24 @@ export class ATREngine {
     return this.passesLane(rule);
   }
 
+  /**
+   * On an engine constructed with `toolDefinitions: true`: how many loaded rules it evaluates, and how
+   * many it would evaluate (status and lane allow them) but leaves out because they were written for
+   * a tool being called. Null on any other engine. Lets a report say "not run" instead of reading as
+   * "ran and found nothing".
+   */
+  getToolDefinitionScope(): { rulesEvaluated: number; rulesSkippedByScope: number } | null {
+    if (this.config.toolDefinitions !== true) return null;
+    let rulesEvaluated = 0;
+    let rulesSkippedByScope = 0;
+    for (const rule of this.rules) {
+      if (rule.status === 'deprecated' || rule.status === 'draft' || !this.passesLane(rule)) continue;
+      if (appliesToToolDefinition(rule)) rulesEvaluated += 1;
+      else rulesSkippedByScope += 1;
+    }
+    return { rulesEvaluated, rulesSkippedByScope };
+  }
+
   /** Active detection lane (config, else 'hunt'). Diagnostics/tests. */
   getLane(): Lane {
     return this.lane;
