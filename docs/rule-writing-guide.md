@@ -188,6 +188,19 @@ only an untyped event and a skill scan, and `atr test` reports its cases as
 unevaluable. `tests/engine-extended-source-types.test.ts` lists the rules of
 that type by id, so a new one fails it until the type is mapped.
 
+Tool definitions: `atr scan` on an MCP `tools/list` document scans each tool
+definition with the tool-definition scope (reference-engine scan-context
+behaviour, off by default; only `atr scan` sets it, and only for a `tools/list`
+document). There, a `tool_call` rule runs only if at least one of its conditions
+reads `tool_description`. A `tool_call` rule meant to inspect what a tool says
+about itself (its description, the directives in it) must therefore read
+`tool_description`; one that reads only `tool_name`, `tool_args` or `content` is
+taken to judge a call and does not run on definitions. The test is per rule, not
+per condition: once one condition reads `tool_description`, all of the rule's
+conditions run on the definition. Rules about the tool's identity that cannot be
+told apart by their fields (ATR-2026-00060, impersonation by name) are listed in
+`TOOL_IDENTITY_RULES` in `src/tool-definition-scope.ts`, with the reason.
+
 ---
 
 ## Regex Best Practices
