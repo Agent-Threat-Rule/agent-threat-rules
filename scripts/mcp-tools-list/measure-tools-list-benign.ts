@@ -41,6 +41,12 @@
  *        <dir>/<lane>/<server>.json = `atr scan <doc> --no-report --json --lane <lane>` output from a build
  *        that has PR #737; the report then records whether the CLI flagged exactly the same tools.
  *   --dump <path>   write the report to <path> as well (inspection; not a measurement file)
+ *   --scoped-cli-results <dir> --scoped-cli-repo <checkout>
+ *        the tool-definition context of PR #737 (engine option toolDefinitions, src/tool-definition-scope.ts):
+ *        `atr scan` output, same layout as --cli-results, from a build of <checkout>, whose commit and rules
+ *        tree the report records. When this checkout's own engine has the option (src/tool-definition-scope.ts
+ *        exists), the context is measured in-process instead and these flags are not needed.
+ *   --label <text>  appended to the report file name (a second report on the same date)
  */
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -75,6 +81,9 @@ const WRITE = process.argv.includes('--write');
 const CHECK = process.argv.includes('--check');
 const CLI_RESULTS = argValue('--cli-results');
 const DUMP = argValue('--dump'); // write the report to this path instead (inspection; not a measurement file)
+const SCOPED_CLI_RESULTS = argValue('--scoped-cli-results');
+const SCOPED_CLI_REPO = argValue('--scoped-cli-repo');
+const LABEL = argValue('--label');
 
 // ------------------------------------------------------------------ corpus
 
@@ -463,6 +472,9 @@ async function main(): Promise<void> {
     cliCrosscheck = { cli_build: `PR #737 head ${PR_737_COMMIT}`, per_lane: perLaneCheck };
   }
 
+  // ---- the tool-definition context (PR #737 engine option toolDefinitions)
+  const toolDefinitionContext = await measureToolDefinitionContext(manifest, results, classifications, timestamp, docs);
+
   const atrVersion = (JSON.parse(readFileSync(resolve(REPO_ROOT, 'package.json'), 'utf-8')) as { version: string }).version;
   const atrCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: REPO_ROOT }).toString().trim();
   const rulesTree = execFileSync('git', ['rev-parse', 'HEAD:rules'], { cwd: REPO_ROOT }).toString().trim();
@@ -502,6 +514,7 @@ async function main(): Promise<void> {
       note: 'Each true positive of a rule that reads tool_description, as a one-tool definition, scanned in the hunt lane: how many fire their own rule in each shape. These rules are agent_source tool_call; the tool_response shape does not admit tool_call rules.',
     },
     cli_crosscheck: cliCrosscheck,
+    tool_definition_context: toolDefinitionContext,
   };
 
   for (const lane of LANES) {
@@ -513,6 +526,10 @@ async function main(): Promise<void> {
         `  mcp_exchange w/o tool_call rules ${(perLane[lane] as { derived_mcp_exchange_without_tool_call_rules: { tools_flagged: number } }).derived_mcp_exchange_without_tool_call_rules.tools_flagged}`,
     );
   }
+  if (toolDefinitionContext) {
+    const ctx = toolDefinitionContext as { per_lane: Record<string, { tools_flagged: number }> ; measured_with: string };
+    console.log(`tool-definition context (${ctx.measured_with}): ` + LANES.map((l) => `${l} ${ctx.per_lane[l]!.tools_flagged}/${total}`).join('  '));
+  }
   if (cliCrosscheck) console.log(`CLI cross-check: ${JSON.stringify((cliCrosscheck as { per_lane: unknown }).per_lane)}`);
   if (unclassified.length > 0) console.log(`unclassified flags (${unclassified.length}): ${unclassified.join(', ')}`);
 
@@ -520,12 +537,121 @@ async function main(): Promise<void> {
   if (WRITE) {
     mkdirSync(OUT_DIR, { recursive: true });
     const date = timestamp.slice(0, 10);
-    const file = join(OUT_DIR, `benign-fp_${date}_${sourceVersion}_atr-${atrVersion.replace(/\./g, '-')}.json`);
+    const file = join(OUT_DIR, `benign-fp_${date}_${sourceVersion}_atr-${atrVersion.replace(/\./g, '-')}${LABEL ? `_${LABEL}` : ''}.json`);
     if (existsSync(file)) throw new Error(`${file} exists: measurement files are append-only`);
     writeFileSync(file, `${JSON.stringify(report, null, 2)}\n`);
     console.log(`wrote ${file}`);
   }
-  if (CHECK && unclassified.length > 0) process.exitCode = 1;
+  const ctxUnclassified = (toolDefinitionContext as { unclassified_flags?: string[] } | null)?.unclassified_flags ?? [];
+  if (CHECK && (unclassified.length > 0 || ctxUnclassified.length > 0)) process.exitCode = 1;
+}
+
+// ------------------------------------------------------------------ tool-definition context
+
+interface ScopedLane {
+  tools_flagged: number;
+  fp_rate: number;
+  fp_rate_wilson95: [number, number];
+  tools_flagged_high_or_critical: number;
+  by_rule: Record<string, number>;
+  flagged: { server: string; tool: string; rules: string[] }[];
+}
+
+/**
+ * Flags per lane with the PR #737 tool-definition scope: measured in-process when this checkout's
+ * engine has the option, else read from `atr scan` output of a PR build (--scoped-cli-results).
+ */
+async function measureToolDefinitionContext(
+  manifest: Manifest,
+  results: readonly ToolResult[],
+  classifications: readonly Classification[],
+  timestamp: string,
+  docs: Map<string, readonly Tool[]>,
+): Promise<unknown> {
+  const total = results.length;
+  const perLane: Record<string, ScopedLane> = {};
+  let measuredWith: string;
+  let code: Record<string, unknown>;
+  const scopeModule = resolve(REPO_ROOT, 'src/tool-definition-scope.ts');
+  const severityOf = new Map<string, string>();
+  if (existsSync(scopeModule)) {
+    measuredWith = "in-process: new ATREngine({ rulesDir, lane, toolDefinitions: true })";
+    code = { commit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: REPO_ROOT }).toString().trim() };
+    for (const lane of LANES) {
+      const engine = new ATREngine({ rulesDir: RULES_DIR, lane, toolDefinitions: true } as ConstructorParameters<typeof ATREngine>[0]);
+      await engine.loadRules();
+      const flagged: ScopedLane['flagged'] = [];
+      for (const s of manifest.servers) {
+        for (const tool of docs.get(s.id)!) {
+          const ms = engine.evaluate(eventFor(tool, 'mcp_exchange', timestamp));
+          ms.forEach((m) => severityOf.set(m.rule.id, m.rule.severity));
+          if (ms.length > 0) flagged.push({ server: s.id, tool: tool.name, rules: [...new Set(ms.map((m) => m.rule.id))].sort() });
+        }
+      }
+      perLane[lane] = summarise(flagged, total, severityOf);
+    }
+  } else if (SCOPED_CLI_RESULTS && SCOPED_CLI_REPO) {
+    const git = (...a: string[]) => execFileSync('git', a, { cwd: SCOPED_CLI_REPO }).toString().trim();
+    measuredWith = 'atr scan <document> --no-report --json --lane <lane>, built from the commit below';
+    code = {
+      commit: git('rev-parse', 'HEAD'),
+      rules_tree_sha: git('rev-parse', 'HEAD:rules'),
+      src_and_rules_clean: git('status', '--porcelain', '--', 'src', 'rules') === '',
+    };
+    const byHash = new Map(results.map((r) => [r.cli_content_hash, r]));
+    for (const lane of LANES) {
+      const flagged: ScopedLane['flagged'] = [];
+      let scanned = 0;
+      for (const s of manifest.servers) {
+        const out = JSON.parse(readFileSync(join(SCOPED_CLI_RESULTS, lane, `${s.id}.json`), 'utf-8')) as {
+          events_scanned: number;
+          results: { content_hash: string; matches: { rule_id: string; severity: string }[] }[];
+        };
+        scanned += out.events_scanned;
+        for (const res of out.results) {
+          const r = byHash.get(res.content_hash);
+          if (!r) throw new Error(`${lane}/${s.id}: content_hash ${res.content_hash} is not a corpus tool`);
+          res.matches.forEach((m) => severityOf.set(m.rule_id, m.severity));
+          flagged.push({ server: r.server, tool: r.tool, rules: [...new Set(res.matches.map((m) => m.rule_id))].sort() });
+        }
+      }
+      if (scanned !== total) throw new Error(`${lane}: the CLI scanned ${scanned} tools, the corpus has ${total}`);
+      perLane[lane] = summarise(flagged, total, severityOf);
+    }
+  } else {
+    return null;
+  }
+  const remaining = new Map<string, { server: string; tool: string; rules: string[] }>();
+  for (const lane of LANES) for (const f of perLane[lane]!.flagged) remaining.set(`${f.server}/${f.tool}`, f);
+  const remainingFlags = [...remaining.values()].map((f) => ({
+    ...f,
+    lanes: LANES.filter((l) => perLane[l]!.flagged.some((x) => x.server === f.server && x.tool === f.tool)),
+    classification: f.rules.map((id) => {
+      const c = classify(classifications, id, `${f.server}/${f.tool}`);
+      return { rule_id: id, cause: c?.cause ?? null, explanation: c?.explanation ?? null };
+    }),
+  }));
+  return {
+    measured_with: measuredWith,
+    code,
+    scope: 'a rule with agent_source.type tool_call runs only if a condition reads tool_description or it is in TOOL_IDENTITY_RULES (ATR-2026-00060); every other rule runs as on the plain mcp_exchange event',
+    per_lane: perLane,
+    remaining_flags: remainingFlags,
+    unclassified_flags: remainingFlags.flatMap((f) => f.classification.filter((c) => c.cause === null).map((c) => `${f.server}/${f.tool}:${c.rule_id}`)),
+  };
+}
+
+function summarise(flagged: ScopedLane['flagged'], total: number, severityOf: Map<string, string>): ScopedLane {
+  const byRule: Record<string, number> = {};
+  for (const f of flagged) for (const id of f.rules) byRule[id] = (byRule[id] ?? 0) + 1;
+  return {
+    tools_flagged: flagged.length,
+    fp_rate: flagged.length / total,
+    fp_rate_wilson95: wilson(flagged.length, total),
+    tools_flagged_high_or_critical: flagged.filter((f) => f.rules.some((id) => ['high', 'critical'].includes(severityOf.get(id) ?? ''))).length,
+    by_rule: byRule,
+    flagged,
+  };
 }
 
 main().catch((err) => {

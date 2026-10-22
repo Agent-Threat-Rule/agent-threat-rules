@@ -4,6 +4,9 @@
 #   bash scripts/mcp-tools-list/reproduce.sh           # re-extract + compare, re-measure (nothing written)
 #   bash scripts/mcp-tools-list/reproduce.sh --write   # same, then write a new report under data/measurements/mcp-tools-list-benign/
 #
+# Optional: SCOPED_CLI_RESULTS=<dir> SCOPED_CLI_REPO=<checkout> add the tool-definition context of PR #737
+# (`atr scan` output of a build of <checkout>, same layout as CLI_RESULTS). Not needed once the checkout
+# measured here has src/tool-definition-scope.ts: the script then measures that context in-process.
 # Optional: CLI_RESULTS=<dir> adds a cross-check against `atr scan` output from a build that has PR #737
 # (<dir>/<lane>/<server>.json, one `atr scan <document> --no-report --json --lane <lane>` per document;
 # documents are data/test-corpora/mcp-tools-list-benign/tools/*.json and, for the one source whose licence
@@ -27,5 +30,7 @@ python3 scripts/mcp-tools-list/fetch-tools-list-corpus.py --check
 echo "== 2/2 measure hunt / alert / enforce on both event shapes"
 args=(--check)
 if [[ -n "${CLI_RESULTS:-}" ]]; then args+=(--cli-results "$CLI_RESULTS"); fi
+if [[ -n "${SCOPED_CLI_RESULTS:-}" ]]; then args+=(--scoped-cli-results "$SCOPED_CLI_RESULTS" --scoped-cli-repo "$SCOPED_CLI_REPO"); fi
+if [[ -n "${LABEL:-}" ]]; then args+=(--label "$LABEL"); fi
 if [[ "${1:-}" == "--write" ]]; then args+=(--write); fi
 npx tsx scripts/mcp-tools-list/measure-tools-list-benign.ts "${args[@]}"
