@@ -161,13 +161,19 @@ detection:
     - field: tool_args
       operator: regex
       value: >-
-        (?i)(?:^|[^0-9a-f:])\[?::ffff:(?:127\.\d{1,3}\.\d{1,3}\.\d{1,3}|10\.|172\.(?:1[6-9]|2[0-9]|3[01])\.|192\.168\.)
+        (?i)(?:^|[^0-9a-f:]|%5b)\[?(?:(?:0{1,4}:){1,4}:|::|(?:0{1,4}:){5})ffff:(?:127\.\d{1,3}\.\d{1,3}\.\d{1,3}|10\.|172\.(?:1[6-9]|2[0-9]|3[01])\.|192\.168\.)
       description: >-
-        IPv4-mapped IPv6 forms (::ffff:a.b.c.d) of loopback and RFC 1918 IPv4,
-        an obfuscation that slips past filters written for dotted IPv4. The
-        address must start the token (a character that is not a hex digit or
-        colon before ::ffff, or start of input), so the suffix of a longer IPv6
-        address does not count. Plain ::1 and unique local addresses (fc00::/7)
+        IPv4-mapped IPv6 forms (::ffff:a.b.c.d, also written 0::ffff:,
+        0:0::ffff: or fully expanded 0:0:0:0:0:ffff:) of loopback (127/8) and
+        RFC 1918 IPv4, an obfuscation that slips past filters written for dotted
+        IPv4. The address must start the token (start of input, a character that
+        is not a hex digit or colon, or a percent-encoded bracket %5B), so the
+        suffix of a longer IPv6 address does not count. Known limits: a mapped
+        address directly after a colon (unbracketed host:port:addr syntax such
+        as curl --resolve x:80:::ffff:127.0.0.1) and a JSON-escaped bracket
+        (\u005b) are not matched; the hex form ::ffff:7f00:1, IPv4-compatible
+        ::127.0.0.1 and NAT64 64:ff9b:: forms are left to ATR-2026-02868;
+        ::ffff:0.0.0.0 and ::ffff:100.64.0.0/10 are not covered. Plain ::1 and unique local addresses (fc00::/7)
         are not matched, for the same reason plain localhost, 127.0.0.1 and
         RFC 1918 are not (see the v2 note in the description): a coding agent
         reaches its own dev server on [::1] and private services on ULA all the
@@ -181,6 +187,13 @@ detection:
       description: URL shorteners that may redirect to internal services
   condition: any
   false_positives:
+    - >-
+      Logs and diagnostics pasted into a tool argument that report IPv4 peers
+      in IPv4-mapped form, as dual-stack sockets do on Linux (netstat / ss /
+      lsof output, Node "connect ECONNREFUSED ::ffff:127.0.0.1:6379", Express
+      req.ip ::ffff:192.168.1.10, nginx or MySQL messages with ::ffff:172.17.0.1).
+      Loopback addresses of system resolvers such as ::ffff:127.0.0.53 match too,
+      since 127/8 is covered.
     - Agents with legitimate access to internal services explicitly allowlisted
     - Development environments where localhost access is expected
     - Private network tools designed for internal infrastructure management
@@ -244,6 +257,15 @@ test_cases:
     - tool_args: '{"host":"::ffff:127.0.0.2","port":6379}'
       expected: triggered
       description: IPv4-mapped loopback (127.0.0.0/8) as a bare host value
+    - tool_args: http://[0::ffff:127.0.0.1]/admin
+      expected: triggered
+      description: IPv4-mapped loopback with a leading zero hextet (same address as ::ffff:127.0.0.1)
+    - tool_args: http://[0:0:0:0:0:ffff:10.0.0.1]/
+      expected: triggered
+      description: Fully expanded IPv4-mapped RFC 1918 address
+    - tool_args: http://%5B::ffff:127.0.0.1%5D/admin
+      expected: triggered
+      description: IPv4-mapped loopback inside percent-encoded brackets
     - tool_args: '{"chat":"me","files":["https://localtest.me/admin"]}'
       expected: triggered
       description: CVE-2026-55096 PoC - apex localtest.me (resolves to 127.0.0.1) in send_message files[]
