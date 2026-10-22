@@ -1,0 +1,69 @@
+{
+  "tools": [
+    {
+      "name": "list_rags",
+      "description": "List AutoRAGs (vector stores)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 20
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "search",
+      "description": "Search Documents using AutoRAG (vector store)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "rag_id": {
+            "type": "string",
+            "description": "ID of the AutoRAG to search"
+          },
+          "query": {
+            "type": "string",
+            "description": "Query to search for. Can be a URL, a title, or a snippet."
+          }
+        },
+        "required": [
+          "rag_id",
+          "query"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ai_search",
+      "description": "AI Search Documents using AutoRAG (vector store)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "rag_id": {
+            "type": "string",
+            "description": "ID of the AutoRAG to search"
+          },
+          "query": {
+            "type": "string",
+            "description": "Query to search for. Can be a URL, a title, or a snippet."
+          }
+        },
+        "required": [
+          "rag_id",
+          "query"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}
