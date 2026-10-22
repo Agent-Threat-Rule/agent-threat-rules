@@ -17,8 +17,11 @@ depth 1 and the definitions are read statically (see "How each server was read")
 - `tools/<server>.json`: the reconstructed `{"tools": [...]}` document of each server whose licence
   allows redistribution (44 of 45). Third-party text, redistributed under the licences in `LICENSES/`;
   copyright stays with each author.
-- `LICENSES/`: the licence (and NOTICE) files of every redistributed source, verbatim from its pin.
-  `manifest.json` records their sha256.
+- `LICENSES/`: the licence (and NOTICE) files of every redistributed source, verbatim from its pin:
+  each repository's root files, and the files of a sub-directory that carries its own (the awslabs
+  server directories' LICENSE and NOTICE, the MIT LICENSE of modelcontextprotocol/servers `src/fetch`
+  and `src/git`). `manifest.json` records their sha256, and the fetch script fails when a LICENSE,
+  COPYING or NOTICE file in the root or a directory above an extracted file is not listed.
 - `manifest.json`: per server the repo, commit, licence, files read, tool count and the sha256 of its
   document; per tool the file, line, extraction shape, anything the extractor could not fold, and the
   sha256 of the definition.

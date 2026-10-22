@@ -9,7 +9,10 @@ Writes data/test-corpora/mcp-tools-list-benign/tools/<server>.json   one reconst
                                                                     tool, how it was extracted, what could not be
                                                                     folded, and the sha256 of every document
        data/test-corpora/mcp-tools-list-benign/LICENSES/            the licence (and NOTICE) files of every
-                                                                    redistributed source, verbatim from its pin
+                                                                    redistributed source, verbatim from its pin;
+                                                                    a LICENSE / COPYING / NOTICE file in the repo
+                                                                    root or a directory above an extracted file
+                                                                    that sources.json does not list fails the run
        <cache>/documents/<server>.json                              every document, redistributable or not (the
                                                                     measurement reads the non-redistributable ones
                                                                     from here)
@@ -190,12 +193,32 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+LICENSE_NAME = re.compile(r"^(LICEN[CS]E|COPYING|NOTICE)(\.[A-Za-z0-9-]+)?$", re.I)
+
+
+def unlisted_license_files(tree: list[str], files: list[str], listed: set[str]) -> list[str]:
+    """LICENSE / NOTICE files in the repository root or in any directory above a selected file that the
+    sources do not list: a redistributed text must carry every licence and notice that covers it."""
+    in_tree = set(tree)
+    dirs = {""}
+    for f in files:
+        parts = f.split("/")[:-1]
+        dirs.update("/".join(parts[:i]) for i in range(1, len(parts) + 1))
+    found = {p for p in in_tree if "/".join(p.split("/")[:-1]) in dirs and LICENSE_NAME.match(p.split("/")[-1])}
+    return sorted(found - listed)
+
+
 def build_server(server: dict, repos: dict) -> tuple[dict, dict]:
     repo = repos[server["repo_id"]]
     bare = ensure_commit(repo["repo"], repo["commit"])
-    files = select_files(ls_tree(bare, repo["commit"]), server)
+    tree = ls_tree(bare, repo["commit"])
+    files = select_files(tree, server)
     if not files:
         raise RuntimeError(f"{server['id']}: no files selected")
+    if repo["redistribute"]:
+        missing = unlisted_license_files(tree, files, set(repo["license_files"]) | set(server.get("license_files", [])))
+        if missing:
+            raise RuntimeError(f"{server['id']}: licence files that cover the extracted text are not listed in sources.json: {missing}")
     raw = extract(server, repo, bare, files)
     allow = names_from(server["include_names_from"], repos) if "include_names_from" in server else None
     exclude = set(server.get("exclude_names", []))
