@@ -9,40 +9,56 @@ and a corpus with no attack samples has none. As with `data/measurements/clawhub
 its own JSON (`kind: "benign-fp"`), named so `verify.ts` does not read it as a schema file, and append-only
 like every other measurement here. It does not feed `data/stats.json`.
 
-## What was measured (ATR 4.1.5, rules tree `1660b3a6`, 2026-10-22)
+## Reports
 
-Two event shapes per tool definition, same content (the definition as JSON) and fields (`tool_name`,
+- `benign-fp_2026-10-22_pinned-2026-10-22_atr-4-1-5.json`: the first measurement, before PR #737 scoped
+  tool definitions. Code `30c07b02` (rules tree `1660b3a6`, the same as PR #737's base).
+- `benign-fp_2026-10-22_pinned-2026-10-22_atr-4-1-5_with-tool-definition-scope.json`: the same corpus and
+  shapes re-measured at `5796c0c4` (same rules tree), plus `tool_definition_context`: `atr scan` built from
+  PR #737 at `2f76611e` (rules tree `1660b3a6`), with the engine option `toolDefinitions` the CLI sets for a
+  tools/list document.
+
+## What was measured (ATR 4.1.5, rules tree `1660b3a6`)
+
+Event shapes per tool definition, same content (the definition as JSON) and fields (`tool_name`,
 `tool_description`):
 
-- `mcp_exchange`: what `atr scan` builds for a tools/list document in PR #737 (`51be1a1c`). The type has no
-  source type, so every rule runs.
-- `tool_response`: the same event typed `tool_response`, the type `atr test` builds for an mcp_exchange rule.
+- `mcp_exchange`: what `atr scan` built for a tools/list document in PR #737 before the scope (`51be1a1c`).
+  The type has no source type, so every rule runs.
+- tool-definition context: the same event on an engine constructed with `toolDefinitions: true` (PR #737
+  `2f76611e`): a rule with agent_source `tool_call` runs only if a condition reads `tool_description` or it
+  is in `TOOL_IDENTITY_RULES` (ATR-2026-00060); every other rule runs as before.
+- `tool_response`: the same event typed `tool_response`, the type `atr test` builds for an mcp_exchange
+  rule (comparison only).
 
-Regex tier only (no embedding, no semantic judge), as `atr scan` runs by default. The report's
-`cli_crosscheck` confirms the PR #737 CLI flags exactly the same (tool, rule) pairs in every lane.
+Regex tier only (no embedding, no semantic judge), as `atr scan` runs by default. `cli_crosscheck`
+confirms the `51be1a1c` CLI flags exactly the (tool, rule) pairs the script computes for `mcp_exchange`.
 
-| Lane | mcp_exchange (PR #737) | tool_response |
-|---|---|---|
-| hunt | 58 / 710 = 8.2% (95% CI 6.4 to 10.4%); 11 at high or critical | 32 / 710 = 4.5%; 9 at high or critical |
-| alert | 57 / 710 = 8.0% | 31 / 710 = 4.4% |
-| enforce | 0 / 710 | 1 / 710 (ATR-2026-00443, stable) |
+| Lane | mcp_exchange, before the scope | tool-definition context (PR #737) | tool_response |
+|---|---|---|---|
+| hunt | 58 / 710 = 8.2% (95% CI 6.4 to 10.4%) | 6 / 710 = 0.85% (0.39 to 1.83%) | 32 / 710 = 4.5% |
+| alert | 57 / 710 = 8.0% | 5 / 710 = 0.70% | 31 / 710 = 4.4% |
+| enforce | 0 / 710 | 0 / 710 | 1 / 710 (ATR-2026-00443, stable) |
 
-What drives it (`fp-classification.json` has the reason for every flag):
+What drove the 58 (`fp-classification.json` has the reason for every flag):
 
-- 54 of the 58 hunt-lane mcp_exchange flags involve tool_call rules, written for a tool being invoked,
-  running on a tool being defined: ATR-2026-00099 (48 tools: names containing delete, remove, reset, exec,
-  eval, publish, subscribe, ...), ATR-2026-00113 (5), ATR-2026-00063 (1). They never run on tool_response.
-  Without tool_call rules the same events flag 6 tools in hunt (0.85%), 5 in alert, 0 in enforce.
-- JSON.stringify puts a definition on one line, so `[^\n]*` and `.*` in line-oriented patterns span the
-  whole definition (ATR-2026-00225, -00217, -00113, -00020, -00502).
+- 54 involved tool_call rules, written for a tool being invoked, running on a tool being defined:
+  ATR-2026-00099 (48 tools: names containing delete, remove, reset, exec, eval, publish, subscribe, ...),
+  ATR-2026-00113 (5), ATR-2026-00063 (1). The scope removes them.
+- The 6 that remain, all at high or critical severity: five over-broad conditions and one form match.
+  ATR-2026-01987 (Supabase execute_sql / apply_migration name `COPY ... FROM PROGRAM` as a primitive),
+  ATR-2026-00225 (Cloudflare's 1.1.1.1 resolver; `[^\n]*` spans the single-line JSON to a later
+  "control"), ATR-2026-00217 (`sync` inside `async`, then `[^\n]*` to "key"), ATR-2026-00161 and
+  ATR-2026-00569 (a DynamoDB description documenting that `../../../../etc/passwd` is blocked), and
+  ATR-2026-00579 (experimental, hunt only: "Before calling this tool, you MUST first ...", the line-jumping
+  form, benign by intent). Follow-ups for those rules, not changed here.
 - On tool_response, prompt-injection (llm_io) rules read the JSON text as a prompt: ATR-2026-00454 counts
   JSON escapes (`\n\n\n`) as backslash-per-character encoding on 21 tools.
-- One flag is arguably a true positive in form: ATR-2026-00579 (experimental, hunt only) on a DynamoDB
-  tool whose description tells the model what it must do before calling the tool.
 
-Switching the PR to tool_response is not a fix: `tool_description_rule_coverage` shows the rules that read
+Switching to tool_response is not a fix: `tool_description_rule_coverage` shows the rules that read
 `tool_description` (ATR-2026-00100..00107, -00441, all agent_source tool_call) fire on 39 of their 41 own
-true positives as mcp_exchange and on 0 as tool_response.
+true positives as mcp_exchange and on 0 as tool_response. The 2 that do not fire are ATR-2026-00441 cases
+that are tool calls with arguments, not descriptions.
 
 ## Reproduce
 
@@ -53,4 +69,7 @@ bash scripts/mcp-tools-list/reproduce.sh            # re-extract the corpus, com
 bash scripts/mcp-tools-list/reproduce.sh --write    # also write a new report here
 ```
 
-`CLI_RESULTS=<dir>` adds the cross-check against `atr scan` output from a PR #737 build (see the script).
+`CLI_RESULTS=<dir>` adds the cross-check against `atr scan` output from a PR #737 build, and
+`SCOPED_CLI_RESULTS=<dir> SCOPED_CLI_REPO=<checkout>` the tool-definition context from a build of that
+checkout; once the measured checkout has `src/tool-definition-scope.ts`, the context is measured in-process
+(see the script).
