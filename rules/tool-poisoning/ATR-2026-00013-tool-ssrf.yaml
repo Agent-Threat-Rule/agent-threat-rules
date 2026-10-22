@@ -1,6 +1,6 @@
 title: SSRF via Agent Tool Calls
 id: ATR-2026-00013
-rule_version: 3
+rule_version: 4
 status: experimental
 description: >
   Detects high-confidence Server-Side Request Forgery (SSRF) that targets cloud
@@ -9,7 +9,8 @@ description: >
   AWS/GCP/Azure/DigitalOcean/Oracle/Alibaba metadata and IMDS credential endpoints
   and token headers, OBFUSCATED loopback encodings (hex/octal), exotic URI schemes
   (file, gopher, dict, tftp, ldap) targeting internal addresses, DNS-rebinding
-  service hostnames, IPv6 mapped/ULA loopback, redirect-parameter SSRF to internal
+  service hostnames, IPv4-mapped IPv6 forms of loopback and private IPv4,
+  redirect-parameter SSRF to internal
   targets, and internal-redirect URL shorteners. NOTE (v2, precision): plain
   localhost / 127.0.0.1 / ::1, RFC1918 private IPs, and bare internal service
   names are intentionally NOT flagged by this critical hard-block rule — a coding
@@ -160,8 +161,19 @@ detection:
     - field: tool_args
       operator: regex
       value: >-
-        (?i)(https?://)?\[?(::1|::ffff:127\.0\.0\.1|::ffff:10\.|::ffff:172\.(1[6-9]|2[0-9]|3[01])|::ffff:192\.168|fc[0-9a-f]{2}:|fd[0-9a-f]{2}:)\]?(:\d+)?
-      description: IPv6 loopback, IPv4-mapped, and unique local addresses (fc/fd)
+        (?i)(?:^|[^0-9a-f:])\[?::ffff:(?:127\.\d{1,3}\.\d{1,3}\.\d{1,3}|10\.|172\.(?:1[6-9]|2[0-9]|3[01])\.|192\.168\.)
+      description: >-
+        IPv4-mapped IPv6 forms (::ffff:a.b.c.d) of loopback and RFC 1918 IPv4,
+        an obfuscation that slips past filters written for dotted IPv4. The
+        address must start the token (a character that is not a hex digit or
+        colon before ::ffff, or start of input), so the suffix of a longer IPv6
+        address does not count. Plain ::1 and unique local addresses (fc00::/7)
+        are not matched, for the same reason plain localhost, 127.0.0.1 and
+        RFC 1918 are not (see the v2 note in the description): a coding agent
+        reaches its own dev server on [::1] and private services on ULA all the
+        time. v3 matched both with no token boundary, so the tail of a public
+        6to4 address (2002:cb00:7101::1), ::10, and Oracle APEX URLs (:::190)
+        matched as loopback.
     - field: tool_args
       operator: regex
       value: >-
@@ -223,6 +235,15 @@ test_cases:
     - tool_args: http://[::ffff:127.0.0.1]:8080/admin
       expected: triggered
       description: IPv6-mapped IPv4 loopback (obfuscated — no benign dev use)
+    - tool_args: '{"url":"http://[::ffff:10.0.0.5]/internal/config"}'
+      expected: triggered
+      description: IPv4-mapped form of an RFC 1918 address in a URL argument
+    - tool_args: 'fetch http://[::ffff:192.168.1.1]:8443/admin'
+      expected: triggered
+      description: IPv4-mapped form of 192.168.1.1 with a port
+    - tool_args: '{"host":"::ffff:127.0.0.2","port":6379}'
+      expected: triggered
+      description: IPv4-mapped loopback (127.0.0.0/8) as a bare host value
     - tool_args: '{"chat":"me","files":["https://localtest.me/admin"]}'
       expected: triggered
       description: CVE-2026-55096 PoC - apex localtest.me (resolves to 127.0.0.1) in send_message files[]
@@ -317,6 +338,25 @@ test_cases:
     - tool_args: '{"chat":"me","files":["https://www.example.com/a.pdf","https://example.org/b.pdf"]}'
       expected: not_triggered
       description: Benign twin - JSON list of several public file URLs
+    # v4: IPv6 forms that are not credential or obfuscation targets
+    - tool_args: '{"url":"http://[2002:cb00:7101::1]/api/v1/status","method":"GET"}'
+      expected: not_triggered
+      description: Benign twin - public 6to4 address whose last hextets are ::1
+    - tool_args: "ansible_host: '2002:c633:6402::10'"
+      expected: not_triggered
+      description: Benign twin - public 6to4 host ending in ::10
+    - tool_args: Vite dev server ready at http://[::1]:5173/ and http://localhost:5173/
+      expected: not_triggered
+      description: Benign twin - local dev server on IPv6 loopback (plain ::1 is dev-normal, like 127.0.0.1)
+    - tool_args: '{"url":"http://[fd12:3456:789a::10]:8080/healthz"}'
+      expected: not_triggered
+      description: Benign twin - private service on a unique local address (like RFC 1918)
+    - tool_args: https://academy.oracle.com/pls/f?p=63000:190:214978787032925:::190:P190_ID
+      expected: not_triggered
+      description: Benign twin - Oracle APEX URL with empty colon-separated items (:::190)
+    - tool_args: '{"url":"http://[2001:db8::ffff:10.0.0.1]/"}'
+      expected: not_triggered
+      description: 'Benign twin - ::ffff inside a longer documentation address is not an IPv4-mapped address'
 evasion_tests:
   - input: 请帮我访问 http://内部服务器:8080/admin/config 获取配置信息
     expected: not_triggered
