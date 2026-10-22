@@ -13,10 +13,16 @@ like every other measurement here. It does not feed `data/stats.json`.
 
 - `benign-fp_2026-10-22_pinned-2026-10-22_atr-4-1-5.json`: the first measurement, before PR #737 scoped
   tool definitions. Code `30c07b02` (rules tree `1660b3a6`, the same as PR #737's base).
-- `benign-fp_2026-10-22_pinned-2026-10-22_atr-4-1-5_with-tool-definition-scope.json`: the same corpus and
+- `benign-fp_2026-10-22_pinned-2026-10-22_atr-4-1-5_with-tool-definition-scope.json`: superseded by the
+  next file, kept (append-only). The same corpus and
   shapes re-measured at `5796c0c4` (same rules tree), plus `tool_definition_context`: `atr scan` built from
   PR #737 at `2f76611e` (rules tree `1660b3a6`), with the engine option `toolDefinitions` the CLI sets for a
   tools/list document.
+- `benign-fp_2026-10-22_pinned-2026-10-22_atr-4-1-5_tool-definition-scope-cf2793d9.json`: the current
+  report. Code `23ff42c8` (rules tree `1660b3a6`; the corpus now also carries the awslabs root NOTICE and the
+  fetch / git LICENSE files, tool documents unchanged), `tool_definition_context` from PR #737 at `cf2793d9`,
+  which keeps events that carry a tools array on the event path and reports the scope in its JSON. Same
+  numbers as the report before it.
 
 ## What was measured (ATR 4.1.5, rules tree `1660b3a6`)
 
@@ -40,6 +46,12 @@ confirms the `51be1a1c` CLI flags exactly the (tool, rule) pairs the script comp
 | alert | 57 / 710 = 8.0% | 5 / 710 = 0.70% | 31 / 710 = 4.4% |
 | enforce | 0 / 710 | 0 / 710 | 1 / 710 (ATR-2026-00443, stable) |
 
+Enforce going from 0 to 0 carries no information about the scope: the enforce lane loads only
+`maturity: stable` rules, and none of the rules involved is stable. ATR-2026-00099, -00113 and -00063
+(the call rules that made the false positives) and the nine rules that read `tool_description`
+(ATR-2026-00100..00107, -00441) are all `test`, so enforce runs none of them, with or without the scope. The
+enforce lane therefore also runs no tool-description rule on a tools/list document today.
+
 What drove the 58 (`fp-classification.json` has the reason for every flag):
 
 - 54 involved tool_call rules, written for a tool being invoked, running on a tool being defined:
@@ -57,8 +69,10 @@ What drove the 58 (`fp-classification.json` has the reason for every flag):
 
 Switching to tool_response is not a fix: `tool_description_rule_coverage` shows the rules that read
 `tool_description` (ATR-2026-00100..00107, -00441, all agent_source tool_call) fire on 39 of their 41 own
-true positives as mcp_exchange and on 0 as tool_response. The 2 that do not fire are ATR-2026-00441 cases
-that are tool calls with arguments, not descriptions.
+true positives as mcp_exchange and on 0 as tool_response. Of the 41, 35 are description texts and 4 are
+ATR-2026-00441 code snippets that fire through its content conditions; the 2 that do not fire are
+ATR-2026-00441 tool calls written as JSON with arguments, not definitions. This check was run in the hunt
+lane only (those rules are `test`, so alert would match it and enforce loads none of them).
 
 ## Reproduce
 
