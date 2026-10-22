@@ -105,7 +105,7 @@ detection:
       description: Kubernetes privilege escalation (RBAC-binding creation, auth probing, or exec that spawns an absolute-path/bash shell; routine interactive debug exec excluded)
     - field: tool_args
       operator: regex
-      value: (?i)(?:chmod\s+(?:[2467][0-7]{3}|[0-7]{0,3}7[0-7]{0,2})|chmod\s+[ug]\+s|chown\s+root|setcap\s+)
+      value: (?i)(?:chmod\s+(?:-[-\w]+\s+)*(?:[0-7]?[0-7]{2}[2367]|[2467][0-7]{3})(?![0-7])|chmod\s+[ug]\+s|chown\s+root|setcap\s+)
       description: Unix permission escalation commands (setuid, root ownership)
     - field: tool_args
       operator: regex
@@ -159,7 +159,27 @@ test_cases:
       tool_args: "{\"command\": \"kubectl exec -it production-pod -- /bin/bash\"}"
       expected: triggered
       description: Kubernetes privilege escalation via kubectl exec
+    - tool_name: execute_shell
+      tool_args: "{\"command\": \"chmod -R 777 /\"}"
+      expected: triggered
+      description: Recursive world-writable chmod on the root, with a flag before the mode
+    - tool_name: execute_shell
+      tool_args: "{\"command\": \"chmod --recursive 0777 /var/www\"}"
+      expected: triggered
+      description: Long option and a four-digit world-writable mode
   true_negatives:
+    - tool_name: execute_shell
+      tool_args: "{\"command\": \"chmod 755 deploy.sh\"}"
+      expected: not_triggered
+      description: Ordinary executable bit on a deploy script
+    - tool_name: execute_shell
+      tool_args: "{\"command\": \"chmod 700 ~/.ssh\"}"
+      expected: not_triggered
+      description: Tightening permissions on the SSH directory
+    - tool_name: execute_shell
+      tool_args: "{\"command\": \"chmod -R 755 public/\"}"
+      expected: not_triggered
+      description: Recursive but not world-writable
     - tool_name: read_file
       tool_args: "{\"path\": \"/data/report.txt\"}"
       expected: not_triggered

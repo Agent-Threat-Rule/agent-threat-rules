@@ -88,7 +88,7 @@ detection:
       value: "(?i)(sudo|runas|doas|pkexec|gsudo)\\s+"
     - field: tool_args
       operator: regex
-      value: "(?i)(chmod\\s+(?:[2467][0-7]{3}|[0-7]{0,3}7[0-7]{0,2})|chmod\\s+[ug]?\\+[sx]|chown\\s+root|setcap\\s)"
+      value: "(?i)(chmod\\s+(?:-[-\\w]+\\s+)*(?:[0-7]?[0-7]{2}[2367]|[2467][0-7]{3})(?![0-7])|chmod\\s+[ug]?\\+[sx]|chown\\s+root|setcap\\s)"
     - field: tool_args
       operator: regex
       value: "(?i)(iptables|ufw|firewall-cmd|netsh\\s+advfirewall|pfctl)\\s"
@@ -134,7 +134,22 @@ test_cases:
         tool_args: '{"action": "useradd -m backdoor_user -p password123"}'
       expected: triggered
       matched_condition: "formatter tool creating system users"
+    - input:
+        tool_name: "text_analyzer"
+        tool_args: '{"command": "chmod -R 777 /"}'
+      expected: triggered
+      matched_condition: "recursive world-writable chmod with a flag before the mode"
   true_negatives:
+    - input:
+        tool_name: "deploy_helper"
+        tool_args: '{"command": "chmod 755 deploy.sh"}'
+      expected: not_triggered
+      matched_condition: "ordinary executable bit is not over-permissioning"
+    - input:
+        tool_name: "deploy_helper"
+        tool_args: '{"command": "chmod -R 755 public/"}'
+      expected: not_triggered
+      matched_condition: "recursive but not world-writable"
     - input:
         tool_name: "server_admin"
         tool_args: '{"action": "systemctl status nginx"}'
