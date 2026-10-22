@@ -209,13 +209,18 @@ async function scanMcpEvents(
 
   const raw = readFileSync(eventsPath, 'utf-8');
   let events: AgentEvent[];
+  // Whether the input is a tools/list document: every event is then a tool definition, and the
+  // engine is told so (toolDefinitions), so the rules written for a tool being called do not run
+  // on it (src/tool-definition-scope.ts). Config documents and event files are scanned as before.
+  let toolDefinitions = false;
   try {
     const parsed = JSON.parse(raw);
     // A config document becomes one event per server, a tools/list document one event per
     // tool; every other input is unchanged.
-    events = configDocumentToEvents(parsed)
-      ?? toolsDocumentToEvents(parsed)
-      ?? (Array.isArray(parsed) ? parsed : [parsed]);
+    const configEvents = configDocumentToEvents(parsed);
+    const toolEvents = configEvents === null ? toolsDocumentToEvents(parsed) : null;
+    toolDefinitions = toolEvents !== null;
+    events = configEvents ?? toolEvents ?? (Array.isArray(parsed) ? parsed : [parsed]);
   } catch {
     console.error(`${RED}Error: Invalid JSON in ${eventsPath}${RESET}`);
     process.exit(1);
@@ -228,6 +233,7 @@ async function scanMcpEvents(
     semanticJudge: semantic.judge,
     ...(options.lane ? { lane: options.lane } : {}),
     ...(options.modelDecisions ? { modelDecisions: options.modelDecisions } : {}),
+    ...(toolDefinitions ? { toolDefinitions: true } : {}),
   });
   const heldBack = (m: ATRMatch): boolean => engine.getModelDecisions() === 'advisory' && isModelDecided(m);
   await engine.loadRules();

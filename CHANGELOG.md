@@ -247,6 +247,22 @@ All notable changes to ATR will be documented in this file.
   such responses is accepted too. A document that lists no tools fails with
   "nothing was scanned" rather than reporting clean. `mcpServers` documents and
   event files are read as before. Tests: `tests/cli-mcp-tools-list-scan.test.ts`.
+- **A tools/list scan does not run the rules written for a tool being called.**
+  A definition defines a tool and calls none, but an `mcp_exchange` event admits
+  every rule, so call rules (ATR-2026-00099 and others, which read the called
+  tool's name and arguments) flagged every definition named `delete_*`,
+  `*_reset` or `exec*`. New engine option `toolDefinitions` (`ATREngineConfig`,
+  default false), which `atr scan` sets only for a tools/list document: a rule
+  with `agent_source.type: tool_call` then runs only if one of its conditions
+  reads `tool_description`, or if its subject is the tool's identity
+  (`TOOL_IDENTITY_RULES` in `src/tool-definition-scope.ts`: ATR-2026-00060,
+  impersonation); every other rule runs as before. No rule file changes; hooks,
+  adapters, config documents and event files are unaffected. On 710 benign tool
+  definitions from 45 official and vendor MCP servers
+  (`data/measurements/mcp-tools-list-benign/`), flagged definitions go from 58 to
+  6 (hunt) and 57 to 5 (alert), 0 in enforce before and after; every true
+  positive of a rule that reads `tool_description`, given as a description, still
+  fires. Tests: `tests/tool-definition-scope.test.ts`.
 
 - **On Claude Code, the guard scans what a tool returned on PostToolUse.**
   Claude Code sends a tool's output at the top level of the PostToolUse hook

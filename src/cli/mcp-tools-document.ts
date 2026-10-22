@@ -16,6 +16,9 @@
  *     carries them as strings, never filled with something else.
  * One event per tool keeps a finding attributable to a tool name.
  *
+ * The CLI scans these events on an engine constructed with `toolDefinitions: true`, so the rules
+ * written for a tool being called do not run on them (src/tool-definition-scope.ts).
+ *
  * @module agent-threat-rules/cli/mcp-tools-document
  */
 

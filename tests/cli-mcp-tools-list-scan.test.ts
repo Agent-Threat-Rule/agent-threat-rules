@@ -11,7 +11,9 @@
  * Asserted: a poisoned tool is detected in the hunt lane and a benign one is not; the JSON-RPC
  * envelope and a log of responses are unpacked; a document with no tools fails instead of
  * reporting clean; a directive in a parameter description is detected; mcpServers documents and
- * explicit event files keep their existing path; and the CLI event matches the event `atr test`
+ * explicit event files keep their existing path; rules written for a tool being called do not run
+ * on tool definitions but still run on tool_call events in an event file (src/tool-definition-scope.ts);
+ * and the CLI event matches the event `atr test`
  * builds for the same tool description (no runtime producer builds tool-definition events: the
  * hook builds tool_call / tool_response events from invocations, src/hook-handler.ts).
  */
@@ -223,6 +225,30 @@ describe("atr scan — a tools/list document is scanned, one event per tool", ()
     expect(stderr).toContain("nothing was scanned");
     expect(stdout).not.toContain("No threats detected");
     expect(status).not.toBe(0);
+  });
+
+  it("does not run rules written for a tool being called on tool definitions", () => {
+    // Without the tool-definition scope these trip ATR-2026-00099 (delete in the name) and
+    // ATR-2026-00113 ("Get ... credentials"), both tool_call rules (src/tool-definition-scope.ts).
+    const tools = [
+      { name: "delete_repository", description: "Delete a GitHub repository.", inputSchema: { type: "object", properties: { repo: { type: "string" } } } },
+      {
+        name: "get_teams",
+        description: "Get details of the teams the user is a member of. Limited to organizations accessible with current credentials",
+        inputSchema: { type: "object", properties: {} },
+      },
+    ];
+    const { summary, status } = runScan(JSON.stringify({ tools }));
+    expect(summary?.events_scanned).toBe(2);
+    expect(ruleIds(summary)).toEqual([]);
+    expect(status).toBe(0);
+  });
+
+  it("still runs those rules on a tool call in an event file", () => {
+    const call = { type: "tool_call", timestamp: "2026-10-23T00:00:00.000Z", content: "delete_repository", fields: { tool_name: "delete_repository" } };
+    const { summary } = runScan(JSON.stringify([call]));
+    expect(summary?.events_scanned).toBe(1);
+    expect(ruleIds(summary)).toContain("ATR-2026-00099");
   });
 
   it("leaves the mcpServers path unchanged", () => {

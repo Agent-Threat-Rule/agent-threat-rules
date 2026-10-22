@@ -60,6 +60,10 @@ name, description and input schema, parameter descriptions included):
 atr scan tools.json
 ```
 
+On a `tools/list` result the rules written for a tool being called (they judge a call's name and
+arguments) do not run: a definition calls nothing. Rules for tool content, tool descriptions and
+the tool's identity do (engine option `toolDefinitions`, `src/tool-definition-scope.ts`).
+
 Use `--json` for machine-readable output:
 
 ```bash

@@ -32,6 +32,7 @@ import { loadRulesFromDirectory, loadRuleFile } from './loader.js';
 import { evaluateTraceRule } from './trace-evaluator.js';
 import { evaluateSemanticRule } from './semantic-evaluator.js';
 import { laneAllows, requiresConfirm, type Lane } from './quality/rule-contract.js';
+import { appliesToToolDefinition } from './tool-definition-scope.js';
 import { laneFromConfig } from './enforcement.js';
 import type { SessionTracker } from './session-tracker.js';
 import { computeVerdict, isModelDecided, modelDecisionsFromConfig, type ModelDecisions } from './verdict.js';
@@ -336,6 +337,16 @@ export interface ATREngineConfig {
    * Any other value throws at construction time.
    */
   modelDecisions?: ModelDecisions;
+  /**
+   * Every event this engine evaluates is an MCP tool definition: an entry of a `tools/list`
+   * document, which defines a tool and calls none (`atr scan` on such a document sets it). Rules
+   * written for a tool being called then do not run: a rule with agent_source.type `tool_call` runs
+   * only if one of its conditions reads `tool_description`, or if its subject is the tool's identity
+   * (TOOL_IDENTITY_RULES). Every other rule runs as without the option. See
+   * src/tool-definition-scope.ts. Default false: other producers (hooks, adapters, event files) are
+   * unaffected.
+   */
+  toolDefinitions?: boolean;
 }
 
 /**
@@ -453,16 +464,22 @@ export class ATREngine {
   }
 
   /**
-   * Whether this engine evaluates `rule` at all. A draft or deprecated status, or
-   * a maturity outside the lane, stops a rule before any of its conditions run,
+   * Whether this engine evaluates `rule` at all. A draft or deprecated status, a
+   * maturity outside the lane, or (on an engine constructed with
+   * `toolDefinitions: true`) a rule written for a tool being called, stops a rule
+   * before any of its conditions run,
    * so nothing about it — its false positives included — can be observed through
    * this engine. evaluateRaw() and evaluateAsync() both ask this, and a
    * measurement harness must ask it too before recording a number for a rule:
    * a rule that is never evaluated scores 0 by construction, and that 0 is not
    * a measurement.
    */
-  evaluates(rule: Pick<ATRRule, 'status' | 'maturity'>): boolean {
+  evaluates(
+    rule: Pick<ATRRule, 'status' | 'maturity'> & Partial<Pick<ATRRule, 'id' | 'agent_source' | 'detection'>>,
+  ): boolean {
     if (rule.status === 'deprecated' || rule.status === 'draft') return false;
+    // An engine scanning tool definitions does not run the rules written for a tool being called.
+    if (this.config.toolDefinitions === true && !appliesToToolDefinition(rule)) return false;
     return this.passesLane(rule);
   }
 
