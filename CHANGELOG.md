@@ -236,6 +236,18 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **`atr scan` scans an MCP `tools/list` document, one event per tool.** A file
+  holding `{"tools": [...]}`, or the JSON-RPC response `{"jsonrpc": "2.0",
+  "result": {"tools": [...]}}`, was wrapped as one event with no content,
+  skipped, and reported as "nothing was scanned", so the usual input for a
+  tool-poisoning check reached no rule. Each tool is now an `mcp_exchange`
+  event (`src/cli/mcp-tools-document.ts`): the content is the tool definition as
+  JSON, input schema and per-parameter descriptions included, and
+  `tool_name` / `tool_description` are set from the definition. A JSON array of
+  such responses is accepted too. A document that lists no tools fails with
+  "nothing was scanned" rather than reporting clean. `mcpServers` documents and
+  event files are read as before. Tests: `tests/cli-mcp-tools-list-scan.test.ts`.
+
 - **On Claude Code, the guard scans what a tool returned on PostToolUse.**
   Claude Code sends a tool's output at the top level of the PostToolUse hook
   input, as `tool_response` (checked against the shipped 2.1.280 binary).

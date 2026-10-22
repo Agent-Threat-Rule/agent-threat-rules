@@ -51,6 +51,15 @@ ATR Scan Results
     Confidence: 85% | Conditions: instruction_override
 ```
 
+`atr scan` also reads an MCP server configuration (`{"mcpServers": {...}}`, one event per
+server) and a `tools/list` result (`{"tools": [...]}` or the JSON-RPC response
+`{"jsonrpc": "2.0", "id": 1, "result": {"tools": [...]}}`, one event per tool, with the tool's
+name, description and input schema, parameter descriptions included):
+
+```bash
+atr scan tools.json
+```
+
 Use `--json` for machine-readable output:
 
 ```bash

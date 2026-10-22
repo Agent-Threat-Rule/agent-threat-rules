@@ -14,6 +14,7 @@ import { scanResultToSARIF } from '../converters/sarif.js';
 import { createTCReporter, resolveTcUrl } from '../tc-reporter.js';
 import { createSemanticJudgeFromConfig } from './semantic-judge-config.js';
 import { isModelDecided, type ModelDecisions } from '../verdict.js';
+import { toolsDocumentToEvents } from './mcp-tools-document.js';
 
 const SEVERITY_ORDER = ['informational', 'low', 'medium', 'high', 'critical'] as const;
 
@@ -210,8 +211,11 @@ async function scanMcpEvents(
   let events: AgentEvent[];
   try {
     const parsed = JSON.parse(raw);
-    // A config document becomes one event per server; every other input is unchanged.
-    events = configDocumentToEvents(parsed) ?? (Array.isArray(parsed) ? parsed : [parsed]);
+    // A config document becomes one event per server, a tools/list document one event per
+    // tool; every other input is unchanged.
+    events = configDocumentToEvents(parsed)
+      ?? toolsDocumentToEvents(parsed)
+      ?? (Array.isArray(parsed) ? parsed : [parsed]);
   } catch {
     console.error(`${RED}Error: Invalid JSON in ${eventsPath}${RESET}`);
     process.exit(1);
@@ -267,7 +271,9 @@ async function scanMcpEvents(
 
   // An event that never reached the engine is not a clean result, and the counts have to say so:
   // `events_scanned` used to be `events.length`, computed before the skip.
-  if (eventsEvaluated === 0) {
+  if (events.length === 0) {
+    console.error(`${RED}Error: nothing was scanned — the input contains no events and no tools${RESET}`);
+  } else if (eventsEvaluated === 0) {
     console.error(`${RED}Error: nothing was scanned — ${eventsSkipped} event(s) had no content${RESET}`);
   } else if (eventsSkipped > 0) {
     console.error(`${DIM}Warning: ${eventsSkipped} event(s) had no content and were not scanned${RESET}`);

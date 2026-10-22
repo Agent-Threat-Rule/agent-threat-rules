@@ -155,6 +155,7 @@ Zero-install scan of the current directory; the image bundles the CLI and pulls 
 ```bash
 atr scan skill.md                 # scan a SKILL.md file
 atr scan mcp-config.json          # scan MCP server config / event log
+atr scan tools.json               # scan an MCP tools/list result, one event per tool
 atr scan . --sarif > results.sarif
 atr convert generic-regex         # export rules as JSON (all patterns)
 atr convert splunk                # export to Splunk SPL
