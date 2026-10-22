@@ -88,7 +88,7 @@ detection:
       value: "(?i)(sudo|runas|doas|pkexec|gsudo)\\s+"
     - field: tool_args
       operator: regex
-      value: "(?i)(chmod\\s+(?:-[-\\w]+\\s+)*(?:[0-7]?[0-7]{2}[2367]|[2467][0-7]{3})(?![0-7])|chmod\\s+[ug]?\\+[sx]|chown\\s+root|setcap\\s)"
+      value: "(?i)(chmod\\s+(?:[0-7]?[0-7]{2}[2367]|[2467][0-7]{3})(?![0-7])|chmod\\s+(?:-[-\\w]+\\s+)+(?:[0-7]?[0-7]{2}[2367]|[2467][0-7]{3})(?![0-7])\\s+(?:/(?=[\\s\"'*;]|$)|/(?:etc|usr|var|bin|sbin|boot|lib|opt|root|home|srv)\\b|~|\\$HOME)|chmod\\s+[ug]?\\+[sx]|chown\\s+root|setcap\\s)"
     - field: tool_args
       operator: regex
       value: "(?i)(iptables|ufw|firewall-cmd|netsh\\s+advfirewall|pfctl)\\s"

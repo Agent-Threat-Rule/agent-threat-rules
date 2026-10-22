@@ -105,7 +105,7 @@ detection:
       description: Kubernetes privilege escalation (RBAC-binding creation, auth probing, or exec that spawns an absolute-path/bash shell; routine interactive debug exec excluded)
     - field: tool_args
       operator: regex
-      value: (?i)(?:chmod\s+(?:-[-\w]+\s+)*(?:[0-7]?[0-7]{2}[2367]|[2467][0-7]{3})(?![0-7])|chmod\s+[ug]\+s|chown\s+root|setcap\s+)
+      value: (?i)(?:chmod\s+(?:[0-7]?[0-7]{2}[2367]|[2467][0-7]{3})(?![0-7])|chmod\s+(?:-[-\w]+\s+)+(?:[0-7]?[0-7]{2}[2367]|[2467][0-7]{3})(?![0-7])\s+(?:/(?=[\s"'*;]|$)|/(?:etc|usr|var|bin|sbin|boot|lib|opt|root|home|srv)\b|~|\$HOME)|chmod\s+[ug]\+s|chown\s+root|setcap\s+)
       description: Unix permission escalation commands (setuid, root ownership)
     - field: tool_args
       operator: regex
