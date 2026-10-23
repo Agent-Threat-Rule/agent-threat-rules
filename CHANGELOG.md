@@ -4,7 +4,7 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
-## [4.2.0] - 2026-10-23
+## [4.2.0] - 2026-10-24
 
 The first release since 4.1.5. For an integrator it changes three things at
 runtime: the Claude Code guard reads what a tool returned instead of what it
