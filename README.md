@@ -478,7 +478,7 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | promptfoo (2026-05-12 import) [^legacyvendor] | corpus-2026-05-12 | 44 | 90.9% (hunt) / 6.8% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | PromptInject (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 1,080 | 100.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) | 97.0% (hunt) | 0.20% (hunt) | 4.1.5 | 2026-10-15 |
-| Vendor guardrail suites (pinned upstream tests) [^vendorsuites] | pinned-2026-10-19 | 146 | 77.0% (hunt) / 5.6% (enforce) | not cited [^vendorsuites] | not cited [^vendorsuites] | 4.1.5 | 2026-10-19 |
+| Vendor guardrail suites (pinned upstream tests) [^vendorsuites] | pinned-2026-10-19 | 146 | 79.4% (hunt) / 5.6% (enforce) | not cited [^vendorsuites] | not cited [^vendorsuites] | 4.2.0 | 2026-10-23 |
 | Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) [^wildscan] | full-scan-v2-2026-04-13 | 101,280 | — | not measured | 1.42% flag rate | 2.0.0 | 2026-04-13 |
 
 The `Vendor guardrail suites` row is the test cases of llm-guard, NeMo
@@ -764,8 +764,9 @@ See [CHANGELOG.md](CHANGELOG.md).
 benign test cases (llm-guard 46 / 16, NeMo Guardrails 22 / 4, promptfoo 58 / 0),
 each traceable to repo, commit, path and line in
 [`manifest.json`](data/test-corpora/vendor-guardrail-suites/manifest.json). At ATR
-4.1.5 (measured 2026-10-19) recall is 97/126 (hunt), 92/126 (alert) and 7/126
-(enforce). Without the 16 rules whose YAML names promptfoo, llm-guard or NeMo, or
+4.2.0 (measured 2026-10-23, after #709 grounded ATR-2026-00500, -00501 and
+-00505 in these cases) recall is 100/126 (hunt), 95/126 (alert) and 7/126
+(enforce); at 4.1.5 (2026-10-19) it was 97, 92 and 7. Without the 16 rules whose YAML names promptfoo, llm-guard or NeMo, or
 carries the `(vendor-corpus-import)` tag, it is 78/126 = 61.9% (hunt), 70/126 =
 55.6% (alert) and 7/126 = 5.6% (enforce); per vendor in the hunt lane, llm-guard
 26/46, NeMo Guardrails 20/22, promptfoo 32/58. That ablation is the reference
