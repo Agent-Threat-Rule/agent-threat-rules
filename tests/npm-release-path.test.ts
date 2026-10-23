@@ -105,6 +105,20 @@ describe("npm release path", () => {
     expect(lines.filter((l) => DIRECT_NPM_PUBLISH.test(l) || STAGE_DECISION.test(l))).toEqual([]);
   });
 
+  it("the version bump commits the reconciled stats cache with package.json", () => {
+    const bump = (parse(RELEASE_WORKFLOW).jobs?.publish?.steps ?? []).find((s) =>
+      (s.run ?? "").includes('git commit -m "release: v$NEW"'),
+    );
+    expect(bump).toBeDefined();
+    const run = bump!.run!;
+    const reconcile = run.indexOf("npm run reconcile-stats");
+    const add = run.indexOf("git add package.json data/stats.json");
+    const commit = run.indexOf('git commit -m "release: v$NEW"');
+    expect(reconcile).toBeGreaterThan(-1);
+    expect(add).toBeGreaterThan(reconcile);
+    expect(commit).toBeGreaterThan(add);
+  });
+
   it("scripts/release.sh leaves publishing to publish.yml", () => {
     const lines = readFileSync(join(ROOT, "scripts", "release.sh"), "utf8")
       .split("\n")
