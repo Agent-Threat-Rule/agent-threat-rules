@@ -67,7 +67,7 @@ detection:
   conditions:
     - field: tool_args
       operator: regex
-      value: "(?i)(?:';|\"\\s*;|--)\\s*(?:DROP\\s+(?:TABLE|DATABASE|INDEX|VIEW)|TRUNCATE\\s+(?:TABLE\\s+)?\\w|DELETE\\s+FROM\\s+\\w)"
+      value: "(?i)(?:'\\s*;|\"\\s*;|--)\\s*(?:DROP\\s+(?:TABLE|DATABASE|INDEX|VIEW)|TRUNCATE\\s+(?:TABLE\\s+)?\\w|DELETE\\s+FROM\\s+\\w)"
       description: "SQL injection: quote-termination followed by destructive DDL"
     - field: tool_args
       operator: regex
@@ -75,7 +75,7 @@ detection:
       description: "DROP TABLE with comment suppressor"
     - field: user_input
       operator: regex
-      value: "(?i)(?:';|\"\\s*;)\\s*(?:DROP\\s+TABLE|TRUNCATE|DELETE\\s+FROM\\s+\\w)"
+      value: "(?i)(?:'\\s*;|\"\\s*;)\\s*(?:DROP\\s+TABLE|TRUNCATE|DELETE\\s+FROM\\s+\\w)"
       description: "Destructive DDL injection in user input"
   condition: any
   false_positives:
@@ -103,6 +103,12 @@ test_cases:
     - tool_args: "{\"filter\": \"x'; TRUNCATE TABLE orders; --\"}"
       expected: triggered
       description: "TRUNCATE TABLE injection"
+    - tool_args: "{\"filter\": \"1' ; TRUNCATE TABLE accounts; --\"}"
+      expected: triggered
+      description: "TRUNCATE with a space between the quote and the semicolon (issue #620)"
+    - tool_args: "{\"id\": \"7' ; DELETE FROM sessions; --\"}"
+      expected: triggered
+      description: "DELETE FROM with a space between the quote and the semicolon (issue #620)"
     - user_input: "Find products with name = \"'; DROP TABLE products; --\""
       expected: triggered
       description: "Destructive DDL in user-facing search input"
