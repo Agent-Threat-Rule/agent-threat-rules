@@ -139,13 +139,41 @@ field is `type` on the TypeScript side and `event_type` on the Python side —
 they are the same concept with different spellings.
 
 `evaluateRaw` maps `event.type` through `EVENT_TYPE_TO_SOURCE` and skips any
-rule whose `agent_source.type` differs, with three documented exceptions
-(`src/engine.ts`, the source-type filter block): `mcp_exchange` rules also run
-on `tool_call` events; `llm_io` rules also run on tool responses, because a
-poisoned tool/RAG output is the primary indirect-injection channel and the
-payload never appears in a direct `llm_input`; and `method: trace` rules run
-whenever the event actually carries a trace. When `scanContext` is `skill` the
-source-type filter is skipped entirely and all rules fire.
+rule whose `agent_source.type` differs (`sourceAdmits` in `src/engine.ts`, one
+definition for both evaluation paths). The extended types name what a rule
+reads rather than an event stream, so `RUNTIME_SOURCE_TYPE` first maps them to
+the source type whose events carry that data: `context_window` to `llm_io`,
+`skill_lifecycle`, `skill_permission` and `skill_chain` to `tool_call`. Before
+that table existed no event type matched them and those rules never ran on a
+typed event. `memory_access` is withheld for now (`WITHHELD_SOURCE_TYPES`, with
+the reason), so its rules still run only on an `mcp_exchange` event and in a
+skill scan, and `atr test` reports their cases as unevaluable. Three documented exceptions
+follow: `mcp_exchange` rules also run on `tool_call` events; `llm_io` rules also
+run on tool responses, because a poisoned tool/RAG output is the primary
+indirect-injection channel and the payload never appears in a direct
+`llm_input`; and `method: trace` rules run whenever the event actually carries a
+trace. An `mcp_exchange` event has no source type and admits every rule, with
+one exception: on an engine constructed with `toolDefinitions: true`
+(reference-engine scan-context behaviour, off by default; only `atr scan` sets
+it, and only for a `tools/list` document), each event is a tool definition, and
+a rule
+whose `agent_source.type` is `tool_call` runs only if one of its conditions
+reads `tool_description`, or if it is listed in `TOOL_IDENTITY_RULES`
+(`src/tool-definition-scope.ts`, one entry per rule with the reason). The
+criterion is rule-level: one condition reading `tool_description` admits the
+whole rule, so all of ATR-2026-00441's conditions run on a definition, its
+`tool_args` and `tool_name` ones included. The gate sits in `evaluates()`, next
+to the status and lane checks (§3.4), and `getToolDefinitionScope()` reports how
+many rules it left out; `atr scan --json` prints that count, so a rule that did
+not run is not read as a clean result. A definition defines a tool and calls
+none: on 710 benign definitions from 45 MCP servers, rules written to judge a
+call (its name and arguments) were behind 54 of the 58 hunt-lane flags
+(`data/measurements/mcp-tools-list-benign/`). ATR-SPEC-v1
+§5.1 maps an `mcp_exchange` event to `mcp_exchange` rules only; the reference
+engine admits every rule on it, and this scope narrows that for tool
+definitions, as §5.2's scan-target filtering does for SKILL.md and runtime
+scans. When `scanContext` is `skill` the source-type filter is skipped entirely
+and all rules fire.
 
 Three call shapes:
 
@@ -153,7 +181,7 @@ Three call shapes:
 |---|---|---|
 | `evaluate(event)` | sync, regex only. In enforce/alert it **drops** `confirm: embedding` rules, because the confirmation is async and an unconfirmed broad rule must not block. | fast advisory scanning |
 | `evaluateAsync(event)` | same walk, plus the async semantic judge | semantic rules |
-| `evaluateWithVerdict(event, executor?)` | `evaluate` + embedding confirm + `computeVerdict` + optional action dispatch. Returns `{verdict, actionResults, layersUsed}`. | enforce/alert deployments |
+| `evaluateWithVerdict(event, executor?)` | `evaluate` + embedding confirm + `computeVerdict` + optional action dispatch. Returns `{verdict, actionResults, layersUsed}`. A match a model decided (semantic judge, embedding signal, semantic layer) is reported in `verdict.advisory` and runs only its observe-tier actions, unless the engine is built with `modelDecisions: 'enforce'`. | enforce/alert deployments |
 
 `scanSkill(content)` / `scanSkillFull(content, filePath?)` are the SKILL.md
 entry points, and they are not just `evaluate` with a different event:
@@ -220,7 +248,12 @@ A label below the deny threshold is capped one basis point under it, so
 `medium` peaks at 0.7999 and a `high`-severity match on a `medium` label asks
 however many conditions fire. Coverage can still lift a `low` label to exactly
 0.60, which asks on a `medium`-severity match. Semantic-judge and embedding
-confidences are continuous and are compared as given.
+confidences are continuous and are compared as given — when they are compared
+at all: by default (`modelDecisions: 'advisory'`) a match a model decided
+(`decidedBy` semantic-judge, embedding or semantic-layer) is left out of the
+outcome, and of its actions only the observe tier runs. It is listed in
+`verdict.advisory`. `computeVerdict` sorts the matches itself; it does not rely
+on its caller's order.
 
 `isAutoResponseEnabled` additionally requires `response.auto_response_threshold`
 to be met before an action may run unattended.

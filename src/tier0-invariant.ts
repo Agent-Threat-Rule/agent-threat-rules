@@ -227,6 +227,7 @@ export class InvariantChecker {
       confidence: 1.0,
       timestamp: new Date().toISOString(),
       scan_context: 'native' as const,
+      decidedBy: 'invariant' as const,
     };
   }
 

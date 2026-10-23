@@ -102,22 +102,22 @@ detection:
 
     - field: content
       operator: regex
-      value: '(?i)(?:plugins?|mcp_servers?)\s*[:=]\s*\[?\s*\{[^}]{0,400}"command"\s*:\s*"(?:curl|wget)"'
+      value: '(?i)(?:plugins?|mcp_servers?)\s*[:=]\s*(?:\[\s*)?\{[^}]{0,400}"command"\s*:\s*"(?:curl|wget)"'
       description: "Plugin/MCP-servers config block where the command field resolves to curl/wget — never a legitimate plugin launcher target"
 
     - field: content
       operator: regex
-      value: '(?i)(?:plugins?|mcp_servers?)\s*[:=]\s*\[?\s*\{[^}]{0,400}"command"\s*:\s*"(?:bash|sh|cmd|powershell)"[^}]{0,300}"args"\s*:\s*\[[^\]]{0,300}(?:https?://|\|\s*(?:ba)?sh\b|-enc(?:odedcommand)?\b|base64|iwr\b|invoke-webrequest)'
+      value: '(?i)(?:plugins?|mcp_servers?)\s*[:=]\s*(?:\[\s*)?\{[^}]{0,400}"command"\s*:\s*"(?:bash|sh|cmd|powershell)"[^}]{0,300}"args"\s*:\s*\[[^\]]{0,300}(?:https?://|\|\s*(?:ba)?sh\b|-enc(?:odedcommand)?\b|base64|iwr\b|invoke-webrequest)'
       description: "Plugin/MCP-servers config block where the wrapper shell (bash/sh/cmd/powershell) args show a genuine payload marker (URL fetch, pipe-to-shell, base64/encoded-command). Excludes benign self-launch idioms like 'sh -c cd /project && node dist/index.js' or 'bash -c /absolute/path/to/own-installed-binary --flag', which lack any such marker — those are the standard way MCP servers document their own stdio launch command, not RCE setup."
 
     - field: content
       operator: regex
-      value: '(?i)(?:^|\n)\s*command\s*:\s*[\x27"]?(?:curl|wget)[\x27"]?\s*\n\s*args?\s*:'
+      value: '(?i)(?:^|\n)[^\S\n]*command\s*:\s*[\x27"]?(?:curl|wget)[\x27"]?[^\S\n]*\n\s*args?\s*:'
       description: "YAML-style plugin config with curl/wget as command — never a legitimate plugin launcher target"
 
     - field: content
       operator: regex
-      value: '(?i)(?:^|\n)\s*command\s*:\s*[\x27"]?(?:bash|sh|cmd|powershell)[\x27"]?\s*\n\s*args?\s*:[\s\S]{0,300}(?:https?://|\|\s*(?:ba)?sh\b|-enc(?:odedcommand)?\b|base64|iwr\b|invoke-webrequest)'
+      value: '(?i)(?:^|\n)[^\S\n]*command\s*:\s*[\x27"]?(?:bash|sh|cmd|powershell)[\x27"]?[^\S\n]*\n\s*args?\s*:[\s\S]{0,300}(?:https?://|\|\s*(?:ba)?sh\b|-enc(?:odedcommand)?\b|base64|iwr\b|invoke-webrequest)'
       description: "YAML-style plugin config with wrapper shell command and args showing a genuine payload marker — same rationale as the JSON-form condition above"
 
     - field: content
@@ -142,7 +142,7 @@ detection:
 
     - field: content
       operator: regex
-      value: '(?i)(?:^|\n)\s+-\s+-(?:c|e|-eval|-command)\s*$'
+      value: '(?i)(?:^\s+|\S[^\S\n]*\n\s+)-\s+-(?:c|e|-eval|-command)\s*$'
       description: "YAML-style args list with inline-execution flag as standalone entry — co-occurrence anchor"
 
 response:

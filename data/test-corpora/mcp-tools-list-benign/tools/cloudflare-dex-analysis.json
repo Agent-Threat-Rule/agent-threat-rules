@@ -1,0 +1,583 @@
+{
+  "tools": [
+    {
+      "name": "dex_test_statistics",
+      "description": "Analyze Cloudflare DEX Test Results by quartile given a Test ID",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "testId": {
+            "type": "string",
+            "description": "The DEX Test ID to analyze details of."
+          },
+          "from": {
+            "type": "string",
+            "description": "The datetime of the beginning point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-21T18:00:00Z)."
+          },
+          "to": {
+            "type": "string",
+            "description": "The datetime of the ending point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-22T00:00:00Z)."
+          }
+        },
+        "required": [
+          "testId",
+          "from",
+          "to"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_list_tests",
+      "description": "Retrieve a list of all Cloudflare DEX Tests configured.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "minimum": 1,
+            "description": "The page of results to retrieve."
+          }
+        },
+        "required": [
+          "page"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_http_test_details",
+      "description": "Retrieve detailed time series results for an HTTP DEX test by id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "testId": {
+            "type": "string",
+            "description": "The HTTP DEX Test ID to get details for."
+          },
+          "deviceId": {
+            "type": "string",
+            "description": "Optionally limit results to specific device(s). Can't be used in conjunction with the colo parameter."
+          },
+          "colo": {
+            "type": "string",
+            "description": "Optionally filter results to a specific Cloudflare colo."
+          },
+          "from": {
+            "type": "string",
+            "description": "The datetime of the beginning point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-21T18:00:00Z)."
+          },
+          "to": {
+            "type": "string",
+            "description": "The datetime of the ending point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-22T00:00:00Z)."
+          },
+          "interval": {
+            "type": "string",
+            "enum": [
+              "minute",
+              "hour"
+            ],
+            "description": "The time interval to group results by."
+          }
+        },
+        "required": [
+          "testId",
+          "from",
+          "to",
+          "interval"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_traceroute_test_details",
+      "description": "Retrieve detailed time series results for a Traceroute DEX test by id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "testId": {
+            "type": "string",
+            "description": "The traceroute DEX Test ID to get details for."
+          },
+          "deviceId": {
+            "type": "string",
+            "description": "Optionally limit results to specific device(s). Can't be used in conjunction with the colo parameter."
+          },
+          "colo": {
+            "type": "string",
+            "description": "Optionally filter results to a specific Cloudflare colo."
+          },
+          "timeStart": {
+            "type": "string",
+            "description": "The datetime of the beginning point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-21T18:00:00Z)."
+          },
+          "timeEnd": {
+            "type": "string",
+            "description": "The datetime of the ending point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-22T00:00:00Z)."
+          },
+          "interval": {
+            "type": "string",
+            "enum": [
+              "minute",
+              "hour"
+            ],
+            "description": "The time interval to group results by."
+          }
+        },
+        "required": [
+          "testId",
+          "timeStart",
+          "timeEnd",
+          "interval"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_traceroute_test_network_path",
+      "description": "Retrieve aggregate network path data for a Traceroute DEX test by id. Use the dex_traceroute_test_result_network_path tool to further explore individual test runs hop-by-hop.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "testId": {
+            "type": "string",
+            "description": "The traceroute DEX Test ID to get network path details for."
+          },
+          "deviceId": {
+            "type": "string",
+            "description": "The ID of the device to get network path details for."
+          },
+          "from": {
+            "type": "string",
+            "description": "The datetime of the beginning point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-21T18:00:00Z)."
+          },
+          "to": {
+            "type": "string",
+            "description": "The datetime of the ending point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-22T00:00:00Z)."
+          },
+          "interval": {
+            "type": "string",
+            "enum": [
+              "minute",
+              "hour"
+            ],
+            "description": "The time interval to group results by."
+          }
+        },
+        "required": [
+          "testId",
+          "deviceId",
+          "from",
+          "to",
+          "interval"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_traceroute_test_result_network_path",
+      "description": "Retrieve the hop-by-hop network path for a specific Traceroute DEX test result by id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "testResultId": {
+            "type": "string",
+            "description": "The traceroute DEX Test Result ID to get network path details for."
+          }
+        },
+        "required": [
+          "testResultId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_list_remote_capture_eligible_devices",
+      "description": "Retrieve a list of devices eligible for remote captures. You'll need the device_id and user_email from this response in order to create a remote capture for a specific device. It can also be used as a generic source to find devices registered to the account, filtering by user email if necessary.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "minimum": 1,
+            "description": "The page of results to retrieve."
+          },
+          "search": {
+            "type": "string",
+            "description": "Filter devices by name or email."
+          }
+        },
+        "required": [
+          "page"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_create_remote_pcap",
+      "description": "Create a remote packet capture (PCAP) for a device. This is a resource intensive and privacy-sensitive operation on a real user device.Always ask for confirmation from the user that the targeted email and device are correct before executing a capture",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "The device ID to target."
+          },
+          "user_email": {
+            "type": "string",
+            "format": "email",
+            "description": "The email of the user associated with the device."
+          },
+          "max-file-size-mb": {
+            "type": "number",
+            "minimum": 1,
+            "default": 5,
+            "description": "Maximum file size in MB for the capture file. Specifies the maximum file size of the warp-daig zip artifact that can be uploaded. If the zip artifact exceeds the specified max file size it will NOT be uploaded."
+          },
+          "packet-size-bytes": {
+            "type": "number",
+            "minimum": 1,
+            "default": 160,
+            "description": "Maximum number of bytes to save for each packet."
+          },
+          "time-limit-min": {
+            "type": "number",
+            "minimum": 1,
+            "default": 5,
+            "description": "Limit on capture duration in minutes"
+          }
+        },
+        "required": [
+          "device_id",
+          "user_email"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_create_remote_warp_diag",
+      "description": "Create a remote Warp Diagnostic (WARP-diag) for a device. This is a resource intensive and privacy-sensitive operation on a real user device.Always ask for confirmation from the user that the targeted email and device are correct before executing a capture",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "The device ID to target."
+          },
+          "user_email": {
+            "type": "string",
+            "format": "email",
+            "description": "The email of the user associated with the device."
+          },
+          "test-all-routes": {
+            "type": "boolean",
+            "default": true,
+            "description": "Test an IP address from all included or excluded ranges. Tests an IP address from all included or excluded ranges.Essentially the same as running 'route get '' and collecting the results. This option may increase the time taken to collect the warp-diag"
+          }
+        },
+        "required": [
+          "device_id",
+          "user_email"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_list_remote_captures",
+      "description": "Retrieve a list of remote captures for device debugging, like PCAPs or WARP Diags.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "minimum": 1,
+            "description": "The page of results to retrieve."
+          }
+        },
+        "required": [
+          "page"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_fleet_status_live",
+      "description": "Retrieve details about the real-time status of the fleet of devices broken down by dimension (mode, status, colo, platform, version)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "since_minutes": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 60,
+            "default": 10,
+            "description": "Number of minutes before current time to use as cutoff for device states to include."
+          },
+          "colo": {
+            "type": "string",
+            "description": "Optionally filter results to a specific Cloudflare colo."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_fleet_status_over_time",
+      "description": "Retrieve aggregate time series details about the status of the fleet of devices, or performance metrics for a specific device, over the specified time period.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "The datetime of the beginning point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-21T18:00:00Z)."
+          },
+          "to": {
+            "type": "string",
+            "description": "The datetime of the ending point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-22T00:00:00Z)."
+          },
+          "interval": {
+            "type": "string",
+            "enum": [
+              "minute",
+              "hour"
+            ],
+            "description": "The time interval to group results by."
+          },
+          "colo": {
+            "type": "string",
+            "description": "Filter results to WARP devices connected to a specific colo."
+          },
+          "device_id": {
+            "type": "string",
+            "description": "Filter results to a specific device."
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "interval"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_fleet_status_logs",
+      "description": "Retrieve raw fleet status device logs with a variety of levels of granularity and filtering. Use `source=last_seen` to view logs showing the last known state per device within the specified time period. Use `source=hourly` to view logs showing an hourly rollup per device where values are the average value of allevents within the time period. Use `source=raw` to view all logs for the specified period.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "minimum": 1,
+            "description": "The page of results to retrieve."
+          },
+          "from": {
+            "type": "string",
+            "description": "The datetime of the beginning point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-21T18:00:00Z)."
+          },
+          "to": {
+            "type": "string",
+            "description": "The datetime of the ending point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-22T00:00:00Z)."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "last_seen",
+              "hourly",
+              "raw"
+            ],
+            "description": "Specifies the granularity of results."
+          },
+          "colo": {
+            "type": "string",
+            "description": "Optionally filter results to a specific Cloudflare colo."
+          },
+          "device_id": {
+            "type": "string",
+            "description": "Filter results to a specific device."
+          },
+          "mode": {
+            "type": "string",
+            "description": "Filter results to devices with a specific WARP mode."
+          },
+          "platform": {
+            "type": "string",
+            "description": "Filter results to devices on a specific operating system."
+          },
+          "status": {
+            "type": "string",
+            "description": "Filter results to devices with a specific WARP connection status."
+          },
+          "version": {
+            "type": "string",
+            "description": "Filter results to devices with a specific WARP client version."
+          }
+        },
+        "required": [
+          "page",
+          "from",
+          "to",
+          "source"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_list_warp_change_events",
+      "description": "View logs of events when users toggle WARP on or off, or change configurations.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "The datetime of the beginning point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-21T18:00:00Z)."
+          },
+          "to": {
+            "type": "string",
+            "description": "The datetime of the ending point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-22T00:00:00Z)."
+          },
+          "page": {
+            "type": "number",
+            "minimum": 1,
+            "description": "The page of results to retrieve."
+          },
+          "account_name": {
+            "type": "string",
+            "description": "Optionally filter events by account name."
+          },
+          "config_name": {
+            "type": "string",
+            "description": "Optionally filter events by WARP configuration name changed from or to. Applicable to `type=config` events only."
+          },
+          "sort_order": {
+            "type": "string",
+            "enum": [
+              "ASC",
+              "DESC"
+            ],
+            "default": "ASC",
+            "description": "Set timestamp sort order."
+          },
+          "toggle": {
+            "type": "string",
+            "enum": [
+              "on",
+              "off"
+            ],
+            "description": "Optionally filter events by toggle value. Applicable to `type=toggle` events only."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "config",
+              "toggle"
+            ],
+            "description": "Optionally filter events by type."
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "page"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_list_colos",
+      "description": "View a list of Cloudflare colos sorted alphabetically or by frequency encountered in fleet status or DEX test data.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "The datetime of the beginning point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-21T18:00:00Z)."
+          },
+          "to": {
+            "type": "string",
+            "description": "The datetime of the ending point of time range for results. Must be in ISO 8601 datetime string in the extended format with UTC time (e.g, 2025-04-22T00:00:00Z)."
+          },
+          "sortBy": {
+            "type": "string",
+            "enum": [
+              "fleet-status-usage",
+              "application-tests-usage"
+            ],
+            "description": "Use `fleet-status-usage` to sort by frequency seen in device state checkins.Use `application-tests-usage` to sort by frequency seen in DEX test results. Omit to sort alphabetically."
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_list_remote_warp_diag_contents",
+      "description": "Given a WARP diag remote capture id and device_id, returns a list of the files contained in the archive.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "deviceId": {
+            "type": "string",
+            "description": "The device_id field of the successful WARP-diag remote capture response to list contents of."
+          },
+          "commandId": {
+            "type": "string",
+            "description": "The id of the successful WARP-diag remote capture response to list contents of."
+          }
+        },
+        "required": [
+          "deviceId",
+          "commandId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_explore_remote_warp_diag_output",
+      "description": "Explore the contents of remote capture WARP diag archive filepaths returned by the dex_list_remote_warp_diag_contents tool for analysis.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "commandId": {
+            "type": "string",
+            "description": "The id of the command results to explore"
+          },
+          "deviceId": {
+            "type": "string",
+            "description": "The device_id field of command to explore"
+          },
+          "filepath": {
+            "type": "string",
+            "description": "The file path from the archive to retrieve contents for."
+          }
+        },
+        "required": [
+          "commandId",
+          "deviceId",
+          "filepath"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dex_analyze_warp_diag",
+      "description": "Analyze successful WARP-diag remote captures for common issues. This should be the first place you start when trying to narrow down device-level issues with WARP.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "command_id": {
+            "type": "string",
+            "description": "The command_id of the successful WARP-diag remote capture to analyze."
+          }
+        },
+        "required": [
+          "command_id"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

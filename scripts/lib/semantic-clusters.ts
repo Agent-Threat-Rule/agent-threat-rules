@@ -3,11 +3,12 @@
  *
  * Reads proposals/{hackaprompt,promptinject,garak}-clusters/*.proposal.yaml
  * and returns the clusters scripts/author-semantic-rules.ts may author a rule
- * from, plus every cluster it skipped and why. Three filters apply, in order:
- * the quarantine (a whole source the lane does not trust yet), scope (ATR
- * detects attacks ON the agent, not content-safety harm), and size (a cluster
- * too small for the gate's TP-hit floor can never pass, so it does not cost an
- * LLM call).
+ * from, plus every cluster it skipped and why. Four filters apply, in order:
+ * the quarantine (a whole source the lane does not trust yet), an existing rule
+ * (a rule under rules/ declares the proposal's id or names it as its
+ * source_cluster; see semantic-existing-rules.ts), scope (ATR detects attacks ON
+ * the agent, not content-safety harm), and size (a cluster too small for the
+ * gate's TP-hit floor can never pass, so it does not cost an LLM call).
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
@@ -15,6 +16,12 @@ import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 import type { ATRCategory, ATRSeverity } from "../../src/types.js";
 import { MIN_FALLBACK_TP_HITS } from "./semantic-gate.js";
+import {
+  describeExistingRule,
+  existingRuleFor,
+  loadExistingRules,
+  type ExistingRules,
+} from "./semantic-existing-rules.js";
 
 const DEFAULT_REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -111,6 +118,8 @@ export interface ClusterCandidate {
 export interface Skip {
   rel: string;
   reason: string;
+  /** Set when the cluster was skipped because this rule already covers it. */
+  existingRule?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -186,7 +195,13 @@ function parseSeverity(raw: unknown): ATRSeverity {
     : "medium";
 }
 
-function parseCluster(f: string, rel: string, source: string, famMap: Map<string, string>): ClusterCandidate | Skip {
+function parseCluster(
+  f: string,
+  rel: string,
+  source: string,
+  famMap: Map<string, string>,
+  existing: ExistingRules,
+): ClusterCandidate | Skip {
   let doc: Record<string, unknown>;
   try {
     doc = yaml.load(readFileSync(f, "utf-8")) as Record<string, unknown>;
@@ -194,6 +209,8 @@ function parseCluster(f: string, rel: string, source: string, famMap: Map<string
     return { rel, reason: "yaml parse error" };
   }
   if (!doc || typeof doc !== "object") return { rel, reason: "not a YAML mapping" };
+  const covered = existingRuleFor(rel, doc.id, existing);
+  if (covered) return { rel, reason: describeExistingRule(covered), existingRule: covered.id };
   const tags = (doc.tags as { category?: string; source?: string } | undefined) ?? {};
   const category = tags.category as ATRCategory | undefined;
   if (!category || !VALID_CATEGORIES.has(category)) {
@@ -234,12 +251,15 @@ export interface FindCandidatesOptions {
   readonly sourceFilter?: string;
   /** Read quarantined sources too. Off by default; see QUARANTINED SOURCES. */
   readonly includeQuarantined?: boolean;
+  /** The rules a cluster may already have. Defaults to every rule under repoRoot/rules. */
+  readonly existingRules?: ExistingRules;
 }
 
 export function findCandidates(opts: FindCandidatesOptions = {}): { candidates: ClusterCandidate[]; skipped: Skip[] } {
   const repoRoot = opts.repoRoot ?? DEFAULT_REPO_ROOT;
   const proposalsBase = join(repoRoot, "proposals");
   const famMap = garakFamilyMap(proposalsBase);
+  const existing = opts.existingRules ?? loadExistingRules(repoRoot);
   const candidates: ClusterCandidate[] = [];
   const skipped: Skip[] = [];
 
@@ -251,7 +271,7 @@ export function findCandidates(opts: FindCandidatesOptions = {}): { candidates: 
       const rel = relative(repoRoot, f);
       const parsed: ClusterCandidate | Skip = quarantined
         ? { rel, reason: QUARANTINE_REASON }
-        : parseCluster(f, rel, source, famMap);
+        : parseCluster(f, rel, source, famMap, existing);
       if ("proposalRel" in parsed) candidates.push(parsed);
       else skipped.push(parsed);
     }

@@ -114,9 +114,23 @@ function fileRawDigest(inputFile: string): string | null {
  * @param toolVersion - ATR version string (e.g. "1.0.0")
  * @returns SARIF JSON object ready for serialization
  */
+export interface SarifOptions {
+  /**
+   * A match the scan reports without enforcing (a model decided it, and the scan
+   * runs with modelDecisions: advisory). Written at level note, with
+   * properties.enforced false, so a gate that counts results can leave it out.
+   */
+  readonly heldBack?: (match: ATRMatch) => boolean;
+  /** Properties of the run as a whole (SARIF run.properties), e.g. the tool-definition scope of `atr scan`. */
+  readonly runProperties?: Readonly<Record<string, unknown>>;
+  /** Extra properties for every result of one scan result (e.g. the tool name of a tools/list entry). */
+  readonly resultProperties?: (result: ScanResult) => Readonly<Record<string, unknown>> | undefined;
+}
+
 export function scanResultToSARIF(
   results: readonly ScanResult[],
   toolVersion: string,
+  options: SarifOptions = {},
 ): object {
   const { rules, ruleIndex } = collectRules(results);
 
@@ -182,10 +196,11 @@ export function scanResultToSARIF(
         };
       }
 
+      const heldBack = options.heldBack?.(match) === true;
       sarifResults.push({
         ruleId: match.rule.id,
         ruleIndex: idx,
-        level: severityToLevel(match.rule.severity),
+        level: heldBack ? 'note' : severityToLevel(match.rule.severity),
         message: {
           text: `${match.rule.title} (confidence: ${(match.confidence * 100).toFixed(0)}%, conditions: ${match.matchedConditions.join(', ')})`,
         },
@@ -200,6 +215,9 @@ export function scanResultToSARIF(
           // Retained alongside run.artifacts[].hashes for back-compat: anything
           // parsing today's output keeps working.
           content_hash: result.content_hash,
+          ...(match.decidedBy ? { decided_by: match.decidedBy } : {}),
+          ...(heldBack ? { enforced: false } : {}),
+          ...(options.resultProperties?.(result) ?? {}),
         },
       });
     }
@@ -220,6 +238,7 @@ export function scanResultToSARIF(
           },
         },
         ...(artifacts.length > 0 ? { artifacts } : {}),
+        ...(options.runProperties ? { properties: options.runProperties } : {}),
         results: sarifResults,
       },
     ],

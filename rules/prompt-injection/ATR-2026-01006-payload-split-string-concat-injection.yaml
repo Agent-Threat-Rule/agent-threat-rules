@@ -75,12 +75,12 @@ detection:
     # Interlace Part 1 / Part 2 character-level interleaving
     - field: user_input
       operator: regex
-      value: "(?i)interlace\\s+(part\\s*(1|one|2|two)|\"[^\"]{3,60}\"\\s*,?\\s+and\\s+\")"
+      value: "(?i)interlace\\s+(part\\s*(1|one|2|two)|\"[^\"]{3,60}\"(?:\\s*,)?\\s+and\\s+\")"
       description: "Character-level interlace instruction splitting a question across two parts"
     # Combine A, B, and C then answer the question
     - field: user_input
       operator: regex
-      value: "(?i)combine\\s+(A|Part\\s*1|the\\s+parts?)\\s*,?\\s+(B|Part\\s*2)?[^.\\n]{0,80}(answer\\s+the\\s+question|and\\s+answer|then\\s+answer|then\\s+give|give\\s+an\\s+example)"
+      value: "(?i)combine\\s+(A|Part\\s*1|the\\s+parts?)(?:\\s*,)?\\s+(?:(B|Part\\s*2)[^.\\n]{0,80}|(?:[^\\s.][^.\\n]{0,79})?)(answer\\s+the\\s+question|and\\s+answer|then\\s+answer|then\\s+give|give\\s+an\\s+example)"
       description: "Combine string parts then answer / give example pattern"
     # Answer using Part N fragments
     - field: user_input

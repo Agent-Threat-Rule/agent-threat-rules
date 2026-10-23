@@ -117,7 +117,7 @@
  *     because the API was down" must not look the same to CI.
  */
 
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
@@ -126,6 +126,7 @@ import { loadBenignSamples, loadCorpusTexts } from "./lib/benign-corpus.js";
 import { loadOwaspAllowlists, type OwaspAllowlists } from "./lib/normalize-references.js";
 import { buildAuthorPrompt, extractJson } from "./lib/semantic-author-prompt.js";
 import { QUARANTINE_REASON, findCandidates, type ClusterCandidate, type Skip } from "./lib/semantic-clusters.js";
+import { loadExistingRules, type ExistingRules } from "./lib/semantic-existing-rules.js";
 import {
   RESEARCH_MENTIONS_CORPUS,
   addPeer,
@@ -233,16 +234,34 @@ export function selectCandidates<T extends { proposalRel: string }>(
   return { fresh, alreadyAuthored, authoredBefore };
 }
 
-function loadAuthoredClusters(): Set<string> {
-  const docs: unknown[] = [];
-  for (const f of walkYamlAll(RULES_BASE)) {
-    try {
-      docs.push(yaml.load(readFileSync(f, "utf-8")));
-    } catch {
-      /* a rule that does not parse is validate's problem, not this lane's */
-    }
+/**
+ * Clusters named by a rule's `_semantic_authored.source_cluster`, from the same
+ * read of rules/ findCandidates() skips covered clusters with. findCandidates
+ * already drops them (and clusters whose proposal id is a rule id); this keeps
+ * selectCandidates' tree check honest for a caller that passes its own index.
+ */
+function authoredClustersIn(existing: ExistingRules): Set<string> {
+  return new Set(existing.bySourceCluster.keys());
+}
+
+/** A dedupe skip is not a scope decision: report it on its own line and count. */
+function isExistingRuleSkip(s: Skip): boolean {
+  return s.existingRule !== undefined;
+}
+
+/** Say why each cluster that already has a rule, or had one, is not authored this run. */
+function logDedupeSkips(
+  skipped: readonly Skip[],
+  alreadyAuthored: readonly ClusterCandidate[],
+  authoredBefore: readonly ClusterCandidate[],
+): void {
+  for (const s of skipped.filter(isExistingRuleSkip)) console.log(`[author-semantic] skip ${s.rel}: ${s.reason}`);
+  for (const c of alreadyAuthored) {
+    console.log(`[author-semantic] skip ${c.proposalRel}: already has a rule (_semantic_authored.source_cluster)`);
   }
-  return authoredClustersFromRules(docs);
+  for (const c of authoredBefore) {
+    console.log(`[author-semantic] skip ${c.proposalRel}: authored by an earlier run (--exclude-from)`);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -336,24 +355,6 @@ function openPrFilesOrExit(): readonly string[] {
     console.error(`FATAL: cannot read --open-pr-files ${OPEN_PR_FILES}: ${e instanceof Error ? e.message : String(e)}`);
     process.exit(1);
   }
-}
-
-// Like walkYaml but for the rules tree (any .yaml/.yml, not just proposals).
-function walkYamlAll(dir: string): string[] {
-  if (!existsSync(dir)) return [];
-  const out: string[] = [];
-  for (const entry of readdirSync(dir)) {
-    const f = join(dir, entry);
-    let s;
-    try {
-      s = statSync(f);
-    } catch {
-      continue;
-    }
-    if (s.isDirectory()) out.push(...walkYamlAll(f));
-    else if (s.isFile() && (entry.endsWith(".yaml") || entry.endsWith(".yml"))) out.push(f);
-  }
-  return out;
 }
 
 function slugify(title: string): string {
@@ -596,9 +597,10 @@ function buildSummary(inputs: RunInputs, outcomes: readonly Outcome[]) {
     rule_true_negatives: inputs.ruleTrueNegatives,
     candidates_total: inputs.candidatesTotal,
     candidates_attempted: outcomes.length,
-    skipped_out_of_scope: inputs.skipped.length,
+    skipped_out_of_scope: inputs.skipped.filter((s) => !isExistingRuleSkip(s)).length,
     skipped_quarantined: inputs.skipped.filter((s) => s.reason === QUARANTINE_REASON).length,
-    skipped_already_authored: inputs.alreadyAuthored,
+    // A rule under rules/ covers the cluster: by its proposal id or its source_cluster.
+    skipped_already_authored: inputs.skipped.filter(isExistingRuleSkip).length + inputs.alreadyAuthored,
     skipped_authored_before: inputs.authoredBefore,
     rules_already_in_pr: inputs.alreadyInPr,
     promotion_budget: inputs.budget,
@@ -686,21 +688,26 @@ async function main(): Promise<void> {
     process.exit(2);
   }
 
+  // Dedupe before capping. Slicing first would spend the whole --max budget
+  // on clusters that already have a rule and author nothing new. findCandidates
+  // drops a cluster a rule under rules/ already covers (its proposal id is a
+  // rule id, any status, or a rule names it as source_cluster: PR #719). A
+  // cluster authored in an earlier rolling PR that was closed or had the rule
+  // removed (--exclude-from, written by the workflow) is not authored again.
+  const existingRules = loadExistingRules(REPO_ROOT);
   const { candidates: found, skipped } = findCandidates({
     repoRoot: REPO_ROOT,
     sourceFilter: SOURCE_FILTER,
     includeQuarantined: INCLUDE_QUARANTINED,
+    existingRules,
   });
-  // Dedupe before capping. Slicing first would spend the whole --max budget
-  // on clusters that already have a rule and author nothing new. A cluster
-  // authored in an earlier rolling PR that was closed or had the rule removed
-  // (--exclude-from, written by the workflow) is not authored again.
   const authoredEver = EXCLUDE_FROM ? readExcludeList(EXCLUDE_FROM) : new Set<string>();
   const { fresh: candidates, alreadyAuthored, authoredBefore } = selectCandidates(
     found,
-    loadAuthoredClusters(),
+    authoredClustersIn(existingRules),
     authoredEver,
   );
+  logDedupeSkips(skipped, alreadyAuthored, authoredBefore);
   if (!Number.isInteger(MAX_PROMOTE) || MAX_PROMOTE < 0) {
     console.error(`FATAL: --max must be a non-negative integer, got "${opt("--max")}"`);
     process.exit(1);

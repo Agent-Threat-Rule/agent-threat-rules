@@ -39,6 +39,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { ENFORCE_LANE_BREAKDOWN_KEY, parseEnforceLaneRecall } from "../src/measurement/schema.js";
+import { type AblationReference, parseAblationReference } from "../src/measurement/in-sample-ablation.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const README_PATH = resolve(REPO_ROOT, "README.md");
@@ -62,15 +63,16 @@ export const LABEL_TO_SOURCE: ReadonlyMap<string, string> = new Map([
   ["HarmBench (CAIS behaviors)", "harmbench"],
   ["hh-rlhf (Anthropic red-team-attempts)", "hh-rlhf"],
   ["JailbreakBench (JBB-Behaviors)", "jailbreakbench"],
-  ["llm-guard (Protect AI test fixtures)", "llm-guard"],
+  ["llm-guard (2026-05-12 import)", "llm-guard"],
   ["MITRE ATLAS", "mitre-atlas"],
-  ["NeMo Guardrails (NVIDIA test fixtures)", "nemo-guardrails"],
+  ["NeMo Guardrails (2026-05-12 import)", "nemo-guardrails"],
   ["OWASP LLM Top 10", "owasp-llm-top10"],
   ["PINT-format (deepset + Lakera Gandalf)", "pint"],
   ["PromptBench (academic adversarial)", "promptbench"],
-  ["promptfoo (red-team plugin fixtures)", "promptfoo"],
+  ["promptfoo (2026-05-12 import)", "promptfoo"],
   ["PromptInject (academic adversarial)", "promptinject"],
   ["SKILL.md benchmark (internal)", "skill-benchmark"],
+  ["Vendor guardrail suites (pinned upstream tests)", "vendor-guardrail-suites"],
   ["Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub)", "wild-scan"],
 ]);
 
@@ -502,14 +504,93 @@ export function findCitationProblems(
   return { fatal: null, rowCount: rows.length, problems };
 }
 
+/**
+ * Root stats.json blocks that cite an ablation reference
+ * (`recallWithoutSourceNamedRules`) and the enforce lane, and the source whose
+ * measurement records them. Kept apart from ROOT_BLOCK_SOURCES, whose blocks
+ * render-benchmark-table.ts re-stamps field by field.
+ */
+export const ROOT_ABLATION_BLOCK_SOURCES: ReadonlyMap<string, string> = new Map([["hackaprompt", "hackaprompt"]]);
+
+/** Each source's cited ablation (breakdown.in_sample_ablation[reference]), read from its measurement file. */
+export function ablationBySource(
+  root: string,
+  entries: readonly { source: string; measurement_file?: string }[],
+): Map<string, AblationReference> {
+  const out = new Map<string, AblationReference>();
+  for (const e of entries) {
+    if (e.measurement_file === undefined) continue;
+    const path = resolve(root, e.measurement_file);
+    if (!existsSync(path)) continue;
+    const m = JSON.parse(readFileSync(path, "utf-8")) as { breakdown?: unknown };
+    const a = parseAblationReference(m.breakdown);
+    if (a !== null) out.set(e.source, a);
+  }
+  return out;
+}
+
+interface AblationCite {
+  enforceLaneRecall?: number;
+  recallWithoutSourceNamedRules?: { hunt?: number; enforce?: number; rulesRemoved?: number; measurementKey?: string };
+}
+
+/**
+ * A root block that quotes a headline from a partly in-sample corpus must carry
+ * the measurement's ablation reference beside it, at the recorded values, and
+ * the enforce lane: a re-measurement must not leave either stale.
+ */
+export function findAblationCitationProblems(
+  rootStats: { benchmarks?: Record<string, unknown> },
+  ablations: ReadonlyMap<string, AblationReference>,
+  enforce: ReadonlyMap<string, number>,
+): string[] {
+  const problems: string[] = [];
+  for (const [block, source] of ROOT_ABLATION_BLOCK_SOURCES) {
+    const cite = rootStats.benchmarks?.[block] as AblationCite | undefined;
+    if (cite === undefined) continue;
+    const recorded = ablations.get(source);
+    const r = cite.recallWithoutSourceNamedRules;
+    if (recorded === undefined) {
+      if (r !== undefined) {
+        problems.push(`stats.json: benchmarks.${block}.recallWithoutSourceNamedRules is cited, but data/measurements/${source}/ records no breakdown.in_sample_ablation`);
+      }
+    } else if (r === undefined) {
+      problems.push(`stats.json: benchmarks.${block} omits recallWithoutSourceNamedRules; the measurement records the ablation reference ${recorded.key}`);
+    } else {
+      const want = {
+        hunt: Number((recorded.hunt.recall * 100).toFixed(1)),
+        enforce: pctLaneNumber(recorded.enforce.recall),
+        rulesRemoved: recorded.removed_rule_ids.length,
+        measurementKey: recorded.key,
+      };
+      for (const k of Object.keys(want) as (keyof typeof want)[]) {
+        if (r[k] !== want[k]) {
+          problems.push(`stats.json: benchmarks.${block}.recallWithoutSourceNamedRules.${k} = ${String(r[k])} but the measurement records ${String(want[k])} (breakdown.in_sample_ablation)`);
+        }
+      }
+    }
+    const e = enforce.get(source);
+    if (e !== undefined && cite.enforceLaneRecall !== pctLaneNumber(e)) {
+      problems.push(`stats.json: benchmarks.${block}.enforceLaneRecall = ${String(cite.enforceLaneRecall)} but the measurement records ${pctLaneNumber(e)}`);
+    }
+  }
+  return problems;
+}
+
 function main(): number {
   const dataStats = readJson(DATA_STATS_PATH) as { benchmarks?: (BenchmarkEntry & { measurement_file?: string })[] };
-  const { fatal, rowCount, problems } = findCitationProblems(
+  const rootStats = readJson(ROOT_STATS_PATH) as RootStats;
+  const enforce = enforceRecallBySource(REPO_ROOT, dataStats.benchmarks ?? []);
+  const { fatal, rowCount, problems: citationProblems } = findCitationProblems(
     readFileSync(README_PATH, "utf-8"),
     dataStats,
-    readJson(ROOT_STATS_PATH) as RootStats,
-    enforceRecallBySource(REPO_ROOT, dataStats.benchmarks ?? []),
+    rootStats,
+    enforce,
   );
+  const problems = [
+    ...citationProblems,
+    ...findAblationCitationProblems(rootStats, ablationBySource(REPO_ROOT, dataStats.benchmarks ?? []), enforce),
+  ];
   if (fatal !== null) {
     console.error(fatal);
     return 1;

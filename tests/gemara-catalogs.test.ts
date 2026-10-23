@@ -332,6 +332,21 @@ describe.skipIf(!HAS_JQ)("publish-gemara.yml: already-published gate", () => {
     expect(output).toContain("publish=true");
   });
 
+  it("publishes when oras reports the tag as not found, as GHCR did on the first publish", () => {
+    const ref = `${REF}:${generated.version}`;
+    const { result, output } = gate({
+      error: `Error response from registry: failed to fetch the content of "${ref}": ${ref}: not found`,
+    });
+    expect(result.status).toBe(0);
+    expect(output).toContain("publish=true");
+  });
+
+  it("does not read any other 'not found' as unpublished", () => {
+    const { result, output } = gate({ error: "Error: credentials helper not found" });
+    expect(result.status).not.toBe(0);
+    expect(output).not.toContain("publish=");
+  });
+
   it("pushes nothing when the version is published with these exact catalogs", () => {
     const { result, output } = gate(published());
     expect(result.status).toBe(0);

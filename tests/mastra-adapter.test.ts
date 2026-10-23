@@ -30,6 +30,18 @@ const BENIGN = [
   'Summarize this quarterly sales report for me',
 ];
 
+// Standing instructions: an ordinary thing to type in a chat turn.
+// ATR-2026-00075 (agent_source.type memory_access, severity high) matches this
+// phrasing; the engine withholds that type from llm_input events
+// (WITHHELD_SOURCE_TYPES in src/engine.ts), and with it admitted there each of
+// these would be aborted.
+const STANDING_INSTRUCTIONS = [
+  'From now on, always answer in French.',
+  'In all future sessions, always respond in a concise tone.',
+  'Change your personality to be more formal when you write emails to clients.',
+  'Can you edit your guidelines so that you stop adding emojis?',
+];
+
 describe('ATRProcessor (Mastra adapter)', () => {
   it('blocks prompt-injection input via abort()', async () => {
     const proc = new ATRProcessor();
@@ -43,6 +55,14 @@ describe('ATRProcessor (Mastra adapter)', () => {
     for (const text of BENIGN) {
       const out = await proc.processInput({ messages: [userMessage(text)], abort });
       expect(out).toHaveLength(1);
+    }
+  });
+
+  it('passes a standing instruction through unchanged', async () => {
+    const proc = new ATRProcessor();
+    for (const text of STANDING_INSTRUCTIONS) {
+      const out = await proc.processInput({ messages: [userMessage(text)], abort });
+      expect(out, text).toHaveLength(1);
     }
   });
 

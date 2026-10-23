@@ -13,7 +13,7 @@ AI Agent 威脅偵測規則的開放格式
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-ATR%20Scan-2ea44f?style=flat-square&logo=github)](https://github.com/marketplace/actions/atr-scan)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square)](LICENSE)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19178002-blue?style=flat-square)](https://doi.org/10.5281/zenodo.19178002)
-[![Rules](https://img.shields.io/badge/rules-836-blue?style=flat-square)](#5-specification)
+[![Rules](https://img.shields.io/badge/rules-843-blue?style=flat-square)](#5-specification)
 [![Categories](https://img.shields.io/badge/categories-10-blue?style=flat-square)](#7-coverage)
 [![OWASP Agentic](https://img.shields.io/badge/OWASP_Agentic_Top_10-10%2F10-brightgreen?style=flat-square)](#7-coverage)
 [![Sponsor](https://img.shields.io/badge/sponsor-Open%20Collective-7FADF2?style=flat-square&logo=opencollective&logoColor=white)](https://opencollective.com/agent-threat-rules)
@@ -155,6 +155,7 @@ Zero-install scan of the current directory; the image bundles the CLI and pulls 
 ```bash
 atr scan skill.md                 # scan a SKILL.md file
 atr scan mcp-config.json          # scan MCP server config / event log
+atr scan tools.json               # scan an MCP tools/list result, one event per tool
 atr scan . --sarif > results.sarif
 atr convert generic-regex         # export rules as JSON (all patterns)
 atr convert splunk                # export to Splunk SPL
@@ -301,9 +302,12 @@ PY
 
 Programmatic embedding: `new ATREngine({ lane })` for the lane,
 `new ActionExecutor({ adapter, blocking })` and
-`new HookHandler({ engine, executor, blocking })` for enforcement. **These are
-the only inputs** — the constructors ignore `ATR_LANE` and `ATR_BLOCKING`, so
-setting them will not configure an embedded engine. An unrecognised lane throws
+`new HookHandler({ engine, executor, blocking })` for enforcement, and
+`new ATREngine({ modelDecisions })` for whether a match a model decided (a
+semantic judge, the embedding signal, the semantic layer) may enforce; it is
+advisory by default. **These are the only inputs** — the constructors ignore
+`ATR_LANE`, `ATR_BLOCKING` and `ATR_MODEL_DECISIONS`, so setting them will not
+configure an embedded engine. An unrecognised lane throws
 a `TypeError`, and so does a non-boolean `blocking`: `blocking: "false"` is a
 string, and every non-empty string is truthy, so it used to switch enforcement
 **on** while reading as an explicit "off".
@@ -461,20 +465,34 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
 | garak (in-the-wild jailbreaks) [^garakcorpus] | inthewild-jailbreak-corpus-650 | 650 | 92.3% (hunt) / 0.9% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | garak-full (all probe families) [^garakcorpus] | 23-families | 3,475 | 57.2% (hunt) / 0.5% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| hackaprompt | v1 | 4,780 | 69.6% | 100.0% | 0.0% | 3.5.0 | 2026-06-16 |
+| hackaprompt [^hackaprompt] | v1 | 4,780 | 83.1% (hunt) / 49.0% (enforce) | not cited [^hackaprompt] | not cited [^hackaprompt] | 4.1.5 | 2026-10-19 |
 | HarmBench (CAIS behaviors) | upstream-2026-10-15 | 400 | 6.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | hh-rlhf (Anthropic red-team-attempts) [^stdcorpora] | snapshot-2026-04 | 4,957 | 1.4% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | JailbreakBench (JBB-Behaviors) | upstream-2026-10-15 | 100 | 3.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| llm-guard (Protect AI test fixtures) | corpus-2026-05-12 | 44 | 63.6% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
+| llm-guard (2026-05-12 import) [^legacyvendor] | corpus-2026-05-12 | 44 | 63.6% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | MITRE ATLAS [^stdcorpora] | snapshot-2026-04 | 182 | 37.4% (hunt) / 1.1% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| NeMo Guardrails (NVIDIA test fixtures) | corpus-2026-05-12 | 6 | 100.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
+| NeMo Guardrails (2026-05-12 import) [^legacyvendor] | corpus-2026-05-12 | 6 | 100.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | OWASP LLM Top 10 [^stdcorpora] | snapshot-2026-04 | 56 | 16.1% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | PINT-format (deepset + Lakera Gandalf) [^pint] | v1 | 850 | 65.4% (hunt) / 0.4% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | PromptBench (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 3,280 | 15.7% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| promptfoo (red-team plugin fixtures) | corpus-2026-05-12 | 44 | 90.9% (hunt) / 6.8% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
+| promptfoo (2026-05-12 import) [^legacyvendor] | corpus-2026-05-12 | 44 | 90.9% (hunt) / 6.8% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | PromptInject (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 1,080 | 100.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
 | SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) | 97.0% (hunt) | 0.20% (hunt) | 4.1.5 | 2026-10-15 |
+| Vendor guardrail suites (pinned upstream tests) [^vendorsuites] | pinned-2026-10-19 | 146 | 77.0% (hunt) / 5.6% (enforce) | not cited [^vendorsuites] | not cited [^vendorsuites] | 4.1.5 | 2026-10-19 |
 | Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) [^wildscan] | full-scan-v2-2026-04-13 | 101,280 | — | not measured | 1.42% flag rate | 2.0.0 | 2026-04-13 |
+
+The `Vendor guardrail suites` row is the test cases of llm-guard, NeMo
+Guardrails and promptfoo extracted by script from pinned upstream commits
+([`data/test-corpora/vendor-guardrail-suites/`](data/test-corpora/vendor-guardrail-suites/README.md)).
+It is partly in-sample: 16 rules name one of the three vendors or carry the
+`(vendor-corpus-import)` tag. Its measurement file re-measures the same samples
+without them (`breakdown.in_sample_ablation.without_rules_naming_source`), the
+ablation reference to cite beside the row: 61.9% (hunt) / 5.6% (enforce) at
+ATR 4.1.5, measured 2026-10-19. That is not an out-of-sample figure either; see
+[^vendorsuites]. The weekly run does not re-measure this row:
+`bash scripts/vendor-suites/reproduce.sh --write` does. The three
+`2026-05-12 import` rows are the earlier hand-assembled corpora; not all of
+their samples come from the vendor they name ([^legacyvendor]).
 
 A `Recall` cell gives two figures from the same measurement file. The first is
 the `hunt` lane: the engine default, which loads every maturity, and the figure
@@ -482,24 +500,29 @@ the `hunt` lane: the engine default, which loads every maturity, and the figure
 one to run when blocking is on, which loads only `stable` rules: the same
 samples through the same detection loop, recorded as `breakdown.enforce_lane`.
 Read the second before deploying with blocking on; see [^skilllane].
-`autoresearch` and `hackaprompt` show only the first, because their last
-measurements predate the second's recording, and `Wild scan` has no recall at
-all. `Precision` and `FP rate` are `hunt`-lane figures, measured only on the
+`autoresearch` shows only the first, because its last measurement predates
+the second's recording, and `Wild scan` has no recall at all. `Precision` and `FP rate` are `hunt`-lane figures, measured only on the
 rows that contain benign samples (`atr-self-test`, `PINT-format` and `SKILL.md
 benchmark`); elsewhere they are convention values or, for `Wild scan`, a flag
 rate, not results (see Conventions below).
 
 Whether a corpus was used to write the rules it scores has been examined for
-`garak`, `garak-full`, `PromptInject` and `PromptBench` ([^garakcorpus],
-[^promptcorpora]); all four are partly closed-book. The other rows are not
+`garak`, `garak-full`, `PromptInject`, `PromptBench` ([^garakcorpus],
+[^promptcorpora]) and `hackaprompt` ([^hackaprompt]); all five are partly
+closed-book. For `hackaprompt`, 20 rules name HackAPrompt in their YAML,
+several mined from this exact sample; the same measurement file re-runs the
+samples without them (`breakdown.in_sample_ablation.without_rules_naming_source`),
+the ablation reference to cite beside the row: 28.7% (hunt) / 0.7% (enforce)
+at ATR 4.1.5, measured 2026-10-19. It approximates an out-of-sample figure; it
+is not one. The other rows are not
 thereby out-of-sample: `atr-self-test` is built partly from the rules' own true
 positives, and the rules authored `(vendor-corpus-import)` name the `promptfoo`
 and `llm-guard` fixtures as their source.
 
-A weekly run re-measures every row except three, which keep their earlier
-measurements: `hackaprompt`, whose corpus is not provisioned in CI, so the run
-skips it (its cell also predates the 2026-08-05 change of the evaluation
-harness's default event shape); `autoresearch`, an internal predicted-rule
+A weekly run re-measures every row except the following, which keep their
+earlier measurements: `hackaprompt`, whose corpus (a gated HuggingFace dataset) is not
+provisioned in CI, so the run skips it and the row is re-measured locally with
+`npm run eval:hackaprompt`; `autoresearch`, an internal predicted-rule
 corpus with no standalone runner; and the `Wild scan` snapshot. The table is
 re-rendered from the measurement files; the prose and footnotes are not, so a
 figure there holds for the version it names. Before the weekly run, every row
@@ -737,6 +760,38 @@ See [CHANGELOG.md](CHANGELOG.md).
     columns are properties of the corpus, not measurements — read them
     together with the benign-gate FP counts above, never alone.
 
+[^vendorsuites]: **Partly in-sample; precision not cited.** 126 attack and 20
+benign test cases (llm-guard 46 / 16, NeMo Guardrails 22 / 4, promptfoo 58 / 0),
+each traceable to repo, commit, path and line in
+[`manifest.json`](data/test-corpora/vendor-guardrail-suites/manifest.json). At ATR
+4.1.5 (measured 2026-10-19) recall is 97/126 (hunt), 92/126 (alert) and 7/126
+(enforce). Without the 16 rules whose YAML names promptfoo, llm-guard or NeMo, or
+carries the `(vendor-corpus-import)` tag, it is 78/126 = 61.9% (hunt), 70/126 =
+55.6% (alert) and 7/126 = 5.6% (enforce); per vendor in the hunt lane, llm-guard
+26/46, NeMo Guardrails 20/22, promptfoo 32/58. That ablation is the reference
+to cite beside the row, and it still overstates out-of-sample recall, by an
+amount the same file measures (`breakdown.overlaps`): 35 further rules carry a
+40-character run of some vendor sample's text in their YAML, and 23 of the 78
+hunt-lane detections in the ablation are by such a rule on the sample it
+overlaps; removing those rules too gives 58/126 = 46.0% (hunt) / 5/126 = 4.0%
+(enforce). Five NeMo Guardrails attack samples (DAN-style jailbreaks) share 58%
+to 99% of their text with a prompt in `garak-full`'s `dan.json` and
+`inthewild.json`, a corpus other rules were mined from; all five are detected in
+the hunt lane of the ablation. The vendors ship only 20 benign cases (the hunt
+lane flags 1, the enforce lane 0), too few for a precision or FP-rate claim, so
+the cells say "not cited" and `data/stats.json` carries `null` for both
+(`breakdown.precision_not_citable`).
+
+[^legacyvendor]: These three rows are the corpora assembled by hand on
+2026-05-12 and attributed to the vendors' test suites. A script-based audit
+([`legacy-corpora-provenance.json`](data/test-corpora/vendor-guardrail-suites/legacy-corpora-provenance.json))
+checked each of their 94 samples against the vendor repo it names, at a pinned
+commit: 79 occur verbatim in the vendor file they name, 3 are truncated or
+edited from it, 2 are another vendor's test cases, and 10 are not found
+verbatim anywhere in the vendor repository at the pinned commit. Read them as ATR-assembled corpora seeded from vendor tests, not as the
+vendors' fixtures; the `Vendor guardrail suites` row is the script-extracted
+replacement.
+
 [^stdcorpora]: Until 2026-08-05 these three rows were **not produced by the ATR
     engine**. `scripts/eval-std-corpora.ts` walked `rules/` with a YAML parser,
     kept only `operator: regex` conditions, flattened every condition of every
@@ -823,7 +878,7 @@ the note in the lanes section above for why. Where a row has benign samples
 npm test                                    # engine + rule unit tests (vitest)
 npm run eval                                # atr-self-test eval (writes a measurement)
 npm run eval:pint                           # PINT benchmark (writes a measurement)
-npx tsx src/eval/run-hackaprompt-benchmark.ts                                # HackAPrompt
+npm run eval:hackaprompt                                                     # HackAPrompt (gated dataset; writes a measurement)
 npx tsx src/eval/skill-benchmark.ts                                          # SKILL.md (498 labeled)
 npx tsx scripts/eval-std-corpora.ts                                          # HH-RLHF + OWASP + ATLAS
 npx tsx scripts/atr_recall_analysis.ts                                       # PromptBench + PromptInject
@@ -837,6 +892,24 @@ npx tsx scripts/sync-stats-from-measurements.ts                              # r
 ```
 
 Raw data: [`data/full-scan-v2-2026-04-14.json`](data/full-scan-v2-2026-04-14.json) — 101,280 skills scanned, 1,434 flagged, engine 2.0.0, timestamped 2026-04-13. The malware-campaign write-up is in [`docs/research/openclaw-malware-campaign-2026-04.md`](docs/research/openclaw-malware-campaign-2026-04.md).
+
+[^hackaprompt]: **Partly in-sample; cite the ablation reference beside it.**
+The samples are a seeded subset of 4,780 of the dataset's 601,757 rows
+(`hackaprompt/hackaprompt-dataset` at revision `25b87fbe`, parquet sha256
+`bedca308...`, seed 20260511, rows shorter than 3 characters dropped), pinned
+by row indices and digests in
+[`hackaprompt-corpus.manifest.json`](data/hackaprompt/hackaprompt-corpus.manifest.json);
+`npm run eval:hackaprompt` re-draws it and stops on any mismatch. At ATR 4.1.5
+(measured 2026-10-19) recall is 3,972 (hunt), 3,931 (alert) and 2,343
+(enforce) of 4,780. Without the 20 rules whose YAML names HackAPrompt it is
+1,372 = 28.7% (hunt) / 32 = 0.7% (enforce): the ablation reference, an
+approximation of out-of-sample recall that does not guarantee it (a rule that
+does not name HackAPrompt can still have been tuned on these prompts). The
+corpus has no benign samples, so precision and FP rate are undefined on it:
+the cells say "not cited" and `data/stats.json` carries `null` for both
+(`breakdown.precision_not_citable`). Earlier figures for this row (28.6% → 66.2% in the 2.2.0 CHANGELOG
+entry, 69.6% at ATR 3.5.0) and their re-runs are in
+[`data/hackaprompt/METHOD.md`](data/hackaprompt/METHOD.md).
 
 [^wildscan]: Scanned and flagged counts come from `total_scanned` and `total_flagged` in the raw scan file; the flag rate is those two divided. **No precision figure is given because none was measured over this run.** Earlier material paired a manual-review count against a smaller 96,096-skill analysis subset and reported the ratio as a precision floor. The review covered that subset rather than all 1,434 flags, so the ratio does not describe this scan and is not reproducible from the raw file; it has been withdrawn rather than recomputed. Establishing precision here means re-reviewing a sample of the 1,434 flags, which has not been done.
 

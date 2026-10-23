@@ -166,9 +166,13 @@ describe("evaluability mirrors the engine", () => {
     ["tool_call", true],
     ["mcp_exchange", true],
     ["multi_agent_comm", true],
+    // The engine admits these where llm_io / tool_call rules run (RUNTIME_SOURCE_TYPE).
+    ["context_window", true],
+    ["skill_lifecycle", true],
+    // Withheld from typed events (WITHHELD_SOURCE_TYPES): no corpus event runs it.
     ["memory_access", false],
-    ["context_window", false],
-    ["skill_lifecycle", false],
+    ["agent_trace", false],
+    ["agent_behavior", false],
   ])("source type %s -> exercised by the eval corpus: %s", (type, expected) => {
     expect(isCorpusCovered(rule({ agent_source: { type } } as Partial<ATRRule>))).toBe(expected);
   });

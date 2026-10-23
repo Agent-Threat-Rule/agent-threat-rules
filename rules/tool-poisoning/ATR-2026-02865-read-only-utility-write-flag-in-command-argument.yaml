@@ -1,0 +1,444 @@
+title: "Read-Only Allow-Listed Utility Invoked With a File-Write or State-Changing Option in a Command Argument"
+id: ATR-2026-02865
+rule_version: 1
+status: experimental
+description: >
+  Detects an agent or MCP tool call whose command-string argument starts with a
+  utility that command allow-lists commonly classify as read-only (sort, uniq,
+  diff, date, hostname, file) and gives it the option or operand that makes the
+  utility itself write a file, run a helper program, or change system state.
+  No shell metacharacter is involved: the allowed binary opens the destination
+  on its own, so filters that only look for ; | && $( ) never see it.
+
+  This is the shape reported as CVE-2026-105789 / GHSA-85w2-wggf-rw49 against
+  Microsoft UFO before 3.0.9. The execute_command tool of the Linux MCP server
+  (ufo/client/mcp/http_servers/linux_mcp_server.py) accepted a free-form
+  command string and allowed sort and uniq as read-only commands, so
+  'sort -o <file>' or the optional second uniq operand created or overwrote any
+  file writable by the server process (agent configuration, shell startup
+  files). The fix (commit 4f79362) removed sort and added per-command argument
+  policies; its regression tests (tests/test_linux_mcp_command_policy.py) list
+  the rejected forms used here. The command string is produced by the model,
+  so a prompt injection that steers the next tool call is enough to reach it.
+
+  Six layers, each one utility's state-changing form:
+  (1) sort with -o / an -o short-option cluster / --output (and its unique
+  prefixes --o, --out ...), or --compress-program naming anything other than a
+  real compressor (gzip, pigz, bzip2, xz, lz4, zstd, ...): sort executes that
+  program, which turns a read-only allow-list entry into code execution;
+  (2) diff with --output / --out / -o;
+  (3) uniq with two non-option operands, where the second is the output file;
+  option arguments of -f / -s / -w are consumed so 'uniq -f 2 data.txt' is not
+  read as two operands;
+  (4) date with -s / --set (and --se, --s) or a bare operand that is a valid
+  MMDDhhmm[[CC]YY][.ss] timestamp (month 01-12, day 01-31, hour 00-23, minute
+  00-59), both of which set the system clock; a YYYYMMDD string such as
+  'date 20261022' is not a valid month and does not match;
+  (5) hostname given a new name as its only operand, or -F / --file;
+  (6) file with --compile (or its unique prefixes --co, --comp ...), which
+  writes a compiled magic database (.mgc) into the working directory.
+
+  Scope and limits: the utility must be the FIRST token of a JSON string value
+  whose key is command-like: command, cmd, cmd_line, command_line, cmdline,
+  commandline, shell, script, exec, args, argv, optionally prefixed by a word
+  ending in '_' or '-' (bash_command, shell_cmd) or by bash, shell, sh, run,
+  exec, raw or full (shellCommand, runCmd). Keys that merely end in those
+  letters (transcript, subscript) do not count. The utility may be prefixed by
+  sudo or a /usr/bin, /bin or ./ path. A JSON-escaped tab (\t) between tokens is
+  treated as whitespace, because the shell splits on it; an escaped newline is
+  not, because it ends the command. Commands reached after a pipe, ';', '&&' or
+  a newline, passed as an argv array, or wrapped by env / nice / timeout are
+  out of scope (shell-metacharacter rules cover the chained forms). file -C
+  cannot be told apart from the read-only file -c because the engine matches
+  case-insensitively, so only the long --compile form is covered. file -z /
+  --uncompress, which the same fix also rejects, is not covered: it runs only
+  libmagic's fixed decompressor list, not an attacker-chosen program, and
+  'file -z archive.gz' is ordinary read-only use. uniq operands that are quoted
+  are not matched. CWE-88, CWE-184.
+
+  RE2 portability: every condition compiles under RE2 (checked with Go
+  regexp). The earlier lookarounds were replaced without changing behaviour:
+  trailing lookaheads now consume the terminator, the uniq option/operand
+  lookaheads became explicit alternatives, and the --compress-program
+  compressor exception became a positive witness generated from the
+  compressor/path trie. Measured equivalent to the lookaround version on
+  2.4M generated command strings and an exhaustive 1.48M-string sweep of the
+  --compress-program value forms. The trade-off is size: Layer 1 is about
+  2.4 KB because a finite exception list has no short RE2 spelling.
+
+  Known false positive: in a general-purpose shell tool where writing files is
+  allowed, the ordinary write forms of these utilities match exactly like the
+  attack, for example 'sort -o sorted.txt data.txt', in-place sorting with
+  'sort -u -o names.txt names.txt', and 'uniq -c sorted.txt counts.txt'. The
+  rule reports that a read-only-looking utility was used to write, not intent,
+  which is why severity is medium and the response is observe-only.
+author: "ATR Community (CVE sync)"
+date: "2026/10/22"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: medium
+
+references:
+  cve:
+    - "CVE-2026-105789"
+  ghsa:
+    - "GHSA-85w2-wggf-rw49"
+  cwe:
+    - "CWE-88"
+    - "CWE-184"
+  owasp_llm:
+    - "LLM06:2025"
+    - "LLM03:2025"
+  owasp_agentic:
+    - "ASI02:2026"
+    - "ASI05:2026"
+    - "ASI04:2026"
+  mitre_atlas:
+    - "AML.T0053 - AI Agent Tool Invocation"
+  mitre_attack:
+    - "T1565.001 - Data Manipulation: Stored Data Manipulation"
+    - "T1546.004 - Event Triggered Execution: Unix Shell Configuration Modification"
+    - "T1202 - Indirect Command Execution"
+  external:
+    - "https://github.com/microsoft/UFO/security/advisories/GHSA-85w2-wggf-rw49"
+    - "https://github.com/microsoft/UFO/pull/349"
+    - "https://github.com/microsoft/UFO/commit/4f793622794f5d47810d54bed431c61f6a781dd6"
+    - "https://github.com/microsoft/UFO/releases/tag/v3.0.9"
+    - "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-93406"
+
+metadata_provenance:
+  cve: euvd-sync
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_atlas: human-reviewed
+  mitre_attack: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 requires cybersecurity appropriate to the intended purpose. An agent whose command tool trusts sort, uniq, diff, date, hostname or file as read-only can be steered into overwriting its own configuration or changing system state; flagging those utilities' write and set forms provides detection evidence supporting Article 15 robustness at the agent-to-OS boundary."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management must identify how an agent's tools can be misused. Matches from this rule provide detection evidence supporting Article 9 by showing when a command allow-list's read-only classification was exceeded through a utility's own options, a risk that first-token allow-lists do not capture."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "MS.2.7 requires security and resilience to be evaluated and documented. Inspecting each command-tool invocation for file-write and state-changing options of allow-listed utilities is a measurable per-call control rather than an assumption that the allow-list is complete."
+      strength: primary
+    - function: Manage
+      subcategory: "MG.3.2"
+      context: "MG.3.2 covers monitoring of third-party components in operation. The vulnerable execute_command tool ships with an agent framework the deployer did not write; monitoring the commands it actually receives is the operational check on that component."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational control over externally provided processes covers the MCP servers an agent invokes. This rule is applied to every command those servers receive, independent of the server's own argument policy."
+      strength: primary
+    - clause: "8.3"
+      context: "Clause 8.3 AI risk treatment requires controls proportionate to the risk. Because one sort -o can overwrite the agent's own configuration, runtime detection of the write form is a proportionate treatment alongside upgrading the framework."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: read-only-utility-write-option
+  scan_target: tool_args
+  confidence: medium
+  source: cve-disclosure
+  vendor_sources: microsoft-ufo-cve-2026-105789
+
+agent_source:
+  type: mcp_exchange
+  framework:
+    - mcp
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  method: pattern
+  false_positives:
+    - "Known false positive: a general-purpose shell tool where the user genuinely asks the agent to write sorted or de-duplicated output to a file produces the same tool call as the attack, for example sort -o sorted.txt data.txt, in-place sort -u -o names.txt names.txt, or uniq -c sorted.txt counts.txt. The rule cannot tell intent; it reports that a utility commonly allow-listed as read-only was used in its write form."
+    - "Administrative agents that are meant to set the clock or hostname (date -s, hostname new-name) will match."
+    - "Building a custom magic database with file -C -m magic --compile in a development shell will match."
+    - "Security test suites and CVE reproductions that pass these command strings to a tool will match, which is intended for a detection corpus."
+  conditions:
+    # Shared pieces (repeated per layer because the engine has no macros; built by
+    # a generator so the six layers stay identical). Every pattern is RE2-portable:
+    # no lookahead / lookbehind, every repeat bound <= 1000, and nested counted
+    # repeats multiply to <= 1000 (Go regexp rejects a larger product).
+    #   KEY  \\{0,7}"(?:\w{0,24}?[_-]|bash|shell|sh|run|exec|raw|full)?(?:command|cmd|...)\\{0,7}"\s*:\s*\\{0,7}"
+    #        command-like JSON key, quotes JSON-escaped up to 3 levels; a prefix must
+    #        end in _ or - or be a listed word, so transcript / subscript do not count
+    #   SEP  (?:\s|\\(?:\\\\?)?t)   whitespace or a JSON-escaped tab (1-3 backslashes);
+    #        written with ? instead of {1,3} so it can nest inside {1,64} and {0,8}
+    #   PFX  (?:sudo SEP{1,64})?(?:/(?:usr/)?(?:local/)?s?bin/|\./)?   optional sudo / path
+    #   SKIP (?:SEP{1,64}[^\s"\\|;&<>]{1,80}){0,8}?SEP{1,64}   other tokens of the SAME
+    #        command; cannot cross a quote, backslash or shell operator
+    #   ARG  (?:\\{1,7}"|')?[^\s"\\|;&<>{}\[\],-]   the destination starts; an escaped
+    #        quote may open it, but a closing quote followed by } , ] does not
+    #   END  (?:SEP|\\{0,7}"|$)   consumes the token terminator (was a trailing lookahead;
+    #        consuming it is equivalent for a yes/no match)
+    # Every backslash run is bounded ({0,7} / {1,7} / {8}); an unbounded \\* before a
+    # quote is quadratic on a long backslash run.
+    #
+    # Layer 1 - sort -o / --output / --compress-program=<non-compressor>
+    # The compressor allow-list used to be a negative lookahead. It is now a
+    # positive "witness" that the program token is NOT one of gzip, pigz, bzip2,
+    # pbzip2, lbzip2, xz, pxz, lz4, lzop, zstd, pzstd, lzma, lzip, plzip, brotli
+    # (optionally after /bin/, /sbin/, /usr/bin/, /usr/sbin/, /usr/local/bin/ ...)
+    # followed by a terminator: either the token leaves that name/path trie at
+    # some character, ends early, or a full name is followed by something that
+    # is not whitespace, a quote, \\{0,7}" or \\{1,3}t. Generated from the trie.
+    - field: content
+      operator: regex
+      value: '\\{0,7}"(?:\w{0,24}?[_-]|bash|shell|sh|run|exec|raw|full)?(?:command_line|commandline|cmd_line|cmdline|command|cmd|shell|script|exec|args?|argv)\\{0,7}"\s*:\s*\\{0,7}"\s{0,16}(?:sudo(?:\s|\\(?:\\\\?)?t){1,64})?(?:/(?:usr/)?(?:local/)?s?bin/|\./)?sort(?:(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>]{1,80}){0,8}?(?:\s|\\(?:\\\\?)?t){1,64}(?:(?:-[bcdfghimnrsuvz]{0,8}o(?:\s|\\(?:\\\\?)?t){0,64}|--o(?:u(?:t(?:p(?:u(?:t)?)?)?)?)?(?:=|(?:\s|\\(?:\\\\?)?t){1,64}))(?:\\{1,7}"|'')?[^\s"\\|;&<>{}\[\],-]|--co[a-z-]{0,16}(?:=|(?:\s|\\(?:\\\\?)?t){1,64})(?:''(?:[^/bglpxz]|$)|\\{1,7}"[^\s"\\|;&<>{}\[\],/bglpxz-]|[^\s"\\|;&<>{}\[\],''/bglpxz-]|(?:''|\\{1,7}")?(?:/(?:usr/)?(?:local/)?s?bin/(?:[^bglpxz]|$|b(?:[^rz]|$|r(?:[^o]|$|o(?:[^t]|$|t(?:[^l]|$|l(?:[^i]|$))))|z(?:[^i]|$|i(?:[^p]|$|p(?:[^2]|$))))|g(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$)))|l(?:[^bz]|$|b(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$|p(?:[^2]|$))))|z(?:[^4imo]|$|i(?:[^p]|$)|m(?:[^a]|$)|o(?:[^p]|$)))|p(?:[^bilxz]|$|b(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$|p(?:[^2]|$))))|i(?:[^g]|$|g(?:[^z]|$))|l(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$)))|x(?:[^z]|$)|z(?:[^s]|$|s(?:[^t]|$|t(?:[^d]|$))))|x(?:[^z]|$)|z(?:[^s]|$|s(?:[^t]|$|t(?:[^d]|$)))|(?:gzip|pigz|bzip2|pbzip2|lbzip2|xz|pxz|lz4|lzop|zstd|pzstd|lzma|lzip|plzip|brotli)(?:[^\s''"\\]|\\{8}|\\{1,7}(?:[^"\\t]|$)|\\{4,7}t))|/(?:[^blsu]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$)))|l(?:[^o]|$|o(?:[^c]|$|c(?:[^a]|$|a(?:[^l]|$|l(?:[^/]|$|/(?:[^bs]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$)))|s(?:[^b]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$))))))))))|s(?:[^b]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$))))|u(?:[^s]|$|s(?:[^r]|$|r(?:[^/]|$|/(?:[^bls]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$)))|l(?:[^o]|$|o(?:[^c]|$|c(?:[^a]|$|a(?:[^l]|$|l(?:[^/]|$|/(?:[^bs]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$)))|s(?:[^b]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$))))))))))|s(?:[^b]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$)))))))))|(?:b(?:[^rz]|$|r(?:[^o]|$|o(?:[^t]|$|t(?:[^l]|$|l(?:[^i]|$))))|z(?:[^i]|$|i(?:[^p]|$|p(?:[^2]|$))))|g(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$)))|l(?:[^bz]|$|b(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$|p(?:[^2]|$))))|z(?:[^4imo]|$|i(?:[^p]|$)|m(?:[^a]|$)|o(?:[^p]|$)))|p(?:[^bilxz]|$|b(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$|p(?:[^2]|$))))|i(?:[^g]|$|g(?:[^z]|$))|l(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$)))|x(?:[^z]|$)|z(?:[^s]|$|s(?:[^t]|$|t(?:[^d]|$))))|x(?:[^z]|$)|z(?:[^s]|$|s(?:[^t]|$|t(?:[^d]|$)))|(?:gzip|pigz|bzip2|pbzip2|lbzip2|xz|pxz|lz4|lzop|zstd|pzstd|lzma|lzip|plzip|brotli)(?:[^\s''"\\]|\\{8}|\\{1,7}(?:[^"\\t]|$)|\\{4,7}t)))))'
+      description: "sort invoked with an output file (-o / --output) or with --compress-program naming a non-compressor program - sort writes or executes it itself (CVE-2026-105789 primary primitive)"
+    - field: tool_args
+      operator: regex
+      value: '\\{0,7}"(?:\w{0,24}?[_-]|bash|shell|sh|run|exec|raw|full)?(?:command_line|commandline|cmd_line|cmdline|command|cmd|shell|script|exec|args?|argv)\\{0,7}"\s*:\s*\\{0,7}"\s{0,16}(?:sudo(?:\s|\\(?:\\\\?)?t){1,64})?(?:/(?:usr/)?(?:local/)?s?bin/|\./)?sort(?:(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>]{1,80}){0,8}?(?:\s|\\(?:\\\\?)?t){1,64}(?:(?:-[bcdfghimnrsuvz]{0,8}o(?:\s|\\(?:\\\\?)?t){0,64}|--o(?:u(?:t(?:p(?:u(?:t)?)?)?)?)?(?:=|(?:\s|\\(?:\\\\?)?t){1,64}))(?:\\{1,7}"|'')?[^\s"\\|;&<>{}\[\],-]|--co[a-z-]{0,16}(?:=|(?:\s|\\(?:\\\\?)?t){1,64})(?:''(?:[^/bglpxz]|$)|\\{1,7}"[^\s"\\|;&<>{}\[\],/bglpxz-]|[^\s"\\|;&<>{}\[\],''/bglpxz-]|(?:''|\\{1,7}")?(?:/(?:usr/)?(?:local/)?s?bin/(?:[^bglpxz]|$|b(?:[^rz]|$|r(?:[^o]|$|o(?:[^t]|$|t(?:[^l]|$|l(?:[^i]|$))))|z(?:[^i]|$|i(?:[^p]|$|p(?:[^2]|$))))|g(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$)))|l(?:[^bz]|$|b(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$|p(?:[^2]|$))))|z(?:[^4imo]|$|i(?:[^p]|$)|m(?:[^a]|$)|o(?:[^p]|$)))|p(?:[^bilxz]|$|b(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$|p(?:[^2]|$))))|i(?:[^g]|$|g(?:[^z]|$))|l(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$)))|x(?:[^z]|$)|z(?:[^s]|$|s(?:[^t]|$|t(?:[^d]|$))))|x(?:[^z]|$)|z(?:[^s]|$|s(?:[^t]|$|t(?:[^d]|$)))|(?:gzip|pigz|bzip2|pbzip2|lbzip2|xz|pxz|lz4|lzop|zstd|pzstd|lzma|lzip|plzip|brotli)(?:[^\s''"\\]|\\{8}|\\{1,7}(?:[^"\\t]|$)|\\{4,7}t))|/(?:[^blsu]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$)))|l(?:[^o]|$|o(?:[^c]|$|c(?:[^a]|$|a(?:[^l]|$|l(?:[^/]|$|/(?:[^bs]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$)))|s(?:[^b]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$))))))))))|s(?:[^b]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$))))|u(?:[^s]|$|s(?:[^r]|$|r(?:[^/]|$|/(?:[^bls]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$)))|l(?:[^o]|$|o(?:[^c]|$|c(?:[^a]|$|a(?:[^l]|$|l(?:[^/]|$|/(?:[^bs]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$)))|s(?:[^b]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$))))))))))|s(?:[^b]|$|b(?:[^i]|$|i(?:[^n]|$|n(?:[^/]|$)))))))))|(?:b(?:[^rz]|$|r(?:[^o]|$|o(?:[^t]|$|t(?:[^l]|$|l(?:[^i]|$))))|z(?:[^i]|$|i(?:[^p]|$|p(?:[^2]|$))))|g(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$)))|l(?:[^bz]|$|b(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$|p(?:[^2]|$))))|z(?:[^4imo]|$|i(?:[^p]|$)|m(?:[^a]|$)|o(?:[^p]|$)))|p(?:[^bilxz]|$|b(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$|p(?:[^2]|$))))|i(?:[^g]|$|g(?:[^z]|$))|l(?:[^z]|$|z(?:[^i]|$|i(?:[^p]|$)))|x(?:[^z]|$)|z(?:[^s]|$|s(?:[^t]|$|t(?:[^d]|$))))|x(?:[^z]|$)|z(?:[^s]|$|s(?:[^t]|$|t(?:[^d]|$)))|(?:gzip|pigz|bzip2|pbzip2|lbzip2|xz|pxz|lz4|lzop|zstd|pzstd|lzma|lzip|plzip|brotli)(?:[^\s''"\\]|\\{8}|\\{1,7}(?:[^"\\t]|$)|\\{4,7}t)))))'
+      description: "Same as Layer 1, in the JSON-encoded tool argument object"
+
+    # Layer 2 - diff --output / --out / -o
+    - field: content
+      operator: regex
+      value: '\\{0,7}"(?:\w{0,24}?[_-]|bash|shell|sh|run|exec|raw|full)?(?:command_line|commandline|cmd_line|cmdline|command|cmd|shell|script|exec|args?|argv)\\{0,7}"\s*:\s*\\{0,7}"\s{0,16}(?:sudo(?:\s|\\(?:\\\\?)?t){1,64})?(?:/(?:usr/)?(?:local/)?s?bin/|\./)?diff(?:(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>]{1,80}){0,8}?(?:\s|\\(?:\\\\?)?t){1,64}(?:-[abcehnpqrtuvwyz]{0,6}o(?:\s|\\(?:\\\\?)?t){0,64}|--out(?:p(?:u(?:t)?)?)?(?:=|(?:\s|\\(?:\\\\?)?t){1,64}))(?:\\{1,7}"|'')?[^\s"\\|;&<>{}\[\],-]'
+      description: "diff invoked with an output file (--output / --out / -o) - diff writes the destination itself"
+    - field: tool_args
+      operator: regex
+      value: '\\{0,7}"(?:\w{0,24}?[_-]|bash|shell|sh|run|exec|raw|full)?(?:command_line|commandline|cmd_line|cmdline|command|cmd|shell|script|exec|args?|argv)\\{0,7}"\s*:\s*\\{0,7}"\s{0,16}(?:sudo(?:\s|\\(?:\\\\?)?t){1,64})?(?:/(?:usr/)?(?:local/)?s?bin/|\./)?diff(?:(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>]{1,80}){0,8}?(?:\s|\\(?:\\\\?)?t){1,64}(?:-[abcehnpqrtuvwyz]{0,6}o(?:\s|\\(?:\\\\?)?t){0,64}|--out(?:p(?:u(?:t)?)?)?(?:=|(?:\s|\\(?:\\\\?)?t){1,64}))(?:\\{1,7}"|'')?[^\s"\\|;&<>{}\[\],-]'
+      description: "Same as Layer 2, in the JSON-encoded tool argument object"
+
+    # Layer 3 - uniq with a second (output) operand. Options are consumed first;
+    # -f/-s/-w style options that are followed by a number must take it, so the
+    # number is never counted as an operand. Without lookaround this is spelled
+    # as: no options, or up to five options followed by a last option that is
+    # either argument-less (then the first operand may not start with a digit)
+    # or ends in its argument / -- (then it may).
+    - field: content
+      operator: regex
+      value: '\\{0,7}"(?:\w{0,24}?[_-]|bash|shell|sh|run|exec|raw|full)?(?:command_line|commandline|cmd_line|cmdline|command|cmd|shell|script|exec|args?|argv)\\{0,7}"\s*:\s*\\{0,7}"\s{0,16}(?:sudo(?:\s|\\(?:\\\\?)?t){1,64})?(?:/(?:usr/)?(?:local/)?s?bin/|\./)?uniq(?:(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>{}\[\],-][^\s"\\|;&<>]{0,200}|(?:(?:\s|\\(?:\\\\?)?t){1,64}(?:--|-[a-z\d]{1,6}(?:(?:\s|\\(?:\\\\?)?t){1,64}\d{1,6})?|--[a-z][a-z-]{1,20}(?:=[\w-]{0,20}|(?:\s|\\(?:\\\\?)?t){1,64}\d{1,6})?)){0,5}(?:\s|\\(?:\\\\?)?t){1,64}(?:(?:-[a-z\d]{1,6}|--[a-z][a-z-]{1,20})(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>{}\[\],\d-][^\s"\\|;&<>]{0,200}|(?:--|-[a-z\d]{1,6}(?:\s|\\(?:\\\\?)?t){1,64}\d{1,6}|--[a-z][a-z-]{1,20}(?:=[\w-]{0,20}|(?:\s|\\(?:\\\\?)?t){1,64}\d{1,6}))(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>{}\[\],-][^\s"\\|;&<>]{0,200}))(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>{}\[\],-][^\s"\\|;&<>]{0,200}(?:(?:\s|\\(?:\\\\?)?t)|\\{0,7}"|$)'
+      description: "uniq given an input and an output operand - uniq creates or overwrites the second file itself"
+    - field: tool_args
+      operator: regex
+      value: '\\{0,7}"(?:\w{0,24}?[_-]|bash|shell|sh|run|exec|raw|full)?(?:command_line|commandline|cmd_line|cmdline|command|cmd|shell|script|exec|args?|argv)\\{0,7}"\s*:\s*\\{0,7}"\s{0,16}(?:sudo(?:\s|\\(?:\\\\?)?t){1,64})?(?:/(?:usr/)?(?:local/)?s?bin/|\./)?uniq(?:(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>{}\[\],-][^\s"\\|;&<>]{0,200}|(?:(?:\s|\\(?:\\\\?)?t){1,64}(?:--|-[a-z\d]{1,6}(?:(?:\s|\\(?:\\\\?)?t){1,64}\d{1,6})?|--[a-z][a-z-]{1,20}(?:=[\w-]{0,20}|(?:\s|\\(?:\\\\?)?t){1,64}\d{1,6})?)){0,5}(?:\s|\\(?:\\\\?)?t){1,64}(?:(?:-[a-z\d]{1,6}|--[a-z][a-z-]{1,20})(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>{}\[\],\d-][^\s"\\|;&<>]{0,200}|(?:--|-[a-z\d]{1,6}(?:\s|\\(?:\\\\?)?t){1,64}\d{1,6}|--[a-z][a-z-]{1,20}(?:=[\w-]{0,20}|(?:\s|\\(?:\\\\?)?t){1,64}\d{1,6}))(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>{}\[\],-][^\s"\\|;&<>]{0,200}))(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>{}\[\],-][^\s"\\|;&<>]{0,200}(?:(?:\s|\\(?:\\\\?)?t)|\\{0,7}"|$)'
+      description: "Same as Layer 3, in the JSON-encoded tool argument object"
+
+    # Layer 4 - date -s / --set / a valid MMDDhhmm[[CC]YY][.ss] operand
+    - field: content
+      operator: regex
+      value: '\\{0,7}"(?:\w{0,24}?[_-]|bash|shell|sh|run|exec|raw|full)?(?:command_line|commandline|cmd_line|cmdline|command|cmd|shell|script|exec|args?|argv)\\{0,7}"\s*:\s*\\{0,7}"\s{0,16}(?:sudo(?:\s|\\(?:\\\\?)?t){1,64})?(?:/(?:usr/)?(?:local/)?s?bin/|\./)?date(?:(?:(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>]{1,80}){0,8}?(?:\s|\\(?:\\\\?)?t){1,64}(?:-u?s(?:\s|\\(?:\\\\?)?t){0,64}|--s(?:et?)?(?:=|(?:\s|\\(?:\\\\?)?t){1,64}))(?:\\{1,7}"|'')?[^\s"\\|;&<>{}\[\],-]|(?:(?:\s|\\(?:\\\\?)?t){1,64}(?:-u|--utc|--universal)){0,3}(?:\s|\\(?:\\\\?)?t){1,64}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])(?:[01]\d|2[0-3])[0-5]\d(?:\d{2}){0,2}(?:\.\d{2})?(?:(?:\s|\\(?:\\\\?)?t)|\\{0,7}"|$))'
+      description: "date invoked with -s / --set or a valid MMDDhhmm operand - both set the system clock"
+    - field: tool_args
+      operator: regex
+      value: '\\{0,7}"(?:\w{0,24}?[_-]|bash|shell|sh|run|exec|raw|full)?(?:command_line|commandline|cmd_line|cmdline|command|cmd|shell|script|exec|args?|argv)\\{0,7}"\s*:\s*\\{0,7}"\s{0,16}(?:sudo(?:\s|\\(?:\\\\?)?t){1,64})?(?:/(?:usr/)?(?:local/)?s?bin/|\./)?date(?:(?:(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>]{1,80}){0,8}?(?:\s|\\(?:\\\\?)?t){1,64}(?:-u?s(?:\s|\\(?:\\\\?)?t){0,64}|--s(?:et?)?(?:=|(?:\s|\\(?:\\\\?)?t){1,64}))(?:\\{1,7}"|'')?[^\s"\\|;&<>{}\[\],-]|(?:(?:\s|\\(?:\\\\?)?t){1,64}(?:-u|--utc|--universal)){0,3}(?:\s|\\(?:\\\\?)?t){1,64}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])(?:[01]\d|2[0-3])[0-5]\d(?:\d{2}){0,2}(?:\.\d{2})?(?:(?:\s|\\(?:\\\\?)?t)|\\{0,7}"|$))'
+      description: "Same as Layer 4, in the JSON-encoded tool argument object"
+
+    # Layer 5 - hostname <new-name> as the only operand, or hostname -F / --file
+    - field: content
+      operator: regex
+      value: '\\{0,7}"(?:\w{0,24}?[_-]|bash|shell|sh|run|exec|raw|full)?(?:command_line|commandline|cmd_line|cmdline|command|cmd|shell|script|exec|args?|argv)\\{0,7}"\s*:\s*\\{0,7}"\s{0,16}(?:sudo(?:\s|\\(?:\\\\?)?t){1,64})?(?:/(?:usr/)?(?:local/)?s?bin/|\./)?hostname(?:(?:\s|\\(?:\\\\?)?t){1,64}(?:-[bv]{1,2}|--boot|--verbose)){0,3}(?:\s|\\(?:\\\\?)?t){1,64}(?:(?:-[bv]{0,2}f(?:\s|\\(?:\\\\?)?t){0,64}|--fi(?:le?)?(?:=|(?:\s|\\(?:\\\\?)?t){1,64}))(?:\\{1,7}"|'')?[^\s"\\|;&<>{}\[\],-]|[a-z0-9][a-z0-9.-]{0,252}(?:\s|\\(?:\\\\?)?t){0,16}(?:\\{0,7}"|$))'
+      description: "hostname given a new name or a name file - hostname changes the system hostname"
+    - field: tool_args
+      operator: regex
+      value: '\\{0,7}"(?:\w{0,24}?[_-]|bash|shell|sh|run|exec|raw|full)?(?:command_line|commandline|cmd_line|cmdline|command|cmd|shell|script|exec|args?|argv)\\{0,7}"\s*:\s*\\{0,7}"\s{0,16}(?:sudo(?:\s|\\(?:\\\\?)?t){1,64})?(?:/(?:usr/)?(?:local/)?s?bin/|\./)?hostname(?:(?:\s|\\(?:\\\\?)?t){1,64}(?:-[bv]{1,2}|--boot|--verbose)){0,3}(?:\s|\\(?:\\\\?)?t){1,64}(?:(?:-[bv]{0,2}f(?:\s|\\(?:\\\\?)?t){0,64}|--fi(?:le?)?(?:=|(?:\s|\\(?:\\\\?)?t){1,64}))(?:\\{1,7}"|'')?[^\s"\\|;&<>{}\[\],-]|[a-z0-9][a-z0-9.-]{0,252}(?:\s|\\(?:\\\\?)?t){0,16}(?:\\{0,7}"|$))'
+      description: "Same as Layer 5, in the JSON-encoded tool argument object"
+
+    # Layer 6 - file --compile (and unique prefixes): writes a compiled .mgc magic file
+    - field: content
+      operator: regex
+      value: '\\{0,7}"(?:\w{0,24}?[_-]|bash|shell|sh|run|exec|raw|full)?(?:command_line|commandline|cmd_line|cmdline|command|cmd|shell|script|exec|args?|argv)\\{0,7}"\s*:\s*\\{0,7}"\s{0,16}(?:sudo(?:\s|\\(?:\\\\?)?t){1,64})?(?:/(?:usr/)?(?:local/)?s?bin/|\./)?file(?:(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>]{1,80}){0,8}?(?:\s|\\(?:\\\\?)?t){1,64}--co(?:m(?:p(?:i(?:l(?:e)?)?)?)?)?(?:(?:\s|\\(?:\\\\?)?t)|\\{0,7}"|$)'
+      description: "file invoked with --compile - file writes a compiled magic database into the working directory"
+    - field: tool_args
+      operator: regex
+      value: '\\{0,7}"(?:\w{0,24}?[_-]|bash|shell|sh|run|exec|raw|full)?(?:command_line|commandline|cmd_line|cmdline|command|cmd|shell|script|exec|args?|argv)\\{0,7}"\s*:\s*\\{0,7}"\s{0,16}(?:sudo(?:\s|\\(?:\\\\?)?t){1,64})?(?:/(?:usr/)?(?:local/)?s?bin/|\./)?file(?:(?:\s|\\(?:\\\\?)?t){1,64}[^\s"\\|;&<>]{1,80}){0,8}?(?:\s|\\(?:\\\\?)?t){1,64}--co(?:m(?:p(?:i(?:l(?:e)?)?)?)?)?(?:(?:\s|\\(?:\\\\?)?t)|\\{0,7}"|$)'
+      description: "Same as Layer 6, in the JSON-encoded tool argument object"
+
+response:
+  actions:
+    - alert
+    - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): new rule with no
+    FP measurement on the 65K benign corpus and a documented false positive on ordinary
+    write forms in general-purpose shell tools; ceiling = observe. No block action.
+  auto_response_threshold: high
+  notify:
+    - security_team
+  message_template: >
+    [ATR-2026-02865] MEDIUM: a command tool argument uses a utility that command
+    allow-lists commonly treat as read-only (sort, uniq, diff, date, hostname,
+    file) in a form that writes a file, runs a helper program or changes system
+    state. This is the CVE-2026-105789 (Microsoft UFO execute_command) pattern.
+    In a general-purpose shell tool this can be an ordinary write; check whether
+    the tool is meant to be read-only and enforces a per-command argument
+    policy, and upgrade UFO to 3.0.9 or later.
+
+confidence: 60
+
+test_cases:
+  true_positives:
+    - input: '{"command":"sort -o /home/ufo/UFO/config/ufo/agents.yaml /tmp/junk.txt"}'
+      expected: triggered
+      description: "Overwriting the UFO agent configuration through sort -o (advisory reproduction)"
+      matched_condition: "Layer 1"
+    - input: '{"command":"sort --output=/home/ufo/.bashrc data.txt"}'
+      expected: triggered
+      description: "sort --output into a shell startup file"
+      matched_condition: "Layer 1"
+    - input: '{"command":"sort -S 1K --compress-program=make data.txt"}'
+      expected: triggered
+      description: "From the fix tests: --compress-program makes sort execute an arbitrary program"
+      matched_condition: "Layer 1"
+    - input: '{"tool":"run_shell","arguments":{"cmd":"sort -u -o ~/.config/app/settings.json notes.txt"}}'
+      expected: triggered
+      description: "Derived variant: different tool and key, -o after another short option"
+      matched_condition: "Layer 1"
+    - input: '{"command":"uniq input.txt /home/ufo/UFO/config/ufo/system.yaml"}'
+      expected: triggered
+      description: "uniq second operand overwriting the UFO system configuration (advisory reproduction)"
+      matched_condition: "Layer 3"
+    - input: '{"command":"uniq -c input.txt output.txt"}'
+      expected: triggered
+      description: "From the fix tests: uniq with an option and an output operand"
+      matched_condition: "Layer 3"
+    - input: '{"command":"diff --output=result.txt original.txt updated.txt"}'
+      expected: triggered
+      description: "From the fix tests: diff --output"
+      matched_condition: "Layer 2"
+    - input: '{"command":"diff -oresult.txt original.txt updated.txt"}'
+      expected: triggered
+      description: "From the fix tests: diff -o with the file attached"
+      matched_condition: "Layer 2"
+    - input: '{"command":"date -s 2030-01-01"}'
+      expected: triggered
+      description: "From the fix tests: date -s sets the system clock"
+      matched_condition: "Layer 4"
+    - input: '{"command":"date --se=2030-01-01"}'
+      expected: triggered
+      description: "From the fix tests: abbreviated --set"
+      matched_condition: "Layer 4"
+    - input: '{"command":"hostname attacker-host"}'
+      expected: triggered
+      description: "From the fix tests: hostname given a new name"
+      matched_condition: "Layer 5"
+    - input: '{"command":"date 090212002026"}'
+      expected: triggered
+      description: "From the fix tests: a valid MMDDhhmmCCYY operand sets the clock (Sep 2 12:00 2026)"
+      matched_condition: "Layer 4"
+    - input: '{"cmd_line":"sort -o /home/ufo/.profile notes.txt"}'
+      expected: triggered
+      description: "Reviewer variant: cmd_line key, missed by round 1"
+      matched_condition: "Layer 1"
+    - input: '{"command_line":"uniq data.txt /home/ufo/UFO/config/ufo/agents.yaml"}'
+      expected: triggered
+      description: "Derived variant: command_line key with the uniq output operand"
+      matched_condition: "Layer 3"
+    - input: '{"command":"sort\t-o\t/home/ufo/.bashrc\tdata.txt"}'
+      expected: triggered
+      description: "Reviewer variant: JSON-escaped tabs between tokens; the shell splits on tab exactly as on space"
+      matched_condition: "Layer 1"
+    - input: '{"command":"file -C -m /home/ufo/magic --compile"}'
+      expected: triggered
+      description: "From the fix tests (file --compile family): file writes a compiled magic database"
+      matched_condition: "Layer 6"
+    - input: '{"bash_command":"file --comp -m rules.magic"}'
+      expected: triggered
+      description: "Derived variant: unique prefix --comp of --compile under a bash_command key"
+      matched_condition: "Layer 6"
+    - input: '{"command":"sort -S 1K --compress-program=''/tmp/payload.sh'' data.txt"}'
+      expected: triggered
+      description: "RE2 rewrite check: quoted non-compressor program for --compress-program still matches"
+      matched_condition: "Layer 1"
+    - input: '{"command":"sort --compress-program=/usr/bin/gzipx data.txt"}'
+      expected: triggered
+      description: "RE2 rewrite check: a name that only starts with a compressor name is not a compressor"
+      matched_condition: "Layer 1"
+  true_negatives:
+    - input: '{"command":"sort -n data.txt"}'
+      expected: not_triggered
+      description: "Benign twin: sort reading and printing, the read-only use the allow-list intended"
+    - input: '{"command":"uniq -c data.txt"}'
+      expected: not_triggered
+      description: "Benign twin: uniq with one operand, allowed by the 3.0.9 policy"
+    - input: '{"command":"uniq -f 2 -c access.log"}'
+      expected: not_triggered
+      description: "Benign twin: -f takes the number, so there is still only one operand"
+    - input: '{"command":"diff original.txt updated.txt"}'
+      expected: not_triggered
+      description: "Benign twin: diff printing to stdout, allowed by the 3.0.9 policy"
+    - input: '{"command":"diff --old-line-format=x --new-line-format=y a.txt b.txt"}'
+      expected: not_triggered
+      description: "Benign twin: diff long options that also start with --o"
+    - input: '{"command":"date -u +%s"}'
+      expected: not_triggered
+      description: "Benign twin: reading the clock, allowed by the 3.0.9 policy"
+    - input: '{"command":"date -d yesterday +%Y-%m-%d"}'
+      expected: not_triggered
+      description: "Benign twin: date -d formats a date without setting the clock"
+    - input: '{"command":"hostname -f"}'
+      expected: not_triggered
+      description: "Benign twin: reading the FQDN, allowed by the 3.0.9 policy"
+    - input: '{"command":"sort -k2,2 -t, -S 1G --compress-program=zstd big.csv"}'
+      expected: not_triggered
+      description: "Benign twin: --compress-program with a real compressor for temp files"
+    - input: '{"command":"sort -to -k2 names.txt"}'
+      expected: not_triggered
+      description: "Benign twin: -t takes the letter o as the field separator; it is not -o"
+    - input: '{"command":"sort data.txt | uniq -c"}'
+      expected: not_triggered
+      description: "Benign twin: classic read-only pipeline"
+    - input: '{"query":"sort -o output.txt input.txt"}'
+      expected: not_triggered
+      description: "Search query, not a command-like key"
+    - input: 'Before 3.0.9, execute_command allowed sort -o /home/ufo/.bashrc data.txt and the second uniq operand to write files.'
+      expected: not_triggered
+      description: "Advisory prose quoting the payload; no command value starts with the utility"
+    - input: '{"transcript":"date 20261022 standup notes: reviewed the deploy plan"}'
+      expected: not_triggered
+      description: "Reviewer FP: transcript only ends in the letters 'script'; not a command-like key"
+    - input: '{"subscript":"hostname server01"}'
+      expected: not_triggered
+      description: "Reviewer FP: subscript only ends in the letters 'script'; not a command-like key"
+    - input: '{"command":"date 20261022"}'
+      expected: not_triggered
+      description: "Reviewer FP: a YYYYMMDD string is not a valid MMDDhhmm (month 20), date fails without touching the clock"
+    - input: '{"command":"file -z archive.tar.gz"}'
+      expected: not_triggered
+      description: "Benign twin: file -z looks inside a compressed file with libmagic's fixed decompressors; out of scope"
+    - input: '{"command":"file -c -m /usr/share/misc/magic"}'
+      expected: not_triggered
+      description: "Benign twin: file -c (checking printout) is read-only"
+    - input: '{"command":"sort data.txt\nuniq -c out.txt"}'
+      expected: not_triggered
+      description: "Benign twin: an escaped newline ends the sort command, so it is not read as whitespace"
+    - input: '{"command":"sort -S 1G --compress-program=/usr/bin/pigz big.csv"}'
+      expected: not_triggered
+      description: "RE2 rewrite check: real compressor given with a /usr/bin/ path stays excluded"
+    - input: '{"command":"uniq -w 10 access.log"}'
+      expected: not_triggered
+      description: "RE2 rewrite check: -w takes the number, so only one operand remains"
+
+evasion_tests:
+  - input: '{"command":"cat data.txt && sort -o /home/ufo/.bashrc data.txt"}'
+    expected: not_triggered
+    bypass_technique: chained_command
+    notes: "Out of scope: the utility is not the first token. Chained commands are the shell-metacharacter rules' territory."
+  - input: '{"argv":["sort","-o","/home/ufo/.bashrc","data.txt"]}'
+    expected: not_triggered
+    bypass_technique: argv_array
+    notes: "Real gap, accepted: argv arrays split the utility and its option into separate JSON strings."
+  - input: '{"command":"env sort -o /home/ufo/.bashrc data.txt"}'
+    expected: not_triggered
+    bypass_technique: wrapper_binary
+    notes: "Real gap, accepted: wrappers other than sudo (env, nice, timeout) are not stripped."
+  - input: '{"command":"sort -o\t/home/ufo/.bashrc data.txt"}'
+    expected: triggered
+    bypass_technique: json_escaped_whitespace
+    notes: "Covered: a JSON-escaped tab is treated as whitespace. An escaped newline is deliberately not, since it terminates the command."
+  - input: '{"command":"file -z /tmp/payload.gz"}'
+    expected: not_triggered
+    bypass_technique: fixed_decompressor
+    notes: "Accepted: the fix also rejects file -z / --uncompress, but it only runs libmagic's fixed decompressors on the input and is common read-only use."

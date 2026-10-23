@@ -16,6 +16,7 @@
 // ── Core Detection Layer (stable API) ───────────────────────────
 export { ATREngine } from './engine.js';
 export type { ATREngineConfig, ATRReporter, ATRDetectionReport, ATRCleanReport } from './engine.js';
+export { appliesToToolDefinition, TOOL_IDENTITY_RULES } from './tool-definition-scope.js';
 export { createTCReporter } from './tc-reporter.js';
 export type { TCReporterConfig } from './tc-reporter.js';
 export { loadRuleFile, loadRulesFromDirectory, validateRule } from './loader.js';
@@ -93,7 +94,8 @@ export type { FlywheelConfig } from './flywheel.js';
 // ── Integration Helpers (for products built on ATR) ─────────────
 // These help products like LlamaFirewall, etc. build
 // protection layers on top of ATR detection results.
-export { computeVerdict, SEVERITY_RANK, isAutoResponseEnabled } from './verdict.js';
+export { computeVerdict, SEVERITY_RANK, isAutoResponseEnabled, isModelDecided } from './verdict.js';
+export type { ModelDecisions, VerdictOptions } from './verdict.js';
 export { ActionExecutor } from './action-executor.js';
 export type { ActionExecutorConfig } from './action-executor.js';
 export { DefaultAdapter } from './adapters/default-adapter.js';
@@ -123,6 +125,8 @@ export {
   DEFAULT_BLOCKING,
   LANE_ENV_VAR,
   BLOCKING_ENV_VAR,
+  MODEL_DECISIONS_ENV_VAR,
+  parseModelDecisions,
 } from './enforcement.js';
 export type { EnvSource, EnforcementPolicy } from './enforcement.js';
 
@@ -132,6 +136,7 @@ export * as quality from './quality/index.js';
 export type {
   ATRRule,
   ATRMatch,
+  ATRMatchDecider,
   AgentEvent,
   AgentEventType,
   ATRAction,

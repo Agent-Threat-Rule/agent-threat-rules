@@ -89,11 +89,11 @@ detection:
       description: 'Backspace cluster in tool response — two or more \x08 in tool output indicates injected content attempting to hide instructions from human log review'
     - field: user_input
       operator: regex
-      value: '[A-Za-z]{2,}\x08[A-Za-z]'
+      value: '[A-Za-z]{2}\x08[A-Za-z]'
       description: 'Word characters immediately followed by backspace then different char — inline character-substitution via backspace; "safe\x08x" renders as "safx" visually but model sees "safe\x08x"'
     - field: user_input
       operator: regex
-      value: '\x08+\s*(?:ignore|forget|disregard|pretend|act\s+as|you\s+are|bypass|override|jailbreak|do\s+not\s+follow|instead)\b'
+      value: '\x08\s*(?:ignore|forget|disregard|pretend|act\s+as|you\s+are|bypass|override|jailbreak|do\s+not\s+follow|instead)\b'
       description: 'Backspace immediately before jailbreak keyword — attacker hides harmful instruction prefix with deletion chars so reviewers see only the benign remainder'
 
   condition: any

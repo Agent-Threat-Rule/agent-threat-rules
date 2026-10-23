@@ -178,8 +178,8 @@ function reportCoverageGaps(shells: readonly RuleLike[]): void {
     );
   }
   console.log(
-    `  Zero-measurement for a TEXT corpus (trace/behavioral/signature method, or an ` +
-      `unfillable field under AND): ${zeroMeasurement.length}`,
+    `  Zero-measurement for a TEXT corpus (trace/behavioral/signature method, semantic ` +
+      `without a pattern fallback, or an unfillable field under AND): ${zeroMeasurement.length}`,
   );
   console.log(
     `  These rules cannot contribute a detection here. Recall below is the engine's ` +
