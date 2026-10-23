@@ -1,0 +1,947 @@
+{
+  "tools": [
+    {
+      "name": "list_users",
+      "description": "List IAM users in the account.\n\n    This tool retrieves a list of IAM users from your AWS account with optional filtering.\n    Use this to get an overview of all users or find specific users by path prefix.\n\n    ## Usage Tips:\n    - Use path_prefix to filter users by organizational structure\n    - Adjust max_items to control response size for large accounts\n    - Results may be paginated for accounts with many users\n\n    Args:\n        ctx: MCP context for error reporting\n        path_prefix: Optional path prefix to filter users\n        max_items: Maximum number of users to return\n\n    Returns:\n        UsersListResponse containing list of users and metadata\n    ",
+      "inputSchema": {
+        "properties": {
+          "ctx": {
+            "title": "Ctx"
+          },
+          "path_prefix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Path prefix to filter users (e.g., \"/division_abc/\")",
+            "title": "Path Prefix"
+          },
+          "max_items": {
+            "default": 100,
+            "description": "Maximum number of users to return",
+            "title": "Max Items",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ctx"
+        ],
+        "title": "list_usersArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_user",
+      "description": "Get detailed information about a specific IAM user.\n\n    This tool retrieves comprehensive information about an IAM user including\n    attached policies, group memberships, and access keys. Use this to get\n    a complete picture of a user's permissions and configuration.\n\n    ## Usage Tips:\n    - Use this after list_users to get detailed information about specific users\n    - Review attached policies to understand user permissions\n    - Check access keys to identify potential security issues\n\n    Args:\n        ctx: MCP context for error reporting\n        user_name: The name of the IAM user\n\n    Returns:\n        UserDetailsResponse containing comprehensive user information\n    ",
+      "inputSchema": {
+        "properties": {
+          "ctx": {
+            "title": "Ctx"
+          },
+          "user_name": {
+            "description": "The name of the IAM user to retrieve",
+            "title": "User Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ctx",
+          "user_name"
+        ],
+        "title": "get_userArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_user",
+      "description": "Create a new IAM user.\n\n    This tool creates a new IAM user in your AWS account. The user will be created\n    without any permissions by default - you'll need to attach policies separately.\n\n    ## Security Best Practices:\n    - Use descriptive user names that indicate the user's role or purpose\n    - Set appropriate paths for organizational structure\n    - Consider using permissions boundaries to limit maximum permissions\n    - Follow the principle of least privilege when assigning permissions later\n\n    Args:\n        ctx: MCP context for error reporting\n        user_name: The name of the new IAM user\n        path: The path for the user (default: '/')\n        permissions_boundary: Optional ARN of the permissions boundary policy\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        CreateUserResponse containing the created user details\n    ",
+      "inputSchema": {
+        "properties": {
+          "ctx": {
+            "title": "Ctx"
+          },
+          "user_name": {
+            "description": "The name of the new IAM user",
+            "title": "User Name",
+            "type": "string"
+          },
+          "path": {
+            "default": "/",
+            "description": "The path for the user",
+            "title": "Path",
+            "type": "string"
+          },
+          "permissions_boundary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "ARN of the permissions boundary policy",
+            "title": "Permissions Boundary"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ctx",
+          "user_name"
+        ],
+        "title": "create_userArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_user",
+      "description": "Delete an IAM user.\n\n    Args:\n        user_name: The name of the IAM user to delete\n        force: If True, removes all attached policies, groups, and access keys first\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        Dictionary containing deletion status\n    ",
+      "inputSchema": {
+        "properties": {
+          "user_name": {
+            "description": "The name of the IAM user to delete",
+            "title": "User Name",
+            "type": "string"
+          },
+          "force": {
+            "default": false,
+            "description": "Force delete user by removing all attached policies, groups, and access keys first",
+            "title": "Force",
+            "type": "boolean"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "user_name"
+        ],
+        "title": "delete_userArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_roles",
+      "description": "List IAM roles in the account.\n\n    Args:\n        path_prefix: Optional path prefix to filter roles\n        max_items: Maximum number of roles to return\n\n    Returns:\n        Dictionary containing list of roles and metadata\n    ",
+      "inputSchema": {
+        "properties": {
+          "path_prefix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Path prefix to filter roles (e.g., \"/service-role/\")",
+            "title": "Path Prefix"
+          },
+          "max_items": {
+            "default": 100,
+            "description": "Maximum number of roles to return",
+            "title": "Max Items",
+            "type": "integer"
+          }
+        },
+        "title": "list_rolesArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_role",
+      "description": "Create a new IAM role.\n\n    Args:\n        role_name: The name of the new IAM role\n        assume_role_policy_document: The trust policy document in JSON format\n        path: The path for the role (default: '/')\n        description: Optional description of the role\n        max_session_duration: Maximum session duration in seconds\n        permissions_boundary: Optional ARN of the permissions boundary policy\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        Dictionary containing the created role details\n    ",
+      "inputSchema": {
+        "properties": {
+          "role_name": {
+            "description": "The name of the new IAM role",
+            "title": "Role Name",
+            "type": "string"
+          },
+          "assume_role_policy_document": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ],
+            "description": "The trust policy document in JSON format (string or dict)",
+            "title": "Assume Role Policy Document"
+          },
+          "path": {
+            "default": "/",
+            "description": "The path for the role",
+            "title": "Path",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Description of the role",
+            "title": "Description"
+          },
+          "max_session_duration": {
+            "default": 3600,
+            "description": "Maximum session duration in seconds (3600-43200)",
+            "title": "Max Session Duration",
+            "type": "integer"
+          },
+          "permissions_boundary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "ARN of the permissions boundary policy",
+            "title": "Permissions Boundary"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "role_name",
+          "assume_role_policy_document"
+        ],
+        "title": "create_roleArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_policies",
+      "description": "List IAM policies in the account.\n\n    Args:\n        scope: Scope of policies to list (\"All\", \"AWS\", or \"Local\")\n        only_attached: Only return policies that are attached\n        path_prefix: Optional path prefix to filter policies\n        max_items: Maximum number of policies to return\n\n    Returns:\n        Dictionary containing list of policies and metadata\n    ",
+      "inputSchema": {
+        "properties": {
+          "scope": {
+            "default": "Local",
+            "description": "Scope of policies to list: \"All\", \"AWS\", or \"Local\"",
+            "title": "Scope",
+            "type": "string"
+          },
+          "only_attached": {
+            "default": false,
+            "description": "Only return policies that are attached to a user, group, or role",
+            "title": "Only Attached",
+            "type": "boolean"
+          },
+          "path_prefix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Path prefix to filter policies",
+            "title": "Path Prefix"
+          },
+          "max_items": {
+            "default": 100,
+            "description": "Maximum number of policies to return",
+            "title": "Max Items",
+            "type": "integer"
+          }
+        },
+        "title": "list_policiesArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_managed_policy_document",
+      "description": "Retrieve the policy document for a managed policy.\n\n    This tool retrieves the policy document for a specific managed policy version.\n    Use this to examine the actual permissions and wildcards in managed policies.\n\n    Args:\n        policy_arn: The ARN of the managed policy\n        version_id: Optional version ID (defaults to current version)\n\n    Returns:\n        ManagedPolicyResponse containing the policy document and details\n    ",
+      "inputSchema": {
+        "properties": {
+          "policy_arn": {
+            "description": "The ARN of the managed policy",
+            "title": "Policy Arn",
+            "type": "string"
+          },
+          "version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "The version ID of the policy (defaults to current version)",
+            "title": "Version Id"
+          }
+        },
+        "required": [
+          "policy_arn"
+        ],
+        "title": "get_managed_policy_documentArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "attach_user_policy",
+      "description": "Attach a managed policy to an IAM user.\n\n    Args:\n        user_name: The name of the IAM user\n        policy_arn: The ARN of the policy to attach\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        Dictionary containing attachment status\n    ",
+      "inputSchema": {
+        "properties": {
+          "user_name": {
+            "description": "The name of the IAM user",
+            "title": "User Name",
+            "type": "string"
+          },
+          "policy_arn": {
+            "description": "The ARN of the policy to attach",
+            "title": "Policy Arn",
+            "type": "string"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "user_name",
+          "policy_arn"
+        ],
+        "title": "attach_user_policyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "detach_user_policy",
+      "description": "Detach a managed policy from an IAM user.\n\n    Args:\n        user_name: The name of the IAM user\n        policy_arn: The ARN of the policy to detach\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        Dictionary containing detachment status\n    ",
+      "inputSchema": {
+        "properties": {
+          "user_name": {
+            "description": "The name of the IAM user",
+            "title": "User Name",
+            "type": "string"
+          },
+          "policy_arn": {
+            "description": "The ARN of the policy to detach",
+            "title": "Policy Arn",
+            "type": "string"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "user_name",
+          "policy_arn"
+        ],
+        "title": "detach_user_policyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_access_key",
+      "description": "Create a new access key for an IAM user.\n\n    Args:\n        user_name: The name of the IAM user\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        Dictionary containing the new access key details (SecretAccessKey is redacted)\n    ",
+      "inputSchema": {
+        "properties": {
+          "user_name": {
+            "description": "The name of the IAM user",
+            "title": "User Name",
+            "type": "string"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "user_name"
+        ],
+        "title": "create_access_keyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_access_key",
+      "description": "Delete an access key for an IAM user.\n\n    Args:\n        user_name: The name of the IAM user\n        access_key_id: The access key ID to delete\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        Dictionary containing deletion status\n    ",
+      "inputSchema": {
+        "properties": {
+          "user_name": {
+            "description": "The name of the IAM user",
+            "title": "User Name",
+            "type": "string"
+          },
+          "access_key_id": {
+            "description": "The access key ID to delete",
+            "title": "Access Key Id",
+            "type": "string"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "user_name",
+          "access_key_id"
+        ],
+        "title": "delete_access_keyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "simulate_principal_policy",
+      "description": "Simulate IAM policy evaluation for a principal.\n\n    Args:\n        policy_source_arn: ARN of the user or role to simulate\n        action_names: List of actions to simulate\n        resource_arns: Optional list of resource ARNs to test against\n        context_entries: Optional context entries for the simulation\n\n    Returns:\n        Dictionary containing simulation results\n    ",
+      "inputSchema": {
+        "properties": {
+          "policy_source_arn": {
+            "description": "ARN of the user or role to simulate",
+            "title": "Policy Source Arn",
+            "type": "string"
+          },
+          "action_names": {
+            "description": "List of actions to simulate",
+            "items": {
+              "type": "string"
+            },
+            "title": "Action Names",
+            "type": "array"
+          },
+          "resource_arns": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "List of resource ARNs to test against",
+            "title": "Resource Arns"
+          },
+          "context_entries": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Context entries for the simulation",
+            "title": "Context Entries"
+          }
+        },
+        "required": [
+          "policy_source_arn",
+          "action_names"
+        ],
+        "title": "simulate_principal_policyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_groups",
+      "description": "List IAM groups in the account.\n\n    This tool retrieves a list of IAM groups from your AWS account with optional filtering.\n    Use this to get an overview of all groups or find specific groups by path prefix.\n\n    ## Usage Tips:\n    - Use path_prefix to filter groups by organizational structure\n    - Adjust max_items to control response size for large accounts\n    - Results may be paginated for accounts with many groups\n\n    Args:\n        path_prefix: Optional path prefix to filter groups\n        max_items: Maximum number of groups to return\n\n    Returns:\n        GroupsListResponse containing list of groups and metadata\n    ",
+      "inputSchema": {
+        "properties": {
+          "path_prefix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Path prefix to filter groups (e.g., \"/division_abc/\")",
+            "title": "Path Prefix"
+          },
+          "max_items": {
+            "default": 100,
+            "description": "Maximum number of groups to return",
+            "title": "Max Items",
+            "type": "integer"
+          }
+        },
+        "title": "list_groupsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_group",
+      "description": "Get detailed information about a specific IAM group.\n\n    This tool retrieves comprehensive information about an IAM group including\n    group members, attached policies, and inline policies. Use this to get\n    a complete picture of a group's configuration and membership.\n\n    ## Usage Tips:\n    - Use this after list_groups to get detailed information about specific groups\n    - Review attached policies to understand group permissions\n    - Check group members to see who has these permissions\n\n    Args:\n        group_name: The name of the IAM group\n\n    Returns:\n        GroupDetailsResponse containing comprehensive group information\n    ",
+      "inputSchema": {
+        "properties": {
+          "group_name": {
+            "description": "The name of the IAM group to retrieve",
+            "title": "Group Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "group_name"
+        ],
+        "title": "get_groupArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_group",
+      "description": "Create a new IAM group.\n\n    This tool creates a new IAM group in your AWS account. The group will be created\n    without any permissions by default - you'll need to attach policies separately.\n\n    ## Security Best Practices:\n    - Use descriptive group names that indicate the group's purpose\n    - Set appropriate paths for organizational structure\n    - Follow the principle of least privilege when assigning permissions later\n\n    Args:\n        group_name: The name of the new IAM group\n        path: The path for the group (default: '/')\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        CreateGroupResponse containing the created group details\n    ",
+      "inputSchema": {
+        "properties": {
+          "group_name": {
+            "description": "The name of the new IAM group",
+            "title": "Group Name",
+            "type": "string"
+          },
+          "path": {
+            "default": "/",
+            "description": "The path for the group",
+            "title": "Path",
+            "type": "string"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "group_name"
+        ],
+        "title": "create_groupArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_group",
+      "description": "Delete an IAM group.\n\n    Args:\n        group_name: The name of the IAM group to delete\n        force: If True, removes all members and attached policies first\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        Dictionary containing deletion status\n    ",
+      "inputSchema": {
+        "properties": {
+          "group_name": {
+            "description": "The name of the IAM group to delete",
+            "title": "Group Name",
+            "type": "string"
+          },
+          "force": {
+            "default": false,
+            "description": "Force delete by removing all members and policies first",
+            "title": "Force",
+            "type": "boolean"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "group_name"
+        ],
+        "title": "delete_groupArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "add_user_to_group",
+      "description": "Add a user to an IAM group.\n\n    Args:\n        group_name: The name of the IAM group\n        user_name: The name of the IAM user\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        GroupMembershipResponse containing operation status\n    ",
+      "inputSchema": {
+        "properties": {
+          "group_name": {
+            "description": "The name of the IAM group",
+            "title": "Group Name",
+            "type": "string"
+          },
+          "user_name": {
+            "description": "The name of the IAM user",
+            "title": "User Name",
+            "type": "string"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "group_name",
+          "user_name"
+        ],
+        "title": "add_user_to_groupArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "remove_user_from_group",
+      "description": "Remove a user from an IAM group.\n\n    Args:\n        group_name: The name of the IAM group\n        user_name: The name of the IAM user\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        GroupMembershipResponse containing operation status\n    ",
+      "inputSchema": {
+        "properties": {
+          "group_name": {
+            "description": "The name of the IAM group",
+            "title": "Group Name",
+            "type": "string"
+          },
+          "user_name": {
+            "description": "The name of the IAM user",
+            "title": "User Name",
+            "type": "string"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "group_name",
+          "user_name"
+        ],
+        "title": "remove_user_from_groupArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "attach_group_policy",
+      "description": "Attach a managed policy to an IAM group.\n\n    Args:\n        group_name: The name of the IAM group\n        policy_arn: The ARN of the policy to attach\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        GroupPolicyAttachmentResponse containing operation status\n    ",
+      "inputSchema": {
+        "properties": {
+          "group_name": {
+            "description": "The name of the IAM group",
+            "title": "Group Name",
+            "type": "string"
+          },
+          "policy_arn": {
+            "description": "The ARN of the policy to attach",
+            "title": "Policy Arn",
+            "type": "string"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "group_name",
+          "policy_arn"
+        ],
+        "title": "attach_group_policyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "detach_group_policy",
+      "description": "Detach a managed policy from an IAM group.\n\n    Args:\n        group_name: The name of the IAM group\n        policy_arn: The ARN of the policy to detach\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        GroupPolicyAttachmentResponse containing operation status\n    ",
+      "inputSchema": {
+        "properties": {
+          "group_name": {
+            "description": "The name of the IAM group",
+            "title": "Group Name",
+            "type": "string"
+          },
+          "policy_arn": {
+            "description": "The ARN of the policy to detach",
+            "title": "Policy Arn",
+            "type": "string"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "group_name",
+          "policy_arn"
+        ],
+        "title": "detach_group_policyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "put_user_policy",
+      "description": "Create or update an inline policy for an IAM user.\n\n    This tool creates a new inline policy or updates an existing one for the specified user.\n    Inline policies are directly embedded in a single user, role, or group and have a one-to-one\n    relationship with the identity.\n\n    ## Security Best Practices:\n    - Follow the principle of least privilege when creating policies\n    - Use managed policies for common permissions that can be reused\n    - Regularly review and audit inline policies\n    - Test policies using simulate_principal_policy before applying\n\n    Args:\n        user_name: The name of the IAM user\n        policy_name: The name of the inline policy\n        policy_document: The policy document in JSON format\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        InlinePolicyResponse containing the policy details and operation status\n    ",
+      "inputSchema": {
+        "properties": {
+          "user_name": {
+            "description": "The name of the IAM user",
+            "title": "User Name",
+            "type": "string"
+          },
+          "policy_name": {
+            "description": "The name of the inline policy",
+            "title": "Policy Name",
+            "type": "string"
+          },
+          "policy_document": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ],
+            "description": "The policy document in JSON format (string or dict)",
+            "title": "Policy Document"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "user_name",
+          "policy_name",
+          "policy_document"
+        ],
+        "title": "put_user_policyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_user_policy",
+      "description": "Retrieve an inline policy for an IAM user.\n\n    This tool retrieves the policy document for a specific inline policy attached to a user.\n\n    Args:\n        user_name: The name of the IAM user\n        policy_name: The name of the inline policy\n\n    Returns:\n        InlinePolicyResponse containing the policy document and details\n    ",
+      "inputSchema": {
+        "properties": {
+          "user_name": {
+            "description": "The name of the IAM user",
+            "title": "User Name",
+            "type": "string"
+          },
+          "policy_name": {
+            "description": "The name of the inline policy",
+            "title": "Policy Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_name",
+          "policy_name"
+        ],
+        "title": "get_user_policyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_user_policy",
+      "description": "Delete an inline policy from an IAM user.\n\n    This tool removes an inline policy from the specified user. The policy document\n    will be permanently deleted and cannot be recovered.\n\n    Args:\n        user_name: The name of the IAM user\n        policy_name: The name of the inline policy to delete\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        Dictionary containing deletion status\n    ",
+      "inputSchema": {
+        "properties": {
+          "user_name": {
+            "description": "The name of the IAM user",
+            "title": "User Name",
+            "type": "string"
+          },
+          "policy_name": {
+            "description": "The name of the inline policy to delete",
+            "title": "Policy Name",
+            "type": "string"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "user_name",
+          "policy_name"
+        ],
+        "title": "delete_user_policyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "put_role_policy",
+      "description": "Create or update an inline policy for an IAM role.\n\n    This tool creates a new inline policy or updates an existing one for the specified role.\n    Inline policies are directly embedded in a single user, role, or group and have a one-to-one\n    relationship with the identity.\n\n    Args:\n        role_name: The name of the IAM role\n        policy_name: The name of the inline policy\n        policy_document: The policy document in JSON format\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        InlinePolicyResponse containing the policy details and operation status\n    ",
+      "inputSchema": {
+        "properties": {
+          "role_name": {
+            "description": "The name of the IAM role",
+            "title": "Role Name",
+            "type": "string"
+          },
+          "policy_name": {
+            "description": "The name of the inline policy",
+            "title": "Policy Name",
+            "type": "string"
+          },
+          "policy_document": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ],
+            "description": "The policy document in JSON format (string or dict)",
+            "title": "Policy Document"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "role_name",
+          "policy_name",
+          "policy_document"
+        ],
+        "title": "put_role_policyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_role_policy",
+      "description": "Retrieve an inline policy for an IAM role.\n\n    This tool retrieves the policy document for a specific inline policy attached to a role.\n\n    Args:\n        role_name: The name of the IAM role\n        policy_name: The name of the inline policy\n\n    Returns:\n        InlinePolicyResponse containing the policy document and details\n    ",
+      "inputSchema": {
+        "properties": {
+          "role_name": {
+            "description": "The name of the IAM role",
+            "title": "Role Name",
+            "type": "string"
+          },
+          "policy_name": {
+            "description": "The name of the inline policy",
+            "title": "Policy Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role_name",
+          "policy_name"
+        ],
+        "title": "get_role_policyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_role_policy",
+      "description": "Delete an inline policy from an IAM role.\n\n    This tool removes an inline policy from the specified role. The policy document\n    will be permanently deleted and cannot be recovered.\n\n    Args:\n        role_name: The name of the IAM role\n        policy_name: The name of the inline policy to delete\n        confirmed: Must be true to confirm this write operation\n\n    Returns:\n        Dictionary containing deletion status\n    ",
+      "inputSchema": {
+        "properties": {
+          "role_name": {
+            "description": "The name of the IAM role",
+            "title": "Role Name",
+            "type": "string"
+          },
+          "policy_name": {
+            "description": "The name of the inline policy to delete",
+            "title": "Policy Name",
+            "type": "string"
+          },
+          "confirmed": {
+            "default": false,
+            "description": "Must be true to confirm this write operation",
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "role_name",
+          "policy_name"
+        ],
+        "title": "delete_role_policyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_user_policies",
+      "description": "List all inline policies for an IAM user.\n\n    This tool retrieves the names of all inline policies attached to the specified user.\n\n    Args:\n        user_name: The name of the IAM user\n\n    Returns:\n        InlinePolicyListResponse containing the list of policy names\n    ",
+      "inputSchema": {
+        "properties": {
+          "user_name": {
+            "description": "The name of the IAM user",
+            "title": "User Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_name"
+        ],
+        "title": "list_user_policiesArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_role_policies",
+      "description": "List all inline policies for an IAM role.\n\n    This tool retrieves the names of all inline policies attached to the specified role.\n\n    Args:\n        role_name: The name of the IAM role\n\n    Returns:\n        InlinePolicyListResponse containing the list of policy names\n    ",
+      "inputSchema": {
+        "properties": {
+          "role_name": {
+            "description": "The name of the IAM role",
+            "title": "Role Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role_name"
+        ],
+        "title": "list_role_policiesArguments",
+        "type": "object"
+      }
+    }
+  ]
+}

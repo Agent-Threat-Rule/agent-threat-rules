@@ -121,6 +121,10 @@ export interface SarifOptions {
    * properties.enforced false, so a gate that counts results can leave it out.
    */
   readonly heldBack?: (match: ATRMatch) => boolean;
+  /** Properties of the run as a whole (SARIF run.properties), e.g. the tool-definition scope of `atr scan`. */
+  readonly runProperties?: Readonly<Record<string, unknown>>;
+  /** Extra properties for every result of one scan result (e.g. the tool name of a tools/list entry). */
+  readonly resultProperties?: (result: ScanResult) => Readonly<Record<string, unknown>> | undefined;
 }
 
 export function scanResultToSARIF(
@@ -213,6 +217,7 @@ export function scanResultToSARIF(
           content_hash: result.content_hash,
           ...(match.decidedBy ? { decided_by: match.decidedBy } : {}),
           ...(heldBack ? { enforced: false } : {}),
+          ...(options.resultProperties?.(result) ?? {}),
         },
       });
     }
@@ -233,6 +238,7 @@ export function scanResultToSARIF(
           },
         },
         ...(artifacts.length > 0 ? { artifacts } : {}),
+        ...(options.runProperties ? { properties: options.runProperties } : {}),
         results: sarifResults,
       },
     ],
