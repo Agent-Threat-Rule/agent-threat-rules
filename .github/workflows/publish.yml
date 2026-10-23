@@ -102,9 +102,15 @@ jobs:
             p.version = '$NEW';
             fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
           "
+          # The stats cache records the package version, and
+          # tests/reconcile-rule-count.test.ts fails on main when the two differ.
+          # Reconcile it here so the version bump commits both; the later
+          # "Reconcile stats.json" step only fixed the release's working tree, so
+          # the v4.2.0 bump reached main with data/stats.json still at 4.1.5.
+          npm run reconcile-stats
           git config user.name "ATR Release Bot"
           git config user.email "release@atr-framework.org"
-          git add package.json
+          git add package.json data/stats.json
           git commit -m "release: v$NEW"
           git pull --rebase --autostash origin main
           git tag "v$NEW"
