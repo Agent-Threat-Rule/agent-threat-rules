@@ -51,6 +51,19 @@ ATR Scan Results
     Confidence: 85% | Conditions: instruction_override
 ```
 
+`atr scan` also reads an MCP server configuration (`{"mcpServers": {...}}`, one event per
+server) and a `tools/list` result (`{"tools": [...]}` or the JSON-RPC response
+`{"jsonrpc": "2.0", "id": 1, "result": {"tools": [...]}}`, one event per tool, with the tool's
+name, description and input schema, parameter descriptions included):
+
+```bash
+atr scan tools.json
+```
+
+On a `tools/list` result the rules written for a tool being called (they judge a call's name and
+arguments) do not run: a definition calls nothing. Rules for tool content, tool descriptions and
+the tool's identity do (engine option `toolDefinitions`, `src/tool-definition-scope.ts`).
+
 Use `--json` for machine-readable output:
 
 ```bash

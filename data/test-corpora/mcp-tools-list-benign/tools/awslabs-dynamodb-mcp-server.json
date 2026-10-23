@@ -1,0 +1,339 @@
+{
+  "tools": [
+    {
+      "name": "dynamodb_data_modeling",
+      "description": "Retrieves the complete DynamoDB Data Modeling Expert prompt.\n\n    This tool returns a prompt to help user with data modeling on DynamoDB.\n    The prompt guides through requirements gathering, access pattern analysis, and\n    schema design. The prompt contains:\n\n    - Structured 2-phase workflow (requirements → final design)\n    - Enterprise design patterns: hot partition analysis, write sharding, sparse GSIs, and more\n    - Cost optimization strategies and RPS-based capacity planning\n    - Multi-table design philosophy with advanced denormalization patterns\n    - Integration guidance for OpenSearch, Lambda, and analytics\n\n    Usage: Simply call this tool to get the expert prompt.\n\n    Returns: Complete expert system prompt as text (no parameters required)\n    ",
+      "inputSchema": {
+        "properties": {},
+        "title": "dynamodb_data_modelingArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "dynamodb_data_model_schema_converter",
+      "description": "Retrieves the DynamoDB Data Model Schema Converter Expert prompt.\n\n    This tool returns a specialized prompt for converting DynamoDB data models (dynamodb_data_model.md)\n    into schema.json - a structured JSON representation used for generating type-safe entities and repositories.\n    By default, also includes instructions for generating usage_data.json with realistic sample data.\n\n    The prompt guides through:\n    - Reading and parsing dynamodb_data_model.md files\n    - Converting table designs, GSIs, and access patterns into structured JSON format\n    - Validating generated schemas using the dynamodb_data_model_schema_validator tool\n    - Iteratively fixing validation errors (up to 8 iterations)\n    - Generating usage_data.json with realistic sample data from markdown tables (unless generate_usage_data=False)\n    - Creating isolated output folders with schema.json (and optionally usage_data.json)\n\n    When to set generate_usage_data=False:\n    - User explicitly asks for \"schema only\", \"just schema\", \"without usage data\", \"without examples\"\n    - User wants to skip sample data generation\n    - User only needs the schema structure for validation or review\n\n    Args:\n        generate_usage_data: If True (default), includes instructions for generating usage_data.json.\n                           If False, only generates schema.json.\n\n    Returns: Complete schema converter expert prompt as text\n    ",
+      "inputSchema": {
+        "properties": {
+          "generate_usage_data": {
+            "default": true,
+            "description": "Set to False if user only wants schema.json without usage examples/sample data. Set to True (default) to generate both schema.json and usage_data.json with realistic sample data for code generation",
+            "title": "Generate Usage Data",
+            "type": "boolean"
+          }
+        },
+        "title": "dynamodb_data_model_schema_converterArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "dynamodb_data_model_schema_validator",
+      "description": "Validates a schema.json file - the structured JSON representation of your DynamoDB data model.\n\n    This tool validates that your schema.json file is properly formatted and contains all required fields\n    for use with the repository generation tool and other automation tools. It provides detailed error\n    messages with suggestions for fixing any issues found.\n\n    Optionally, if usage_data_path is provided, it will also validate the usage_data.json file against\n    the schema to ensure consistency.\n\n    The validation checks:\n    - Required sections (table_config, entities) exist\n    - All required fields are present\n    - Field types are valid (string, integer, decimal, boolean, array, object, uuid)\n    - Enum values are correct (operation types, return types, etc.)\n    - Pattern IDs are unique across all entities\n    - GSI names match between gsi_list and gsi_mappings\n    - Fields referenced in templates exist in entity fields\n    - Range conditions are valid and have correct parameter counts\n    - Access patterns have valid operations and return types\n    - Usage data validation (if usage_data_path provided)\n\n    Security:\n    - Schema files must be within the current working directory or subdirectories\n    - Path traversal attempts (e.g., ../../../../etc/passwd) are blocked\n\n    Args:\n        schema_path: Absolute path to the schema.json file to validate\n        usage_data_path: Optional absolute path to the usage_data.json file to validate\n\n    Returns:\n        Validation result with either success message or detailed error messages with suggestions\n\n    Example Usage:\n        dynamodb_data_model_schema_validator(\"/path/to/schema.json\")\n        dynamodb_data_model_schema_validator(\"/path/to/schema.json\", \"/path/to/usage_data.json\")\n\n    Example Success Output:\n        \"✅ Schema validation passed!\"\n        or\n        \"✅ Schema validation passed!\n         ✅ Usage data validation passed!\"\n\n    Example Error Output:\n        \"❌ Schema validation failed:\n          • entities.User.fields[0].type: Invalid type value 'strng'\n            💡 Did you mean 'string'? Valid options: string, integer, decimal, boolean, array, object, uuid\"\n    ",
+      "inputSchema": {
+        "properties": {
+          "schema_path": {
+            "description": "Absolute path to the schema.json file to validate",
+            "title": "Schema Path",
+            "type": "string"
+          },
+          "usage_data_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional absolute path to the usage_data.json file to validate alongside the schema",
+            "title": "Usage Data Path"
+          }
+        },
+        "required": [
+          "schema_path"
+        ],
+        "title": "dynamodb_data_model_schema_validatorArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "source_db_analyzer",
+      "description": "Analyzes source database to extract schema and access patterns for DynamoDB modeling.\n\n    WHEN TO USE: Call this tool when the user selects \"Existing Database Analysis\" option\n    after invoking the `dynamodb_data_modeling` tool. This extracts schema and query patterns\n    from an existing relational database to accelerate DynamoDB data model design.\n\n    IMPORTANT: Always ask the user which execution mode they prefer before calling this tool.\n\n    Execution Modes:\n    - self_service: Generates SQL queries for user to run manually, then parses their results.\n    - managed (MySQL only): Database connection via RDS Data API or hostname.\n\n    Supported Databases: MySQL, PostgreSQL, SQL Server, Oracle\n\n    Output: Generates analysis files (schema structure, access patterns, relationships) in\n    Markdown format. These files feed into the DynamoDB data modeling workflow to inform\n    table design, GSI selection, and access pattern mapping.\n\n    Returns: Analysis summary with file locations and next steps.\n    ",
+      "inputSchema": {
+        "properties": {
+          "source_db_type": {
+            "description": "Database type: 'mysql', 'postgresql', 'sqlserver', or 'oracle'",
+            "title": "Source Db Type",
+            "type": "string"
+          },
+          "source_identifier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Identifier for the source to analyze. Accepts a database name (MySQL, PostgreSQL, SQL Server) or a schema/owner name (Oracle, where objects are scoped by schema rather than database). REQUIRED for self_service mode.",
+            "title": "Source Identifier"
+          },
+          "execution_mode": {
+            "default": "self_service",
+            "description": "'self_service': generates SQL for user to run, then parses results. 'managed' (MySQL only): RDS Data API-based access (aws_cluster_arn) or Connection-based access (hostname+port).",
+            "title": "Execution Mode",
+            "type": "string"
+          },
+          "queries_file_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "[self_service] Output path for generated SQL queries (Step 1).",
+            "title": "Queries File Path"
+          },
+          "query_result_file_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "[self_service] Path to query results file for parsing (Step 2).",
+            "title": "Query Result File Path"
+          },
+          "pattern_analysis_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 30,
+            "description": "Days of query logs to analyze. Default: 30.",
+            "minimum": 1,
+            "title": "Pattern Analysis Days"
+          },
+          "max_query_results": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Max rows per query. Default: 500. Env: MYSQL_MAX_QUERY_RESULTS.",
+            "minimum": 1,
+            "title": "Max Query Results"
+          },
+          "aws_cluster_arn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "[managed/RDS Data API-based] Aurora cluster ARN. Use this OR hostname, not both. Env: MYSQL_CLUSTER_ARN.",
+            "title": "Aws Cluster Arn"
+          },
+          "aws_secret_arn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "[managed] Secrets Manager ARN for DB credentials. REQUIRED. Env: MYSQL_SECRET_ARN.",
+            "title": "Aws Secret Arn"
+          },
+          "aws_region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "[managed] AWS region. REQUIRED. Env: AWS_REGION.",
+            "title": "Aws Region"
+          },
+          "hostname": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "[managed/connection-based] MySQL hostname. Use this OR aws_cluster_arn, not both. Env: MYSQL_HOSTNAME.",
+            "title": "Hostname"
+          },
+          "port": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "[managed/connection-based] MySQL port. Default: 3306. Env: MYSQL_PORT.",
+            "title": "Port"
+          },
+          "output_dir": {
+            "description": "Absolute path for output folder. Must exist and be writable. REQUIRED.",
+            "title": "Output Dir",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_db_type",
+          "output_dir"
+        ],
+        "title": "source_db_analyzerArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "dynamodb_data_model_validation",
+      "description": "Validates and tests DynamoDB data models against DynamoDB Local.\n\n    Use this tool to validate, test, and verify your DynamoDB data model after completing the design phase.\n    This tool automatically checks that all access patterns work correctly by executing them against a local\n    DynamoDB instance.\n\n    WHEN TO USE:\n    - After completing data model design with dynamodb_data_modeling tool\n    - When user asks to \"validate\", \"test\", \"check\", or \"verify\" their DynamoDB data model\n    - To ensure all access patterns execute correctly before deploying to production\n\n    WHAT IT DOES:\n    1. If dynamodb_data_model.json doesn't exist:\n       - Returns complete JSON generation guide from json_generation_guide.md\n       - Follow the guide to create the JSON file with tables, items, and access_patterns\n       - Call this tool again after creating the JSON to validate\n\n    2. If dynamodb_data_model.json exists:\n       - Validates the JSON structure (checks for required keys: tables, items, access_patterns)\n       - Sets up DynamoDB Local environment (Docker/Podman/Finch/nerdctl or Java fallback)\n       - Cleans up existing tables from previous validation runs\n       - Creates tables and inserts test data from your model specification\n       - Tests all defined access patterns by executing their AWS CLI implementations\n       - Saves detailed validation results to dynamodb_model_validation.json\n       - Transforms results to markdown format for comprehensive review\n\n    WHAT TO DO ON SUCCESSFUL COMPLETION:\n    After validation completes, you MUST present the user with TWO options:\n    1. Deploy to AWS: Call `generate_resources` tool with resource_type='cdk' to create a CDK app for provisioning tables\n    2. Generate Python code: Call `dynamodb_data_model_schema_converter` to convert the model to schema.json, then generate code\n\n    The user can choose one or both options. If they choose CDK first, you can still generate Python code afterward.\n\n    Args:\n        workspace_dir: Absolute path of the workspace directory\n\n    Returns:\n        JSON generation guide (if file missing) or validation results with transformation prompt (if file exists)\n    ",
+      "inputSchema": {
+        "properties": {
+          "workspace_dir": {
+            "description": "Absolute path of the workspace directory",
+            "title": "Workspace Dir",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspace_dir"
+        ],
+        "title": "dynamodb_data_model_validationArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "compute_performances_and_costs",
+      "description": "Calculate DynamoDB capacity units and monthly costs from access patterns.\n\n    Call after completing data model design. Extracts patterns from Access Pattern Mapping\n    table and tables from Table Designs section in dynamodb_data_model.md.\n\n    Args:\n        access_pattern_list: Access patterns with fields:\n            - operation: GetItem|Query|Scan|PutItem|UpdateItem|DeleteItem|BatchGetItem|BatchWriteItem|TransactGetItems|TransactWriteItems\n            - pattern, description, table, rps (>0), item_size_bytes (1-409600)\n            - item_count: required for Query/Scan/Batch/Transact operations (>0)\n            - strongly_consistent: optional for GetItem/Query/Scan/BatchGetItem (default: false)\n            - gsi: optional for Query/Scan (target index name)\n            - gsi_list: optional for write operations (affected index names)\n        table_list: Tables with name, item_count (>0), item_size_bytes (1-409600), gsi_list (each GSI needs name, item_count, item_size_bytes)\n        workspace_dir: Absolute path to the folder containing dynamodb_data_model.md - report will be appended\n\n    Returns:\n        {'status': 'success', 'message': <success_message>} or {'status': 'error', 'message': <error_reason>}\n\n    Example:\n        {\n          \"access_pattern_list\": [\n            {\n              \"operation\": \"GetItem\",\n              \"pattern\": \"get-user\",\n              \"description\": \"Get user by ID\",\n              \"table\": \"users\",\n              \"rps\": 100,\n              \"item_size_bytes\": 2000\n            },\n            {\n              \"operation\": \"Query\",\n              \"pattern\": \"query-by-email\",\n              \"description\": \"Query user by email\",\n              \"table\": \"users\",\n              \"rps\": 50,\n              \"item_size_bytes\": 1500,\n              \"item_count\": 1,\n              \"gsi\": \"email-index\"\n            },\n            {\n              \"operation\": \"PutItem\",\n              \"pattern\": \"put-user\",\n              \"description\": \"Create user\",\n              \"table\": \"users\",\n              \"rps\": 20,\n              \"item_size_bytes\": 2000,\n              \"gsi_list\": [\"email-index\", \"status-index\"]\n            },\n            {\n              \"operation\": \"Query\",\n              \"pattern\": \"query-orders\",\n              \"description\": \"Query user orders\",\n              \"table\": \"orders\",\n              \"rps\": 50,\n              \"item_size_bytes\": 800,\n              \"item_count\": 10\n            }\n          ],\n          \"table_list\": [\n            {\n              \"name\": \"users\",\n              \"item_size_bytes\": 2500,\n              \"item_count\": 10000,\n              \"gsi_list\": [\n                {\"name\": \"email-index\", \"item_size_bytes\": 1500, \"item_count\": 10000},\n                {\"name\": \"status-index\", \"item_size_bytes\": 500, \"item_count\": 10000}\n              ]\n            },\n            {\n              \"name\": \"orders\",\n              \"item_size_bytes\": 1024,\n              \"item_count\": 50000\n            }\n          ],\n          \"workspace_dir\": \"/absolute/path/to/workspace\"\n        }\n    ",
+      "inputSchema": {
+        "properties": {
+          "access_pattern_list": {
+            "description": "List of access patterns with operation details (required)",
+            "items": {},
+            "title": "Access Pattern List",
+            "type": "array"
+          },
+          "table_list": {
+            "description": "List of table definitions for storage cost calculation (required)",
+            "items": {},
+            "title": "Table List",
+            "type": "array"
+          },
+          "workspace_dir": {
+            "description": "Absolute path of the workspace directory (required). Cost analysis will be appended to dynamodb_data_model.md",
+            "title": "Workspace Dir",
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_pattern_list",
+          "table_list",
+          "workspace_dir"
+        ],
+        "title": "compute_performances_and_costsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "generate_resources",
+      "description": "Generates resources from a DynamoDB data model JSON file (dynamodb_data_model.json).\n\n    This tool generates various resources based on the provided `dynamodb_data_model.json` file.\n    Currently supports generating a CDK app for deploying DynamoDB tables.\n\n    Supported resource types:\n    - cdk: CDK app for deploying DynamoDB tables.\n           Generates a CDK app that provisions DynamoDB tables and GSIs as defined in `dynamodb_data_model.json`.\n\n    WHEN TO USE:\n    - After completing data model validation with `dynamodb_data_model_validation` tool\n    - When user asks to \"deploy\", \"create CDK app\", \"generate CDK\", or \"provision infrastructure\"\n    - When user wants to deploy their DynamoDB tables and GSIs to AWS using a CDK app\n\n    WHEN NOT TO USE:\n    - Before completing data model validation with `dynamodb_data_model_validation` tool\n    - Before having created the `dynamodb_data_model.json` file\n    - When user only wants to generate Python code without deploying infrastructure\n\n    WHAT TO DO ON SUCCESSFUL COMPLETION:\n    After CDK generation completes, you MUST ask the user if they want to:\n    1. Deploy the CDK app now (provide deployment instructions)\n    2. Generate Python data access layer code to interact with the tables (call `dynamodb_data_model_schema_converter` then `generate_data_access_layer`)\n\n    Args:\n        dynamodb_data_model_json_file: Absolute path to the `dynamodb_data_model.json` file\n        resource_type: Type of resource to generate, possible values: cdk\n\n    Returns:\n        Success message with the destination path, or error message if generation fails\n    ",
+      "inputSchema": {
+        "properties": {
+          "dynamodb_data_model_json_file": {
+            "description": "Absolute path to the dynamodb_data_model.json file. Resources will be generated in the same directory.",
+            "title": "Dynamodb Data Model Json File",
+            "type": "string"
+          },
+          "resource_type": {
+            "description": "Type of resource to generate: 'cdk' for CDK app",
+            "title": "Resource Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dynamodb_data_model_json_file",
+          "resource_type"
+        ],
+        "title": "generate_resourcesArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "generate_data_access_layer",
+      "description": "Generate Python code for a data access layer to interact with your DynamoDB tables.\n\n    🔴 PREREQUISITE: Before calling this tool, you MUST first call `dynamodb_data_model_schema_converter`\n    to generate schema.json from dynamodb_data_model.md. This tool ONLY accepts schema.json.\n\n    TYPICAL WORKFLOW:\n    1. Complete data modeling with `dynamodb_data_modeling` tool (creates dynamodb_data_model.md)\n    2. Validate with `dynamodb_data_model_validation` tool (optional but recommended)\n    3. Optionally deploy infrastructure with `generate_resources` tool (resource_type='cdk')\n    4. Convert to schema: Call `dynamodb_data_model_schema_converter` tool (creates schema.json)\n    5. Generate code: Call this `generate_data_access_layer` tool with the path to schema.json\n\n    This tool generates a complete data access layer from your schema including:\n    - Type-safe entity classes with field validation using Pydantic\n    - Repository classes with optimistic locking and error handling for all operations\n    - Fully implemented access patterns\n    - Working usage examples with realistic sample data (if usage_data_path provided)\n\n    Args:\n        schema_path: Path to the schema JSON file\n        language: Target programming language for generated code (currently only 'python' supported)\n        generate_sample_usage: Generate usage examples and test cases\n        usage_data_path: Path to usage_data.json file for realistic sample data (optional)\n\n    Returns:\n        Success message with output location and implementation guidance\n    ",
+      "inputSchema": {
+        "properties": {
+          "schema_path": {
+            "description": "Path to the schema JSON file",
+            "title": "Schema Path",
+            "type": "string"
+          },
+          "language": {
+            "default": "python",
+            "description": "Target programming language (python)",
+            "title": "Language",
+            "type": "string"
+          },
+          "generate_sample_usage": {
+            "default": true,
+            "description": "Generate usage examples and test cases",
+            "title": "Generate Sample Usage",
+            "type": "boolean"
+          },
+          "usage_data_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Path to usage_data.json file for realistic sample data (optional)",
+            "title": "Usage Data Path"
+          }
+        },
+        "required": [
+          "schema_path"
+        ],
+        "title": "generate_data_access_layerArguments",
+        "type": "object"
+      }
+    }
+  ]
+}

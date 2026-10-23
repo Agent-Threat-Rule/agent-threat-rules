@@ -1,0 +1,808 @@
+{
+  "tools": [
+    {
+      "name": "get_cloudwatch_logs",
+      "description": "Get logs from CloudWatch for a specific resource.\n\n        This tool retrieves logs from CloudWatch for Kubernetes resources in an EKS cluster,\n        allowing you to analyze application behavior, troubleshoot issues, and monitor system\n        health. It supports filtering by resource type, time range, and content for troubleshooting\n        application errors, investigating security incidents, and analyzing startup configuration issues.\n\n        IMPORTANT: Use this tool instead of 'aws logs get-log-events', 'aws logs filter-log-events',\n        or 'aws logs start-query' commands.\n\n        ## Requirements\n        - The server must be run with the `--allow-sensitive-data-access` flag\n        - The EKS cluster must have CloudWatch logging enabled\n        - The resource must exist in the specified cluster\n\n        ## Response Information\n        The response includes resource details (type, name, cluster), log group information,\n        time range queried, and formatted log entries with timestamps and messages.\n\n        ## Usage Tips\n        - Start with a small time range (15-30 minutes) and expand if needed\n        - Use filter_pattern to narrow down results (e.g., \"ERROR\", \"exception\")\n        - For JSON logs, the tool automatically parses nested structures\n        - Combine with get_k8s_events for comprehensive troubleshooting\n        - Use resource_type=\"cluster\" when querying cluster-level logs to avoid filtering by cluster name twice\n\n        Args:\n            ctx: MCP context\n            resource_type: Resource type (pod, node, container, cluster). When \"cluster\" is specified, logs are not filtered by resource_name.\n            cluster_name: Name of the EKS cluster\n            log_type: Log type (application, host, performance, control-plane, or custom)\n            resource_name: Resource name to search for in log messages. Optional when resource_type is \"cluster\".\n            minutes: Number of minutes to look back\n            start_time: Start time in ISO format (overrides minutes)\n            end_time: End time in ISO format (defaults to now)\n            limit: Maximum number of log entries to return\n            filter_pattern: Additional CloudWatch Logs filter pattern\n            fields: Custom fields to include in the query results\n\n        Returns:\n            CloudWatchLogsResponse with log entries and resource information\n        ",
+      "inputSchema": {
+        "properties": {
+          "resource_type": {
+            "description": "Resource type to search logs for. Valid values: \"pod\", \"node\", \"container\". This determines how logs are filtered.",
+            "title": "Resource Type",
+            "type": "string"
+          },
+          "cluster_name": {
+            "description": "Name of the EKS cluster where the resource is located. Used to construct the CloudWatch log group name.",
+            "title": "Cluster Name",
+            "type": "string"
+          },
+          "log_type": {
+            "description": "Log type to query. Options:\n            - \"application\": Container/application logs\n            - \"host\": Node-level system logs\n            - \"performance\": Performance metrics logs\n            - \"control-plane\": EKS control plane logs\n            - Or provide a custom CloudWatch log group name directly",
+            "title": "Log Type",
+            "type": "string"
+          },
+          "resource_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Resource name to search for in log messages (e.g., pod name, node name, container name). Used to filter logs for the specific resource.",
+            "title": "Resource Name"
+          },
+          "minutes": {
+            "default": 15,
+            "description": "Number of minutes to look back for logs. Default: 15. Ignored if start_time is provided. Use smaller values for recent issues, larger values for historical analysis.",
+            "title": "Minutes",
+            "type": "integer"
+          },
+          "start_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Start time in ISO format (e.g., \"2023-01-01T00:00:00Z\"). If provided, overrides the minutes parameter. IMPORTANT: Use this for precise time ranges.",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "End time in ISO format (e.g., \"2023-01-01T01:00:00Z\"). If not provided, defaults to current time. IMPORTANT: Use with start_time for precise time ranges.",
+            "title": "End Time"
+          },
+          "limit": {
+            "default": 50,
+            "description": "Maximum number of log entries to return. Use lower values (10-50) for faster queries, higher values (100-1000) for more comprehensive results. IMPORTANT: Higher values may impact performance.",
+            "title": "Limit",
+            "type": "integer"
+          },
+          "filter_pattern": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Additional CloudWatch Logs filter pattern to apply. Uses CloudWatch Logs Insights syntax (e.g., \"ERROR\", \"field=value\"). IMPORTANT: Use this to narrow down results for specific issues.",
+            "title": "Filter Pattern"
+          },
+          "fields": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Custom fields to include in the query results (defaults to \"@timestamp, @message\"). Use CloudWatch Logs Insights field syntax. IMPORTANT: Only specify if you need fields beyond the default timestamp and message.",
+            "title": "Fields"
+          }
+        },
+        "required": [
+          "resource_type",
+          "cluster_name",
+          "log_type"
+        ],
+        "title": "get_cloudwatch_logsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_cloudwatch_metrics",
+      "description": "Get metrics from CloudWatch for a specific resource.\n\n        This tool retrieves metrics from CloudWatch for Kubernetes resources in an EKS cluster,\n        allowing you to monitor performance, resource utilization, and system health. It supports\n        various resource types and metrics with flexible time ranges and aggregation options for\n        monitoring CPU/memory usage, analyzing network traffic, and identifying performance bottlenecks.\n\n        IMPORTANT: Use this tool instead of 'aws cloudwatch get-metric-data', 'aws cloudwatch get-metric-statistics',\n        or similar CLI commands.\n\n        IMPORTANT: Use the get_eks_metrics_guidance tool first to determine the correct dimensions for metric queries.\n        Do not try to infer which dimensions are needed for EKS ContainerInsights metrics.\n\n        IMPORTANT: When using pod metrics, note that `FullPodName` has the same prefix as `PodName` but includes a\n        suffix with a random string (e.g., \"my-pod-abc123\"). Always use the version without the suffix for `PodName`\n        dimension. The pod name returned by list_k8s_resources is the `FullPodName`.\n\n        ## Requirements\n        - The EKS cluster must have CloudWatch Container Insights enabled\n        - The resource must exist in the specified cluster\n        - The metric must be available in the specified namespace\n\n        ## Response Information\n        The response includes resource details (cluster), metric information (name, namespace),\n        time range queried, and data points with timestamps and values.\n\n        ## Usage Tips\n        - Use appropriate statistics for different metrics (e.g., Average for CPU, Maximum for memory spikes)\n        - Match the period to your analysis needs (smaller for detailed graphs, larger for trends)\n        - For rate metrics like network traffic, Sum is often more useful than Average\n        - Combine with get_cloudwatch_logs to correlate metrics with log events\n\n        Args:\n            ctx: MCP context\n            cluster_name: Name of the EKS cluster\n            metric_name: Metric name (e.g., cpu_usage_total, memory_rss)\n            namespace: CloudWatch namespace\n            dimensions: Dimensions to use for the CloudWatch metric query\n            minutes: Number of minutes to look back\n            start_time: Start time in ISO format (overrides minutes)\n            end_time: End time in ISO format (defaults to now)\n            limit: Maximum number of data points to return\n            period: Period in seconds for the metric data points\n            stat: Statistic to use for the metric\n\n        Returns:\n            CloudWatchMetricsResponse with metric data points and resource information\n        ",
+      "inputSchema": {
+        "properties": {
+          "cluster_name": {
+            "description": "Name of the EKS cluster to get metrics for.",
+            "title": "Cluster Name",
+            "type": "string"
+          },
+          "metric_name": {
+            "description": "Metric name to retrieve. Common examples:\n            - cpu_usage_total: Total CPU usage\n            - memory_rss: Resident Set Size memory usage\n            - network_rx_bytes: Network bytes received\n            - network_tx_bytes: Network bytes transmitted",
+            "title": "Metric Name",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "CloudWatch namespace where the metric is stored. Common values:\n            - \"ContainerInsights\": For container metrics\n            - \"AWS/EC2\": For EC2 instance metrics\n            - \"AWS/EKS\": For EKS control plane metrics",
+            "title": "Namespace",
+            "type": "string"
+          },
+          "dimensions": {
+            "additionalProperties": true,
+            "description": "Dimensions to use for the CloudWatch metric query. Must include appropriate dimensions for the resource type and metric (e.g., ClusterName, PodName, Namespace).",
+            "title": "Dimensions",
+            "type": "object"
+          },
+          "minutes": {
+            "default": 15,
+            "description": "Number of minutes to look back for metrics. Default: 15. Ignored if start_time is provided. IMPORTANT: Choose a time range appropriate for the metric resolution.",
+            "title": "Minutes",
+            "type": "integer"
+          },
+          "start_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Start time in ISO format (e.g., \"2023-01-01T00:00:00Z\"). If provided, overrides the minutes parameter. IMPORTANT: Use this for precise historical analysis.",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "End time in ISO format (e.g., \"2023-01-01T01:00:00Z\"). If not provided, defaults to current time. IMPORTANT: Use with start_time for precise time ranges.",
+            "title": "End Time"
+          },
+          "limit": {
+            "default": 50,
+            "description": "Maximum number of data points to return. Higher values (100-1000) provide more granular data but may impact performance. IMPORTANT: Balance between granularity and performance.",
+            "title": "Limit",
+            "type": "integer"
+          },
+          "period": {
+            "default": 60,
+            "description": "Period in seconds for the metric data points. Default: 60 (1 minute). Lower values (1-60) provide higher resolution but may be less available. IMPORTANT: Match to your monitoring needs.",
+            "title": "Period",
+            "type": "integer"
+          },
+          "stat": {
+            "default": "Average",
+            "description": "Statistic to use for the metric aggregation:\n            - Average: Mean value during the period\n            - Sum: Total value during the period\n            - Maximum: Highest value during the period\n            - Minimum: Lowest value during the period\n            - SampleCount: Number of samples during the period",
+            "title": "Stat",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cluster_name",
+          "metric_name",
+          "namespace",
+          "dimensions"
+        ],
+        "title": "get_cloudwatch_metricsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_eks_metrics_guidance",
+      "description": "Get CloudWatch metrics guidance for specific resource types in EKS clusters.\n\n        This tool provides information about available CloudWatch metrics that are in the `ContainerInsights` naemspace for different resource types\n        in EKS clusters, including metric names, dimensions, and descriptions to help with monitoring and troubleshooting.\n        It's particularly useful for determining the correct dimensions to use with the get_cloudwatch_metrics tool.\n\n        ## Response Information\n        The response includes a list of metrics with their names, descriptions, and required dimensions\n        for the specified resource type.\n\n        ## Usage Tips\n        - Use this tool before calling get_cloudwatch_metrics to determine the correct dimensions\n        - For pod metrics, note that FullPodName has a random suffix while PodName doesn't\n        - Different metrics require different dimension combinations\n\n        Args:\n            ctx: MCP context\n            resource_type: Type of resource to get metrics for (cluster, node, pod, namespace, service)\n\n        Returns:\n            List of metrics with their details\n        ",
+      "inputSchema": {
+        "properties": {
+          "resource_type": {
+            "description": "Type of resource to get metrics for (cluster, node, pod, namespace, service)",
+            "title": "Resource Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "resource_type"
+        ],
+        "title": "get_eks_metrics_guidanceArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_eks_troubleshoot_guide",
+      "description": "Search the EKS Troubleshoot Guide for troubleshooting information.\n\n        This tool provides troubleshooting guidance for Amazon EKS issues by querying\n        a specialized knowledge base of EKS troubleshooting information. It helps identify\n        common problems and provides step-by-step solutions for resolving cluster creation issues,\n        node group management problems, workload deployment issues, and diagnosing error messages.\n\n        ## Requirements\n        - Internet connectivity to access the EKS Knowledge Base API\n        - Valid AWS credentials with permissions to access the EKS Knowledge Base\n        - IAM permission: eks-mcpserver:QueryKnowledgeBase\n\n        ## Response Information\n        The response includes bullet-point instructions for troubleshooting EKS issues.\n\n        ## Usage Tips\n        - Provide specific error messages or symptoms in your query\n        - Try running this tool 2-3 times with different phrasings or related queries to increase the chance of retrieving the most relevant guidance\n\n        Args:\n            query: Your specific question or issue description related to EKS troubleshooting. Question has to be less than 300 characters and can only\n            contain letters, numbers, commas, periods, question marks, colons, and spaces.\n\n        Returns:\n            CallToolResult: Detailed troubleshooting guidance for the EKS issue\n        ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Your specific question or issue description related to EKS troubleshooting",
+            "title": "Query",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "search_eks_troubleshoot_guideArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "manage_eks_stacks",
+      "description": "Manage EKS CloudFormation stacks with both read and write operations.\n\n        This tool provides operations for managing EKS CloudFormation stacks, including creating templates,\n        deploying stacks, retrieving stack information, and deleting stacks. It serves as the primary\n        mechanism for creating and managing EKS clusters through CloudFormation, enabling standardized\n        cluster creation, configuration updates, and resource cleanup.\n\n        IMPORTANT: Use this tool instead of 'aws eks create-cluster', 'aws eks delete-cluster',\n        'eksctl create cluster', 'eksctl delete cluster', or similar CLI commands.\n\n        IMPORTANT: Use this tool's standardized templates for creating EKS clusters with proper VPC configuration,\n        networking, security groups, and EKS auto mode. DO NOT create EKS clusters by generating CloudFormation\n        templates from scratch.\n\n        ## Requirements\n        - The server must be run with the `--allow-write` flag for generate, deploy, and delete operations\n        - For deploy and delete operations, the stack must have been created by this tool\n        - For template_file parameter, the path must be absolute and accessible to the server\n\n        ## Operations\n        - **generate**: Create a CloudFormation template at the specified absolute path with the cluster name embedded\n        - **deploy**: Deploy a CloudFormation template from the specified absolute path (creates a new stack or updates an existing one)\n        - **describe**: Get detailed information about a CloudFormation stack for a specific cluster\n        - **delete**: Delete a CloudFormation stack for the specified cluster\n\n        ## Response Information\n        The response type varies based on the operation:\n        - generate: Returns CallToolResult with the template path\n        - deploy: Returns CallToolResult with stack name, ARN, and cluster name\n        - describe: Returns CallToolResult with stack details, outputs, and status\n        - delete: Returns CallToolResult with stack name, ID, and cluster name\n\n        ## Usage Tips\n        - Use the describe operation first to check if a cluster already exists\n        - For safety, this tool will only modify or delete stacks that it created\n        - Stack creation typically takes 15-20 minutes to complete\n        - Use absolute paths for template files (e.g., '/home/user/templates/eks-template.yaml')\n        - The cluster name is used to derive the CloudFormation stack name\n\n        Args:\n            ctx: MCP context\n            operation: Operation to perform (generate, deploy, describe, or delete)\n            template_file: Absolute path for the CloudFormation template (for generate and deploy operations)\n            cluster_name: Name of the EKS cluster (for all operations)\n\n        Returns:\n            ManageEksStacksResponse: Response with fields populated based on the operation performed\n        ",
+      "inputSchema": {
+        "properties": {
+          "operation": {
+            "description": "Operation to perform: generate, deploy, describe, or delete. Choose \"describe\" for read-only operations when write access is disabled.",
+            "title": "Operation",
+            "type": "string"
+          },
+          "template_file": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Absolute path for the CloudFormation template (for generate and deploy operations).\n            IMPORTANT: Assistant must provide the full absolute path to the template file, as the MCP client and server might not run from the same location.",
+            "title": "Template File"
+          },
+          "cluster_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Name of the EKS cluster (for generate, deploy, describe and delete operations).\n            This name will be used to derive the CloudFormation stack name and will be embedded in the cluster resources.",
+            "title": "Cluster Name"
+          }
+        },
+        "required": [
+          "operation"
+        ],
+        "title": "manage_eks_stacksArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "add_inline_policy",
+      "description": "Add a new inline policy to an IAM role.\n\n        This tool creates a new inline policy with the specified permissions and adds it to an IAM role.\n        Inline policies are embedded within the role and cannot be attached to multiple roles. Commonly used\n        for granting EKS clusters access to AWS services, enabling worker nodes to access resources, and\n        configuring permissions for CloudWatch logging and ECR access.\n\n        IMPORTANT: Use this tool instead of 'aws iam put-role-policy' commands.\n\n        ## Requirements\n        - The server must be run with the `--allow-write` flag\n        - The role must exist in your AWS account\n        - The policy name must be unique within the role\n        - You cannot modify existing policies with this tool\n\n        ## Permission Format\n        The permissions parameter can be either a single policy statement or a list of statements.\n\n        ### Single Statement Example\n        ```json\n        {\n            \"Effect\": \"Allow\",\n            \"Action\": [\"s3:GetObject\", \"s3:PutObject\"],\n            \"Resource\": \"arn:aws:s3:::example-bucket/*\"\n        }\n        ```\n\n        ## Usage Tips\n        - Follow the principle of least privilege by granting only necessary permissions\n        - Use specific resources rather than \"*\" whenever possible\n        - Consider using conditions to further restrict permissions\n        - Group related permissions into logical policies with descriptive names\n\n        Args:\n            ctx: The MCP context\n            policy_name: Name of the new inline policy to create\n            role_name: Name of the role to add the policy to\n            permissions: Permissions to include in the policy (in JSON format)\n\n        Returns:\n            AddInlinePolicyResponse: Information about the created policy\n        ",
+      "inputSchema": {
+        "properties": {
+          "policy_name": {
+            "description": "Name of the inline policy to create. Must be unique within the role.",
+            "title": "Policy Name",
+            "type": "string"
+          },
+          "role_name": {
+            "description": "Name of the IAM role to add the policy to. The role must exist.",
+            "title": "Role Name",
+            "type": "string"
+          },
+          "permissions": {
+            "anyOf": [
+              {
+                "additionalProperties": {},
+                "type": "object"
+              },
+              {
+                "items": {
+                  "additionalProperties": {},
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            ],
+            "description": "Permissions to include in the policy as IAM policy statements in JSON format.\n            Can be either a single statement object or an array of statement objects.",
+            "title": "Permissions"
+          }
+        },
+        "required": [
+          "policy_name",
+          "role_name",
+          "permissions"
+        ],
+        "title": "add_inline_policyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_policies_for_role",
+      "description": "Get all policies attached to an IAM role.\n\n        This tool retrieves all policies associated with an IAM role, providing a comprehensive view\n        of the role's permissions and trust relationships. It helps you understand the current\n        permissions, identify missing or excessive permissions, troubleshoot EKS cluster issues,\n        and verify trust relationships for service roles.\n\n        IMPORTANT: Use this tool instead of 'aws iam get-role', 'aws iam list-attached-role-policies',\n        'aws iam list-role-policies', and 'aws iam get-role-policy' commands.\n\n        ## Requirements\n        - The role must exist in your AWS account\n        - Valid AWS credentials with permissions to read IAM role information\n\n        ## Response Information\n        The response includes role ARN, assume role policy document (trust relationships),\n        role description, managed policies with their documents, and inline policies with\n        their documents.\n\n        ## Usage Tips\n        - Use this tool before adding new permissions to understand existing access\n        - Check the assume role policy to verify which services or roles can assume this role\n        - Look for overly permissive policies that might pose security risks\n        - Use with add_inline_policy to implement least-privilege permissions\n\n        Args:\n            ctx: The MCP context\n            role_name: Name of the IAM role to get policies for\n\n        Returns:\n            RoleDescriptionResponse: Detailed information about the role's policies\n        ",
+      "inputSchema": {
+        "properties": {
+          "role_name": {
+            "description": "Name of the IAM role to get policies for. The role must exist in your AWS account.",
+            "title": "Role Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role_name"
+        ],
+        "title": "get_policies_for_roleArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_eks_insights",
+      "description": "Get EKS Insights for cluster configuration and upgrade readiness.\n\n        This tool retrieves Amazon EKS Insights that identify potential issues with\n        your EKS cluster. These insights help identify both cluster configuration issues\n        and upgrade readiness concerns that might affect hybrid nodes functionality.\n\n        Amazon EKS provides two types of insights:\n        - MISCONFIGURATION insights: Identify misconfigurations in your EKS cluster setup\n        - UPGRADE_READINESS insights: Identify issues that could prevent successful cluster upgrades\n\n        When used without an insight_id, it returns a list of all insights.\n        When used with an insight_id, it returns detailed information about\n        that specific insight, including recommendations.\n\n        ## Requirements\n        - The server must be run with the `--allow-sensitive-data-access` flag\n\n        ## Response Information\n        The response includes insight details such as status, description, and\n        recommendations for addressing identified issues.\n\n        ## Usage Tips\n        - Review MISCONFIGURATION insights to identify cluster misconfigurations\n        - Check UPGRADE_READINESS insights before upgrading your cluster\n        - Pay special attention to insights with FAILING status\n        - Focus on insights related to node and network configuration for hybrid nodes\n\n        Args:\n            ctx: MCP context\n            cluster_name: Name of the EKS cluster\n            insight_id: Optional ID of a specific insight to get detailed information for\n            category: Optional category to filter insights by (e.g., \"MISCONFIGURATION\" or \"UPGRADE_READINESS\")\n            next_token: Optional token for pagination to get the next set of results\n\n        Returns:\n            EksInsightsResponse with insights information\n        ",
+      "inputSchema": {
+        "properties": {
+          "cluster_name": {
+            "description": "Name of the EKS cluster",
+            "title": "Cluster Name",
+            "type": "string"
+          },
+          "insight_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "ID of a specific insight to get detailed information for. If provided, returns detailed information about this specific insight.",
+            "title": "Insight Id"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Filter insights by category (e.g., \"MISCONFIGURATION\" or \"UPGRADE_READINESS\")",
+            "title": "Category"
+          },
+          "next_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Token for pagination to get the next set of results",
+            "title": "Next Token"
+          }
+        },
+        "required": [
+          "cluster_name"
+        ],
+        "title": "get_eks_insightsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_k8s_resources",
+      "description": "List Kubernetes resources of a specific kind.\n\n        This tool lists Kubernetes resources of a specified kind in an EKS cluster,\n        with options to filter by namespace, labels, and fields. It returns a summary\n        of each resource including name, namespace, creation time, and metadata, useful\n        for listing pods in a namespace, finding services with specific labels, or\n        checking resources in a specific state.\n\n        IMPORTANT: Use this tool instead of 'kubectl get' commands.\n\n        ## Response Information\n        The response includes a summary of each resource with name, namespace, creation timestamp,\n        labels, and annotations.\n\n        ## Usage Tips\n        - Use the list_api_versions tool first to find available API versions\n        - For non-namespaced resources (like Nodes), the namespace parameter is ignored\n        - Combine label and field selectors for more precise filtering\n        - Results are summarized to avoid overwhelming responses\n\n        Args:\n            ctx: MCP context\n            cluster_name: Name of the EKS cluster\n            kind: Kind of the Kubernetes resources (e.g., 'Pod', 'Service')\n            api_version: API version of the Kubernetes resources (e.g., 'v1', 'apps/v1')\n            namespace: Namespace of the Kubernetes resources (optional)\n            label_selector: Label selector to filter resources (optional)\n            field_selector: Field selector to filter resources (optional)\n\n        Returns:\n            KubernetesResourceListResponse with operation result\n        ",
+      "inputSchema": {
+        "properties": {
+          "cluster_name": {
+            "description": "Name of the EKS cluster where the resources are located.",
+            "title": "Cluster Name",
+            "type": "string"
+          },
+          "kind": {
+            "description": "Kind of the Kubernetes resources to list (e.g., 'Pod', 'Service', 'Deployment').\n            Use the list_api_versions tool to find available resource kinds.",
+            "title": "Kind",
+            "type": "string"
+          },
+          "api_version": {
+            "description": "API version of the Kubernetes resources (e.g., 'v1', 'apps/v1', 'networking.k8s.io/v1').\n            Use the list_api_versions tool to find available API versions.",
+            "title": "Api Version",
+            "type": "string"
+          },
+          "namespace": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Namespace of the Kubernetes resources to list.\n            If not provided, resources will be listed across all namespaces (for namespaced resources).",
+            "title": "Namespace"
+          },
+          "label_selector": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Label selector to filter resources (e.g., 'app=nginx,tier=frontend').\n            Uses the same syntax as kubectl's --selector flag.",
+            "title": "Label Selector"
+          },
+          "field_selector": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Field selector to filter resources (e.g., 'metadata.name=my-pod,status.phase=Running').\n            Uses the same syntax as kubectl's --field-selector flag.",
+            "title": "Field Selector"
+          }
+        },
+        "required": [
+          "cluster_name",
+          "kind",
+          "api_version"
+        ],
+        "title": "list_k8s_resourcesArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_pod_logs",
+      "description": "Get logs from a pod in a Kubernetes cluster.\n\n        This tool retrieves logs from a specified pod in an EKS cluster, with options\n        to filter by container, time range, and size. It's useful for debugging application\n        issues, monitoring behavior, investigating crashes, and verifying startup configuration.\n\n        IMPORTANT: Use this tool instead of 'kubectl logs' commands.\n\n        ## Requirements\n        - The server must be run with the `--allow-sensitive-data-access` flag\n        - The pod must exist and be accessible in the specified namespace\n        - The EKS cluster must exist and be accessible\n\n        ## Response Information\n        The response includes pod name, namespace, container name (if specified),\n        and log lines as an array of strings.\n\n        Args:\n            ctx: MCP context\n            cluster_name: Name of the EKS cluster\n            namespace: Namespace of the pod\n            pod_name: Name of the pod\n            container_name: Container name (optional, if pod contains more than one container)\n            since_seconds: Only return logs newer than this many seconds (optional)\n            tail_lines: Number of lines to return from the end of the logs (defaults to 100)\n            limit_bytes: Maximum number of bytes to return (defaults to 10KB)\n            previous: Return previous terminated container logs (defaults to false)\n\n        Returns:\n            PodLogsResponse with pod logs\n        ",
+      "inputSchema": {
+        "properties": {
+          "cluster_name": {
+            "description": "Name of the EKS cluster where the pod is running.",
+            "title": "Cluster Name",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Kubernetes namespace where the pod is located.",
+            "title": "Namespace",
+            "type": "string"
+          },
+          "pod_name": {
+            "description": "Name of the pod to retrieve logs from.",
+            "title": "Pod Name",
+            "type": "string"
+          },
+          "container_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Name of the specific container to get logs from. Required only if the pod contains multiple containers.",
+            "title": "Container Name"
+          },
+          "since_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Only return logs newer than this many seconds. Useful for getting recent logs without retrieving the entire history.",
+            "title": "Since Seconds"
+          },
+          "tail_lines": {
+            "default": 100,
+            "description": "Number of lines to return from the end of the logs. Default: 100. Use higher values for more context.",
+            "title": "Tail Lines",
+            "type": "integer"
+          },
+          "limit_bytes": {
+            "default": 10240,
+            "description": "Maximum number of bytes to return. Default: 10KB (10240 bytes). Prevents retrieving extremely large log files.",
+            "title": "Limit Bytes",
+            "type": "integer"
+          },
+          "previous": {
+            "default": false,
+            "description": "Return previous terminated container logs. Default: false. Useful to get logs for pods that are restarting.",
+            "title": "Previous",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cluster_name",
+          "namespace",
+          "pod_name"
+        ],
+        "title": "get_pod_logsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_k8s_events",
+      "description": "Get events related to a specific Kubernetes resource.\n\n        This tool retrieves Kubernetes events related to a specific resource, providing\n        detailed information about what has happened to the resource over time. Events\n        are useful for troubleshooting pod startup failures, investigating deployment issues,\n        understanding resource modifications, and diagnosing scheduling problems.\n\n        IMPORTANT: Use this tool instead of 'kubectl describe' or 'kubectl get events' commands.\n\n        ## Requirements\n        - The server must be run with the `--allow-sensitive-data-access` flag\n        - The resource must exist and be accessible in the specified namespace\n\n        ## Response Information\n        The response includes events with timestamps (first and last), occurrence counts,\n        messages, reasons, reporting components, and event types (Normal or Warning).\n\n        ## Usage Tips\n        - Warning events often indicate problems that need attention\n        - Normal events provide information about expected lifecycle operations\n        - The count field shows how many times the same event has occurred\n        - Recent events are most relevant for current issues\n\n        Args:\n            ctx: MCP context\n            cluster_name: Name of the EKS cluster\n            kind: Kind of the involved object\n            name: Name of the involved object\n            namespace: Namespace of the involved object (optional for non-namespaced resources)\n\n        Returns:\n            EventsResponse with events related to the specified object\n        ",
+      "inputSchema": {
+        "properties": {
+          "cluster_name": {
+            "description": "Name of the EKS cluster where the resource is located.",
+            "title": "Cluster Name",
+            "type": "string"
+          },
+          "kind": {
+            "description": "Kind of the involved object (e.g., \"Pod\", \"Deployment\", \"Service\"). Must match the resource kind exactly.",
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of the involved object to get events for.",
+            "title": "Name",
+            "type": "string"
+          },
+          "namespace": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Namespace of the involved object. Required for namespaced resources (like Pods, Deployments).\n            Not required for cluster-scoped resources (like Nodes, PersistentVolumes).",
+            "title": "Namespace"
+          }
+        },
+        "required": [
+          "cluster_name",
+          "kind",
+          "name"
+        ],
+        "title": "get_k8s_eventsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_api_versions",
+      "description": "List all available API versions in the Kubernetes cluster.\n\n        This tool discovers all available API versions on the Kubernetes cluster,\n        which is helpful for determining the correct apiVersion to use when\n        managing Kubernetes resources. It returns both core APIs and API groups,\n        useful for verifying API compatibility and discovering available resources.\n\n        ## Response Information\n        The response includes core APIs (like 'v1'), API groups with versions\n        (like 'apps/v1'), extension APIs (like 'networking.k8s.io/v1'), and\n        any Custom Resource Definition (CRD) APIs installed in the cluster.\n\n        ## Usage Tips\n        - Use this tool before creating or updating resources to ensure API compatibility\n        - Different Kubernetes versions may have different available APIs\n        - Some APIs may be deprecated or removed in newer Kubernetes versions\n        - Custom resources will only appear if their CRDs are installed in the cluster\n\n        Args:\n            ctx: MCP context\n            cluster_name: Name of the EKS cluster\n\n        Returns:\n            ApiVersionsResponse with list of available API versions\n        ",
+      "inputSchema": {
+        "properties": {
+          "cluster_name": {
+            "description": "Name of the EKS cluster to query for available API versions.",
+            "title": "Cluster Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cluster_name"
+        ],
+        "title": "list_api_versionsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "manage_k8s_resource",
+      "description": "Manage a single Kubernetes resource with various operations.\n\n        This tool provides complete CRUD (Create, Read, Update, Delete) operations\n        for Kubernetes resources in an EKS cluster. It supports all resource types\n        and allows for precise control over individual resources, enabling you to create\n        custom resources, update specific fields, read detailed information, and delete\n        resources that are no longer needed.\n\n        IMPORTANT: Use this tool instead of 'kubectl create', 'kubectl edit', 'kubectl patch',\n        'kubectl delete', or 'kubectl get' commands.\n\n        ## Requirements\n        - The server must be run with the `--allow-write` flag for mutating operations\n        - The server must be run with the `--allow-sensitive-data-access` flag for Secret resources\n        - The EKS cluster must exist and be accessible\n\n        ## Operations\n        - **create**: Create a new resource with the provided definition\n        - **replace**: Replace an existing resource with a new definition\n        - **patch**: Update specific fields of an existing resource\n        - **delete**: Remove an existing resource\n        - **read**: Get details of an existing resource\n\n        ## Usage Tips\n        - Use list_api_versions to find available API versions\n        - For namespaced resources, always provide the namespace\n        - When creating resources, ensure the name in the body matches the name parameter\n        - For patch operations, only include the fields you want to update\n\n        Args:\n            ctx: MCP context\n            operation: Operation to perform (create, replace, patch, delete, read)\n            cluster_name: Name of the EKS cluster\n            kind: Kind of the Kubernetes resource (e.g., 'Pod', 'Service')\n            api_version: API version of the Kubernetes resource (e.g., 'v1', 'apps/v1')\n            name: Name of the Kubernetes resource\n            namespace: Namespace of the Kubernetes resource (optional)\n            body: Resource definition\n\n        Returns:\n            KubernetesResourceResponse with operation result\n        ",
+      "inputSchema": {
+        "properties": {
+          "operation": {
+            "description": "Operation to perform on the resource. Valid values:\n            - create: Create a new resource\n            - replace: Replace an existing resource\n            - patch: Update specific fields of an existing resource\n            - delete: Delete an existing resource\n            - read: Get details of an existing resource\n            Use list_k8s_resources for listing multiple resources.",
+            "title": "Operation",
+            "type": "string"
+          },
+          "cluster_name": {
+            "description": "Name of the EKS cluster where the resource is located or will be created.",
+            "title": "Cluster Name",
+            "type": "string"
+          },
+          "kind": {
+            "description": "Kind of the Kubernetes resource (e.g., \"Pod\", \"Service\", \"Deployment\").",
+            "title": "Kind",
+            "type": "string"
+          },
+          "api_version": {
+            "description": "API version of the Kubernetes resource (e.g., \"v1\", \"apps/v1\", \"networking.k8s.io/v1\").",
+            "title": "Api Version",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Name of the Kubernetes resource. Required for all operations except create (where it can be specified in the body).",
+            "title": "Name"
+          },
+          "namespace": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Namespace of the Kubernetes resource. Required for namespaced resources.\n            Not required for cluster-scoped resources (like Nodes, PersistentVolumes).",
+            "title": "Namespace"
+          },
+          "body": {
+            "anyOf": [
+              {
+                "additionalProperties": {},
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Resource definition as a dictionary. Required for create, replace, and patch operations.\n            For create and replace, this should be a complete resource definition.\n            For patch, this should contain only the fields to update.",
+            "title": "Body"
+          }
+        },
+        "required": [
+          "operation",
+          "cluster_name",
+          "kind",
+          "api_version"
+        ],
+        "title": "manage_k8s_resourceArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "apply_yaml",
+      "description": "Apply a Kubernetes YAML from a local file.\n\n        This tool applies Kubernetes resources defined in a YAML file to an EKS cluster,\n        similar to the `kubectl apply` command. It supports multi-document YAML files\n        and can create or update resources, useful for deploying applications, creating\n        Kubernetes resources, and applying complete application stacks.\n\n        IMPORTANT: Use this tool instead of 'kubectl apply -f' commands.\n\n        ## Requirements\n        - The server must be run with the `--allow-write` flag\n        - The YAML file must exist and be accessible to the server\n        - The path must be absolute (e.g., '/home/user/manifests/app.yaml')\n        - The EKS cluster must exist and be accessible\n\n        ## Response Information\n        The response includes the number of resources created, number of resources\n        updated (when force=True), and whether force was applied.\n\n        Args:\n            ctx: MCP context\n            yaml_path: Absolute path to the YAML file to apply\n            cluster_name: Name of the EKS cluster\n            namespace: Default namespace to use for resources\n            force: Whether to update resources if they already exist (like kubectl apply)\n\n        Returns:\n            ApplyYamlResponse with operation result\n        ",
+      "inputSchema": {
+        "properties": {
+          "yaml_path": {
+            "description": "Absolute path to the YAML file to apply.\n            IMPORTANT: Must be an absolute path (e.g., '/home/user/manifests/app.yaml') as the MCP client and server might not run from the same location.",
+            "title": "Yaml Path",
+            "type": "string"
+          },
+          "cluster_name": {
+            "description": "Name of the EKS cluster where the resources will be created or updated.",
+            "title": "Cluster Name",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Kubernetes namespace to apply resources to. Will be used for namespaced resources that do not specify a namespace.",
+            "title": "Namespace",
+            "type": "string"
+          },
+          "force": {
+            "default": true,
+            "description": "Whether to update resources if they already exist (similar to kubectl apply). Set to false to only create new resources.",
+            "title": "Force",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "yaml_path",
+          "cluster_name",
+          "namespace"
+        ],
+        "title": "apply_yamlArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "generate_app_manifest",
+      "description": "Generate Kubernetes manifest for a deployment and service.\n\n        This tool generates Kubernetes manifests for deploying an application to an EKS cluster,\n        creating both a Deployment and a LoadBalancer Service. The generated manifest can be\n        applied to a cluster using the apply_yaml tool, useful for deploying containerized\n        applications, creating load-balanced services, and standardizing deployment configurations.\n\n        ## Requirements\n        - The server must be run with the `--allow-write` flag\n\n        ## Generated Resources\n        - **Deployment**: Manages the application pods with specified replicas and resource requests\n        - **Service**: LoadBalancer type service that exposes the application externally\n\n        ## Usage Tips\n        - Use 2 or more replicas for production workloads\n        - Set appropriate resource requests based on application needs\n        - Use internal load balancers for services that should only be accessible within the VPC\n        - The generated manifest can be modified before applying if needed\n\n        Args:\n            ctx: MCP context\n            app_name: Name of the application (used for deployment and service names)\n            image_uri: Full ECR image URI with tag\n            port: Container port that the application listens on\n            replicas: Number of replicas to deploy\n            cpu: CPU request for each container\n            memory: Memory request for each container\n            namespace: Kubernetes namespace to deploy to\n            load_balancer_scheme: AWS load balancer scheme (internal or internet-facing)\n            output_dir: Directory to save the manifest file\n\n        Returns:\n            GenerateAppManifestResponse: The complete Kubernetes manifest content and output file path\n        ",
+      "inputSchema": {
+        "properties": {
+          "app_name": {
+            "description": "Name of the application. Used for deployment and service names, and for labels.",
+            "title": "App Name",
+            "type": "string"
+          },
+          "image_uri": {
+            "description": "Full ECR image URI with tag (e.g., 123456789012.dkr.ecr.region.amazonaws.com/repo:tag).\n            Must include the full repository path and tag.",
+            "title": "Image Uri",
+            "type": "string"
+          },
+          "output_dir": {
+            "description": "Absolute path to the directory to save the manifest file",
+            "title": "Output Dir",
+            "type": "string"
+          },
+          "port": {
+            "default": 80,
+            "description": "Container port that the application listens on",
+            "title": "Port",
+            "type": "integer"
+          },
+          "replicas": {
+            "default": 2,
+            "description": "Number of replicas to deploy",
+            "title": "Replicas",
+            "type": "integer"
+          },
+          "cpu": {
+            "default": "100m",
+            "description": "CPU request for each container (e.g., \"100m\" for 0.1 CPU cores, \"500m\" for half a core).",
+            "title": "Cpu",
+            "type": "string"
+          },
+          "memory": {
+            "default": "128Mi",
+            "description": "Memory request for each container (e.g., \"128Mi\" for 128 MiB, \"1Gi\" for 1 GiB).",
+            "title": "Memory",
+            "type": "string"
+          },
+          "namespace": {
+            "default": "default",
+            "description": "Kubernetes namespace to deploy the application to. Default: \"default\"",
+            "title": "Namespace",
+            "type": "string"
+          },
+          "load_balancer_scheme": {
+            "default": "internal",
+            "description": "AWS load balancer scheme. Options: \"internal\" (private VPC only) or \"internet-facing\" (public access).",
+            "title": "Load Balancer Scheme",
+            "type": "string"
+          }
+        },
+        "required": [
+          "app_name",
+          "image_uri",
+          "output_dir"
+        ],
+        "title": "generate_app_manifestArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_eks_vpc_config",
+      "description": "Get VPC configuration for an EKS cluster.\n\n        This tool retrieves comprehensive VPC configuration details for any EKS cluster,\n        including CIDR blocks and route tables which are essential for understanding\n        network connectivity. For hybrid node setups, it also automatically identifies\n        and includes remote node and pod CIDR configurations.\n\n        ## Requirements\n        - The server must be run with the `--allow-sensitive-data-access` flag\n\n        ## Response Information\n        The response includes VPC CIDR blocks, route tables, and when available,\n        remote CIDR configurations for hybrid node connectivity.\n\n        ## Usage Tips\n        - Understand VPC networking configuration for any EKS cluster\n        - Examine route tables to verify proper network connectivity\n        - For hybrid setups: Check that remote node CIDR blocks are correctly configured\n        - For hybrid setups: Verify that VPC route tables include routes for hybrid node CIDRs\n\n        Args:\n            ctx: MCP context\n            cluster_name: Name of the EKS cluster\n            vpc_id: Optional ID of the specific VPC to query\n\n        Returns:\n            EksVpcConfigResponse with VPC configuration details\n        ",
+      "inputSchema": {
+        "properties": {
+          "cluster_name": {
+            "description": "Name of the EKS cluster to get VPC configuration for",
+            "title": "Cluster Name",
+            "type": "string"
+          },
+          "vpc_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "ID of the specific VPC to query (optional, will use cluster VPC if not specified)",
+            "title": "Vpc Id"
+          }
+        },
+        "required": [
+          "cluster_name"
+        ],
+        "title": "get_eks_vpc_configArguments",
+        "type": "object"
+      }
+    }
+  ]
+}

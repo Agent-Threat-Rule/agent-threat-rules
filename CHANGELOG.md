@@ -4,7 +4,86 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-10-24
+
+The first release since 4.1.5. For an integrator it changes three things at
+runtime: the Claude Code guard reads what a tool returned instead of what it
+was given, rules written for `context_window` and `skill_*` events now run on
+the events their data arrives in, and a match that a model decided is
+reported instead of enforced unless the integrator opts in. `atr scan` now
+scans an MCP config file it used to skip, and an MCP `tools/list` document
+as one event per tool, without running the rules written for a tool being
+called. Many rule conditions that took polynomial time on long input were
+rewritten, and three rules left the enforce
+lane after matching benign samples. Like 4.1.5, the npm package carries the
+rules without their test samples; the repository keeps them.
+
+Default behaviour that changes, and how to keep the old one:
+
+- Model-decided matches are advisory. A match from a semantic rule's judge
+  that its own pattern fallback does not corroborate, from the embedding
+  module or from the semantic layer is listed in `verdict.advisory` and no
+  longer sets the verdict's outcome or dispatches more than observe-tier
+  actions. To keep the old behaviour pass `modelDecisions: 'enforce'` to
+  `ATREngine` or `computeVerdict()`, or use `--model-decisions enforce` or
+  `ATR_MODEL_DECISIONS=enforce` with `atr scan` and `atr mcp`. Integrations
+  that wire no model, including `atr guard` and the bundled adapters, see no
+  change (#720). `verdict.highestSeverity` and `highestConfidence` now
+  describe only the matches the outcome came from (read `advisorySeverity`
+  for the rest), and `atr scan --json` gives every match `decided_by` and
+  `enforced`.
+- More of what an agent sees reaches the rules. A guard registered under
+  Claude Code's PostToolUse now scans the tool's output, where it used to scan
+  the tool's input; registering it under PostToolUseFailure as well also scans
+  failed calls (#715, #721). Rules of type `context_window` and `skill_*` now
+  run on typed runtime events (#701). The OpenShell filter
+  and NemoClaw preflight adapters evaluate in the hunt lane and deny at `high`
+  and above by default (`ATR_MIN_SEVERITY`), so they can now deny on
+  ATR-2026-00070 and -01774 (high, `llm_input`/`llm_output`) and
+  ATR-2026-00157 and -02405 (critical, `tool_call`), where 4.1.5 did not. Both raise matches in
+  the hunt lane, the engine default, including on benign text (measured
+  figures under Fixed below); neither moves the enforce lane. There is no
+  switch back. An integration that blocks on PostToolUse should block on the
+  enforce lane: `atr guard --blocking --lane enforce` (or `ATR_BLOCKING=1
+  ATR_LANE=enforce`), or `lane: 'enforce'` on `ATREngine`. The guard's default
+  lane is hunt, so `--blocking` alone blocks on the hunt-lane matches above.
+- ATR-2026-00080, -00436 and -01606 moved from maturity `stable` to `test`
+  after matching benign samples in the grown corpus (#625). They still alert;
+  an integration that blocks only in the enforce lane no longer blocks on
+  them.
+- ATR-2026-00012 moved from maturity `test` to `experimental` (#683), so it
+  runs in the hunt lane only and no longer in the alert lane. ATR-2026-00233,
+  a duplicate of ATR-2026-00228, is deprecated and runs in no lane (#666).
+- `atr scan` on an MCP config file scans one event per server (#581, by
+  @ciceroyang), and on an MCP `tools/list` document, bare or in a JSON-RPC
+  response, one event per tool (#737). 4.1.5 skipped both and reported them
+  clean. Any JSON file `atr scan` reads in which no event reaches the engine
+  now exits 1, in text, `--json` and `--sarif` output alike; `events_scanned`
+  counts only events that did, beside a new `events_skipped`. A CI step that ran
+  `atr scan` on such a file and always passed may now fail, on the exit code or
+  through `--fail-on`. The GitHub Action ignores the exit code (#575) but counts
+  the new findings toward `fail-on-finding`. Scanning a directory that holds
+  only an MCP config is not fixed yet (#575).
+
+Under SPEC §10 this is a minor release: the rule format, identifier scheme and
+Match output are unchanged (matches gain an optional `decidedBy`, which §7
+allows). SPEC.md moves to 1.0.1, a [Compatible] correction of §6.4 (#699).
+SPEC §10 versions the format, not the package's defaults, and some defaults
+change above. 4.0.0 went major because every `atr guard` user lost a block
+they had by default. Here an integration that wires no model loses no block;
+one that wired a model judge and blocked on its decisions does, and one that
+blocks in the hunt lane, as `atr guard --blocking` does on PostToolUse and the
+OpenShell and NemoClaw adapters do, can gain blocks. If that describes your
+integration, apply the switches above or stay on 4.1.5.
+
 ### Added
+
+- **New rules, all at maturity `test`** (hunt and alert lanes, not the
+  enforce lane): ATR-2026-02815, -02817 and -02820 (#612); -02858, -02859 and
+  -02860, technique rules for llm-guard samples lost to earlier FP repairs
+  (#668); -02855, -02861 and -02862 from the FN-mine sweeps (#650, #671);
+  -02864, -02865, -02866, -02867 and -02868 from agent-related CVEs published
+  2026-09-22 to 2026-10-21 (#730, #731).
 
 - **The category registry as Gemara catalogs, generated and published from
   here.** `spec/category-registry/gemara/` holds a vector, capability, threat
@@ -105,6 +184,14 @@ All notable changes to ATR will be documented in this file.
   measurement file.
 
 ### Changed
+
+- **Three rules left the enforce lane.** ATR-2026-00080, -00436 and -01606
+  each matched benign samples in the grown corpus and were demoted from
+  maturity `stable` to `test` (#625). ATR-2026-00233, a duplicate of another
+  rule, is deprecated (#666).
+- **Six rules follow MITRE ATLAS v2026.07.** AML.T0019 and AML.T0104, retired
+  into AML.T0115 as sub-techniques, are replaced by AML.T0115.000 and
+  AML.T0115.002 in the rules' `references.mitre_atlas` (#543).
 
 - **A match a model decided is reported, not enforced, unless the integrator
   opts in.** Three engine paths turn a model's output into a match: a semantic
@@ -235,6 +322,76 @@ All notable changes to ATR will be documented in this file.
   block, a 3.5.11 figure nothing has written since #600 and nothing reads.
 
 ### Fixed
+
+- **`atr scan` scans an MCP config file instead of skipping it.** The file was
+  parsed, wrapped as one event without `content` and skipped, while the
+  summary counted it as scanned, so a config that sets `NODE_OPTIONS` to a
+  `require` payload came back as no threats. Each server in the document is
+  now its own event, `events_scanned` counts what reached the engine beside
+  `events_skipped`, and a file with nothing scannable exits non-zero (#581,
+  by @ciceroyang; issue #575, where directory scans and the Action's exit
+  handling remain open).
+
+- **Rule conditions that took polynomial time on long input were
+  rewritten.** 86 conditions in 48 rules found by the extended ReDoS gate
+  (#704), eight conditions quadratic in a long run of one character (#723),
+  and ATR-2026-00063 and -00228 (#666). The rewrites keep the language of
+  each condition, except four deliberate changes in #704:
+  ATR-2026-00446 condition 0 widens, and ATR-2026-01005 condition 1 and
+  ATR-2026-01307 conditions 0 and 1 narrow. ATR-2026-02261 condition 0
+  narrows on purpose in #723 (its back-reference no longer ties two different
+  variables), and ATR-2026-00228 condition 1 in #666 (on JSON-encoded content
+  the two labels must be on one line). Conditions still over the gate's
+  budget stay listed in `data/redos-baseline.json`.
+- **Rule false positives.** ATR-2026-00012 matched 1,817 of 14,157 benign
+  samples and now matches 150, with every match of the new version also a
+  match of the old one (#683). ATR-2026-02010 no longer matches blank or
+  whitespace-only input (#704). ATR-2026-00013 also flags apex
+  loopback-wildcard domains (CVE-2026-55096) and its IPv6 condition matches
+  IPv4-mapped obfuscation only (#732, #733).
+- **`atr scan` scans an MCP `tools/list` document, one event per tool.** A file
+  holding `{"tools": [...]}`, or the JSON-RPC response `{"jsonrpc": "2.0",
+  "result": {"tools": [...]}}`, was wrapped as one event with no content,
+  skipped, and reported as "nothing was scanned", so the usual input for a
+  tool-poisoning check reached no rule. Each tool is now an `mcp_exchange`
+  event (`src/cli/mcp-tools-document.ts`): the content is the tool definition as
+  JSON, input schema and per-parameter descriptions included, and
+  `tool_name` / `tool_description` are set from the definition. A JSON array of
+  such responses is accepted too. A document that lists no tools fails with
+  "nothing was scanned" rather than reporting clean. `mcpServers` documents and
+  event files are read as before. Tests: `tests/cli-mcp-tools-list-scan.test.ts`.
+- **A tools/list scan does not run the rules written for a tool being called.**
+  A definition defines a tool and calls none, but an `mcp_exchange` event admits
+  every rule, so call rules (ATR-2026-00099 and others, which read the called
+  tool's name and arguments) flagged every definition named `delete_*`,
+  `*_reset` or `exec*`. New engine option `toolDefinitions` (`ATREngineConfig`,
+  default false), which `atr scan` sets only for a tools/list document: a rule
+  with `agent_source.type: tool_call` then runs only if one of its conditions
+  reads `tool_description` (the test is per rule: such a rule runs with all its
+  conditions), or if its subject is the tool's identity (`TOOL_IDENTITY_RULES`
+  in `src/tool-definition-scope.ts`: ATR-2026-00060, impersonation); every other
+  rule runs as before. No rule file changes; hooks, adapters, config documents
+  and event files are unaffected. `atr scan --json` reports
+  `tool_definition_scope`, `rules_evaluated` and `rules_skipped_by_scope` (SARIF:
+  run properties) and the `tool_name` of each result, so a rule that was not run
+  does not read as a clean result. An event that also carries a `tools` array
+  is still scanned as an event. Documented in `docs/ARCHITECTURE.md` §3.2,
+  `docs/schema-spec.md` (agent_source.type) and `docs/rule-writing-guide.md`.
+  On 710 benign tool definitions from 45 official and vendor MCP servers,
+  flagged definitions go from 58 to 6 (hunt) and 57 to 5 (alert); enforce is 0
+  before and after, which says nothing here, since none of the rules involved is
+  stable. The true positives of the rules that read `tool_description` give the
+  same result with and without the scope: of 41, 39 fire (35 description texts,
+  and 4 ATR-2026-00441 code snippets through its content conditions) and 2 do
+  not (ATR-2026-00441 tool calls given as JSON with arguments, which are not
+  definitions). The 6 remaining hunt-lane false positives come from rules this
+  change does not touch: ATR-2026-01987, -00225, -00217, -00161 and -00569 (over-
+  broad conditions) and a form match of ATR-2026-00579 (experimental); see
+  `data/measurements/mcp-tools-list-benign/README.md`. The scope also costs
+  detection: a poisoned definition that only a call rule catches (for example
+  ATR-2026-00114) is missed in a tools/list scan; no malicious tool-definition
+  corpus measures this yet. Tests:
+  `tests/tool-definition-scope.test.ts`, `tests/cli-mcp-tools-list-scan.test.ts`.
 
 - **On Claude Code, the guard scans what a tool returned on PostToolUse.**
   Claude Code sends a tool's output at the top level of the PostToolUse hook

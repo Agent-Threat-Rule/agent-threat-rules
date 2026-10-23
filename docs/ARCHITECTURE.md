@@ -152,9 +152,28 @@ follow: `mcp_exchange` rules also run on `tool_call` events; `llm_io` rules also
 run on tool responses, because a poisoned tool/RAG output is the primary
 indirect-injection channel and the payload never appears in a direct
 `llm_input`; and `method: trace` rules run whenever the event actually carries a
-trace. An `mcp_exchange` event has no source type and admits every rule. When
-`scanContext` is `skill` the source-type filter is skipped entirely and all
-rules fire.
+trace. An `mcp_exchange` event has no source type and admits every rule, with
+one exception: on an engine constructed with `toolDefinitions: true`
+(reference-engine scan-context behaviour, off by default; only `atr scan` sets
+it, and only for a `tools/list` document), each event is a tool definition, and
+a rule
+whose `agent_source.type` is `tool_call` runs only if one of its conditions
+reads `tool_description`, or if it is listed in `TOOL_IDENTITY_RULES`
+(`src/tool-definition-scope.ts`, one entry per rule with the reason). The
+criterion is rule-level: one condition reading `tool_description` admits the
+whole rule, so all of ATR-2026-00441's conditions run on a definition, its
+`tool_args` and `tool_name` ones included. The gate sits in `evaluates()`, next
+to the status and lane checks (§3.4), and `getToolDefinitionScope()` reports how
+many rules it left out; `atr scan --json` prints that count, so a rule that did
+not run is not read as a clean result. A definition defines a tool and calls
+none: on 710 benign definitions from 45 MCP servers, rules written to judge a
+call (its name and arguments) were behind 54 of the 58 hunt-lane flags
+(`data/measurements/mcp-tools-list-benign/`). ATR-SPEC-v1
+§5.1 maps an `mcp_exchange` event to `mcp_exchange` rules only; the reference
+engine admits every rule on it, and this scope narrows that for tool
+definitions, as §5.2's scan-target filtering does for SKILL.md and runtime
+scans. When `scanContext` is `skill` the source-type filter is skipped entirely
+and all rules fire.
 
 Three call shapes:
 
