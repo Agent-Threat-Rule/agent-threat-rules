@@ -4,6 +4,69 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+## [4.2.1] - 2026-10-24
+
+A patch release of rule fixes and one new rule, plus two release-tooling
+fixes. The rule format, identifier scheme and Match output are unchanged.
+
+Default behaviour that changes:
+
+- ATR-2026-01601 (SQL injection with destructive DDL, maturity `stable`, so it
+  runs in the enforce lane) now also matches when whitespace separates the
+  single quote from the semicolon, as in `1' ; TRUNCATE TABLE accounts; --` and
+  `7' ; DELETE FROM sessions; --`, which it missed before. An integration that
+  blocks on the enforce lane blocks these too. Its benign false positives were
+  re-measured: none over the 14,172 samples of the benign gate (#748, issue
+  #620).
+
+### Added
+
+- **ATR-2026-02870: an invisible control before a directive in a tool
+  description or skill file.** A zero-width, soft-hyphen or bidi control
+  character at the start of a clause that tells the agent to ignore or
+  override instructions, send or read secrets, conversations or credential
+  files, or keep something from the user. Presence of the character alone
+  does not match, so soft hyphens in German, ZWNJ in Persian, LRM/RLM in Hebrew
+  and Arabic, emoji ZWJ sequences and a leading BOM stay clear. It reads
+  `tool_description`, so it runs in a `tools/list` scan, on `mcp_exchange`
+  events and on SKILL.md files. Maturity `test` (hunt and alert lanes). No
+  benign false positives on the gate corpora or on the 710 tool definitions in
+  `data/test-corpora/mcp-tools-list-benign/`, which contain no such characters,
+  so that last figure is weak evidence. A control inside a word, rather than at
+  the start of a clause, is ATR-2026-00276's case and not covered here (#749,
+  from issue #653 by @Paraphern).
+
+### Fixed
+
+- **ATR-2026-00040 and -00064 matched the wrong chmod modes.** Their chmod
+  condition matched the owner digit of `chmod 755 deploy.sh` or `chmod 700
+  ~/.ssh` and missed `chmod -R 777 /`. They now match a world-writable mode or
+  a setuid/setgid/sticky four-digit mode; with options such as `-R` before the
+  mode, only when the target is the root, a system directory or the home
+  directory, since `chmod -R 777` on an application subdirectory is documented
+  practice in the benign corpus. Group-writable modes are not matched. Both
+  rules are maturity `test` (#740, issue #735, from the probe in #658 by
+  @PHM-Audit).
+- **ATR-2026-00500, -00501 and -00505 are grounded in the vendor test cases
+  they cite.** 00500 and 00501 matched 1 and 0 of promptfoo's SSRF and
+  data-exfiltration test cases, and 00505 missed an llm-guard case with a
+  typographic apostrophe. They now match all of them (3 of 3, 3 of 3, 6 of 6),
+  their true positives that did not occur in any vendor repository were
+  replaced by verbatim vendor cases with repository, commit, file and line,
+  and -00503 and -00521 gained the vendor originals behind their shortened
+  samples. On the pinned vendor suites, hunt-lane recall goes from 97 to 100 of
+  126 attack cases; the ablation reference is unchanged (#709, measurement in
+  #750).
+- **ATR-2026-00223's samples use a documentation address** (203.0.113.30)
+  instead of an address from a real dropper. Detection is unchanged (#738).
+- **The release workflow commits the reconciled stats cache with the version
+  bump.** The 4.2.0 bump reached `main` with `data/stats.json` still at 4.1.5,
+  which failed CI on `main`; the published package was not affected (#746).
+- **The Gemara catalogs' first publish reads oras's "not found" as
+  unpublished.** The first publish from v4.2.0 stopped at the
+  already-published check; this release tag is the first that can publish the
+  bundle (#747).
+
 ## [4.2.0] - 2026-10-24
 
 The first release since 4.1.5. For an integrator it changes three things at
