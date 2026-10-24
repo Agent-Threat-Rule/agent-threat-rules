@@ -106,13 +106,14 @@ export function loadRules(rulesDir: string, options: LoadOptions = {}): LoadResu
 }
 
 /**
- * Regex literals in source order, verbatim.
+ * The rule's regex condition values in source order, exactly as the rule
+ * writes them. transform.ts decides how each is written into the pack.
  *
  * Non-regex operators are not representable in a signature pack. Duplicates
  * are deliberately kept: a rule may carry the same regex against two
  * different `field`s, the pack has no field concept, and dropping the second
- * copy would silently make the exported pack disagree with the rule it claims
- * to be a verbatim copy of.
+ * copy would silently make the exported pack disagree with the rule it links
+ * to.
  */
 export function extractPatterns(rule: AtrRule): string[] {
   const conditions = rule.detection?.conditions ?? [];

@@ -1,3 +1,4 @@
+import { regexConditionSpec } from '../../src/engine.js';
 import { extractPatterns, type LoadedRule } from './load-rules.js';
 
 /** Field widths the vendored pack truncates to. */
@@ -28,6 +29,12 @@ export interface TransformOptions {
    * carry. Only set when reproducing that pack byte for byte.
    */
   readonly omitMaturity?: boolean;
+  /**
+   * Copy each regex exactly as the rule writes it instead of through
+   * toScannerPattern(). The pack vendored downstream was built that way.
+   * Only set when reproducing that pack byte for byte.
+   */
+  readonly verbatimPatterns?: boolean;
 }
 
 export const DEFAULT_REPO_URL = 'https://github.com/Agent-Threat-Rule/agent-threat-rules';
@@ -40,6 +47,23 @@ export function toSignatureCategory(category: string): string {
 /** "ATR-2026-00072" -> "ATR_2026_00072". */
 export function toSignatureId(ruleId: string): string {
   return ruleId.replace(/-/g, '_');
+}
+
+/**
+ * A rule's regex condition written with the flags ATR's engine applies. The
+ * scanner still matches most patterns one line at a time, which the engine
+ * does not, and Python `re` differs from ECMAScript in places.
+ *
+ * ATR's engine matches every regex condition case-insensitively and removes
+ * a leading flag group such as `(?im)` without applying its `m`, `s` or `x`
+ * (SPEC.md §6.4). The scanner compiles each pattern with `re.compile(pattern)`
+ * and no flags, so a condition copied as written would be case-sensitive
+ * there unless the rule happened to write `(?i)`, and a group such as `(?im)`
+ * would be applied. The pattern is therefore `(?i)` followed by the source
+ * the engine itself compiles, from regexConditionSpec() in src/engine.ts.
+ */
+export function toScannerPattern(value: string): string {
+  return `(?i)${regexConditionSpec(value).source}`;
 }
 
 /**
@@ -72,7 +96,9 @@ export function toSignature(loaded: LoadedRule, options: TransformOptions): Cisc
     category: toSignatureCategory(category),
     severity: rule.severity.toUpperCase(),
     ...(options.omitMaturity ? {} : { maturity: rule.maturity ?? 'experimental' }),
-    patterns: extractPatterns(rule),
+    patterns: options.verbatimPatterns
+      ? extractPatterns(rule)
+      : extractPatterns(rule).map(toScannerPattern),
     file_types: FILE_TYPES,
     description: flatten(rule.description, DESCRIPTION_MAX),
     remediation: flatten(rule.remediation, REMEDIATION_MAX),

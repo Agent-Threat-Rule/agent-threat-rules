@@ -29,7 +29,10 @@
  *   --reproduce-vendored   Reproduce the banner comments of the pack already
  *                          vendored downstream (generator name, and a per-file
  *                          rule count that counts files rather than emitted
- *                          signatures). Only for byte-for-byte verification.
+ *                          signatures), and its patterns, which it copied from
+ *                          the rules verbatim instead of writing them as
+ *                          (?i) plus the pattern the engine compiles
+ *                          (SPEC.md §6.4). Only for byte-for-byte verification.
  *   --json                 Emit the run summary as JSON on stdout
  *
  * Exit codes: 0 on success, 1 on any failure (missing measurement file,
@@ -105,6 +108,7 @@ function writePack(args: Args): { total: number; summary: Record<string, unknown
     ref: args.ref,
     repoUrl: DEFAULT_REPO_URL,
     omitMaturity: args.reproduceVendored,
+    verbatimPatterns: args.reproduceVendored,
   });
   const claims = loadBenchmarkClaims(REPO_ROOT, countOwaspAgenticCategories(args.rules));
   const context: RenderContext = {
