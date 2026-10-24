@@ -97,10 +97,18 @@ runs:
         esac
 
         ATR_STDERR=$(mktemp)
-        atr scan "$ATR_PATH" \
+        if atr scan "$ATR_PATH" \
           --severity "$ATR_SEVERITY" \
           --lane "$ATR_SCAN_LANE" \
-          --sarif > "$ATR_SARIF_FILE" 2>"$ATR_STDERR"
+          --sarif > "$ATR_SARIF_FILE" 2>"$ATR_STDERR"; then
+          :
+        else
+          SCAN_STATUS=$?
+          SCAN_ERROR=$(tr -d '\033' < "$ATR_STDERR" | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')
+          echo "::error::ATR scan failed (exit code ${SCAN_STATUS}). ${SCAN_ERROR}"
+          rm -f "$ATR_STDERR"
+          exit "$SCAN_STATUS"
+        fi
 
         if [ ! -s "$ATR_SARIF_FILE" ]; then
           if [ -s "$ATR_STDERR" ]; then
