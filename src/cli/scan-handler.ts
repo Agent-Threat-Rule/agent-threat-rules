@@ -142,7 +142,9 @@ export async function cmdScanUnified(
 
   let failHits = 0;
   try {
-    if (scanType === 'skill') {
+    if (!options.forceType && statSync(targetPath).isDirectory()) {
+      failHits = await scanDirectory(targetPath, rulesDir, options, reporter);
+    } else if (scanType === 'skill') {
       failHits = await scanSkillFiles(targetPath, rulesDir, options, reporter);
     } else {
       failHits = await scanMcpEvents(targetPath, rulesDir, options, reporter);
@@ -162,6 +164,112 @@ export async function cmdScanUnified(
   if (failHits > 0) {
     process.exitCode = 1;
   }
+}
+
+// ── Mixed directory scan ──────────────────────────────────────
+
+async function scanDirectory(
+  targetPath: string,
+  rulesDir: string,
+  options: ScanOptions,
+  reporter?: ReturnType<typeof createTCReporter>,
+): Promise<number> {
+  const { configs, skills } = collectDirectoryTargets(targetPath);
+  if (configs.length + skills.length === 0) {
+    console.error(`${RED}Error: No MCP config or SKILL.md files found in ${targetPath}${RESET}`);
+    process.exit(1);
+  }
+
+  const semantic = createSemanticJudgeFromScanOptions(options);
+  const engine = new ATREngine({
+    rulesDir,
+    reporter,
+    semanticJudge: semantic.judge,
+    ...(options.lane ? { lane: options.lane } : {}),
+    ...(options.modelDecisions ? { modelDecisions: options.modelDecisions } : {}),
+  });
+  await engine.loadRules();
+  const heldBack = (m: ATRMatch): boolean => engine.getModelDecisions() === 'advisory' && isModelDecided(m);
+  const minIdx = SEVERITY_ORDER.indexOf((options.severity ?? 'informational') as typeof SEVERITY_ORDER[number]);
+  const failIdx = options.failOn === undefined ? -1 : SEVERITY_ORDER.indexOf(options.failOn as typeof SEVERITY_ORDER[number]);
+  const findings: Array<{ kind: 'mcp' | 'skill'; file: string; result: ScanResult; filtered: ATRMatch[] }> = [];
+  let mcpEventsScanned = 0;
+  let skillsScanned = 0;
+  let filesSkipped = 0;
+  let totalThreats = 0;
+  let failHits = 0;
+
+  const record = (kind: 'mcp' | 'skill', file: string, result: ScanResult): void => {
+    const filtered = result.matches.filter((m) => SEVERITY_ORDER.indexOf(m.rule.severity) >= minIdx);
+    if (filtered.length === 0) return;
+    findings.push({ kind, file, result, filtered });
+    totalThreats += filtered.length;
+    if (failIdx >= 0) {
+      failHits += filtered.filter((m) => !heldBack(m) && SEVERITY_ORDER.indexOf(m.rule.severity) >= failIdx).length;
+    }
+  };
+
+  for (const file of configs) {
+    if (statSync(file).size > 50 * 1024 * 1024) {
+      console.error(`${RED}Warning: Skipping ${file} (exceeds 50MB limit)${RESET}`);
+      filesSkipped += 1;
+      continue;
+    }
+    let events: AgentEvent[] | null = null;
+    try {
+      events = configDocumentToEvents(JSON.parse(readFileSync(file, 'utf-8')));
+    } catch (error) {
+      console.error(`${DIM}Warning: Skipping ${file}: ${error instanceof Error ? error.message : String(error)}${RESET}`);
+      filesSkipped += 1;
+      continue;
+    }
+    if (events === null) {
+      console.error(`${DIM}Warning: Skipping ${file}: not an MCP config document${RESET}`);
+      filesSkipped += 1;
+      continue;
+    }
+    for (const event of events) {
+      const result = semantic.enabled ? await engine.evaluateFullAsync(event, file) : engine.evaluateFull(event, file);
+      record('mcp', file, result);
+      mcpEventsScanned += 1;
+    }
+  }
+
+  for (const file of skills) {
+    if (statSync(file).size > 1024 * 1024) {
+      console.error(`${RED}Warning: Skipping ${file} (exceeds 1MB limit)${RESET}`);
+      filesSkipped += 1;
+      continue;
+    }
+    const content = readFileSync(file, 'utf-8');
+    const result = semantic.enabled ? await engine.scanSkillFullAsync(content, file) : engine.scanSkillFull(content, file);
+    record('skill', file, result);
+    skillsScanned += 1;
+  }
+
+  const scanned = mcpEventsScanned + skillsScanned;
+  if (scanned === 0) console.error(`${RED}Error: nothing was scanned${RESET}`);
+  const sarifResults = findings.map(({ result, filtered }) => ({ ...result, matches: filtered, threat_count: filtered.length }));
+  if (options.sarif) {
+    console.log(JSON.stringify(scanResultToSARIF(sarifResults, process.env['npm_package_version'] ?? '1.0.0', { heldBack }), null, 2));
+  } else if (options.json) {
+    console.log(JSON.stringify({
+      scan_type: 'directory', mcp_events_scanned: mcpEventsScanned, skills_scanned: skillsScanned,
+      files_skipped: filesSkipped, threats_detected: totalThreats, rules_loaded: engine.getRuleCount(),
+      results: findings.map(({ kind, file, result, filtered }) => ({
+        kind, file, content_hash: result.content_hash,
+        matches: filtered.map((m) => formatMatchJson(m, heldBack(m))),
+      })),
+    }, null, 2));
+  } else {
+    printDirectoryScan(mcpEventsScanned, skillsScanned, engine.getRuleCount(), totalThreats);
+    for (const { kind, file, filtered } of findings) {
+      console.log(`  ${BOLD}${file.replace(process.cwd() + '/', '')}${RESET} ${DIM}(${kind})${RESET}`);
+      for (const match of filtered) printMatch(match, heldBack(match));
+      console.log('');
+    }
+  }
+  return scanned === 0 ? 1 : failHits;
 }
 
 // ── MCP Event Scan ─────────────────────────────────────────────
@@ -489,6 +597,24 @@ function collectSkillFiles(targetPath: string): string[] {
   return files;
 }
 
+const MCP_CONFIG_NAMES = new Set(['.mcp.json', 'mcp.json', 'mcp-config.json', 'claude_desktop_config.json']);
+
+function collectDirectoryTargets(root: string): { configs: string[]; skills: string[] } {
+  const configs: string[] = [];
+  const skills: string[] = [];
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      if (entry.name === '.git' || entry.name === 'node_modules') continue;
+      const full = resolve(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name === 'SKILL.md' || entry.name === 'skill.md') skills.push(full);
+      else if (MCP_CONFIG_NAMES.has(entry.name)) configs.push(full);
+    }
+  };
+  walk(root);
+  return { configs, skills };
+}
+
 function walkForSkills(dir: string, out: string[]): void {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = resolve(dir, entry.name);
@@ -528,6 +654,16 @@ function printScanHeader(
   console.log(`${DIM}${'─'.repeat(60)}${RESET}`);
   console.log(`${DIM}  Open source (MIT). Star: https://github.com/Agent-Threat-Rule/agent-threat-rules${RESET}`);
   console.log('');
+}
+
+function printDirectoryScan(mcp: number, skills: number, rules: number, threats: number): void {
+  console.log(`\n${BOLD}ATR Directory Scan Results${RESET}`);
+  console.log(`${DIM}${'─'.repeat(60)}${RESET}`);
+  console.log(`  MCP events scanned: ${mcp}`);
+  console.log(`  Skills scanned:     ${skills}`);
+  console.log(`  Rules loaded:       ${rules}`);
+  console.log(`  Threats found:      ${threats > 0 ? RED + threats + RESET : GREEN + '0' + RESET}`);
+  console.log(`${DIM}${'─'.repeat(60)}${RESET}\n`);
 }
 
 function printMatch(m: ATRMatch, heldBack: boolean): void {
