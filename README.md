@@ -460,24 +460,24 @@ Aggregated into [`data/stats.json`](data/stats.json) under `benchmarks[]`.
 
 | Source | Source version | Samples | Recall | Precision | FP rate | ATR version | Measured |
 |---|---|---:|---:|---:|---:|---|---|
-| AdvBench (LLM-attacks behaviors) | upstream-2026-10-15 | 520 | 5.6% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| atr-self-test | internal | 341 | 96.6% (hunt) / 3.4% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
+| AdvBench (LLM-attacks behaviors) | upstream-2026-10-26 | 520 | 5.6% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
+| atr-self-test | internal | 341 | 97.2% (hunt) / 3.4% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
 | autoresearch | internal-1054 | 1,054 | 15.1% | 100.0% | 0.0% | 3.0.0-alpha.0 | 2026-05-23 |
-| garak (in-the-wild jailbreaks) [^garakcorpus] | inthewild-jailbreak-corpus-650 | 650 | 92.3% (hunt) / 0.9% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| garak-full (all probe families) [^garakcorpus] | 23-families | 3,475 | 57.2% (hunt) / 0.5% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
+| garak (in-the-wild jailbreaks) [^garakcorpus] | inthewild-jailbreak-corpus-650 | 650 | 92.6% (hunt) / 0.9% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
+| garak-full (all probe families) [^garakcorpus] | 23-families | 3,475 | 57.3% (hunt) / 0.5% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
 | hackaprompt [^hackaprompt] | v1 | 4,780 | 83.1% (hunt) / 49.0% (enforce) | not cited [^hackaprompt] | not cited [^hackaprompt] | 4.1.5 | 2026-10-19 |
-| HarmBench (CAIS behaviors) | upstream-2026-10-15 | 400 | 6.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| hh-rlhf (Anthropic red-team-attempts) [^stdcorpora] | snapshot-2026-04 | 4,957 | 1.4% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| JailbreakBench (JBB-Behaviors) | upstream-2026-10-15 | 100 | 3.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| llm-guard (2026-05-12 import) [^legacyvendor] | corpus-2026-05-12 | 44 | 63.6% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| MITRE ATLAS [^stdcorpora] | snapshot-2026-04 | 182 | 37.4% (hunt) / 1.1% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| NeMo Guardrails (2026-05-12 import) [^legacyvendor] | corpus-2026-05-12 | 6 | 100.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| OWASP LLM Top 10 [^stdcorpora] | snapshot-2026-04 | 56 | 16.1% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| PINT-format (deepset + Lakera Gandalf) [^pint] | v1 | 850 | 65.4% (hunt) / 0.4% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| PromptBench (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 3,280 | 15.7% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| promptfoo (2026-05-12 import) [^legacyvendor] | corpus-2026-05-12 | 44 | 90.9% (hunt) / 6.8% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| PromptInject (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 1,080 | 100.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.1.5 | 2026-10-15 |
-| SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) | 97.0% (hunt) | 0.20% (hunt) | 4.1.5 | 2026-10-15 |
+| HarmBench (CAIS behaviors) | upstream-2026-10-26 | 400 | 6.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
+| hh-rlhf (Anthropic red-team-attempts) [^stdcorpora] | snapshot-2026-04 | 4,957 | 1.4% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
+| JailbreakBench (JBB-Behaviors) | upstream-2026-10-26 | 100 | 3.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
+| llm-guard (2026-05-12 import) [^legacyvendor] | corpus-2026-05-12 | 44 | 72.7% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
+| MITRE ATLAS [^stdcorpora] | snapshot-2026-04 | 182 | 37.4% (hunt) / 1.1% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
+| NeMo Guardrails (2026-05-12 import) [^legacyvendor] | corpus-2026-05-12 | 6 | 100.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
+| OWASP LLM Top 10 [^stdcorpora] | snapshot-2026-04 | 56 | 16.1% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
+| PINT-format (deepset + Lakera Gandalf) [^pint] | v1 | 850 | 66.3% (hunt) / 0.4% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
+| PromptBench (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 3,280 | 15.7% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
+| promptfoo (2026-05-12 import) [^legacyvendor] | corpus-2026-05-12 | 44 | 90.9% (hunt) / 6.8% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
+| PromptInject (academic adversarial) [^promptcorpora] | snapshot-2026-04 | 1,080 | 100.0% (hunt) / 0.0% (enforce) | 100.0% | 0.0% | 4.2.1 | 2026-10-26 |
+| SKILL.md benchmark (internal) [^skilllane] | internal-498 | 498 | 100.0% (hunt) / 0.0% (enforce) | 97.0% (hunt) | 0.20% (hunt) | 4.2.1 | 2026-10-26 |
 | Vendor guardrail suites (pinned upstream tests) [^vendorsuites] | pinned-2026-10-19 | 146 | 79.4% (hunt) / 5.6% (enforce) | not cited [^vendorsuites] | not cited [^vendorsuites] | 4.2.0 | 2026-10-23 |
 | Wild scan (OpenClaw + Skills.sh + Hermes + ClawHub) [^wildscan] | full-scan-v2-2026-04-13 | 101,280 | — | not measured | 1.42% flag rate | 2.0.0 | 2026-04-13 |
 
