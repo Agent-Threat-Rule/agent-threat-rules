@@ -97,6 +97,8 @@ runs:
         esac
 
         ATR_STDERR=$(mktemp)
+        # Make the path available to the always-run SARIF upload, even if scanning fails.
+        printf 'sarif_path=%s\n' "$ATR_SARIF_FILE" >> "$GITHUB_OUTPUT"
         if atr scan "$ATR_PATH" \
           --severity "$ATR_SEVERITY" \
           --lane "$ATR_SCAN_LANE" \
@@ -104,8 +106,11 @@ runs:
           :
         else
           SCAN_STATUS=$?
-          SCAN_ERROR=$(tr -d '\033' < "$ATR_STDERR" | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')
-          echo "::error::ATR scan failed (exit code ${SCAN_STATUS}). ${SCAN_ERROR}"
+          SCAN_ERROR=$(tr -d '\033' < "$ATR_STDERR" | sed 's/\[[0-9;]*m//g')
+          SCAN_ERROR=${SCAN_ERROR//'%'/'%25'}
+          SCAN_ERROR=${SCAN_ERROR//$'\r'/'%0D'}
+          SCAN_ERROR=${SCAN_ERROR//$'\n'/'%0A'}
+          printf '::error::ATR scan failed (exit code %s). %s\n' "$SCAN_STATUS" "$SCAN_ERROR"
           rm -f "$ATR_STDERR"
           exit "$SCAN_STATUS"
         fi
@@ -133,8 +138,7 @@ runs:
             console.log(count);
           } catch { console.log(0); }
         " "$ATR_SARIF_FILE")
-        echo "threat_count=${THREAT_COUNT}" >> "$GITHUB_OUTPUT"
-        echo "sarif_path=${ATR_SARIF_FILE}" >> "$GITHUB_OUTPUT"
+        printf 'threat_count=%s\n' "$THREAT_COUNT" >> "$GITHUB_OUTPUT"
 
         if [ "${THREAT_COUNT}" -gt "0" ]; then
           echo "::warning::ATR found ${THREAT_COUNT} AI agent security threat(s). See SARIF results for details."
