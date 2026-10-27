@@ -260,8 +260,9 @@ enum:
 | Operator | Semantics |
 |----------|-----------|
 | `regex` | `value` is a regular expression (Section 6.4). Used by the overwhelming majority of the Corpus. |
-| `contains` | Case-sensitive substring match. |
-| `equals` | Exact string equality. |
+| `contains` | Case-insensitive substring match: the field contains `value` when both are lowercased. |
+| `exact` | Case-sensitive exact string equality. |
+| `starts_with` | Case-insensitive prefix match: the field starts with `value` when both are lowercased. |
 | `matches` | Glob / wildcard match, engine-defined. |
 | `ml_classifier` | `value` names a classifier the Engine invokes; result is boolean. |
 | `ast` | `value` is an AST query over parsed code content. |
@@ -276,6 +277,15 @@ unknown operator as no-match would convert an authoring mistake into a silent
 false negative. An Engine MAY skip `matches`, `ml_classifier`, `ast`, or
 `bytecode` conditions it cannot evaluate (treating them as non-matching, not
 matching), but MUST NOT report such a Rule as conformant at Level L2/L3.
+
+> **Change in 1.1.0, non-normative note.** Until version 1.1.0 this table
+> defined `contains` as case-sensitive and listed `equals`, and it did not
+> list `exact` or `starts_with`. No implementation followed that text: the
+> reference Engine and pyATR implement `contains`, `exact` and `starts_with`
+> as defined above, neither ever implemented `equals`, and every pattern
+> condition in the Corpus uses `regex`. The table now matches the
+> implementations. `equals` is removed rather than kept as a synonym of
+> `exact`, since no Engine evaluated it. Issue #703.
 
 ### 6.4 Regular-Expression Dialect
 
@@ -608,6 +618,6 @@ Author/Change controller: Same as B.1.
 
 | Version | Date | Change |
 |---------|------|--------|
-| 1.1.0 | 2026-10-27 | Minor release under Section 10. Section 12: an edge-case fixture whose payload is itself a detection signal (outcome `handled`) also accepts a match; this only widens what an edge-case fixture accepts. It ships with Conformance Test Suite v1.1.0, which alters and removes published v1.0.0 fixtures that carried no payload, named Rules the reference Engine does not evaluate, or did not exercise their Rule, and adds the `handled` outcome; a suite patch release may do neither, so the suite and this Spec take a minor version. No Engine could pass suite v1.0.0, so no Engine that passed it can fail v1.1.0. Issue #705; erratum `e-2026-10-19-conformance-suite`. |
+| 1.1.0 | 2026-10-27 | Minor release under Section 10. Section 12: an edge-case fixture whose payload is itself a detection signal (outcome `handled`) also accepts a match; this only widens what an edge-case fixture accepts. It ships with Conformance Test Suite v1.1.0, which alters and removes published v1.0.0 fixtures that carried no payload, named Rules the reference Engine does not evaluate, or did not exercise their Rule, and adds the `handled` outcome; a suite patch release may do neither, so the suite and this Spec take a minor version. No Engine could pass suite v1.0.0, so no Engine that passed it can fail v1.1.0. Issue #705; erratum `e-2026-10-19-conformance-suite`. Section 6.3: the operator table matches the reference Engine and pyATR: `contains` and `starts_with` are case-insensitive, `exact` is case-sensitive, and `equals` is removed. Adding operators is a minor change under Section 10; redefining `contains` and removing `equals` would otherwise count as a change to evaluation semantics, but no Engine evaluated either as the 1.0 text described, and no Rule, fixture or registered Engine uses them, so no conforming Engine changes behaviour. Issue #703. |
 | 1.0.1 | 2026-10-19 | Section 6.4 corrected, compatible with 1.0.0 Engines that pass the Conformance Test Suite: every `regex` pattern condition matches case-insensitively, `m`, `s` and `x` in a leading flag group have no effect, the group may contain `x`, the `u` flag applies exactly when the pattern needs it, and a Rule SHOULD NOT contain a modifier group. The 1.0.0 text of 2026-07-19 (#340) said an Engine applies the flags that group names. No rule, no Conformance Test Suite fixture and no Match produced by the reference Engine changed. Issue #698; erratum `e-2026-10-19-regex-dialect`. |
 | 1.0.0 | 2026-05-16 | Initial Draft. Revised in place on 2026-05-28, 2026-07-19 (#340) and 2026-10-16 (#677) without a version change; the repository history has each revision. |
