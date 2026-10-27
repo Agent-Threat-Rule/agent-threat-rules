@@ -1,8 +1,8 @@
 # ATR Core Specification
 
-Version: 1.0.2
+Version: 1.1.0
 Status: Draft
-Date: 2026-10-19
+Date: 2026-10-27
 Previous version: 1.0.1 (2026-10-19)
 License: MIT
 Editor: Adam Lin (林冠辛) <adam@agentthreatrule.org>
@@ -25,7 +25,7 @@ specification is an ATR-compatible engine.
 
 ## 2. Status of This Document
 
-This is a Draft of ATR Core v1.0.2. Distribution is unlimited. The Draft is
+This is a Draft of ATR Core v1.1.0. Distribution is unlimited. The Draft is
 stable for implementation. Changes prior to Final status will be limited to
 editorial corrections and clarifications that do not alter rule wire format or
 evaluation outcome.
@@ -444,7 +444,7 @@ Level and a reproducible test report.
 The Conformance Test Suite is published in the `conformance/` directory of
 the canonical repository under the same MIT license as the Spec.
 
-The suite v1.0.x ships at least 100 true-positive fixtures, at least 100
+Suite v1.0.0 and v1.1.0 each ship at least 100 true-positive fixtures, at least 100
 true-negative fixtures, and 20 edge-case fixtures covering catastrophic
 regex inputs, malformed YAML and JSON, oversized inputs, deeply nested
 structures, zero-width and RTL-override characters, null-byte injection,
@@ -462,11 +462,11 @@ expected outcome is `handled`, because its payload is itself a detection
 signal, a match also passes. An Engine MUST publish the suite version it was
 tested against in any conformance claim.
 
-> **Correction (2026-10-19), non-normative.** Until version 1.0.2 this
+> **Change in 1.1.0, non-normative note.** Until version 1.1.0 this
 > section required every edge-case fixture to end in no_match or a
 > graceful_error. Four edge-case fixtures carry zero-width, bidi-override and
 > control characters, which the Corpus detects, so an Engine running the
-> published Corpus faithfully could not reach L2. Suite v1.0.1 marks them
+> published Corpus faithfully could not reach L2. Suite v1.1.0 marks them
 > `handled`. It also corrects v1.0.0 fixtures that carried no payload, named
 > Rules the reference Engine does not evaluate, or did not exercise their
 > Rule; see conformance/v1.0/README.md, Appendix D, issue #705 and erratum
@@ -608,6 +608,6 @@ Author/Change controller: Same as B.1.
 
 | Version | Date | Change |
 |---------|------|--------|
-| 1.0.2 | 2026-10-19 | Section 12 corrected: an edge-case fixture whose payload is itself a detection signal (outcome `handled`) also accepts a match. The change is compatible: it only widens what an edge-case fixture accepts, so no Engine needs a change. It tracks Conformance Test Suite v1.0.1, which corrects v1.0.0 fixtures that carried no payload, named Rules the reference Engine does not evaluate, or did not exercise their Rule. Issue #705; erratum `e-2026-10-19-conformance-suite`. |
+| 1.1.0 | 2026-10-27 | Minor release under Section 10. Section 12: an edge-case fixture whose payload is itself a detection signal (outcome `handled`) also accepts a match; this only widens what an edge-case fixture accepts. It ships with Conformance Test Suite v1.1.0, which alters and removes published v1.0.0 fixtures that carried no payload, named Rules the reference Engine does not evaluate, or did not exercise their Rule, and adds the `handled` outcome; a suite patch release may do neither, so the suite and this Spec take a minor version. No Engine could pass suite v1.0.0, so no Engine that passed it can fail v1.1.0. Issue #705; erratum `e-2026-10-19-conformance-suite`. |
 | 1.0.1 | 2026-10-19 | Section 6.4 corrected, compatible with 1.0.0 Engines that pass the Conformance Test Suite: every `regex` pattern condition matches case-insensitively, `m`, `s` and `x` in a leading flag group have no effect, the group may contain `x`, the `u` flag applies exactly when the pattern needs it, and a Rule SHOULD NOT contain a modifier group. The 1.0.0 text of 2026-07-19 (#340) said an Engine applies the flags that group names. No rule, no Conformance Test Suite fixture and no Match produced by the reference Engine changed. Issue #698; erratum `e-2026-10-19-regex-dialect`. |
 | 1.0.0 | 2026-05-16 | Initial Draft. Revised in place on 2026-05-28, 2026-07-19 (#340) and 2026-10-16 (#677) without a version change; the repository history has each revision. |

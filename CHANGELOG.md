@@ -6,7 +6,7 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
-- **Conformance Test Suite v1.0.1 and SPEC.md 1.0.2 [Compatible]: the
+- **Conformance Test Suite v1.1.0 and SPEC.md 1.1.0 [Minor]: the
   reference engine passes the suite.** No engine could pass suite v1.0.0.
   41 TP and TN fixtures had no payload: the generator read only a test case's
   `input`, while 21 rules keep their payload under keys such as
@@ -25,11 +25,12 @@ All notable changes to ATR will be documented in this file.
   replaced; the runner reports a fixture with no `input`, a tp or tn fixture
   with no `rule_id`, and a fixture whose outcome its category does not allow
   as a harness error; and the new edge outcome `handled`, allowed by SPEC.md
-  1.0.2 §12, accepts a match within budget. Result: 226/226. Compatible: no
-  engine needs a change, since 1.0.2 only widens what an edge fixture
-  accepts. Suite v1.0.1 is a corrective release: it alters published
-  fixtures, which the suite's versioning rule otherwise forbids, and issue
-  #705 has the evidence and the versioning question.
+  1.1.0 §12, accepts a match within budget. Result: 226/226. Minor under
+  SPEC §10 and the suite's versioning rule: the suite alters and removes
+  published v1.0.0 fixtures and adds an outcome, which a patch release may
+  not do. No engine needs a change, since §12 only widens what an edge
+  fixture accepts, and no engine could pass v1.0.0, so none that passed it
+  fails v1.1.0. Issue #705 has the evidence.
   `.github/workflows/conformance.yml` now runs the suite and
   `.github/workflows/sigma-export.yml` runs `scripts/test_generate_sigma.py`,
   whose stale RE2 test is fixed. Erratum `e-2026-10-19-conformance-suite`.

@@ -1,4 +1,4 @@
-# ATR Conformance Test Suite v1.0 — Suite Specification
+# ATR Conformance Test Suite v1.1.0 — Suite Specification
 
 Companion document to [README.md](README.md). Defines fixture format,
 runner contract, and how new fixtures are added.
@@ -75,9 +75,9 @@ detection signal, such as zero-width, bidi-override or control characters:
 an Engine running the published Corpus faithfully may match it, so only the
 robustness of the run is tested.
 
-## Suite contents v1.0
+## Suite contents v1.1.0
 
-| Category | Count v1.0 target | On disk (as of 2026-10-19) |
+| Category | Target (unchanged since v1.0.0) | On disk (as of 2026-10-27) |
 |----------|-------------------|----------------------------|
 | TP fixtures | 100 (10 per canonical category) | 103 |
 | TN fixtures | 100 (paired with TPs) | 103 |
@@ -91,7 +91,7 @@ for c in tp tn edge; do
 done
 ```
 
-The v1.0 target count is met, and the reference engine passes every fixture
+The target count is met, and the reference engine passes every fixture
 (see "Status" in [README.md](README.md)); CI runs the suite on every change
 to the engine, the rules or the suite.
 
@@ -223,6 +223,7 @@ payloads against live systems. Use placeholders such as `sk-FAKE-...` and
 
 ## Stability guarantee
 
-The fixture format defined here is stable for the entire v1.0.x lifecycle.
-Any breaking change to the fixture schema requires a v1.1 suite release
-and corresponds to a SPEC.md minor bump.
+The fixture format defined here is stable for the entire v1.1.x lifecycle.
+v1.1.0 adds the edge outcome `handled` to the v1.0.0 format and changes
+nothing else in it. Any further breaking change to the fixture schema
+requires a minor suite release and corresponds to a SPEC.md minor bump.
