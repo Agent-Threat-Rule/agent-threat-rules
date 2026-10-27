@@ -4,6 +4,21 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- **SPEC §6.3 operators match the engines: SPEC.md 1.1.0 [Minor].** The
+  operator table defined `contains` as case-sensitive, listed `equals`, and
+  did not list `exact` or `starts_with`. The reference engine and pyATR
+  implement `contains` and `starts_with` case-insensitively and `exact`
+  case-sensitively, as `docs/rule-writing-guide.md` already said, and never
+  implemented `equals`. The table and the operator enum in
+  `spec/schema/rule.schema.json` now list `regex`, `contains`, `exact` and
+  `starts_with` with those semantics, plus the optional `matches`,
+  `ml_classifier`, `ast` and `bytecode`; `equals` is removed. Every pattern
+  condition in `rules/` uses `regex`, so no rule and no detection changes.
+  Engines still treat an unknown operator as no match instead of rejecting
+  the rule as §6.3 requires; that is tracked in issue #703.
+
 ### Fixed
 
 - **Conformance Test Suite v1.1.0 and SPEC.md 1.1.0 [Minor]: the
