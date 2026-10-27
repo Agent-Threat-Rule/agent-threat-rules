@@ -1,4 +1,4 @@
-# ATR Conformance Test Suite v1.0 — Suite Specification
+# ATR Conformance Test Suite v1.1.0 — Suite Specification
 
 Companion document to [README.md](README.md). Defines fixture format,
 runner contract, and how new fixtures are added.
@@ -55,9 +55,29 @@ rationale: |
 }
 ```
 
-## Suite contents v1.0
+`outcome` is required in every fixture, and a tp or tn fixture also requires
+`rule_id`, the Rule it tests. Each category accepts only these outcomes; a
+fixture with any other outcome, or a tp or tn fixture without `rule_id`, is
+broken, and the runner reports it as a `harness_error` instead of scoring it:
 
-| Category | Count v1.0 target | On disk (as of 2026-09-22) |
+| Category | `outcome` | The engine passes when it returns |
+|----------|-----------|-----------------------------------|
+| tp | `match` | at least `min_match_count` matches for `rule_id` |
+| tn | `no_match` | no match for `rule_id` |
+| edge | `graceful_error` | a clean non-zero exit |
+| edge | `no_match` | no match |
+| edge | `graceful_error_or_no_match` | either of those |
+| edge | `handled` | a match, no match or a graceful error: anything but a crash, hang or unreadable output |
+
+Every edge outcome also requires the run to finish within `max_runtime_ms`
+when the fixture sets one. `handled` is for a payload that is itself a
+detection signal, such as zero-width, bidi-override or control characters:
+an Engine running the published Corpus faithfully may match it, so only the
+robustness of the run is tested.
+
+## Suite contents v1.1.0
+
+| Category | Target (unchanged since v1.0.0) | On disk (as of 2026-10-27) |
 |----------|-------------------|----------------------------|
 | TP fixtures | 100 (10 per canonical category) | 103 |
 | TN fixtures | 100 (paired with TPs) | 103 |
@@ -71,9 +91,9 @@ for c in tp tn edge; do
 done
 ```
 
-The v1.0 target count is met. Not every fixture on disk is sound — the ones
-that cannot pass as written are enumerated under "Known gaps" in
-[README.md](README.md).
+The target count is met, and the reference engine passes every fixture
+(see "Status" in [README.md](README.md)); CI runs the suite on every change
+to the engine, the rules or the suite.
 
 ## Runner contract
 
@@ -165,12 +185,27 @@ prints.
 
 ## Adding a fixture
 
-1. Choose a Rule ID. The Rule MUST exist in the corpus at the declared
-   `status: stable`. Rules at `status: draft` or `status: deprecated` are
-   excluded from evaluation, so a fixture naming one can never pass.
-2. Create `fixtures/tp/<rule_id>/input.yaml` and `expect.json` (or `tn/`).
-   `input:` is mandatory — a fixture without it feeds the engine an empty
-   document and fails for a reason that has nothing to do with the Rule.
+1. Choose a Rule ID. The Rule MUST exist in the corpus, and the reference
+   runner MUST be able to exercise it:
+   - it is not at `status: draft` or `status: deprecated`, or at
+     `maturity: deprecated`, which the reference Engine does not evaluate;
+   - its `detection.method` is `pattern` (or absent), since the runner drives
+     neither semantic judges nor traces;
+   - unless its `tags.scan_target` is `skill` or `both`, the reference
+     Engine admits its `agent_source.type` on at least one of the runner's
+     MCP channels (`sourceTypeAdmits()` in `src/engine.ts`). Today that holds
+     for `llm_io`, `mcp_exchange`, `tool_call`, `multi_agent_comm`,
+     `context_window` and the `skill_*` types, and not for `agent_behavior`
+     or `memory_access`. A Rule with no `tags.scan_target` counts as `mcp`,
+     as it does in the runner.
+
+   `runner/generate-fixtures.ts` applies these checks when it picks Rules,
+   and `tests/conformance-fixtures.test.ts` applies them to every tp and tn
+   fixture on disk.
+2. Create `fixtures/tp/<rule_id>/input.yaml` and `expect.json` (or `tn/`),
+   with `rule_id` in `expect.json` equal to the directory name. `input:` is
+   mandatory, and the runner reports a fixture without it as a
+   `harness_error`.
 3. Build the engine and run the suite locally to confirm the new fixture
    passes. `--engine` is required:
 
@@ -188,6 +223,7 @@ payloads against live systems. Use placeholders such as `sk-FAKE-...` and
 
 ## Stability guarantee
 
-The fixture format defined here is stable for the entire v1.0.x lifecycle.
-Any breaking change to the fixture schema requires a v1.1 suite release
-and corresponds to a SPEC.md minor bump.
+The fixture format defined here is stable for the entire v1.1.x lifecycle.
+v1.1.0 adds the edge outcome `handled` to the v1.0.0 format and changes
+nothing else in it. Any further breaking change to the fixture schema
+requires a minor suite release and corresponds to a SPEC.md minor bump.

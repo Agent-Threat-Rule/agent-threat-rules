@@ -8,7 +8,7 @@ organization to display the corresponding ATR-Certified mark per
 
 ## Verified implementations
 
-_None yet. The registry opens at SPEC.md v1.0.0 Final. The v1.0.0
+_None yet. The registry opens when SPEC.md reaches Final status. The
 Draft period is being used to stabilize the fixture format._
 
 ## How to be listed

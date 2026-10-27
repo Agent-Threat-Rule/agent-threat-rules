@@ -4,6 +4,52 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- **SPEC §6.3 operators match the engines: SPEC.md 1.1.0 [Minor].** The
+  operator table defined `contains` as case-sensitive, listed `equals`, and
+  did not list `exact` or `starts_with`. The reference engine and pyATR
+  implement `contains` and `starts_with` case-insensitively and `exact`
+  case-sensitively, as `docs/rule-writing-guide.md` already said, and never
+  implemented `equals`. The table and the operator enum in
+  `spec/schema/rule.schema.json` now list `regex`, `contains`, `exact` and
+  `starts_with` with those semantics, plus the optional `matches`,
+  `ml_classifier`, `ast` and `bytecode`; `equals` is removed. Every pattern
+  condition in `rules/` uses `regex`, so no rule and no detection changes.
+  Engines still treat an unknown operator as no match instead of rejecting
+  the rule as §6.3 requires; that is tracked in issue #703.
+
+### Fixed
+
+- **Conformance Test Suite v1.1.0 and SPEC.md 1.1.0 [Minor]: the
+  reference engine passes the suite.** No engine could pass suite v1.0.0.
+  41 TP and TN fixtures had no payload: the generator read only a test case's
+  `input`, while 21 rules keep their payload under keys such as
+  `tool_response` or `tool_description`. Six fixture pairs named rules the
+  reference engine did not evaluate as the runner drives it: four at
+  `status: draft`, ATR-2026-00075, whose `memory_access` source the engine
+  withholds from typed events, and ATR-2026-00070, whose `context_window`
+  source it evaluated on no typed event until #701 and whose TP fixture also
+  lacked the injection. ATR-2026-00451's hand-written fixture did not
+  exercise the rule. Four edge fixtures expected no match on zero-width,
+  bidi-override and control-character payloads that rules in the corpus
+  detect, while SPEC §12 required no_match or graceful_error for every edge
+  fixture. The generator now builds the payload from every key
+  `src/testcase-event.ts` reads, fails on a test case with none, and skips
+  rules the runner cannot exercise; the affected fixtures were regenerated or
+  replaced; the runner reports a fixture with no `input`, a tp or tn fixture
+  with no `rule_id`, and a fixture whose outcome its category does not allow
+  as a harness error; and the new edge outcome `handled`, allowed by SPEC.md
+  1.1.0 §12, accepts a match within budget. Result: 226/226. Minor under
+  SPEC §10 and the suite's versioning rule: the suite alters and removes
+  published v1.0.0 fixtures and adds an outcome, which a patch release may
+  not do. No engine needs a change, since §12 only widens what an edge
+  fixture accepts, and no engine could pass v1.0.0, so none that passed it
+  fails v1.1.0. Issue #705 has the evidence.
+  `.github/workflows/conformance.yml` now runs the suite and
+  `.github/workflows/sigma-export.yml` runs `scripts/test_generate_sigma.py`,
+  whose stale RE2 test is fixed. Erratum `e-2026-10-19-conformance-suite`.
+
 ## [4.2.1] - 2026-10-24
 
 A patch release of rule fixes and one new rule, plus two release-tooling
