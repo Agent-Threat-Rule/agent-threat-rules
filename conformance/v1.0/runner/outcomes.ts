@@ -11,8 +11,8 @@
 export type Outcome = 'match' | 'no_match' | 'graceful_error' | 'graceful_error_or_no_match' | 'handled';
 
 /** The suite and SPEC.md versions a report declares; report-schema.json lists them. */
-export const SUITE_VERSION = 'v1.0.1';
-export const SPEC_VERSION = '1.0.2';
+export const SUITE_VERSION = 'v1.1.0';
+export const SPEC_VERSION = '1.1.0';
 
 export const ALLOWED_OUTCOMES: Readonly<Record<'tp' | 'tn' | 'edge', readonly Outcome[]>> = {
   tp: ['match'],

@@ -1,4 +1,4 @@
-# ATR Conformance Test Suite v1.0
+# ATR Conformance Test Suite v1.1.0
 
 This directory is the normative test suite referenced by [SPEC.md §12](../../SPEC.md).
 Implementations that claim "ATR-Compatible L1/L2/L3" MUST pass it.
@@ -81,8 +81,8 @@ A machine-readable report is written to `--out` (default
 
 ## Status
 
-The reference engine passed the whole suite on 2026-10-19: **226 / 226** at
-L2 (TP 103, TN 103, edge 20, no runner-internal errors), at main `9d74fc506`
+The reference engine passed the whole suite on 2026-10-27: **226 / 226** at
+L2 (TP 103, TN 103, edge 20, no runner-internal errors), at main `0f8c6a0e9`
 plus the change that introduced this section. CI runs the suite on every
 change to `src/`, `rules/` or `conformance/`; the check is not a required
 one, so rerun before citing. Reproduce:
@@ -95,7 +95,7 @@ npx tsx conformance/v1.0/runner/run-conformance.ts \
 ```
 
 Until 2026-10-19 it did not, and no engine could. The fixes, which make up
-suite v1.0.1 (see "Versioning"):
+suite v1.1.0 (see "Versioning"):
 
 1. 41 TP and TN fixtures had no payload. The generator read only a test
    case's `input`, but 21 Rules write their payload under `tool_response`,
@@ -139,19 +139,22 @@ to `registry/` and authorize the ATR-Certified mark per the same policy.
 
 ## Versioning
 
-This suite is `v1.0`. It tracks `SPEC.md v1.0.x`. Patch releases of the
-suite (`v1.0.1`, `v1.0.2`...) MAY add fixtures and MUST NOT remove or
-alter existing ones — a passing engine at `v1.0.0` MUST continue to pass
-at `v1.0.x`. Minor releases (`v1.1`) align with `SPEC.md v1.1.x` and MAY
-require new conformance behavior.
+Patch releases of the suite (`v1.1.1`, `v1.1.2`...) MAY add fixtures and
+MUST NOT remove or alter existing ones: an engine that passes `v1.1.0` MUST
+continue to pass every `v1.1.x`. Minor releases align with the SPEC.md minor
+version and MAY require new conformance behavior.
 
-`v1.0.1` (2026-10-19) is a corrective release, recorded by erratum
-`e-2026-10-19-conformance-suite`, and the one exception. It alters
-and removes fixtures, which the rule above forbids, because no Engine could
-pass `v1.0.0`: its TP fixtures without a payload could not match anything.
-So no Engine that passed `v1.0.0` can fail `v1.0.1`. The changes are listed
-under "Status" and in SPEC.md Appendix D; they track SPEC.md 1.0.2, whose
-Section 12 now allows the `handled` edge outcome.
+`v1.1.0` (2026-10-27) is the current release and tracks SPEC.md 1.1.0. It
+alters and removes `v1.0.0` fixtures and adds the `handled` edge outcome,
+which a patch release may not do, so it is a minor release. The changes are
+listed under "Status" and in SPEC.md Appendix D, and erratum
+`e-2026-10-19-conformance-suite` records the defects in `v1.0.0`. No Engine
+could pass `v1.0.0`: its TP fixtures without a payload could not match
+anything. So no Engine that passed `v1.0.0` can fail `v1.1.0`.
+
+The directory keeps the name `conformance/v1.0/` so that existing links,
+CI paths and the report schema's `$id` stay valid. The suite version is the
+one a report declares in `suite_version` (`runner/outcomes.ts`).
 
 ## License
 
