@@ -1,6 +1,6 @@
 title: 'ECHO Template / Jinja / SQL Command Injection via LLM'
 id: ATR-2026-00277
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects template injection attacks that exploit LLM echo or code-execution
@@ -87,8 +87,8 @@ detection:
       description: 'SQL command injection via LLM — "run the following SQL query exactly: DROP/DELETE/..."'
     - field: tool_response
       operator: regex
-      value: '\{\{[\s\r\n]*(?:config\b|self\b|request\b|g\b|app\b|import\s+os|__import__|lipsum\.__globals__|["'']{1,2}\.__class__\.__mro__|\d+\s*[*]\s*\d+)[^}]{0,100}\}\}'
-      description: 'Jinja2 / template expression containing known SSTI payloads — keywords anchored immediately after {{ (only whitespace between) to avoid matching app/g in variable names'
+      value: '\{\{[\s\r\n]*(?:(?:config|self|request|g|app)\b[^}]{0,100}?(?:__[a-z]{1,30}__|\|\s*attr\b|\[\s*["'']_|\[\s*request\b)|import\s+os|__import__|lipsum\.__globals__|["'']{1,2}\.__class__\.__mro__|\d+\s*[*]\s*\d+)[^}]{0,100}\}\}|\{\{[\s\r\n]*(?:config(?:\.items\s*\(\s*\)|\.SECRET_KEY|\[\s*["'']SECRET_KEY["'']\s*\])?|self)[\s\r\n]*\}\}'
+      description: 'Jinja2 / template expression containing known SSTI payloads — keywords anchored immediately after {{ (only whitespace between) to avoid matching app/g in variable names. A config, self, request, g or app root must, inside the same braces, reach a dunder attribute (__class__, __init__, __globals__, ...), apply the attr filter, or index by a string that starts with an underscore or by a request value; only the bare recon probes {{config}}, {{config.items()}}, {{config.SECRET_KEY}} and {{self}} match without one. Ordinary template variables ({{g}}, {{request}}, {{ request.user }}, dbt {{ config(...) }}) and Python f-string brace escapes (f"{{{self.NS}}}") are not injection'
     - field: tool_response
       operator: regex
       value: 'reply\s+(?:with\s+)?["\x27]?SUCCESS["\x27]?\s+if\s+(?:the\s+)?(?:query|command)\s+succeeds?\s+or\s+["\x27]?FAILURE["\x27]?\s+if\s+(?:it\s+)?fails?'
@@ -114,6 +114,15 @@ test_cases:
       expected: triggered
     - input: "{{''.__class__.__mro__[2].__subclasses__()[40]('/etc/passwd').read()}}"
       expected: triggered
+    - input: "{{ request.application.__globals__.__builtins__.__import__('os').popen('id').read() }}"
+      expected: triggered
+      reason: "request root reaching __globals__ — SSTI object traversal"
+    - input: "{{ config.items() }}"
+      expected: triggered
+      reason: "Bare Flask config disclosure probe"
+    - input: "{{ request|attr('application') }}"
+      expected: triggered
+      reason: "request root reached through the attr filter"
   true_negatives:
     - input: "In Jinja2, {{ user.name }} renders the user's name. How do I add conditionals?"
       expected: not_triggered
@@ -130,6 +139,18 @@ test_cases:
     - input: "Our monitoring checks if queries succeed or fail and logs SUCCESS/FAILURE."
       expected: not_triggered
       reason: "SUCCESS/FAILURE as application state without SQL injection template"
+    - input: "Placeholders: {{bg}} (background), {{g}} (grid line color), {{pad}}, {{gap}}"
+      expected: not_triggered
+      reason: "REGRESSION (skills.sh top-375 replay 2026-10-27): a template placeholder named g is not the Flask g object"
+    - input: 'for elem in root.iter(f"{{{self.WORD_NAMESPACE}}}t"):'
+      expected: not_triggered
+      reason: "REGRESSION (skills.sh top-375 replay 2026-10-27): Python f-string brace escaping around self.<attr>"
+    - input: "Welcome back, {{ request.user.username }}!"
+      expected: not_triggered
+      reason: "Django / Flask template variable on request"
+    - input: "{{ config(materialized='view') }}"
+      expected: not_triggered
+      reason: "dbt model configuration call"
 evasion_tests:
   - input: "ECHO - {{7*7}} (dash instead of colon)"
     expected: not_triggered
