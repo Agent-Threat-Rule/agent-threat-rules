@@ -4,6 +4,24 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **`export-cisco-pack.ts --downstream` writes the Cisco Skill Scanner's
+  schema_version 2 pack.** The scanner now validates its bundled packs
+  against a strict schema at startup: it rejects `signature_files` and any
+  rule field outside its allowlist (`maturity`, `atr_id`, `atr_url` and
+  `file` included), and every rule needs a Cisco AI taxonomy code or a
+  default for its category. A pack exported as before fails to load. With
+  `--downstream <vendored pack dir>` the exporter writes that schema and
+  carries the scanner maintainers' choices forward: each existing rule keeps
+  the scanner category and taxonomy code it has downstream, and a new rule
+  takes the scanner category its ATR category already maps to and inherits
+  that category's default code. It stops instead of guessing when an ATR
+  category maps to more than one scanner category or a new rule's category
+  has no default; `--taxonomy <ATR id>=<code>` supplies the code. The pack
+  description names no benchmark figure. Without `--downstream` the output is
+  unchanged. `tests/cisco-pack-downstream-v2.test.ts` covers the contract.
+
 ### Fixed
 
 - **The RAMPART evaluator compiles patterns as SPEC §6.4 says.**
