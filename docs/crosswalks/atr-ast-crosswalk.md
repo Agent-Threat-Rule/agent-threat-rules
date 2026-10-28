@@ -17,15 +17,15 @@ Rules in corpus at generation time: **844**.
 
 | AST | Title | ATR rules | Top supporting ASI (evidence) |
 |-----|-------|-----------|-------------------------------|
-| AST01 | Malicious Skills | 214 | ASI05 (61), ASI01 (59), ASI04 (53) |
-| AST02 | Supply Chain Compromise | 58 | ASI04 (21), ASI05 (13), ASI01 (12) |
-| AST03 | Over-Privileged Skills | 257 | ASI01 (94), ASI03 (94), ASI06 (47) |
-| AST04 | Insecure Metadata | 123 | ASI05 (48), ASI06 (36), ASI04 (33) |
-| AST05 | Untrusted External Instructions | 362 | ASI01 (340), ASI06 (16), ASI04 (14) |
-| AST06 | Weak Isolation | 138 | ASI01 (76), ASI03 (40), ASI06 (22) |
+| AST01 | Malicious Skills | 214 | ASI05 (78), ASI04 (68), ASI01 (61) |
+| AST02 | Supply Chain Compromise | 58 | ASI04 (31), ASI05 (15), ASI01 (12) |
+| AST03 | Over-Privileged Skills | 257 | ASI03 (95), ASI01 (90), ASI02 (74) |
+| AST04 | Insecure Metadata | 123 | ASI05 (63), ASI02 (44), ASI04 (38) |
+| AST05 | Untrusted External Instructions | 362 | ASI01 (341), ASI04 (15), ASI06 (15) |
+| AST06 | Weak Isolation | 138 | ASI01 (73), ASI03 (46), ASI02 (31) |
 | AST07 | Update Drift | 0 | - |
 | AST08 | Poor Scanning | 0 | - |
-| AST09 | No Governance | 40 | ASI03 (19), ASI01 (15), ASI02 (10) |
+| AST09 | No Governance | 40 | ASI02 (16), ASI01 (15), ASI03 (13) |
 | AST10 | Cross-Platform Reuse | 0 | - |
 
 ## Category -> AST mapping (the editorial join table)
