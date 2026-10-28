@@ -97,19 +97,19 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)(?:(?<=\bmcpServers\b[\s\S]{0,500})|(?=[\s\S]{0,300}?"?\bcommand\b"?\s*[:=])(?=[\s\S]{0,300}?"?\bargs\b"?\s*[:=]))"env"\s*:\s*\{[\s\S]{0,10}"?\bNODE_OPTIONS\b"?\s*:\s*["''][\s\S]{0,40}?(?:--require\b|-r\s+\S|--loader\b|--experimental-loader\b|--experimental-require-module\b)'
+      value: '(?i)(?:\bmcpServers\b[\s\S]{0,500}?|(?=[\s\S]{0,300}?"?\bcommand\b"?\s*[:=])(?=[\s\S]{0,300}?"?\bargs\b"?\s*[:=]))"env"\s*:\s*\{[\s\S]{0,10}"?\bNODE_OPTIONS\b"?\s*:\s*["''][\s\S]{0,40}?(?:--require\b|-r\s+\S|--loader\b|--experimental-loader\b|--experimental-require-module\b)'
       description: "JSON-style MCP config env block, anchored by a nearby mcpServers key OR a command+args pair (the MCP stdio-spawn shape), sets NODE_OPTIONS to a value that actually references a require/preload/loader flag, not a routine memory/debug/warnings flag or the modern --import instrumentation flag"
     - field: content
       operator: regex
-      value: '(?i)(?:(?<=\bmcpServers\b[\s\S]{0,500})|(?=[\s\S]{0,300}?"?\bcommand\b"?\s*[:=])(?=[\s\S]{0,300}?"?\bargs\b"?\s*[:=]))\b(?:env|environment)\b\s*:\s*\n\s+"?\bNODE_OPTIONS\b"?\s*:\s*[\s\S]{0,40}?(?:--require\b|-r\s+\S|--loader\b|--experimental-loader\b|--experimental-require-module\b)'
+      value: '(?i)(?:\bmcpServers\b[\s\S]{0,500}?|(?=[\s\S]{0,300}?"?\bcommand\b"?\s*[:=])(?=[\s\S]{0,300}?"?\bargs\b"?\s*[:=]))\b(?:env|environment)\b\s*:[^\S\n]*\n\s+"?\bNODE_OPTIONS\b"?\s*:\s*[\s\S]{0,40}?(?:--require\b|-r\s+\S|--loader\b|--experimental-loader\b|--experimental-require-module\b)'
       description: "YAML-style MCP config env block (env:/environment: followed immediately by an indented NODE_OPTIONS key on the next line, not separated by prose or a code fence), anchored by a nearby mcpServers key OR a command+args pair, sets NODE_OPTIONS to a require/preload/loader flag"
     - field: content
       operator: regex
-      value: '(?i)(?:(?<=\bmcpServers\b[\s\S]{0,500})|(?=[\s\S]{0,300}?"?\bcommand\b"?\s*[:=])(?=[\s\S]{0,300}?"?\bargs\b"?\s*[:=]))"env"\s*:\s*\{[\s\S]{0,10}"?\b(?:LD_PRELOAD|DYLD_INSERT_LIBRARIES|BASH_ENV|PYTHONSTARTUP|PERL5OPT|RUBYOPT|GCONV_PATH)\b"?\s*:\s*\S'
+      value: '(?i)(?:\bmcpServers\b[\s\S]{0,500}?|(?=[\s\S]{0,300}?"?\bcommand\b"?\s*[:=])(?=[\s\S]{0,300}?"?\bargs\b"?\s*[:=]))"env"\s*:\s*\{[\s\S]{0,10}"?\b(?:LD_PRELOAD|DYLD_INSERT_LIBRARIES|BASH_ENV|PYTHONSTARTUP|PERL5OPT|RUBYOPT|GCONV_PATH)\b"?\s*:\s*\S'
       description: "JSON-style MCP config env block, anchored by a nearby mcpServers key OR a command+args pair, sets a known process-hijacking environment variable that has no benign flag-only mode (its value IS the hijack payload)"
     - field: content
       operator: regex
-      value: '(?i)(?:(?<=\bmcpServers\b[\s\S]{0,500})|(?=[\s\S]{0,300}?"?\bcommand\b"?\s*[:=])(?=[\s\S]{0,300}?"?\bargs\b"?\s*[:=]))\b(?:env|environment)\b\s*:\s*\n\s+"?\b(?:LD_PRELOAD|DYLD_INSERT_LIBRARIES|BASH_ENV|PYTHONSTARTUP|PERL5OPT|RUBYOPT|GCONV_PATH)\b"?\s*:\s*\S'
+      value: '(?i)(?:\bmcpServers\b[\s\S]{0,500}?|(?=[\s\S]{0,300}?"?\bcommand\b"?\s*[:=])(?=[\s\S]{0,300}?"?\bargs\b"?\s*[:=]))\b(?:env|environment)\b\s*:[^\S\n]*\n\s+"?\b(?:LD_PRELOAD|DYLD_INSERT_LIBRARIES|BASH_ENV|PYTHONSTARTUP|PERL5OPT|RUBYOPT|GCONV_PATH)\b"?\s*:\s*\S'
       description: "YAML-style MCP config env block (env:/environment: followed immediately by an indented key on the next line), anchored by a nearby mcpServers key OR a command+args pair, sets a known process-hijacking environment variable"
   false_positives:
     - "A DevOps runbook or documentation discussing these variable names in prose without an accompanying env-block config context"

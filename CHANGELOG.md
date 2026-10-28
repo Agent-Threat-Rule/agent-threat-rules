@@ -6,6 +6,32 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **Five rules compile under Python `re`.** The Cisco Skill Scanner pack and
+  other Python consumers compile patterns with `re`, which rejects
+  variable-width look-behind and a back-reference to a group that does not
+  exist; such a pattern is skipped and detects nothing there. Twelve
+  conditions in five rules were affected. ATR-2026-00442 and -02100 split a
+  negative look-behind over alternatives of different lengths into one
+  look-behind per alternative. ATR-2026-02300 and -02304 match the
+  `mcpServers` or fetch-verb prefix instead of looking behind for it, which
+  changes the matched span but not whether the condition matches. The fourth
+  condition of ATR-2026-00290, `(?:(?:\w+\s+){40,})\1{3,}`, is removed: its
+  `\1` refers to no group, which JavaScript reads as the character U+0001, so
+  it never matched anything. On every test case and evasion test of the five
+  rules and the text files under `data/` (7,963 samples), the old and new
+  rules match the same samples. `check-python-compat.py` now reports 0
+  uncompilable patterns in the exported pack, down from 12, and
+  ATR-2026-02300 and -02304 profile more than 3x cheaper than their latency
+  baseline (171.6x and 9.2x).
+  Compiling under Python also exposed the ReDoS gate to three of these
+  conditions for the first time, and they backtracked quadratically on a long
+  run of whitespace: ATR-2026-00442#1 on `\s*[:,-]?\s*` and ATR-2026-02300#1
+  and #3 on `:\s*\n\s+`. Both are rewritten to accept the same strings
+  without the ambiguity, `(?:\s*[:,-])?\s*` and `:[^\S\n]*\n\s+`. The
+  five rules' entries in `data/benign-fp-measurement.json` are re-measured
+  because their detection fingerprints changed; their false-positive counts
+  are unchanged.
+
 - **The RAMPART evaluator compiles patterns as SPEC §6.4 says.**
   `integrations/rampart/src/atr_rules_evaluator.py` compiled each rule's
   pattern as written with `re.IGNORECASE | re.MULTILINE`, so `^` and `$`
