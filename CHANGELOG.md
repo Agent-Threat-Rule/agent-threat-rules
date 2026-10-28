@@ -4,6 +4,20 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The RAMPART evaluator compiles patterns as SPEC §6.4 says.**
+  `integrations/rampart/src/atr_rules_evaluator.py` compiled each rule's
+  pattern as written with `re.IGNORECASE | re.MULTILINE`, so `^` and `$`
+  matched at every line of a field and the letters of a leading flag group
+  took effect (`(?s)` let `.` match a newline). It now removes one leading
+  `(?imsx)` group and compiles the rest with `re.IGNORECASE` only, as pyATR
+  does. On the rules on main this can change a result only on multi-line
+  input to a rule whose first regex condition, the only one the evaluator
+  reads, contains `^` or `$`; none of those rules' test samples is matched
+  differently by that condition. The evaluator is one of the exports issue
+  #698 lists.
+
 ## [4.2.1] - 2026-10-24
 
 A patch release of rule fixes and one new rule, plus two release-tooling

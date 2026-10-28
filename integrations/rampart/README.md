@@ -19,12 +19,11 @@ RAMPART's three built-in evaluators (`ResponseContains`, `SideEffectOccurred`, `
 
 ATR is exactly that corpus:
 
-- **425+ rules** across 10 categories (prompt injection, tool poisoning, skill compromise, context exfiltration, excessive autonomy, model abuse, model security, agent manipulation, data poisoning, privilege escalation)
+- **Rules across 10 categories** (prompt injection, tool poisoning, skill compromise, context exfiltration, excessive autonomy, model abuse, model security, agent manipulation, data poisoning, privilege escalation)
 - **MIT licensed**, language-agnostic YAML, drift-checked in CI (`stats.json`)
-- **96,096-skill wild scan** with 751 confirmed-malicious samples for empirical grounding
-- **Merged** as example directories in Microsoft Agent Governance Toolkit (PR [#3025](https://github.com/microsoft/agent-governance-toolkit/pull/3025), ACS annotator adapter example, 2026-06-15), and into Cisco AI Defense skill-scanner (PR [#99](https://github.com/cisco-ai-defense/skill-scanner/pull/99), full pack, 2026-04-22), MISP CIRCL ([galaxy #1207](https://github.com/MISP/misp-galaxy/pull/1207), [taxonomies #323](https://github.com/MISP/misp-taxonomies/pull/323), 2026-05-10), and Gen Digital Sage chain.
+- **Merged** as example directories in Microsoft Agent Governance Toolkit (PR [#3025](https://github.com/microsoft/agent-governance-toolkit/pull/3025), ACS annotator adapter example, 2026-06-15), and into Cisco AI Defense skill-scanner (PR [#99](https://github.com/cisco-ai-defense/skill-scanner/pull/99), full pack, 2026-04-22), MISP CIRCL ([galaxy #1207](https://github.com/MISP/misp-galaxy/pull/1207), [taxonomies #323](https://github.com/MISP/misp-taxonomies/pull/323), 2026-05-10), and Gen Digital Sage ([sage #33](https://github.com/gendigitalinc/sage/pull/33), 2026-05-11). Evidence and current status for each: ADOPTERS.md in the ATR repository.
 
-On 2026-05-11, after an AGT maintainer assigned it ATR's issue [microsoft/agent-governance-toolkit#1937](https://github.com/microsoft/agent-governance-toolkit/issues/1937), the Microsoft Copilot SWE Agent opened [microsoft/agent-governance-toolkit#1981](https://github.com/microsoft/agent-governance-toolkit/issues/1981) with regression fixtures presuming ATR detection of two Semantic Kernel CVEs. ATR v2.1.2 with the matching rules was merged 2 hours 16 minutes later and npm-published two minutes after that. That dependency loop is the strongest concrete case for shipping ATR coverage inside RAMPART today.
+On 2026-05-11, after an AGT maintainer assigned it ATR's issue [microsoft/agent-governance-toolkit#1937](https://github.com/microsoft/agent-governance-toolkit/issues/1937), the Microsoft Copilot SWE Agent opened [microsoft/agent-governance-toolkit#1981](https://github.com/microsoft/agent-governance-toolkit/issues/1981) with regression fixtures presuming ATR detection of two Semantic Kernel CVEs. ATR v2.1.2 with the matching rules was merged 2 hours 16 minutes later and npm-published two minutes after that. AGT has since removed those fixtures (2026-07-30 refactor) and takes no runtime dependency on ATR; ADOPTERS.md has the current status.
 
 ## Install
 
@@ -65,7 +64,7 @@ async def test_agent_resists_atr_violations(agent, attack):
 ## Behavior
 
 - Loads every `.yaml` rule under `rules_dir` (recursive).
-- For each rule, compiles the first `regex`-operator condition into a `re.Pattern`. Rules whose conditions use other operators (e.g., `ml_classifier`, `ast`) are skipped at load time (or raise in `strict=True` mode).
+- For each rule, compiles the first `regex`-operator condition into a case-insensitive `re.Pattern`, as ATR's [SPEC.md §6.4](https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md#64-regular-expression-dialect) specifies: a leading inline flag group such as `(?i)` or `(?is)` is removed, and `m`, `s` and `x` in it have no effect (`^` and `$` anchor to the whole field, not to each line; `.` does not match `\n`). A rule with no regex condition, or whose first regex condition Python `re` cannot compile (on main: three rules with a variable-width lookbehind), is skipped at load time (or raises in `strict=True` mode).
 - At evaluation time, walks all loaded rules and matches each against the appropriate field of the current `EvalContext`:
   - `field: response | llm_output | model_output | output` → matched against `context.text` (current turn's response)
   - `field: user_input | prompt | input` → matched against the latest user request
@@ -94,7 +93,7 @@ cd integrations/rampart
 python -m pytest tests/ -v
 ```
 
-13 tests cover loading edge cases (category filter, severity gate, strict vs lenient, XOR args, malformed YAML) and evaluation edge cases (response match, user_input match, tool_call match, no-match, multi-match aggregation, empty context).
+16 tests cover loading edge cases (category filter, severity gate, strict vs lenient, XOR args, malformed YAML), evaluation edge cases (response match, user_input match, tool_call match, no-match, multi-match aggregation, empty context) and the SPEC.md §6.4 flag handling (a leading `(?im)` or `(?is)` group does not turn on multiline or dotAll matching; a pattern without a group still matches case-insensitively).
 
 ## Provenance
 

@@ -4,7 +4,7 @@ Loads detection rules from the Agent Threat Rules (ATR) corpus
 (github.com/Agent-Threat-Rule/agent-threat-rules) and exposes them
 as a RAMPART evaluator that asserts on rule violations.
 
-ATR is an MIT-licensed open detection corpus (425+ rules across 10
+ATR is an MIT-licensed open detection corpus (rules across 10
 categories) for AI agent threats. It has been merged into public
 repositories at Cisco AI Defense, MISP CIRCL, Microsoft Agent Governance
 Toolkit (example directories), and others.
@@ -55,6 +55,13 @@ _FIELD_RESPONSE = {"response", "llm_output", "model_output", "output"}
 _FIELD_USER_INPUT = {"user_input", "prompt", "input"}
 _FIELD_TOOL_CALL = {"tool_call", "tool_invocation", "tool_args"}
 
+# SPEC.md 1.0.1 section 6.4: a regex value may begin with one inline flag
+# group such as `(?i)` or `(?is)`. It is removed before compiling, every
+# pattern matches case-insensitively, and `m`, `s` and `x` in the group have
+# no effect: `^` and `$` anchor to the whole field, not to each line, and `.`
+# does not match `\n`. pyATR (python/pyatr/engine.py) does the same.
+_INLINE_FLAGS_RE = re.compile(r"^\(\?[imsx]+\)")
+
 
 @dataclass(frozen=True)
 class _CompiledRule:
@@ -90,10 +97,12 @@ class ATRRulesEvaluator(BaseEvaluator):
     matches them against the current turn's response text, user input,
     or tool call arguments — depending on each rule's `detection.field`.
 
-    A rule is considered to fire when any of its regex conditions
-    match the targeted field. Rules with unsupported condition types
-    (non-regex operators, multi-field joins) are skipped at load
-    time. Pass `strict=True` to raise on skip instead of swallowing.
+    A rule is considered to fire when its first regex condition
+    matches the targeted field. Only that condition is compiled: the
+    rule's other conditions and its `condition` combinator are not
+    evaluated. Rules with no regex condition (only non-regex
+    operators) are skipped at load time. Pass `strict=True` to raise
+    on skip instead of swallowing.
 
     Args:
         rules_dir: Directory containing `*.yaml` ATR rule files.
@@ -273,8 +282,9 @@ class ATRRulesEvaluator(BaseEvaluator):
             msg = "Regex condition has non-string `value`."
             raise ATRLoadError(msg)
 
+        cleaned_src = _INLINE_FLAGS_RE.sub("", pattern_src, count=1)
         try:
-            pattern = re.compile(pattern_src, re.IGNORECASE | re.MULTILINE)
+            pattern = re.compile(cleaned_src, re.IGNORECASE)
         except re.error as exc:
             msg = f"Regex compile failure: {exc}"
             raise ATRLoadError(msg) from exc
