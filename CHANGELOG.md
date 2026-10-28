@@ -18,6 +18,37 @@ All notable changes to ATR will be documented in this file.
   differently by that condition. The evaluator is one of the exports issue
   #698 lists.
 
+- **The PyRIT digest, the Cisco Skill Scanner pack and the Pipelock bundle
+  now follow SPEC §6.4.** PyRIT's `RegexScorer` and the Cisco scanner
+  compile patterns with Python `re` and no flags, Pipelock with Go RE2, and
+  both honour an inline flag group. The exporters passed each condition's
+  leading group through, so the `(?im)`, `(?si)` and `(?is)` of
+  ATR-2026-00450, -00859 and -00207 were applied. A condition written
+  without `(?i)` was case-sensitive in the Cisco pack, and in the Pipelock
+  bundle's injection rules, which Pipelock releases up to v3.7.0 compile as
+  written; Pipelock adds `(?i)` to DLP and tool-poison rules itself, and the
+  digest already added it. Each pattern is now `(?i)` followed by
+  `regexConditionSpec(value).source`, the pattern the engine compiles; the
+  Pipelock bundle puts one `(?i)` in front of a rule's joined alternatives.
+  Output change on the rules on main: in `data/pyrit-digest.json`, four
+  patterns, of which only ATR-2026-00450#2 matches differently. The digest is
+  also regenerated at main for the first time since 4.0.0, in a commit of its
+  own: 116 new conditions, 5 removed with the deprecated ATR-2026-00233, 121
+  patterns edited in their rules and nine new `condition: all` exclusions.
+  The exporter no longer emits a `case_sensitive` marker, which no rule sets
+  and §6.4 gives no effect. `tests/pyrit-digest.test.ts` checks the
+  transform on fixed inputs and that every committed pattern starts with
+  exactly one `(?i)`; it does not compare the digest with the rules, so a
+  rule edit does not require regenerating it. The Cisco pack changes 1,161
+  of 3,471 patterns in 307 signatures, 1,157 of them because they gain
+  `(?i)`; `--reproduce-vendored` keeps the vendored pack's verbatim
+  patterns, its output is unchanged, and a new test checks that wiring. The
+  Pipelock bundle changes every rule's regex: 814 conditions in 191
+  injection rules become case-insensitive on Pipelock releases up to v3.7.0,
+  and ATR-2026-00450 no longer matches at the start of a second line; the
+  compiler version is now 1.0.1. No pattern starts or stops compiling under
+  Python `re` or Go RE2. Issue #698; `tests/compile-pipelock.test.ts` is new.
+
 ## [4.2.1] - 2026-10-24
 
 A patch release of rule fixes and one new rule, plus two release-tooling
