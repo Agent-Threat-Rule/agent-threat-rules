@@ -4,6 +4,30 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- **ATR-2026-00440, -00121, -00277 and -00225 stop matching ordinary code
+  and documentation.** A replay over the skills.sh all-time top 375 skills
+  found each of them firing on benign files. Each change is confined to one
+  condition, and `rule_version` goes to 2. ATR-2026-00440 #3 (maturity
+  `stable`, so it runs in the enforce lane) had no boundary after the getattr
+  root, so `getattr(types.Scale, ...)` read as getattr on the built-in
+  `type`; getattr on `type`, `object` and `__builtins__` still matches, and
+  an integration that blocks on the enforce lane no longer blocks the
+  prefixed names. In ATR-2026-00121 #4, `nc` and `ncat` must start a word,
+  and a `python -c` one-liner that imports socket or os must also run
+  something within 300 characters on the same line. In ATR-2026-00277 #3, a
+  `config`, `self`, `request`, `g` or `app` root must reach Python internals
+  inside the same braces; the bare recon probes such as `{{config}}` still
+  match, while template placeholders such as `{{g}}` and dbt's
+  `{{ config(...) }}` no longer do. ATR-2026-00225 #2 takes `C2`, `backdoor`,
+  `malware` and command-and-control as whole words within 120 characters on
+  the same line; most of its 80 benign false positives came from
+  JSON-encoded events, where `[^\n]*` ran past escaped newlines to the end of
+  the document. Benign false positives over the 14,172 samples of the benign
+  gate: 00121 6 to 4, 00225 80 to 0, 00277 6 to 0, 00440 0. Over every file
+  under `data/` and every rule's test cases, none of the four gains a match.
+
 ## [4.2.2] - 2026-10-28
 
 A patch release of export and converter fixes, five rule rewrites for Python
