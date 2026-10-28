@@ -26,6 +26,13 @@
  *   --version <v>          Pack version (default: package.json version)
  *   --ref <git-ref>        Ref used in atr_url permalinks (default: main)
  *   --diff-against <dir>   Existing pack directory to diff against
+ *   --downstream <dir>     Pack vendored in Cisco Skill Scanner (schema_version 2).
+ *                          Emits that schema: scanner categories and taxonomy
+ *                          codes are carried over from it, a new rule takes its
+ *                          category's mapping and default code. See
+ *                          scripts/cisco-pack/downstream-v2.ts.
+ *   --taxonomy <id>=<code> Taxonomy code for one rule (repeatable); needed when
+ *                          a new rule's scanner category has no default.
  *   --reproduce-vendored   Reproduce the banner comments of the pack already
  *                          vendored downstream (generator name, and a per-file
  *                          rule count that counts files rather than emitted
@@ -53,6 +60,13 @@ import {
 import { loadRules } from './cisco-pack/load-rules.js';
 import { renderPackManifest, renderReadme, renderSignatureFile, type RenderContext } from './cisco-pack/render.js';
 import { buildSignatureFiles, DEFAULT_REPO_URL } from './cisco-pack/transform.js';
+import {
+  parseTaxonomyOverride,
+  readDownstreamPack,
+  renderPackManifestV2,
+  resolveV2Rules,
+  toV2SignatureFiles,
+} from './cisco-pack/downstream-v2.js';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -62,6 +76,8 @@ interface Args {
   readonly version: string;
   readonly ref: string;
   readonly diffAgainst?: string;
+  readonly downstream?: string;
+  readonly taxonomy: ReadonlyMap<string, string>;
   readonly reproduceVendored: boolean;
   readonly json: boolean;
 }
@@ -74,6 +90,17 @@ function readFlag(argv: readonly string[], name: string): string | undefined {
   return value;
 }
 
+function readRepeatedFlag(argv: readonly string[], name: string): string[] {
+  const values: string[] = [];
+  argv.forEach((arg, index) => {
+    if (arg !== name) return;
+    const value = argv[index + 1];
+    if (value === undefined || value.startsWith('--')) throw new Error(`${name} needs a value`);
+    values.push(value);
+  });
+  return values;
+}
+
 function parseArgs(argv: readonly string[]): Args {
   const pkg = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8')) as { version?: string };
   const version = readFlag(argv, '--version') ?? pkg.version;
@@ -84,6 +111,8 @@ function parseArgs(argv: readonly string[]): Args {
     version,
     ref: readFlag(argv, '--ref') ?? 'main',
     diffAgainst: readFlag(argv, '--diff-against'),
+    downstream: readFlag(argv, '--downstream'),
+    taxonomy: new Map(readRepeatedFlag(argv, '--taxonomy').map(parseTaxonomyOverride)),
     reproduceVendored: argv.includes('--reproduce-vendored'),
     json: argv.includes('--json'),
   };
@@ -104,12 +133,18 @@ function writePack(args: Args): { total: number; summary: Record<string, unknown
   const loaded = loadRules(args.rules, { includeDeprecated: args.reproduceVendored });
   if (loaded.rules.length === 0) throw new Error(`no rules found under ${args.rules}`);
 
-  const files = buildSignatureFiles(loaded.rules, {
+  if (args.downstream && args.reproduceVendored) {
+    throw new Error('--downstream and --reproduce-vendored are mutually exclusive');
+  }
+  const atrFiles = buildSignatureFiles(loaded.rules, {
     ref: args.ref,
     repoUrl: DEFAULT_REPO_URL,
     omitMaturity: args.reproduceVendored,
     verbatimPatterns: args.reproduceVendored,
   });
+  const downstream = args.downstream ? readDownstreamPack(resolve(args.downstream)) : undefined;
+  const v2Rules = downstream ? resolveV2Rules(atrFiles, downstream, args.taxonomy) : undefined;
+  const files = v2Rules ? toV2SignatureFiles(atrFiles, v2Rules) : atrFiles;
   const claims = loadBenchmarkClaims(REPO_ROOT, countOwaspAgenticCategories(args.rules));
   const context: RenderContext = {
     version: args.version,
@@ -124,7 +159,11 @@ function writePack(args: Args): { total: number; summary: Record<string, unknown
   for (const file of files) {
     writeFileSync(join(args.out, file.path), renderSignatureFile(file, context), 'utf8');
   }
-  writeFileSync(join(args.out, 'pack.yaml'), renderPackManifest(files, context), 'utf8');
+  const manifest =
+    downstream && v2Rules
+      ? renderPackManifestV2(files, v2Rules, downstream, args.version)
+      : renderPackManifest(files, context);
+  writeFileSync(join(args.out, 'pack.yaml'), manifest, 'utf8');
   writeFileSync(join(args.out, 'README.md'), renderReadme(files, context, loaded.excluded), 'utf8');
 
   const all = files.flatMap((file) => [...file.signatures]);
@@ -136,7 +175,7 @@ function writePack(args: Args): { total: number; summary: Record<string, unknown
     patterns: all.reduce((sum, s) => sum + s.patterns.length, 0),
     byCategory: Object.fromEntries(summariseByCategory(all)),
     bySeverity: Object.fromEntries(summariseBySeverity(all)),
-    byMaturity: Object.fromEntries(summariseByMaturity(all)),
+    byMaturity: Object.fromEntries(summariseByMaturity(atrFiles.flatMap((file) => [...file.signatures]))),
   };
 
   if (args.diffAgainst) {
