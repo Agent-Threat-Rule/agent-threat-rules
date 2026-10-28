@@ -16,21 +16,23 @@
  *   corpus.
  * - ATR `response.actions` (10 values) collapse to Sage `action` (3
  *   values: block / require_approval / log) by strongest-wins semantics.
- * - ATR `(?i)` inline flag (PCRE) is extracted into Sage's rule-level
- *   `case_insensitive: true` because the Sage runtime regex compiler is
- *   JavaScript and does not support inline flag groups.
+ * - SPEC §6.4: every ATR regex condition matches case-insensitively, so the
+ *   leading flag group is removed and every Sage rule sets
+ *   `case_insensitive: true`. The Sage runtime compiles patterns as JavaScript
+ *   `RegExp` with only the `i` flag, so a condition that depends on the `u`
+ *   flag is skipped (sagePatternOf).
  * - ATR `detection_tier: semantic` rules are SKIPPED — they require LLM
  *   evaluation, not deterministic regex.
  * - License: ATR rules are MIT; Sage's `threats/*.yaml` are DRL 1.1. Per-rule
  *   comment in the output preserves upstream attribution per both licenses.
  *
- * Used by: scripts/sync-with-atr.ts (Sage maintainers can run this script
- * to regenerate threats/agent-layer.yaml from a pinned ATR version), and
- * by any downstream tool that consumes ATR but wants Sage-flavoured output.
+ * Used by scripts/export-sage.ts, and by any downstream tool that consumes
+ * ATR but wants Sage-flavoured output.
  *
  * @module agent-threat-rules/converters/sage
  */
 
+import { regexConditionSpec } from '../regex-dialect.js';
 import type {
 	ATRRule,
 	ATRAction,
@@ -190,40 +192,87 @@ function mapCategory(atrCategory: string): string {
 // ── Regex compatibility ────────────────────────────────────────────────────
 
 /**
- * Extract a leading `(?flags)` inline modifier and return the stripped regex
- * plus the JavaScript-applicable flag characters. Sage compiles regex with
- * `new RegExp(pattern, case_insensitive ? "i" : "")`, so the `i` flag is the
- * only one Sage supports at rule level. Other inline flags (`s`, `m`, `u`,
- * `g`, `y`) cannot survive — they get stripped and a warning emitted.
+ * A condition's regex for Sage, which compiles
+ * `new RegExp(pattern, case_insensitive ? "i" : "")` and cannot set `u`.
+ *
+ * SPEC §6.4: the leading flag group is removed and every condition matches
+ * case-insensitively, so every exported rule sets `case_insensitive: true`.
+ * This used to follow the group instead: a condition without `(?i)` became a
+ * case-sensitive Sage rule. `m`, `s` and `x` have no effect in ATR, so
+ * dropping them changes nothing.
+ *
+ * The engine compiles a condition with `iu` when it contains `\u{...}`,
+ * `\p{...}` or an astral character (needsUnicodeFlag). Without `u` an astral
+ * character is two UTF-16 code units. As a plain literal it still matches the
+ * same text, so such a condition is exported without `u`; the one difference
+ * left is that `.` and a negated class consume one code unit, so a bounded
+ * repeat such as `.{0,50}` counts an astral character of the input as two. A
+ * condition that depends on `u` in any other way is skipped
+ * (dependsOnUnicodeMode).
  */
-function extractInlineFlags(pattern: string): {
-	pattern: string;
-	caseInsensitive: boolean;
-	unsupportedFlags: string;
-} {
-	const leadingFlagMatch = pattern.match(/^\(\?([gimsuy]+)\)/);
-	if (!leadingFlagMatch) {
-		return { pattern, caseInsensitive: false, unsupportedFlags: '' };
-	}
-	const flags = leadingFlagMatch[1]!;
-	const stripped = pattern.slice(leadingFlagMatch[0].length);
-	const ci = flags.includes('i');
-	const unsupported = flags.replace(/i/g, '');
+function sagePatternOf(value: string): { pattern: string; needsUnicode: boolean } {
+	const spec = regexConditionSpec(value);
 	return {
-		pattern: stripped,
-		caseInsensitive: ci,
-		unsupportedFlags: unsupported,
+		pattern: spec.source,
+		needsUnicode: spec.flags === 'iu' && dependsOnUnicodeMode(spec.source),
 	};
 }
 
 /**
- * Validate a regex compiles under JavaScript's RegExp engine with the given
- * flags. Returns the compile error message if it fails, or null if it
+ * Whether a pattern the engine compiles with `u` fails to compile, or means
+ * something else, without it: `\u{...}`, `\p{...}` or `\P{...}`, or an
+ * astral character inside a character class, before a quantifier, or with a
+ * case mapping.
+ */
+function dependsOnUnicodeMode(source: string): boolean {
+	if (/\\[pPu]\{/.test(source)) return true;
+	try {
+		new RegExp(source, 'i');
+	} catch {
+		return true;
+	}
+	const chars = [...source];
+	let inClass = false;
+	let escaped = false;
+	for (let k = 0; k < chars.length; k++) {
+		const ch = chars[k]!;
+		if (escaped) {
+			escaped = false;
+			continue;
+		}
+		if (ch === '\\') {
+			escaped = true;
+			continue;
+		}
+		const astral = ch.codePointAt(0)! > 0xffff;
+		if (inClass) {
+			if (ch === ']') inClass = false;
+			else if (astral) return true;
+			continue;
+		}
+		if (ch === '[') {
+			inClass = true;
+			continue;
+		}
+		if (!astral) continue;
+		if (ch.toLowerCase() !== ch || ch.toUpperCase() !== ch) return true;
+		if (/^[*+?{]/.test(chars[k + 1] ?? '')) return true;
+	}
+	return false;
+}
+
+const NEEDS_UNICODE_DETAIL =
+	'Regex depends on the u flag (\\u{...}, \\p{...}, or an astral character in a character class, ' +
+	'before a quantifier or with a case mapping), which Sage cannot set; condition skipped';
+
+/**
+ * Validate a regex compiles the way Sage compiles an exported rule, with the
+ * `i` flag. Returns the compile error message if it fails, or null if it
  * succeeds.
  */
-function validateRegexCompiles(pattern: string, caseInsensitive: boolean): string | null {
+function validateRegexCompiles(pattern: string): string | null {
 	try {
-		new RegExp(pattern, caseInsensitive ? 'i' : '');
+		new RegExp(pattern, 'i');
 		return null;
 	} catch (e) {
 		return e instanceof Error ? e.message : String(e);
@@ -402,22 +451,17 @@ function groupToSageRule(
 	idAllocator: SageIdAllocator,
 	warnings: ConversionWarning[],
 ): SageRule | null {
-	// Process each condition's regex: strip inline flags, validate compile.
-	type Processed = { regex: string; caseInsensitive: boolean };
-	const processed: Processed[] = [];
-	let anyCaseInsensitive = false;
-	let anyCaseSensitive = false;
+	// Process each condition's regex (SPEC §6.4, see sagePatternOf) and
+	// validate that it compiles.
+	const processed: string[] = [];
 
 	for (const cond of conditions) {
-		const { pattern, caseInsensitive, unsupportedFlags } = extractInlineFlags(cond.value);
-		if (unsupportedFlags) {
-			warnings.push({
-				ruleId: atr.id,
-				kind: 'regex_compat_issue',
-				detail: `Unsupported inline flags (${unsupportedFlags}) stripped; Sage runtime supports case-insensitive only`,
-			});
+		const { pattern, needsUnicode } = sagePatternOf(cond.value);
+		if (needsUnicode) {
+			warnings.push({ ruleId: atr.id, kind: 'regex_compat_issue', detail: NEEDS_UNICODE_DETAIL });
+			continue;
 		}
-		const compileError = validateRegexCompiles(pattern, caseInsensitive);
+		const compileError = validateRegexCompiles(pattern);
 		if (compileError) {
 			warnings.push({
 				ruleId: atr.id,
@@ -426,36 +470,16 @@ function groupToSageRule(
 			});
 			continue;
 		}
-		processed.push({ regex: pattern, caseInsensitive });
-		if (caseInsensitive) {
-			anyCaseInsensitive = true;
-		} else {
-			anyCaseSensitive = true;
-		}
+		processed.push(pattern);
 	}
 
 	if (processed.length === 0) return null;
 
-	// If the group mixes case-sensitive and case-insensitive patterns, we can
-	// only honour one at the rule level. Choose case-insensitive (safer fail-
-	// open for detection) and rewrap case-sensitive patterns by hoisting the
-	// case-sensitive requirement into the regex via [Aa] character classes is
-	// non-trivial; for now, mark a warning and treat the whole rule as ci.
-	if (anyCaseInsensitive && anyCaseSensitive) {
-		warnings.push({
-			ruleId: atr.id,
-			kind: 'regex_compat_issue',
-			detail:
-				'Group mixes case-sensitive and case-insensitive sub-patterns; promoting whole rule to case_insensitive=true',
-		});
-	}
-	const ruleCaseInsensitive = anyCaseInsensitive;
-
-	const combinedRegex = alternationCombine(processed.map((p) => p.regex));
+	const combinedRegex = alternationCombine(processed);
 
 	// Validate the combined regex still compiles (alternation can occasionally
 	// expose escape conflicts).
-	const compileError = validateRegexCompiles(combinedRegex, ruleCaseInsensitive);
+	const compileError = validateRegexCompiles(combinedRegex);
 	if (compileError) {
 		warnings.push({
 			ruleId: atr.id,
@@ -492,7 +516,7 @@ function groupToSageRule(
 		title,
 		expires_at: null,
 		revoked: atr.status === 'draft',
-		case_insensitive: ruleCaseInsensitive,
+		case_insensitive: true,
 		upstream: atr.id,
 		upstream_url: upstreamUrl,
 		upstream_license: 'MIT',
@@ -526,8 +550,7 @@ function extractDetectsSummary(description: string | undefined): string {
  * (user_input or tool_response or content), producing 1 Sage rule each.
  *
  * Lossy spots (documented in the bridge research memo):
- * - Multi-condition rules with mixed case-sensitivity → whole rule becomes
- *   case-insensitive
+ * - Conditions that depend on the `u` flag → skipped (sagePatternOf)
  * - `condition: all` semantics → ignored; alternation always treats as OR
  * - `response.actions` reduced to strongest single action
  * - All compliance/metadata fields (eu_ai_act, mitre_atlas, references, etc.)
@@ -601,10 +624,12 @@ export function atrToSage(
 	for (const [sageChannel, conditions] of channelEntries) {
 		const disambiguator = isMultiChannel ? channelCode(sageChannel) : null;
 
-		// Build the combined regex once to check length.
+		// Build the combined regex once to check length. Conditions Sage cannot
+		// express are skipped when the rule is built, so they do not count.
 		const candidatePatterns = conditions
-			.map((c) => extractInlineFlags(c.value).pattern)
-			.filter((p) => p.length > 0);
+			.map((c) => sagePatternOf(c.value))
+			.filter((p) => !p.needsUnicode && p.pattern.length > 0)
+			.map((p) => p.pattern);
 		const tentativeCombined = alternationCombine(candidatePatterns);
 
 		if (tentativeCombined.length <= MAX_COMBINED_PATTERN_LEN || conditions.length === 1) {
@@ -671,15 +696,12 @@ function buildSplitSubRule(
 	pickedAction: SageAction,
 	warnings: ConversionWarning[],
 ): SageRule | null {
-	const { pattern, caseInsensitive, unsupportedFlags } = extractInlineFlags(condition.value);
-	if (unsupportedFlags) {
-		warnings.push({
-			ruleId: atr.id,
-			kind: 'regex_compat_issue',
-			detail: `Unsupported inline flags (${unsupportedFlags}) stripped`,
-		});
+	const { pattern, needsUnicode } = sagePatternOf(condition.value);
+	if (needsUnicode) {
+		warnings.push({ ruleId: atr.id, kind: 'regex_compat_issue', detail: NEEDS_UNICODE_DETAIL });
+		return null;
 	}
-	const compileError = validateRegexCompiles(pattern, caseInsensitive);
+	const compileError = validateRegexCompiles(pattern);
 	if (compileError) {
 		warnings.push({
 			ruleId: atr.id,
@@ -717,7 +739,7 @@ function buildSplitSubRule(
 		title,
 		expires_at: null,
 		revoked: atr.status === 'draft',
-		case_insensitive: caseInsensitive,
+		case_insensitive: true,
 		upstream: atr.id,
 		upstream_url: upstreamUrl,
 		upstream_license: 'MIT',

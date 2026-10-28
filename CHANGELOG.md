@@ -49,6 +49,45 @@ All notable changes to ATR will be documented in this file.
   compiler version is now 1.0.1. No pattern starts or stops compiling under
   Python `re` or Go RE2. Issue #698; `tests/compile-pipelock.test.ts` is new.
 
+- **The rule converters translate regex conditions per SPEC §6.4.**
+  `atr convert generic-regex|splunk|elastic`, the package exports
+  `ruleToSPL()`, `ruleToElastic()`, `convertRule()` and `convertAllRules()`,
+  and the `converters/sage` and `converters/sage-reverse` subpaths each
+  followed a condition's leading flag group instead of SPEC §6.4 (issue
+  #698):
+  - generic-regex copied the group's letters into `flags`, so a condition
+    without `(?i)` exported `flags: ""` (case-sensitive) and `(?im)` or
+    `(?is)` turned on multiline or dotAll in the consumer. `flags` is now
+    always `i`, or `iu` when the pattern needs Unicode mode.
+  - Splunk passed the group to PCRE unchanged, with the same two effects.
+    Every regex now starts with a single `(?i)`.
+  - Elastic put the group into a Lucene `regexp` value, where inline flags do
+    not exist. The value is now the condition without its group;
+    `case_insensitive: true` is unchanged.
+  - Sage exported a rule as case-sensitive unless a group said `(?i)`. Every
+    exported rule now sets `case_insensitive: true`; a condition that depends
+    on the `u` flag, which Sage cannot set, is skipped with a warning; and the
+    "mixes case-sensitive" and "unsupported inline flags" warnings are gone.
+    Importing from Sage (`sage-reverse`) now always writes `(?i)` and warns
+    (`case_sensitivity_lost`) when the Sage rule was case-sensitive.
+
+  The dialect lives in the new dependency-free `src/regex-dialect.ts`
+  (`regexConditionSpec()`, `needsUnicodeFlag()`, `inlineCaseInsensitive()`),
+  so the published `converters/sage` subpath does not load the engine;
+  `src/engine.ts` imports and re-exports it, and the rule-quality and
+  rule-latency gates now also run when it changes. The generic-regex docs no
+  longer show an import path the package does not export.
+
+  Upgrade note: exports regenerated after this change differ from earlier
+  ones. Conditions without a flag group now match case-insensitively, so a
+  SIEM or scanner that loads them can see more matches, and conditions whose
+  group had `s` or `m` no longer let `.` cross a line break or `^` and `$`
+  match inside the field. Generic-regex `flags` can now be `iu`, so a consumer
+  that maps the letters to another regex engine must accept `u`. The Sage
+  export skips conditions that depend on `u`. `ReverseWarning['kind']` gains
+  `case_sensitivity_lost`; TypeScript code that switches over it exhaustively
+  must handle it.
+
 ## [4.2.1] - 2026-10-24
 
 A patch release of rule fixes and one new rule, plus two release-tooling
