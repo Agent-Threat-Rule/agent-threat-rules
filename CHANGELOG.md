@@ -4,6 +4,26 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+## [4.2.2] - 2026-10-28
+
+A patch release of export and converter fixes, five rule rewrites for Python
+portability, and reference corrections. The rule format, identifier scheme,
+engine matching and Match output are unchanged.
+
+Default behaviour that changes:
+
+- Nothing the engine matches. The five rewritten rules match the same samples
+  as before on every test case, evasion test and text file under `data/`.
+- Exports regenerated from this release differ from earlier ones: the
+  converters (`atr convert`, `ruleToSPL()`, `ruleToElastic()`, Sage), the
+  Cisco Skill Scanner pack, the PyRIT digest, the Pipelock bundle and the
+  RAMPART evaluator now follow SPEC §6.4, so a condition without a flag group
+  matches case-insensitively and a leading `(?s)` or `(?m)` has no effect.
+  See the upgrade note under the converters entry below.
+- `references` and `compliance` metadata changes on 139 rules (the OWASP and
+  ATLAS corrections below). Tooling that reports or groups by those ids sees
+  different buckets.
+
 ### Added
 
 - **`export-cisco-pack.ts --downstream` writes the Cisco Skill Scanner's
@@ -23,6 +43,24 @@ All notable changes to ATR will be documented in this file.
   unchanged. `tests/cisco-pack-downstream-v2.test.ts` covers the contract.
 
 ### Fixed
+
+- **OWASP and MITRE ATLAS references corrected on 108 rules** (#675).
+  `references.owasp_llm`, `references.owasp_agentic` and
+  `references.mitre_atlas` are corrected where a rule named an identifier
+  that does not describe what it detects. No detection, severity, maturity,
+  status, confidence or response field changes. The two crosswalks CI checks
+  against rule metadata are regenerated.
+
+- **OWASP compliance entries aligned with the corrected references on 25
+  rules** (#680). 29 `compliance.owasp_agentic` / `compliance.owasp_llm`
+  entries still named an identifier #675 removed from `references`, which
+  kept it in `docs/OWASP-AGENTIC-MAPPING.md`.
+
+- **`LLM08:2025` used for Excessive Agency replaced on 30 rules** (#684). In
+  the OWASP Top 10 for LLM Applications 2025, LLM08 is Vector and Embedding
+  Weaknesses and Excessive Agency is LLM06. Only `references.owasp_llm` and
+  `compliance.owasp_llm` change; two rules that use LLM08 for its real
+  meaning keep it.
 
 - **Five rules compile under Python `re`.** The Cisco Skill Scanner pack and
   other Python consumers compile patterns with `re`, which rejects
