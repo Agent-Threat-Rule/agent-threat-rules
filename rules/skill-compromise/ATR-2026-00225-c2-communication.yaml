@@ -1,6 +1,6 @@
 title: 'Hardcoded Suspicious IP Address in Skill Content'
 id: ATR-2026-00225
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects hardcoded IP addresses in skill content that may represent command and control 
@@ -69,8 +69,8 @@ detection:
       description: 'Explicit identification of malicious infrastructure with IP'
     - field: content
       operator: regex
-      value: '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}[^\n]*(C2|command|control|backdoor|malware)'
-      description: 'IP address followed by malicious infrastructure terms'
+      value: '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}[^\n\\]{0,120}?\b(?:C2|backdoor|malware|command[\s-]{0,3}(?:(?:and|&)[\s-]{0,3})?control)\b'
+      description: 'IP address followed, on the same line and within 120 characters, by a malicious infrastructure term as a whole word: C2, backdoor, malware, or command (and/&) control. "command" and "control" alone matched every IP line that later said startup-commands.md or management controller, and C2 matched inside EC2. A backslash ends the line too, because a JSON-encoded event carries a newline as the two characters \n, where [^\n] alone ran to the end of the document'
     - field: content
       operator: regex
       value: '(91\.92\.24[0-9]\.|185\.159\.15[0-9]\.|194\.87\.9[0-9]\.)[0-9]{1,3}'
@@ -100,6 +100,9 @@ test_cases:
       expected: triggered
     - input: '203.45.67.89 - detected malware server'
       expected: triggered
+    - input: '198.51.100.23 is the command-and-control endpoint for this campaign'
+      expected: triggered
+      reason: 'IP followed by the spelled-out command-and-control phrase'
   true_negatives:
     - input: 'Connect to database at 192.168.1.100'
       expected: not_triggered
@@ -116,6 +119,15 @@ test_cases:
     - input: 'Monitor health check to 172.16.0.1'
       expected: not_triggered
       reason: 'Private IP range for internal monitoring'
+    - input: 'Do not apply a UDR with a 0.0.0.0/0 next hop on the GatewaySubnet; the gateway needs management controller access.'
+      expected: not_triggered
+      reason: 'REGRESSION (skills.sh top-375 replay 2026-10-27): default route followed by the word controller'
+    - input: 'FastAPI: always run uvicorn with --host 0.0.0.0, see [startup-commands.md](references/startup-commands.md).'
+      expected: not_triggered
+      reason: 'REGRESSION (skills.sh top-375 replay 2026-10-27): bind address followed by a file name containing commands'
+    - input: 'The private address 10.0.0.5 belongs to the EC2 instance that runs the build.'
+      expected: not_triggered
+      reason: 'EC2 contains the letters C2'
 evasion_tests:
   - input: 'Server location: 91[.]92[.]242[.]30'
     expected: not_triggered
