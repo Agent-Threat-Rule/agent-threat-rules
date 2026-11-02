@@ -17,6 +17,7 @@ export interface AtrRule {
   readonly maturity?: string;
   readonly detection?: {
     readonly method?: string;
+    readonly condition?: string;
     readonly conditions?: readonly AtrCondition[];
   };
 }
@@ -36,6 +37,17 @@ export interface LoadOptions {
    * publishes. Only set when reproducing the pack already vendored downstream.
    */
   readonly includeDeprecated?: boolean;
+  /**
+   * Keep rules with a regex condition on a field a skill package does not
+   * carry (see STATIC_TEXT_FIELDS). Only set when reproducing the pack already
+   * vendored downstream.
+   */
+  readonly includeRuntimeFields?: boolean;
+  /**
+   * Rules to leave out, with the reason, e.g. the rules the benign gate found
+   * blocking a benign skill (scripts/cisco-pack/benign-gate.py).
+   */
+  readonly exclude?: ReadonlyMap<string, string>;
 }
 
 export interface LoadResult {
@@ -52,6 +64,31 @@ export interface LoadResult {
  * runtime state (session windows, event counts, trace joins) are dropped.
  */
 export const UNSUPPORTED_DETECTION_METHODS: readonly string[] = ['behavioral'];
+
+/**
+ * Condition fields whose text a skill package carries, so a pattern written
+ * for them means the same thing over a skill's files.
+ *
+ * Every other field exists only at runtime: `tool_name` and `tool_args` of a
+ * call being made, a `tool_response`, the agent's own output, trace fields.
+ * The pack has no field concept and Skill Scanner applies each pattern to
+ * every line of every file, so a condition on such a field matches whatever
+ * text happens to look like it. ATR-2026-00099 shows the cost: it fires when
+ * the tool being called is named like `delete` or `format`, and as a line
+ * pattern it matched almost every benign skill, because skills say "delete".
+ * A rule with any regex condition outside this list is therefore left out;
+ * dropping only that condition would broaden a `condition: all` rule.
+ */
+export const STATIC_TEXT_FIELDS: readonly string[] = ['content', 'user_input', 'tool_description'];
+
+/** The runtime-only fields a rule's regex conditions read, sorted. */
+export function runtimeOnlyFields(rule: AtrRule): string[] {
+  const fields = (rule.detection?.conditions ?? [])
+    .filter((c) => c.operator === 'regex' && typeof c.value === 'string')
+    .map((c) => String(c.field ?? ''))
+    .filter((field) => !STATIC_TEXT_FIELDS.includes(field));
+  return [...new Set(fields)].sort();
+}
 
 function isRuleFile(name: string): boolean {
   return name.endsWith('.yaml') || name.endsWith('.yml');
@@ -99,6 +136,16 @@ export function loadRules(rulesDir: string, options: LoadOptions = {}): LoadResu
         excluded.push({ id: rule.id, reason: 'no regex conditions' });
         continue;
       }
+      const runtimeFields = runtimeOnlyFields(rule);
+      if (runtimeFields.length > 0 && !options.includeRuntimeFields) {
+        excluded.push({ id: rule.id, reason: `runtime-only field: ${runtimeFields.join(', ')}` });
+        continue;
+      }
+      const excludedBy = options.exclude?.get(rule.id);
+      if (excludedBy !== undefined) {
+        excluded.push({ id: rule.id, reason: excludedBy });
+        continue;
+      }
       rules.push({ category, fileName, rule });
     }
   }
@@ -106,13 +153,14 @@ export function loadRules(rulesDir: string, options: LoadOptions = {}): LoadResu
 }
 
 /**
- * Regex literals in source order, verbatim.
+ * The rule's regex condition values in source order, exactly as the rule
+ * writes them. transform.ts decides how each is written into the pack.
  *
  * Non-regex operators are not representable in a signature pack. Duplicates
  * are deliberately kept: a rule may carry the same regex against two
  * different `field`s, the pack has no field concept, and dropping the second
- * copy would silently make the exported pack disagree with the rule it claims
- * to be a verbatim copy of.
+ * copy would silently make the exported pack disagree with the rule it links
+ * to.
  */
 export function extractPatterns(rule: AtrRule): string[] {
   const conditions = rule.detection?.conditions ?? [];

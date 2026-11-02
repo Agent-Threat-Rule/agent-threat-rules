@@ -39,8 +39,9 @@ import {
 } from 'node:fs';
 import { join, dirname, basename, extname } from 'node:path';
 import yaml from 'js-yaml';
+import { regexConditionSpec } from '../src/engine.js';
 
-const COMPILER_VERSION = '1.0.0';
+const COMPILER_VERSION = '1.0.1';
 
 // ---- Type definitions matching ATR + Pipelock ----
 
@@ -141,18 +142,30 @@ function extractRegex(rule: ATRRule): string | null {
   const conditions = rule.detection?.conditions;
   if (!Array.isArray(conditions) || conditions.length === 0) return null;
 
-  // Collect all regex patterns and join with |
+  // Collect all regex patterns and join with |.
+  //
+  // Each alternative is the pattern the ATR engine compiles: the condition's
+  // value minus a leading flag group (regexConditionSpec() in src/engine.ts).
+  // The engine applies only i, and applies it to every condition (SPEC.md
+  // §6.4), while Go RE2 honours whatever inline flags it is given. Left inside
+  // its parentheses, (?im) or (?si) would turn on multi-line or dot-all mode
+  // for that alternative, and a condition written without (?i) would match
+  // case-sensitively wherever Pipelock does not add (?i) itself (it does for
+  // DLP and tool-poison rules). One (?i) in front of the joined pattern covers
+  // every alternative.
+  //
+  // Nothing else is translated: look-around, backreferences, JavaScript
+  // \uXXXX escapes, \b inside a character class and repeat counts above 1000
+  // do not compile in Go RE2. Caller can run `pipelock validate` to catch
+  // those.
   const patterns: string[] = [];
   for (const cond of conditions as Array<{ operator?: string; value?: string }>) {
     if (cond.operator === 'regex' && typeof cond.value === 'string') {
-      // Pipelock requires RE2-compatible regex. We do NOT translate; if a
-      // pattern uses look-around (?=, ?!) or backrefs (\1) it won't work in
-      // Go RE2. Caller can run `pipelock validate` to catch that case.
-      patterns.push(`(${cond.value})`);
+      patterns.push(`(${regexConditionSpec(cond.value).source})`);
     }
   }
   if (patterns.length === 0) return null;
-  return patterns.join('|');
+  return `(?i)${patterns.join('|')}`;
 }
 
 function collectReferences(rule: ATRRule): string[] {

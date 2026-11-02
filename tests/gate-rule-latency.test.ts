@@ -462,7 +462,7 @@ describe("blame scoping", () => {
       }
     });
 
-    it.each(["src/engine.ts", "src/quality/rule-contract.ts"])(
+    it.each(["src/engine.ts", "src/regex-dialect.ts", "src/quality/rule-contract.ts"])(
       "widens to the whole corpus when %s changed",
       (path) => {
         const dir = initRepo();

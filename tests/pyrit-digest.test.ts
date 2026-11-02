@@ -18,6 +18,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { needsUnicodeFlag } from '../src/engine.js';
+import { digestPattern } from '../scripts/export-pyrit-digest.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIGEST = join(ROOT, 'data/pyrit-digest.json');
@@ -32,7 +33,6 @@ interface Condition {
   readonly pattern: string;
   readonly category: string;
   readonly severity: string;
-  readonly case_sensitive?: true;
 }
 
 interface Digest {
@@ -82,17 +82,29 @@ describe('the PyRIT digest', () => {
     expect(new Set(selected.map(([, c]) => c.rule_id)).size).toBe(d.rules_in_default_fields);
   });
 
-  it('leaves no pattern whose case behaviour is unattributable', () => {
-    // A consumer calls re.compile(pattern) with no flags, so a pattern that
-    // expected the engine's default folding would quietly become
-    // case-sensitive. Every pattern must therefore either carry an inline flag
-    // or be marked as having opted out.
-    const ambiguous = entries
-      .filter(([, c]) => !INLINE_FLAGS.test(c.pattern) && !c.case_sensitive)
-      .map(([k]) => k);
-    expect(ambiguous, 'patterns with neither an inline flag nor a case_sensitive marker').toEqual(
-      [],
-    );
+  it('starts every pattern with exactly (?i) and no other flag group', () => {
+    // A consumer calls re.compile(pattern) with no flags, and Python re honours
+    // whatever group a pattern starts with. The engine matches every regex
+    // condition case-insensitively and applies no m, s or x (SPEC.md §6.4), so
+    // (?i) is the only flag that may reach the consumer: without it a pattern
+    // turns case-sensitive, and with (?m) or (?s) it changes what ^ and . match.
+    const wrong = entries
+      .filter(([, c]) => !c.pattern.startsWith('(?i)') || INLINE_FLAGS.test(c.pattern.slice(4)))
+      .map(([k, c]) => `${k}: ${c.pattern.slice(0, 24)}`);
+    expect(wrong, 'patterns that do not start with exactly one (?i)').toEqual([]);
+    for (const [, c] of entries) expect(c).not.toHaveProperty('case_sensitive');
+  });
+
+  it('emits a condition as (?i) plus the source the engine compiles', () => {
+    // The transform itself, on fixed inputs. The committed digest is not
+    // compared with rules/ entry by entry: that would fail every pull request
+    // that edits the regex of a rule already in the digest until someone
+    // regenerated it, and nothing regenerates it automatically.
+    expect(digestPattern('(?i)ignore previous')).toBe('(?i)ignore previous');
+    expect(digestPattern('ignore previous')).toBe('(?i)ignore previous');
+    expect(digestPattern('(?im)^system:')).toBe('(?i)^system:');
+    expect(digestPattern('(?si)begin.end')).toBe('(?i)begin.end');
+    expect(digestPattern('(?x)a b')).toBe('(?i)a b');
   });
 
   it('every pattern compiles as JavaScript under the flags the engine would pick', () => {

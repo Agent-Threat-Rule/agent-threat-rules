@@ -103,7 +103,7 @@ detection:
       description: "WebFetch-style URL to huggingface.co/hf.co whose path contains a base64-padded (trailing '=') encoded segment -- not a normal repo/file name shape"
     - field: content
       operator: regex
-      value: '(?i)(?<=\b(?:WebFetch|fetch(?:_url)?|curl|wget|GET|POST|download(?:ing)?|(?:send|issue|make)\s+(?:a\s+|an\s+)?(?:web)?fetch|request(?:ing)?)\b[\s\S]{0,30}?)\bhuggingface\.co\b[\s\S]{0,40}?\b(?:encode|base64|exfiltrat\w*|covert\s+channel|out-of-band\s+channel)\b'
+      value: '(?i)\b(?:WebFetch|fetch(?:_url)?|curl|wget|GET|POST|download(?:ing)?|(?:send|issue|make)\s+(?:a\s+|an\s+)?(?:web)?fetch|request(?:ing)?)\b[\s\S]{0,30}?\bhuggingface\.co\b[\s\S]{0,40}?\b(?:encode|base64|exfiltrat\w*|covert\s+channel|out-of-band\s+channel)\b'
       description: "Natural-language framing describing encoding/exfiltrating data via a huggingface.co request -- catches the instruction-level technique before a concrete URL is constructed. Requires an actual fetch/request-action cue (WebFetch, fetch, curl, download, 'issue a fetch', etc.) within 30 chars BEFORE the domain, and the encode/base64/exfiltrate trigger within a tightened 40 chars AFTER the domain, so ordinary prose merely co-mentioning huggingface.co and base64/encode in the same sentence (with no request framing) does not fire"
   false_positives:
     - "An ordinary WebFetch/download URL to a real HuggingFace model or dataset repository, e.g. https://huggingface.co/bert-base-uncased/resolve/main/config.json -- model/file names are short hyphenated slugs, not a 16+ character base64-padded blob"

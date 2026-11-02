@@ -52,6 +52,10 @@ import type { InvariantChecker } from './tier0-invariant.js';
 import type { BlacklistProvider } from './tier1-blacklist.js';
 import { buildBlacklistMatch, resolveSkillId as resolveBlacklistSkillId } from './tier1-blacklist.js';
 import type { EmbeddingModule } from './modules/embedding.js';
+import { normalizeRegex, regexConditionSpec } from './regex-dialect.js';
+// Re-exported: scripts and tests import these from the engine.
+export { needsUnicodeFlag, regexConditionSpec } from './regex-dialect.js';
+export type { RegexConditionSpec } from './regex-dialect.js';
 
 /**
  * Rules excluded from skill-context scanning due to high false-positive rate.
@@ -105,20 +109,27 @@ const SKILL_CONTEXT_DENYLIST: ReadonlySet<string> = new Set([
   // ATR-2026-00098 Unauthorized Financial Action (1 FP)
 ]);
 
+const MAX_DECODE_BLOCKS = 5;
+
 /**
  * Detect and decode base64-encoded blocks in content.
  * Bounds: max 1 level decode, max 5 blocks, min 32 chars per block,
  * MAX_EVAL_LENGTH per decoded block. Returns decoded text fragments.
+ * The result depends on `content` alone (SPEC §6.5).
  */
-const BASE64_BLOCK_RE = /(?:[A-Za-z0-9+/]{32,}={0,2})/g;
-const MAX_DECODE_BLOCKS = 5;
-
 export function decodeBase64Blocks(content: string): string[] {
   const decoded: string[] = [];
+  // A /g regex keeps its search position in lastIndex, and this loop stops at
+  // the block cap partway through the content. A regex shared across calls
+  // carried that position into the next call, which resumed from it, so the
+  // same text decoded different blocks on alternate scans. A literal in the
+  // function body is a new RegExp on every call, so the position cannot
+  // outlive the call.
+  const blockRe = /(?:[A-Za-z0-9+/]{32,}={0,2})/g;
   let match: RegExpExecArray | null;
   let count = 0;
 
-  while ((match = BASE64_BLOCK_RE.exec(content)) !== null && count < MAX_DECODE_BLOCKS) {
+  while (count < MAX_DECODE_BLOCKS && (match = blockRe.exec(content)) !== null) {
     try {
       const raw = Buffer.from(match[0], 'base64');
       const text = raw.toString('utf-8');
@@ -2084,48 +2095,6 @@ function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-/** A leading inline flag group as rule authors write it: (?i), (?is), (?im), ... */
-const LEADING_INLINE_FLAGS = /^\(\?([imsx]+)\)/;
-
-/**
- * Strip inline flags like (?i) from regex patterns.
- * JavaScript RegExp uses flags as a constructor parameter, not inline.
- */
-function normalizeRegex(pattern: string): string {
-  return pattern.replace(LEADING_INLINE_FLAGS, '');
-}
-
-/** How the engine compiles one array-format `operator: regex` condition. */
-export interface RegexConditionSpec {
-  /** The pattern handed to RegExp: the condition's value minus a leading inline flag group. */
-  readonly source: string;
-  /** The letters of that stripped group ("i", "is", ...), or "" when there was none. Stripped, not applied. */
-  readonly inlineFlags: string;
-  /** Always `i` -- this condition shape has no case-sensitive mode -- plus `u` when the pattern needs it. */
-  readonly flags: 'i' | 'iu';
-}
-
-/**
- * The engine's single definition of how an array-format `operator: regex`
- * condition is compiled (SPEC §6.4). Both compile sites in ATREngine reach it
- * through compileRegexCondition() (compilePatterns() and the on-the-fly fallback
- * in evaluateArrayCondition()), so does ShadowEvaluator, and
- * scripts/gate-case-sensitivity.ts imports it, because it has to see each pattern
- * exactly as the engine does. That gate used to keep its own copy of this logic,
- * and the copy went stale when needsUnicodeFlag() started setting `u` for astral
- * literals. Other scripts still re-derive it by hand and could import it too.
- *
- * Two consequences rule authors cannot see from the pattern:
- *   - `i` is applied whether or not the author wrote (?i), so letter case never
- *     distinguishes anything: [A-Z] also matches a-z.
- *   - A stripped (?s), (?m) or (?x) is NOT applied.
- */
-export function regexConditionSpec(value: string): RegexConditionSpec {
-  const inline = LEADING_INLINE_FLAGS.exec(value);
-  const source = normalizeRegex(value);
-  return { source, inlineFlags: inline?.[1] ?? '', flags: needsUnicodeFlag(source) ? 'iu' : 'i' };
-}
-
 /**
  * Compile an array-format `operator: regex` value the way the engine does: the
  * leading flag group handled by regexConditionSpec(), then the ReDoS gate in
@@ -2455,30 +2424,6 @@ export function isReDoSSafe(source: string): boolean {
  * be LOUD, not silent, so a rejected ReDoS pattern warns to stderr (never
  * stdout — that carries the hook protocol) with the offending source.
  */
-/**
- * Does this pattern need the RegExp `u` flag?
- *
- * `\\u{...}` and `\\p{...}` require it by syntax, and so does a literal astral
- * character: without `u`, JavaScript reads a surrogate pair, and a class range
- * written with literals -- [<U+E0000>-<U+E007F>] -- is a SyntaxError rather than
- * a range.
- *
- * The literal form matters because it is the only spelling the three consuming
- * engines share. `\\u{...}` is JS-only: Python re needs `\\U000E0000`, Go needs
- * `\\x{E0000}`, and neither of those is valid JavaScript. Sixteen conditions
- * across ten rules used it, which made those rules uncompilable from the Python
- * and Go channels; they are literals now, and this is what keeps them working
- * here.
- */
-export function needsUnicodeFlag(pattern: string): boolean {
-  if (pattern.includes('\\u{') || pattern.includes('\\p{')) return true;
-  for (const ch of pattern) {
-    const cp = ch.codePointAt(0);
-    if (cp !== undefined && cp > 0xffff) return true;
-  }
-  return false;
-}
-
 function safeCompile(source: string, flags: string, ruleId?: string): RegExp | null {
   if (!isReDoSSafe(source)) {
     console.warn(

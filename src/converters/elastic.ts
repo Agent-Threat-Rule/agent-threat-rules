@@ -8,6 +8,7 @@
  */
 
 import type { ATRRule, ATRArrayCondition } from '../types.js';
+import { regexConditionSpec } from '../regex-dialect.js';
 
 interface ElasticQuery {
   _meta: {
@@ -36,10 +37,15 @@ function conditionToElastic(cond: ATRArrayCondition): unknown {
 
   switch (cond.operator) {
     case 'regex':
+      // Lucene regular expressions have no inline flags, so a leading (?i)
+      // group was never a flag there: Lucene reads it as literal characters
+      // or rejects the query (not tested against a live cluster). Case-insensitivity
+      // comes from case_insensitive below (SPEC §6.4: always), and m, s and x
+      // have no effect in ATR.
       return {
         regexp: {
           [field]: {
-            value: value,
+            value: regexConditionSpec(value).source,
             flags: 'ALL',
             case_insensitive: true,
           },

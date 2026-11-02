@@ -46,7 +46,8 @@ export interface ReverseWarning {
 		| 'missing_compliance'
 		| 'missing_references'
 		| 'category_unknown'
-		| 'match_on_ambiguous';
+		| 'match_on_ambiguous'
+		| 'case_sensitivity_lost';
 	readonly detail: string;
 }
 
@@ -170,14 +171,20 @@ export function sageToAtr(sage: SageRule): ReverseConvertResult {
 		});
 	}
 
-	// Build conditions. If Sage rule has case_insensitive: true, wrap the
-	// regex with (?i) prefix so the ATR rule preserves case-insensitive
-	// semantics when run on an ATR engine.
-	const regexValue = sage.case_insensitive
-		? sage.pattern.startsWith('(?i)')
-			? sage.pattern
-			: `(?i)${sage.pattern}`
-		: sage.pattern;
+	// Build conditions. An ATR engine matches every regex condition
+	// case-insensitively, whatever the pattern says (SPEC §6.4), so the
+	// condition always gets (?i) and reads the way it behaves. A case-sensitive
+	// Sage rule cannot keep that distinction in ATR; say so instead of
+	// importing a pattern that only looks case-sensitive.
+	const regexValue = sage.pattern.startsWith('(?i)') ? sage.pattern : `(?i)${sage.pattern}`;
+	if (!sage.case_insensitive) {
+		warnings.push({
+			sageId: sage.id,
+			kind: 'case_sensitivity_lost',
+			detail:
+				'Sage rule is case-sensitive; ATR matches every regex condition case-insensitively (SPEC §6.4), so the imported rule can match more inputs',
+		});
+	}
 
 	const conditions: ATRArrayCondition[] = matchOnList.map((m) => ({
 		field: reverseMatchOn(m),

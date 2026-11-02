@@ -390,13 +390,15 @@ export type Blame = ReadonlySet<string> | null;
 
 /**
  * Files that change what EVERY rule costs, so touching one puts the whole
- * corpus back in scope. The engine is the thing being timed; the eval corpus is
- * what it is timed over; the lane contract decides which rules are timed at all;
+ * corpus back in scope. The engine is the thing being timed, and the regex
+ * dialect is how it compiles every condition; the eval corpus is what it is
+ * timed over; the lane contract decides which rules are timed at all;
  * the profiler is the clock and the thresholds file is the verdict; the lockfile
  * carries the regex engine underneath.
  */
 const MEASUREMENT_PATHS: readonly string[] = [
   "src/engine.ts",
+  "src/regex-dialect.ts",
   "src/eval/",
   "src/quality/rule-contract.ts",
   "scripts/lib/rule-latency-",

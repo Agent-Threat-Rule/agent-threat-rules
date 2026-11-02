@@ -69,16 +69,10 @@ describe('atrToSage', () => {
 				expect(r.upstream).toBe('ATR-2026-00001');
 				expect(r.upstream_license).toBe('MIT');
 			}
-			// Compat warnings about MIXED case-sensitivity, split-by-length, or
-			// unsupported inline flags are informational (the converter handles
+			// Split-by-length warnings are informational (the converter handles
 			// them gracefully). Real compat issues are "does not compile" or
 			// "operator not supported".
-			const realCompatWarnings = warnings.filter(
-				(w) =>
-					w.kind === 'regex_compat_issue' &&
-					!w.detail.includes('mixes case-sensitive') &&
-					!w.detail.includes('Unsupported inline flags'),
-			);
+			const realCompatWarnings = warnings.filter((w) => w.kind === 'regex_compat_issue');
 			expect(realCompatWarnings.length, JSON.stringify(realCompatWarnings)).toBe(0);
 		});
 
@@ -146,10 +140,7 @@ describe('atrToSage', () => {
 			// — many ATR rules have multi-condition regexes that need splitting,
 			// which is by design, not an error.
 			const realWarnings = warnings.filter(
-				(w) =>
-					w.kind !== 'split_by_length' &&
-					!(w.kind === 'regex_compat_issue' && w.detail.includes('mixes case-sensitive')) &&
-					w.kind !== 'unsupported_action_dropped',
+				(w) => w.kind !== 'split_by_length' && w.kind !== 'unsupported_action_dropped',
 			);
 			const realWarnedRuleIds = new Set(realWarnings.map((w) => w.ruleId));
 			const realWarnRate = realWarnedRuleIds.size / all.length;
