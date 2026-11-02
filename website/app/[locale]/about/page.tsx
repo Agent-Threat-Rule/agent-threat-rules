@@ -2,17 +2,27 @@ import { Reveal } from "@/components/Reveal";
 import { loadSiteStats } from "@/lib/stats";
 import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "About — ATR",
-  description:
-    "ATR is the open detection standard for AI agent threats. Mission, history, governance, and maintainers.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/about",
+    title: "About",
+    description:
+      "ATR is the open detection standard for AI agent threats. Mission, history, governance, and maintainers.",
+  });
+}
 
 type Bilingual = { en: string; zh: string };
 

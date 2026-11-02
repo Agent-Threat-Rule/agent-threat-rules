@@ -4,6 +4,7 @@
  */
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { locales, type Locale, t } from "@/lib/i18n";
@@ -20,13 +21,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "Errata — ATR",
+  return pageMetadata({
+    locale,
+    path: "/errata",
+    title: "Errata",
     description:
       locale === "zh"
         ? "ATR 規格已發布版本中發現之錯誤的公開常設紀錄。錯誤公開更正、留下紀錄,而非靜默修補。"
         : "A public, standing record of errors found in published versions of the ATR specification — corrected in the open, never silently patched.",
-  };
+  });
 }
 
 interface ErrataEntry {

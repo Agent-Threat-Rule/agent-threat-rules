@@ -1,28 +1,16 @@
 // ATR spec metadata — single source of truth for Document Status banners
-// across the site. SPEC_DOC_VERSION is aligned to the published npm package
-// version (agent-threat-rules) for a single, unambiguous external version
-// number: once the standard ships in production and is cited by third parties,
-// a separate pre-1.0 spec-document number reads as half-baked. Status remains
-// "Working Draft" to register the governance transition (BDFL -> TSC) honestly.
-// The version is read from the repo-root package.json at build time so it can
-// never drift from the published package again (it sat at a hardcoded 3.5.0
-// while npm shipped 3.5.6).
+// across the site.
+//
+// The spec version is the one in SPEC.md's own header. It used to be the npm
+// package version (package.json), so the written specification appeared to
+// change version with every rules release, and /spec, the footer and npm each
+// showed a different number. Package and npm versions now live in
+// lib/versions.ts and are shown under their own labels next to this one.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadSiteStats } from "./stats";
-
-/** Public spec-document version, aligned to the npm package version. */
-const SPEC_DOC_VERSION = ((): string => {
-  try {
-    const pkg = JSON.parse(
-      readFileSync(join(process.cwd(), "..", "package.json"), "utf-8"),
-    ) as { version?: string };
-    return pkg.version ?? "unversioned";
-  } catch {
-    return "unversioned";
-  }
-})();
+import { readCoreSpec } from "./versions";
 
 interface StatsJsonShape {
   generatedAt?: string;
@@ -48,11 +36,11 @@ export type SpecStatus =
   | "Editor's Draft";
 
 export interface SpecMeta {
-  /** Semver of the specification document. */
-  version: string;
+  /** Version of the written core specification (SPEC.md header). Not the npm package version. */
+  specVersion: string;
   /** Maturity of this document. */
   status: SpecStatus;
-  /** ISO date string this document last received normative changes. */
+  /** ISO date of this spec version (SPEC.md "Date:" header). */
   lastModified: string;
   /** Canonical URL for the spec authority. */
   canonicalUrl: string;
@@ -69,15 +57,16 @@ export interface SpecMeta {
 
 export function getSpecMeta(): SpecMeta {
   const stats = loadSiteStats();
+  const spec = readCoreSpec();
   const raw = readStatsJson();
-  const generatedAt = raw.generatedAt
+  const fallbackDate = raw.generatedAt
     ? raw.generatedAt.slice(0, 10)
     : new Date().toISOString().slice(0, 10);
 
   return {
-    version: SPEC_DOC_VERSION,
+    specVersion: spec.version,
     status: "Working Draft",
-    lastModified: generatedAt,
+    lastModified: spec.date || fallbackDate,
     canonicalUrl: "https://agentthreatrule.org/spec",
     editors: [
       {
@@ -97,9 +86,12 @@ export function getSpecMeta(): SpecMeta {
 export function formatSpecDate(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
+  // The ISO date is a calendar date (parsed as UTC midnight); format it in UTC
+  // or every timezone west of Greenwich shows the day before.
   return d.toLocaleDateString("en-GB", {
     year: "numeric",
     month: "long",
     day: "numeric",
+    timeZone: "UTC",
   });
 }

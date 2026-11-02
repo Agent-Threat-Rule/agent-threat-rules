@@ -4,6 +4,7 @@
  */
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
@@ -20,13 +21,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "Specification | ATR",
+  return pageMetadata({
+    locale,
+    path: "/spec",
+    title: "Specification",
     description:
       locale === "zh"
         ? "ATR 開放偵測規則格式的正式規格文件。"
         : "Canonical specification of the ATR open detection rule format.",
-  };
+  });
 }
 
 interface Section {

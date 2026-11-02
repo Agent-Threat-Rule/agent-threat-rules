@@ -20,12 +20,33 @@ import {
   pctHunt,
 } from "@/lib/recall";
 import { getSpecMeta } from "@/lib/spec-meta";
+import { loadVersionLabels, npmReleaseText } from "@/lib/versions";
 import { loadAllRules, getCategories, categoryDisplayName } from "@/lib/rules";
 import { locales, type Locale } from "@/lib/i18n";
 import Link from "next/link";
+import type { Metadata } from "next";
+import { pageMetadata, SITE_NAME } from "@/lib/seo";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const stats = loadSiteStats();
+  // No title: the home page keeps the root layout's default title.
+  return pageMetadata({
+    locale,
+    path: "",
+    openGraph: {
+      title: SITE_NAME,
+      description: `The open detection standard for AI agent security. ${stats.ruleCount} effective rules. ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. MIT Licensed.`,
+    },
+  });
 }
 
 const CATEGORY_DESC: Record<string, { en: string; zh: string }> = {
@@ -88,7 +109,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   );
   const categoryCount = taxonomy.length;
   const mergedCount = stats.ecosystemIntegrations.filter(e => e.type === "merged").length;
-  const specVersion = getSpecMeta().version;
+  const specVersion = getSpecMeta().specVersion;
+  const versions = await loadVersionLabels();
   // Tier 1 in ADOPTERS.md = rule pack merged into a named organization's own
   // repository, evidenced by a merged PR. It is not a claim that any vendor
   // ships ATR in a commercial product.
@@ -155,7 +177,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           {/* Three monospace stats */}
           <HeroEntrance delay={1.3}>
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 mt-11 md:mt-14 font-data text-sm md:text-base tracking-wide">
-              <span><span className="font-data font-bold text-ink">{stats.ruleCount}</span> <span className="text-stone">{zh ? "條規則" : "rules"}</span></span>
+              <span title={zh ? `main 上 ${stats.ruleFileCount} 個規則檔:${stats.ruleCount} 條生效,${stats.ruleInertCount} 條 inert` : `${stats.ruleFileCount} rule files on main: ${stats.ruleCount} effective, ${stats.ruleInertCount} inert`}><span className="font-data font-bold text-ink">{stats.ruleCount}</span> <span className="text-stone">{zh ? "條生效規則" : "effective rules"}</span></span>
               <span className="text-fog">·</span>
               <span><span className="font-data font-bold text-ink">{categoryCount}</span> <span className="text-stone">{zh ? "個類別" : "categories"}</span></span>
               {garak && (
@@ -197,13 +219,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             >
               <span className="text-ink font-semibold">Working Draft</span>
               <span className="text-fog">·</span>
-              <span>v{specVersion}</span>
-              {stats.lastRegenerated && (
-                <>
-                  <span className="text-fog">·</span>
-                  <span>{zh ? `最新發布 ${stats.lastRegenerated}` : `latest release ${stats.lastRegenerated}`}</span>
-                </>
-              )}
+              <span>{zh ? "規格" : "spec"} v{specVersion}</span>
+              <span className="text-fog">·</span>
+              <span>{versions.npmVerified ? "npm" : "package.json"} {versions.npm}</span>
+              <span className="text-fog">·</span>
+              <span>{zh ? `頁面產生於 ${versions.generatedAt}` : `page generated ${versions.generatedAt}`}</span>
               <span className="text-fog">·</span>
               <span>{zh ? "正式網址" : "canonical"} <span className="text-ink group-hover:underline">/spec</span></span>
             </Link>
@@ -399,8 +419,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.1}>
             <h2 className="font-display text-[20px] md:text-[clamp(24px,3.5vw,40px)] font-extrabold tracking-[-1px] md:tracking-[-2px] leading-[1.3] mb-6 md:mb-8 max-w-[700px] text-balance">
               {zh
-                ? <>{categoryCount} 個威脅類別。{stats.ruleCount} 條規則。真實 CVE。</>
-                : <>{categoryCount} threat categories. {stats.ruleCount} rules. Real CVEs.</>}
+                ? <>{categoryCount} 個威脅類別。{stats.ruleCount} 條生效規則。真實 CVE。</>
+                : <>{categoryCount} threat categories. {stats.ruleCount} effective rules. Real CVEs.</>}
             </h2>
           </Reveal>
           <Reveal delay={0.2}>
@@ -530,7 +550,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog mt-8 md:mt-10">
               {[
                 { num: String(tier1MergedCount), label: zh ? "已合併的上游整合" : "merged upstream", sub: "ADOPTERS.md Tier 1" },
-                { num: String(stats.ruleCount), label: zh ? "條偵測規則" : "detection rules", sub: zh ? `跨 ${categoryCount} 個類別` : `across ${categoryCount} categories` },
+                { num: String(stats.ruleCount), label: zh ? "條生效偵測規則" : "effective detection rules", sub: zh ? `另 ${stats.ruleInertCount} 條 inert · 跨 ${categoryCount} 個類別` : `plus ${stats.ruleInertCount} inert · ${categoryCount} categories` },
                 { num: stats.megaScanTotal.toLocaleString(), label: zh ? "skills 已掃描" : "skills scanned", sub: zh ? "跨多個 registry" : "across registries" },
                 { num: `${mergedCount}/${stats.ecosystemIntegrations.length}`, label: zh ? "生態系 PR" : "ecosystem PRs", sub: zh ? "已合併" : "merged" },
               ].map((item) => (
@@ -575,8 +595,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Reveal delay={0.15}>
             <p className="text-sm md:text-base text-graphite font-light max-w-[640px] mb-6 md:mb-8 leading-[1.8] text-pretty">
               {zh
-                ? <>新規則來自 CVE 與安全公告掃描、benchmark 漏報挖掘與貢獻者，每一條都經由維護者合併的 pull request 進入 main。從六月起，標準從 462 條成長到 {stats.ruleCount} 條，全部隨 npm <span className="font-data text-graphite">agent-threat-rules@{specVersion}</span> 發布。</>
-                : <>New rules come from CVE and advisory sweeps, benchmark-miss mining and contributors, and each one reaches main through a pull request a maintainer merges. Since June the standard has grown from 462 to {stats.ruleCount} rules, all shipped in npm <span className="font-data text-graphite">agent-threat-rules@{specVersion}</span>.</>}
+                ? <>新規則來自 CVE 與安全公告掃描、benchmark 漏報挖掘與貢獻者，每一條都經由維護者合併的 pull request 進入 main。從六月起，標準從 462 條成長到 main 上的 {stats.ruleCount} 條生效規則（{npmReleaseText(versions, true)}，截至 {versions.generatedAt}）。</>
+                : <>New rules come from CVE and advisory sweeps, benchmark-miss mining and contributors, and each one reaches main through a pull request a maintainer merges. Since June the standard has grown from 462 to {stats.ruleCount} effective rules on main ({npmReleaseText(versions, false)}, as of {versions.generatedAt}).</>}
             </p>
           </Reveal>
           <Reveal delay={0.18}>
@@ -589,23 +609,19 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
           {/* Standard heartbeat — version-pinned, dated cadence so the flywheel
               reads as a live, moving standard rather than a frozen catalog. Every
-              token here is verifiable (npm tag, rule count, daily CI, stats.json regen date). */}
+              token here is verifiable (npm release, rule counts, daily CI, build date). */}
           <Reveal delay={0.19}>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 font-data text-[11px] md:text-xs text-stone mb-8 md:mb-10">
               <span className="inline-flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-green inline-block" aria-hidden="true" />
-                <span className="text-ink font-semibold">agent-threat-rules@{specVersion}</span>
+                <span className="text-ink font-semibold">{versions.npmVerified ? `npm agent-threat-rules@${versions.npm}` : `package.json ${versions.npm}`}</span>
               </span>
               <span className="text-fog">·</span>
-              <span><span className="text-ink font-semibold">{stats.ruleCount}</span> {zh ? "條規則" : "rules"}</span>
+              <span><span className="text-ink font-semibold">{stats.ruleCount}</span> {zh ? `條生效規則(main 上 ${stats.ruleFileCount} 個檔,${stats.ruleInertCount} 條 inert)` : `effective rules (${stats.ruleFileCount} files on main, ${stats.ruleInertCount} inert)`}</span>
               <span className="text-fog">·</span>
               <span>{zh ? "每天收集 CVE 提案" : "CVE proposals collected daily"}</span>
-              {stats.lastRegenerated && (
-                <>
-                  <span className="text-fog">·</span>
-                  <span>{zh ? `標準最後重生 ${stats.lastRegenerated}` : `standard regenerated ${stats.lastRegenerated}`}</span>
-                </>
-              )}
+              <span className="text-fog">·</span>
+              <span>{zh ? `頁面產生於 ${versions.generatedAt}` : `page generated ${versions.generatedAt}`}</span>
             </div>
           </Reveal>
 

@@ -2,17 +2,27 @@ import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { loadSiteStats } from "@/lib/stats";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Compliance — ATR",
-  description:
-    "Regulation says you must manage AI agent risk. ATR maps every rule to the framework it answers to — OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, ISO 42001, plus candidate SAF-MCP technique mappings — so compliance becomes a detection that runs, not a document that asserts.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/compliance",
+    title: "Compliance",
+    description:
+      "Regulation says you must manage AI agent risk. ATR maps every rule to the framework it answers to — OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, ISO 42001, plus candidate SAF-MCP technique mappings — so compliance becomes a detection that runs, not a document that asserts.",
+  });
+}
 
 // Per-rule mapping completeness is enforced in CI by
 // `npm run audit:mappings -- --require-full=...` (validate.yml), so the

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Inter_Tight, JetBrains_Mono, Source_Serif_4, Noto_Serif_TC } from "next/font/google";
 import { loadSiteStats } from "@/lib/stats";
+import { BASE_OPEN_GRAPH, SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 const stats = loadSiteStats();
@@ -46,38 +47,22 @@ export const metadata: Metadata = {
     template: "%s | ATR",
   },
   description:
-    `Open-source detection standard for AI agent security. ${stats.ruleCount} rules, ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild, RFC-001 quality standard. MIT Licensed.`,
-  metadataBase: new URL("https://agentthreatrule.org"),
-  alternates: {
-    canonical: "https://agentthreatrule.org",
-    languages: {
-      en: "https://agentthreatrule.org/en",
-      zh: "https://agentthreatrule.org/zh",
-    },
-  },
+    `Open-source detection standard for AI agent security. ${stats.ruleCount} effective rules, ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild, RFC-001 quality standard. MIT Licensed.`,
+  metadataBase: new URL(SITE_URL),
+  // No `alternates` here: a canonical set in a layout is inherited by every
+  // page that does not set its own. Each page sets it through lib/seo.ts.
   openGraph: {
+    ...BASE_OPEN_GRAPH,
     title: "ATR - Agent Threat Rules",
     description:
-      `The open detection standard for AI agent security. ${stats.ruleCount} rules. ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. MIT Licensed.`,
-    url: "https://agentthreatrule.org",
-    siteName: "ATR - Agent Threat Rules",
-    type: "website",
+      `The open detection standard for AI agent security. ${stats.ruleCount} effective rules. ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. MIT Licensed.`,
     locale: "en_US",
-    alternateLocale: "zh_TW",
-    images: [
-      {
-        url: "https://agentthreatrule.org/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "ATR - Agent Threat Rules: The open detection standard for AI agent security",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "ATR - Agent Threat Rules",
     description:
-      `The open detection standard for AI agent security. ${stats.ruleCount} rules. ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. MIT Licensed.`,
+      `The open detection standard for AI agent security. ${stats.ruleCount} effective rules. ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. MIT Licensed.`,
     images: ["https://agentthreatrule.org/og-image.png"],
   },
   keywords: [
@@ -122,7 +107,7 @@ const jsonLd = {
       "@type": "SoftwareSourceCode",
       name: "agent-threat-rules",
       description:
-        `Open-source detection standard for AI agent security. ${stats.ruleCount} rules, ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. By default the engine runs in process, with no network or model calls.`,
+        `Open-source detection standard for AI agent security. ${stats.ruleCount} effective rules, ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. By default the engine runs in process, with no network or model calls.`,
       codeRepository: "https://github.com/Agent-Threat-Rule/agent-threat-rules",
       programmingLanguage: ["YAML", "TypeScript"],
       license: "https://opensource.org/licenses/MIT",

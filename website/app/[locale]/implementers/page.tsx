@@ -7,6 +7,7 @@
  */
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
@@ -22,13 +23,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "Implementer Report — ATR",
+  return pageMetadata({
+    locale,
+    path: "/implementers",
+    title: "Implementer Report",
     description:
       locale === "zh"
         ? "已整合 ATR 的組織,每一筆的憑據都是公開 repo 裡一個已合併的 pull request。透過對 ADOPTERS.md registry 的 pull request 自我宣告。"
         : "Organizations that have integrated ATR, each evidenced by a merged pull request in a public repository. Self-declared via pull request to the ADOPTERS.md registry.",
-  };
+  });
 }
 
 // Implementer data — kept in sync with the homepage IMPLEMENTERS array.

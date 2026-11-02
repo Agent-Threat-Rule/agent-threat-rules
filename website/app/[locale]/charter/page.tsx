@@ -4,6 +4,7 @@
  */
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
@@ -18,13 +19,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "Charter — ATR",
+  return pageMetadata({
+    locale,
+    path: "/charter",
+    title: "Charter",
     description:
       locale === "zh"
         ? "ATR 章程:定義 ATR 是什麼、不是什麼、決策如何做成、以及技術指導委員會 (TSC) 如何就任。"
         : "The ATR charter defines what ATR is, what it is not, how decisions are made, and how the Technical Steering Committee is seated.",
-  };
+  });
 }
 
 const GOVERNANCE_URL =

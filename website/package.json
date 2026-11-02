@@ -3,12 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/fetch-npm-version.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/fetch-npm-version.mjs",
     "build": "next build && next-sitemap",
-    "deploy": "next build && next-sitemap && wrangler pages deploy out --project-name=agentthreatrule --commit-dirty=true",
+    "deploy": "node scripts/fetch-npm-version.mjs && next build && next-sitemap && wrangler pages deploy out --project-name=agentthreatrule --commit-dirty=true",
     "postbuild": "next-sitemap",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:seo": "node scripts/check-seo.mjs"
   },
   "dependencies": {
     "@giscus/react": "^3.1.0",

@@ -5,8 +5,10 @@
  */
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
+import { loadVersionLabels } from "@/lib/versions";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
 import { CitationBlock } from "@/components/spec/CitationBlock";
 
@@ -20,13 +22,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "Citation — ATR",
+  return pageMetadata({
+    locale,
+    path: "/citations",
+    title: "Citation",
     description:
       locale === "zh"
         ? "ATR 引用格式 (BibTeX / APA / IEEE / Chicago) 與相關識別碼。"
         : "Citation formats (BibTeX / APA / IEEE / Chicago) and related identifiers for citing ATR.",
-  };
+  });
 }
 
 export default async function CitationsPage({
@@ -37,6 +41,7 @@ export default async function CitationsPage({
   const { locale: l } = await params;
   const locale = (locales.includes(l as Locale) ? l : "en") as Locale;
   const meta = getSpecMeta();
+  const versions = await loadVersionLabels();
   const prefix = `/${locale}`;
   const zh = locale === "zh";
 
@@ -194,7 +199,9 @@ export default async function CitationsPage({
             <CitationBlock
               locale={locale}
               meta={{
-                version: meta.version,
+                // Cited as software ([Computer software] in APA), so the
+                // version is the npm release, not the written spec's.
+                version: versions.npm,
                 lastModified: meta.lastModified,
                 canonicalUrl: meta.canonicalUrl,
                 doi: meta.doi,

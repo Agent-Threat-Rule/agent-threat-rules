@@ -16,16 +16,26 @@ import {
   integrationTypeHint,
 } from "@/components/IntegrationTypeIcon";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Ecosystem — ATR adopters",
-  description:
-    "Standards bodies, security vendors, and open-source tooling that have merged Agent Threat Rules (ATR) into their own public repositories.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/ecosystem",
+    title: "Ecosystem — ATR adopters",
+    description:
+      "Standards bodies, security vendors, and open-source tooling that have merged Agent Threat Rules (ATR) into their own public repositories.",
+  });
+}
 
 export default async function EcosystemPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;

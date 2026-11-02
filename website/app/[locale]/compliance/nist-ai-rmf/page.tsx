@@ -2,6 +2,7 @@ import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { loadSiteStats } from "@/lib/stats";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 
 export function generateStaticParams() {
@@ -16,14 +17,16 @@ export async function generateMetadata({
   const { locale } = await params;
   const zh = locale === "zh";
   const stats = loadSiteStats();
-  return {
+  return pageMetadata({
+    locale,
+    path: "/compliance/nist-ai-rmf",
     title: zh
       ? "ATR 規則的 NIST AI RMF 對應(非官方)"
       : "NIST AI RMF mappings in ATR rules (unofficial)",
     description: zh
       ? `NIST AI RMF 定義 GOVERN / MAP / MEASURE / MANAGE 四個 function。ATR ${stats.ruleCount} 條規則每一條都帶有 subcategory 對應,把治理流程接到能在真實 agent 成品上開火的偵測。共 25 個 subcategory,跨四大 function。MIT License。`
       : `NIST AI RMF defines four functions — GOVERN / MAP / MEASURE / MANAGE. Every one of ATR's ${stats.ruleCount} rules carries subcategory mappings, wiring those governance functions to detection that fires on real agent artifacts. 25 subcategories across all four. MIT License.`,
-  };
+  });
 }
 
 type Subcat = {

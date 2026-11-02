@@ -2,16 +2,26 @@ import { Reveal } from "@/components/Reveal";
 import { loadSiteStats } from "@/lib/stats";
 import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Integrate - ATR",
-  description: "Five integration paths for ATR: TypeScript, Python, raw YAML, GitHub Action, or SIEM queries.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/integrate",
+    title: "Integrate",
+    description: "Five integration paths for ATR: TypeScript, Python, raw YAML, GitHub Action, or SIEM queries.",
+  });
+}
 
 const PATHS = [
   {

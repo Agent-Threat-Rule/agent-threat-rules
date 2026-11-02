@@ -2,17 +2,27 @@ import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { loadSiteStats } from "@/lib/stats";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Responsible Use — ATR",
-  description:
-    "ATR responsible-use policy: intended use for defensive detection, what constitutes misuse, dual-use disclosure, and abuse reporting contact.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/responsible-use",
+    title: "Responsible Use",
+    description:
+      "ATR responsible-use policy: intended use for defensive detection, what constitutes misuse, dual-use disclosure, and abuse reporting contact.",
+  });
+}
 
 export default async function ResponsibleUsePage({
   params,

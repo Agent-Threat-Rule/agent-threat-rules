@@ -5,16 +5,26 @@ import { locales, type Locale } from "@/lib/i18n";
 import { RED_TEAM_TOOLS } from "@/lib/red-team-tools";
 import { ablationLanes } from "@/lib/ablation";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Red Team — Your attack becomes the standard | ATR",
-  description:
-    "ATR is an open detection standard fed by red-team research. A probe found today becomes a versioned rule that propagates to Cisco AI Defense, MISP, and OWASP — keeping defenders evolving at the same speed as attackers. Attribution stays attached to the rule ID, permanently.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/red-team",
+    title: "Red Team — Your attack becomes the standard",
+    description:
+      "ATR is an open detection standard fed by red-team research. A probe found today becomes a versioned rule that propagates to Cisco AI Defense, MISP, and OWASP — keeping defenders evolving at the same speed as attackers. Attribution stays attached to the rule ID, permanently.",
+  });
+}
 
 interface AttributionStat {
   number: string;

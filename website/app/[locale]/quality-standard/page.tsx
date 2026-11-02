@@ -1,18 +1,28 @@
 import { Reveal } from "@/components/Reveal";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
-import { getSpecMeta } from "@/lib/spec-meta";
+import { loadVersionLabels, npmInstallSpec } from "@/lib/versions";
 import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Quality Standard (RFC-001 v1.1) - ATR",
-  description:
-    "An open detection-rule quality standard for the AI agent era. A maturity ladder with explicit gates, detection lanes that report false-positive rates per lane instead of a single figure, a vendor-neutral validator anyone can run, wild-validated on 101,280 real agent skills and MCP definitions (engine v2.0.0, as of 2026-04-13). MIT licensed. Effective 2026-04-14.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/quality-standard",
+    title: "Quality Standard (RFC-001 v1.1)",
+    description:
+      "An open detection-rule quality standard for the AI agent era. A maturity ladder with explicit gates, detection lanes that report false-positive rates per lane instead of a single figure, a vendor-neutral validator anyone can run, wild-validated on 101,280 real agent skills and MCP definitions (engine v2.0.0, as of 2026-04-13). MIT licensed. Effective 2026-04-14.",
+  });
+}
 
 /* =============================================================
    RFC-001 data — the formula, maturity ladder, gauntlet, evidence
@@ -214,6 +224,7 @@ export default async function QualityStandardPage({
 }) {
   const { locale: raw } = await params;
   const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
+  const installSpec = npmInstallSpec(await loadVersionLabels());
 
   return (
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
@@ -273,7 +284,7 @@ export default async function QualityStandardPage({
             rel="noopener noreferrer"
             className="font-data text-xs text-stone hover:text-ink transition-colors border border-fog px-4 py-2.5 rounded-sm"
           >
-            {`npm install agent-threat-rules@${getSpecMeta().version}`}
+            {`npm install ${installSpec}`}
           </a>
         </div>
       </Reveal>
@@ -882,7 +893,7 @@ export default async function QualityStandardPage({
             </span>
           </div>
           <pre className="font-data text-xs md:text-sm text-ink p-5 overflow-x-auto">
-            {`npm install agent-threat-rules@${getSpecMeta().version}`}
+            {`npm install ${installSpec}`}
           </pre>
         </div>
       </Reveal>

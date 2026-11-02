@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import type { Locale } from "@/lib/i18n";
 import { locales } from "@/lib/i18n";
 import { Nav } from "@/components/Nav";
@@ -8,25 +7,6 @@ import { ScrollProgress } from "@/components/ScrollProgress";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
-}
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
-  const otherLocale = locale === "zh" ? "en" : "zh";
-
-  return {
-    alternates: {
-      canonical: `https://agentthreatrule.org/${locale}`,
-      languages: {
-        [locale]: `https://agentthreatrule.org/${locale}`,
-        [otherLocale]: `https://agentthreatrule.org/${otherLocale}`,
-      },
-    },
-  };
 }
 
 export default async function LocaleLayout({

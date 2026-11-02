@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { getActor, listActors } from "@/lib/actors";
@@ -22,12 +23,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: rawLocale, actor: slug } = await params;
   const actor = getActor(slug);
-  if (!actor) return { title: "Actor Not Found — ATR" };
+  if (!actor) return { title: "Actor Not Found" };
   const zh = rawLocale === "zh";
-  return {
-    title: `Actor Profile: ${actor.name} | ATR`,
+  return pageMetadata({
+    locale: rawLocale,
+    path: `/threats/${slug}`,
+    title: `Actor Profile: ${actor.name}`,
     description: zh ? actor.summary.zh : actor.summary.en,
-  };
+  });
 }
 
 export default async function ActorPage({

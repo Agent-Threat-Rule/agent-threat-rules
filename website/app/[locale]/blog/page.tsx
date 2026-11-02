@@ -3,16 +3,26 @@ import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { posts } from "@/lib/posts";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Blog — ATR",
-  description:
-    "Timestamped notes from the Agent Threat Rules project: new detection rules, campaign analysis, and public bets on where agent security is heading — each dated and open to scrutiny.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/blog",
+    title: "Blog",
+    description:
+      "Timestamped notes from the Agent Threat Rules project: new detection rules, campaign analysis, and public bets on where agent security is heading — each dated and open to scrutiny.",
+  });
+}
 
 export default async function BlogIndexPage({
   params,

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import { loadSiteStats } from '@/lib/stats';
 import {
   GARAK_BOTH_CLOSED_BOOK,
@@ -14,11 +15,20 @@ export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: 'NVIDIA garak × ATR — ATR',
-  description:
-    "A red-team tool feeds a detection standard. NVIDIA garak finds attacks; ATR has written detection rules from garak's probe corpus. garak does not ship ATR: garak PR #1676, which proposed ATR detectors for garak, was withdrawn by its ATR author on 2026-08-04 without being merged.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/integrate/garak",
+    title: "NVIDIA garak × ATR",
+    description:
+      "A red-team tool feeds a detection standard. NVIDIA garak finds attacks; ATR has written detection rules from garak's probe corpus. garak does not ship ATR: garak PR #1676, which proposed ATR detectors for garak, was withdrawn by its ATR author on 2026-08-04 without being merged.",
+  });
+}
 
 export default async function GarakIntegratePage({
   params,

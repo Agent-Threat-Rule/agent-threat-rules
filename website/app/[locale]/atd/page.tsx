@@ -5,6 +5,7 @@
  */
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { locales, type Locale } from "@/lib/i18n";
 import { RFC2119 } from "@/components/spec/RFC2119";
 import { NormativeBadge, InformativeBadge } from "@/components/spec/Badges";
@@ -22,13 +23,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "ATD — Agentic Threat Detection | ATR",
+  return pageMetadata({
+    locale,
+    path: "/atd",
+    title: "ATD — Agentic Threat Detection",
     description:
       locale === "zh"
         ? "Agentic Threat Detection (ATD):agent 原生威脅技法的開放知識庫。為每種 runtime 攻擊手法命名,對映 OWASP/ATLAS/CWE/AVID,讓偵測規則有處可掛。"
         : "Agentic Threat Detection (ATD): an open knowledge base of agent-native threat techniques. Names every runtime attack technique, maps it to OWASP/ATLAS/CWE/AVID, and gives detection rules something to hang from.",
-  };
+  });
 }
 
 const ATD_VERSION = "0.1.0";

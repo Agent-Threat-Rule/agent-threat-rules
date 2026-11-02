@@ -5,6 +5,7 @@ import { getPost } from "@/lib/posts";
 import { loadSiteStats } from "@/lib/stats";
 import { count, findBenchmark, measuredStamp, recallLanes } from "@/lib/recall";
 import type { Metadata } from "next";
+import { pageMetadata, toLocale } from "@/lib/seo";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -12,10 +13,20 @@ export function generateStaticParams() {
 
 const post = getPost("static-guardrails-lose")!;
 
-export const metadata: Metadata = {
-  title: `${post.title.en} — ATR`,
-  description: post.summary.en,
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const lang = toLocale(locale);
+  return pageMetadata({
+    locale,
+    path: "/blog/static-guardrails-lose",
+    title: post.title[lang],
+    description: post.summary[lang],
+  });
+}
 
 export default async function StaticGuardrailsPostPage({
   params,

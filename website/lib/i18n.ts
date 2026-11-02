@@ -118,13 +118,13 @@ export const messages: Record<Locale, Record<string, string>> = {
 
     // Rules page
     "rules.label": "Rule Explorer",
-    "rules.heading": "{count} detection rules. Browse, filter, inspect.",
+    "rules.heading": "{count} effective detection rules. Browse, filter, inspect.",
     "rules.sub":
       "Every rule carries a stable ATR-YYYY-NNNNN identifier — CVE/CWE-style, permanent once published. Parsed from YAML at build time; click any rule to read its detection logic, test cases, and known limitations.",
     "rules.search": "Search rules... (name, ID, CVE)",
     "rules.all_categories": "All categories",
     "rules.all_severities": "All severities",
-    "rules.showing": "Showing {filtered} of {total} rules",
+    "rules.showing": "Showing {filtered} of {total} rule files",
     "rules.no_match": "No rules match your filters.",
     "rules.clear": "clear filters",
     "rules.col.id": "Rule ID",
@@ -241,8 +241,9 @@ export const messages: Record<Locale, Record<string, string>> = {
     // ── Standards site additions ───────────────────────────────
     // Document Status banner
     "spec.canonical": "canonical",
-    "spec.version": "version",
-    "spec.date": "updated",
+    "spec.version": "spec",
+    "spec.date": "dated",
+    "spec.generated": "page generated",
     "spec.editor": "editor",
     "spec.status_aria": "Document status",
     "spec.toc": "Table of Contents",
@@ -501,14 +502,14 @@ export const messages: Record<Locale, Record<string, string>> = {
     // Rules page
     "rules.label": "Rule Explorer",
     "rules.heading":
-      "{count} \u689D\u5075\u6E2C\u898F\u5247\u3002\u700F\u89BD\u3001\u904E\u6FFE\u3001\u6AA2\u67E5\u3002",
+      "{count} \u689D\u751F\u6548\u7684\u5075\u6E2C\u898F\u5247\u3002\u700F\u89BD\u3001\u904E\u6FFE\u3001\u6AA2\u67E5\u3002",
     "rules.sub":
       "\u6BCF\u689D\u898F\u5247\u90FD\u6709\u7A69\u5B9A\u7684 ATR-YYYY-NNNNN \u8B58\u5225\u78BC\u2014\u2014CVE/CWE \u9AD4\u88C1\uFF0C\u4E00\u7D93\u767C\u5E03\u6C38\u4E0D\u66F4\u6539\u3002\u898F\u5247\u5728 build time \u5F9E YAML \u89E3\u6790\uFF1B\u9EDE\u64CA\u4EFB\u4F55\u898F\u5247\uFF0C\u67E5\u770B\u5B83\u7684\u5075\u6E2C\u908F\u8F2F\u3001\u6E2C\u8A66\u6848\u4F8B\u8207\u5DF2\u77E5\u9650\u5236\u3002",
     "rules.search":
       "\u641C\u7D22\u898F\u5247\u2026\uff08\u540D\u7A31\u3001ID\u3001CVE\uff09",
     "rules.all_categories": "\u6240\u6709\u985E\u5225",
     "rules.all_severities": "\u6240\u6709\u56B4\u91CD\u7B49\u7D1A",
-    "rules.showing": "\u986F\u793A {filtered} / {total} \u689D\u898F\u5247",
+    "rules.showing": "\u986F\u793A {filtered} / {total} \u500B\u898F\u5247\u6A94",
     "rules.no_match":
       "\u6C92\u6709\u898F\u5247\u7B26\u5408\u4F60\u7684\u904E\u6FFE\u689D\u4EF6\u3002",
     "rules.clear": "\u6E05\u9664\u904E\u6FFE",
@@ -632,8 +633,9 @@ export const messages: Record<Locale, Record<string, string>> = {
 
     // \u2500\u2500 Standards site additions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     "spec.canonical": "\u6B63\u5F0F\u7DB2\u5740",
-    "spec.version": "\u7248\u672C",
-    "spec.date": "\u66F4\u65B0\u65BC",
+    "spec.version": "\u898F\u683C\u7248\u672C",
+    "spec.date": "\u65E5\u671F",
+    "spec.generated": "\u9801\u9762\u7522\u751F\u65BC",
     "spec.editor": "\u7DE8\u8F2F",
     "spec.status_aria": "\u6587\u4EF6\u72C0\u614B",
     "spec.toc": "\u76EE\u9304",

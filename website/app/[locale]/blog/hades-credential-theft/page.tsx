@@ -3,6 +3,7 @@ import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { getPost } from "@/lib/posts";
 import type { Metadata } from "next";
+import { pageMetadata, toLocale } from "@/lib/seo";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -10,10 +11,20 @@ export function generateStaticParams() {
 
 const post = getPost("hades-credential-theft")!;
 
-export const metadata: Metadata = {
-  title: `${post.title.en} — ATR`,
-  description: post.summary.en,
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const lang = toLocale(locale);
+  return pageMetadata({
+    locale,
+    path: "/blog/hades-credential-theft",
+    title: post.title[lang],
+    description: post.summary[lang],
+  });
+}
 
 function Code({ children }: { children: React.ReactNode }) {
   return (

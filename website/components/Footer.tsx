@@ -2,15 +2,15 @@ import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 import { loadSiteStats } from "@/lib/stats";
+import { getSpecMeta } from "@/lib/spec-meta";
+import { loadVersionLabels, NPM_PACKAGE_URL } from "@/lib/versions";
 
-/** Build-time date stamp — safe for all environments */
-const BUILD_DATE = new Date().toISOString().slice(0, 10);
-
-export function Footer({ locale }: { locale: Locale }) {
+export async function Footer({ locale }: { locale: Locale }) {
   const prefix = `/${locale}`;
   const zh = locale === "zh";
   const stats = loadSiteStats();
-  const lastUpdated = BUILD_DATE;
+  const specVersion = getSpecMeta().specVersion;
+  const versions = await loadVersionLabels();
 
   return (
     <footer className="border-t border-fog py-12 px-6">
@@ -52,6 +52,9 @@ export function Footer({ locale }: { locale: Locale }) {
               {zh ? "專案" : "Project"}
             </div>
             <div className="flex flex-col gap-2">
+              <Link href={`${prefix}/start`} className="text-sm text-stone hover:text-ink transition-colors">
+                {zh ? "從這裡開始" : "Start here"}
+              </Link>
               <Link href={`${prefix}/rules`} className="text-sm text-stone hover:text-ink transition-colors">
                 {zh ? "規則庫" : "Rules"}
               </Link>
@@ -161,7 +164,8 @@ export function Footer({ locale }: { locale: Locale }) {
           </span>
         </div>
 
-        {/* Bottom bar — spec lineage, rule count, last-build */}
+        {/* Bottom bar — three version labels (spec, npm, page generated) and
+            the rule counts with what each one counts. */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-3 pt-4">
           <div className="flex items-center gap-3">
             <img src="/atr-logo-black.png" alt="ATR" className="h-5 opacity-40" />
@@ -171,16 +175,24 @@ export function Footer({ locale }: { locale: Locale }) {
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-data text-xs text-mist">
             <Link href={`${prefix}/spec`} className="hover:text-stone transition-colors">
-              {zh ? "規格" : "Spec"} 3.5.0
+              {zh ? "規格" : "Spec"} {specVersion}
             </Link>
+            <span className="text-fog">·</span>
+            <a href={NPM_PACKAGE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-stone transition-colors">
+              {versions.npmVerified ? "npm" : "package.json"} {versions.npm}
+            </a>
             <span className="text-fog">·</span>
             <Link href={`${prefix}/citations`} className="hover:text-stone transition-colors">
               DOI 10.5281/zenodo.19178002
             </Link>
             <span className="text-fog hidden sm:inline">|</span>
-            <span>{stats.ruleCount} {zh ? "條規則" : "rules"}</span>
+            <Link href={`${prefix}/rules`} className="hover:text-stone transition-colors">
+              {zh
+                ? `${stats.ruleCount} 條生效規則(main 上 ${stats.ruleFileCount} 個檔,${stats.ruleInertCount} 條 inert)`
+                : `${stats.ruleCount} effective rules (${stats.ruleFileCount} files on main, ${stats.ruleInertCount} inert)`}
+            </Link>
             <span className="text-fog hidden sm:inline">|</span>
-            <span>{zh ? "ISO 8601" : "ISO 8601"} {lastUpdated}</span>
+            <span>{zh ? "頁面產生於" : "Page generated"} {versions.generatedAt}</span>
           </div>
         </div>
       </div>

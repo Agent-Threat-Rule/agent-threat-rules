@@ -3,6 +3,7 @@
  * locale. Each entry anchored by slug for deep linking.
  */
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
@@ -17,13 +18,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "Glossary — ATR",
+  return pageMetadata({
+    locale,
+    path: "/glossary",
+    title: "Glossary",
     description:
       locale === "zh"
         ? "ATR 規格中關鍵術語的定義。"
         : "Definitions for key terms used throughout the ATR specification.",
-  };
+  });
 }
 
 interface GlossaryEntry {

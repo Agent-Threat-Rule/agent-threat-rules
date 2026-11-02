@@ -20,15 +20,25 @@ import { StatsHydrator } from "@/components/StatsHydrator";
 import { locales, t, type Locale } from "@/lib/i18n";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Coverage - ATR",
-  description: "ATR coverage of OWASP Agentic Top 10, OWASP AST10, SAFE-MCP, and MITRE ATLAS frameworks.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/coverage",
+    title: "Coverage",
+    description: "ATR coverage of OWASP Agentic Top 10, OWASP AST10, SAFE-MCP, and MITRE ATLAS frameworks.",
+  });
+}
 
 const STATUS_COLORS: Record<string, string> = {
   STRONG: "bg-green/10 text-green",

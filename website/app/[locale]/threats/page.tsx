@@ -5,17 +5,27 @@ import { listActors } from "@/lib/actors";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Threat Feed - ATR",
-  description:
-    "Public blacklist of flagged AI agent skills, generated from open ATR ecosystem scans. Threat Cloud is an optional reference service that can also feed reports.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/threats",
+    title: "Threat Feed",
+    description:
+      "Public blacklist of flagged AI agent skills, generated from open ATR ecosystem scans. Threat Cloud is an optional reference service that can also feed reports.",
+  });
+}
 
 interface BlacklistData {
   generated: string;

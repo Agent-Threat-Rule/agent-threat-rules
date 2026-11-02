@@ -1,6 +1,8 @@
 import { loadAllRules, findRuleById, getRelatedRules, loadRuleDetail, categoryDisplayName } from "@/lib/rules";
 import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
+import { normalizeMaturity, rulesLanes } from "@/lib/lanes";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -37,19 +39,15 @@ export async function generateMetadata({
   const categoryDisplay = categoryDisplayName(rule.category, locale);
 
   return {
-    title: `${rule.id}: ${rule.title}`,
-    description: rule.description.slice(0, 160),
-    alternates: {
-      canonical: `https://agentthreatrule.org/${locale}/rules/${rule.id}`,
-      languages: {
-        en: `https://agentthreatrule.org/en/rules/${rule.id}`,
-        zh: `https://agentthreatrule.org/zh/rules/${rule.id}`,
+    ...pageMetadata({
+      locale,
+      path: `/rules/${rule.id}`,
+      title: `${rule.id}: ${rule.title}`,
+      description: rule.description.slice(0, 160),
+      openGraph: {
+        description: `${rule.severity.toUpperCase()} severity ${categoryDisplay} detection rule. ${rule.description.slice(0, 120)}`,
       },
-    },
-    openGraph: {
-      title: `${rule.id}: ${rule.title} | ATR`,
-      description: `${rule.severity.toUpperCase()} severity ${categoryDisplay} detection rule. ${rule.description.slice(0, 120)}`,
-    },
+    }),
     other: {
       "article:section": categoryDisplay,
       "article:tag": [rule.category, rule.severity, ...rule.cves].join(","),
@@ -75,6 +73,7 @@ export default async function RuleDetailPage({
   const related = getRelatedRules(rules, rule);
   const categoryDisplay = categoryDisplayName(rule.category, locale);
   const severityClass = SEVERITY_COLORS[rule.severity] ?? "bg-ash text-stone";
+  const lanes = rulesLanes(rule);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -140,7 +139,7 @@ export default async function RuleDetailPage({
         </div>
 
         {/* Metadata grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-fog mb-8">
           <div className="bg-paper p-4">
             <div className="font-data text-xs text-stone mb-1">{zh ? "嚴重度" : "Severity"}</div>
             <div className={`font-data text-sm font-semibold uppercase ${rule.severity === "critical" ? "text-critical" : rule.severity === "high" ? "text-high" : "text-medium"}`}>
@@ -158,6 +157,16 @@ export default async function RuleDetailPage({
           <div className="bg-paper p-4">
             <div className="font-data text-xs text-stone mb-1">{zh ? "作者" : "Author"}</div>
             <div className="font-data text-sm text-ink">{rule.author}</div>
+          </div>
+          <div className="bg-paper p-4">
+            <div className="font-data text-xs text-stone mb-1">Maturity</div>
+            <div className="font-data text-sm text-ink">{normalizeMaturity(rule.maturity)}</div>
+          </div>
+          <div className="bg-paper p-4">
+            <div className="font-data text-xs text-stone mb-1">{zh ? "載入此規則的 lane" : "Lanes that load it"}</div>
+            <div className="font-data text-sm text-ink">
+              {lanes.length > 0 ? lanes.join(" · ") : zh ? "無(inert)" : "none (inert)"}
+            </div>
           </div>
         </div>
 

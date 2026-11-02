@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { loadAllRules } from "./rules";
 import { loadAdopters, adopterLogoUrl, type Adopter, type AdopterTier } from "./adopters";
+import { countLanes, type LaneCounts } from "./lanes";
 
 const DATA_DIR = join(process.cwd(), "..", "data");
 const MEASUREMENTS_DIR = join(DATA_DIR, "measurements");
@@ -69,8 +70,16 @@ interface SkillScanReport {
 }
 
 export interface SiteStats {
-  // Rules
+  // Rules. Three counts, never one bare "rules" figure (see sync-stats.ts):
+  // ruleFileCount = rule files on main; ruleCount = effective, the files the
+  // engine loads in at least one lane; ruleInertCount = files in no lane
+  // (status draft or deprecated). ruleCount is the one to quote by default,
+  // and it must be labelled "effective" wherever it appears.
   ruleCount: number;
+  ruleFileCount: number;
+  ruleInertCount: number;
+  /** Rules each lane loads (enforce = maturity stable, alert = stable + test, hunt = all effective). */
+  laneCounts: LaneCounts["byLane"];
   categoryCount: number;
 
   // Standard heartbeat — YYYY-MM-DD the canonical stats.json was last
@@ -386,19 +395,27 @@ export function loadSiteStats(): SiteStats {
   // lastUpdated is the freshest honest "standard heartbeat". data/stats.json
   // generatedAt only moves when the measurement pipeline reruns — keep it as
   // the fallback.
-  const rootStatsJson = readJson<{ lastUpdated?: string }>(
-    join(process.cwd(), "..", "stats.json"),
-  );
+  const rootStatsJson = readJson<{
+    lastUpdated?: string;
+    ruleCount?: { total?: number; effective?: number; inert?: number };
+  }>(join(process.cwd(), "..", "stats.json"));
 
   const rules = loadAllRules();
 
   // The engine skips status: draft | deprecated before the lane gate, so those
   // rules fire in no lane at all; the raw file count overstates what runs. Cite
   // the effective count on user-facing surfaces (same rule as sync-stats.ts).
-  const effectiveRuleCount = rules.filter(
-    (r: { status?: string }) =>
-      r.status !== "draft" && r.status !== "deprecated",
-  ).length;
+  const lanes = countLanes(rules);
+  const published = rootStatsJson?.ruleCount;
+  if (
+    published &&
+    (published.total !== lanes.files || published.effective !== lanes.effective || published.inert !== lanes.inert)
+  ) {
+    console.warn(
+      `stats.json ruleCount (${published.total} files / ${published.effective} effective / ${published.inert} inert) ` +
+        `disagrees with rules/ (${lanes.files} / ${lanes.effective} / ${lanes.inert}); the site shows the rules/ counts.`,
+    );
+  }
 
   const categories = new Set(
     rules.map((r: { category: string }) => r.category),
@@ -414,7 +431,10 @@ export function loadSiteStats(): SiteStats {
   }
 
   return {
-    ruleCount: effectiveRuleCount,
+    ruleCount: lanes.effective,
+    ruleFileCount: lanes.files,
+    ruleInertCount: lanes.inert,
+    laneCounts: lanes.byLane,
     categoryCount: categories.size,
     lastRegenerated:
       rootStatsJson?.lastUpdated ?? statsJson?.generatedAt?.slice(0, 10) ?? "",

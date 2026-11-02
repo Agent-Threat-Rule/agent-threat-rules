@@ -2,16 +2,28 @@ import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { loadChangelog } from "@/lib/changelog";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
+import { getSpecMeta } from "@/lib/spec-meta";
+import { loadVersionLabels } from "@/lib/versions";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Changelog — ATR",
-  description:
-    "Version history for Agent Threat Rules (ATR). Detection rules, engine changes, and ecosystem milestones.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/changelog",
+    title: "Changelog",
+    description:
+      "Version history for Agent Threat Rules (ATR). Detection rules, engine changes, and ecosystem milestones.",
+  });
+}
 
 const SECTION_ACCENT: Record<string, string> = {
   BREAKING: "text-critical border-critical",
@@ -32,6 +44,9 @@ export default async function ChangelogPage({
   const locale = (locales.includes(rawLocale as Locale) ? rawLocale : "en") as Locale;
   const zh = locale === "zh";
   const entries = loadChangelog();
+  const specVersion = getSpecMeta().specVersion;
+  const versions = await loadVersionLabels();
+  const releaseLabel = versions.npmVerified ? `npm v${versions.npm}` : `package.json v${versions.npm}`;
 
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
@@ -51,11 +66,11 @@ export default async function ChangelogPage({
         <p className="text-sm md:text-base text-graphite max-w-[640px] mt-5 md:mt-6 leading-[1.8]">
           {zh ? (
             <>
-              從 <code className="font-data text-xs bg-ash px-1.5 py-0.5">CHANGELOG.md</code> 於建置時自動產生——這頁就是那份檔案。規則 ID 一經發布永不改號；rule_version 可升，ID 穩定，外部論文、CI 腳本、稽核軌跡都能安全引用。版號跟著 npm 釋出線走（目前 <code className="font-data text-xs bg-ash px-1.5 py-0.5">v3.5.0</code>），書面規範以同一版號發布、狀態為 Working Draft。完整 commit 歷史在 GitHub。
+              從 <code className="font-data text-xs bg-ash px-1.5 py-0.5">CHANGELOG.md</code> 於建置時自動產生——這頁就是那份檔案。規則 ID 一經發布永不改號；rule_version 可升，ID 穩定，外部論文、CI 腳本、稽核軌跡都能安全引用。版號跟著 npm 釋出線走（目前 <code className="font-data text-xs bg-ash px-1.5 py-0.5">{releaseLabel}</code>，頁面產生於 {versions.generatedAt}）；書面核心規範（SPEC.md）另有自己的版號（目前 <code className="font-data text-xs bg-ash px-1.5 py-0.5">{specVersion}</code>），狀態為 Working Draft。完整 commit 歷史在 GitHub。
             </>
           ) : (
             <>
-              Generated from <code className="font-data text-xs bg-ash px-1.5 py-0.5">CHANGELOG.md</code> at build time — this page is that file. Rule IDs are permanent once published; <code className="font-data text-xs bg-ash px-1.5 py-0.5">rule_version</code> may bump, but the ID stays stable, safe for papers, CI scripts, and audit trails to cite. Version numbers track the npm release line (currently <code className="font-data text-xs bg-ash px-1.5 py-0.5">v3.5.0</code>); the written specification ships at the same version with Working Draft status. Full commit history is on GitHub.
+              Generated from <code className="font-data text-xs bg-ash px-1.5 py-0.5">CHANGELOG.md</code> at build time — this page is that file. Rule IDs are permanent once published; <code className="font-data text-xs bg-ash px-1.5 py-0.5">rule_version</code> may bump, but the ID stays stable, safe for papers, CI scripts, and audit trails to cite. Version numbers track the npm release line (currently <code className="font-data text-xs bg-ash px-1.5 py-0.5">{releaseLabel}</code>, as of {versions.generatedAt}); the written core specification (SPEC.md) carries its own version (currently <code className="font-data text-xs bg-ash px-1.5 py-0.5">{specVersion}</code>) with Working Draft status. Full commit history is on GitHub.
             </>
           )}
         </p>

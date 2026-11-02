@@ -4,6 +4,7 @@
  */
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
@@ -20,13 +21,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "Conformance — ATR",
+  return pageMetadata({
+    locale,
+    path: "/conformance",
+    title: "Conformance",
     description:
       locale === "zh"
         ? "ATR 的三個符規等級 (L1 Engine / L2 Publisher / L3 Sub-range Authority) 的規範性定義,以及 L1 測試套件與自我認證程序。"
         : "Normative definition of the three ATR conformance levels (L1 Engine / L2 Publisher / L3 Sub-range Authority), the L1 test suite, and the self-certification procedure.",
-  };
+  });
 }
 
 const ADOPTERS_URL =

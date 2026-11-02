@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { join, extname, relative, basename, dirname } from "node:path";
+import { join, extname, relative, basename, dirname, sep } from "node:path";
 import yaml from "js-yaml";
 
 /**
@@ -37,6 +37,8 @@ export interface RuleSummary {
   date: string;
   filePath: string;
   status?: string;
+  /** YAML `maturity`; decides which lanes load the rule (lib/lanes.ts). */
+  maturity?: string;
   responseActions?: string[];
   detectionTier?: string;
   confidence?: string;
@@ -50,6 +52,7 @@ interface RawRule {
   author?: string;
   date?: string;
   status?: string;
+  maturity?: string;
   detection_tier?: string;
   tags?: {
     category?: string;
@@ -104,6 +107,7 @@ function loadRulesRecursive(dir: string, rootDir: string): RuleSummary[] {
           date: raw.date ?? "",
           filePath: relative(rootDir, fullPath),
           status: raw.status,
+          maturity: typeof raw.maturity === "string" ? raw.maturity : undefined,
           responseActions: raw.response?.actions,
           detectionTier: raw.detection_tier,
           confidence: raw.tags?.confidence,
@@ -207,6 +211,7 @@ interface RawRuleDetail {
   author?: string;
   date?: string;
   status?: string;
+  maturity?: string;
   detection_tier?: string;
   tags?: {
     category?: string;
@@ -242,7 +247,7 @@ interface RawRuleDetail {
 /**
  * Build-time caches, populated once per worker and reused across all rule
  * detail page renders. SSG otherwise walks the rules tree O(N) times for N
- * rules, and spawns one `git log` subprocess per rule per locale.
+ * rules, and runs `git log` for every rule on every render.
  */
 let rulePathCache: Map<string, string> | null = null;
 let lastModifiedCache: Map<string, string> | null = null;
@@ -278,24 +283,43 @@ function getRulePathMap(): Map<string, string> {
   return map;
 }
 
+/** Date (YYYY-MM-DD) of the last commit touching the rule's YAML, when git can say. */
+export function ruleLastModified(id: string): string | undefined {
+  return getLastModifiedMap().get(id);
+}
+
 function getLastModifiedMap(): Map<string, string> {
   if (lastModifiedCache) return lastModifiedCache;
-  const map = new Map<string, string>();
   const repoRoot = join(process.cwd(), "..");
   const pathMap = getRulePathMap();
 
-  for (const [id, fullPath] of pathMap.entries()) {
-    try {
-      const relPath = relative(repoRoot, fullPath);
-      const iso = execSync(`git log -1 --format=%cs -- "${relPath}"`, {
-        cwd: repoRoot,
-        encoding: "utf-8",
-        stdio: ["ignore", "pipe", "ignore"],
-      }).trim();
-      if (iso) map.set(id, iso);
-    } catch {
-      // Skip — file may be untracked or git unavailable.
+  // One `git log` over rules/, newest commit first: the first date seen for a
+  // path is the date `git log -1 -- <path>` gives. One process instead of one
+  // per rule; the per-rule calls took ~0.7 s each on a loaded machine, so the
+  // first rule page in every build worker ran past Next's 60 s page timeout.
+  const latestByPath = new Map<string, string>();
+  try {
+    const log = execSync("git log --format=%x00%cs --name-only -- rules", {
+      cwd: repoRoot,
+      encoding: "utf-8",
+      maxBuffer: 256 * 1024 * 1024,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    for (const commit of log.split("\0")) {
+      const [date, ...paths] = commit.split("\n").map((l) => l.trim());
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date ?? "")) continue;
+      for (const path of paths) {
+        if (path && !latestByPath.has(path)) latestByPath.set(path, date);
+      }
     }
+  } catch {
+    // git unavailable or not a repository: rule pages show no last-modified date.
+  }
+
+  const map = new Map<string, string>();
+  for (const [id, fullPath] of pathMap.entries()) {
+    const date = latestByPath.get(relative(repoRoot, fullPath).split(sep).join("/"));
+    if (date) map.set(id, date);
   }
   lastModifiedCache = map;
   return map;
@@ -332,6 +356,7 @@ export function loadRuleDetail(id: string): RuleDetail | undefined {
     date: parsed.date ?? "",
     filePath: relFile,
     status: parsed.status,
+    maturity: typeof parsed.maturity === "string" ? parsed.maturity : undefined,
     responseActions: parsed.response?.actions,
     detectionTier: parsed.detection_tier,
     confidence: parsed.tags?.confidence,

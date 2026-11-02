@@ -3,6 +3,8 @@ import { locales, type Locale } from "@/lib/i18n";
 import { loadSiteStats } from "@/lib/stats";
 import { count, findBenchmark, measuredStamp, pct, pctHunt } from "@/lib/recall";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
+import { getSpecMeta } from "@/lib/spec-meta";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -15,14 +17,16 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const zh = locale === "zh";
-  return {
+  return pageMetadata({
+    locale,
+    path: "/sovereign-ai-defense",
     title: zh
       ? "主權 AI 與中立偵測標準"
       : "Sovereign AI and a Neutral Detection Standard",
     description: zh
       ? "主權 AI 需要一個廠商中立、不受任何國家或公司控制的開放偵測標準。ATR 在主權 AI 語境裡的角色說明。"
       : "Sovereign AI needs a vendor-neutral detection standard controlled by no single country or company. ATR's role in the sovereign-AI context.",
-  };
+  });
 }
 
 const ENCODED_SLOGAN_ZH = encodeURIComponent(
@@ -50,6 +54,7 @@ export default async function SovereignAIDefensePage({
   const ENC_URL = zh ? ENCODED_URL_ZH : ENCODED_URL_EN;
   const stats = loadSiteStats();
   const ruleCount = stats.ruleCount;
+  const specVersion = getSpecMeta().specVersion;
   const garak = findBenchmark(stats, "garak");
 
   return (
@@ -693,7 +698,7 @@ atr convert splunk               # or export into the SOC you already run`}</cod
               agentthreatrule.org
             </a>
             <div className="font-data text-[11px] text-mist tracking-[1px] uppercase mt-3">
-              {ruleCount} Rules · NIST AI RMF mappings · Spec 3.5.0 (Working Draft)
+              {ruleCount} Effective Rules · NIST AI RMF mappings · Spec {specVersion} (Working Draft)
             </div>
           </div>
         </div>

@@ -3,17 +3,27 @@ import { loadContributors, getCountryStats } from "@/lib/contributors";
 import { loadSiteStats } from "@/lib/stats";
 import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Wall — ATR Community",
-  description:
-    "The people maintaining ATR — contributors, adopters, and researchers carrying an open detection standard toward universal. A standard is only as strong as the people who maintain it.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/wall",
+    title: "Community Wall",
+    description:
+      "The people maintaining ATR — contributors, adopters, and researchers carrying an open detection standard toward universal. A standard is only as strong as the people who maintain it.",
+  });
+}
 
 const COUNTRY_NAMES: Record<string, { en: string; zh: string }> = {
   TW: { en: "Taiwan", zh: "台灣" },

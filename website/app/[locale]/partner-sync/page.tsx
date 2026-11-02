@@ -1,10 +1,20 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Partner Live Sync — ATR',
-  description:
-    'Live rule sync for qualifying security platforms. ATR confirmed rules, polled on your own cadence, authenticated via partner API key.',
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/partner-sync",
+    title: "Partner Live Sync",
+    description:
+      'Live rule sync for qualifying security platforms. ATR confirmed rules, polled on your own cadence, authenticated via partner API key.',
+  });
+}
 
 // Keep the copy deliberately terse. This page is not for general users; it's the
 // page we link to in the 403 response from /api/atr-rules/live when someone tries

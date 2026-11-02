@@ -1,15 +1,25 @@
 import { Reveal } from "@/components/Reveal";
 import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Contribute - ATR",
-  description: "Four ways to contribute to ATR: report evasions, false positives, submit rules, or use AI-native workflows.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/contribute",
+    title: "Contribute",
+    description: "Four ways to contribute to ATR: report evasions, false positives, submit rules, or use AI-native workflows.",
+  });
+}
 
 export default async function ContributePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;

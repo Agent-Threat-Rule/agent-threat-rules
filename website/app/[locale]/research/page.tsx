@@ -4,23 +4,34 @@ import { StatsHydrator } from "@/components/StatsHydrator";
 import { loadSiteStats, type BenchmarkMeasurement } from "@/lib/stats";
 import { PINT_CLOSED_BOOK, count, findBenchmark, measuredStamp, pct, pctHunt, toFullWidth } from "@/lib/recall";
 import { MetricCell, RecallCell } from "@/components/LaneFigures";
-import { getSpecMeta } from "@/lib/spec-meta";
+import { loadVersionLabels, npmReleaseText } from "@/lib/versions";
 import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Research - ATR",
-  description: "ATR research: academic paper, benchmark results, limitations, and ecosystem scan data.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/research",
+    title: "Research",
+    description: "ATR research: academic paper, benchmark results, limitations, and ecosystem scan data.",
+  });
+}
 
 export default async function ResearchPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
   const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
   const stats = loadSiteStats();
+  const versions = await loadVersionLabels();
   const zh = locale === "zh";
   const pintRun = findBenchmark(stats, "pint");
   const selfTestRun = findBenchmark(stats, "atr-self-test");
@@ -239,8 +250,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
       <Reveal delay={0.15}>
         <p className="text-sm text-graphite leading-[1.7] mb-6 max-w-[760px]">
           {locale === "zh"
-            ? `這個掃描不是一份報告，是一條每天運轉的迴圈。新攻擊出現 → 結晶成偵測規則 → 回流標準：紅隊巨量掃描與 CVE 攝取兩條飛輪各自跑完整輪後轉為每日更新，把規則集從 462 條推進到目前的 ${stats.ruleCount} 條（新增 ${stats.ruleCount - 462} 條，npm agent-threat-rules@${getSpecMeta().version}）。這就是「標準活著」的意思——不是一次性的快照，而是與威脅同速演化的層。`
-            : `This scan is not a report — it is a loop that runs every day. New attack appears → crystallizes into a detection rule → flows back into the standard. A red-team mega-scan flywheel and a CVE-ingestion flywheel each completed a full sweep, then moved to daily updates, taking the ruleset from 462 to the current ${stats.ruleCount} (${stats.ruleCount - 462} new rules, npm agent-threat-rules@${getSpecMeta().version}). This is what it means for a standard to be alive: not a one-time snapshot, but a layer that evolves at the speed of the threats it covers.`}
+            ? `這個掃描不是一份報告，是一條每天運轉的迴圈。新攻擊出現 → 結晶成偵測規則 → 回流標準：紅隊巨量掃描與 CVE 攝取兩條飛輪各自跑完整輪後轉為每日更新，把規則集從 462 條推進到目前 main 上的 ${stats.ruleCount} 條生效規則（另有 ${stats.ruleInertCount} 條 inert；${npmReleaseText(versions, true)}，頁面產生於 ${versions.generatedAt}）。這就是「標準活著」的意思——不是一次性的快照，而是與威脅同速演化的層。`
+            : `This scan is not a report — it is a loop that runs every day. New attack appears → crystallizes into a detection rule → flows back into the standard. A red-team mega-scan flywheel and a CVE-ingestion flywheel each completed a full sweep, then moved to daily updates, taking the ruleset from 462 to the current ${stats.ruleCount} effective rules on main (plus ${stats.ruleInertCount} inert; ${npmReleaseText(versions, false)}, as of ${versions.generatedAt}). This is what it means for a standard to be alive: not a one-time snapshot, but a layer that evolves at the speed of the threats it covers.`}
         </p>
       </Reveal>
       <Reveal delay={0.2}>
