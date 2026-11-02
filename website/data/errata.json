@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-19",
+  "lastUpdated": "2026-10-27",
   "entries": [
     {
       "id": "e-2026-10-19-red-team-sprint",
@@ -9,6 +9,15 @@
       "summary_zh": "/red-team 頁面與 2.2.0 版 CHANGELOG 原本寫 HackAPrompt 召回率從 28.6% 升到 66.2%、precision 100%，並說該次 sprint 的 75 條規則與 2026-06 巨量掃描的 29 條規則都通過品質門檻、良性樣本 0 誤報。2026-10-19 重跑結果：在同一份 4,780 筆 HackAPrompt prompt 上，66.2% 在 sprint 的兩個 commit（e9efefdd、92c0d0fe）都無法重現（分別為 65.0% 與 66.0%）；28.6% 本身也屬樣本內；這份語料沒有良性樣本，所以根本沒有量過 precision。sprint 的兩個 commit 新增的是 71 個規則檔（75 另外算進了同一天稍早、在 sprint 之前由 commit 80dbd0ab 加入的 4 條 CVE 規則）。門檻當時的執行紀錄沒有 commit；重跑後，在 92c0d0fe 時 71 條中有 10 條未通過（true positive 沒命中），沒有一條在良性 SKILL.md 上誤報；在 2026-10-22 的 main（b9d16840）上，71 條中 33 條、29 條中 4 條未通過（與 2026-10-19 在 9d74fc50 的結果相同），其中 26 條與 3 條至少誤報 1 筆良性樣本，都不在 enforce lane。頁面現在引用這些實測（data/gate-reruns/2026-10-19_red-team-rule-batches.json、data/hackaprompt/METHOD.md），並在每個語料庫的召回率旁附上量測檔中的消融參考值。",
       "date": "2026-10-19",
       "url": "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/691"
+    },
+    {
+      "id": "e-2026-10-19-conformance-suite",
+      "version": "3.0.1–4.1.5",
+      "section": "SPEC.md §12 Conformance Test Suite (ATR Core 1.0.0–1.0.1; suite v1.0.0)",
+      "summary_en": "No engine could pass the Conformance Test Suite v1.0.0, including the reference engine. 41 true-positive and true-negative fixtures had no payload, because the fixture generator read only a test case's input key while 21 rules keep their payload under keys such as tool_response or tool_description; the 20 true negatives among them passed without testing anything until the CLI began refusing an empty scan. Six fixture pairs named rules the reference engine did not evaluate as the runner drives it (four draft rules, a memory_access rule, which it withholds from typed events, and a context_window rule, which it evaluated on no typed event until 2026-10-19), one hand-written fixture did not exercise its rule, and four edge-case fixtures expected no match on zero-width, bidi-override and control-character payloads that rules in the corpus detect, while §12 required no_match or graceful_error for every edge-case fixture. Suite v1.1.0 regenerates and replaces those fixtures and adds the edge outcome handled (anything but a crash, within budget), and SPEC.md 1.1.0 allows it; both take a minor version because a patch release may not alter published fixtures. The reference engine now passes 226 of 226. CI runs the suite.",
+      "summary_zh": "沒有任何引擎能通過 conformance 測試套件 v1.0.0，參考引擎也不例外。有 41 個 true-positive 與 true-negative fixture 沒有 payload：fixture 產生器只讀測試案例的 input 欄位，但有 21 條規則把 payload 放在 tool_response、tool_description 等欄位；其中 20 個 true negative 在 CLI 開始拒絕空掃描之前，都是什麼也沒測到就「通過」。另有六組 fixture 指向參考引擎在 runner 的驅動方式下不會評估的規則（四條是 draft；一條是 memory_access 規則，引擎不在有型別的事件上評估它；一條是 context_window 規則，引擎在 2026-10-19 之前不在任何有型別的事件上評估它），一個手寫 fixture 根本觸發不了它所屬的規則；還有四個 edge fixture 的 payload 含零寬字元、雙向覆寫字元與控制字元，corpus 裡本來就有規則會偵測，fixture 卻預期不命中，而 §12 又要求每個 edge fixture 都必須是 no_match 或 graceful_error。測試套件 v1.1.0 重新產生並替換這些 fixture，新增 edge 結果 handled（在時間預算內、不當機即可），SPEC.md 1.1.0 允許這個結果；因為小修版不得改動已公開的 fixture，兩者都升次版。參考引擎現在 226 個 fixture 全數通過，CI 也會執行這套測試。",
+      "date": "2026-10-19",
+      "url": "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/705"
     },
     {
       "id": "e-2026-10-19-regex-dialect",
