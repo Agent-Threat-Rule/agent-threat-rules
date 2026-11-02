@@ -75,7 +75,10 @@ export function renderSignatureFile(file: SignatureFile, context: RenderContext)
   ].join('\n');
   const body = emitYaml(
     { signatures: file.signatures.map(signatureNode) },
-    { anchoredKeys: { file_types: FILE_TYPES_ANCHOR } },
+    {
+      anchoredKeys: { file_types: FILE_TYPES_ANCHOR },
+      escapeInvisible: !context.reproduceVendored,
+    },
   );
   return banner + body;
 }

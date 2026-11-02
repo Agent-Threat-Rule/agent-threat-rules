@@ -17,6 +17,7 @@ export interface AtrRule {
   readonly maturity?: string;
   readonly detection?: {
     readonly method?: string;
+    readonly condition?: string;
     readonly conditions?: readonly AtrCondition[];
   };
 }

@@ -91,6 +91,28 @@ describe('emitYaml', () => {
     expect(parsed.signatures[0].patterns).toEqual(values);
   });
 
+  it('writes invisible characters as escapes when asked, without changing the value', () => {
+    const cp = (...codes: number[]) => String.fromCodePoint(...codes);
+    const values = [
+      `(?i)[${cp(0xe0000)}-${cp(0xe007f)}]{3,}`,
+      `[${cp(0x200b, 0x200c, 0x200d, 0x2060)}]`,
+      `${cp(0x202e)}gnp.exe`,
+      `[${cp(0x2066)}-${cp(0x2069)}]`,
+      `short ${cp(0x00ad)} value`,
+    ];
+    const text = emitYaml({ signatures: [{ patterns: values }] }, { escapeInvisible: true });
+    expect([...text].filter((char) => /[\p{Cf}\p{Cn}\p{Co}\p{Cs}]/u.test(char))).toEqual([]);
+    expect(text).toContain('\\U000E0000');
+    expect(text).toContain('\\u202E');
+    const parsed = yaml.load(text) as { signatures: { patterns: string[] }[] };
+    expect(parsed.signatures[0].patterns).toEqual(values);
+  });
+
+  it('keeps invisible characters raw by default, as the reproduction target does', () => {
+    const value = `[${String.fromCodePoint(0x200b)}]`;
+    expect(emitYaml({ p: [value] })).toContain(value);
+  });
+
   it('emits a shared array once as an anchor and then as an alias', () => {
     const shared = ['markdown', 'json'];
     const text = emitYaml(
@@ -165,6 +187,36 @@ describe('toSignature', () => {
       '(?i)pickle\\.load',
       '(?i)pickle\\.load',
     ]);
+  });
+
+  it('writes a condition: all rule as one pattern that needs every condition', () => {
+    const both = rule({
+      id: 'ATR-2026-00006',
+      detection: {
+        condition: 'all',
+        conditions: [
+          { field: 'content', operator: 'regex', value: 'you\\s+are\\s+now' },
+          { field: 'content', operator: 'regex', value: '(?i)unfiltered' },
+        ],
+      },
+    });
+    expect(toSignature({ ...loaded, rule: both }, OPTIONS).patterns).toEqual([
+      '(?i)\\A(?=[\\s\\S]*?(?:you\\s+are\\s+now))(?=[\\s\\S]*?(?:unfiltered))',
+    ]);
+  });
+
+  it('keeps one pattern per condition for any, and for a single all condition', () => {
+    const conditions = [
+      { field: 'content', operator: 'regex', value: 'abc' },
+      { field: 'content', operator: 'regex', value: 'def' },
+    ];
+    const any = rule({ id: 'ATR-2026-00007', detection: { condition: 'any', conditions } });
+    expect(toSignature({ ...loaded, rule: any }, OPTIONS).patterns).toEqual(['(?i)abc', '(?i)def']);
+    const single = rule({
+      id: 'ATR-2026-00008',
+      detection: { condition: 'all', conditions: conditions.slice(0, 1) },
+    });
+    expect(toSignature({ ...loaded, rule: single }, OPTIONS).patterns).toEqual(['(?i)abc']);
   });
 
   // One condition per leading-group shape on main: none, (?i), and the three

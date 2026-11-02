@@ -11,7 +11,8 @@
  *   1. empty string                       -> ''
  *   2. contains a character that cannot   -> double quoted, JSON-style escapes
  *      survive an unquoted scalar
- *      (control, zero width, BOM)
+ *      (control, zero width, BOM; with
+ *      escapeInvisible, any invisible char)
  *   3. leading or trailing whitespace     -> double quoted
  *   4. longer than FOLD_THRESHOLD         -> block folded (>-) on the next line
  *   5. plain-safe                         -> plain
@@ -40,6 +41,22 @@ export interface EmitOptions {
    * referenced by alias afterwards. Maps key name -> anchor name.
    */
   readonly anchoredKeys?: Readonly<Record<string, string>>;
+  /**
+   * Write every invisible character (format, unassigned, private use, lone
+   * surrogate, line and paragraph separator) as a YAML escape instead of the
+   * raw character. The parsed value is identical, so no pattern changes; the
+   * file just stops carrying bidirectional overrides and tag characters that
+   * a reviewer cannot see. Off for --reproduce-vendored, whose target bytes
+   * keep the raw characters.
+   */
+  readonly escapeInvisible?: boolean;
+}
+
+/** Characters a reader cannot see in the file, by Unicode general category. */
+const INVISIBLE = /[\p{Cf}\p{Cn}\p{Co}\p{Cs}\p{Zl}\p{Zp}]/u;
+
+function isInvisible(char: string): boolean {
+  return INVISIBLE.test(char);
 }
 
 const PLAIN_UNSAFE_FIRST = new Set([
@@ -68,8 +85,9 @@ const PLAIN_UNSAFE_FIRST = new Set([
  * A line feed is not one of them: a block scalar carries line feeds, and a
  * few regexes legitimately contain one inside a character class.
  */
-export function hasUnquotableChar(value: string): boolean {
+export function hasUnquotableChar(value: string, escapeInvisible = false): boolean {
   for (const char of value) {
+    if (escapeInvisible && isInvisible(char)) return true;
     const code = char.codePointAt(0) ?? 0;
     if (code === 0x0a) continue;
     const isC0 = code < 0x20;
@@ -121,7 +139,7 @@ export function isPlainSafe(value: string): boolean {
  * invisible-character smuggling. U+FEFF is the exception: it is excluded from
  * the printable set, so it has to be written as an escape.
  */
-function escapeDoubleQuoted(value: string): string {
+function escapeDoubleQuoted(value: string, escapeInvisible = false): string {
   let out = '';
   for (const char of value) {
     const code = char.codePointAt(0) ?? 0;
@@ -132,6 +150,11 @@ function escapeDoubleQuoted(value: string): string {
     else if (code < 0x20 || code === 0x7f) out += `\\x${code.toString(16).padStart(2, '0')}`;
     else if ((code >= 0x80 && code <= 0x9f) || code === 0xfeff) {
       out += `\\u${code.toString(16).toUpperCase().padStart(4, '0')}`;
+    } else if (escapeInvisible && isInvisible(char)) {
+      out +=
+        code > 0xffff
+          ? `\\U${code.toString(16).toUpperCase().padStart(8, '0')}`
+          : `\\u${code.toString(16).toUpperCase().padStart(4, '0')}`;
     } else out += char;
   }
   return `"${out}"`;
@@ -144,9 +167,9 @@ function hasUnfoldableLines(value: string): boolean {
   return value.split('\n').some((line) => line.length === 0 || /^[ \t]|[ \t]$/.test(line));
 }
 
-export function chooseScalarStyle(value: string): ScalarStyle {
+export function chooseScalarStyle(value: string, escapeInvisible = false): ScalarStyle {
   if (value.length === 0) return 'empty';
-  if (hasUnquotableChar(value)) return 'double';
+  if (hasUnquotableChar(value, escapeInvisible)) return 'double';
   if (value !== value.trim()) return 'double';
   if (value.includes('\n')) return hasUnfoldableLines(value) ? 'double' : 'folded';
   if (value.length > FOLD_THRESHOLD) return 'folded';
@@ -157,14 +180,14 @@ export function chooseScalarStyle(value: string): ScalarStyle {
  * Render a scalar. Folded scalars return a multi-line chunk starting with
  * ">-", so the caller must place them after "key:" with no trailing space.
  */
-function renderScalar(value: string, indent: number): string {
-  const style = chooseScalarStyle(value);
+function renderScalar(value: string, indent: number, escapeInvisible: boolean): string {
+  const style = chooseScalarStyle(value, escapeInvisible);
   const pad = ' '.repeat(indent + 2);
   switch (style) {
     case 'empty':
       return "''";
     case 'double':
-      return escapeDoubleQuoted(value);
+      return escapeDoubleQuoted(value, escapeInvisible);
     case 'folded':
       // A line feed inside a folded scalar is written as a blank line: the
       // reader folds one break into a space and keeps the second.
@@ -179,6 +202,7 @@ function renderScalar(value: string, indent: number): string {
 interface EmitState {
   readonly anchoredKeys: Readonly<Record<string, string>>;
   readonly emitted: Set<string>;
+  readonly escapeInvisible: boolean;
 }
 
 function emitArray(key: string, items: YamlValue[], indent: number, state: EmitState): string[] {
@@ -194,7 +218,7 @@ function emitArray(key: string, items: YamlValue[], indent: number, state: EmitS
 function emitSequenceItem(item: YamlValue, indent: number, state: EmitState): string[] {
   const dash = `${' '.repeat(indent)}- `;
   if (isLiteralScalar(item)) return [`${dash}${String(item)}`];
-  if (typeof item === 'string') return [`${dash}${renderScalar(item, indent)}`];
+  if (typeof item === 'string') return [`${dash}${renderScalar(item, indent, state.escapeInvisible)}`];
   if (Array.isArray(item)) throw new Error('nested sequences are not supported by this emitter');
   const lines = emitMapping(item, indent + 2, state);
   return [dash + lines[0].slice(indent + 2), ...lines.slice(1)];
@@ -204,7 +228,7 @@ function emitMapping(node: Record<string, YamlValue>, indent: number, state: Emi
   return Object.entries(node).flatMap(([key, value]) => {
     if (isLiteralScalar(value)) return [`${' '.repeat(indent)}${key}: ${String(value)}`];
     if (typeof value === 'string') {
-      return [`${' '.repeat(indent)}${key}: ${renderScalar(value, indent)}`];
+      return [`${' '.repeat(indent)}${key}: ${renderScalar(value, indent, state.escapeInvisible)}`];
     }
     if (Array.isArray(value)) return emitArray(key, value, indent, state);
     return [`${' '.repeat(indent)}${key}:`, ...emitMapping(value, indent + 2, state)];
@@ -213,6 +237,10 @@ function emitMapping(node: Record<string, YamlValue>, indent: number, state: Emi
 
 /** Emit a document. Always ends with exactly one newline. */
 export function emitYaml(root: Record<string, YamlValue>, options: EmitOptions = {}): string {
-  const state: EmitState = { anchoredKeys: options.anchoredKeys ?? {}, emitted: new Set() };
+  const state: EmitState = {
+    anchoredKeys: options.anchoredKeys ?? {},
+    emitted: new Set(),
+    escapeInvisible: options.escapeInvisible ?? false,
+  };
   return `${emitMapping(root, 0, state).join('\n')}\n`;
 }
