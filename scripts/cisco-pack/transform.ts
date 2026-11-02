@@ -1,5 +1,5 @@
 import { regexConditionSpec } from '../../src/engine.js';
-import { extractPatterns, type LoadedRule } from './load-rules.js';
+import { extractPatterns, type AtrRule, type LoadedRule } from './load-rules.js';
 
 /** Field widths the vendored pack truncates to. */
 export const DESCRIPTION_MAX = 300;
@@ -67,6 +67,35 @@ export function toScannerPattern(value: string): string {
 }
 
 /**
+ * True when every condition must match: `condition: all` (or `and`). SPEC.md
+ * §6.1 makes `any` the default when the combinator is left out.
+ */
+export function requiresAllConditions(rule: AtrRule): boolean {
+  const condition = rule.detection?.condition;
+  return condition === 'all' || condition === 'and';
+}
+
+/**
+ * The patterns a rule contributes to the pack.
+ *
+ * The scanner reports a finding when any one pattern matches, so a rule whose
+ * conditions must all match cannot be written as one pattern per condition:
+ * that turns AND into OR and fires on half of the signal. Such a rule becomes
+ * a single pattern of anchored lookaheads, one per condition, which matches
+ * only where every condition does. The lookaheads use `[\s\S]` so they span
+ * whatever text the scanner hands the pattern. Skill Scanner hands it one line
+ * at a time unless the pattern contains `\n`, so there the conditions have to
+ * meet on one line: narrower than ATR's engine, never broader.
+ */
+export function toScannerPatterns(rule: AtrRule): string[] {
+  const sources = extractPatterns(rule).map((value) => regexConditionSpec(value).source);
+  if (sources.length > 1 && requiresAllConditions(rule)) {
+    return [`(?i)\\A${sources.map((source) => `(?=[\\s\\S]*?(?:${source}))`).join('')}`];
+  }
+  return sources.map((source) => `(?i)${source}`);
+}
+
+/**
  * Put the prose on one line, then truncate.
  *
  * Only line breaks are replaced. Runs of spaces are left alone on purpose:
@@ -98,7 +127,7 @@ export function toSignature(loaded: LoadedRule, options: TransformOptions): Cisc
     ...(options.omitMaturity ? {} : { maturity: rule.maturity ?? 'experimental' }),
     patterns: options.verbatimPatterns
       ? extractPatterns(rule)
-      : extractPatterns(rule).map(toScannerPattern),
+      : toScannerPatterns(rule),
     file_types: FILE_TYPES,
     description: flatten(rule.description, DESCRIPTION_MAX),
     remediation: flatten(rule.remediation, REMEDIATION_MAX),

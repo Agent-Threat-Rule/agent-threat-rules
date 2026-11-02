@@ -189,6 +189,36 @@ describe('toSignature', () => {
     ]);
   });
 
+  it('writes a condition: all rule as one pattern that needs every condition', () => {
+    const both = rule({
+      id: 'ATR-2026-00006',
+      detection: {
+        condition: 'all',
+        conditions: [
+          { field: 'content', operator: 'regex', value: 'you\\s+are\\s+now' },
+          { field: 'content', operator: 'regex', value: '(?i)unfiltered' },
+        ],
+      },
+    });
+    expect(toSignature({ ...loaded, rule: both }, OPTIONS).patterns).toEqual([
+      '(?i)\\A(?=[\\s\\S]*?(?:you\\s+are\\s+now))(?=[\\s\\S]*?(?:unfiltered))',
+    ]);
+  });
+
+  it('keeps one pattern per condition for any, and for a single all condition', () => {
+    const conditions = [
+      { field: 'content', operator: 'regex', value: 'abc' },
+      { field: 'content', operator: 'regex', value: 'def' },
+    ];
+    const any = rule({ id: 'ATR-2026-00007', detection: { condition: 'any', conditions } });
+    expect(toSignature({ ...loaded, rule: any }, OPTIONS).patterns).toEqual(['(?i)abc', '(?i)def']);
+    const single = rule({
+      id: 'ATR-2026-00008',
+      detection: { condition: 'all', conditions: conditions.slice(0, 1) },
+    });
+    expect(toSignature({ ...loaded, rule: single }, OPTIONS).patterns).toEqual(['(?i)abc']);
+  });
+
   // One condition per leading-group shape on main: none, (?i), and the three
   // rules that write more than i (ATR-2026-00450, -00859, -00207).
   const SHAPES = ['abc', '(?i)abc', '(?im)^abc', '(?si)<x>[^<]*', '(?is)a[.]b'];
