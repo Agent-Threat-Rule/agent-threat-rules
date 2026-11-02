@@ -4,6 +4,30 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The SKILL.md path decodes the same base64 blocks on every scan of the
+  same text.** `decodeBase64Blocks()` searched with a module-level `/g`
+  regular expression and stopped at its five-block cap without resetting
+  `lastIndex`, so the next call in the same process resumed where the
+  previous one stopped. That happened after any document with five
+  decodable blocks and one more run of 32 or more base64 characters after
+  them, decodable or not: a second scan of the same text decoded only what
+  came after that run, and the next document scanned lost some or all of
+  its own blocks. The `[decoded:base64]` matches of `scanSkill()` and
+  `scanSkillAsync()` therefore depended on what the process had scanned
+  before, which SPEC §6.5 does not allow; a directory scan
+  (`atr scan <dir>`) and the `atr_scan_skill` MCP tool scan many documents
+  in one process. The regular expression is now created per call. The cap,
+  the block pattern and the printable-text filter are unchanged, so the
+  first scan in a fresh process returns what it did before. No measurement
+  that can be re-run from this repository changes: of the files under
+  `data/` and the rules' test cases, only the two BrowseSafe corpora hold
+  such a document, and they are scored as tool responses, not through
+  `scanSkill()`. The wild-scan measurement (`data/measurements/wild-scan/`)
+  was made with the old decoder over documents that are not in the
+  repository, and was not re-run.
+
 ## [4.2.2] - 2026-10-28
 
 A patch release of export and converter fixes, five rule rewrites for Python
