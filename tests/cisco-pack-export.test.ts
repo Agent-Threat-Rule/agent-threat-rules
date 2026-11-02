@@ -18,6 +18,7 @@ import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { describe, expect, it } from 'vitest';
 import { regexConditionSpec } from '../src/engine.js';
+import { benignGateExclusions, parseBenignGate } from '../scripts/cisco-pack/benign-gate.js';
 import { loadRules, extractPatterns, type AtrRule } from '../scripts/cisco-pack/load-rules.js';
 import {
   buildSignatureFiles,
@@ -329,6 +330,67 @@ describe('loadRules', () => {
       { dir: 'prompt-injection', name: 'broken.yaml', body: { severity: 'high' } },
     ]);
     expect(() => loadRules(root)).toThrow(/missing rule id/);
+  });
+
+  function fieldRule(id: string, fields: readonly string[]) {
+    return {
+      dir: 'excessive-autonomy',
+      name: `${id}-x.yaml`,
+      body: {
+        id,
+        severity: 'high',
+        description: 'x',
+        detection: { conditions: fields.map((field) => ({ field, operator: 'regex', value: 'delete' })) },
+      },
+    };
+  }
+
+  it('leaves out a rule with a condition on a runtime-only field, and says which', () => {
+    const root = writeRuleTree([
+      fieldRule('ATR-2026-00099', ['tool_name', 'tool_args']),
+      fieldRule('ATR-2026-00100', ['content', 'user_input', 'tool_description']),
+      // One static and one runtime condition: dropping only the runtime one
+      // would broaden a condition: all rule, so the whole rule goes.
+      fieldRule('ATR-2026-00101', ['content', 'tool_response']),
+    ]);
+    const loaded = loadRules(root);
+    expect(loaded.rules.map((r) => r.rule.id)).toEqual(['ATR-2026-00100']);
+    expect(loaded.excluded).toEqual([
+      { id: 'ATR-2026-00099', reason: 'runtime-only field: tool_args, tool_name' },
+      { id: 'ATR-2026-00101', reason: 'runtime-only field: tool_response' },
+    ]);
+    expect(loadRules(root, { includeRuntimeFields: true }).rules).toHaveLength(3);
+  });
+
+  it('leaves out the rules it is told to, with the given reason', () => {
+    const root = writeRuleTree([
+      fieldRule('ATR-2026-00100', ['content']),
+      fieldRule('ATR-2026-00102', ['content']),
+    ]);
+    const loaded = loadRules(root, { exclude: new Map([['ATR-2026-00102', 'benign gate: x']]) });
+    expect(loaded.rules.map((r) => r.rule.id)).toEqual(['ATR-2026-00100']);
+    expect(loaded.excluded).toEqual([{ id: 'ATR-2026-00102', reason: 'benign gate: x' }]);
+  });
+});
+
+describe('benign gate result', () => {
+  const gate = {
+    scanner: { repo: 'cisco-ai-defense/skill-scanner', commit: 'a'.repeat(40) },
+    corpus: { path: 'data/skill-benchmark/benign', records: 432, sha256: 'b'.repeat(64) },
+    hits: { 'ATR-2026-00111': 27, 'ATR-2026-00001': 2 },
+  };
+
+  it('turns every rule that fired into an exclusion with its count', () => {
+    expect([...benignGateExclusions(parseBenignGate(JSON.stringify(gate)))]).toEqual([
+      ['ATR-2026-00001', 'benign gate: fires on 2 of 432 benign skills in Skill Scanner'],
+      ['ATR-2026-00111', 'benign gate: fires on 27 of 432 benign skills in Skill Scanner'],
+    ]);
+  });
+
+  it('rejects a result it cannot trust', () => {
+    expect(() => parseBenignGate(JSON.stringify({ ...gate, hits: { ATR_2026_00111: 1 } }))).toThrow(/rule id/);
+    expect(() => parseBenignGate(JSON.stringify({ ...gate, hits: { 'ATR-2026-00111': 0 } }))).toThrow(/count/);
+    expect(() => parseBenignGate(JSON.stringify({ ...gate, corpus: { records: 0 } }))).toThrow(/records/);
   });
 });
 
