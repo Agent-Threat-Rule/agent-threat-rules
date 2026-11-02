@@ -109,20 +109,27 @@ const SKILL_CONTEXT_DENYLIST: ReadonlySet<string> = new Set([
   // ATR-2026-00098 Unauthorized Financial Action (1 FP)
 ]);
 
+const MAX_DECODE_BLOCKS = 5;
+
 /**
  * Detect and decode base64-encoded blocks in content.
  * Bounds: max 1 level decode, max 5 blocks, min 32 chars per block,
  * MAX_EVAL_LENGTH per decoded block. Returns decoded text fragments.
+ * The result depends on `content` alone (SPEC §6.5).
  */
-const BASE64_BLOCK_RE = /(?:[A-Za-z0-9+/]{32,}={0,2})/g;
-const MAX_DECODE_BLOCKS = 5;
-
 export function decodeBase64Blocks(content: string): string[] {
   const decoded: string[] = [];
+  // A /g regex keeps its search position in lastIndex, and this loop stops at
+  // the block cap partway through the content. A regex shared across calls
+  // carried that position into the next call, which resumed from it, so the
+  // same text decoded different blocks on alternate scans. A literal in the
+  // function body is a new RegExp on every call, so the position cannot
+  // outlive the call.
+  const blockRe = /(?:[A-Za-z0-9+/]{32,}={0,2})/g;
   let match: RegExpExecArray | null;
   let count = 0;
 
-  while ((match = BASE64_BLOCK_RE.exec(content)) !== null && count < MAX_DECODE_BLOCKS) {
+  while (count < MAX_DECODE_BLOCKS && (match = blockRe.exec(content)) !== null) {
     try {
       const raw = Buffer.from(match[0], 'base64');
       const text = raw.toString('utf-8');
