@@ -227,10 +227,11 @@ export function renderReadme(
   const exclusionNote =
     excluded.length === 0
       ? 'Every rule in the ATR release is representable as a static signature.'
-      : `${excluded.length} rule(s) in the ATR release are not representable as static ` +
-        `signatures and are excluded: ${excluded.map((e) => `\`${e.id}\` (${e.reason})`).join(', ')}. ` +
+      : `${excluded.length} rule(s) in the ATR release are excluded: ` +
+        `${excluded.map((e) => `\`${e.id}\` (${e.reason})`).join(', ')}. ` +
         'A signature pack matches regular expressions against file content; it cannot ' +
-        'evaluate a per-session time window or a tool-call count.';
+        'evaluate a per-session time window or a tool-call count, and it has no field to ' +
+        'tell a tool call or tool response apart from the text of a skill.';
   return `# ATR Rule Pack for Cisco Skill Scanner
 
 **Source:** [Agent Threat Rules (ATR)](${context.repoUrl})
