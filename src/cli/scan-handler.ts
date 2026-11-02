@@ -174,8 +174,8 @@ async function scanDirectory(
   options: ScanOptions,
   reporter?: ReturnType<typeof createTCReporter>,
 ): Promise<number> {
-  const { configs, skills } = collectDirectoryTargets(targetPath);
-  if (configs.length + skills.length === 0) {
+  const { configs, skills, skipped: collectionSkipped } = collectDirectoryTargets(targetPath);
+  if (configs.length + skills.length === 0 && collectionSkipped.length === 0) {
     console.error(`${RED}Error: No MCP config or SKILL.md files found in ${targetPath}${RESET}`);
     process.exit(1);
   }
@@ -195,9 +195,18 @@ async function scanDirectory(
   const findings: Array<{ kind: 'mcp' | 'skill'; file: string; result: ScanResult; filtered: ATRMatch[] }> = [];
   let mcpEventsScanned = 0;
   let skillsScanned = 0;
-  let filesSkipped = 0;
+  const skipped = [...collectionSkipped];
   let totalThreats = 0;
   let failHits = 0;
+
+  const recordSkip = (file: string, reason: string): void => {
+    console.error(`${DIM}Warning: Skipping ${file}: ${reason}${RESET}`);
+    skipped.push({ file, reason });
+  };
+
+  for (const { file, reason } of collectionSkipped) {
+    console.error(`${DIM}Warning: Skipping ${file}: ${reason}${RESET}`);
+  }
 
   const record = (kind: 'mcp' | 'skill', file: string, result: ScanResult): void => {
     const filtered = result.matches.filter((m) => SEVERITY_ORDER.indexOf(m.rule.severity) >= minIdx);
@@ -210,22 +219,19 @@ async function scanDirectory(
   };
 
   for (const file of configs) {
-    if (statSync(file).size > 50 * 1024 * 1024) {
-      console.error(`${RED}Warning: Skipping ${file} (exceeds 50MB limit)${RESET}`);
-      filesSkipped += 1;
-      continue;
-    }
     let events: AgentEvent[] | null = null;
     try {
+      if (statSync(file).size > 50 * 1024 * 1024) {
+        recordSkip(file, 'exceeds 50MB limit');
+        continue;
+      }
       events = configDocumentToEvents(JSON.parse(readFileSync(file, 'utf-8')));
     } catch (error) {
-      console.error(`${DIM}Warning: Skipping ${file}: ${error instanceof Error ? error.message : String(error)}${RESET}`);
-      filesSkipped += 1;
+      recordSkip(file, error instanceof Error ? error.message : String(error));
       continue;
     }
     if (events === null) {
-      console.error(`${DIM}Warning: Skipping ${file}: not an MCP config document${RESET}`);
-      filesSkipped += 1;
+      recordSkip(file, 'not an MCP config document');
       continue;
     }
     for (const event of events) {
@@ -236,12 +242,17 @@ async function scanDirectory(
   }
 
   for (const file of skills) {
-    if (statSync(file).size > 1024 * 1024) {
-      console.error(`${RED}Warning: Skipping ${file} (exceeds 1MB limit)${RESET}`);
-      filesSkipped += 1;
+    let content: string;
+    try {
+      if (statSync(file).size > 1024 * 1024) {
+        recordSkip(file, 'exceeds 1MB limit');
+        continue;
+      }
+      content = readFileSync(file, 'utf-8');
+    } catch (error) {
+      recordSkip(file, error instanceof Error ? error.message : String(error));
       continue;
     }
-    const content = readFileSync(file, 'utf-8');
     const result = semantic.enabled ? await engine.scanSkillFullAsync(content, file) : engine.scanSkillFull(content, file);
     record('skill', file, result);
     skillsScanned += 1;
@@ -251,11 +262,15 @@ async function scanDirectory(
   if (scanned === 0) console.error(`${RED}Error: nothing was scanned${RESET}`);
   const sarifResults = findings.map(({ result, filtered }) => ({ ...result, matches: filtered, threat_count: filtered.length }));
   if (options.sarif) {
-    console.log(JSON.stringify(scanResultToSARIF(sarifResults, process.env['npm_package_version'] ?? '1.0.0', { heldBack }), null, 2));
+    console.log(JSON.stringify(scanResultToSARIF(sarifResults, process.env['npm_package_version'] ?? '1.0.0', {
+      heldBack,
+      skippedFiles: skipped,
+      executionSuccessful: scanned > 0,
+    }), null, 2));
   } else if (options.json) {
     console.log(JSON.stringify({
       scan_type: 'directory', mcp_events_scanned: mcpEventsScanned, skills_scanned: skillsScanned,
-      files_skipped: filesSkipped, threats_detected: totalThreats, rules_loaded: engine.getRuleCount(),
+      files_skipped: skipped.length, threats_detected: totalThreats, rules_loaded: engine.getRuleCount(),
       results: findings.map(({ kind, file, result, filtered }) => ({
         kind, file, content_hash: result.content_hash,
         matches: filtered.map((m) => formatMatchJson(m, heldBack(m))),
@@ -599,20 +614,37 @@ function collectSkillFiles(targetPath: string): string[] {
 
 const MCP_CONFIG_NAMES = new Set(['.mcp.json', 'mcp.json', 'mcp-config.json', 'claude_desktop_config.json']);
 
-function collectDirectoryTargets(root: string): { configs: string[]; skills: string[] } {
+function collectDirectoryTargets(root: string): {
+  configs: string[];
+  skills: string[];
+  skipped: Array<{ file: string; reason: string }>;
+} {
   const configs: string[] = [];
   const skills: string[] = [];
+  const skipped: Array<{ file: string; reason: string }> = [];
   const walk = (dir: string): void => {
-    for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    let entries;
+    try {
+      entries = readdirSync(dir, { withFileTypes: true });
+    } catch (error) {
+      skipped.push({ file: dir, reason: error instanceof Error ? error.message : String(error) });
+      return;
+    }
+    for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
       if (entry.name === '.git' || entry.name === 'node_modules') continue;
       const full = resolve(dir, entry.name);
       if (entry.isDirectory()) walk(full);
-      else if (entry.name === 'SKILL.md' || entry.name === 'skill.md') skills.push(full);
-      else if (MCP_CONFIG_NAMES.has(entry.name)) configs.push(full);
+      else if (entry.name === 'SKILL.md' || entry.name === 'skill.md') {
+        if (entry.isFile()) skills.push(full);
+        else skipped.push({ file: full, reason: 'not a regular file' });
+      } else if (MCP_CONFIG_NAMES.has(entry.name)) {
+        if (entry.isFile()) configs.push(full);
+        else skipped.push({ file: full, reason: 'not a regular file' });
+      }
     }
   };
   walk(root);
-  return { configs, skills };
+  return { configs, skills, skipped };
 }
 
 function walkForSkills(dir: string, out: string[]): void {

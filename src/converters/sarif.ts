@@ -125,6 +125,10 @@ export interface SarifOptions {
   readonly runProperties?: Readonly<Record<string, unknown>>;
   /** Extra properties for every result of one scan result (e.g. the tool name of a tools/list entry). */
   readonly resultProperties?: (result: ScanResult) => Readonly<Record<string, unknown>> | undefined;
+  /** Files the tool deliberately skipped, reported as SARIF execution warnings. */
+  readonly skippedFiles?: readonly { readonly file: string; readonly reason: string }[];
+  /** Whether the invocation produced at least one scan result. */
+  readonly executionSuccessful?: boolean;
 }
 
 export function scanResultToSARIF(
@@ -223,6 +227,20 @@ export function scanResultToSARIF(
     }
   }
 
+  const toolExecutionNotifications = options.skippedFiles?.map(({ file, reason }) => {
+    const uri = toArtifactUri(file);
+    return {
+      descriptor: { id: 'ATR_SCAN_SKIPPED' },
+      level: 'warning',
+      message: { text: `Skipped ${uri}: ${reason}` },
+      locations: [{
+        physicalLocation: {
+          artifactLocation: { uri, uriBaseId: '%SRCROOT%' },
+        },
+      }],
+    };
+  }) ?? [];
+
   return {
     $schema: 'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json',
     version: '2.1.0',
@@ -238,6 +256,12 @@ export function scanResultToSARIF(
           },
         },
         ...(artifacts.length > 0 ? { artifacts } : {}),
+        ...(toolExecutionNotifications.length > 0 ? {
+          invocations: [{
+            executionSuccessful: options.executionSuccessful ?? true,
+            toolExecutionNotifications,
+          }],
+        } : {}),
         ...(options.runProperties ? { properties: options.runProperties } : {}),
         results: sarifResults,
       },
