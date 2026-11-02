@@ -91,6 +91,28 @@ describe('emitYaml', () => {
     expect(parsed.signatures[0].patterns).toEqual(values);
   });
 
+  it('writes invisible characters as escapes when asked, without changing the value', () => {
+    const cp = (...codes: number[]) => String.fromCodePoint(...codes);
+    const values = [
+      `(?i)[${cp(0xe0000)}-${cp(0xe007f)}]{3,}`,
+      `[${cp(0x200b, 0x200c, 0x200d, 0x2060)}]`,
+      `${cp(0x202e)}gnp.exe`,
+      `[${cp(0x2066)}-${cp(0x2069)}]`,
+      `short ${cp(0x00ad)} value`,
+    ];
+    const text = emitYaml({ signatures: [{ patterns: values }] }, { escapeInvisible: true });
+    expect([...text].filter((char) => /[\p{Cf}\p{Cn}\p{Co}\p{Cs}]/u.test(char))).toEqual([]);
+    expect(text).toContain('\\U000E0000');
+    expect(text).toContain('\\u202E');
+    const parsed = yaml.load(text) as { signatures: { patterns: string[] }[] };
+    expect(parsed.signatures[0].patterns).toEqual(values);
+  });
+
+  it('keeps invisible characters raw by default, as the reproduction target does', () => {
+    const value = `[${String.fromCodePoint(0x200b)}]`;
+    expect(emitYaml({ p: [value] })).toContain(value);
+  });
+
   it('emits a shared array once as an anchor and then as an alias', () => {
     const shared = ['markdown', 'json'];
     const text = emitYaml(

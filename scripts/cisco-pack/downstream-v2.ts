@@ -227,14 +227,17 @@ export function renderPackManifestV2(
   const header = downstream.headerComments.trimEnd();
   return (
     (header ? `${header}\n` : "") +
-    emitYaml({
-      schema_version: 2,
-      name: "atr",
-      version,
-      description: packDescriptionV2(total, files.length),
-      taxonomy_defaults: { ...downstream.taxonomyDefaults },
-      rules,
-    })
+    emitYaml(
+      {
+        schema_version: 2,
+        name: "atr",
+        version,
+        description: packDescriptionV2(total, files.length),
+        taxonomy_defaults: { ...downstream.taxonomyDefaults },
+        rules,
+      },
+      { escapeInvisible: true },
+    )
   );
 }
 
