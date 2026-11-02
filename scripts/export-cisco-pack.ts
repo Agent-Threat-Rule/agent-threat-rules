@@ -46,6 +46,11 @@
  *                          scripts/cisco-pack/downstream-v2.ts.
  *   --taxonomy <id>=<code> Taxonomy code for one rule (repeatable); needed when
  *                          a new rule's scanner category has no default.
+ *   --max-severity <level> Highest severity a signature may carry (critical, high,
+ *                          medium, low, info); more severe rules are written at
+ *                          it. Skill Scanner fails a skill on any HIGH or
+ *                          CRITICAL finding by default, so `low` makes the pack
+ *                          report without changing that verdict.
  *   --benign-gate <json>   Output of scripts/cisco-pack/benign-gate.py. Every
  *                          rule it saw block a benign skill in Skill Scanner
  *                          is left out of the pack, and listed as excluded.
@@ -97,6 +102,7 @@ interface Args {
   readonly taxonomy: ReadonlyMap<string, string>;
   readonly reproduceVendored: boolean;
   readonly benignGate?: string;
+  readonly maxSeverity?: string;
   readonly json: boolean;
 }
 
@@ -133,6 +139,7 @@ function parseArgs(argv: readonly string[]): Args {
     taxonomy: new Map(readRepeatedFlag(argv, '--taxonomy').map(parseTaxonomyOverride)),
     reproduceVendored: argv.includes('--reproduce-vendored'),
     benignGate: readFlag(argv, '--benign-gate'),
+    maxSeverity: readFlag(argv, '--max-severity')?.toUpperCase(),
     json: argv.includes('--json'),
   };
 }
@@ -149,6 +156,9 @@ function countOwaspAgenticCategories(rulesDir: string): number {
 }
 
 function writePack(args: Args): { total: number; summary: Record<string, unknown> } {
+  if (args.maxSeverity && args.reproduceVendored) {
+    throw new Error('--max-severity and --reproduce-vendored are mutually exclusive');
+  }
   if (args.benignGate && args.reproduceVendored) {
     throw new Error('--benign-gate and --reproduce-vendored are mutually exclusive');
   }
@@ -167,6 +177,7 @@ function writePack(args: Args): { total: number; summary: Record<string, unknown
     repoUrl: DEFAULT_REPO_URL,
     omitMaturity: args.reproduceVendored,
     verbatimPatterns: args.reproduceVendored,
+    maxSeverity: args.maxSeverity,
   });
   const downstream = args.downstream ? readDownstreamPack(resolve(args.downstream)) : undefined;
   const v2Rules = downstream ? resolveV2Rules(atrFiles, downstream, args.taxonomy) : undefined;

@@ -22,6 +22,7 @@ import { benignGateExclusions, parseBenignGate } from '../scripts/cisco-pack/ben
 import { loadRules, extractPatterns, type AtrRule } from '../scripts/cisco-pack/load-rules.js';
 import {
   buildSignatureFiles,
+  capSeverity,
   toScannerPattern,
   toSignature,
   toSignatureId,
@@ -143,6 +144,16 @@ describe('toSignature', () => {
     expect(signature.atr_url).toBe(
       `${DEFAULT_REPO_URL}/blob/main/rules/tool-poisoning/ATR-2026-00001-example.yaml`,
     );
+  });
+
+  it('lowers severity to --max-severity and leaves less severe rules alone', () => {
+    expect(toSignature(loaded, { ...OPTIONS, maxSeverity: 'LOW' }).severity).toBe('LOW');
+    const low = { ...loaded, rule: rule({ id: 'ATR-2026-00002', severity: 'low' }) };
+    expect(toSignature(low, { ...OPTIONS, maxSeverity: 'MEDIUM' }).severity).toBe('LOW');
+    expect(capSeverity('HIGH', 'MEDIUM')).toBe('MEDIUM');
+    expect(capSeverity('MEDIUM', 'MEDIUM')).toBe('MEDIUM');
+    expect(capSeverity('INFO', 'LOW')).toBe('INFO');
+    expect(() => capSeverity('HIGH', 'SEVERE')).toThrow(/severity cap/);
   });
 
   it('takes the category from the directory, not from tags.category', () => {
