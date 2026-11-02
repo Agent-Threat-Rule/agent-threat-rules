@@ -4,10 +4,37 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+## [4.2.3] - 2026-11-02
+
+A patch release with one engine fix and two fixes to the Cisco Skill Scanner
+pack exporter, a repository script the npm package does not include. The
+rule format, identifier scheme, rules and the Match output format (SPEC §7)
+are unchanged.
+
+Default behaviour that changes:
+
+- `scanSkill()` and `scanSkillAsync()`, and `scanSkillFull()` and
+  `scanSkillFullAsync()`, which call them, no longer depend on what the
+  process scanned before. A document scanned after one with five decodable
+  base64 blocks and a further run of 32 or more base64 characters after them
+  now reports the `[decoded:base64]` matches it reports when scanned on its
+  own; before, it could lose some or all of them, and could report matches
+  from blocks after its first five decodable ones instead. `atr scan <dir>`
+  and the `atr_scan_skill` MCP tool scan many documents in one process. The
+  first scan in a fresh process is unchanged, and `evaluate()`, which decodes
+  no base64, is unchanged.
+- Cisco Skill Scanner packs generated with `scripts/export-cisco-pack.ts`
+  from a checkout of this release, other than with `--reproduce-vendored`,
+  differ from earlier ones: invisible characters in the signature files are
+  written as YAML escapes that parse to the same patterns, and a rule with
+  `condition: all` and more than one regex condition is written as one
+  pattern that matches only where every condition does. A pack generated
+  before this release changes only when it is regenerated.
+
 ### Fixed
 
 - **The SKILL.md path decodes the same base64 blocks on every scan of the
-  same text.** `decodeBase64Blocks()` searched with a module-level `/g`
+  same text** (#762). `decodeBase64Blocks()` searched with a module-level `/g`
   regular expression and stopped at its five-block cap without resetting
   `lastIndex`, so the next call in the same process resumed where the
   previous one stopped. That happened after any document with five
@@ -27,6 +54,35 @@ All notable changes to ATR will be documented in this file.
   `scanSkill()`. The wild-scan measurement (`data/measurements/wild-scan/`)
   was made with the old decoder over documents that are not in the
   repository, and was not re-run.
+
+- **The Cisco Skill Scanner pack writes invisible characters as YAML
+  escapes** (#760). Rules that detect Unicode smuggling contain the
+  characters they look for (tag characters, bidirectional overrides and
+  isolates, zero-width characters, the soft hyphen), and the pack emitter
+  wrote them raw, so a regenerated pack carried invisible characters, U+202E
+  among them, which GitHub flags as hidden or bidirectional Unicode. The
+  signature files, and `pack.yaml` with `--downstream`, now write any
+  character in Unicode categories Cf, Cn, Co, Cs, Zl or Zp as `\uXXXX`, or
+  `\UXXXXXXXX` above the BMP, in a double-quoted scalar. A YAML reader
+  decodes the escapes, so the parsed patterns are unchanged.
+  `--reproduce-vendored` keeps the raw characters, since the bytes it
+  reproduces contain them.
+
+- **A `condition: all` rule in the Cisco Skill Scanner pack matches only
+  where all its conditions do** (#761). The scanner reports a finding when
+  any one of a signature's patterns matches, and the exporter wrote one
+  pattern per regex condition, so a rule with `condition: all` fired
+  wherever a single condition did. A rule whose `detection.condition` is
+  `all` (or `and`) and that has more than one regex condition is now written
+  as one pattern of lookaheads anchored at the start of the text, one per
+  condition. Rules with `any`, or with one regex condition, are unchanged,
+  and `--reproduce-vendored` still copies patterns verbatim. Skill Scanner
+  runs a pattern over one line at a time, and also over the whole file only
+  when the pattern contains `\n` outside a character class; without one,
+  the conditions have to meet on one line, so a rule whose attacks span
+  lines can match less in the pack than in the engine. The combined pattern
+  matches an empty string at the start of the text it runs over, so the
+  match itself carries no text, and an RE2-based engine cannot compile it.
 
 ## [4.2.2] - 2026-10-28
 
