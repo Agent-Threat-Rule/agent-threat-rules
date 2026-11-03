@@ -493,6 +493,19 @@ describe('SARIF Converter', () => {
     expect(sarif.runs[0]!.results).toHaveLength(0);
   });
 
+  it('does not expose absolute paths from skipped-file errors', () => {
+    const file = '/home/runner/work/repo/repo/root/locked';
+    const sarif = scanResultToSARIF([], '1.0.0', {
+      skippedFiles: [{ file, reason: `EACCES: permission denied, scandir '${file}'` }],
+    }) as {
+      runs: Array<{ invocations: Array<{ toolExecutionNotifications: Array<{ message: { text: string } }> }> }>;
+    };
+    const message = sarif.runs[0]!.invocations[0]!.toolExecutionNotifications[0]!.message.text;
+
+    expect(message).toBe("Skipped locked: EACCES: permission denied, scandir 'locked'");
+    expect(message).not.toContain('/home/runner/');
+  });
+
   it('handles results with no matches', () => {
     const result = makeScanResult({ matches: [], threat_count: 0 });
     const sarif = scanResultToSARIF([result], '1.0.0') as {
