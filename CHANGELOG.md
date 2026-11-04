@@ -19,6 +19,11 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **pyatr 0.4.0 shipped its bundled rules without `maturity` or `confirm`**,
+  so a `pip install pyatr` engine treated every rule as experimental and the
+  enforce lane matched nothing (it never blocked wrongly, it just never
+  blocked). The bundle now keeps both fields, and a test checks that stable
+  rules survive bundling.
 - **SARIF skip warnings no longer expose absolute scanner paths** (#766).
   Filesystem errors retain their diagnostic details but refer to the relative
   artifact URI instead of repeating the CI runner's working path.
