@@ -190,7 +190,8 @@ function writeOutputs(args: Args, lane: Record<string, unknown>, rules: readonly
   const recall = hunt.recall.overall.rate ?? 0;
   const input = {
     source: SOURCE,
-    source_version: `${HOLDOUT_VERSION}-${shaShort}`,
+    // The corpus hash prefix: a new build is a new source_version.
+    source_version: shaShort,
     samples: holdout.attack.length + holdout.benign.length,
     metrics: { recall, precision, f1: precision + recall === 0 ? 0 : (2 * precision * recall) / (precision + recall), fp_rate: hunt.fp_rate.overall.rate ?? 0 },
     confusion: { tp, fp, tn: holdout.benign.length - fp, fn: holdout.attack.length - tp },
