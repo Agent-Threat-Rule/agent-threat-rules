@@ -1,0 +1,61 @@
+{
+  "schema_version": "1",
+  "source": "skill-benchmark",
+  "source_version": "internal-498",
+  "atr_version": "4.1.5",
+  "atr_commit": "f4dc7b219",
+  "rules_loaded": 836,
+  "measured_at": "2026-10-19T10:33:30.621Z",
+  "samples": 498,
+  "metrics": {
+    "recall": 1,
+    "precision": 0.97,
+    "f1": 0.985,
+    "fp_rate": 0.002
+  },
+  "confusion": {
+    "tp": 32,
+    "fp": 1,
+    "tn": 465,
+    "fn": 0
+  },
+  "latency_ms": {
+    "p50": 17.44,
+    "p95": 808.84,
+    "p99": 808.84,
+    "mean": 17.44,
+    "max": 808.84
+  },
+  "breakdown": {
+    "layers": {
+      "a": {
+        "total": 24,
+        "detected": 24,
+        "recall": 1
+      },
+      "b": {
+        "total": 0,
+        "detected": 0,
+        "recall": 0
+      },
+      "c": {
+        "total": 8,
+        "detected": 8,
+        "recall": 1
+      }
+    },
+    "malicious_count": 32,
+    "benign_count": 466,
+    "expected_rules_accuracy": 1,
+    "category_accuracy": 1,
+    "enforce_lane": {
+      "lane": "enforce",
+      "detected": 0,
+      "attacks": 32,
+      "recall": 0,
+      "rules_in_lane": 103,
+      "note": "Recall of the same attack samples, through the same detection loop as metrics.recall, on an engine constructed with lane: 'enforce', which loads only maturity: stable rules: the lane README recommends when blocking is on. A match is not necessarily a block (src/verdict.ts decides that from severity and confidence), so this is an upper bound on what blocking stops. metrics.recall is the hunt lane (the engine default, every maturity). Not a headline."
+    }
+  },
+  "notes": "Internal 498-sample SKILL.md benchmark. Layer A = obvious payload, Layer B = obfuscated, Layer C = semantic."
+}
