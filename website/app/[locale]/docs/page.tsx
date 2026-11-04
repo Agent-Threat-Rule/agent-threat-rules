@@ -32,6 +32,7 @@ const SECTION_NOTES: Record<string, { en: string; zh: string }> = {
   implement: { en: "Engines, integrations and the conformance suite, and which ATR component each adopter uses.", zh: "引擎、整合與符規測試套件，以及每個採用者用了 ATR 的哪個元件。" },
   evidence: { en: "What a deployment can show an auditor, and how an auditor verifies it from public material.", zh: "部署可以給稽核員看什麼，以及稽核員怎麼用公開資料驗證。" },
   taxonomies: { en: "The ATD technique catalog and the public threat feed.", zh: "ATD 技法目錄與公開威脅情資。" },
+  help: { en: "Common questions, who to contact for what, and the privacy notice and terms.", zh: "常見問題、各種事由該找誰，以及隱私說明與使用條款。" },
   governance: { en: "Who maintains ATR, how decisions are made, how to contribute and how to cite.", zh: "誰維護 ATR、怎麼做決定、怎麼貢獻、怎麼引用。" },
 };
 

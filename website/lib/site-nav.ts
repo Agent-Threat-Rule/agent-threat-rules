@@ -83,6 +83,8 @@ export const NAV_GROUPS: ReadonlyArray<NavGroup> = [
       { path: "/research", label: { en: "Research", zh: "研究" } },
       { path: "/blog", label: { en: "Blog", zh: "部落格" } },
       { path: "/responsible-use", label: { en: "Responsible use", zh: "負責任使用" } },
+      { path: "/faq", label: { en: "FAQ", zh: "常見問題" } },
+      { path: "/contact", label: { en: "Contact", zh: "聯絡" } },
     ],
   },
 ];
@@ -93,6 +95,8 @@ export const FOOTER_EXTRA: ReadonlyArray<NavLink> = [
   { path: "/sovereign-ai-defense", label: { en: "Sovereign AI", zh: "主權 AI" } },
   { path: "/partner-sync", label: { en: "Partner live sync", zh: "夥伴即時同步" } },
   { path: "/integrate/garak", label: { en: "garak and ATR", zh: "garak 與 ATR" } },
+  { path: "/privacy", label: { en: "Privacy (draft)", zh: "隱私（草稿）" } },
+  { path: "/terms", label: { en: "Terms (draft)", zh: "條款（草稿）" } },
 ];
 
 export function pick(text: Bilingual, locale: string): string {

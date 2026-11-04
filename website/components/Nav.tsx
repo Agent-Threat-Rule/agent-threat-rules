@@ -84,7 +84,9 @@ export function Nav({ locale, meta }: { locale: Locale; meta: HeaderMeta }) {
             </button>
           </div>
 
-          <nav className="hidden md:flex items-stretch h-11 border-b border-fog" aria-label={zh ? "主選單" : "Main"}>
+          <nav className="relative hidden md:flex items-stretch h-11 border-b border-fog" aria-label={zh ? "主選單" : "Main"}>
+            <span className="corner-mark corner-mark-l !top-auto -bottom-[4px]" aria-hidden="true" />
+            <span className="corner-mark corner-mark-r !top-auto -bottom-[4px]" aria-hidden="true" />
             <ul className="flex items-stretch mr-auto pl-3">
               {NAV_GROUPS.map((group) => {
                 const active = group.key === activeGroupKey;

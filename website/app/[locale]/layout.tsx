@@ -37,7 +37,9 @@ export default async function LocaleLayout({
       </a>
       <HtmlLang locale={lang} />
       <Nav locale={lang} meta={meta} />
-      <main id="main-content" className="flex-1">{children}</main>
+      {/* Every page sits on the same sheet: two hairline rails, continuous
+          from the header to the footer. */}
+      <main id="main-content" className="flex-1 w-full sheet">{children}</main>
       <Footer locale={lang} />
     </>
   );

@@ -58,7 +58,7 @@ const NOT_FOR_SALE: ReadonlyArray<B> = [
   { en: "Early access to rules or to the specification. Drafts are public when they are written.", zh: "提早取得規則或規格。草稿寫出來就公開。" },
   { en: "A chair, a veto, or a seat that can outvote the technical maintainers.", zh: "主席、否決權，或能壓過技術維護者表決的席位。" },
   { en: "A private errata channel. Errors are corrected in public.", zh: "私下的勘誤管道。錯誤一律公開更正。" },
-  { en: "An “ATR certified” mark. ATR does not certify products.", zh: "「ATR 認證」標章。ATR 不認證產品。" },
+  { en: "The ATR-Certified conformance designation. It follows the public conformance suite results, never membership.", zh: "ATR-Certified 符規標示。它只看公開符規測試的結果，與會員資格無關。" },
 ];
 
 export default async function MembershipPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -69,7 +69,7 @@ export default async function MembershipPage({ params }: { params: Promise<{ loc
   const pick = (t: B) => (zh ? t.zh : t.en);
 
   return (
-    <div className="sheet">
+    <>
       <SheetRow grid>
       <div className="max-w-[960px] mx-auto px-8 md:px-12 pt-24 pb-24">
       <div className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-6">
@@ -150,6 +150,6 @@ export default async function MembershipPage({ params }: { params: Promise<{ loc
       </section>
       </div>
       </SheetRow>
-    </div>
+    </>
   );
 }

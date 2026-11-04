@@ -58,7 +58,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
   const contributors = loadGithubContributors();
 
   return (
-    <div className="sheet">
+    <>
       <SheetRow grid>
       <section className="grid lg:grid-cols-[1.3fr_1fr] gap-12 px-8 md:px-12 pt-24 pb-20">
         <div>
@@ -173,6 +173,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
         </dl>
       </section>
       </SheetRow>
-    </div>
+    </>
   );
 }

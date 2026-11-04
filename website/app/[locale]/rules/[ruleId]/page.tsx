@@ -147,7 +147,7 @@ export default async function RuleDetailPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/<\/script>/gi, "<\\/script>") }}
       />
 
-      <div className="sheet">
+      <>
       <SheetRow>
       <div className="pt-16 pb-24 px-8 md:px-12 max-w-[900px] mx-auto">
         {/* Breadcrumb */}
@@ -496,7 +496,7 @@ export default async function RuleDetailPage({
         )}
       </div>
       </SheetRow>
-      </div>
+      </>
     </>
   );
 }

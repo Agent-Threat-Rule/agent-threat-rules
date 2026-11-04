@@ -110,6 +110,17 @@ export const DOCS_SECTIONS: ReadonlyArray<DocsSection> = [
       { path: "/responsible-use", label: { en: "Responsible use", zh: "負責任使用" } },
     ],
   },
+  {
+    key: "help",
+    numeral: "VIII",
+    label: { en: "Help and legal", zh: "說明與法律" },
+    links: [
+      { path: "/faq", label: { en: "FAQ", zh: "常見問題" } },
+      { path: "/contact", label: { en: "Contact", zh: "聯絡" } },
+      { path: "/privacy", label: { en: "Privacy notice (draft)", zh: "隱私說明（草稿）" } },
+      { path: "/terms", label: { en: "Terms of use (draft)", zh: "使用條款（草稿）" } },
+    ],
+  },
 ];
 
 export function pick(text: Bilingual, locale: string): string {

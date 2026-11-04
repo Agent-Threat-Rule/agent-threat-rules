@@ -33,7 +33,7 @@ export function DocsShell({
   const feedback = `${REPO}/issues/new?title=${encodeURIComponent(`Docs feedback: ${path}`)}&labels=documentation`;
 
   return (
-    <div className="sheet">
+    <>
       <SheetRow>
         <div className="grid lg:grid-cols-[250px_1fr]">
           <aside className="hidden lg:block border-r border-fog">
@@ -80,7 +80,7 @@ export function DocsShell({
           </article>
         </div>
       </SheetRow>
-    </div>
+    </>
   );
 }
 

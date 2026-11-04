@@ -90,7 +90,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   ];
 
   return (
-    <div className="sheet">
+    <>
       {/* Hero */}
       <SheetRow grid className="min-h-[640px]">
         <div className="grid lg:grid-cols-[1fr_1fr] items-center gap-10 px-8 md:px-12 py-24 md:py-32">
@@ -305,6 +305,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           ))}
         </div>
       </SheetRow>
-    </div>
+    </>
   );
 }

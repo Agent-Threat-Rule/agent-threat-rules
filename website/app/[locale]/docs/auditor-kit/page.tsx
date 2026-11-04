@@ -100,10 +100,10 @@ export default async function AuditorKitPage({ params }: { params: Promise<{ loc
       />
 
       <div className="mt-8">
-        <Callout label={zh ? "不發證" : "No certification"}>
+        <Callout label={zh ? "不稽核組織" : "No audits by ATR"}>
           {zh
-            ? "ATR 不認證組織或產品，也沒有授權任何人代表 ATR 發證。這份工具包只幫稽核員驗證一個部署的說法。"
-            : "ATR does not certify organizations or products, and has authorized no one to certify on its behalf. This kit only helps an auditor verify what a deployment claims."}
+            ? "ATR 不稽核、也不認證組織或它們的部署，沒有授權任何人代表 ATR 這麼做。引擎的符規是依公開測試套件自我宣告。這份工具包只幫稽核員驗證一個部署的說法。"
+            : "ATR does not audit or certify organizations or their deployments, and has authorized no one to do so on its behalf. Engine conformance is self-declared against the public test suite. This kit only helps an auditor verify what a deployment claims."}
         </Callout>
       </div>
 

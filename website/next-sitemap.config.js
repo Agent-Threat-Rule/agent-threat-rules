@@ -6,7 +6,8 @@ module.exports = {
   generateRobotsTxt: true,
   outDir: "./out",
   generateIndexSitemap: false,
-  exclude: ["/icon.svg", "/favicon.ico", "/llms.txt", "/rules/index.json", "/rules/index.csv"],
+  // Privacy and Terms stay out of the sitemap while they are drafts (lib/legal.ts).
+  exclude: ["/icon.svg", "/favicon.ico", "/llms.txt", "/rules/index.json", "/rules/index.csv", "/en/privacy", "/zh/privacy", "/en/terms", "/zh/terms"],
   robotsTxtOptions: {
     policies: [
       { userAgent: "*", allow: "/" },

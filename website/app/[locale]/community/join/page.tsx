@@ -77,7 +77,7 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
   const noGithubHref = NO_GITHUB_FORM_URL ?? `mailto:${CONTACT}?subject=${encodeURIComponent("Joining the ATR community")}`;
 
   return (
-    <div className="sheet">
+    <>
       <SheetRow grid>
       <div className="max-w-[860px] mx-auto px-8 md:px-12 pt-24 pb-24">
       <div className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-6">
@@ -150,6 +150,6 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
       </section>
       </div>
       </SheetRow>
-    </div>
+    </>
   );
 }
