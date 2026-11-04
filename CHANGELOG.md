@@ -4,6 +4,144 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **pyatr detection lanes.** `ATREngine(lane=...)` takes `"enforce"`
+  (maturity `stable` only), `"alert"` (`stable` and `test`) or `"hunt"` (every
+  rule, the default, so existing callers see no change), with the same mapping
+  as the TypeScript engine: a missing or unknown maturity counts as
+  `experimental`, a `deprecated` rule never fires, and a `confirm: embedding`
+  rule fires in the hunt lane only, since pyatr has no embedding check.
+  `ATRRule` and `ATRMatch` now carry `maturity`, and `lane_allows(match, lane)`
+  applies the same gate to a single match, so an integration can scan every
+  rule, record every match, and block on the enforce lane only. Until now the Python engine had no
+  way to tell the two apart.
+
+### Fixed
+
+- **The Pydantic AI guard now scans typed tool events and blocks on the
+  enforce lane only** (#772). It used `pyatr.scan()`, which evaluates text as
+  user input, so most rules written for `tool_args` or `tool_response` never
+  saw their field, and it blocked on any rule at `block_severity`, including
+  experimental ones. Tool calls are now `tool_call` events and results
+  `tool_response` events; every match is still recorded, and a match blocks
+  only when its rule is in `block_lane` (default `"enforce"`). Values over
+  `max_scan_chars` (default 10,000) are now scanned as head and tail, with
+  `truncated` in the audit entry, where they used to be scanned in full.
+  `block_severity="info"`, which was accepted and acted as `"critical"`, now
+  raises `ValueError`. `pydantic-ai-atr` 0.2.0 requires `pyatr>=0.4.1` and
+  ships with tests.
+- **pyatr 0.4.0 shipped its bundled rules without `maturity` or `confirm`**,
+  so a `pip install pyatr` engine treated every rule as experimental and the
+  enforce lane matched nothing (it never blocked wrongly, it just never
+  blocked). The bundle now keeps both fields, and a test checks that stable
+  rules survive bundling.
+- **SARIF skip warnings no longer expose absolute scanner paths** (#766).
+  Filesystem errors retain their diagnostic details but refer to the relative
+  artifact URI instead of repeating the CI runner's working path.
+
+- **ATR-2026-00440, -00121, -00277 and -00225 stop matching ordinary code
+  and documentation.** A replay over the skills.sh all-time top 375 skills
+  found each of them firing on benign files. Each change is confined to one
+  condition, and `rule_version` goes to 2. ATR-2026-00440 #3 (maturity
+  `stable`, so it runs in the enforce lane) had no boundary after the getattr
+  root, so `getattr(types.Scale, ...)` read as getattr on the built-in
+  `type`; getattr on `type`, `object` and `__builtins__` still matches, and
+  an integration that blocks on the enforce lane no longer blocks the
+  prefixed names. In ATR-2026-00121 #4, `nc` and `ncat` must start a word,
+  and a `python -c` one-liner that imports socket or os must also run
+  something within 300 characters on the same line. In ATR-2026-00277 #3, a
+  `config`, `self`, `request`, `g` or `app` root must reach Python internals
+  inside the same braces; the bare recon probes such as `{{config}}` still
+  match, while template placeholders such as `{{g}}` and dbt's
+  `{{ config(...) }}` no longer do. ATR-2026-00225 #2 takes `C2`, `backdoor`,
+  `malware` and command-and-control as whole words within 120 characters on
+  the same line; most of its 80 benign false positives came from
+  JSON-encoded events, where `[^\n]*` ran past escaped newlines to the end of
+  the document. Benign false positives over the 14,172 samples of the benign
+  gate: 00121 6 to 4, 00225 80 to 0, 00277 6 to 0, 00440 0. Over every file
+  under `data/` and every rule's test cases, none of the four gains a match.
+
+## [4.2.4] - 2026-11-03
+
+A patch release that makes `atr scan <dir>` scan MCP configs as well as
+skills and makes the GitHub Action fail when the scan fails. It also notes
+two changes to the Cisco Skill Scanner pack exporter, a repository script
+the npm package does not include. The rule format, identifier scheme, rules
+and the Match output format (SPEC §7) are unchanged.
+
+Default behaviour that changes:
+
+- `atr scan <dir>` scans every `SKILL.md` (or `skill.md`) and every MCP
+  config named `.mcp.json`, `mcp.json`, `mcp-config.json` or
+  `claude_desktop_config.json` under the directory, in one report. Before,
+  it scanned the `SKILL.md` files only, ignored MCP configs, and exited 1
+  with "No SKILL.md files found" when there were none, so a directory with
+  only MCP configs could not be scanned and a directory with both reported
+  only its skills. Its `--json` output now has `scan_type: "directory"`,
+  `mcp_events_scanned` and `files_skipped`, and a `kind` (`mcp` or `skill`)
+  on each result (one MCP event per server under a config's `mcpServers`).
+  `skills_scanned` no longer counts skipped files, and `--fail-on` counts
+  findings from configs and skills alike. The terminal report is now headed
+  "ATR Directory Scan Results", with separate counts for MCP events and
+  skills. Directories named `.git` or `node_modules` are no longer walked,
+  so a `SKILL.md` inside one is no longer scanned. Scanning a single file,
+  and `atr scan-skill <dir>`, are unchanged.
+- In a directory scan, symlinks and other entries that are not regular
+  files, unreadable files and directories, MCP configs over 50 MB and
+  configs that are not JSON or have no `mcpServers` entries are skipped with
+  a warning instead of being read or ending the scan. `--json` counts them
+  in `files_skipped`, and `--sarif` lists each one in
+  `runs[0].invocations[0].toolExecutionNotifications`. A `SKILL.md` over
+  1 MB was already skipped with a warning and still is, but it is now
+  counted in `files_skipped`. A directory scan exits 1 when nothing could be
+  scanned, and its SARIF then sets `executionSuccessful: false`.
+- The GitHub Action (`action.yml`) fails the step with the scanner's exit
+  status and one `::error::` annotation when `atr scan` exits non-zero.
+  Before, a failed scan with no output was turned into an empty SARIF file
+  and reported as clean. A workflow that points the Action at a path with
+  no skill or MCP config, or where every one is skipped, now fails instead
+  of passing. The Action installs `agent-threat-rules@latest`, so workflows
+  on an earlier Action ref also get the new directory scan, but those
+  workflows still report a scan that exits 1 after writing SARIF as clean.
+
+### Fixed
+
+- **`atr scan <dir>` scans MCP configs and skills together** (#752, by
+  @dc-tw). Directories are walked recursively, skipping `.git` and
+  `node_modules`, and both target types go into one terminal, JSON or SARIF
+  report. Fixes the directory part of #575.
+
+- **The GitHub Action no longer reports a failed scan as clean** (#743, by
+  @dajiaohuang). The error annotation strips colour codes and encodes `%`,
+  CR and LF, so text from the scanned repository cannot start a workflow
+  command, and it also works under bash 3.2. `sarif_path` is written before
+  the scan, so the always-run SARIF upload step still gets it when the scan
+  fails. Fixes the Action part of #575.
+
+### Changed
+
+- **The Cisco Skill Scanner pack exporter leaves out rules that do not hold
+  up on a skill's files** (#764). Skill Scanner applies each pattern to
+  every line of every file and has no field concept, so a rule whose regex
+  conditions read a field only a running agent has (`tool_name`,
+  `tool_args`, `tool_response`, agent output, trace fields) matched
+  whatever text looked like it. Only rules all of whose regex conditions
+  read `content`, `user_input` or `tool_description` are exported now,
+  which leaves out 244 of the 4.2.3 rules. `scripts/cisco-pack/benign-gate.py`
+  runs an exported pack inside a Skill Scanner checkout over a directory of
+  benign skill `.md` files given as `--corpus` (the documented run uses
+  `data/skill-benchmark/benign`), and `--benign-gate <json>` leaves out
+  every rule that fired there at any severity. `--reproduce-vendored` still
+  keeps the runtime-field rules and cannot be combined with
+  `--benign-gate`. #764 was merged before the 4.2.3 tag but is not in the
+  4.2.3 notes.
+
+- **`--max-severity` caps the severity of exported signatures** (#765).
+  Skill Scanner treats a skill as unsafe on any HIGH or CRITICAL finding by
+  default, so `--max-severity low` lets a pack report its matches without
+  changing that verdict. It cannot be combined with `--reproduce-vendored`.
+
 ## [4.2.3] - 2026-11-02
 
 A patch release with one engine fix and two fixes to the Cisco Skill Scanner

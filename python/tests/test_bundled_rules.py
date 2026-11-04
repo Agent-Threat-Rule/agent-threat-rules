@@ -34,6 +34,16 @@ def test_bundle_contains_full_ruleset() -> None:
     assert all("id" in r and "detection" in r for r in rules)
 
 
+def test_bundle_keeps_lane_fields() -> None:
+    """Lanes need maturity and confirm; a bundle without them puts every rule in hunt only."""
+    _ensure_bundle()
+    rules = _read_bundled_rules()
+    assert any(r.get("maturity") == "stable" for r in rules), "bundle dropped maturity"
+    engine = ATREngine(lane="enforce")
+    engine.load_bundled_rules()
+    assert any(r.maturity == "stable" for r in engine.rules)
+
+
 def test_engine_loads_bundled_rules() -> None:
     _ensure_bundle()
     engine = ATREngine()

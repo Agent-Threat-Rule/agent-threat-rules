@@ -30,6 +30,8 @@ class ATRRule:
     tags: dict[str, str] = field(default_factory=dict)
     references: dict[str, Any] = field(default_factory=dict)
     response: dict[str, Any] = field(default_factory=dict)
+    maturity: str = "experimental"
+    confirm: str = ""
 
 
 @dataclass(frozen=True)
@@ -75,3 +77,5 @@ class ATRMatch:
     matched_patterns: tuple[str, ...]
     description: str = ""
     tags: dict[str, str] = field(default_factory=dict)
+    maturity: str = "experimental"
+    confirm: str = ""

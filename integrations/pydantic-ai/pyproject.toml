@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pydantic-ai-atr"
-version = "0.1.0"
-description = "ATR (Agent Threat Rules) guardrail capability for Pydantic AI — scans agent tool calls against an open MIT detection standard and blocks critical ones before they run."
+version = "0.2.0"
+description = "ATR (Agent Threat Rules) guardrail capability for Pydantic AI — scans agent tool calls against an open MIT detection standard and blocks critical matches from stable rules before they run."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -19,8 +19,11 @@ classifiers = [
 ]
 dependencies = [
     "pydantic-ai>=1.0",
-    "pyatr>=0.2",
+    "pyatr>=0.4.1",
 ]
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-asyncio"]
 
 [project.urls]
 Homepage = "https://github.com/Agent-Threat-Rule/agent-threat-rules"

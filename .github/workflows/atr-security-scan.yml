@@ -7,9 +7,12 @@ jobs:
       security-events: write
     steps:
       - uses: actions/checkout@v5
+      # The repository has no skills or MCP configs of its own, so the Action is
+      # pointed at a small benign fixture: this runs it end to end (install,
+      # scan, SARIF upload) on every push. Both files are expected to be clean.
       - uses: ./
         with:
-          path: '.'
+          path: '.github/action-smoke'
           severity: 'medium'
           fail-on-finding: 'false'
           upload-sarif: 'true'
