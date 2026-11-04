@@ -23,7 +23,7 @@ export async function generateMetadata({
     path: "/threats",
     title: "Threat Feed",
     description:
-      "A public blacklist of flagged AI agent skills, built from open ATR ecosystem scans. Threat Cloud is an optional reference service that can also feed reports.",
+      "A public blacklist of flagged AI agent skills, built from open ATR ecosystem scans.",
   });
 }
 
@@ -298,14 +298,6 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
         </p>
       </Reveal>
 
-      {/* Threat Cloud — optional reference service (not part of the standard) */}
-      <Reveal delay={0.55}>
-        <p className="text-xs text-mist mt-4 leading-[1.8] max-w-[480px]">
-          {zh
-            ? "Threat Cloud 是 ATR 維護者營運的參考服務，用不用都可以，它不屬於標準。標準本身是規格加上 MIT 授權的規則，透過 npm、PyPI 或直接拿 YAML，都能完全離線使用。Threat Cloud 只是代管上方便一些，像是同步規則、提交威脅。不用它，也能得到一樣的結果。"
-            : "Threat Cloud is an optional reference service run by the ATR maintainers. It is not part of the standard. The standard is the spec plus the MIT-licensed rules, and it works fully offline through npm, PyPI or raw YAML. Threat Cloud only adds hosted convenience, such as rule sync and threat submission. You get the same results without it."}
-        </p>
-      </Reveal>
     </div>
   );
 }

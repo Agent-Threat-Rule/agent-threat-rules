@@ -70,8 +70,8 @@ const ENTRIES: GlossaryEntry[] = [
   },
   {
     term: "crystallization",
-    en: "The Threat Cloud pipeline that converts an observed attack into a candidate ATR rule and routes it through review. (Reference implementation, not part of the normative standard.)",
-    zh: "Threat Cloud pipeline,將觀察到的攻擊轉換為 ATR 候選規則並送入審查。(參考實作,非規範標準的一部分。)",
+    en: "The process that turns an observed attack into a candidate ATR rule and sends it to review. It is not part of the normative standard.",
+    zh: "把觀察到的攻擊轉成 ATR 候選規則、再送去審查的流程。它不屬於規範標準。",
   },
   {
     term: "detection.conditions",
@@ -152,11 +152,6 @@ const ENTRIES: GlossaryEntry[] = [
     term: "Technical Steering Committee (TSC)",
     en: "The body that governs ATR's evolution. Currently in BDFL transition; see /charter.",
     zh: "治理 ATR 演化的機構。目前處於 BDFL 過渡階段;見 /charter。",
-  },
-  {
-    term: "Threat Cloud",
-    en: "An optional reference service operated by the ATR maintainers — not part of the standard. The standard is the spec plus the MIT-licensed rules, fully usable offline via npm / PyPI / raw YAML. Threat Cloud only adds hosted convenience (rule sync, threat submission); the same outcomes are reachable without it. Technically, it is an auto-review backend for community-submitted rules, running the crystallization pipeline and safety gates.",
-    zh: "Threat Cloud 是 ATR 維護者運營的選用參考服務,並非標準的一部分。標準本體是規格加上 MIT 授權的規則,透過 npm / PyPI / 純 YAML 完全可離線使用;Threat Cloud 只提供 hosted 便利(規則同步、威脅提交),不用它也能達到同樣結果。技術上,它是對社群提交規則的自動審查後端,執行 crystallization pipeline 與安全閘 (safety gate)。",
   },
 ];
 

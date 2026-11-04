@@ -24,8 +24,8 @@ const STEPS: Step[] = [
   {
     label: "Analyze",
     labelZh: "分析",
-    actor: "Threat Cloud LLM",
-    actorZh: "Threat Cloud LLM",
+    actor: "LLM drafter",
+    actorZh: "LLM 起草",
     detail: "The LLM takes the attack apart: how it is built, what it wants and how it slips past detection. This happens while a rule is being written, not on every scan.",
     detailZh: "LLM 拆解這個攻擊：怎麼組成、想做什麼、怎麼躲過偵測。這發生在寫規則的階段，不是每次掃描都跑。",
   },

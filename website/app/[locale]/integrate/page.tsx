@@ -127,7 +127,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
           <div className="text-[13px] text-stone mb-4">
             {locale === "zh" ? "同一份規則，任何符合規範的引擎都能跑。看你要接多深。" : "One ruleset, and any conforming engine can run it. Pick how deep you go."}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-fog">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog">
             {[
               {
                 level: "L1",
@@ -144,14 +144,6 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
                 how: locale === "zh" ? "npm install，再呼叫 ATR engine" : "npm install, then call the ATR engine",
                 what: locale === "zh" ? `用戶什麼都不用做，就有 ${stats.ruleCount} 條規則在保護` : `Your users get ${stats.ruleCount} rules without lifting a finger`,
                 update: locale === "zh" ? "npm update，或 lockfile 搭配 CI" : "npm update, or a lockfile plus CI",
-              },
-              {
-                level: "L3",
-                title: locale === "zh" ? "雙向（選用）" : "Bidirectional (optional)",
-                who: locale === "zh" ? "資安平台、企業 SOC" : "Security platforms, enterprise SOCs",
-                how: locale === "zh" ? "先嵌入，想要的話再接上 Threat Cloud 參考服務" : "Embed, then connect the Threat Cloud reference service if you want it",
-                what: locale === "zh" ? "可以上報威脅、同步規則。不接，標準照樣完整能用" : "You can send threats in and sync rules. The standard works fully without it",
-                update: locale === "zh" ? "npm update。接上 TC 的話，還有即時推送" : "npm update. With TC connected, you also get real-time push",
               },
             ].map((tier) => (
               <div key={tier.level} className="bg-paper p-5 md:p-6">
@@ -371,7 +363,7 @@ jobs:
             <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog">
               {[
                 { label: locale === "zh" ? "覆蓋範圍" : "Coverage", atr: locale === "zh" ? `${stats.ruleCount} 條規則，${stats.cveCount} 個 CVE 對應，${stats.categoryCount} 個威脅類別` : `${stats.ruleCount} rules, ${stats.cveCount} CVEs mapped, ${stats.categoryCount} threat categories`, own: locale === "zh" ? "規則庫要自己從頭建" : "You build the rule set yourself" },
-                { label: locale === "zh" ? "新攻擊反應" : "New attack response", atr: locale === "zh" ? "社群和 CI 流程一直在加規則，目標是幾小時內出來。選用的 Threat Cloud 能讓回報更快" : "The community and the CI pipeline keep adding rules, aiming for hours. The optional Threat Cloud can speed up reporting", own: locale === "zh" ? "看你的團隊有多少人力" : "Depends on how much time your team has" },
+                { label: locale === "zh" ? "新攻擊反應" : "New attack response", atr: locale === "zh" ? "社群和 CI 流程一直在加規則，目標是幾小時內出來" : "The community and the CI pipeline keep adding rules, aiming for hours", own: locale === "zh" ? "看你的團隊有多少人力" : "Depends on how much time your team has" },
                 { label: locale === "zh" ? "繞過測試" : "Evasion testing", atr: locale === "zh" ? "附 evasion_tests、記下已知繞過手法的規則，不到一半" : "Fewer than half the rules carry evasion tests that record known bypasses", own: locale === "zh" ? "要另外花時間建" : "Takes dedicated time to build" },
                 { label: locale === "zh" ? "OWASP / MITRE 對應" : "OWASP / MITRE mapping", atr: locale === "zh" ? "內建。Agentic 10/10，每條規則也都對到 MITRE ATLAS" : "Built in. Agentic 10/10, and every rule maps to MITRE ATLAS", own: locale === "zh" ? "要手動對上好幾個小時" : "Hours of mapping by hand" },
                 { label: locale === "zh" ? "維護成本" : "Maintenance", atr: locale === "zh" ? "社群維護，MIT 授權，不用錢。" : "Maintained by the community. MIT. Free.", own: locale === "zh" ? "要一直有人顧" : "Needs engineering time, indefinitely" },
@@ -445,87 +437,6 @@ jobs:
                 <p className="text-xs text-stone mt-1">{item.detail}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </Reveal>
-
-      {/* Threat Cloud — optional reference service */}
-      <Reveal>
-        <div className="mt-12 border border-fog">
-          <div className="px-6 py-4 border-b border-fog bg-[#0B0B0F]">
-            <h2 className="font-display text-lg font-semibold text-white">
-              {locale === "zh" ? "Threat Cloud：選用的參考服務" : "Threat Cloud: an optional reference service"}
-            </h2>
-          </div>
-          <div className="p-6 space-y-6">
-            <div className="bg-ash border border-fog px-4 py-3 ">
-              <p className="text-sm text-graphite leading-[1.8] max-w-[640px]">
-                {locale === "zh"
-                  ? "Threat Cloud 是 ATR 維護者營運的選用參考服務，不是標準的一部分。標準本身就是規格加上 MIT 授權的規則，透過 npm、PyPI 或純 YAML，完全可以離線用。Threat Cloud 只是多一份託管的方便：同步規則、上報威脅。不用它，一樣做得到。"
-                  : "Threat Cloud is an optional reference service run by the ATR maintainers. It is not part of the standard. The standard is the spec plus the MIT-licensed rules, and it works fully offline through npm, PyPI or raw YAML. Threat Cloud only adds hosted conveniences: rule sync and threat submission. You can get the same results without it."}
-              </p>
-            </div>
-            <p className="text-sm text-stone leading-[1.8] max-w-[560px]">
-              {locale === "zh"
-                ? "接上之後，掃描器發現新威脅，可以上報到 Threat Cloud。維護者把它寫成偵測規則，審過之後合併進 MIT 規則集發出去。接法如下。"
-                : "Once connected, your scanner can submit a new threat to Threat Cloud when it finds one. Maintainers turn it into a detection rule, review it, and merge it into the MIT rule set that goes out to everyone. Here is how to connect."}
-            </p>
-
-            <div className="space-y-4">
-              <div>
-                <div className="font-data text-xs text-stone mb-2">{locale === "zh" ? "方式 1：CLI，最簡單" : "Option 1: the CLI, simplest"}</div>
-                <div className="font-data text-sm bg-[#0B0B0F] text-[#4ade80] px-4 py-3  overflow-x-auto">
-                  <span className="text-[#808089]">$</span> npx agent-threat-rules scan . --report-to-cloud
-                </div>
-              </div>
-
-              <div>
-                <div className="font-data text-xs text-stone mb-2">{locale === "zh" ? "方式 2：程式庫，給平台整合用" : "Option 2: the library, for platforms"}</div>
-                <div className="font-data text-xs bg-[#0B0B0F] text-[#E0E0E8] px-4 py-3  overflow-x-auto leading-[1.8]">
-                  <div className="text-[#6B6B76]">{"// "}{locale === "zh" ? "平台偵測到威脅就自動上報" : "Report automatically when your platform detects a threat"}</div>
-                  <div>{"import { ATREngine, createTCReporter } from 'agent-threat-rules';"}</div>
-                  <div className="mt-1">{"const engine = new ATREngine({"}</div>
-                  <div>{"  reporter: createTCReporter(), "}<span className="text-[#6B6B76]">{"// "}{locale === "zh" ? "匿名，不用 API key" : "anonymous, no API key"}</span></div>
-                  <div>{"});"}</div>
-                  <div className="mt-1 text-[#6B6B76]">{"// "}{locale === "zh" ? "偵測結果會自動分批送到 TC" : "detections are batched and sent to TC"}</div>
-                </div>
-              </div>
-
-              <div>
-                <div className="font-data text-xs text-stone mb-2">{locale === "zh" ? "方式 3：API，全部自己來" : "Option 3: the API, fully custom"}</div>
-                <div className="font-data text-xs bg-[#0B0B0F] text-[#E0E0E8] px-4 py-3  overflow-x-auto leading-[1.8]">
-                  <div className="text-[#6B6B76]">{"# "}{locale === "zh" ? "直接呼叫 TC API" : "Call the TC API directly"}</div>
-                  <div>{"curl -X POST https://tc.agentthreatrule.org/api/threats \\"}</div>
-                  <div>{"  -H 'Content-Type: application/json' \\"}</div>
-                  <div>{"  -d '{\"ruleId\":\"ATR-2026-00121\",\"severity\":\"critical\","}</div>
-                  <div>{"       \"contentHash\":\"abc123\",\"scanTarget\":\"my-skill\"}"}</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-fog">
-              <div className="text-[13px] text-stone mb-2">
-                {locale === "zh" ? "上報之後" : "What happens after you report"}
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-stone">
-                <div className="bg-ash p-3 ">
-                  <div className="font-data text-ink font-medium mb-1">1. {locale === "zh" ? "聚合" : "Aggregate"}</div>
-                  {locale === "zh" ? "TC 收集各個端點送來的訊號" : "TC collects signals from many endpoints"}
-                </div>
-                <div className="bg-ash p-3 ">
-                  <div className="font-data text-ink font-medium mb-1">2. {locale === "zh" ? "結晶" : "Crystallize"}</div>
-                  {locale === "zh" ? "AI 找出模式，寫出規則草稿" : "AI looks for patterns and drafts rules"}
-                </div>
-                <div className="bg-ash p-3 ">
-                  <div className="font-data text-ink font-medium mb-1">3. {locale === "zh" ? "審核" : "Review"}</div>
-                  {locale === "zh" ? "人工檢查誤判，替攻擊分類" : "A person checks for false positives and classifies the attack"}
-                </div>
-                <div className="bg-ash p-3 ">
-                  <div className="font-data text-ink font-medium mb-1">4. {locale === "zh" ? "分發" : "Distribute"}</div>
-                  {locale === "zh" ? "合併進 ATR → npm publish → 全球更新" : "Merged into ATR → npm publish → global update"}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </Reveal>

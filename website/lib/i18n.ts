@@ -65,12 +65,6 @@ export const messages: Record<Locale, Record<string, string>> = {
       "ATR spreads through PRs, not sales calls. Open source, MIT licensed, zero lock-in.",
 
     // Future
-    "future.label": "The Future",
-    "future.heading": "ATR rules don't have to be written by hand.",
-    "future.sub":
-      "Threat Cloud crystallization turns new attacks into detection rules automatically.",
-    "future.note":
-      "Traditional rules are written by hand, on weekly cycles. Threat Cloud shrinks new rule turnaround from weeks to hours.",
 
     // CTA
     "cta.heading": "Add ATR to your platform.",
@@ -158,9 +152,6 @@ export const messages: Record<Locale, Record<string, string>> = {
       "Cisco's AI Defense team integrated ATR rules as an upstream dependency. Their engineer submitted PR #79, we reviewed it, and it merged in 3 days. They then built a --rule-packs CLI feature (PR #80) specifically to consume ATR as a first-class rule source.",
 
     // Contribute page
-    "contribute.crystal.title": "Threat Cloud Crystallization",
-    "contribute.crystal.sub":
-      "Traditional rules take weeks to write, review, and ship. Threat Cloud targets hours.",
     "contribute.governance": "Governance",
     "contribute.governance.desc":
       "How a rule gets reviewed, what maintainers do, and who decides.",
@@ -444,12 +435,6 @@ export const messages: Record<Locale, Record<string, string>> = {
       "ATR 透過 PR 擴散，不是透過銷售。開源、MIT 授權、零鎖定。",
 
     // Future
-    "future.label": "未來",
-    "future.heading": "ATR 規則不需要手寫。",
-    "future.sub":
-      "Threat Cloud 結晶機制自動將新攻擊轉化為偵測規則。",
-    "future.note":
-      "傳統規則由人工撰寫，週期以週計。Threat Cloud 讓新規則的產出從數週縮短到數小時。",
 
     // CTA
     "cta.heading": "將 ATR 加入你的平台。",
@@ -546,9 +531,6 @@ export const messages: Record<Locale, Record<string, string>> = {
       "Cisco 的 AI Defense 團隊將 ATR rules 作為上游依賴整合。他們的工程師提交了 PR #79，我們 review 完，3 天合併。然後他們建了 --rule-packs CLI（PR #80）專門消費 ATR。",
 
     // Contribute page
-    "contribute.crystal.title": "Threat Cloud 結晶機制",
-    "contribute.crystal.sub":
-      "傳統規則需要數週撰寫、審查、發布。Threat Cloud 目標數小時。",
     "contribute.governance": "治理",
     "contribute.governance.desc":
       "規則怎麼審、維護者做什麼，最後由誰拍板。",

@@ -336,64 +336,6 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
         </div>
       </Reveal>
 
-      {/* ── Optional: Threat Cloud reference service ── */}
-      <Reveal>
-        <div className="text-[13px] text-stone mb-3">
-          {zh ? "選用：Threat Cloud 參考服務" : "Optional: Threat Cloud reference service"}
-        </div>
-      </Reveal>
-      <Reveal delay={0.1}>
-        <div className="border border-fog p-6 mb-6 text-sm text-stone leading-relaxed">
-          <p>
-            {zh
-              ? "Threat Cloud 是 ATR 維護者營運的選用參考服務，不屬於標準本身。標準是規格加上 MIT 授權的規則，用 npm、PyPI 或直接拿 YAML，都能完全離線使用。Threat Cloud 只多了託管的方便，例如規則同步和威脅提交。不用它，也能得到同樣的結果。"
-              : "Threat Cloud is an optional reference service run by the ATR maintainers. It is not part of the standard. The standard is the spec plus the MIT-licensed rules, fully usable offline through npm, PyPI or the raw YAML. Threat Cloud only adds hosted convenience, such as rule sync and threat submission. You can get the same results without it."}
-          </p>
-        </div>
-      </Reveal>
-      <Reveal>
-        <div className="border border-fog mb-10">
-          <div className="px-6 py-4 border-b border-fog bg-ash">
-            <h2 className="font-display text-base font-semibold">
-              {zh ? "Threat Cloud 自動化流程（選用）" : "The Threat Cloud auto-pipeline (optional)"}
-            </h2>
-            <p className="text-sm text-stone mt-1">
-              {zh
-                ? "規則正式的產生方式，是上面「送出後會發生什麼」講的社群與維護者流程：issue → 草案 PR → 維護者寫 regex → 安全閘 → 合併 → 發布到 npm。下面是維護者在 Threat Cloud 上營運的選用自動化版本，目標是把同一套流程壓到幾個小時。用不用它，標準和規則都一樣。"
-                : "The canonical way rules get made is the community and maintainer workflow under \"What happens after you contribute\" above (issue → draft PR → maintainer writes regex → safety gate → merge → npm publish). Below is the optional automated version the maintainers run on Threat Cloud, which aims to get that same flow down to hours. The standard and the rules are identical whether or not you use it."}
-            </p>
-          </div>
-          <div className="p-5 md:p-6">
-            <div className="font-data text-sm leading-[2.2] text-graphite">
-              {(zh
-                ? [
-                    "在野外發現新的攻擊手法",
-                    "LLM 分析攻擊的結構和意圖",
-                    "自動產生 YAML 規則提案和測試案例",
-                    "社群審查，再過精確度測試閘",
-                    "合併進 ATR，所有下游引擎自動更新。",
-                  ]
-                : [
-                    "A new attack pattern is spotted in the wild",
-                    "An LLM analyzes the attack's structure and intent",
-                    "A YAML rule proposal with test cases is generated automatically",
-                    "Community review, then the precision test gate",
-                    "Merged into ATR. Every downstream engine updates.",
-                  ]
-              ).map((step, i) => (
-                <div key={i}>
-                  {i > 0 && <div className="text-mist text-center pl-6">|</div>}
-                  <div className="flex items-center gap-3">
-                    <span className="text-blue font-bold">{i + 1}.</span>
-                    <span>{step}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </Reveal>
-
       {/* ── Resources ── */}
       <Reveal>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-fog">
