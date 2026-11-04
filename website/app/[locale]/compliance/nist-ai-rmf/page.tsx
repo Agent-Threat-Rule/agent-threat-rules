@@ -88,6 +88,12 @@ export default async function NistAiRmfPage({
           <br />
           <span className="text-blue">{zh ? "ATR 讓它能被偵測驗證。" : "ATR makes it detectable."}</span>
         </h1>
+      <p className="mt-4 mb-6 max-w-[640px] border-l-2 border-high pl-3 text-[13px] leading-[1.7] text-graphite">
+        {zh
+          ? "部分框架對應已知有誤，正在重做；偵測不受影響。修正發布前，請把對應當成可能相關的參考，不要當成稽核證據。"
+          : "Some framework mappings are known to be wrong and are being redone; detection is not affected. Until the corrections ship, treat the mappings as candidate relevance, not as audit evidence."}{" "}
+        <a href={`/${locale}/errata`} className="text-blue hover:underline">{zh ? "看勘誤" : "See the errata"}</a>
+      </p>
         <p className="text-sm text-stone mt-3 leading-[1.6]">
           {zh
             ? "GOVERN / MAP / MEASURE / MANAGE 四個 function,每一個都有 ATR 規則可掛進去(逐條分布見下方表格)。"

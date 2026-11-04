@@ -1,6 +1,14 @@
 {
-  "lastUpdated": "2026-10-19",
+  "lastUpdated": "2026-11-04",
   "entries": [
+    {
+      "id": "e-2026-11-04-framework-mappings",
+      "version": "all releases through 4.2.4",
+      "section": "Rule metadata: compliance.nist_ai_rmf, compliance.eu_ai_act, references.owasp_agentic, references.owasp_llm; /compliance and /compliance/nist-ai-rmf",
+      "summary_en": "Some of the framework mappings carried in the rules are wrong, and are being redone. Detection is not affected: the engine never reads these fields, and no detection condition changes. Known problems: (1) The script that generated the NIST AI RMF mappings worked from a reference table that misdescribed three subcategories. It gave MG.2.3 the meaning of MG.2.4 (supersede, disengage or deactivate a system; MG.2.3 is responding to and recovering from a previously unknown risk), GV.1.2 the meaning of GV.2.1 (accountability roles; GV.1.2 is building trustworthy-AI characteristics into policy), and MP.5.2 the meaning of MG.1.3 (planning risk responses). 556 mappings cite MG.2.3 and 25 cite GV.1.2; no rule cites MP.5.2. (2) 101 rule files say that deploying the rule \"satisfies\" an EU AI Act article. ATR's own mapping policy (docs/COMPLIANCE-COVERAGE-POLICY.md) allows only \"provides detection evidence supporting Article X\". A detection rule does not by itself satisfy any legal requirement. (3) 25 rule files describe harmful-task facilitation as a \"mandatory Article 9 risk category\"; Article 9 lists no such category. 50 rule files say \"Article 10 requires control over the data an AI system processes\"; Article 10 governs training, validation and testing data, not data an agent handles at run time. (4) 26 of the 43 model-abuse rules map to OWASP ASI08 (Cascading Failures) and LLM02 (Sensitive Information Disclosure), which do not describe those attacks. CI checks that every mapping cites an identifier that exists. It does not check that the mapping is right. Until the corrections ship, treat the mappings as candidate relevance, not as evidence for an audit.",
+      "summary_zh": "規則裡帶的部分框架對應有錯，正在重做。偵測不受影響：引擎從不讀這些欄位，也沒有任何偵測條件會改。已知的問題有四類。第一，產生 NIST AI RMF 對應的腳本用了一張寫錯的參考表，三個子類別的意思寫錯：把 MG.2.4 的意思（取代、脫離或停用系統）寫成 MG.2.3，MG.2.3 實際是發現未知風險時的應變與復原；把 GV.2.1 的意思（問責角色）寫成 GV.1.2，GV.1.2 實際是把可信賴 AI 的特性納入政策；把 MG.1.3 的意思（規劃風險回應）寫成 MP.5.2。引用 MG.2.3 的對應有 556 筆，GV.1.2 有 25 筆，沒有規則引用 MP.5.2。第二，101 個規則檔寫著部署這條規則就「satisfies」某條 EU AI Act 條文。ATR 自己的對應政策（docs/COMPLIANCE-COVERAGE-POLICY.md）只允許寫「提供支持第 X 條的偵測證據」。偵測規則本身不會讓任何法律要求被滿足。第三，25 個規則檔把協助有害任務寫成「第 9 條規定的必要風險類別」，第 9 條沒有列這種類別；50 個規則檔寫「第 10 條要求控管 AI 系統處理的資料」，第 10 條管的是訓練、驗證與測試資料，不是 agent 執行時處理的資料。第四，43 條 model-abuse 規則裡有 26 條對到 OWASP ASI08（連鎖失效）和 LLM02（敏感資訊外洩），這兩項描述的都不是這些攻擊。CI 會檢查每筆對應引用的編號存在，但不檢查對應是否正確。修正發布之前，請把這些對應當成「可能相關」的參考，不要當成稽核證據。",
+      "date": "2026-11-04"
+    },
     {
       "id": "e-2026-10-19-red-team-sprint",
       "version": "2.2.0–4.1.5",

@@ -104,6 +104,12 @@ export default async function CompliancePage({
           {zh ? "6 個框架。每條規則都映射。" : "6 frameworks. Every rule mapped."}
         </h1>
       </Reveal>
+      <p className="mt-4 mb-6 max-w-[640px] border-l-2 border-high pl-3 text-[13px] leading-[1.7] text-graphite">
+        {zh
+          ? "部分框架對應已知有誤，正在重做；偵測不受影響。修正發布前，請把對應當成可能相關的參考，不要當成稽核證據。"
+          : "Some framework mappings are known to be wrong and are being redone; detection is not affected. Until the corrections ship, treat the mappings as candidate relevance, not as audit evidence."}{" "}
+        <a href={`/${locale}/errata`} className="text-blue hover:underline">{zh ? "看勘誤" : "See the errata"}</a>
+      </p>
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-4">
           {zh
