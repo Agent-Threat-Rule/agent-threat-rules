@@ -57,6 +57,11 @@ export const DOCS_SECTIONS: ReadonlyArray<DocsSection> = [
     numeral: "III",
     label: { en: "Crosswalks", zh: "框架對照" },
     links: [
+      { path: "/docs/crosswalks", label: { en: "All crosswalks", zh: "全部對照" } },
+      { path: "/docs/crosswalks/owasp-agentic-top-10", label: { en: "OWASP Agentic Top 10", zh: "OWASP Agentic Top 10" } },
+      { path: "/docs/crosswalks/owasp-agentic-skills-top-10", label: { en: "OWASP Agentic Skills Top 10", zh: "OWASP Agentic Skills Top 10" } },
+      { path: "/docs/crosswalks/safe-mcp", label: { en: "SAF-MCP", zh: "SAF-MCP" } },
+      { path: "/docs/crosswalks/nsa-mcp", label: { en: "NSA MCP guidance", zh: "NSA MCP 指引" } },
       { path: "/coverage", label: { en: "Coverage overview", zh: "覆蓋總覽" } },
       { path: "/compliance", label: { en: "Compliance mappings", zh: "合規對應" } },
       { path: "/compliance/nist-ai-rmf", label: { en: "NIST AI RMF", zh: "NIST AI RMF" } },
@@ -74,8 +79,18 @@ export const DOCS_SECTIONS: ReadonlyArray<DocsSection> = [
     ],
   },
   {
-    key: "taxonomies",
+    key: "evidence",
     numeral: "V",
+    label: { en: "Evidence and audit", zh: "證據與稽核" },
+    links: [
+      { path: "/docs/evidence", label: { en: "Evidence guide", zh: "證據指南" } },
+      { path: "/docs/auditor-kit", label: { en: "Auditor kit", zh: "稽核員工具包" } },
+      { path: "/research", label: { en: "Measurements", zh: "量測" } },
+    ],
+  },
+  {
+    key: "taxonomies",
+    numeral: "VI",
     label: { en: "Taxonomies", zh: "分類法" },
     links: [
       { path: "/atd", label: { en: "ATD techniques", zh: "ATD 技法" } },
@@ -84,7 +99,7 @@ export const DOCS_SECTIONS: ReadonlyArray<DocsSection> = [
   },
   {
     key: "governance",
-    numeral: "VI",
+    numeral: "VII",
     label: { en: "Community and governance", zh: "社群與治理" },
     links: [
       { path: "/community", label: { en: "Community", zh: "社群" } },

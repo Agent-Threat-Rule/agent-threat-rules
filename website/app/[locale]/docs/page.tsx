@@ -30,6 +30,7 @@ const SECTION_NOTES: Record<string, { en: string; zh: string }> = {
   categories: { en: "Ten threat categories, each with its rules, their lanes and the most frequent crosswalks.", zh: "十個威脅類別，各自列出規則、lane 與最常見的框架對照。" },
   crosswalks: { en: "How rules map to OWASP, MITRE ATLAS, NIST AI RMF and regulation. ATR's own documents, not endorsements.", zh: "規則如何對照 OWASP、MITRE ATLAS、NIST AI RMF 與法規。ATR 自己的文件，不是背書。" },
   implement: { en: "Engines, integrations and the conformance suite, and which ATR component each adopter uses.", zh: "引擎、整合與符規測試套件，以及每個採用者用了 ATR 的哪個元件。" },
+  evidence: { en: "What a deployment can show an auditor, and how an auditor verifies it from public material.", zh: "部署可以給稽核員看什麼，以及稽核員怎麼用公開資料驗證。" },
   taxonomies: { en: "The ATD technique catalog and the public threat feed.", zh: "ATD 技法目錄與公開威脅情資。" },
   governance: { en: "Who maintains ATR, how decisions are made, how to contribute and how to cite.", zh: "誰維護 ATR、怎麼做決定、怎麼貢獻、怎麼引用。" },
 };
