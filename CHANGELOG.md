@@ -19,6 +19,18 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **The Pydantic AI guard now scans typed tool events and blocks on the
+  enforce lane only** (#772). It used `pyatr.scan()`, which evaluates text as
+  user input, so most rules written for `tool_args` or `tool_response` never
+  saw their field, and it blocked on any rule at `block_severity`, including
+  experimental ones. Tool calls are now `tool_call` events and results
+  `tool_response` events; every match is still recorded, and a match blocks
+  only when its rule is in `block_lane` (default `"enforce"`). Values over
+  `max_scan_chars` (default 10,000) are now scanned as head and tail, with
+  `truncated` in the audit entry, where they used to be scanned in full.
+  `block_severity="info"`, which was accepted and acted as `"critical"`, now
+  raises `ValueError`. `pydantic-ai-atr` 0.2.0 requires `pyatr>=0.4.1` and
+  ships with tests.
 - **pyatr 0.4.0 shipped its bundled rules without `maturity` or `confirm`**,
   so a `pip install pyatr` engine treated every rule as experimental and the
   enforce lane matched nothing (it never blocked wrongly, it just never
