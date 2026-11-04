@@ -42,7 +42,7 @@ export async function generateMetadata({
 
 const STATUS_COLORS: Record<string, string> = {
   STRONG: "bg-green/10 text-green",
-  MODERATE: "bg-blue/10 text-blue",
+  MODERATE: "bg-ink/10 text-blue",
   PARTIAL: "bg-medium/10 text-medium",
   GAP: "bg-stone/10 text-stone",
 };
@@ -58,10 +58,10 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
       <StatsHydrator />
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">{t(locale, "coverage.label")}</div>
+        <div className="text-[13px] text-stone mb-3">{t(locale, "coverage.label")}</div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] mb-2">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-2">
           {t(locale, "coverage.heading")}
         </h1>
       </Reveal>
@@ -74,7 +74,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
       {/* How to read this */}
       <Reveal delay={0.25}>
         <div className="bg-ash border border-fog p-5 md:p-6 mb-8">
-          <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+          <div className="text-[13px] text-stone mb-3">
             {locale === "zh" ? "如何解讀這些數字" : "How to read this"}
           </div>
           <p className="text-sm text-graphite leading-[1.7] mb-4">
@@ -97,20 +97,20 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
       <Reveal delay={0.3}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog mb-12">
           <div className="bg-paper p-6 text-center">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">OWASP Agentic</div>
+            <div className="text-[13px] text-stone mb-2">OWASP Agentic</div>
             <div className="font-data text-3xl font-bold text-ink">{stats.owaspAgentic}</div>
           </div>
           <div className="bg-paper p-6 text-center">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">SAF-MCP (candidate)</div>
+            <div className="text-[13px] text-stone mb-2">SAF-MCP (candidate)</div>
             <div className="font-data text-3xl font-bold text-ink">{stats.safeMcp}</div>
           </div>
           <div className="bg-paper p-6 text-center">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">OWASP AST10</div>
+            <div className="text-[13px] text-stone mb-2">OWASP AST10</div>
             <div className="font-data text-3xl font-bold text-ink">{stats.owaspAst10}</div>
           </div>
           {pint && (
             <div className="bg-paper p-6 text-center">
-              <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">PINT F1 · hunt</div>
+              <div className="text-[13px] text-stone mb-2">PINT F1 · hunt</div>
               <div className="font-data text-3xl font-bold text-ink"><CountUp target={Math.round(pint.f1 * 1000) / 10} /></div>
             </div>
           )}
@@ -119,7 +119,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
 
       {/* OWASP Agentic Top 10 */}
       <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-12">OWASP Agentic Top 10</h2>
+        <h2 className="font-display text-2xl font-medium tracking-[-1px] mb-1 mt-12">OWASP Agentic Top 10</h2>
         <p className="text-sm text-stone mb-6">{coverage.owaspAgenticCovered}/10 {locale === "zh" ? "個類別都有開火的規則——不是打勾，是偵測。" : "categories, each backed by rules that fire — not a checklist, detections."}</p>
       </Reveal>
       <Reveal delay={0.1}>
@@ -136,7 +136,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
               <div className="px-4 py-3 text-sm text-ink">{m.category}</div>
               <div className="px-4 py-3 font-data text-sm text-ink">{m.ruleCount}</div>
               <div className="px-4 py-3">
-                <span className={`font-data text-xs font-semibold uppercase tracking-wide px-2.5 py-1 rounded-sm ${STATUS_COLORS[m.status] ?? ""}`}>
+                <span className={`font-data text-xs font-semibold uppercase tracking-wide px-2.5 py-1  ${STATUS_COLORS[m.status] ?? ""}`}>
                   {m.status}
                 </span>
               </div>
@@ -147,7 +147,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
 
       {/* OWASP AST10 */}
       <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-12">OWASP Agentic Skills Top 10 (AST10)</h2>
+        <h2 className="font-display text-2xl font-medium tracking-[-1px] mb-1 mt-12">OWASP Agentic Skills Top 10 (AST10)</h2>
         <p className="text-sm text-stone mb-6">{coverage.ast10Covered}/10 {locale === "zh" ? "個類別有規則覆蓋。3 個類別屬於流程/元層級（無法用模式偵測）。" : "categories with rule coverage. 3 categories are process/meta-level (not pattern-detectable)."}</p>
       </Reveal>
       <Reveal delay={0.1}>
@@ -164,7 +164,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
               <div className="px-4 py-3 text-sm text-ink">{m.category}</div>
               <div className="px-4 py-3 font-data text-sm text-ink">{m.ruleCount}</div>
               <div className="px-4 py-3">
-                <span className={`font-data text-xs font-semibold uppercase tracking-wide px-2.5 py-1 rounded-sm ${STATUS_COLORS[m.status] ?? ""}`}>
+                <span className={`font-data text-xs font-semibold uppercase tracking-wide px-2.5 py-1  ${STATUS_COLORS[m.status] ?? ""}`}>
                   {m.status}
                 </span>
               </div>
@@ -175,7 +175,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
 
       {/* SAFE-MCP */}
       <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-12">SAF-MCP</h2>
+        <h2 className="font-display text-2xl font-medium tracking-[-1px] mb-1 mt-12">SAF-MCP</h2>
         <p className="text-sm text-stone mb-4">{locale === "zh" ? `SAF Framework Model v2 有效技術中，至少有一條經審查 ATR 規則對應（partial 或 adjacent）者為 ${stats.safeMcp}。每組對應依規則實際 pattern 提出，兩位獨立審查者都同意才保留。這是候選對照，未經 SAF 驗證，也不是偵測成效宣稱；adjacent 只提供輔助脈絡，不等於偵測到該技術。沒有對應規則的技術列在對應表最後。` : `Active SAF Framework Model v2 techniques with at least one reviewed ATR rule (partial or adjacent): ${stats.safeMcp}. Each pair was proposed from the rule's actual patterns and kept only when two independent reviewers agreed. These are candidate mappings, not validated by SAF and not a detection-effectiveness claim; an adjacent rule supplies supporting context and does not by itself detect the technique. Techniques with no mapped rule are listed at the end of the mapping.`}</p>
         <a
           href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md"
@@ -189,7 +189,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
 
       {/* MITRE ATLAS */}
       <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-12">MITRE ATLAS</h2>
+        <h2 className="font-display text-2xl font-medium tracking-[-1px] mb-1 mt-12">MITRE ATLAS</h2>
         <p className="text-sm text-stone mb-4">{locale === "zh" ? "每條規則的 YAML 都帶有 MITRE ATLAS 參照——這是 ATR 對六個框架（ATLAS、OWASP Agentic、OWASP LLM、EU AI Act、NIST AI RMF、ISO 42001）逐條對應的一部分。沒有對應的規則進不了 main，由 CI 強制。在規則瀏覽器中依戰術分組。" : "Every rule's YAML carries a MITRE ATLAS reference — part of ATR's per-rule mapping into six frameworks (ATLAS, OWASP Agentic, OWASP LLM, EU AI Act, NIST AI RMF, ISO 42001). A rule with no mapping does not reach main; CI enforces it. Grouped by tactic in the rule explorer."}</p>
         <Link
           href={`/${locale}/rules`}

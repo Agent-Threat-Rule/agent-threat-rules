@@ -73,7 +73,7 @@ export default async function ActorPage({
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="font-display text-[clamp(32px,5vw,56px)] font-extrabold tracking-[-2px] md:tracking-[-3px] leading-[1.05] text-ink break-all">
+        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.035em] font-medium text-ink break-all">
           {actor.name}
         </h1>
       </Reveal>
@@ -185,7 +185,7 @@ export default async function ActorPage({
         </div>
         {actor.iocs.base64Samples && actor.iocs.base64Samples.length > 0 && (
           <div className="mt-6">
-            <div className="font-data text-[11px] text-stone tracking-[2px] uppercase mb-2">
+            <div className="text-[13px] text-stone mb-2">
               {zh ? "Base64 樣本" : "Base64 samples"}
             </div>
             <div className="bg-ash border border-fog p-4 font-data text-xs text-graphite overflow-x-auto leading-[1.8]">
@@ -238,7 +238,7 @@ export default async function ActorPage({
       <Section label={zh ? "上層框架對照" : "Maps to Established Frameworks"} delay={0.4}>
         <div className="space-y-5">
           <div>
-            <div className="font-data text-[11px] text-stone tracking-[2px] uppercase mb-2">
+            <div className="text-[13px] text-stone mb-2">
               MITRE ATLAS
             </div>
             <div className="flex flex-wrap gap-2">
@@ -254,7 +254,7 @@ export default async function ActorPage({
           </div>
           {actor.owasp.map((group) => (
             <div key={group.framework}>
-              <div className="font-data text-[11px] text-stone tracking-[2px] uppercase mb-2">
+              <div className="text-[13px] text-stone mb-2">
                 {group.framework}
               </div>
               <ul className="space-y-1.5">
@@ -330,7 +330,7 @@ export default async function ActorPage({
                     ? "bg-high/10 text-high"
                     : r.status === "closed"
                       ? "bg-stone/10 text-stone"
-                      : "bg-blue/10 text-blue"
+                      : "bg-ink/10 text-blue"
                 }`}
               >
                 {r.status}
@@ -365,7 +365,7 @@ function Section({
   return (
     <Reveal delay={delay}>
       <section className="mt-12 md:mt-16">
-        <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-4 md:mb-5">
+        <div className="text-[13px] text-stone mb-4 md:mb-5">
           {label}
         </div>
         {children}
@@ -397,7 +397,7 @@ function DataRow({ label, value }: { label: string; value: string }) {
 function IocBlock({ title, items }: { title: string; items: string[] }) {
   return (
     <div>
-      <div className="font-data text-[11px] text-stone tracking-[2px] uppercase mb-2">{title}</div>
+      <div className="text-[13px] text-stone mb-2">{title}</div>
       <ul className="space-y-1.5">
         {items.map((item, i) => (
           <li

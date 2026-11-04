@@ -203,12 +203,12 @@ export default async function AboutPage({
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
       {/* Header */}
       <Reveal>
-        <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "關於 ATR" : "About ATR"}
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="font-display text-[clamp(32px,5vw,56px)] font-extrabold tracking-[-2px] md:tracking-[-3px] leading-[1.05] text-ink">
+        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.035em] font-medium text-ink">
           {zh ? "一個開放標準。" : "An open standard."}
           <br />
           {zh ? "一位維護者開始。" : "Started by one maintainer."}
@@ -351,7 +351,7 @@ function Section({
   return (
     <Reveal delay={delay}>
       <section className="mt-12 md:mt-16">
-        <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-4 md:mb-5">
+        <div className="text-[13px] text-stone mb-4 md:mb-5">
           {label}
         </div>
         {children}

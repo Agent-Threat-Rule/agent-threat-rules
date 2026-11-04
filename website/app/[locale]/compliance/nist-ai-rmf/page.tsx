@@ -86,7 +86,7 @@ export default async function NistAiRmfPage({
 
       {/* H1 */}
       <Reveal delay={0.05}>
-        <h1 className="font-display text-[clamp(32px,5vw,52px)] font-extrabold tracking-[-2px] md:tracking-[-3px] leading-[1.08] text-ink">
+        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.035em] font-medium text-ink">
           {zh ? "NIST AI RMF 定義流程。" : "NIST AI RMF defines the process."}
           <br />
           <span className="text-blue">{zh ? "ATR 讓它能被偵測驗證。" : "ATR makes it detectable."}</span>
@@ -100,7 +100,7 @@ export default async function NistAiRmfPage({
 
       {/* Speed line */}
       <Reveal delay={0.08}>
-        <div className="h-[2px] bg-blue w-20 my-8" />
+        <div className="h-[2px] bg-ink w-20 my-8" />
       </Reveal>
 
       {/* Lead paragraph */}
@@ -128,7 +128,7 @@ export default async function NistAiRmfPage({
       {/* Community OSCAL contribution — submission status (honest framing) */}
       <Reveal delay={0.14}>
         <div className="bg-paper border border-fog p-5 md:p-6 mt-8 mb-4">
-          <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">
+          <div className="text-[13px] text-stone mb-2">
             {zh ? "社群 OSCAL 貢獻 · 目前狀態" : "Community OSCAL contribution · current status"}
           </div>
           <p className="text-sm md:text-base text-graphite leading-[1.8] mb-3">
@@ -224,7 +224,7 @@ export default async function NistAiRmfPage({
             ? "對應落在 16 個 subcategory 上,GOVERN / MAP / MEASURE / MANAGE 四個 function 沒有一個是空的——治理框架的每一段流程,底下都掛得到能開火的規則。一條規則可同時對應多個 subcategory(primary + secondary strength);各 subcategory 的對應次數見下表。"
             : "The mappings land across 16 subcategories, and none of the four functions — GOVERN / MAP / MEASURE / MANAGE — is left empty: every stretch of the governance process has firing rules wired beneath it. A single rule can map to several subcategories (primary + secondary strength); the per-subcategory counts are listed below."}
         </p>
-        <div className="bg-paper border border-fog rounded">
+        <div className="bg-paper border border-fog ">
           <div className="grid grid-cols-[80px_55px_minmax(0,1fr)_55px] sm:grid-cols-[110px_70px_minmax(0,1fr)_70px] gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 border-b border-fog font-data text-[10.5px] tracking-[1.2px] uppercase text-stone">
             <div>{zh ? "Subcategory" : "Subcategory"}</div>
             <div>{zh ? "Function" : "Function"}</div>
@@ -257,7 +257,7 @@ export default async function NistAiRmfPage({
             ? "對應寫在規則裡,不是寫在投影片上。每條規則的 NIST 對應都明確說明它服務哪個 subcategory、以及為何。以下是 ATR-2026-00118(Approval Fatigue Exploitation)的實際 metadata:"
             : "The mapping lives in the rule, not on a slide. Every rule's NIST mapping states which subcategory it serves and why. Below is the actual metadata from ATR-2026-00118 (Approval Fatigue Exploitation):"}
         </p>
-        <div className="bg-ink rounded p-5 overflow-x-auto">
+        <div className="bg-ink  p-5 overflow-x-auto">
           <pre className="font-data text-[11.5px] md:text-[12.5px] text-paper leading-[1.6] whitespace-pre-wrap break-words">
 {`compliance:
   nist_ai_rmf:
@@ -499,7 +499,7 @@ function Section({
   return (
     <Reveal delay={delay}>
       <section className="mt-12 md:mt-16">
-        <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-4 md:mb-5">
+        <div className="text-[13px] text-stone mb-4 md:mb-5">
           {label}
         </div>
         {children}

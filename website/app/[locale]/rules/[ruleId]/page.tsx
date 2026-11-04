@@ -12,7 +12,7 @@ const SEVERITY_COLORS: Record<string, string> = {
   high: "bg-high/10 text-high",
   medium: "bg-medium/10 text-medium",
   low: "bg-green/10 text-green",
-  informational: "bg-blue/10 text-blue",
+  informational: "bg-ink/10 text-blue",
 };
 
 /** First sentence of a rule description, for the lead line under the title. */
@@ -485,7 +485,7 @@ export default async function RuleDetailPage({
                   className="bg-paper p-4 hover:bg-ash/50 transition-colors flex items-center gap-4"
                 >
                   <span className="font-data text-xs text-mist shrink-0 w-28">{r.id}</span>
-                  <span className={`font-data text-xs px-1.5 py-0.5 rounded-sm uppercase shrink-0 ${SEVERITY_COLORS[r.severity] ?? "bg-ash text-stone"}`}>
+                  <span className={`font-data text-xs px-1.5 py-0.5  uppercase shrink-0 ${SEVERITY_COLORS[r.severity] ?? "bg-ash text-stone"}`}>
                     {r.severity}
                   </span>
                   <span className="text-sm text-ink truncate">{r.title}</span>

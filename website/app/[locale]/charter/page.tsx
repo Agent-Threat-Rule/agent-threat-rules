@@ -190,7 +190,7 @@ export default async function CharterPage({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-5 not-prose">
               {/* In scope */}
               <div
-                className="border-l-4 border-navy bg-paper rounded-sm p-5"
+                className="border-l-4 border-navy bg-paper  p-5"
                 style={{ borderColor: "#0b1d3a" }}
               >
                 <p
@@ -214,7 +214,7 @@ export default async function CharterPage({
               </div>
 
               {/* Out of scope */}
-              <div className="border-l-4 border-stone bg-paper rounded-sm p-5">
+              <div className="border-l-4 border-stone bg-paper  p-5">
                 <p
                   className="text-xs uppercase tracking-wider text-stone font-semibold mb-3"
                   style={{ fontFamily: "var(--font-data)" }}

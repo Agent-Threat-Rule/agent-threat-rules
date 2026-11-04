@@ -11,7 +11,7 @@ const SEVERITY_COLORS: Record<string, string> = {
   critical: "bg-critical/10 text-critical",
   high: "bg-high/10 text-high",
   medium: "bg-medium/10 text-medium",
-  low: "bg-blue/10 text-blue",
+  low: "bg-ink/10 text-blue",
   informational: "bg-stone/10 text-stone",
 };
 
@@ -196,7 +196,7 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
                 <div className="px-4 py-3 text-sm text-ink">{rule.title}</div>
                 <div className="px-4 py-3 font-data text-xs text-stone">{categoryDisplayName(rule.category, locale)}</div>
                 <div className="px-4 py-3">
-                  <span className={`font-data text-xs font-semibold uppercase tracking-wide px-2.5 py-1 rounded-sm ${SEVERITY_COLORS[rule.severity] ?? "bg-stone/10 text-stone"}`}>
+                  <span className={`font-data text-xs font-semibold uppercase tracking-wide px-2.5 py-1  ${SEVERITY_COLORS[rule.severity] ?? "bg-stone/10 text-stone"}`}>
                     {rule.severity}
                   </span>
                 </div>

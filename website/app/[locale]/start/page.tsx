@@ -36,10 +36,10 @@ export default async function StartPage({ params }: { params: Promise<{ locale: 
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
       <Reveal>
         <div className="mb-10">
-          <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+          <div className="text-[13px] text-stone mb-3">
             {zh ? "從這裡開始" : "Start here"}
           </div>
-          <h1 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] mb-2 text-balance">
+          <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-2 text-balance">
             {zh ? "你為什麼來?" : "What brings you to ATR?"}
           </h1>
           <p className="text-base text-stone font-light max-w-[640px]">

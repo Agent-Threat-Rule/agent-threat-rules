@@ -108,10 +108,10 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
   return (
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">{t(locale, "integrate.label")}</div>
+        <div className="text-[13px] text-stone mb-3">{t(locale, "integrate.label")}</div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] mb-2">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-2">
           {t(locale, "integrate.heading")}
         </h1>
       </Reveal>
@@ -124,7 +124,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
       {/* Integration tiers — choose your level */}
       <Reveal>
         <div className="mb-12">
-          <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">
+          <div className="text-[13px] text-stone mb-4">
             {locale === "zh" ? "一份規則 · 任何符合規範的引擎 · 選擇你的整合程度" : "One ruleset · Any conforming engine · Choose your integration level"}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-fog">
@@ -156,7 +156,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
             ].map((tier) => (
               <div key={tier.level} className="bg-paper p-5 md:p-6">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-data text-xs font-bold text-blue bg-blue/10 px-2 py-0.5 rounded-sm">{tier.level}</span>
+                  <span className="font-data text-xs font-bold text-blue bg-ink/10 px-2 py-0.5 ">{tier.level}</span>
                   <span className="font-display text-sm font-semibold text-ink">{tier.title}</span>
                 </div>
                 <div className="text-xs text-blue font-medium mb-2">{tier.who}</div>
@@ -184,19 +184,19 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
             <div className="space-y-3">
               <div>
                 <div className="font-data text-xs text-stone mb-1">{locale === "zh" ? "掃描一個 SKILL.md 檔案" : "Scan a SKILL.md file"}</div>
-                <div className="font-data text-sm bg-[#0B0B0F] text-[#4ade80] px-4 py-3 rounded-sm overflow-x-auto">
+                <div className="font-data text-sm bg-[#0B0B0F] text-[#4ade80] px-4 py-3  overflow-x-auto">
                   <span className="text-stone">$</span> npx agent-threat-rules scan your-skill.md
                 </div>
               </div>
               <div>
                 <div className="font-data text-xs text-stone mb-1">{locale === "zh" ? "掃描整個目錄" : "Scan a directory"}</div>
-                <div className="font-data text-sm bg-[#0B0B0F] text-[#4ade80] px-4 py-3 rounded-sm overflow-x-auto">
+                <div className="font-data text-sm bg-[#0B0B0F] text-[#4ade80] px-4 py-3  overflow-x-auto">
                   <span className="text-stone">$</span> npx agent-threat-rules scan ./my-mcp-skills/
                 </div>
               </div>
               <div>
                 <div className="font-data text-xs text-stone mb-1">{locale === "zh" ? "安裝為 Claude Code 即時防護" : "Install as Claude Code real-time guard"}</div>
-                <div className="font-data text-sm bg-[#0B0B0F] text-[#4ade80] px-4 py-3 rounded-sm overflow-x-auto">
+                <div className="font-data text-sm bg-[#0B0B0F] text-[#4ade80] px-4 py-3  overflow-x-auto">
                   <span className="text-stone">$</span> npx agent-threat-rules init --global
                 </div>
               </div>
@@ -212,7 +212,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
 
       {/* SDK Integration Paths */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-4">
+        <div className="text-[13px] text-stone mb-4">
           {locale === "zh" ? "SDK 整合 · 同一份規則,五種讀法" : "SDK Integration · Same rules, five ways to read them"}
         </div>
       </Reveal>
@@ -255,7 +255,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
                 : <>Wire ATR into any GitHub repo&apos;s CI. Results write to SARIF and surface in the repo&apos;s GitHub Security tab — same place as CodeQL and dependabot.</>}
             </p>
             <div>
-              <div className="font-data text-[11px] text-stone tracking-[2px] uppercase mb-2">
+              <div className="text-[13px] text-stone mb-2">
                 {locale === "zh" ? "最小工作流" : "Minimal Workflow"}
               </div>
               <pre className="font-data text-xs md:text-sm text-graphite bg-ash border border-fog p-4 overflow-x-auto leading-[1.7]">
@@ -275,7 +275,7 @@ jobs:
               </pre>
             </div>
             <div>
-              <div className="font-data text-[11px] text-stone tracking-[2px] uppercase mb-3">
+              <div className="text-[13px] text-stone mb-3">
                 {locale === "zh" ? "公開採用" : "Public Adopters"}
               </div>
               <p className="text-sm text-graphite leading-[1.7]">
@@ -430,7 +430,7 @@ jobs:
       {/* Integrated by */}
       <Reveal>
         <div className="mt-12 mb-px">
-          <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-5">
+          <div className="text-[13px] text-stone mb-5">
             {locale === "zh" ? "生態整合" : "Integrated by"}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog">
@@ -458,7 +458,7 @@ jobs:
             </h2>
           </div>
           <div className="p-6 space-y-6">
-            <div className="bg-ash border border-fog px-4 py-3 rounded-sm">
+            <div className="bg-ash border border-fog px-4 py-3 ">
               <p className="text-sm text-graphite leading-[1.8] max-w-[640px]">
                 {locale === "zh"
                   ? "Threat Cloud 是 ATR 維護者運營的選用參考服務,並非標準的一部分。標準本體是規格加上 MIT 授權的規則,透過 npm / PyPI / 純 YAML 完全可離線使用;Threat Cloud 只提供 hosted 便利(規則同步、威脅提交),不用它也能達到同樣結果。"
@@ -474,14 +474,14 @@ jobs:
             <div className="space-y-4">
               <div>
                 <div className="font-data text-xs text-stone mb-2">{locale === "zh" ? "方式 1：CLI（最簡單）" : "Method 1: CLI (simplest)"}</div>
-                <div className="font-data text-sm bg-[#0B0B0F] text-[#4ade80] px-4 py-3 rounded-sm overflow-x-auto">
+                <div className="font-data text-sm bg-[#0B0B0F] text-[#4ade80] px-4 py-3  overflow-x-auto">
                   <span className="text-[#808089]">$</span> npx agent-threat-rules scan . --report-to-cloud
                 </div>
               </div>
 
               <div>
                 <div className="font-data text-xs text-stone mb-2">{locale === "zh" ? "方式 2：程式庫（平台整合）" : "Method 2: Library (platform integration)"}</div>
-                <div className="font-data text-xs bg-[#0B0B0F] text-[#E0E0E8] px-4 py-3 rounded-sm overflow-x-auto leading-[1.8]">
+                <div className="font-data text-xs bg-[#0B0B0F] text-[#E0E0E8] px-4 py-3  overflow-x-auto leading-[1.8]">
                   <div className="text-[#6B6B76]">{"// "}{locale === "zh" ? "你的平台發現威脅時自動上報" : "Auto-report when your platform detects threats"}</div>
                   <div>{"import { ATREngine, createTCReporter } from 'agent-threat-rules';"}</div>
                   <div className="mt-1">{"const engine = new ATREngine({"}</div>
@@ -493,7 +493,7 @@ jobs:
 
               <div>
                 <div className="font-data text-xs text-stone mb-2">{locale === "zh" ? "方式 3：API（完全自訂）" : "Method 3: API (fully custom)"}</div>
-                <div className="font-data text-xs bg-[#0B0B0F] text-[#E0E0E8] px-4 py-3 rounded-sm overflow-x-auto leading-[1.8]">
+                <div className="font-data text-xs bg-[#0B0B0F] text-[#E0E0E8] px-4 py-3  overflow-x-auto leading-[1.8]">
                   <div className="text-[#6B6B76]">{"# "}{locale === "zh" ? "直接呼叫 TC API" : "Direct TC API call"}</div>
                   <div>{"curl -X POST https://tc.agentthreatrule.org/api/threats \\"}</div>
                   <div>{"  -H 'Content-Type: application/json' \\"}</div>
@@ -504,23 +504,23 @@ jobs:
             </div>
 
             <div className="pt-4 border-t border-fog">
-              <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">
+              <div className="text-[13px] text-stone mb-2">
                 {locale === "zh" ? "上報後會發生什麼" : "What happens after reporting"}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-stone">
-                <div className="bg-ash p-3 rounded-sm">
+                <div className="bg-ash p-3 ">
                   <div className="font-data text-ink font-medium mb-1">1. {locale === "zh" ? "聚合" : "Aggregate"}</div>
                   {locale === "zh" ? "TC 收集多個端點的訊號" : "TC collects signals from endpoints"}
                 </div>
-                <div className="bg-ash p-3 rounded-sm">
+                <div className="bg-ash p-3 ">
                   <div className="font-data text-ink font-medium mb-1">2. {locale === "zh" ? "結晶" : "Crystallize"}</div>
                   {locale === "zh" ? "AI 分析模式，產出規則草稿" : "AI analyzes patterns, drafts rules"}
                 </div>
-                <div className="bg-ash p-3 rounded-sm">
+                <div className="bg-ash p-3 ">
                   <div className="font-data text-ink font-medium mb-1">3. {locale === "zh" ? "審核" : "Review"}</div>
                   {locale === "zh" ? "人工審核 FP + 攻擊類型分類" : "Human reviews FP + attack classification"}
                 </div>
-                <div className="bg-ash p-3 rounded-sm">
+                <div className="bg-ash p-3 ">
                   <div className="font-data text-ink font-medium mb-1">4. {locale === "zh" ? "分發" : "Distribute"}</div>
                   {locale === "zh" ? "合併到 ATR → npm publish → 全球更新" : "Merged to ATR → npm publish → global update"}
                 </div>
@@ -575,7 +575,7 @@ jobs:
           in the loop — integrate, ask if stuck, then list yourself. */}
       <Reveal>
         <div className="mt-12 border border-fog px-6 py-6">
-          <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">
+          <div className="text-[13px] text-stone mb-4">
             {locale === "zh" ? "出貨之後" : "After you ship"}
           </div>
           <ol className="grid grid-cols-1 md:grid-cols-3 gap-6 list-none">

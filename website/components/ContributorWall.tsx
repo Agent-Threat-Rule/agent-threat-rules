@@ -103,7 +103,7 @@ export function ContributorWall({
               alt={c.github}
               width={48}
               height={48}
-              className={`rounded-sm ${
+              className={` ${
                 c.role === "maintainer"
                   ? "ring-2 ring-blue"
                   : "ring-1 ring-fog"

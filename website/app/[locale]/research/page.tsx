@@ -41,10 +41,10 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
       <StatsHydrator />
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">{t(locale, "research.label")}</div>
+        <div className="text-[13px] text-stone mb-3">{t(locale, "research.label")}</div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] mb-2">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-2">
           {t(locale, "research.heading")}
         </h1>
       </Reveal>
@@ -82,7 +82,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
           {/* Malware campaign research report */}
           <div className="bg-paper p-5 md:p-6">
             <div className="flex items-center gap-2 mb-2">
-              <span className="font-data text-xs bg-critical/10 text-critical px-2 py-0.5 rounded-sm">{locale === "zh" ? "新" : "NEW"}</span>
+              <span className="font-data text-xs bg-critical/10 text-critical px-2 py-0.5 ">{locale === "zh" ? "新" : "NEW"}</span>
               <span className="font-data text-xs text-mist">April 2026</span>
             </div>
             <div className="font-display text-base font-semibold text-ink mb-1">
@@ -123,7 +123,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
           {/* MCP attack surface paper */}
           <div className="bg-paper p-5 md:p-6">
             <div className="flex items-center gap-2 mb-2">
-              <span className="font-data text-xs bg-critical/10 text-critical px-2 py-0.5 rounded-sm">{locale === "zh" ? "新" : "NEW"}</span>
+              <span className="font-data text-xs bg-critical/10 text-critical px-2 py-0.5 ">{locale === "zh" ? "新" : "NEW"}</span>
               <span className="font-data text-xs text-mist">April 2026 · 18 pages · 30 references</span>
             </div>
             <div className="font-display text-base font-semibold text-ink mb-1">
@@ -144,7 +144,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
 
       {/* Benchmarks */}
       <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-10">{t(locale, "research.benchmarks")}</h2>
+        <h2 className="font-display text-2xl font-medium tracking-[-1px] mb-1 mt-10">{t(locale, "research.benchmarks")}</h2>
         <p className="text-sm text-stone mb-6">{t(locale, "research.benchmarks.sub")}</p>
       </Reveal>
       {pintRun && selfTestRun && (
@@ -152,7 +152,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
           <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog mb-8">
             {/* PINT */}
             <div className="bg-paper p-6">
-              <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">{t(locale, "research.pint")}</div>
+              <div className="text-[13px] text-stone mb-4">{t(locale, "research.pint")}</div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <MetricCell value={pintRun.precision} label={`${t(locale, "research.precision")} · hunt`} />
                 <RecallCell m={pintRun} label={t(locale, "research.recall")} zh={zh} />
@@ -169,7 +169,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             {/* Self-test */}
             <div className="bg-paper p-6">
-              <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">{t(locale, "research.self")}</div>
+              <div className="text-[13px] text-stone mb-4">{t(locale, "research.self")}</div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <MetricCell value={selfTestRun.precision} label="Precision · hunt" />
                 <RecallCell m={selfTestRun} label="Recall" zh={zh} />
@@ -202,13 +202,13 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
 
       {/* Ecosystem Scan Data */}
       <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-10">{t(locale, "research.scan")}</h2>
+        <h2 className="font-display text-2xl font-medium tracking-[-1px] mb-1 mt-10">{t(locale, "research.scan")}</h2>
         <p className="text-sm text-stone mb-6">{t(locale, "research.scan.sub")}</p>
       </Reveal>
       <Reveal delay={0.1}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog mb-8">
           <div className="bg-paper p-6">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-3">{locale === "zh" ? "野外生態系掃描（5 個來源）" : "Wild ecosystem scan (5 sources)"}</div>
+            <div className="text-[13px] text-stone mb-3">{locale === "zh" ? "野外生態系掃描（5 個來源）" : "Wild ecosystem scan (5 sources)"}</div>
             <div className="font-data text-3xl font-bold text-ink mb-1"><CountUp target={stats.megaScanTotal} useComma liveKey="megaScanTotal" /></div>
             <div className="text-sm text-stone mb-3">{locale === "zh" ? "個 skill 已掃描" : "skills scanned"}</div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
@@ -227,7 +227,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
           </div>
           <div className="bg-paper p-6">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-3">ClawHub Registry Scan</div>
+            <div className="text-[13px] text-stone mb-3">ClawHub Registry Scan</div>
             <div className="font-data text-3xl font-bold text-ink mb-1"><CountUp target={stats.clawHubCrawled} useComma /></div>
             <div className="text-sm text-stone mb-3">{locale === "zh" ? "個 skill 已爬取" : "skills crawled"}</div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
@@ -267,7 +267,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
 
       {/* Methodology */}
       <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-10">
+        <h2 className="font-display text-2xl font-medium tracking-[-1px] mb-1 mt-10">
           {locale === "zh" ? "研究方法論" : "Research Methodology"}
         </h2>
         <p className="text-sm text-stone mb-6">
@@ -335,7 +335,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
 
       {/* External Citations */}
       <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-10">
+        <h2 className="font-display text-2xl font-medium tracking-[-1px] mb-1 mt-10">
           {locale === "zh" ? "外部引用" : "External Citations"}
         </h2>
         <p className="text-sm text-stone mb-6">
@@ -355,7 +355,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
           </p>
           <div className="mt-4 pt-4 border-t border-fog space-y-3">
             <div>
-              <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-1">
+              <div className="text-[13px] text-stone mb-1">
                 {locale === "zh" ? "引用此標準" : "Cite the standard"}
               </div>
               <p className="text-xs text-mist leading-[1.7]">
@@ -365,7 +365,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
               </p>
             </div>
             <div>
-              <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-1">
+              <div className="text-[13px] text-stone mb-1">
                 {locale === "zh" ? "原始論文" : "Originating paper"}
               </div>
               <p className="text-xs text-mist leading-[1.7]">
@@ -388,7 +388,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
 
       {/* Upcoming Research */}
       <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-10">
+        <h2 className="font-display text-2xl font-medium tracking-[-1px] mb-1 mt-10">
           {locale === "zh" ? "進行中的研究" : "Upcoming Research"}
         </h2>
         <p className="text-sm text-stone mb-6">
@@ -404,7 +404,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
               <div className="font-display text-sm md:text-base font-semibold text-ink">
                 {locale === "zh" ? "Tier 3 行為評估層" : "Tier 3 Behavioral Evaluator"}
               </div>
-              <span className="font-data text-[10px] text-blue bg-blue/10 px-2 py-0.5 rounded-sm uppercase tracking-wide">
+              <span className="font-data text-[10px] text-blue bg-ink/10 px-2 py-0.5  uppercase tracking-wide">
                 {locale === "zh" ? "進行中" : "In progress"}
               </span>
             </div>
@@ -419,7 +419,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
               <div className="font-display text-sm md:text-base font-semibold text-ink">
                 {locale === "zh" ? "Tier 4 語意評估 + 結晶 pipeline" : "Tier 4 Semantic Evaluator + Crystallization Pipeline"}
               </div>
-              <span className="font-data text-[10px] text-stone bg-stone/10 px-2 py-0.5 rounded-sm uppercase tracking-wide">
+              <span className="font-data text-[10px] text-stone bg-stone/10 px-2 py-0.5  uppercase tracking-wide">
                 {locale === "zh" ? "設計中" : "Design"}
               </span>
             </div>
@@ -434,7 +434,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
               <div className="font-display text-sm md:text-base font-semibold text-ink">
                 {locale === "zh" ? "Sigma / YARA 跨格式相容" : "Sigma / YARA Cross-format Compatibility"}
               </div>
-              <span className="font-data text-[10px] text-stone bg-stone/10 px-2 py-0.5 rounded-sm uppercase tracking-wide">
+              <span className="font-data text-[10px] text-stone bg-stone/10 px-2 py-0.5  uppercase tracking-wide">
                 {locale === "zh" ? "規劃中" : "Planned"}
               </span>
             </div>
@@ -449,7 +449,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
               <div className="font-display text-sm md:text-base font-semibold text-ink">
                 {locale === "zh" ? "訓練 ↔ runtime 偵測邊界" : "Training ↔ Runtime Detection Boundary"}
               </div>
-              <span className="font-data text-[10px] text-stone bg-stone/10 px-2 py-0.5 rounded-sm uppercase tracking-wide">
+              <span className="font-data text-[10px] text-stone bg-stone/10 px-2 py-0.5  uppercase tracking-wide">
                 {locale === "zh" ? "開放問題" : "Open problem"}
               </span>
             </div>
@@ -473,7 +473,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
 
       {/* Limitations */}
       <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-10">{t(locale, "research.limits")}</h2>
+        <h2 className="font-display text-2xl font-medium tracking-[-1px] mb-1 mt-10">{t(locale, "research.limits")}</h2>
         <p className="text-sm text-stone mb-6">{t(locale, "research.limits.sub")}</p>
       </Reveal>
       <Reveal delay={0.1}>
@@ -515,7 +515,7 @@ function SkillBenchmark({ run, zh }: { run: BenchmarkMeasurement; zh: boolean })
   return (
     <>
       <Reveal>
-        <h2 className="font-display text-2xl font-extrabold tracking-[-1px] mb-1 mt-10">
+        <h2 className="font-display text-2xl font-medium tracking-[-1px] mb-1 mt-10">
           {zh ? "SKILL.md 偵測基準" : "SKILL.md Detection Benchmark"}
         </h2>
         <p className="text-sm text-stone mb-6">
@@ -535,7 +535,7 @@ function SkillBenchmark({ run, zh }: { run: BenchmarkMeasurement; zh: boolean })
 function SkillOverall({ run, zh }: { run: BenchmarkMeasurement; zh: boolean }) {
   return (
     <div className="bg-paper p-6">
-      <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">
+      <div className="text-[13px] text-stone mb-4">
         {zh ? "整體表現" : "Overall Performance"}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -562,7 +562,7 @@ function SkillLayers({ run, zh }: { run: BenchmarkMeasurement; zh: boolean }) {
   const fp = run.falsePositives === null ? null : count(run.falsePositives);
   return (
     <div className="bg-paper p-6">
-      <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-4">
+      <div className="text-[13px] text-stone mb-4">
         {zh ? "按攻擊層分析 · hunt lane" : "By Attack Layer · hunt lane"}
       </div>
       <div className="space-y-4">
@@ -619,7 +619,7 @@ function LayerBar({ name, value, desc, width, benign = false }: { name: string; 
         <span className={`font-data text-sm font-bold ${benign ? "text-green" : "text-ink"}`}>{value}</span>
       </div>
       <div className="text-xs text-stone">{desc}</div>
-      <div className="mt-1.5 h-1.5 bg-fog"><div className={`h-full ${benign ? "bg-green" : "bg-blue"}`} style={{ width: `${width}%` }} /></div>
+      <div className="mt-1.5 h-1.5 bg-fog"><div className={`h-full ${benign ? "bg-green" : "bg-ink"}`} style={{ width: `${width}%` }} /></div>
     </div>
   );
 }

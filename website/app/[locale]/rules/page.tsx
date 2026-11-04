@@ -35,10 +35,10 @@ export default async function RulesPage({ params }: { params: Promise<{ locale: 
   return (
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
       <div className="mb-8">
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {t(locale, "rules.label")}
         </div>
-        <h1 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] mb-2">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-2">
           {t(locale, "rules.heading", { count: String(stats.ruleCount) })}
         </h1>
         <p className="text-base text-stone font-light">

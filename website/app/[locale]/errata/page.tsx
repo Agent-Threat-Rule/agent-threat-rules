@@ -209,7 +209,7 @@ export default async function ErrataPage({
                       <div
                         key={key}
                         id={`erratum-mobile-${key}`}
-                        className="border border-fog rounded-sm p-4 bg-paper"
+                        className="border border-fog  p-4 bg-paper"
                       >
                         <p
                           className="font-semibold text-navy-ink mb-2"
@@ -251,7 +251,7 @@ export default async function ErrataPage({
               </>
             ) : (
               <div
-                className="border border-fog rounded-sm p-6 bg-paper not-prose"
+                className="border border-fog  p-6 bg-paper not-prose"
                 role="status"
               >
                 <p

@@ -94,12 +94,12 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
   return (
     <div className="pt-20 pb-16 px-5 md:px-6 max-w-[1120px] mx-auto">
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "公開威脅情報" : "Public Threat Feed"}
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] mb-2">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-2">
           {zh ? "攻擊先發生在野外。" : "The attack happens in the wild first."}
         </h1>
       </Reveal>
@@ -199,7 +199,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
               <div className="font-data text-xs font-medium text-green tracking-[2px] uppercase">
                 {zh ? "ATR 認證白名單" : "ATR Verified Whitelist"}
               </div>
-              <span className="inline-flex items-center gap-1 bg-green/15 text-green text-[10px] font-bold px-2 py-0.5 rounded-sm tracking-wide uppercase">
+              <span className="inline-flex items-center gap-1 bg-green/15 text-green text-[10px] font-bold px-2 py-0.5  tracking-wide uppercase">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="shrink-0">
                   <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="currentColor"/>
                 </svg>
@@ -217,7 +217,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
           <Reveal delay={0.2}>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {wl.entries.slice(0, 21).map((entry) => (
-                <div key={entry.skill} className="bg-white border border-green/20 rounded-sm p-3 md:p-4">
+                <div key={entry.skill} className="bg-white border border-green/20  p-3 md:p-4">
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <div className="font-data text-xs font-medium text-ink truncate">{entry.skill}</div>
                     <span className="font-data text-[10px] text-stone shrink-0">{entry.downloads.toLocaleString()} {zh ? "下載" : "dl"}</span>
@@ -253,7 +253,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
       {/* Full blacklist — JSON download card */}
       <Reveal delay={0.4}>
         <div className="mb-4">
-          <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-3">
+          <div className="text-[13px] text-stone mb-3">
             {zh ? "完整黑名單" : "Full Blacklist"}
           </div>
           <div className="bg-paper border border-fog p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">

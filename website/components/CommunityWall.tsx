@@ -95,9 +95,9 @@ export function CommunityWall({
                 </div>
 
                 {/* Contribution bar */}
-                <div className="h-2 bg-ash rounded-sm overflow-hidden mb-2">
+                <div className="h-2 bg-ash  overflow-hidden mb-2">
                   <motion.div
-                    className="h-full bg-blue rounded-sm"
+                    className="h-full bg-ink "
                     initial={{ width: 0 }}
                     animate={isInView ? { width: `${barWidth}%` } : { width: 0 }}
                     transition={{ duration: 0.8, delay: 0.2 + i * 0.1, ease: EASE }}
@@ -119,7 +119,7 @@ export function CommunityWall({
                         alt={c.github}
                         width={20}
                         height={20}
-                        className="rounded-sm ring-1 ring-fog group-hover:ring-blue transition-all"
+                        className="ring-1 ring-fog group-hover:ring-blue transition-all"
                       />
                       <span className="font-data text-xs text-stone group-hover:text-ink transition-colors">
                         @{c.github}
@@ -153,7 +153,7 @@ export function CommunityWall({
             className="bg-paper px-5 py-4 flex items-center gap-3 hover:bg-ash/50 transition-colors"
           >
             {item.logo && (
-              <img src={item.logo} alt="" width={28} height={28} className="rounded-sm ring-1 ring-fog" />
+              <img src={item.logo} alt="" width={28} height={28} className="ring-1 ring-fog" />
             )}
             <div className="min-w-0">
               <div className="font-display text-sm font-semibold text-ink truncate">{item.name}</div>

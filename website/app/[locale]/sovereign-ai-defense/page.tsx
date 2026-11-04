@@ -68,7 +68,7 @@ export default async function SovereignAIDefensePage({
 
       {/* Slogan callout */}
       <Reveal delay={0.03}>
-        <div className="mb-7 md:mb-8 px-7 py-6 bg-ink rounded">
+        <div className="mb-7 md:mb-8 px-7 py-6 bg-ink ">
           <p className="font-display text-[18px] md:text-[22px] font-medium italic leading-[1.4] tracking-[-0.01em] text-paper">
             &ldquo;Sovereign AI without Sovereign Defense is just Sovereign Risk.&rdquo;
           </p>
@@ -77,7 +77,7 @@ export default async function SovereignAIDefensePage({
 
       {/* H1 */}
       <Reveal delay={0.08}>
-        <h1 className="font-display text-[clamp(32px,5vw,52px)] font-extrabold tracking-[-2px] md:tracking-[-3px] leading-[1.08] text-ink">
+        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.035em] font-medium text-ink">
           {zh ? "每個國家都在建主權 AI。" : "Every country is building sovereign AI."}
           <br />
           {zh ? "保護它的偵測知識,不該屬於任何單一廠商。" : "The detection knowledge that defends it should belong to no single vendor."}
@@ -88,7 +88,7 @@ export default async function SovereignAIDefensePage({
 
       {/* Speed line */}
       <Reveal delay={0.12}>
-        <div className="h-[2px] bg-blue w-20 my-8" />
+        <div className="h-[2px] bg-ink w-20 my-8" />
       </Reveal>
 
       {/* Declarative opening */}
@@ -407,7 +407,7 @@ export default async function SovereignAIDefensePage({
             </>
           )}
         </p>
-        <pre className="mt-7 bg-ink text-paper rounded-md p-5 text-[12.5px] md:text-[13px] leading-[1.7] overflow-x-auto font-data whitespace-pre">
+        <pre className="mt-7 bg-ink text-paper  p-5 text-[12.5px] md:text-[13px] leading-[1.7] overflow-x-auto font-data whitespace-pre">
           <code>{`# Open reference CLI (MIT) — export ATR rules into existing tooling
 atr convert splunk --output ./atr-rules.spl`}</code>
         </pre>
@@ -428,7 +428,7 @@ atr convert splunk --output ./atr-rules.spl`}</code>
           <TractionRow
             org="Microsoft"
             status={zh ? "PR 已合併" : "PR Merged"}
-            statusClass="bg-blue/10 text-blue"
+            statusClass="bg-ink/10 text-blue"
             desc={zh ? "agent-governance-toolkit · PR #2308 + #3025 · ATR 匯入範例與 ACS annotator 範例（早期規則包 YAML 已不在 repo）" : "agent-governance-toolkit · PR #2308 + #3025 · ATR import and ACS annotator examples (earlier rule-pack YAML no longer in the repo)"}
           />
           <TractionRow
@@ -577,7 +577,7 @@ atr convert splunk --output ./atr-rules.spl`}</code>
             ? "採用不是一份提案,是三行指令。沒有授權窗口、沒有採購流程、沒有人需要先點頭:"
             : "Adoption is not a proposal — it is three commands. No license desk, no procurement cycle, no one's permission required:"}
         </p>
-        <pre className="mt-4 bg-ink text-paper rounded-md p-5 text-[12.5px] md:text-[13px] leading-[1.7] overflow-x-auto font-data whitespace-pre">
+        <pre className="mt-4 bg-ink text-paper  p-5 text-[12.5px] md:text-[13px] leading-[1.7] overflow-x-auto font-data whitespace-pre">
           <code>{`# Adopt the open standard — MIT, no fee, no geopolitical strings
 npm install -g agent-threat-rules
 atr scan ./agent-config.json     # audit your own agents against ${ruleCount} rules
@@ -588,7 +588,7 @@ atr convert splunk               # or export into the SOC you already run`}</cod
       {/* 07 · Open call */}
       <Reveal delay={0.05}>
         <section className="mt-12 md:mt-16">
-          <div className="bg-ink text-paper rounded-md p-10 md:p-12">
+          <div className="bg-ink text-paper  p-10 md:p-12">
             <div className="font-data text-[11px] md:text-xs font-medium text-mist tracking-[1.5px] md:tracking-[3px] uppercase mb-3">
               07 · OPEN CALL
             </div>
@@ -721,7 +721,7 @@ function Section({
   return (
     <Reveal delay={delay}>
       <section className="mt-12 md:mt-16">
-        <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-4 md:mb-5">
+        <div className="text-[13px] text-stone mb-4 md:mb-5">
           {label}
         </div>
         {children}
@@ -814,7 +814,7 @@ function TractionRow({
 
 function ConditionCard({ num, head, body }: { num: string; head: string; body: string }) {
   return (
-    <div className="p-6 border border-fog rounded-md bg-paper">
+    <div className="p-6 border border-fog  bg-paper">
       <div className="font-data text-[11px] text-blue tracking-[1.2px] uppercase mb-2">{num}</div>
       <div className="font-display text-[17px] font-bold text-ink mb-2">{head}</div>
       <div className="text-[13.5px] text-graphite leading-[1.55]">{body}</div>

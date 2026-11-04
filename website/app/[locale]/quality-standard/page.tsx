@@ -230,12 +230,12 @@ export default async function QualityStandardPage({
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
       {/* ── HERO ───────────────────────────────────────────── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {locale === "zh" ? "RFC-001 · 品質標準" : "RFC-001 · Quality Standard"}
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] mb-3 leading-[1.05]">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-3 leading-[1.05]">
           {locale === "zh" ? (
             <>
               具備
@@ -274,7 +274,7 @@ export default async function QualityStandardPage({
             href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/proposals/001-atr-quality-standard-rfc.md"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-blue text-white px-5 py-2.5 rounded-sm text-sm font-semibold hover:bg-blue-hover transition-colors"
+            className="bg-ink text-white px-5 py-2.5  text-sm font-semibold hover:bg-black transition-colors"
           >
             {locale === "zh" ? "閱讀 RFC-001" : "Read RFC-001"} →
           </a>
@@ -282,7 +282,7 @@ export default async function QualityStandardPage({
             href="https://www.npmjs.com/package/agent-threat-rules"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-data text-xs text-stone hover:text-ink transition-colors border border-fog px-4 py-2.5 rounded-sm"
+            className="font-data text-xs text-stone hover:text-ink transition-colors border border-fog px-4 py-2.5 "
           >
             {`npm install ${installSpec}`}
           </a>
@@ -294,7 +294,7 @@ export default async function QualityStandardPage({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog border border-fog mb-16">
           {EVIDENCE.map((e) => (
             <div key={e.label} className="bg-paper p-5 md:p-6">
-              <div className="font-display text-2xl md:text-3xl font-extrabold text-ink mb-1">
+              <div className="font-display text-2xl md:text-3xl font-medium text-ink mb-1">
                 {e.stat}
               </div>
               <div className="text-xs text-stone leading-snug">{e.label}</div>
@@ -305,10 +305,10 @@ export default async function QualityStandardPage({
 
       {/* ── PROVENANCE RATIO ───────────────────────────────── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {locale === "zh" ? "規則來源組成" : "Rule provenance breakdown"}
         </div>
-        <h2 className="font-display text-2xl md:text-3xl font-extrabold tracking-[-1px] mb-2">
+        <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-2">
           {locale === "zh"
             ? "哪些規則是人工審核的，哪些是 LLM 生成的。"
             : "What fraction is human-reviewed vs. LLM-generated."}
@@ -322,10 +322,10 @@ export default async function QualityStandardPage({
       <Reveal delay={0.1}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-fog border border-fog mb-6">
           <div className="bg-paper p-5 md:p-6">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">
+            <div className="text-[13px] text-stone mb-2">
               {locale === "zh" ? "人工審核" : "Human-reviewed"}
             </div>
-            <div className="font-display text-3xl font-extrabold text-ink mb-1">~30%</div>
+            <div className="font-display text-3xl font-medium text-ink mb-1">~30%</div>
             <p className="text-sm text-stone leading-relaxed">
               {locale === "zh"
                 ? "規則創始時由人工撰寫，或已通過人工 review 升級到 stable。這些規則的 metadata_provenance 標記為 human-reviewed。"
@@ -333,10 +333,10 @@ export default async function QualityStandardPage({
             </p>
           </div>
           <div className="bg-paper p-5 md:p-6">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">
+            <div className="text-[13px] text-stone mb-2">
               {locale === "zh" ? "LLM 生成 + 雙重閘門驗證" : "LLM-generated + 2-gate validated"}
             </div>
-            <div className="font-display text-3xl font-extrabold text-ink mb-1">~65%</div>
+            <div className="font-display text-3xl font-medium text-ink mb-1">~65%</div>
             <p className="text-sm text-stone leading-relaxed">
               {locale === "zh"
                 ? "由 LLM 草擬，通過語法關 + RFC-001 品質關 + 0 FP benign corpus 驗證。標記為 llm-generated，信心分數上限 70，直到人工 review。"
@@ -344,10 +344,10 @@ export default async function QualityStandardPage({
             </p>
           </div>
           <div className="bg-paper p-5 md:p-6">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">
+            <div className="text-[13px] text-stone mb-2">
               {locale === "zh" ? "語料庫指紋（保留為實驗性）" : "Corpus fingerprints (kept experimental)"}
             </div>
-            <div className="font-display text-3xl font-extrabold text-ink mb-1">~5%</div>
+            <div className="font-display text-3xl font-medium text-ink mb-1">~5%</div>
             <p className="text-sm text-stone leading-relaxed">
               {locale === "zh"
                 ? "非常字面的模式，從特定語料庫取出。泛化這些規則會帶來無法接受的 FP。保留為 experimental，不用於生產封鎖，明確標注。"
@@ -373,10 +373,10 @@ export default async function QualityStandardPage({
 
       {/* ── THE FORMULA ────────────────────────────────────── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {locale === "zh" ? "公式" : "The Formula"}
         </div>
-        <h2 className="font-display text-2xl md:text-3xl font-extrabold tracking-[-1px] mb-2">
+        <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-2">
           {locale === "zh"
             ? "信心分數是數字,不是意見"
             : "Confidence is a number, not an opinion"}
@@ -390,7 +390,7 @@ export default async function QualityStandardPage({
 
       <Reveal delay={0.1}>
         <div className="bg-paper border border-fog p-5 md:p-6 mb-6">
-          <div className="font-data text-[13px] md:text-sm text-ink bg-fog/40 border border-fog p-4 rounded-sm overflow-x-auto">
+          <div className="font-data text-[13px] md:text-sm text-ink bg-fog/40 border border-fog p-4  overflow-x-auto">
             confidence = 0.4 × precision + 0.3 × wild + 0.2 × coverage + 0.1 × evasion
           </div>
         </div>
@@ -402,7 +402,7 @@ export default async function QualityStandardPage({
             <div className="bg-paper p-5 md:p-6 h-full">
               <div className="flex items-center justify-between mb-2">
                 <span className="font-display font-semibold text-ink">{c.name}</span>
-                <span className="font-data text-xs text-blue bg-blue/10 px-2 py-0.5 rounded-sm">
+                <span className="font-data text-xs text-blue bg-ink/10 px-2 py-0.5 ">
                   {c.weight}
                 </span>
               </div>
@@ -444,10 +444,10 @@ export default async function QualityStandardPage({
 
       {/* ── TWO-DIMENSIONAL COMPLIANCE ─────────────────────── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {locale === "zh" ? "核心差異" : "The Differentiator"}
         </div>
-        <h2 className="font-display text-2xl md:text-3xl font-extrabold tracking-[-1px] mb-2">
+        <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-2">
           {locale === "zh"
             ? "雙維度合規模型"
             : "Two-dimensional compliance model"}
@@ -512,10 +512,10 @@ export default async function QualityStandardPage({
 
       {/* ── MATURITY LADDER ────────────────────────────────── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {locale === "zh" ? "成熟度階梯" : "The Ladder"}
         </div>
-        <h2 className="font-display text-2xl md:text-3xl font-extrabold tracking-[-1px] mb-2">
+        <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-2">
           {locale === "zh"
             ? "每條規則都要靠證據往上爬一階"
             : "Every rule climbs by evidence, not by age"}
@@ -533,7 +533,7 @@ export default async function QualityStandardPage({
             <div className="bg-paper p-5 md:p-6">
               <div className="flex flex-col md:flex-row md:gap-8 md:items-start">
                 <div className="md:w-32 flex-shrink-0 mb-3 md:mb-0">
-                  <span className="font-data text-xs text-ink bg-fog/60 px-3 py-1 rounded-sm tracking-wide uppercase font-semibold">
+                  <span className="font-data text-xs text-ink bg-fog/60 px-3 py-1  tracking-wide uppercase font-semibold">
                     {m.label}
                   </span>
                 </div>
@@ -575,10 +575,10 @@ export default async function QualityStandardPage({
           where the quality model becomes an operational, honest tradeoff —
           FP reported lane by lane, never as one flattering figure. */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {locale === "zh" ? "偵測車道" : "Detection lanes"}
         </div>
-        <h2 className="font-display text-2xl md:text-3xl font-extrabold tracking-[-1px] mb-2">
+        <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-2">
           {locale === "zh"
             ? "成熟度決定一條規則被允許做什麼"
             : "Maturity decides what a rule is allowed to do"}
@@ -596,7 +596,7 @@ export default async function QualityStandardPage({
             <div className="font-data text-xs text-blue tracking-wider uppercase mb-2">
               {locale === "zh" ? "enforce 車道" : "enforce lane"}
             </div>
-            <div className="font-display text-3xl font-extrabold text-ink mb-1">
+            <div className="font-display text-3xl font-medium text-ink mb-1">
               {locale === "zh" ? "最窄" : "Narrowest"}
             </div>
             <div className="font-data text-xs text-stone mb-3">
@@ -614,7 +614,7 @@ export default async function QualityStandardPage({
             <div className="font-data text-xs text-critical tracking-wider uppercase mb-2">
               {locale === "zh" ? "alert 車道" : "alert lane"}
             </div>
-            <div className="font-display text-3xl font-extrabold text-ink mb-1">
+            <div className="font-display text-3xl font-medium text-ink mb-1">
               {locale === "zh" ? "告警" : "Alert"}
             </div>
             <div className="font-data text-xs text-stone mb-3">
@@ -632,7 +632,7 @@ export default async function QualityStandardPage({
             <div className="font-data text-xs text-stone tracking-wider uppercase mb-2">
               {locale === "zh" ? "hunt 車道（預設）" : "hunt lane (default)"}
             </div>
-            <div className="font-display text-3xl font-extrabold text-ink mb-1">
+            <div className="font-display text-3xl font-medium text-ink mb-1">
               {locale === "zh" ? "最寬" : "Widest"}
             </div>
             <div className="font-data text-xs text-stone mb-3">
@@ -662,10 +662,10 @@ export default async function QualityStandardPage({
 
       {/* ── THE GAUNTLET ───────────────────────────────────── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {locale === "zh" ? "六道關卡" : "The Gauntlet"}
         </div>
-        <h2 className="font-display text-2xl md:text-3xl font-extrabold tracking-[-1px] mb-2">
+        <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-2">
           {locale === "zh"
             ? "一條規則在抵達生產環境前要過六關"
             : "Six stages before a rule reaches production"}
@@ -696,7 +696,7 @@ export default async function QualityStandardPage({
       {/* ── REAL RULE EXAMPLE ──────────────────────────────── */}
       <Reveal>
         <div className="bg-paper border border-blue/40 mb-16">
-          <div className="border-b border-blue/30 bg-blue/5 px-5 md:px-6 py-3 flex items-center justify-between flex-wrap gap-2">
+          <div className="border-b border-blue/30 bg-ink/5 px-5 md:px-6 py-3 flex items-center justify-between flex-wrap gap-2">
             <span className="font-data text-xs text-blue tracking-wider uppercase font-semibold">
               {locale === "zh"
                 ? "實際結晶輸出 · 通過品質關"
@@ -708,13 +708,13 @@ export default async function QualityStandardPage({
             <h3 className="font-display text-lg md:text-xl font-bold text-ink mb-2">
               {EXAMPLE_RULE.title}
             </h3>
-            <div className="inline-block font-data text-xs text-critical bg-critical/10 px-2 py-0.5 rounded-sm tracking-wider uppercase mb-5">
+            <div className="inline-block font-data text-xs text-critical bg-critical/10 px-2 py-0.5  tracking-wider uppercase mb-5">
               severity · {EXAMPLE_RULE.severity}
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog border border-fog mb-5">
               <div className="bg-paper p-4">
-                <div className="font-display text-2xl font-extrabold text-blue mb-1">
+                <div className="font-display text-2xl font-medium text-blue mb-1">
                   {EXAMPLE_RULE.layers}
                 </div>
                 <div className="font-data text-xs text-stone">
@@ -722,7 +722,7 @@ export default async function QualityStandardPage({
                 </div>
               </div>
               <div className="bg-paper p-4">
-                <div className="font-display text-2xl font-extrabold text-blue mb-1">
+                <div className="font-display text-2xl font-medium text-blue mb-1">
                   {EXAMPLE_RULE.tpTn}
                 </div>
                 <div className="font-data text-xs text-stone">
@@ -730,7 +730,7 @@ export default async function QualityStandardPage({
                 </div>
               </div>
               <div className="bg-paper p-4">
-                <div className="font-display text-2xl font-extrabold text-blue mb-1">
+                <div className="font-display text-2xl font-medium text-blue mb-1">
                   {EXAMPLE_RULE.evasions}
                 </div>
                 <div className="font-data text-xs text-stone">
@@ -738,7 +738,7 @@ export default async function QualityStandardPage({
                 </div>
               </div>
               <div className="bg-paper p-4">
-                <div className="font-display text-2xl font-extrabold text-blue mb-1">
+                <div className="font-display text-2xl font-medium text-blue mb-1">
                   100%
                 </div>
                 <div className="font-data text-xs text-stone">
@@ -794,10 +794,10 @@ export default async function QualityStandardPage({
 
       {/* ── COMPARISON ─────────────────────────────────────── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {locale === "zh" ? "同業比較" : "The Landscape"}
         </div>
-        <h2 className="font-display text-2xl md:text-3xl font-extrabold tracking-[-1px] mb-2">
+        <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-2">
           {locale === "zh"
             ? "ATR 與既有規則標準的比較"
             : "How ATR compares to existing rule standards"}
@@ -870,10 +870,10 @@ export default async function QualityStandardPage({
 
       {/* ── VERIFY IT YOURSELF ─────────────────────────────── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {locale === "zh" ? "自己驗證" : "Verify It Yourself"}
         </div>
-        <h2 className="font-display text-2xl md:text-3xl font-extrabold tracking-[-1px] mb-2">
+        <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-2">
           {locale === "zh"
             ? "別相信我們,執行驗證器"
             : "Don't trust us — run the validator"}
@@ -926,7 +926,7 @@ console.log('Issues:', gate.issues);`}
       {/* ── CTA ─────────────────────────────────────────────── */}
       <Reveal>
         <div className="border-t border-fog pt-10 text-center">
-          <h2 className="font-display text-2xl md:text-3xl font-extrabold tracking-[-1px] mb-3">
+          <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-3">
             {locale === "zh" ? "可測量。可審計。公開。" : "Measurable. Auditable. Open."}
           </h2>
           <p className="text-sm text-stone mb-6 max-w-xl mx-auto">
@@ -939,13 +939,13 @@ console.log('Issues:', gate.issues);`}
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/proposals/001-atr-quality-standard-rfc.md"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-blue text-white px-5 py-2.5 rounded-sm text-sm font-semibold hover:bg-blue-hover transition-colors"
+              className="bg-ink text-white px-5 py-2.5  text-sm font-semibold hover:bg-black transition-colors"
             >
               {locale === "zh" ? "閱讀 RFC" : "Read the RFC"} →
             </a>
             <a
               href={`/${locale}/rules`}
-              className="font-data text-xs text-stone hover:text-ink transition-colors border border-fog px-4 py-2.5 rounded-sm"
+              className="font-data text-xs text-stone hover:text-ink transition-colors border border-fog px-4 py-2.5 "
             >
               {locale === "zh" ? "瀏覽規則" : "Browse rules"}
             </a>

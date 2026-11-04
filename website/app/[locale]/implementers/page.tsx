@@ -206,7 +206,7 @@ export default async function ImplementersPage({
           {IMPLEMENTERS.map((imp) => (
             <div
               key={imp.refUrl}
-              className="border border-fog rounded-sm p-4 bg-paper"
+              className="border border-fog  p-4 bg-paper"
             >
               <p
                 className="font-semibold text-navy-ink mb-2"
@@ -259,7 +259,7 @@ export default async function ImplementersPage({
         </p>
 
         {/* Separate aside: standards-body submissions in review — NOT adoptions */}
-        <div className="border border-fog rounded-sm p-4 mt-6 bg-paper" style={{ maxWidth: "42em" }}>
+        <div className="border border-fog  p-4 mt-6 bg-paper" style={{ maxWidth: "42em" }}>
           <p className="text-xs uppercase tracking-[0.18em] text-stone mb-2" style={{ fontFamily: "var(--font-data)" }}>
             {zh ? "標準機構 submission(仍開著,非採用)" : "Standards-body submissions (open, not adoptions)"}
           </p>

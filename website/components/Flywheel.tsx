@@ -98,18 +98,18 @@ export function Flywheel({ locale = "en" }: { locale?: string }) {
               {/* Node */}
               <button
                 onClick={() => handleClick(i)}
-                className={`relative shrink-0 w-10 h-10 rounded-sm flex items-center justify-center font-data text-xs font-bold transition-all duration-500 cursor-pointer ${
+                className={`relative shrink-0 w-10 h-10  flex items-center justify-center font-data text-xs font-bold transition-all duration-500 cursor-pointer ${
                   isActive
-                    ? "bg-blue text-white"
+                    ? "bg-ink text-white"
                     : isPast
-                    ? "bg-blue/10 text-blue"
+                    ? "bg-ink/10 text-blue"
                     : "bg-ash text-stone border border-fog"
                 }`}
               >
                 {i + 1}
                 {isActive && (
                   <motion.div
-                    className="absolute inset-0 rounded-sm border-2 border-blue"
+                    className="absolute inset-0  border-2 border-blue"
                     layoutId="flywheel-ring"
                     transition={{ duration: 0.4, ease: EASE }}
                   />
@@ -120,7 +120,7 @@ export function Flywheel({ locale = "en" }: { locale?: string }) {
                 <div className="flex-1 h-px mx-1 relative overflow-hidden">
                   <div className="absolute inset-0 bg-fog" />
                   <motion.div
-                    className="absolute top-0 left-0 h-full bg-blue origin-left"
+                    className="absolute top-0 left-0 h-full bg-ink origin-left"
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: isPast || isActive ? 1 : 0 }}
                     transition={{ duration: 0.5, ease: EASE }}

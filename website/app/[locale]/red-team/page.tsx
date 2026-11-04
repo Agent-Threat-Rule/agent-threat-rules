@@ -121,12 +121,12 @@ export default async function RedTeamPage({
       ============================================================ */}
       <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
         <Reveal>
-          <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-6">
+          <div className="text-[13px] text-stone mb-6">
             {zh ? "獻給紅隊" : "For red teams"}
           </div>
         </Reveal>
         <Reveal delay={0.1}>
-          <h1 className="font-display text-[clamp(40px,6.5vw,80px)] font-extrabold tracking-[-3px] leading-[0.98] mb-8 max-w-[920px]">
+          <h1 className="text-[42px] md:text-[72px] leading-[1.04] tracking-[-0.035em] font-medium mb-8 max-w-[920px]">
             {zh ? (
               <>
                 你找到攻擊。
@@ -171,13 +171,13 @@ export default async function RedTeamPage({
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=red-team-probe.yml"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-ink text-paper px-7 py-3 rounded-sm text-base font-semibold hover:bg-ink/85 transition-colors"
+              className="bg-ink text-paper px-7 py-3  text-base font-semibold hover:bg-ink/85 transition-colors"
             >
               {zh ? "送一個 probe →" : "Submit a probe →"}
             </a>
             <a
               href="#how-it-works"
-              className="border border-fog text-ink px-7 py-3 rounded-sm text-base font-semibold hover:bg-ash/40 transition-colors"
+              className="border border-fog text-ink px-7 py-3  text-base font-semibold hover:bg-ash/40 transition-colors"
             >
               {zh ? "怎麼跑 →" : "How it works →"}
             </a>
@@ -190,7 +190,7 @@ export default async function RedTeamPage({
       ============================================================ */}
       <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
         <Reveal>
-          <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-10">
+          <div className="text-[13px] text-stone mb-10">
             {zh ? "為什麼一個攻擊該進標準" : "Why an attack belongs in the standard"}
           </div>
         </Reveal>
@@ -198,7 +198,7 @@ export default async function RedTeamPage({
           {ATTRIBUTION_STATS.map((s, i) => (
             <Reveal key={i} delay={0.1 + i * 0.08}>
               <div className="border-l-2 border-blue pl-6">
-                <div className="font-display text-[clamp(36px,4.5vw,56px)] font-extrabold tracking-[-2px] text-ink mb-2 leading-none">
+                <div className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.035em] font-medium text-ink mb-2 leading-none">
                   {s.number === "RULECOUNT" ? stats.ruleCount : s.number}
                 </div>
                 <div className="font-display text-base font-semibold text-ink mb-3">
@@ -216,10 +216,10 @@ export default async function RedTeamPage({
       ============================================================ */}
       <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
         <Reveal>
-          <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-4">
+          <div className="text-[13px] text-stone mb-4">
             {zh ? "你能拿到什麼" : "What you get"}
           </div>
-          <h2 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] leading-[1.05] mb-12 max-w-[720px]">
+          <h2 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-12 max-w-[720px]">
             {zh
               ? "你的攻擊進了標準之後，留下什麼 — 依你是誰而不同。"
               : "What your attack leaves behind once it's in the standard — depending on who you are."}
@@ -265,7 +265,7 @@ export default async function RedTeamPage({
                 ? "送一個 probe 之後會發生什麼"
                 : "What happens after you submit"}
             </div>
-            <h2 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] leading-[1.05] mb-12 max-w-[720px]">
+            <h2 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-12 max-w-[720px]">
               {zh
                 ? "Probe 進來、maintainer 寫 regex、quality gate 全綠才 merge。"
                 : "Probe in. A maintainer writes the regex. Quality gate validates. Merge if green."}
@@ -275,7 +275,7 @@ export default async function RedTeamPage({
           <div className="space-y-12">
             <Reveal delay={0.1}>
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                <div className="md:col-span-2 font-display text-5xl font-extrabold text-paper/40 leading-none">
+                <div className="md:col-span-2 font-display text-5xl font-medium text-paper/40 leading-none">
                   01
                 </div>
                 <div className="md:col-span-10">
@@ -298,7 +298,7 @@ export default async function RedTeamPage({
 
             <Reveal delay={0.15}>
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                <div className="md:col-span-2 font-display text-5xl font-extrabold text-paper/40 leading-none">
+                <div className="md:col-span-2 font-display text-5xl font-medium text-paper/40 leading-none">
                   02
                 </div>
                 <div className="md:col-span-10">
@@ -323,7 +323,7 @@ export default async function RedTeamPage({
 
             <Reveal delay={0.2}>
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                <div className="md:col-span-2 font-display text-5xl font-extrabold text-paper/40 leading-none">
+                <div className="md:col-span-2 font-display text-5xl font-medium text-paper/40 leading-none">
                   03
                 </div>
                 <div className="md:col-span-10">
@@ -343,7 +343,7 @@ export default async function RedTeamPage({
 
             <Reveal delay={0.25}>
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                <div className="md:col-span-2 font-display text-5xl font-extrabold text-paper/40 leading-none">
+                <div className="md:col-span-2 font-display text-5xl font-medium text-paper/40 leading-none">
                   04
                 </div>
                 <div className="md:col-span-10">
@@ -374,10 +374,10 @@ export default async function RedTeamPage({
       ============================================================ */}
       <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
         <Reveal>
-          <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-4">
+          <div className="text-[13px] text-stone mb-4">
             {zh ? "攻擊側的工具與語料" : "Offensive tools and corpora"}
           </div>
-          <h2 className="font-display text-[clamp(28px,4vw,40px)] font-extrabold tracking-[-2px] leading-[1.05] mb-4 max-w-[720px]">
+          <h2 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.025em] font-medium mb-4 max-w-[720px]">
             {zh
               ? "攻擊側的工具與語料,正在餵養標準。你的工具可以是下一個。"
               : "The offensive side is already feeding the standard. Your tool can be next."}
@@ -390,7 +390,7 @@ export default async function RedTeamPage({
         </Reveal>
 
         <Reveal>
-          <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-4">
+          <div className="text-[13px] text-stone mb-4">
             {zh
               ? `已合併上游或已消化語料 (${inProduction.length})`
               : `Merged upstream or corpus ingested (${inProduction.length})`}
@@ -463,7 +463,7 @@ export default async function RedTeamPage({
         </Reveal>
 
         <Reveal>
-          <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-4">
+          <div className="text-[13px] text-stone mb-4">
             {zh
               ? `仍開著的提案 (${inReview.length})`
               : `Open proposals (${inReview.length})`}
@@ -501,10 +501,10 @@ export default async function RedTeamPage({
       ============================================================ */}
       <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
         <Reveal>
-          <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-4">
+          <div className="text-[13px] text-stone mb-4">
             {zh ? "持續語料庫整合" : "Continuous corpus integration"}
           </div>
-          <h2 className="font-display text-[clamp(24px,3.4vw,36px)] font-extrabold tracking-[-2px] leading-tight mb-4 max-w-[720px]">
+          <h2 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.025em] font-medium mb-4 max-w-[720px]">
             {zh
               ? "5 個語料庫 · 71 條新規則 · HackAPrompt 召回率 28.6% → 66.0%（2026-05-12 該次 sprint，載入全部規則，在挖出規則的同一份 4,780 筆子集上量測，屬樣本內）"
               : "5 corpora · 71 new rules · HackAPrompt recall 28.6% → 66.0% (2026-05-12 sprint, every rule loaded, measured on the 4,780-prompt subset the rules were mined from, so in-sample)"}
@@ -555,7 +555,7 @@ export default async function RedTeamPage({
           <div className="font-data text-xs uppercase tracking-[2px] text-stone mb-3 mt-16">
             {zh ? "2026-06 巨量掃描" : "2026-06 mega-scan"}
           </div>
-          <h2 className="font-display text-[clamp(24px,3.4vw,36px)] font-extrabold tracking-[-2px] leading-tight mb-4 max-w-[720px]">
+          <h2 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.025em] font-medium mb-4 max-w-[720px]">
             {zh
               ? "8 個語料庫 · 29 條偵測規則 · 2 個無新增 miss"
               : "8 corpora · 29 detection rules · 2 with no novel misses"}
@@ -600,10 +600,10 @@ export default async function RedTeamPage({
       ============================================================ */}
       <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
         <Reveal>
-          <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-4">
+          <div className="text-[13px] text-stone mb-4">
             {zh ? "我們不導入什麼" : "What we don't import"}
           </div>
-          <h2 className="font-display text-[clamp(24px,3.4vw,36px)] font-extrabold tracking-[-2px] leading-tight mb-4 max-w-[720px]">
+          <h2 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.025em] font-medium mb-4 max-w-[720px]">
             {zh
               ? "誠實說明範圍界限。"
               : "Honest scope boundaries."}
@@ -663,11 +663,11 @@ export default async function RedTeamPage({
                   <div className="md:col-span-3">
                     <div className="font-display text-sm font-bold text-ink mb-1">{item.name}</div>
                     <div className="font-data text-xs text-stone mb-2">{item.org}</div>
-                    <span className={`font-data text-xs uppercase tracking-wide px-2 py-0.5 rounded-sm ${
+                    <span className={`font-data text-xs uppercase tracking-wide px-2 py-0.5  ${
                       item.decision === "Refused" || item.decision === "拒絕導入"
                         ? "bg-critical/10 text-critical"
                         : item.decision === "Kept, not generalized" || item.decision === "保留，不泛化"
-                        ? "bg-blue/10 text-blue"
+                        ? "bg-ink/10 text-blue"
                         : "bg-stone/10 text-stone"
                     }`}>
                       {item.decision}
@@ -689,10 +689,10 @@ export default async function RedTeamPage({
       <section className="px-6 max-w-[1120px] mx-auto">
         <Reveal>
           <div className="border border-ink p-8 md:p-12">
-            <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-4">
+            <div className="text-[13px] text-stone mb-4">
               {zh ? "送一個 probe" : "Submit a probe"}
             </div>
-            <h2 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] leading-[1.05] mb-6 max-w-[720px]">
+            <h2 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-6 max-w-[720px]">
               {zh
                 ? "10 分鐘填表 → 永久署名 → 一條規則,所有採用 ATR 的防禦者共用。"
                 : "10 minutes of form-filling. Permanent attribution. One rule, shared by every defender who adopts ATR."}
@@ -707,7 +707,7 @@ export default async function RedTeamPage({
                 href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=red-team-probe.yml"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-ink text-paper px-7 py-3 rounded-sm text-base font-semibold hover:bg-ink/85 transition-colors"
+                className="bg-ink text-paper px-7 py-3  text-base font-semibold hover:bg-ink/85 transition-colors"
               >
                 {zh ? "開 probe issue →" : "Open a probe issue →"}
               </a>
@@ -715,13 +715,13 @@ export default async function RedTeamPage({
                 href="https://github.com/Agent-Threat-Rule/agent-threat-rules"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border border-fog text-ink px-7 py-3 rounded-sm text-base font-semibold hover:bg-ash/40 transition-colors"
+                className="border border-fog text-ink px-7 py-3  text-base font-semibold hover:bg-ash/40 transition-colors"
               >
                 {zh ? "看 repo →" : "Read the repo →"}
               </a>
               <a
                 href={`/${locale}/ecosystem`}
-                className="border border-fog text-ink px-7 py-3 rounded-sm text-base font-semibold hover:bg-ash/40 transition-colors"
+                className="border border-fog text-ink px-7 py-3  text-base font-semibold hover:bg-ash/40 transition-colors"
               >
                 {zh
                   ? "防禦端在 /ecosystem →"

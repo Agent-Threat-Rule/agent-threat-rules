@@ -105,12 +105,12 @@ export default async function CompliancePage({
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[1120px] mx-auto">
       <Reveal>
-        <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "合規覆蓋" : "Compliance Coverage"}
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="font-display text-[clamp(28px,4vw,48px)] font-extrabold tracking-[-2px] leading-[1.08] text-ink mb-4">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium text-ink mb-4">
           {zh ? "6 個框架。每條規則都映射。" : "6 frameworks. Every rule mapped."}
         </h1>
       </Reveal>
@@ -126,7 +126,7 @@ export default async function CompliancePage({
       <Reveal delay={0.15}>
         <div className="bg-ash border border-fog p-5 md:p-6 mb-10 flex flex-col md:flex-row md:items-center md:gap-8">
           <div className="flex-1 mb-4 md:mb-0">
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">
+            <div className="text-[13px] text-stone mb-2">
               {zh ? "給採購團隊" : "For procurement teams"}
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
@@ -140,7 +140,7 @@ export default async function CompliancePage({
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/releases/latest"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-blue text-white px-5 py-2.5 rounded-sm text-sm font-semibold hover:bg-blue-hover transition-colors text-center"
+              className="bg-ink text-white px-5 py-2.5  text-sm font-semibold hover:bg-black transition-colors text-center"
             >
               {zh ? "下載合規映射包 (GitHub Releases) →" : "Download compliance mapping (GitHub Releases) →"}
             </a>
@@ -199,7 +199,7 @@ export default async function CompliancePage({
       {/* Per-rule verifiability note */}
       <Reveal>
         <div className="bg-paper border border-fog p-5 md:p-6 mb-8">
-          <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">
+          <div className="text-[13px] text-stone mb-2">
             {zh ? "可逐條驗證" : "Rule-by-rule verifiability"}
           </div>
           <p className="text-sm text-graphite leading-[1.7] mb-3">

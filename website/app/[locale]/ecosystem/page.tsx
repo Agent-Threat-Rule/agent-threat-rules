@@ -73,12 +73,12 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
       {/* Header */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "生態系" : "Ecosystem"}
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] mb-2">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-2">
           {zh ? "誰在採用這個標準。" : "Who ships the standard."}
         </h1>
       </Reveal>
@@ -167,7 +167,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
       {sections.map(({ tier, entries }) => (
         <section key={tier} className="mb-12">
           <Reveal>
-            <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-1">
+            <div className="text-[13px] text-stone mb-1">
               {tierLabel(tier, locale)} ({entries.length})
             </div>
           </Reveal>
@@ -206,7 +206,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
                           height={28}
                           loading="lazy"
                           referrerPolicy="no-referrer"
-                          className="rounded-sm ring-1 ring-fog shrink-0"
+                          className="ring-1 ring-fog shrink-0"
                         />
                       )}
                       <h2 className="font-display text-base font-semibold text-ink flex-1">
@@ -281,7 +281,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
       {commercial.length > 0 && (
         <section className="border-t border-fog pt-10 mt-4 mb-12">
           <Reveal>
-            <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-1">
+            <div className="text-[13px] text-stone mb-1">
               {tierLabel("4", locale)} ({commercial.length})
             </div>
           </Reveal>
@@ -303,7 +303,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
                         height={28}
                         loading="lazy"
                         referrerPolicy="no-referrer"
-                        className="rounded-sm ring-1 ring-fog shrink-0"
+                        className="ring-1 ring-fog shrink-0"
                       />
                     )}
                     <h2 className="font-display text-base font-semibold text-ink flex-1">
@@ -334,7 +334,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
       <Reveal>
         <div className="mt-12 border border-fog px-6 py-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">
+            <div className="text-[13px] text-stone mb-2">
               {zh ? "規劃整合中" : "Planning an integration"}
             </div>
             <h3 className="font-display text-base font-semibold text-ink mb-2">
@@ -355,7 +355,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
             </a>
           </div>
           <div>
-            <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-2">
+            <div className="text-[13px] text-stone mb-2">
               {zh ? "已經 ship 了" : "Already shipped"}
             </div>
             <h3 className="font-display text-base font-semibold text-ink mb-2">
@@ -381,7 +381,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
       {/* Badge */}
       <Reveal>
         <div className="mt-10 mb-3">
-          <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-2">
+          <div className="text-[13px] text-stone mb-2">
             {zh ? "徽章" : "Badge"}
           </div>
           <p className="text-sm text-stone mb-3 max-w-[480px]">
@@ -419,20 +419,20 @@ function StatusBadge({
 }) {
   if (status === "shipped") {
     return (
-      <span className="font-data text-[10px] text-green bg-green/10 px-2 py-0.5 rounded-sm uppercase tracking-wide shrink-0">
+      <span className="font-data text-[10px] text-green bg-green/10 px-2 py-0.5  uppercase tracking-wide shrink-0">
         {zh ? "已上線" : "shipped"}
       </span>
     );
   }
   if (status === "in-review") {
     return (
-      <span className="font-data text-[10px] text-stone bg-fog/40 px-2 py-0.5 rounded-sm uppercase tracking-wide shrink-0">
+      <span className="font-data text-[10px] text-stone bg-fog/40 px-2 py-0.5  uppercase tracking-wide shrink-0">
         {zh ? "審查中" : "in review"}
       </span>
     );
   }
   return (
-    <span className="font-data text-[10px] text-stone bg-fog/30 px-2 py-0.5 rounded-sm uppercase tracking-wide shrink-0">
+    <span className="font-data text-[10px] text-stone bg-fog/30 px-2 py-0.5  uppercase tracking-wide shrink-0">
       {zh ? "規劃中" : "planning"}
     </span>
   );

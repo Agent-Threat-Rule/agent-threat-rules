@@ -77,7 +77,7 @@ export default async function GarakIntegratePage({
           )}
         </p>
 
-        <pre className="overflow-x-auto rounded bg-neutral-900 p-4 text-sm">
+        <pre className="overflow-x-auto  bg-neutral-900 p-4 text-sm">
 {`garak (red team)                    ATR (standard)           downstream consumers
 ─────────────────                    ──────────────           ────────────────────
 Probes claude-3.7                    ${ruleCountStr}npm: agent-threat-rules
@@ -117,7 +117,7 @@ garak PR #1676 (ATR detectors inside garak): withdrawn by its ATR author on
           </li>
           <li>
             {zh ? '在環境變數設定 key:' : 'Set the key in your environment:'}{' '}
-            <code className="rounded bg-neutral-800 px-1 break-all">export ATR_PARTNER_KEY=…</code>
+            <code className="bg-neutral-800 px-1 break-all">export ATR_PARTNER_KEY=…</code>
           </li>
         </ol>
       </section>
@@ -128,7 +128,7 @@ garak PR #1676 (ATR detectors inside garak): withdrawn by its ATR author on
         <p className="text-sm text-neutral-400">
           {zh ? '跑完一次 garak eval session 後:' : 'After a garak eval session:'}
         </p>
-        <pre className="overflow-x-auto rounded bg-neutral-900 p-4 text-sm">
+        <pre className="overflow-x-auto  bg-neutral-900 p-4 text-sm">
 {`# Native garak JSONL report
 python3 garak-to-tc.py \\
     --input ~/.local/share/garak/runs/2026-04-18-claude-3-7/report.jsonl \\

@@ -35,12 +35,12 @@ export default async function GovernancePage({
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
       <Reveal>
-        <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "治理" : "Governance"}
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="font-display text-[clamp(28px,4vw,48px)] font-extrabold tracking-[-2px] leading-[1.08] text-ink mb-4">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium text-ink mb-4">
           {zh ? "治理是寫在公開記錄裡的。" : "Governance is on the public record."}
         </h1>
       </Reveal>
@@ -54,10 +54,10 @@ export default async function GovernancePage({
 
       {/* Current maintainers */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "現任維護者" : "Current maintainers"}
         </div>
-        <h2 className="font-display text-xl font-extrabold tracking-[-0.5px] mb-6">
+        <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-6">
           {zh ? "負責規則品質、PR 審核、與發布。" : "Responsible for rule quality, PR review, and releases."}
         </h2>
       </Reveal>
@@ -97,10 +97,10 @@ export default async function GovernancePage({
 
       {/* Merge policy */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "合併政策" : "Merge policy"}
         </div>
-        <h2 className="font-display text-xl font-extrabold tracking-[-0.5px] mb-4">
+        <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
           {zh ? "每條規則要過六道關才能 merge。" : "Six gates before any rule merges."}
         </h2>
       </Reveal>
@@ -161,10 +161,10 @@ export default async function GovernancePage({
 
       {/* Decision-making */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "決策流程" : "Decision-making"}
         </div>
-        <h2 className="font-display text-xl font-extrabold tracking-[-0.5px] mb-4">
+        <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
           {zh ? "每種改動有自己的審核門檻。" : "Different changes have different bars."}
         </h2>
       </Reveal>
@@ -243,10 +243,10 @@ export default async function GovernancePage({
 
       {/* Working group */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "工作小組" : "Working group"}
         </div>
-        <h2 className="font-display text-xl font-extrabold tracking-[-0.5px] mb-4">
+        <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
           {zh ? "目前還沒有,但路徑開放。" : "There isn't one yet, and the path to forming one is open."}
         </h2>
       </Reveal>
@@ -267,10 +267,10 @@ export default async function GovernancePage({
 
       {/* Become a maintainer */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "想成為維護者" : "Become a maintainer"}
         </div>
-        <h2 className="font-display text-xl font-extrabold tracking-[-0.5px] mb-4">
+        <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
           {zh ? "我們正在主動招募。" : "We are actively recruiting."}
         </h2>
       </Reveal>
@@ -324,10 +324,10 @@ export default async function GovernancePage({
 
       {/* Succession plan */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "繼承計畫" : "Succession plan"}
         </div>
-        <h2 className="font-display text-xl font-extrabold tracking-[-0.5px] mb-4">
+        <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
           {zh ? "如果首席維護者無法履行職責。" : "If the lead maintainer becomes unavailable."}
         </h2>
       </Reveal>
@@ -355,10 +355,10 @@ export default async function GovernancePage({
 
       {/* Conflict of interest */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "利益衝突揭露" : "Conflict-of-interest disclosure"}
         </div>
-        <h2 className="font-display text-xl font-extrabold tracking-[-0.5px] mb-4">
+        <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
           {zh ? "為什麼揭露這件事。" : "Why this disclosure exists."}
         </h2>
       </Reveal>
@@ -386,7 +386,7 @@ export default async function GovernancePage({
 
       {/* Contribution rights */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "貢獻者權利" : "Contributor rights"}
         </div>
       </Reveal>

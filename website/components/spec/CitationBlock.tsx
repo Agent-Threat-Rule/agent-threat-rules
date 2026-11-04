@@ -55,7 +55,7 @@ export function CitationBlock({ locale, meta }: CitationBlockProps) {
             aria-selected={tab === f}
             aria-controls={`cite-panel-${f}`}
             onClick={() => setTab(f)}
-            className={`font-data text-xs tracking-wide px-3 py-1.5 rounded-sm border transition-colors ${
+            className={`font-data text-xs tracking-wide px-3 py-1.5  border transition-colors ${
               tab === f
                 ? "bg-ink text-white border-ink"
                 : "bg-paper text-stone border-fog hover:text-ink hover:border-stone"
@@ -69,7 +69,7 @@ export function CitationBlock({ locale, meta }: CitationBlockProps) {
         id={`cite-panel-${tab}`}
         role="tabpanel"
         aria-label={`${tab} citation`}
-        className="text-xs leading-relaxed bg-paper border border-fog rounded-sm p-4 overflow-x-auto"
+        className="text-xs leading-relaxed bg-paper border border-fog  p-4 overflow-x-auto"
         style={{ fontFamily: "var(--font-data)" }}
       >
         {citations[tab]}

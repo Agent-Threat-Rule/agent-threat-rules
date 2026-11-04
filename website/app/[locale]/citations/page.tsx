@@ -362,7 +362,7 @@ export default async function CitationsPage({
               ].map((row) => (
                 <div
                   key={row.label}
-                  className="border border-fog rounded-sm p-4 bg-paper"
+                  className="border border-fog  p-4 bg-paper"
                 >
                   <p
                     className="text-xs uppercase tracking-wider text-stone mb-1"

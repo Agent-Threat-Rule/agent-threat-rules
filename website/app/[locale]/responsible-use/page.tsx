@@ -37,12 +37,12 @@ export default async function ResponsibleUsePage({
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
       <Reveal>
-        <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "負責任使用" : "Responsible Use"}
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="font-display text-[clamp(28px,4vw,48px)] font-extrabold tracking-[-2px] leading-[1.08] text-ink mb-4">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium text-ink mb-4">
           {zh ? "一個公開的攻擊偵測標準，必須面對雙重用途。" : "A public attack-detection standard must answer for dual use."}
         </h1>
       </Reveal>
@@ -56,10 +56,10 @@ export default async function ResponsibleUsePage({
 
       {/* Intended use */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "設計用途" : "Intended use"}
         </div>
-        <h2 className="font-display text-xl font-extrabold tracking-[-0.5px] mb-4">
+        <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
           {zh ? "ATR 是防禦端的偵測標準。" : "ATR is a defensive detection standard."}
         </h2>
       </Reveal>
@@ -101,10 +101,10 @@ export default async function ResponsibleUsePage({
 
       {/* What constitutes misuse */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "濫用定義" : "What constitutes misuse"}
         </div>
-        <h2 className="font-display text-xl font-extrabold tracking-[-0.5px] mb-4">
+        <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
           {zh ? "ATR 規則不應當作攻擊生成器使用。" : "ATR rules should not be used as attack generators."}
         </h2>
       </Reveal>
@@ -153,10 +153,10 @@ export default async function ResponsibleUsePage({
 
       {/* Dual-use disclosure */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "雙重用途揭露" : "Dual-use disclosure"}
         </div>
-        <h2 className="font-display text-xl font-extrabold tracking-[-0.5px] mb-4">
+        <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
           {zh ? "這個標準是雙重用途的，我們把它寫在明處。" : "This standard is dual-use, and we say so in the open."}
         </h2>
       </Reveal>
@@ -205,10 +205,10 @@ export default async function ResponsibleUsePage({
 
       {/* Abuse reporting */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "濫用回報" : "Abuse reporting"}
         </div>
-        <h2 className="font-display text-xl font-extrabold tracking-[-0.5px] mb-4">
+        <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
           {zh ? "如果你看到 ATR 被濫用。" : "If you observe ATR being misused."}
         </h2>
       </Reveal>
@@ -221,7 +221,7 @@ export default async function ResponsibleUsePage({
           </p>
           <div className="flex flex-col gap-3">
             <div>
-              <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-1">
+              <div className="text-[13px] text-stone mb-1">
                 {zh ? "濫用回報" : "Abuse reports"}
               </div>
               <a
@@ -232,7 +232,7 @@ export default async function ResponsibleUsePage({
               </a>
             </div>
             <div>
-              <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-1">
+              <div className="text-[13px] text-stone mb-1">
                 {zh ? "一般問題" : "General questions"}
               </div>
               <a
@@ -243,7 +243,7 @@ export default async function ResponsibleUsePage({
               </a>
             </div>
             <div>
-              <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-1">
+              <div className="text-[13px] text-stone mb-1">
                 {zh ? "安全漏洞回報（ATR 本身）" : "Security vulnerability reports (ATR itself)"}
               </div>
               <a

@@ -33,7 +33,7 @@ export default function PartnerSyncPage() {
 
       <section className="mt-10 space-y-3">
         <h2 className="text-xl font-semibold">The standard comes first — this is optional</h2>
-        <p className="rounded border border-neutral-800 bg-neutral-900/50 p-4 text-sm text-neutral-300">
+        <p className="border border-neutral-800 bg-neutral-900/50 p-4 text-sm text-neutral-300">
           Threat Cloud is an optional reference service operated by the ATR maintainers — not part
           of the standard. The standard is the spec plus the MIT-licensed rules, fully usable
           offline via npm / PyPI / raw YAML. Threat Cloud only adds hosted convenience (rule sync,
@@ -41,8 +41,8 @@ export default function PartnerSyncPage() {
         </p>
         <p>
           Start with the open, offline path:{' '}
-          <code className="rounded bg-neutral-800 px-1">npm install agent-threat-rules</code>,{' '}
-          <code className="rounded bg-neutral-800 px-1">pip install pyatr</code>, or pull the raw
+          <code className="bg-neutral-800 px-1">npm install agent-threat-rules</code>,{' '}
+          <code className="bg-neutral-800 px-1">pip install pyatr</code>, or pull the raw
           YAML rules directly. That path needs no key, no network at runtime, and no dependency on
           any hosted service. This partner endpoint is one optional convenience layered on top.
         </p>
@@ -56,8 +56,8 @@ export default function PartnerSyncPage() {
           follow upstream releases automatically rather than waiting on a manual re-install. Keeping
           a detection stack current is the standard's job, not the integrator's — this endpoint is
           one way to make that automatic. For most users, the offline{' '}
-          <code className="rounded bg-neutral-800 px-1">npm install agent-threat-rules</code> or{' '}
-          <code className="rounded bg-neutral-800 px-1">pip install pyatr</code> path is the right
+          <code className="bg-neutral-800 px-1">npm install agent-threat-rules</code> or{' '}
+          <code className="bg-neutral-800 px-1">pip install pyatr</code> path is the right
           one — this endpoint is not required to use the standard.
         </p>
       </section>
@@ -74,7 +74,7 @@ export default function PartnerSyncPage() {
 
       <section className="mt-10 space-y-3">
         <h2 className="text-xl font-semibold">Endpoint</h2>
-        <pre className="overflow-x-auto rounded bg-neutral-900 p-4 text-sm">
+        <pre className="overflow-x-auto  bg-neutral-900 p-4 text-sm">
 {`GET https://tc.agentthreatrule.org/api/atr-rules/live?since=<ISO-8601>
 Authorization: Bearer <partner-key>`}
         </pre>
@@ -87,7 +87,7 @@ Authorization: Bearer <partner-key>`}
 
       <section className="mt-10 space-y-3">
         <h2 className="text-xl font-semibold">Response shape</h2>
-        <pre className="overflow-x-auto rounded bg-neutral-900 p-4 text-sm">
+        <pre className="overflow-x-auto  bg-neutral-900 p-4 text-sm">
 {`{
   "ok": true,
   "data": [
@@ -109,7 +109,7 @@ Authorization: Bearer <partner-key>`}
 
       <section className="mt-10 space-y-3">
         <h2 className="text-xl font-semibold">Minimum polling example</h2>
-        <pre className="overflow-x-auto rounded bg-neutral-900 p-4 text-sm">
+        <pre className="overflow-x-auto  bg-neutral-900 p-4 text-sm">
 {`# 5-minute cadence, ETag-aware
 LAST_ETAG=""
 while true; do

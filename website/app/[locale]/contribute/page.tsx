@@ -29,12 +29,12 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
   return (
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {t(locale, "contribute.label")}
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="font-display text-[clamp(28px,4vw,44px)] font-extrabold tracking-[-2px] mb-2 max-w-[600px]">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-2 max-w-[600px]">
           {zh
             ? "一條在台北寫的規則,擋下西雅圖首報的攻擊。"
             : "A rule written in Taipei catches an attack first reported in Seattle."}
@@ -50,7 +50,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
 
       {/* ── Integrating ATR into your project (top — most asked path) ── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "把 ATR 接到你的專案" : "Integrating ATR into your project"}
         </div>
       </Reveal>
@@ -103,7 +103,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
 
       {/* ── Quick Actions (the most important part) ── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "改進規則本身" : "Improve the rules themselves"}
         </div>
       </Reveal>
@@ -188,7 +188,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
 
       {/* ── What happens after you contribute (sets motivation) ── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "送出後會發生什麼" : "What happens after you contribute"}
         </div>
       </Reveal>
@@ -236,7 +236,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
 
       {/* ── Spec amendments ── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "想改 spec 本身" : "Want to change the spec itself"}
         </div>
       </Reveal>
@@ -283,7 +283,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
 
       {/* ── First-time contributors ── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "第一次貢獻" : "First time contributing"}
         </div>
       </Reveal>
@@ -319,7 +319,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
 
       {/* ── Become a maintainer ── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "想成為維護者" : "Want to become a maintainer"}
         </div>
       </Reveal>
@@ -338,7 +338,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
 
       {/* ── Optional: Threat Cloud reference service ── */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "選用:Threat Cloud 參考服務" : "Optional: Threat Cloud reference service"}
         </div>
       </Reveal>
