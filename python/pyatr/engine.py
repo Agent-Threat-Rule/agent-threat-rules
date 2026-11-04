@@ -132,14 +132,19 @@ def _normalize_maturity(value: Any) -> str:
     return text if text in MATURITIES else "experimental"
 
 
-def _lane_allows(rule: ATRRule, lane: str) -> bool:
+def lane_allows(rule: ATRRule | ATRMatch, lane: str) -> bool:
     """Lane gate, matching ``laneAllows`` in src/quality/rule-contract.ts.
 
     ``enforce`` keeps maturity=stable rules, ``alert`` stable and test, and
     ``hunt`` every rule. A rule marked ``confirm: embedding`` needs an
     embedding check before it may fire in enforce or alert; pyatr has no
     embedding layer, so such a rule fires in the hunt lane only.
+
+    Accepts a rule or a match, so an integration that scans in the hunt lane
+    can decide per match whether it falls in the lane it blocks on.
     """
+    if lane not in LANES:
+        raise ValueError(f"lane must be one of {LANES}, got {lane!r}")
     if rule.maturity == "deprecated":
         return False
     if lane == "hunt":
@@ -283,7 +288,7 @@ class ATREngine:
             # Parity with the TS engine: deprecated/draft rules never fire.
             if rule.status in ("deprecated", "draft"):
                 continue
-            if not _lane_allows(rule, self.lane):
+            if not lane_allows(rule, self.lane):
                 continue
             match = self._evaluate_rule(rule, event)
             if match is not None:
@@ -325,6 +330,7 @@ class ATREngine:
             description=rule.description,
             tags=rule.tags,
             maturity=rule.maturity,
+            confirm=rule.confirm,
         )
 
     def _test_condition(

@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from pyatr import lane_allows
 from pyatr.engine import ATREngine
 from pyatr.types import AgentEvent
 
@@ -90,3 +91,20 @@ def test_corpus_maturities_parse() -> None:
     maturities = {r.maturity for r in engine.rules}
     assert "stable" in maturities, "the corpus should contain maturity=stable rules"
     assert maturities <= {"draft", "experimental", "test", "stable", "deprecated"}
+
+
+@pytest.mark.parametrize("lane", ["enforce", "alert", "hunt"])
+def test_lane_allows_on_matches_agrees_with_the_engine(rules_dir: Path, lane: str) -> None:
+    """An integration scanning in hunt can filter matches per lane and get the engine's answer."""
+    engine = ATREngine()
+    engine.load_rules_from_directory(rules_dir)
+    matches = engine.evaluate(AgentEvent(content=MARKER))
+    assert {m.rule_id for m in matches if lane_allows(m, lane)} == _fired(rules_dir, lane)
+
+
+def test_lane_allows_rejects_unknown_lane(rules_dir: Path) -> None:
+    engine = ATREngine()
+    engine.load_rules_from_directory(rules_dir)
+    match = engine.evaluate(AgentEvent(content=MARKER))[0]
+    with pytest.raises(ValueError, match="lane must be one of"):
+        lane_allows(match, "block")

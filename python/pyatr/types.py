@@ -78,3 +78,4 @@ class ATRMatch:
     description: str = ""
     tags: dict[str, str] = field(default_factory=dict)
     maturity: str = "experimental"
+    confirm: str = ""

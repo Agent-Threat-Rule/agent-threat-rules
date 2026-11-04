@@ -12,8 +12,9 @@ All notable changes to ATR will be documented in this file.
   as the TypeScript engine: a missing or unknown maturity counts as
   `experimental`, a `deprecated` rule never fires, and a `confirm: embedding`
   rule fires in the hunt lane only, since pyatr has no embedding check.
-  `ATRRule` and `ATRMatch` now carry `maturity`, so an integration can block
-  on the enforce lane and record the rest. Until now the Python engine had no
+  `ATRRule` and `ATRMatch` now carry `maturity`, and `lane_allows(match, lane)`
+  applies the same gate to a single match, so an integration can scan every
+  rule, record every match, and block on the enforce lane only. Until now the Python engine had no
   way to tell the two apart.
 
 ### Fixed

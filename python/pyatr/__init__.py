@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from pyatr.types import AgentEvent, ATRMatch, ATRRule
-from pyatr.engine import ATREngine
+from pyatr.engine import ATREngine, lane_allows
 from pyatr.validator import validate, ValidationResult, ValidationError
 from pyatr.test_runner import run_tests, TestRunResult, RuleTestResult, TestCaseResult
 
@@ -15,6 +15,7 @@ except Exception:  # pragma: no cover - source checkout without install
     __version__ = "0.2.7"
 __all__ = [
     "ATREngine",
+    "lane_allows",
     "AgentEvent",
     "ATRMatch",
     "ATRRule",
