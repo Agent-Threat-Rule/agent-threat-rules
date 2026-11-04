@@ -109,6 +109,16 @@ All notable changes to ATR will be documented in this file.
   `rule_version` moves. `scripts/validate-compliance.ts` now fails CI on a
   context that claims compliance ("satisfies the Article …", "makes …
   compliant", "ensures compliance"). See the 2026-11-04 errata entry.
+
+- **ATR-2026-00432 no longer fires on lists of dangerous calls.** Its `exec()`
+  condition matched any `exec(` followed within 200 characters by `import os`,
+  `os.system` or `subprocess.`, so defensive skill text that lists blocked
+  patterns, or tells the agent to grep for them, was flagged as a critical
+  RCE. This is a stable rule, so the enforce lane flagged those skills too.
+  The argument now has to open with a quote (`exec("import os; ...")`), which
+  keeps every true positive in the rule's tests and drops the lists.
+  `rule_version` 2.
+
 - **A "New Rule Proposal" issue now becomes a readable draft proposal.**
   `scripts/issue-to-proposal.ts` indented the example payload at the same
   depth as its `example_payload:` key, so every proposal file it wrote was
