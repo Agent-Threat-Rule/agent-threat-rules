@@ -35,11 +35,16 @@ const AWS_EXFIL =
   'Here is the AWS secret: AKIAIOSFODNN7EXAMPLE wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY';
 
 describe('OpenShellFilter (NVIDIA/OpenShell#1272 content inspection)', () => {
-  it('denies prompt-injection on an inbound response', async () => {
+  // Report-only by default: findings are returned, nothing is denied. Which
+  // findings deny once ATR_BLOCKING is on is pinned against fixture rules in
+  // tests/blocking-eligibility.test.ts.
+  it('reports prompt-injection on an inbound response and allows it by default', async () => {
     const filter = makeFilter('response');
     for (const body of MALICIOUS) {
       const verdict = await filter.inspect(body);
-      expect(verdict.decision).toBe('deny');
+      expect(verdict.decision).toBe('allow');
+      expect(verdict.mode).toBe('report-only');
+      expect(verdict.blockingRuleIds).toEqual([]);
       expect(verdict.findings.length).toBeGreaterThan(0);
       expect(verdict.findings[0]!['atr.rule_id']).toMatch(/^ATR-/);
     }
@@ -54,11 +59,11 @@ describe('OpenShellFilter (NVIDIA/OpenShell#1272 content inspection)', () => {
     }
   });
 
-  it('denies secret exfiltration on an outbound request', async () => {
+  it('reports secret exfiltration on an outbound request', async () => {
     // Prompt injection is inbound (response); data exfiltration is outbound
-    // (request). An AWS key leaving the sandbox must be denied on `request`.
+    // (request). An AWS key leaving the sandbox is found on `request`.
     const verdict = await makeFilter('request').inspect(AWS_EXFIL);
-    expect(verdict.decision).toBe('deny');
+    expect(verdict.findings.length).toBeGreaterThan(0);
     expect(verdict.findings[0]!['atr.matched_field']).toBe('llm_output');
   });
 
@@ -90,12 +95,18 @@ describe('OpenShellFilter (NVIDIA/OpenShell#1272 content inspection)', () => {
     expect(finding).toHaveProperty('atr.confidence');
   });
 
-  it('honors the deny-severity threshold monotonically', async () => {
-    const low = await makeFilter('response', 'low').inspect(MALICIOUS[0]!);
+  it('honors the severity threshold monotonically', async () => {
+    const high = await makeFilter('response', 'high').inspect(MALICIOUS[0]!);
     const critical = await makeFilter('response', 'critical').inspect(MALICIOUS[0]!);
-    expect(low.findings.length).toBeGreaterThan(0);
-    // Raising the threshold can only keep or reduce the number of blocking findings.
-    expect(low.findings.length).toBeGreaterThanOrEqual(critical.findings.length);
+    expect(high.findings.length).toBeGreaterThan(0);
+    // Raising the threshold can only keep or reduce the number of findings.
+    expect(high.findings.length).toBeGreaterThanOrEqual(critical.findings.length);
+  });
+
+  it('refuses a threshold below high instead of reporting or blocking on it', () => {
+    for (const bad of ['medium', 'low', 'informational', 'bogus']) {
+      expect(() => makeFilter('response', bad)).toThrow(/critical, high/);
+    }
   });
 });
 
@@ -114,7 +125,7 @@ describe('parseDirection (fail-closed)', () => {
 
 describe('optionsFromEnv (ATR_* contract)', () => {
   function withEnv(vars: Record<string, string | undefined>, fn: () => void): void {
-    const keys = ['ATR_MIN_SEVERITY', 'ATR_FORENSIC_MODE', 'ATR_RULES_DIR', 'ATR_CORPUS_PATH'];
+    const keys = ['ATR_MIN_SEVERITY', 'ATR_FORENSIC_MODE', 'ATR_RULES_DIR', 'ATR_CORPUS_PATH', 'ATR_BLOCKING'];
     const saved = Object.fromEntries(keys.map((k) => [k, process.env[k]]));
     try {
       for (const k of keys) delete process.env[k];
@@ -147,12 +158,31 @@ describe('optionsFromEnv (ATR_* contract)', () => {
       expect(o.rulesDir).toBe('/y/rules');
       expect(o.minSeverity).toBe('high');
       expect(o.forensic).toBe(false);
+      expect(o.blocking).toBe(false);
     });
   });
 
-  it('clamps an unknown ATR_MIN_SEVERITY back to high', () => {
-    withEnv({ ATR_MIN_SEVERITY: 'bogus' }, () => {
-      expect(optionsFromEnv(['--direction', 'response']).minSeverity).toBe('high');
+  // It used to clamp an unknown value to high in silence, and accept `low`.
+  it('rejects an ATR_MIN_SEVERITY that is not high or critical', () => {
+    for (const bad of ['bogus', 'low', 'medium']) {
+      withEnv({ ATR_MIN_SEVERITY: bad }, () => {
+        expect(() => optionsFromEnv(['--direction', 'response'])).toThrow(/ATR_MIN_SEVERITY/);
+      });
+    }
+    withEnv({ ATR_MIN_SEVERITY: 'CRITICAL' }, () => {
+      expect(optionsFromEnv(['--direction', 'response']).minSeverity).toBe('critical');
+    });
+  });
+
+  it('reads ATR_BLOCKING with the CLI spellings and rejects anything else', () => {
+    withEnv({ ATR_BLOCKING: 'on' }, () => {
+      expect(optionsFromEnv(['--direction', 'response']).blocking).toBe(true);
+    });
+    withEnv({ ATR_BLOCKING: '0' }, () => {
+      expect(optionsFromEnv(['--direction', 'response']).blocking).toBe(false);
+    });
+    withEnv({ ATR_BLOCKING: 'enabled' }, () => {
+      expect(() => optionsFromEnv(['--direction', 'response'])).toThrow(/ATR_BLOCKING/);
     });
   });
 });

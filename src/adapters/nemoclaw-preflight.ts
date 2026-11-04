@@ -2,16 +2,36 @@
  * NemoClaw / OpenShell supply-chain pre-flight scanner (ATR Seam B).
  *
  * Scans an agent bundle — SKILL.md skills and MCP server configs — BEFORE it is
- * provisioned into a NemoClaw/OpenShell sandbox, and returns a gate verdict:
- *   exit 0 = pass        (all targets scanned, nothing at/above threshold)
- *   exit 1 = block       (a rule at/above the threshold matched)
- *   exit 2 = incomplete  (could not fully scan — oversized/unreadable/symlink/
- *                         too many files) OR internal error
+ * provisioned into a NemoClaw/OpenShell sandbox, and returns a verdict.
  *
- * It is FAIL-CLOSED: because this is the only pre-deployment barrier, an
- * incomplete scan is never reported as a pass. A skipped file (too large to
- * scan, unreadable, a symlink, or beyond the file cap) yields an "incomplete"
- * verdict the caller must treat as a gate failure, not a clean result.
+ * REPORT-ONLY BY DEFAULT. Without ATR_BLOCKING=1 the decision is `report` and
+ * the exit code is 0 whatever was found: every finding at or above
+ * ATR_MIN_SEVERITY, and every file that could not be scanned, is printed (and
+ * returned in --json), and nothing is gated. With ATR_BLOCKING=1 it is a gate:
+ *   exit 0 = pass        (all targets scanned, no blocking-eligible match)
+ *   exit 1 = block       (a blocking-eligible match: a live maturity: stable
+ *                         rule at high or critical severity — see
+ *                         isBlockingEligible in src/enforcement.ts)
+ *   exit 2 = incomplete  (could not fully scan — oversized/unreadable/symlink/
+ *                         too many files)
+ * In either mode, exit 2 also means an internal error, including a bad
+ * ATR_MIN_SEVERITY or ATR_BLOCKING value, which is reported on stderr.
+ *
+ * WHY "incomplete" IS REPORT-ONLY BY DEFAULT TOO. Exit 2 for an incomplete scan
+ * fails the provisioning step exactly as a block does — a caller cannot tell
+ * the two apart from the exit status alone, and the README tells it to treat
+ * both as a gate failure. So it is a block, and a block needs the operator's
+ * opt-in. When blocking is on the gate stays FAIL-CLOSED as before: an operator
+ * who asked for a gate gets one that never reports a pass it could not vouch
+ * for. When blocking is off, an incomplete scan is printed as INCOMPLETE and
+ * listed in `skipped`, and the decision is `report`, not `pass`, so nothing
+ * reads it as clean. Internal errors keep exit 2 in both modes: they are not a
+ * verdict on the bundle, and exiting 0 on a broken configuration would hide it.
+ *
+ * This scanner used to block by default on any hunt-lane match at
+ * ATR_MIN_SEVERITY, which could be lowered to `low`, and mapped an unreadable
+ * ATR_MIN_SEVERITY to `high` in silence. The threshold now accepts only `high`
+ * or `critical`.
  *
  * This is the pre-deployment counterpart to the runtime content filter
  * (openshell-filter): the filter inspects L7 traffic at run time; this inspects
@@ -40,9 +60,21 @@
 import { existsSync, lstatSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
 import { ATREngine } from '../engine.js';
-import type { AgentEvent, ATRMatch } from '../types.js';
+import type { AgentEvent, ATRMatch, ATRSeverity } from '../types.js';
+import {
+  BLOCKING_MIN_SEVERITY,
+  blockingFromConfig,
+  blockingSeveritiesFrom,
+  isBlockingEligible,
+  parseBlockingSeverity,
+  resolveBlocking,
+} from '../enforcement.js';
 
-export type Decision = 'pass' | 'block' | 'incomplete';
+/**
+ * `report`: blocking is off — findings and skipped files are listed, nothing
+ * is gated. `pass` / `block` / `incomplete`: blocking is on.
+ */
+export type Decision = 'pass' | 'block' | 'incomplete' | 'report';
 
 /** Reason a target could not be fully scanned (fail-closed signals). */
 export type SkipReason = 'too_large' | 'unreadable' | 'symlink' | 'max_files_exceeded';
@@ -56,7 +88,7 @@ const SEVERITY_RANK: Readonly<Record<string, number>> = Object.freeze({
   critical: 4,
 });
 
-const DEFAULT_MIN_SEVERITY = 'high';
+const DEFAULT_MIN_SEVERITY: ATRSeverity = BLOCKING_MIN_SEVERITY;
 const DEFAULT_MAX_FILE_BYTES = 1024 * 1024; // 1 MB per file
 const DEFAULT_MAX_FILES = 2000;
 const REDACTED = '[REDACTED]';
@@ -79,15 +111,24 @@ function severityRank(severity: string): number {
 }
 
 export interface PreflightOptions {
-  /** Block when a matched rule's severity is at or above this (default "high"). */
+  /**
+   * Report (and, when blocking, block on) matches at or above this severity:
+   * "high" or "critical". Anything else throws.
+   */
   readonly minSeverity: string;
+  /**
+   * Act as a gate. OFF BY DEFAULT: the decision is `report` and nothing is
+   * gated. When on, only a blocking-eligible match blocks, and an incomplete
+   * scan fails closed.
+   */
+  readonly blocking?: boolean;
   /** Directory of ATR rule YAML files. Omit to use the rules bundled with the package. */
   readonly rulesDir?: string;
   /** When true, include the raw matched value instead of redacting it. */
   readonly forensic: boolean;
-  /** Skip files larger than this (default 1 MB) — skipped files block the gate. */
+  /** Skip files larger than this (default 1 MB) — skipped files fail the gate when blocking. */
   readonly maxFileBytes?: number;
-  /** Stop collecting after this many target files (default 2000) — truncation blocks the gate. */
+  /** Stop collecting after this many target files (default 2000) — truncation fails the gate when blocking. */
   readonly maxFiles?: number;
 }
 
@@ -108,6 +149,10 @@ export interface SkippedFile {
 
 export interface PreflightResult {
   readonly decision: Decision;
+  /** Whether this run was a gate (`blocking`) or a report (`report-only`). */
+  readonly mode: 'report-only' | 'blocking';
+  /** Rule ids of the blocking-eligible findings; empty in report-only mode. */
+  readonly blockingRuleIds: readonly string[];
   /** Number of files actually read and evaluated (not merely discovered). */
   readonly scanned: number;
   /** Targets that could not be fully scanned. Non-empty ⇒ verdict cannot be a clean pass. */
@@ -197,14 +242,18 @@ function collectTargets(root: string, maxFiles: number): CollectResult {
 /** The supply-chain pre-flight scanner. Construct once, reuse across bundles. */
 export class NemoClawPreflight {
   private readonly engine: ATREngine;
-  private readonly blockRank: number;
+  private readonly reportRank: number;
+  private readonly blockSeverities: readonly ATRSeverity[];
+  private readonly blocking: boolean;
   private readonly maxFileBytes: number;
   private readonly maxFiles: number;
   private loadPromise: Promise<number> | null = null;
 
   constructor(private readonly options: PreflightOptions) {
+    this.blockSeverities = blockingSeveritiesFrom(options.minSeverity);
+    this.blocking = blockingFromConfig(options.blocking);
     this.engine = new ATREngine(options.rulesDir ? { rulesDir: options.rulesDir } : {});
-    this.blockRank = severityRank(options.minSeverity);
+    this.reportRank = severityRank(options.minSeverity);
     this.maxFileBytes = options.maxFileBytes ?? DEFAULT_MAX_FILE_BYTES;
     this.maxFiles = options.maxFiles ?? DEFAULT_MAX_FILES;
   }
@@ -220,17 +269,17 @@ export class NemoClawPreflight {
    * unreadable files are reported as skipped (fail-closed), never silently
    * treated as clean.
    */
-  private scanFile(target: Target): { findings: PreflightFinding[]; skip: SkipReason | null } {
+  private scanFile(target: Target): { findings: PreflightFinding[]; blockingIds: string[]; skip: SkipReason | null } {
     let content: string;
     try {
       if (statSync(target.path).size > this.maxFileBytes) {
-        return { findings: [], skip: 'too_large' };
+        return { findings: [], blockingIds: [], skip: 'too_large' };
       }
       content = readFileSync(target.path, 'utf8');
     } catch {
-      return { findings: [], skip: 'unreadable' };
+      return { findings: [], blockingIds: [], skip: 'unreadable' };
     }
-    if (!content.trim()) return { findings: [], skip: null };
+    if (!content.trim()) return { findings: [], blockingIds: [], skip: null };
 
     // scanContext 'skill' makes every rule evaluate against the whole content,
     // with the engine's compound gating controlling false positives — correct
@@ -243,11 +292,17 @@ export class NemoClawPreflight {
       scanContext: 'skill',
     };
 
-    const findings = this.engine
+    const reported = this.engine
       .evaluate(event)
-      .filter((m) => severityRank(m.rule.severity) >= this.blockRank)
-      .map((m) => this.toFinding(m, target.path));
-    return { findings, skip: null };
+      .filter((m) => severityRank(m.rule.severity) >= this.reportRank);
+    // Synchronous hunt-lane evaluate(): no model decides a match, and an
+    // unconfirmed confirm-rule cannot block (detectionLane defaults to hunt).
+    const blockingIds = this.blocking
+      ? reported
+          .filter((m) => isBlockingEligible(m, { severities: this.blockSeverities }))
+          .map((m) => m.rule.id)
+      : [];
+    return { findings: reported.map((m) => this.toFinding(m, target.path)), blockingIds, skip: null };
   }
 
   private toFinding(match: ATRMatch, sourcePath: string): PreflightFinding {
@@ -263,9 +318,10 @@ export class NemoClawPreflight {
   }
 
   /**
-   * Scan an agent bundle (directory or single file). Block on any finding at or
-   * above the threshold; otherwise report incomplete if any target could not be
-   * fully scanned (fail-closed); otherwise pass.
+   * Scan an agent bundle (directory or single file). Report-only mode: the
+   * decision is `report`. Blocking mode: block on any blocking-eligible
+   * finding; otherwise incomplete if any target could not be fully scanned
+   * (fail-closed); otherwise pass.
    */
   async scanBundle(root: string): Promise<PreflightResult> {
     await this.ensureLoaded();
@@ -276,40 +332,94 @@ export class NemoClawPreflight {
     const collected = collectTargets(root, this.maxFiles);
     const skipped: SkippedFile[] = [...collected.skipped];
     const findings: PreflightFinding[] = [];
+    const blockingIds = new Set<string>();
     let evaluated = 0;
 
     for (const target of collected.targets) {
-      const { findings: f, skip } = this.scanFile(target);
+      const { findings: f, blockingIds: ids, skip } = this.scanFile(target);
       if (skip) skipped.push({ path: target.path, reason: skip });
       else evaluated++;
       findings.push(...f);
+      ids.forEach((id) => blockingIds.add(id));
     }
     if (collected.truncated) {
       skipped.push({ path: root, reason: 'max_files_exceeded' });
     }
 
-    const decision: Decision =
-      findings.length > 0 ? 'block' : skipped.length > 0 ? 'incomplete' : 'pass';
-    return { decision, scanned: evaluated, skipped, findings };
+    const mode = this.blocking ? 'blocking' : 'report-only';
+    const decision: Decision = !this.blocking
+      ? 'report'
+      : blockingIds.size > 0 ? 'block' : skipped.length > 0 ? 'incomplete' : 'pass';
+    return { decision, mode, blockingRuleIds: [...blockingIds], scanned: evaluated, skipped, findings };
   }
 }
 
 // ── CLI wiring (provisioning gate the supervisor / CI runs) ──────────────────
 
-/** Build options from the ATR_* environment contract. */
+/**
+ * Read ATR_MIN_SEVERITY: unset or empty means high; `high` or `critical` (any
+ * case) is taken; anything else throws, which the CLI turns into exit 2 with
+ * the message on stderr. It used to fall back to `high` in silence.
+ */
+export function minSeverityFromEnv(raw: string | undefined): ATRSeverity {
+  if (raw === undefined || raw.trim() === '') return DEFAULT_MIN_SEVERITY;
+  const parsed = parseBlockingSeverity(raw);
+  if (parsed === null) {
+    throw new Error(
+      `invalid ATR_MIN_SEVERITY="${raw}"; expected "high" or "critical". ` +
+        `Lower severities may not block, and the threshold is not guessed.`,
+    );
+  }
+  return parsed;
+}
+
+/**
+ * Build options from the ATR_* environment contract.
+ *
+ * @throws on an invalid ATR_MIN_SEVERITY or ATR_BLOCKING.
+ */
 export function optionsFromEnv(): PreflightOptions {
-  const minRaw = (process.env['ATR_MIN_SEVERITY'] ?? DEFAULT_MIN_SEVERITY).toLowerCase();
-  const minSeverity = SEVERITY_RANK[minRaw] !== undefined ? minRaw : DEFAULT_MIN_SEVERITY;
   const forensicRaw = process.env['ATR_FORENSIC_MODE'];
   return {
-    minSeverity,
+    minSeverity: minSeverityFromEnv(process.env['ATR_MIN_SEVERITY']),
+    blocking: resolveBlocking(undefined, process.env),
     rulesDir: process.env['ATR_RULES_DIR'] ?? process.env['ATR_CORPUS_PATH'] ?? undefined,
     forensic: forensicRaw === '1' || forensicRaw === 'true',
   };
 }
 
-function exitCodeFor(decision: Decision): number {
+/** Exit status for a decision. `report` (blocking off) is always 0. */
+export function exitCodeFor(decision: Decision): number {
   return decision === 'block' ? 1 : decision === 'incomplete' ? 2 : 0;
+}
+
+function headline(result: PreflightResult): string {
+  const { scanned, findings, skipped, blockingRuleIds } = result;
+  switch (result.decision) {
+    case 'block':
+      return `BLOCK: ${blockingRuleIds.length} blocking-eligible rule(s); ${findings.length} finding(s) across ${scanned} file(s)`;
+    case 'incomplete':
+      return `INCOMPLETE: scanned ${scanned} file(s); ${skipped.length} could not be scanned (treated as gate failure)`;
+    case 'pass':
+      return `PASS: ${scanned} file(s) scanned, no blocking-eligible finding` +
+        (findings.length > 0 ? `; ${findings.length} finding(s) reported` : '');
+    default:
+      return `REPORT (blocking off, nothing gated): ${findings.length} finding(s) across ${scanned} file(s); ` +
+        `${skipped.length} could not be scanned. Set ATR_BLOCKING=1 to gate.`;
+  }
+}
+
+/** Human-readable result on stderr: headline, then every finding and skipped file. */
+function printResult(result: PreflightResult): void {
+  process.stderr.write(headline(result) + '\n');
+  const eligible = new Set(result.blockingRuleIds);
+  for (const f of result.findings) {
+    const tag = eligible.has(f['atr.rule_id']) ? '  [blocking]' : '';
+    process.stderr.write(`  ${f['atr.severity']}  ${f['atr.rule_id']}  ${f['atr.category']}  ${f['atr.source_path']}${tag}\n`);
+  }
+  for (const s of result.skipped) {
+    process.stderr.write(`  skipped  ${s.reason}  ${s.path}\n`);
+  }
 }
 
 async function main(argv: readonly string[]): Promise<number> {
@@ -319,24 +429,10 @@ async function main(argv: readonly string[]): Promise<number> {
     return 2;
   }
   const result = await new NemoClawPreflight(optionsFromEnv()).scanBundle(target);
-
   if (argv.includes('--json')) {
     process.stdout.write(JSON.stringify(result) + '\n');
-    return exitCodeFor(result.decision);
-  }
-
-  if (result.decision === 'block') {
-    process.stderr.write(`BLOCK: ${result.findings.length} finding(s) across ${result.scanned} file(s)\n`);
-    for (const f of result.findings) {
-      process.stderr.write(`  ${f['atr.severity']}  ${f['atr.rule_id']}  ${f['atr.category']}  ${f['atr.source_path']}\n`);
-    }
-  } else if (result.decision === 'incomplete') {
-    process.stderr.write(`INCOMPLETE: scanned ${result.scanned} file(s); ${result.skipped.length} could not be scanned (treated as gate failure)\n`);
-    for (const s of result.skipped) {
-      process.stderr.write(`  ${s.reason}  ${s.path}\n`);
-    }
   } else {
-    process.stderr.write(`PASS: ${result.scanned} file(s) scanned, no findings at or above threshold\n`);
+    printResult(result);
   }
   return exitCodeFor(result.decision);
 }

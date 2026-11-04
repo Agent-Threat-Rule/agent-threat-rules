@@ -127,8 +127,16 @@ export {
   BLOCKING_ENV_VAR,
   MODEL_DECISIONS_ENV_VAR,
   parseModelDecisions,
+  BLOCKING_LANE,
+  BLOCKING_MIN_SEVERITY,
+  BLOCKING_SEVERITIES,
+  parseBlockingSeverity,
+  blockingSeveritiesFrom,
+  isBlockingEligible,
+  blockingMatches,
+  verdictBlockingMatches,
 } from './enforcement.js';
-export type { EnvSource, EnforcementPolicy } from './enforcement.js';
+export type { EnvSource, EnforcementPolicy, BlockingEligibilityOptions } from './enforcement.js';
 
 // Quality Standard — RFC-001 reference implementation
 export * as quality from './quality/index.js';

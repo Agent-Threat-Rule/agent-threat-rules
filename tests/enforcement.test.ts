@@ -19,9 +19,12 @@
  *    (alert / snapshot / shadow / escalate) must keep running — suppressing them
  *    would cost detection.
  *
- * 3. Blocking on reproduces the historical severity+confidence matrix for the
- *    decisions that RESTRAIN (deny / ask), so turning the switch on is not a
- *    second behaviour to review. It does not restore the affirmative allow.
+ * 3. Blocking on lets ATR deny, and dispatch actions above OBSERVE, only for a
+ *    blocking-eligible match: a live maturity: stable rule at high or critical
+ *    severity (isBlockingEligible). The historical severity+confidence matrix
+ *    no longer reaches the host -- its `ask` was how a medium match, or any
+ *    experimental rule, became a real prompt. It does not restore the
+ *    affirmative allow. The full matrix is in tests/blocking-eligibility.test.ts.
  *
  * 4. THE LIBRARY DOES NOT READ THE ENVIRONMENT. ATREngine / ActionExecutor /
  *    HookHandler take explicit config only; ATR_LANE and ATR_BLOCKING are read
@@ -488,8 +491,8 @@ describe('response actions obey the same switch', () => {
     expect(adapter.calls).not.toContain('blockTool');
   });
 
-  it('dispatches them once blocking is on', async () => {
-    const engine = await loadedEngine();
+  it('dispatches them once blocking is on, for a maturity: stable rule', async () => {
+    const engine = await loadedEngine({ rules: [fixtureRule({ maturity: 'stable' })] });
     const adapter = new RecordingAdapter();
     const executor = new ActionExecutor({ adapter, blocking: true });
     expect(executor.isBlocking()).toBe(true);
@@ -499,6 +502,23 @@ describe('response actions obey the same switch', () => {
     expect(adapter.calls).toContain('blockTool');
     expect(adapter.calls).toContain('alert');
     expect(adapter.calls).toContain('snapshot');
+  });
+
+  it('still suppresses them with blocking on when the rule is not stable', async () => {
+    // The default fixture is maturity: test, critical. It fires in the default
+    // hunt lane and is reported, but may not drive an action above OBSERVE.
+    // Before the eligibility rule, blocking on dispatched blockTool here.
+    const engine = await loadedEngine();
+    const adapter = new RecordingAdapter();
+    const executor = new ActionExecutor({ adapter, blocking: true });
+
+    const { verdict, actionResults } = await engine.evaluateWithVerdict(markerEvent(), executor);
+
+    expect(verdict.matchCount).toBeGreaterThan(0);
+    expect(adapter.calls).toContain('alert');
+    expect(adapter.calls).not.toContain('blockTool');
+    const blockTool = actionResults.find((r) => r.action === 'block_tool')!;
+    expect(blockTool.message).toContain('no blocking-eligible match');
   });
 
   it('a string "false" is a caller bug, not a switch that turns blocking ON', async () => {
@@ -633,7 +653,7 @@ describe('HookHandler carries the policy', () => {
 // --- 6. CLI: the shipping surface ------------------------------------------
 
 describe('atr guard CLI', () => {
-  const RULE_YAML = `title: "Enforcement CLI fixture"
+  const ruleYaml = (maturity: string): string => `title: "Enforcement CLI fixture"
 id: ATR-2026-09102
 rule_version: 1
 status: experimental
@@ -641,7 +661,7 @@ description: "Fixture rule for the enforcement CLI tests."
 author: "ATR Community"
 date: "2026/08/14"
 schema_version: "0.1"
-maturity: test
+maturity: ${maturity}
 severity: critical
 tags:
   category: excessive-autonomy
@@ -674,13 +694,14 @@ test_cases:
 
   function runGuard(
     args: readonly string[],
-    env: Record<string, string> = {}
+    env: Record<string, string> = {},
+    maturity = 'test'
   ): { status: number; lines: Array<Record<string, unknown>>; stderr: string } {
     const dir = mkdtempSync(join(tmpdir(), 'atr-enforcement-'));
     try {
       const rulesDir = join(dir, 'rules', 'excessive-autonomy');
       mkdirSync(rulesDir, { recursive: true });
-      writeFileSync(join(rulesDir, 'ATR-2026-09102-fixture.yaml'), RULE_YAML);
+      writeFileSync(join(rulesDir, 'ATR-2026-09102-fixture.yaml'), ruleYaml(maturity));
 
       const r = spawnSync(
         'npx',
@@ -722,16 +743,31 @@ test_cases:
     expect(stderr).toContain('blocking=off');
   });
 
-  it('--blocking turns the decision on', () => {
-    const { status, lines, stderr } = runGuard(['--blocking']);
+  it('--blocking turns the decision on for a maturity: stable critical rule', () => {
+    const { status, lines, stderr } = runGuard(['--blocking'], {}, 'stable');
     expect(status, stderr).toBe(0);
     expect(lines[0]!['matched_rules']).toEqual(['ATR-2026-09102']);
     expect(hso(lines[0]!)['permissionDecision']).toBe('deny');
+    expect(lines[0]!['atr_blocking_rules']).toEqual(['ATR-2026-09102']);
     expect(stderr).toContain('blocking=on');
   });
 
+  it('--blocking does not deny on a maturity: test critical rule in the hunt lane', () => {
+    const { status, lines, stderr } = runGuard(['--blocking']);
+    expect(status, stderr).toBe(0);
+    expect(stderr).toContain('lane=hunt');
+    expect(stderr).toContain('blocking=on');
+    // CONTROL: it matched and the detection is still reported as a deny.
+    expect(lines[0]!['matched_rules']).toEqual(['ATR-2026-09102']);
+    expect(lines[0]!['atr_detection']).toBe('deny');
+    // ...but nothing was asked of the host.
+    expect(lines[0]!['hookSpecificOutput']).toBeUndefined();
+    expect(JSON.stringify(lines[0])).not.toContain('permissionDecision');
+    expect(String(lines[0]!['atr_reason'])).toContain('not blocked');
+  });
+
   it('ATR_BLOCKING turns it on without a flag', () => {
-    const { status, lines } = runGuard([], { ATR_BLOCKING: '1' });
+    const { status, lines } = runGuard([], { ATR_BLOCKING: '1' }, 'stable');
     expect(status).toBe(0);
     expect(hso(lines[0]!)['permissionDecision']).toBe('deny');
   });

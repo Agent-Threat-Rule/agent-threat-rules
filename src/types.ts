@@ -474,6 +474,12 @@ export interface ExecutionContext {
   readonly verdict: ATRVerdict;
   readonly sessionId?: string;
   readonly metadata?: Readonly<Record<string, unknown>>;
+  /**
+   * The detection lane of the engine that produced the verdict. The
+   * ActionExecutor reads it to tell a confirmed `confirm: embedding` match from
+   * an unconfirmed one (src/enforcement.ts). Absent means hunt: unconfirmed.
+   */
+  readonly lane?: "enforce" | "alert" | "hunt";
 }
 
 /** Platform-specific adapter for executing ATR actions */
@@ -538,10 +544,24 @@ export interface HookInput {
 
 /** Hook output to Claude Code / agent host */
 export interface HookOutput {
+  /**
+   * What ATR asks the host to do. With blocking off it is the detection
+   * verdict (and the host is told nothing). With blocking on it is `deny` when
+   * a blocking-eligible match exists (src/enforcement.ts) and `allow` (no
+   * decision emitted) otherwise; it is never `ask` on the engine path.
+   */
   readonly decision: VerdictOutcome;
   readonly reason?: string;
   readonly message?: string;
   readonly matched_rules?: readonly string[];
+  /**
+   * The detection verdict computed from every match, whatever `decision` is.
+   * Absent on outputs that did not come from an evaluation (guard errors,
+   * unknown hook types).
+   */
+  readonly detection?: VerdictOutcome;
+  /** Ids of the blocking-eligible matches behind a `deny`, when blocking is on. */
+  readonly blocking_rules?: readonly string[];
 }
 
 /** Scan type: MCP runtime event scan vs SKILL.md static file scan */

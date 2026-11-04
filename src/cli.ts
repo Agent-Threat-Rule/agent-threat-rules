@@ -92,7 +92,9 @@ ${BOLD}Options:${RESET}
   --report-to-cloud  Send anonymous detection reports to a Threat Cloud endpoint.
                      OFF BY DEFAULT: nothing leaves your machine without it.
                      (--no-report is accepted and is a no-op, kept for compatibility.)
-  --fail-on <sev>    Exit non-zero if matches at/above this severity are found (for CI / pre-commit gates)
+  --fail-on <sev>    high | critical. Exit non-zero if a match from a maturity: stable
+                     rule at/above this severity is found (for CI / pre-commit gates).
+                     Other rules are reported, never counted. Off unless given.
   --tc-url <url>     Threat Cloud endpoint base URL. Also read from ATR_TC_URL.
                      REQUIRED with --report-to-cloud: ATR ships no default
                      endpoint, so you choose who receives your detections.
@@ -105,8 +107,10 @@ ${BOLD}Options:${RESET}
                    not count it toward --fail-on. Overrides ATR_MODEL_DECISIONS.
   --blocking       Allow ATR to block. OFF BY DEFAULT: without it the guard
                    reports detections but emits no permissionDecision and runs
-                   no response action above the observe tier. Overrides
-                   ATR_BLOCKING.
+                   no response action above the observe tier. With it, only a
+                   maturity: stable rule at high or critical severity can deny
+                   or run such an action; --lane only changes what is
+                   reported. Overrides ATR_BLOCKING.
   --no-blocking    Force blocking off even if ATR_BLOCKING is set.
   --dry-run        Log actions without executing (guard mode)
   --fail-open      Default to allow on errors (guard mode, default: true)
@@ -133,11 +137,11 @@ ${BOLD}Examples:${RESET}
   ${DIM}# Run as a Claude Code guard hook (advisory: reports, never blocks)${RESET}
   atr guard --rules ./my-rules
 
-  ${DIM}# Opt in to blocking, restricted to stable rules${RESET}
-  atr guard --lane enforce --blocking
+  ${DIM}# Opt in to blocking (only stable rules at high/critical can block)${RESET}
+  atr guard --blocking
 
   ${DIM}# Same, via the environment${RESET}
-  ${LANE_ENV_VAR}=enforce ${BLOCKING_ENV_VAR}=1 atr guard
+  ${BLOCKING_ENV_VAR}=1 atr guard
 
   ${DIM}# Start MCP server for AI agent integration${RESET}
   atr mcp
@@ -682,7 +686,7 @@ async function cmdGuard(options: Record<string, string>): Promise<void> {
     `${dryRun ? ' (dry-run)' : ''}\n` +
     `[atr-guard] lane=${engine.getLane()} blocking=${handler.isBlocking() ? 'on' : 'off'}` +
     `${handler.isBlocking()
-      ? ' (deny/ask only; never approves a tool call)'
+      ? ' (denies only on stable high/critical rules; never approves a tool call)'
       : ' (advisory: detections are reported, nothing is blocked)'}\n`
   );
 
@@ -1083,8 +1087,10 @@ function cmdInit(options: Record<string, string>): void {
   console.log(`flagged with severity and recommendation.${RESET}\n`);
   console.log(`${BOLD}Mode: advisory.${RESET} ${DIM}The guard reports detections and does NOT block:`);
   console.log(`it emits no permissionDecision, so Claude Code's own permission flow is`);
-  console.log(`untouched. Turn blocking on when you have chosen a lane you trust:`);
-  console.log(`  ${BLOCKING_ENV_VAR}=1 ${LANE_ENV_VAR}=enforce   (or: atr guard --blocking --lane enforce)${RESET}\n`);
+  console.log(`untouched. To let it block, set ${BLOCKING_ENV_VAR}=1 (or: atr guard --blocking).`);
+  console.log(`Even then only maturity: stable rules at high or critical severity can`);
+  console.log(`deny a tool call; every other match is still reported. ${LANE_ENV_VAR} only`);
+  console.log(`changes which rules are reported.${RESET}\n`);
 }
 
 // --- CONVERT command ---

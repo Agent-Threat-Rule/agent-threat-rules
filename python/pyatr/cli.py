@@ -1,7 +1,7 @@
 """CLI for pyATR.
 
 Usage:
-    pyatr scan events.json [--rules-dir DIR]
+    pyatr scan events.json [--rules-dir DIR] [--fail-on {high,critical}]
     pyatr validate <rule.yaml|dir>
     pyatr test <rule.yaml|dir>
     pyatr stats [--rules-dir DIR]
@@ -20,6 +20,7 @@ from typing import Any
 import yaml
 
 from pyatr.engine import ATREngine
+from pyatr.enforcement import BLOCKING_SEVERITIES, blocking_matches, blocking_severities_from
 from pyatr.types import AgentEvent
 
 
@@ -37,6 +38,16 @@ def _build_parser() -> argparse.ArgumentParser:
         "--rules-dir",
         default=None,
         help="Directory containing ATR YAML rules (default: ../rules/)",
+    )
+    scan_parser.add_argument(
+        "--fail-on",
+        choices=BLOCKING_SEVERITIES,
+        default=None,
+        help=(
+            "Exit 2 when a match from a maturity: stable rule (the enforce lane) "
+            "at or above this severity is found, for CI gates. Off by default: "
+            "without it the scan reports every match and exits 0."
+        ),
     )
 
     # validate
@@ -101,26 +112,41 @@ def _cmd_scan(args: argparse.Namespace) -> int:
     events = _load_events(args.events_file)
     print(f"Scanning {len(events)} event(s)...\n")
 
+    # The scan runs in the hunt lane, so every match is reported. Only
+    # --fail-on turns a match into a non-zero exit, and only a match that may
+    # block (pyatr.enforcement: enforce lane, high/critical). The scan used to
+    # exit 2 on any match of any rule at any severity, which made a plain
+    # `pyatr scan` in CI a blocking gate on experimental rules.
+    fail_severities = blocking_severities_from(args.fail_on) if args.fail_on else ()
     total_matches = 0
+    failing = 0
     for i, event in enumerate(events):
         matches = engine.evaluate(event)
-        if matches:
-            total_matches += len(matches)
-            snippet = (
-                (event.content[:80] + "...") if len(event.content) > 80 else event.content
-            )
-            print(f"Event {i + 1}: {snippet!r}")
-            for m in matches:
-                print(f"  [{m.severity.upper()}] {m.rule_id} - {m.title}")
-                print(f"    confidence={m.confidence}, patterns_matched={len(m.matched_patterns)}")
-            print()
+        if not matches:
+            continue
+        total_matches += len(matches)
+        gate = {m.rule_id for m in blocking_matches(matches, fail_severities)} if fail_severities else set()
+        failing += len(gate)
+        _print_event_matches(i, event, matches, gate)
 
     if total_matches == 0:
         print("No threats detected.")
     else:
         print(f"Total: {total_matches} match(es) across {len(events)} event(s).")
+    if args.fail_on:
+        print(f"--fail-on {args.fail_on}: {failing} match(es) from maturity: stable rules at or above it.")
 
-    return 0 if total_matches == 0 else 2
+    return 2 if failing > 0 else 0
+
+
+def _print_event_matches(index: int, event: AgentEvent, matches: list[Any], gate: set[str]) -> None:
+    snippet = (event.content[:80] + "...") if len(event.content) > 80 else event.content
+    print(f"Event {index + 1}: {snippet!r}")
+    for m in matches:
+        marker = "  [fails --fail-on]" if m.rule_id in gate else ""
+        print(f"  [{m.severity.upper()}] {m.rule_id} - {m.title}{marker}")
+        print(f"    confidence={m.confidence}, maturity={m.maturity}, patterns_matched={len(m.matched_patterns)}")
+    print()
 
 
 def _cmd_validate(args: argparse.Namespace) -> int:

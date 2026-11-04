@@ -239,12 +239,14 @@ switches — the **lane** (which maturities may fire) and the **blocking** opt-i
 
 | Posture | Lane | Blocking | Rules that fire |
 |---|---|---|---|
-| **Enterprise blocking** | `enforce` | on | `maturity: stable` only |
+| **Enterprise blocking** | `enforce` (or `hunt`, to also report the rest) | on | `maturity: stable` only can block, whatever the lane |
 | **Alert-only monitoring** | `alert` | off | `stable` + `test` |
 | **Research / evaluation** | `hunt` (default) | off (default) | every maturity except `deprecated` |
 
 ```bash
-# Enterprise blocking: stable rules only, and they are permitted to act.
+# Enterprise blocking: stable high/critical rules are permitted to act.
+# Blocking never acts on a non-stable rule, whatever the lane; --lane enforce
+# additionally stops the other rules from being reported.
 atr guard --lane enforce --blocking
 # Equivalently, for a process you do not control the argv of:
 ATR_LANE=enforce ATR_BLOCKING=1 atr guard

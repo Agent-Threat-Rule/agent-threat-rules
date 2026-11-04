@@ -4,6 +4,7 @@ from pathlib import Path
 
 from pyatr.types import AgentEvent, ATRMatch, ATRRule
 from pyatr.engine import ATREngine, lane_allows
+from pyatr.enforcement import BLOCKING_SEVERITIES, blocking_matches, is_blocking_eligible
 from pyatr.validator import validate, ValidationResult, ValidationError
 from pyatr.test_runner import run_tests, TestRunResult, RuleTestResult, TestCaseResult
 
@@ -16,6 +17,9 @@ except Exception:  # pragma: no cover - source checkout without install
 __all__ = [
     "ATREngine",
     "lane_allows",
+    "BLOCKING_SEVERITIES",
+    "blocking_matches",
+    "is_blocking_eligible",
     "AgentEvent",
     "ATRMatch",
     "ATRRule",

@@ -4,6 +4,64 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Changed (breaking)
+
+- **Blocking is off by default everywhere ATR ships, and once it is turned
+  on only stable high and critical rules can block.** A match may block only
+  when its rule is live (not `draft` or `deprecated`), has `maturity: stable`
+  (what the enforce lane admits), has severity `high` or `critical`, and was
+  not decided by a model. One function decides it, `isBlockingEligible` in
+  `src/enforcement.ts` (Python: `pyatr.enforcement.is_blocking_eligible`), and
+  every surface below asks it. Every other match is reported exactly as
+  before. The detection lane (default `hunt`) still decides what is reported;
+  it no longer decides what can block. This breaks anyone who relied on a
+  default block, or on blocking with a non-stable rule:
+  - **`atr guard --blocking` / `HookHandler({ blocking: true })`** denied or
+    asked on any match the lane admitted, including experimental rules, and a
+    `medium` match could reach the host as a real `ask`. It now emits
+    `deny` only for an eligible match and never `ask`; the detection verdict
+    moves to `atr_detection`, and `atr_blocking_rules` names the rules behind a
+    `deny`. Advisory payloads are unchanged.
+  - **`ActionExecutor({ blocking: true })`** dispatched every declared action
+    of every match. It now dispatches an action above `observe` only when an
+    eligible match declares it.
+  - **Mastra `ATRProcessor`** aborted by default on any critical or high
+    match. It now reports (to `onDetection`, default `console.warn`) and
+    aborts only with `blocking: true`, on eligible matches. `blockSeverities`
+    may narrow to `["critical"]`; a lower severity throws.
+  - **`openshell-filter`** exited 1 (deny) by default, and
+    **`nemoclaw-preflight`** exited 1 (block) by default and 2 on an incomplete
+    scan. Both now report and exit 0 unless `ATR_BLOCKING=1`, and then exit 1
+    only for eligible matches; nemoclaw keeps exit 2 for an incomplete scan
+    when blocking is on (an incomplete scan fails provisioning exactly like a
+    block, so it follows the same opt-in) and reports `decision: "report"`
+    when it is off. `ATR_MIN_SEVERITY` accepts only `high` or `critical`; any
+    other value exits 2 with a message, where it used to fall back to `high`
+    in silence or lower the threshold to `low`. Their JSON gains `mode` and
+    `blockingRuleIds`. This lifts the scope limit recorded under the
+    enforcement entries further down.
+  - **GitHub Action**: `fail-on-finding` defaults to `'false'`. It failed the
+    job on any hunt-lane finding at `medium` or above; with `'true'` it now
+    fails only when a second scan, `atr scan --lane enforce --severity high
+    --fail-on high`, does. SARIF and `threat-count` still follow `lane` and
+    `severity`.
+  - **`atr scan --fail-on`** accepts only `high` or `critical` (a lower value
+    is a usage error) and counts only eligible matches.
+  - **`pyatr scan`** exited 2 on any match of any rule. It now exits 0 unless
+    `--fail-on high|critical` is given, and then exits 2 only for a match from
+    a `maturity: stable` rule at or above it.
+  - **LangChain guardrail** halted or refused by default on any critical
+    match; **goose hook** exited 2 by default on any high or critical match;
+    **Pydantic AI guard** raised `ModelRetry` by default on stable critical
+    matches. All three are advisory by default now: `blocking=True` (goose:
+    `ATR_BLOCKING=1`) turns blocking on, for stable `high`/`critical` matches
+    only. The LangChain and Pydantic AI `block_severity` defaults to `"high"`
+    and accepts only `"high"` or `"critical"`; Pydantic AI's `block_lane`
+    accepts only `"enforce"`.
+  - `pyatr.moderation` is unchanged: `flagged` is a signal on the enforce lane
+    at `high`/`critical` by default and blocks nothing itself; its docstring
+    now says so.
+
 ### Added
 
 - **`pyatr.moderation`, an OpenAI-compatible moderation endpoint.**

@@ -18,6 +18,14 @@ text. ``categories`` and ``category_scores`` are keyed by the ATR rule ids
 that flagged, not by OpenAI's fixed category names, and the scores are the
 rules' confidence levels mapped to 1.0 / 0.7 / 0.4, not probabilities. The
 extra ``atr_matches`` list carries every match with its maturity, for logging.
+
+``flagged`` is a signal, not a block. With the defaults it is raised on the
+enforce lane at high or critical severity -- the same matches
+``pyatr.enforcement.is_blocking_eligible`` admits -- and this module blocks
+nothing itself: whether a flagged input is refused is the consumer's decision.
+A gateway that does refuse on ``flagged`` should keep the defaults; widening
+``lane`` or lowering ``block_severity`` flags matches that no other ATR surface
+would block on.
 """
 
 from __future__ import annotations
