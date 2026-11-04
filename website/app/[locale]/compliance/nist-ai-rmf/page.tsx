@@ -42,7 +42,9 @@ type Subcat = {
 // Plain-language labels for the subcategories ATR rules cite. Counts are read
 // from the rule files; a subcategory without a label here shows its ID only.
 const SUBCATEGORY_LABELS: Subcat[] = [
-  { id: "MG.2.3", function: "MG", fn_label_zh: "MANAGE", fn_label_en: "MANAGE", desc_zh: "風險回應：隔離與停用機制", desc_en: "Containment / disengage mechanisms" },
+  { id: "MG.2.3", function: "MG", fn_label_zh: "MANAGE", fn_label_en: "MANAGE", desc_zh: "發現未知風險時的應變與復原", desc_en: "Respond to and recover from a previously unknown risk" },
+  { id: "MG.2.4", function: "MG", fn_label_zh: "MANAGE", fn_label_en: "MANAGE", desc_zh: "取代、脫離或停用系統的機制", desc_en: "Supersede, disengage or deactivate the system" },
+  { id: "MG.1.3", function: "MG", fn_label_zh: "MANAGE", fn_label_en: "MANAGE", desc_zh: "高優先風險的回應計畫", desc_en: "Planned responses to high-priority risks" },
   { id: "MS.2.7", function: "MS", fn_label_zh: "MEASURE", fn_label_en: "MEASURE", desc_zh: "安全與韌性評估", desc_en: "Security / resilience evaluation" },
   { id: "MP.5.1", function: "MP", fn_label_zh: "MAP", fn_label_en: "MAP", desc_zh: "風險特徵化與追蹤", desc_en: "Risk characterization & tracking" },
   { id: "MS.2.6", function: "MS", fn_label_zh: "MEASURE", fn_label_en: "MEASURE", desc_zh: "持續性評估", desc_en: "Continuous evaluation" },
@@ -52,7 +54,8 @@ const SUBCATEGORY_LABELS: Subcat[] = [
   { id: "MG.4.1", function: "MG", fn_label_zh: "MANAGE", fn_label_en: "MANAGE", desc_zh: "部署後監控", desc_en: "Post-deployment monitoring" },
   { id: "MG.3.1", function: "MG", fn_label_zh: "MANAGE", fn_label_en: "MANAGE", desc_zh: "第三方風險管理", desc_en: "Third-party risk management" },
   { id: "MS.2.5", function: "MS", fn_label_zh: "MEASURE", fn_label_en: "MEASURE", desc_zh: "系統韌性評估", desc_en: "Robustness evaluation" },
-  { id: "GV.1.2", function: "GV", fn_label_zh: "GOVERN", fn_label_en: "GOVERN", desc_zh: "問責角色設定", desc_en: "Accountability roles" },
+  { id: "GV.1.2", function: "GV", fn_label_zh: "GOVERN", fn_label_en: "GOVERN", desc_zh: "把可信賴 AI 的特性納入組織政策", desc_en: "Trustworthy-AI characteristics built into policy" },
+  { id: "GV.2.1", function: "GV", fn_label_zh: "GOVERN", fn_label_en: "GOVERN", desc_zh: "角色、責任與溝通管道寫清楚", desc_en: "Roles, responsibilities and lines of communication documented" },
   { id: "GV.1.1", function: "GV", fn_label_zh: "GOVERN", fn_label_en: "GOVERN", desc_zh: "法規與法律框架對應", desc_en: "Legal / regulatory framework" },
   { id: "MS.1.1", function: "MS", fn_label_zh: "MEASURE", fn_label_en: "MEASURE", desc_zh: "評估指標", desc_en: "Evaluation metrics" },
   { id: "MP.3.3", function: "MP", fn_label_zh: "MAP", fn_label_en: "MAP", desc_zh: "系統能力文件化", desc_en: "Capabilities documented" },
@@ -96,6 +99,12 @@ export default async function NistAiRmfPage({
           <br />
           <span className="text-blue">{zh ? "ATR 讓它偵測得到。" : "ATR makes it detectable."}</span>
         </h1>
+      <p className="mt-4 mb-6 max-w-[640px] border-l-2 border-high pl-3 text-[13px] leading-[1.7] text-graphite">
+        {zh
+          ? "部分框架對應已知有誤，正在重做；偵測不受影響。修正發布前，請把對應當成可能相關的參考，不要當成稽核證據。"
+          : "Some framework mappings are known to be wrong and are being redone; detection is not affected. Until the corrections ship, treat the mappings as candidate relevance, not as audit evidence."}{" "}
+        <a href={`/${locale}/errata`} className="text-blue hover:underline">{zh ? "看勘誤" : "See the errata"}</a>
+      </p>
         <p className="text-sm text-stone mt-3 leading-[1.6]">
           {zh
             ? "GOVERN、MAP、MEASURE、MANAGE 四個功能，每一個底下都掛了 ATR 規則。各子類別怎麼分布，看下面的表。"
