@@ -1,0 +1,121 @@
+"use client";
+
+import Link from "next/link";
+import { useRef } from "react";
+import data from "@/data/scenarios.json";
+import { useSteps } from "@/lib/use-steps";
+
+type Match = { id: string; title: string; severity: string; category: string | null };
+type Step = { type: string; role: string; name: string | null; content: string; attack: string | null; matches: { hunt: Match[]; alert: Match[]; enforce: Match[] } };
+
+const LABELS: Record<string, { en: string; zh: string }> = {
+  coding: { en: "Coding agent", zh: "程式助手" },
+  support: { en: "Support agent", zh: "客服" },
+  automation: { en: "Ops agent", zh: "自動化" },
+};
+
+// Per scenario: blank, task, tool call, tool result, scan, verdict.
+const BEATS = [350, 800, 800, 900, 1100, 3800];
+const DURATIONS = data.scenarios.flatMap(() => BEATS);
+
+/**
+ * The hero: three agent sessions, each with an attack hidden in what the
+ * agent reads. ATR's verdict on every message is the published engine's
+ * recorded output in the alert lane (data/scenarios.json).
+ */
+export function AgentConsole({ locale, ruleCount }: { locale: string; ruleCount: number }) {
+  const zh = locale === "zh";
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Server renders the first session complete; the loop starts from there.
+  const [tick, setTick] = useSteps(rootRef, DURATIONS, false, BEATS.length - 1);
+  const sIndex = Math.floor(tick / BEATS.length);
+  const beat = tick % BEATS.length;
+  const scenario = data.scenarios[sIndex];
+  const [task, call, result] = scenario.steps as Step[];
+  const verdict = result.matches.alert;
+  const lead = verdict[0];
+
+  const shown = (n: number) => (beat >= n ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1.5");
+  const attackOn = beat >= 5 && !!result.attack;
+  const parts = result.attack ? result.content.split(result.attack) : [result.content];
+
+  return (
+    <div ref={rootRef} className="relative w-full min-w-0">
+      <div className="absolute -inset-x-10 -inset-y-12 grid-paper grid-paper-fade pointer-events-none" aria-hidden="true" />
+
+      <div className="relative flex gap-1 mb-3" role="tablist" aria-label={zh ? "情境" : "Scenario"}>
+        {data.scenarios.map((s, i) => (
+          <button
+            key={s.key}
+            role="tab"
+            aria-selected={i === sIndex}
+            onClick={() => setTick(i * BEATS.length + 1)}
+            className={`text-[12.5px] px-3 py-1.5 border transition-colors ${i === sIndex ? "border-ink bg-white text-ink" : "border-transparent text-stone hover:text-ink"}`}
+          >
+            {zh ? LABELS[s.key].zh : LABELS[s.key].en}
+          </button>
+        ))}
+      </div>
+
+      <div className="relative bg-white border border-fog shadow-[0_24px_60px_-28px_rgba(0,0,0,0.28)]">
+        <div className="flex items-center gap-3 px-4 h-10 border-b border-fog">
+          <span className="flex gap-1.5" aria-hidden="true">
+            <span className="w-2 h-2 rounded-full bg-fog" />
+            <span className="w-2 h-2 rounded-full bg-fog" />
+            <span className="w-2 h-2 rounded-full bg-fog" />
+          </span>
+          <span className="font-data text-[11.5px] text-ink">{scenario.agent}</span>
+          <span className="ml-auto font-data text-[10.5px] text-stone">ATR · alert lane</span>
+        </div>
+
+        <div className="px-4 py-4 space-y-3 h-[300px] sm:h-[280px] overflow-hidden font-data text-[11.5px] leading-[1.6]">
+          <div className={`transition-all duration-500 ${shown(1)}`}>
+            <span className="text-mist">{zh ? "使用者" : "user"}</span>
+            <p className="mt-0.5 font-body text-[13px] text-ink">{task.content}</p>
+          </div>
+          <div className={`transition-all duration-500 ${shown(2)}`}>
+            <span className="text-mist">→ {call.name}</span> <span className="text-stone">{call.content}</span>
+          </div>
+          <div className={`relative transition-all duration-500 ${shown(3)}`}>
+            <span className="text-mist">← {result.name}</span>
+            <div className="relative mt-1 border-l-2 border-fog pl-3 text-graphite whitespace-pre-wrap break-words">
+              {parts[0]}
+              {result.attack && (
+                <mark className={`transition-colors duration-500 ${attackOn ? "bg-alert/15 text-alert-ink" : "bg-transparent text-graphite"}`}>{result.attack}</mark>
+              )}
+              {parts[1]}
+              {beat === 4 && <span className="absolute inset-x-0 h-6 -top-1 bg-gradient-to-b from-transparent via-brand/15 to-transparent animate-[scan_1.1s_ease-in-out]" aria-hidden="true" />}
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-fog px-4 h-[92px] flex flex-col justify-center">
+          {beat === 4 && (
+            <div className="font-data text-[11.5px] text-brand-ink">{zh ? `對照 ${ruleCount} 條規則…` : `Checking ${ruleCount} rules…`}</div>
+          )}
+          {beat >= 5 && lead && (
+            <div className="animate-[fadein_350ms_ease-out]">
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="font-data text-[10.5px] px-1.5 py-0.5 bg-alert text-white uppercase">{lead.severity}</span>
+                <Link href={`/${locale}/rules/${lead.id}`} className="font-data text-[12.5px] text-ink hover:underline underline-offset-2">{lead.id}</Link>
+              </div>
+              <div className="mt-1 text-[13px] text-ink truncate">{lead.title}</div>
+              <div className="mt-0.5 text-[11.5px] text-stone">
+                {verdict.length > 1
+                  ? zh ? `另外 ${verdict.length - 1} 條規則也認出這一段` : `${verdict.length - 1} more rules flagged the same text`
+                  : zh ? "其他 agent 動作：沒有命中" : "Other steps: no match"}
+              </div>
+            </div>
+          )}
+          {beat < 4 && <div className="font-data text-[11.5px] text-mist">{zh ? "ATR 在每一則輸入上執行" : "ATR runs on every message"}</div>}
+        </div>
+      </div>
+
+      <p className="relative mt-3 text-[11.5px] text-stone">
+        {zh
+          ? `判定為 agent-threat-rules ${data.engine} 實際跑出的結果；攻擊內容取自規則的測試案例。`
+          : `Verdicts are what agent-threat-rules ${data.engine} actually returned. Each attack is taken from a rule's test cases.`}
+      </p>
+    </div>
+  );
+}

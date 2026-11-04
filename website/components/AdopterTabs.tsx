@@ -8,13 +8,18 @@ export interface AdopterItem {
   integration: string;
   evidence: string;
   since: string;
-  logo?: string;
-  tier: string;
+}
+
+/** "Gen Digital (Norton / Avast / LifeLock parent)" -> "Gen Digital". */
+function wordmark(org: string): string {
+  return org.replace(/\s*\(.*\)\s*$/, "").trim() || org;
 }
 
 /**
- * Logo row with one panel open: who integrated ATR, what they integrated,
- * since when, and the public evidence. Every entry comes from ADOPTERS.md.
+ * A row of organization names set as wordmarks, with one panel open: who
+ * integrated ATR, what they integrated, since when, and the public evidence.
+ * Names are typeset rather than shown as logos, so no third-party mark is
+ * reproduced. Every entry comes from ADOPTERS.md.
  */
 export function AdopterTabs({ items, locale }: { items: AdopterItem[]; locale: string }) {
   const zh = locale === "zh";
@@ -24,42 +29,33 @@ export function AdopterTabs({ items, locale }: { items: AdopterItem[]; locale: s
 
   return (
     <div>
-      <div role="tablist" aria-label={zh ? "採用者" : "Adopters"} className="grid grid-cols-3 md:grid-cols-6 border-t border-fog">
+      <div role="tablist" aria-label={zh ? "採用者" : "Adopters"} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 border-t border-fog">
         {items.map((item, i) => (
           <button
             key={item.name + item.org}
             role="tab"
             aria-selected={i === active}
             onClick={() => setActive(i)}
-            className={`relative flex flex-col items-start gap-2 px-4 py-4 text-left border-r border-fog last:border-r-0 transition-colors ${
-              i === active ? "bg-white" : "hover:bg-white/60"
+            className={`relative flex items-center justify-center h-24 px-4 text-center border-r border-b md:border-b-0 border-fog md:last:border-r-0 transition-colors ${
+              i === active ? "bg-white text-ink" : "text-stone hover:text-ink hover:bg-white/60"
             }`}
           >
-            {i === active && <span className="absolute left-0 right-0 top-0 h-[2px] bg-navy" aria-hidden="true" />}
-            <span className="h-7 flex items-center">
-              {item.logo ? (
-                <img src={item.logo} alt="" className={`h-7 w-7 ${i === active ? "" : "grayscale opacity-70"}`} loading="lazy" />
-              ) : (
-                <span className="font-data text-[11px] text-stone">{item.org.slice(0, 12)}</span>
-              )}
-            </span>
-            <span className="text-[13px] leading-tight text-ink line-clamp-2">{item.name}</span>
-            <span className="font-data text-[10px] uppercase tracking-[0.08em] text-mist">tier {item.tier}</span>
+            {i === active && <span className="absolute left-0 right-0 top-0 h-[2px] bg-brand" aria-hidden="true" />}
+            <span className="text-[17px] leading-tight tracking-[-0.01em] font-medium">{wordmark(item.org)}</span>
           </button>
         ))}
       </div>
 
-      <div role="tabpanel" className="grid md:grid-cols-[1fr_1.2fr] border-t border-fog bg-white">
-        <div className="p-8 border-b md:border-b-0 md:border-r border-fog flex items-center justify-center grid-paper min-h-[220px]">
-          {current.logo && <img src={current.logo.replace("size=128", "size=240")} alt={current.org} className="w-24 h-24 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.25)] bg-white" />}
+      <div role="tabpanel" className="grid md:grid-cols-[220px_1fr] border-t border-fog bg-white">
+        <div className="px-8 pt-8 md:pb-8 md:border-r border-fog">
+          <div className="text-[13px] text-stone">{zh ? "自" : "Since"}</div>
+          <div className="mt-1 text-[15px] text-ink tabular-nums">{current.since}</div>
         </div>
         <div className="p-8 flex flex-col">
           <div className="text-[20px] leading-snug text-ink">{current.name}</div>
-          <div className="mt-1 text-[13px] text-stone">{current.org}</div>
-          <p className="mt-5 text-[14.5px] leading-[1.7] text-graphite flex-1">{current.integration}</p>
-          <div className="mt-6 flex items-center justify-between gap-4 font-data text-[11px] text-stone">
-            <span>{zh ? "自" : "Since"} {current.since}</span>
-            <a href={current.evidence} target="_blank" rel="noopener noreferrer" className="inline-flex items-stretch bg-ink text-white text-[12.5px] leading-none hover:bg-navy transition-colors">
+          <p className="mt-3 text-[14.5px] leading-[1.7] text-graphite max-w-[640px]">{current.integration}</p>
+          <div className="mt-6">
+            <a href={current.evidence} target="_blank" rel="noopener noreferrer" className="inline-flex items-stretch bg-ink text-white text-[12.5px] leading-none hover:bg-black transition-colors">
               <span className="px-3 py-2">{zh ? "公開證據" : "Public evidence"}</span>
               <span className="px-2 py-2 border-l border-white/20" aria-hidden="true">↗</span>
             </a>

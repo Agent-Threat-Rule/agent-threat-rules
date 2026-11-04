@@ -1,9 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  /* Quiet standards-document palette: one paper, one ink, four greys, one
-     accent (navy). Severity colours appear only on rule data. */
-  --paper: #F8F8F8;
+  /* Quiet standards-document palette: one paper, one ink, four greys, and
+     the brand sage from BRAND.md as the only accent. Severity colours appear
+     only on rule data. */
+  --brand: #2EA44F;
+  --brand-tint: #EAF6EE;
+  /* Text-safe shades of the brand colours (4.5:1 on white). */
+  --brand-ink: #1E7B38;
+  /* BRAND.md alert orange, and its text-safe shade. */
+  --alert: #FE7D37;
+  --alert-ink: #B04A0B;
+  --paper: #FFFFFF;
   --ash: #F0F0EF;
   --fog: #DFDFDF;
   --ink: #1A1A1A;
@@ -39,6 +47,11 @@
   --color-high: var(--high);
   --color-medium: var(--medium);
   --color-green: var(--green);
+  --color-brand: var(--brand);
+  --color-brand-tint: var(--brand-tint);
+  --color-brand-ink: var(--brand-ink);
+  --color-alert: var(--alert);
+  --color-alert-ink: var(--alert-ink);
   --color-navy: var(--navy);
   --color-navy-soft: var(--navy-soft);
   --color-navy-ink: var(--navy-ink);
@@ -695,4 +708,42 @@ main h1.text-3xl.font-bold {
   font-size: clamp(30px, 3.4vw, 40px);
   font-weight: 400;
   letter-spacing: -0.02em;
+}
+
+/* Corner marks sit 3px outside the sheet edge; never let them scroll the page sideways. */
+html,
+body {
+  overflow-x: clip;
+}
+
+/* Rule tags that float over the hero dome. */
+.dome-tag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1;
+  padding: 5px 7px;
+  white-space: nowrap;
+  background: #fff;
+  color: var(--ink);
+  border: 1px solid var(--alert);
+  will-change: transform, opacity;
+}
+.dome-tag[data-kind="new"] {
+  border-color: var(--brand);
+  color: var(--brand-ink);
+}
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes grow {
+  from { width: 0; }
+  to { width: 100%; }
+}
+@keyframes scan {
+  from { top: -10%; }
+  to { top: 100%; }
 }

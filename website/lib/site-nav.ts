@@ -1,5 +1,5 @@
 /**
- * Site navigation: five groups, used by the header dropdowns, the mobile
+ * Site navigation: six groups, used by the header dropdowns, the mobile
  * drawer and the footer index, so the three never list different pages.
  * Paths are below the locale prefix. Pages left out of the header (partner
  * sync, red team, sovereign AI, the old wall) keep their URLs and appear in
@@ -46,6 +46,15 @@ export const NAV_GROUPS: ReadonlyArray<NavGroup> = [
       { path: "/atd", label: { en: "ATD techniques", zh: "ATD 技法" } },
       { path: "/quality-standard", label: { en: "Quality standard", zh: "品質標準" } },
       { path: "/threats", label: { en: "Threat feed", zh: "威脅情資" } },
+    ],
+  },
+  {
+    key: "tools",
+    label: { en: "Tools", zh: "工具" },
+    path: "/router",
+    links: [
+      { path: "/router", label: { en: "ATR Router", zh: "ATR Router" } },
+      { path: "/eval", label: { en: "ATR Eval", zh: "ATR Eval" } },
     ],
   },
   {

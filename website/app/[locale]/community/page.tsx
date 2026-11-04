@@ -72,7 +72,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
               : "Experts advise on coverage priorities and framework crosswalks; contributors write and review rules. Anyone may open issues and pull requests; merging is limited to maintainers with repository permission."}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href={`${prefix}/community/join`} className="bg-navy text-white text-[14px] px-5 py-2.5 rounded-[3px] hover:bg-navy-ink transition-colors">
+            <Link href={`${prefix}/community/join`} className="bg-ink text-white text-[14px] px-5 py-2.5 hover:bg-black transition-colors">
               {zh ? "加入社群" : "Join the community"}
             </Link>
             <Link href={`${prefix}/community/membership`} className="border border-ink/20 text-ink text-[14px] px-5 py-2.5 rounded-[3px] hover:border-ink transition-colors">

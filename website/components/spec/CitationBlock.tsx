@@ -57,7 +57,7 @@ export function CitationBlock({ locale, meta }: CitationBlockProps) {
             onClick={() => setTab(f)}
             className={`font-data text-xs tracking-wide px-3 py-1.5 rounded-sm border transition-colors ${
               tab === f
-                ? "bg-navy text-white border-navy"
+                ? "bg-ink text-white border-ink"
                 : "bg-paper text-stone border-fog hover:text-ink hover:border-stone"
             }`}
           >

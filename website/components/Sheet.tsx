@@ -42,7 +42,7 @@ export function FigureLabel({ fig, title }: { fig: string; title: string }) {
 export function Eyebrow({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-center gap-2 text-[13px] text-stone">
-      <span className="inline-block w-2 h-2 bg-navy" aria-hidden="true" />
+      <span className="inline-block w-2 h-2 bg-brand" aria-hidden="true" />
       {children}
     </div>
   );
@@ -50,7 +50,7 @@ export function Eyebrow({ children }: { children: ReactNode }) {
 
 /** Small solid button with an arrow box, for "view" actions. */
 export function ArrowButton({ href, children, external = false }: { href: string; children: ReactNode; external?: boolean }) {
-  const cls = "inline-flex items-stretch bg-ink text-white text-[12.5px] leading-none hover:bg-navy transition-colors";
+  const cls = "inline-flex items-stretch bg-ink text-white text-[12.5px] leading-none hover:bg-black transition-colors";
   const inner = (
     <>
       <span className="px-3 py-2">{children}</span>
@@ -67,7 +67,7 @@ export function ArrowButton({ href, children, external = false }: { href: string
 /** Primary and secondary hero buttons, small and square-cornered. */
 export function SolidButton({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <Link href={href} className="inline-flex items-center bg-ink text-white text-[13px] px-3.5 py-2 hover:bg-navy transition-colors">
+    <Link href={href} className="inline-flex items-center bg-ink text-white text-[13px] px-3.5 py-2 hover:bg-black transition-colors">
       {children}
     </Link>
   );

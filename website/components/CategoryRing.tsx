@@ -60,14 +60,14 @@ export function CategoryRing({
           {nodes.map((n, i) => (
             <g key={n.name}>
               <line x1={cx} y1={cy} x2={n.x} y2={n.y} stroke="#E4E4E4" strokeWidth="0.6" />
-              <circle cx={n.x} cy={n.y} r="11" fill={i === activeIndex ? "#E7ECF6" : "#FFFFFF"} stroke={i === activeIndex ? "#0B1D3A" : "#8C8C8C"} strokeWidth="0.9" />
+              <circle cx={n.x} cy={n.y} r="11" fill={i === activeIndex ? "#EAF6EE" : "#FFFFFF"} stroke={i === activeIndex ? "#2EA44F" : "#8C8C8C"} strokeWidth="0.9" />
               <text x={n.x} y={n.y + 3.5} textAnchor="middle" fontSize="9.5" fill="#1A1A1A" style={{ fontFamily: "var(--font-geist-mono)" }}>{n.letter}</text>
               <text x={n.lx} y={n.ly + 3} textAnchor={n.anchor as "start" | "middle" | "end"} fontSize="8.2" fill="#5F5F5F" style={{ fontFamily: "var(--font-geist-mono)", letterSpacing: "0.08em" }}>
                 {n.name.toUpperCase()}
               </text>
             </g>
           ))}
-          <line x1={cx} y1={cy + r + 44} x2={cx} y2="456" stroke="#0B1D3A" strokeWidth="0.8" />
+          <line x1={cx} y1={cy + r + 44} x2={cx} y2="456" stroke="#2EA44F" strokeWidth="0.8" />
           <rect x={cx - 60} y="456" width="120" height="22" fill="#FFFFFF" stroke="#C4C4C4" strokeWidth="0.8" />
           <text x={cx} y="470.5" textAnchor="middle" fontSize="8" fill="#1A1A1A" style={{ fontFamily: "var(--font-geist-mono)", letterSpacing: "0.1em" }}>REF. STANDARDS</text>
         </svg>

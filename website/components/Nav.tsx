@@ -16,7 +16,7 @@ export interface HeaderMeta {
 /**
  * Announcement bar, then a two-row header laid out on the sheet's columns:
  * row one is the logo and the facts every page is true as of; row two is the
- * five navigation groups on the left and two fixed actions in ruled cells on
+ * six navigation groups on the left and two fixed actions in ruled cells on
  * the right.
  */
 export function Nav({ locale, meta }: { locale: Locale; meta: HeaderMeta }) {
@@ -38,7 +38,7 @@ export function Nav({ locale, meta }: { locale: Locale; meta: HeaderMeta }) {
   return (
     <>
       {barOpen && (
-        <div className="bg-[#E7ECF6] text-[13px] text-ink">
+        <div className="bg-brand-tint text-[13px] text-ink">
           <div className="max-w-[1120px] mx-auto px-6 h-9 flex items-center justify-center gap-3 relative">
             <span>{zh ? "ATR 社群開放加入：專家與貢獻者" : "The ATR community is open: experts and contributors"}</span>
             <span className="w-px h-3.5 bg-ink/20" aria-hidden="true" />
@@ -98,7 +98,7 @@ export function Nav({ locale, meta }: { locale: Locale; meta: HeaderMeta }) {
                       aria-haspopup="true"
                     >
                       {pick(group.label, locale)}
-                      {active && <span className="absolute left-3 right-3 -bottom-px h-[2px] bg-navy" aria-hidden="true" />}
+                      {active && <span className="absolute left-3 right-3 -bottom-px h-[2px] bg-brand" aria-hidden="true" />}
                     </Link>
                     <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 transition-opacity absolute top-full left-0 min-w-[240px] bg-paper border border-fog shadow-[0_8px_24px_rgba(0,0,0,0.06)] py-2 z-50">
                       {group.links.map((link) => (
