@@ -84,6 +84,11 @@ function toArtifactUri(inputFile: string): string {
   return inputFile;
 }
 
+/** Keep filesystem diagnostics useful without publishing the scanner's absolute path. */
+function skippedReasonForSarif(reason: string, file: string, uri: string): string {
+  return file === uri ? reason : reason.split(file).join(uri);
+}
+
 /**
  * Raw-octet SHA-256 of a file's bytes — the digest basis the shared envelope
  * profile joins layers on (claude-code-skill-security-check#24 §2): computed
@@ -229,10 +234,11 @@ export function scanResultToSARIF(
 
   const toolExecutionNotifications = options.skippedFiles?.map(({ file, reason }) => {
     const uri = toArtifactUri(file);
+    const safeReason = skippedReasonForSarif(reason, file, uri);
     return {
       descriptor: { id: 'ATR_SCAN_SKIPPED' },
       level: 'warning',
-      message: { text: `Skipped ${uri}: ${reason}` },
+      message: { text: `Skipped ${uri}: ${safeReason}` },
       locations: [{
         physicalLocation: {
           artifactLocation: { uri, uriBaseId: '%SRCROOT%' },

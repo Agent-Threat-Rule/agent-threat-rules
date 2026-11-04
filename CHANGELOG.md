@@ -4,6 +4,12 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- **SARIF skip warnings no longer expose absolute scanner paths** (#766).
+  Filesystem errors retain their diagnostic details but refer to the relative
+  artifact URI instead of repeating the CI runner's working path.
+
 ## [4.2.4] - 2026-11-03
 
 A patch release that makes `atr scan <dir>` scan MCP configs as well as
