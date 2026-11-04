@@ -1,6 +1,6 @@
 title: "Microsoft Semantic Kernel In-Memory Vector Store eval() RCE (CVE-2026-26030)"
 id: ATR-2026-00440
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects exploitation of CVE-2026-26030 (Critical), remote code execution
@@ -113,8 +113,8 @@ detection:
 
     - field: content
       operator: regex
-      value: '(?i)BuiltinImporter|\btypes\.FunctionType\b|\bFunctionType\s*\(|getattr\s*\(\s*(?:object|type|__builtins__)'
-      description: "BuiltinImporter, Python types.FunctionType reflective construction, or reflective getattr on built-in roots — excludes bare 'FunctionType' which collides with TypeScript terminology"
+      value: '(?i)BuiltinImporter|\btypes\.FunctionType\b|\bFunctionType\s*\(|getattr\s*\(\s*(?:object|type|__builtins__)\b'
+      description: "BuiltinImporter, Python types.FunctionType reflective construction, or reflective getattr on built-in roots — excludes bare 'FunctionType' which collides with TypeScript terminology. The root name must end at a word boundary: without it 'getattr(types.Scale, name)' read as getattr on the built-in type"
 
     - field: content
       operator: regex
@@ -168,6 +168,9 @@ test_cases:
     - input: 'getattr(__builtins__, "eval")("os.system(\"id\")")'
       expected: triggered
       description: "Reflective getattr on __builtins__ to reach eval — second-stage AST-bypass shape"
+    - input: 'getattr(object, "__subclasses__")()'
+      expected: triggered
+      description: "Reflective getattr on the bare object root still matches after the word-boundary fix"
   true_negatives:
     - input: "The semantic-kernel changelog notes that lambda-with-eval filter expressions are blocked after the 1.39.4 patch."
       expected: not_triggered
@@ -184,3 +187,9 @@ test_cases:
     - input: "The filter argument accepts a callable; users typically pass operator.attrgetter."
       expected: not_triggered
       description: "Reference to alternative safe callable forms"
+    - input: "scale = getattr(types.Scale, args.scale, None)"
+      expected: not_triggered
+      description: "getattr on the types module: 'type' is only a prefix of 'types', not the built-in root"
+    - input: "handler = getattr(objects_by_id, key, None)"
+      expected: not_triggered
+      description: "getattr on a variable whose name starts with 'object'"

