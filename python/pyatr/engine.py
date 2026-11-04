@@ -100,6 +100,8 @@ def _parse_rule(data: dict[str, Any]) -> ATRRule:
         tags={str(k): str(v) for k, v in tags.items()},
         references=data.get("references", {}),
         response=data.get("response", {}),
+        maturity=_normalize_maturity(data.get("maturity")),
+        confirm=str(data.get("confirm") or "").strip(),
     )
 
 
@@ -120,10 +122,47 @@ def _read_bundled_rules() -> list[dict[str, Any]]:
     return []
 
 
-class ATREngine:
-    """Layer 1 (pattern-only) ATR evaluation engine."""
+MATURITIES = ("draft", "experimental", "test", "stable", "deprecated")
+LANES = ("enforce", "alert", "hunt")
 
-    def __init__(self) -> None:
+
+def _normalize_maturity(value: Any) -> str:
+    """Same mapping as the TypeScript engine: a missing or unknown maturity is experimental."""
+    text = str(value if value is not None else "").strip()
+    return text if text in MATURITIES else "experimental"
+
+
+def _lane_allows(rule: ATRRule, lane: str) -> bool:
+    """Lane gate, matching ``laneAllows`` in src/quality/rule-contract.ts.
+
+    ``enforce`` keeps maturity=stable rules, ``alert`` stable and test, and
+    ``hunt`` every rule. A rule marked ``confirm: embedding`` needs an
+    embedding check before it may fire in enforce or alert; pyatr has no
+    embedding layer, so such a rule fires in the hunt lane only.
+    """
+    if rule.maturity == "deprecated":
+        return False
+    if lane == "hunt":
+        return True
+    if rule.confirm == "embedding":
+        return False
+    if lane == "enforce":
+        return rule.maturity == "stable"
+    return rule.maturity in ("stable", "test")
+
+
+class ATREngine:
+    """Layer 1 (pattern-only) ATR evaluation engine.
+
+    ``lane`` selects which rules may fire, by maturity: ``"enforce"`` (stable
+    only, the lane to block on), ``"alert"`` (stable and test) or ``"hunt"``
+    (every rule, the default).
+    """
+
+    def __init__(self, lane: str = "hunt") -> None:
+        if lane not in LANES:
+            raise ValueError(f"lane must be one of {LANES}, got {lane!r}")
+        self.lane = lane
         self._rules: list[ATRRule] = []
         # Pre-compiled regex cache: rule_id -> list of (condition_index, compiled_re)
         self._compiled: dict[str, list[tuple[int, _SearchablePattern]]] = {}
@@ -244,6 +283,8 @@ class ATREngine:
             # Parity with the TS engine: deprecated/draft rules never fire.
             if rule.status in ("deprecated", "draft"):
                 continue
+            if not _lane_allows(rule, self.lane):
+                continue
             match = self._evaluate_rule(rule, event)
             if match is not None:
                 matches.append(match)
@@ -283,6 +324,7 @@ class ATREngine:
             matched_patterns=tuple(matched_patterns),
             description=rule.description,
             tags=rule.tags,
+            maturity=rule.maturity,
         )
 
     def _test_condition(

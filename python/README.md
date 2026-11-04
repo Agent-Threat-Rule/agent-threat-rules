@@ -33,6 +33,10 @@ for match in engine.evaluate(event):
     print(f"[{match.severity.upper()}] {match.rule_id} - {match.title}")
 ```
 
+`ATREngine(lane=...)` chooses which rules may fire, by maturity: `"enforce"`
+(stable rules only, the lane to block on), `"alert"` (stable and test) or
+`"hunt"` (every rule, the default). Each match carries the rule's `maturity`.
+
 ### CLI Commands
 
 #### Scan events

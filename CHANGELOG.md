@@ -4,6 +4,18 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **pyatr detection lanes.** `ATREngine(lane=...)` takes `"enforce"`
+  (maturity `stable` only), `"alert"` (`stable` and `test`) or `"hunt"` (every
+  rule, the default, so existing callers see no change), with the same mapping
+  as the TypeScript engine: a missing or unknown maturity counts as
+  `experimental`, a `deprecated` rule never fires, and a `confirm: embedding`
+  rule fires in the hunt lane only, since pyatr has no embedding check.
+  `ATRRule` and `ATRMatch` now carry `maturity`, so an integration can block
+  on the enforce lane and record the rest. Until now the Python engine had no
+  way to tell the two apart.
+
 ### Fixed
 
 - **SARIF skip warnings no longer expose absolute scanner paths** (#766).
