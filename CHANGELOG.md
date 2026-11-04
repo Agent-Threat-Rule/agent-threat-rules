@@ -6,6 +6,21 @@ All notable changes to ATR will be documented in this file.
 
 ### Added
 
+- **`atr convert numbat` exports rules for [numbat](https://github.com/perplexityai/numbat).**
+  Each rule becomes a numbat operator rule (`atr.atr-yyyy-nnnnn`,
+  monitor-only) and a companion `_tests.yaml` built from the rule's own true
+  positives and negatives, so `numbat rules check` runs ATR's tests through
+  numbat's RE2 matcher. `user_input`, `agent_output`, `tool_args`,
+  `tool_response` and `tool_name` map onto numbat's prompt, assistant, tool
+  input and tool result fields, with `user_input` and `agent_output` also read
+  on tool results as the engine does; `content` maps onto whichever of those
+  the event carries. The default `--lane enforce` exports stable rules only.
+  Conditions RE2 cannot express (lookaround, backreferences, unpaired
+  surrogate escapes and the like) are dropped, an `all` rule that would lose
+  one is skipped, and the export lists every true positive a rule no longer
+  catches. numbat matches raw text, without the engine's Unicode
+  normalization. The RE2 check is in `src/re2.ts`, tested against the CI
+  audit's `scanPattern` on every rule.
 - **`pyatr.moderation`, an OpenAI-compatible moderation endpoint.**
   `moderation_result(input)` returns the `/v1/moderations` response shape,
   and `python -m pyatr.moderation` runs a standard-library reference server
