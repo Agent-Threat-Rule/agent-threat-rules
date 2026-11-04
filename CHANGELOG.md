@@ -41,6 +41,16 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **A rule passed to the engine now overrides the bundled rule with its id.**
+  `new ATREngine({ rules })` with `loadRules()` also loads the rules directory
+  (the bundled tree by default). A passed rule and a directory rule with the
+  same id were both kept, and because compiled patterns are keyed by id, the
+  directory copy's regex ran under the passed rule's name, twice. So
+  `atr test` on an edited copy of an existing rule, run from an installed
+  `atr`, tested the published version, and an integration that passed a
+  tightened rule still matched with the old one. The directory's copy is now
+  skipped; duplicates inside the directory are unchanged.
+
 - **A "New Rule Proposal" issue now becomes a readable draft proposal.**
   `scripts/issue-to-proposal.ts` indented the example payload at the same
   depth as its `example_payload:` key, so every proposal file it wrote was
