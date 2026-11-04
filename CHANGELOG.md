@@ -6,6 +6,10 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **SARIF skip warnings no longer expose absolute scanner paths** (#766).
+  Filesystem errors retain their diagnostic details but refer to the relative
+  artifact URI instead of repeating the CI runner's working path.
+
 - **ATR-2026-00440, -00121, -00277 and -00225 stop matching ordinary code
   and documentation.** A replay over the skills.sh all-time top 375 skills
   found each of them firing on benign files. Each change is confined to one
