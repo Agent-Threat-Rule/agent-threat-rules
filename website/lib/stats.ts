@@ -375,7 +375,16 @@ function ecosystemFromAdopters(): EcosystemIntegration[] {
     }));
 }
 
+// Cached per build worker for the same reason as loadAllRules (lib/rules.ts).
+let siteStatsCache: SiteStats | null = null;
+
 export function loadSiteStats(): SiteStats {
+  if (siteStatsCache && process.env.NODE_ENV === "production") return siteStatsCache;
+  siteStatsCache = computeSiteStats();
+  return siteStatsCache;
+}
+
+function computeSiteStats(): SiteStats {
   const clawhub = readJson<ClawHubStats>(
     join(DATA_DIR, "clawhub-scan", "ecosystem-stats.json"),
   );

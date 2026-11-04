@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node scripts/fetch-npm-version.mjs",
+    "predev": "node scripts/fetch-npm-version.mjs && node scripts/fetch-contributors.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/fetch-npm-version.mjs",
+    "prebuild": "node scripts/fetch-npm-version.mjs && node scripts/fetch-contributors.mjs",
     "build": "next build && next-sitemap",
-    "deploy": "node scripts/fetch-npm-version.mjs && next build && next-sitemap && wrangler pages deploy out --project-name=agentthreatrule --commit-dirty=true",
+    "deploy": "node scripts/fetch-npm-version.mjs && node scripts/fetch-contributors.mjs && next build && next-sitemap && wrangler pages deploy out --project-name=agentthreatrule --commit-dirty=true",
     "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "eslint",
@@ -16,6 +16,7 @@
   "dependencies": {
     "@giscus/react": "^3.1.0",
     "fuse.js": "^7.3.0",
+    "geist": "^1.3.1",
     "js-yaml": "^4.1.1",
     "motion": "^12.38.0",
     "next": "^16.2.4",

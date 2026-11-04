@@ -121,10 +121,20 @@ function loadRulesRecursive(dir: string, rootDir: string): RuleSummary[] {
   return results;
 }
 
+// Every page (and the layout, footer and metadata of every page) asks for the
+// rule set; parsing 844 YAML files each time ran static generation past the
+// 60 s page timeout. The parsed set is cached per build worker and frozen, so
+// a caller that tried to sort or splice it in place would throw instead of
+// corrupting every later page. Development reloads it each time so YAML edits
+// show up without a restart.
+let allRulesCache: RuleSummary[] | null = null;
+
 export function loadAllRules(): RuleSummary[] {
+  if (allRulesCache && process.env.NODE_ENV === "production") return allRulesCache;
   const rulesDir = join(process.cwd(), "..", "rules");
   const rules = loadRulesRecursive(rulesDir, join(process.cwd(), ".."));
-  return rules.sort((a, b) => a.id.localeCompare(b.id));
+  allRulesCache = Object.freeze(rules.sort((a, b) => a.id.localeCompare(b.id))) as RuleSummary[];
+  return allRulesCache;
 }
 
 export function findRuleById(rules: RuleSummary[], id: string): RuleSummary | undefined {

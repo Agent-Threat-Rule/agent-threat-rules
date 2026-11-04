@@ -1,27 +1,17 @@
 import type { Metadata } from "next";
-import { Inter, Inter_Tight, JetBrains_Mono, Source_Serif_4, Noto_Serif_TC } from "next/font/google";
+import { Source_Serif_4, Noto_Serif_TC } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import { loadSiteStats } from "@/lib/stats";
 import { BASE_OPEN_GRAPH, SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 const stats = loadSiteStats();
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const interTight = Inter_Tight({
-  variable: "--font-inter-tight",
-  subsets: ["latin"],
-  weight: ["400", "600", "800", "900"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-});
+// Geist for interface and headings, Geist Mono for identifiers and metadata,
+// loaded from the geist package (local files, OFL) rather than Google Fonts:
+// Turbopack fails to resolve the multi-subset Google CSS for Geist Mono, and
+// local files keep the build independent of a font CDN.
 
 // Serif for spec body — gives W3C / IETF document feel.
 // Applied via `font-spec` utility on .spec-document wrappers.
@@ -132,7 +122,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${interTight.variable} ${jetbrainsMono.variable} ${sourceSerif.variable} ${notoSerifTC.variable} h-full`}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${sourceSerif.variable} ${notoSerifTC.variable} h-full`}
     >
       <body className="min-h-full flex flex-col antialiased">
         <script

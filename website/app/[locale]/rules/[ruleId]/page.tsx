@@ -1,7 +1,8 @@
-import { loadAllRules, findRuleById, getRelatedRules, loadRuleDetail, categoryDisplayName } from "@/lib/rules";
+import { loadAllRules, findRuleById, getRelatedRules, loadRuleDetail, categoryDisplayName, type RuleSummary } from "@/lib/rules";
 import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import { SheetRow } from "@/components/Sheet";
 import { normalizeMaturity, rulesLanes } from "@/lib/lanes";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -13,6 +14,50 @@ const SEVERITY_COLORS: Record<string, string> = {
   low: "bg-green/10 text-green",
   informational: "bg-blue/10 text-blue",
 };
+
+/** First sentence of a rule description, for the lead line under the title. */
+function leadSentence(text: string): string {
+  // Descriptions are YAML block scalars with hard line breaks; flatten first.
+  const flat = text.replace(/\s+/g, " ").trim();
+  const m = /^(.{40,}?[.。])(\s|$)/.exec(flat);
+  return m ? m[1] : flat;
+}
+
+interface Crosswalk {
+  name: string;
+  help: string;
+  items: { text: string; href?: string }[];
+}
+
+function buildCrosswalks(rule: RuleSummary, zh: boolean): Crosswalk[] {
+  const atlasId = (ref: string) => /AML\.T\d{4}(?:\.\d{3})?/.exec(ref)?.[0];
+  const all: Crosswalk[] = [
+    {
+      name: "MITRE ATLAS",
+      help: zh ? "MITRE 的 AI 攻擊技術知識庫；這裡列 technique 層級的 ID" : "MITRE's knowledge base of attacks on AI systems; technique-level IDs",
+      items: rule.mitreAtlas.map((ref) => {
+        const id = atlasId(ref);
+        return { text: ref, href: id ? `https://atlas.mitre.org/techniques/${id}` : undefined };
+      }),
+    },
+    {
+      name: "OWASP Agentic Top 10",
+      help: zh ? "OWASP 針對 AI 代理應用的十大風險" : "OWASP's top ten risks for agentic AI applications",
+      items: rule.owaspAgentic.map((text) => ({ text })),
+    },
+    {
+      name: "OWASP LLM Top 10",
+      help: zh ? "OWASP 針對大型語言模型應用的十大風險" : "OWASP's top ten risks for LLM applications",
+      items: rule.owaspLlm.map((text) => ({ text })),
+    },
+    {
+      name: "CVE",
+      help: zh ? "這條規則偵測的已公開漏洞，連到 NVD" : "Published vulnerabilities this rule detects, linked to NVD",
+      items: rule.cves.map((cve) => ({ text: cve, href: `https://nvd.nist.gov/vuln/detail/${cve}` })),
+    },
+  ];
+  return all.filter((c) => c.items.length > 0);
+}
 
 export function generateStaticParams() {
   const rules = loadAllRules();
@@ -74,6 +119,10 @@ export default async function RuleDetailPage({
   const categoryDisplay = categoryDisplayName(rule.category, locale);
   const severityClass = SEVERITY_COLORS[rule.severity] ?? "bg-ash text-stone";
   const lanes = rulesLanes(rule);
+  const keywords = [rule.subcategory, rule.detectionTier, rule.confidence && `confidence: ${rule.confidence}`]
+    .filter((k): k is string => typeof k === "string" && k.trim() !== "")
+    .map((k) => k.replace(/[-_]/g, " "));
+  const crosswalks = buildCrosswalks(rule, zh);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -98,7 +147,9 @@ export default async function RuleDetailPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/<\/script>/gi, "<\\/script>") }}
       />
 
-      <div className="pt-20 pb-16 px-5 md:px-6 max-w-[860px] mx-auto">
+      <div className="sheet">
+      <SheetRow>
+      <div className="pt-16 pb-24 px-8 md:px-12 max-w-[900px] mx-auto">
         {/* Breadcrumb */}
         <nav className="font-data text-xs text-stone mb-6 flex items-center gap-2">
           <Link href={prefix} className="hover:text-ink transition-colors">ATR</Link>
@@ -110,150 +161,98 @@ export default async function RuleDetailPage({
           <span className="text-ink">{rule.id}</span>
         </nav>
 
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3 flex-wrap">
-            <span className="font-data text-xs text-mist">{rule.id}</span>
-            <span className={`font-data text-xs px-2 py-0.5 rounded-sm uppercase ${severityClass}`}>
-              {rule.severity}
-            </span>
-            <span className="font-data text-xs text-stone bg-ash px-2 py-0.5 rounded-sm">
-              {categoryDisplay}
-            </span>
-            {rule.status && (
-              <span className="font-data text-xs text-mist bg-ash px-2 py-0.5 rounded-sm">
-                {rule.status}
-              </span>
-            )}
+        {/* Header — one template for every rule: identity, one-sentence
+            statement, keywords, attribute row, crosswalk grid. */}
+        <div className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-4">
+          {categoryDisplay} <span className="text-mist">· {rule.id}</span>
+        </div>
+        <h1 className="text-[30px] md:text-[36px] leading-[1.15] tracking-[-0.02em] font-medium text-ink text-balance">
+          {rule.title}
+        </h1>
+        <p className="mt-4 text-[17px] leading-[1.6] text-graphite text-pretty">{leadSentence(rule.description)}</p>
+
+        {keywords.length > 0 && (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {keywords.map((k) => (
+              <span key={k} className="font-data text-[11px] text-graphite bg-ash border border-fog px-2 py-0.5 rounded-[2px]">{k}</span>
+            ))}
           </div>
-          <h1 className="font-display text-[clamp(22px,3.5vw,36px)] font-extrabold tracking-[-1px] leading-[1.3] text-ink">
-            {rule.title}
-          </h1>
-        </div>
+        )}
 
-        {/* Description */}
-        <div className="mb-8">
-          <p className="text-sm md:text-base text-graphite leading-[1.8]">
-            {rule.description}
-          </p>
-        </div>
-
-        {/* Metadata grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-fog mb-8">
-          <div className="bg-paper p-4">
-            <div className="font-data text-xs text-stone mb-1">{zh ? "嚴重度" : "Severity"}</div>
-            <div className={`font-data text-sm font-semibold uppercase ${rule.severity === "critical" ? "text-critical" : rule.severity === "high" ? "text-high" : "text-medium"}`}>
-              {rule.severity}
+        <dl className="mt-8 grid grid-cols-2 md:grid-cols-5 border-t border-b border-fog">
+          {[
+            { label: zh ? "嚴重度" : "Severity", value: rule.severity, tone: rule.severity === "critical" ? "text-critical" : rule.severity === "high" ? "text-high" : "text-ink" },
+            { label: "Maturity", value: normalizeMaturity(rule.maturity), tone: "text-ink" },
+            { label: zh ? "載入的 lane" : "Lanes", value: lanes.length > 0 ? lanes.join(" · ") : zh ? "無（inert）" : "none (inert)", tone: lanes.length > 0 ? "text-ink" : "text-high" },
+            { label: zh ? "掃描目標" : "Scan target", value: rule.scanTarget ?? "—", tone: "text-ink" },
+            { label: "Status", value: rule.status ?? "—", tone: "text-ink" },
+          ].map((cell) => (
+            <div key={cell.label} className="py-4 pr-4 md:border-r border-fog last:border-r-0 [&:not(:first-child)]:md:pl-4">
+              <dt className="font-data text-[10px] uppercase tracking-[0.08em] text-mist">{cell.label}</dt>
+              <dd className={`mt-1.5 text-[14px] ${cell.tone}`}>{cell.value}</dd>
             </div>
-          </div>
-          <div className="bg-paper p-4">
-            <div className="font-data text-xs text-stone mb-1">{zh ? "類別" : "Category"}</div>
-            <div className="font-data text-sm text-ink">{categoryDisplay}</div>
-          </div>
-          <div className="bg-paper p-4">
-            <div className="font-data text-xs text-stone mb-1">{zh ? "掃描目標" : "Scan Target"}</div>
-            <div className="font-data text-sm text-ink">{rule.scanTarget ?? "mcp"}</div>
-          </div>
-          <div className="bg-paper p-4">
-            <div className="font-data text-xs text-stone mb-1">{zh ? "作者" : "Author"}</div>
-            <div className="font-data text-sm text-ink">{rule.author}</div>
-          </div>
-          <div className="bg-paper p-4">
-            <div className="font-data text-xs text-stone mb-1">Maturity</div>
-            <div className="font-data text-sm text-ink">{normalizeMaturity(rule.maturity)}</div>
-          </div>
-          <div className="bg-paper p-4">
-            <div className="font-data text-xs text-stone mb-1">{zh ? "載入此規則的 lane" : "Lanes that load it"}</div>
-            <div className="font-data text-sm text-ink">
-              {lanes.length > 0 ? lanes.join(" · ") : zh ? "無(inert)" : "none (inert)"}
-            </div>
-          </div>
-        </div>
+          ))}
+        </dl>
 
-        {/* Response actions */}
-        {rule.responseActions && rule.responseActions.length > 0 && (
-          <div className="mb-8">
-            <h2 className="font-display text-sm font-semibold text-ink mb-3">
-              {zh ? "建議回應" : "Response Actions"}
+        {crosswalks.length > 0 && (
+          <section className="mt-10" aria-labelledby="crosswalks-heading">
+            <h2 id="crosswalks-heading" className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-4">
+              {zh ? "框架對照" : "Crosswalks"}
             </h2>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+              {crosswalks.map((cw) => (
+                <div key={cw.name}>
+                  <div className="text-[13px] text-ink mb-2 flex items-center gap-1.5">
+                    {cw.name}
+                    <span title={cw.help} className="font-data text-[10px] text-mist border border-fog rounded-full w-4 h-4 inline-flex items-center justify-center cursor-help" aria-label={cw.help}>?</span>
+                  </div>
+                  <ul className="flex flex-col gap-1">
+                    {cw.items.map((item) => (
+                      <li key={item.text} className="text-[13px] leading-snug">
+                        {item.href ? (
+                          <a href={item.href} target="_blank" rel="noopener noreferrer" className="text-blue hover:underline underline-offset-4">{item.text}</a>
+                        ) : (
+                          <span className="text-graphite">{item.text}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="mt-10 pt-8 border-t border-fog">
+          <h2 className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-3">{zh ? "說明" : "Description"}</h2>
+          <p className="text-[15px] text-graphite leading-[1.8]">{rule.description}</p>
+          {rule.responseActions && rule.responseActions.length > 0 && (
+            <div className="mt-6 flex flex-wrap items-center gap-2">
+              <span className="font-data text-[10px] uppercase tracking-[0.08em] text-mist mr-1">{zh ? "建議回應" : "Suggested response"}</span>
               {rule.responseActions.map((action) => (
-                <span key={action} className="font-data text-xs bg-ash text-ink px-3 py-1.5 rounded-sm">
+                <span key={action} className="font-data text-[11px] text-ink border border-fog px-2 py-0.5 rounded-[2px]">
                   {action.replace(/_/g, " ")}
                 </span>
               ))}
             </div>
+          )}
+          <div className="mt-6 font-data text-[11px] text-stone">
+            {zh ? "作者" : "Author"}: {rule.author}
+            {rule.date && <> · {zh ? "建立" : "Created"} {rule.date.replace(/\//g, "-")}</>}
+            {detail?.lastModified && <> · {zh ? "最後修改" : "Last modified"} {detail.lastModified}</>}
           </div>
-        )}
+        </section>
 
-        {/* References */}
-        {(rule.cves.length > 0 || rule.owaspAgentic.length > 0 || rule.owaspLlm.length > 0 || rule.mitreAtlas.length > 0) && (
-          <div className="mb-8">
-            <h2 className="font-display text-sm font-semibold text-ink mb-3">
-              {zh ? "參考資料" : "References"}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-fog">
-              {rule.cves.length > 0 && (
-                <div className="bg-paper p-4">
-                  <div className="font-data text-xs text-stone mb-2">CVE</div>
-                  <div className="flex flex-wrap gap-2">
-                    {rule.cves.map((cve) => (
-                      <a
-                        key={cve}
-                        href={`https://nvd.nist.gov/vuln/detail/${cve}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-data text-xs text-blue hover:underline"
-                      >
-                        {cve}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {rule.owaspAgentic.length > 0 && (
-                <div className="bg-paper p-4">
-                  <div className="font-data text-xs text-stone mb-2">OWASP Agentic</div>
-                  <div className="flex flex-col gap-1">
-                    {rule.owaspAgentic.map((ref) => (
-                      <span key={ref} className="font-data text-xs text-ink">{ref}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {rule.owaspLlm.length > 0 && (
-                <div className="bg-paper p-4">
-                  <div className="font-data text-xs text-stone mb-2">OWASP LLM</div>
-                  <div className="flex flex-col gap-1">
-                    {rule.owaspLlm.map((ref) => (
-                      <span key={ref} className="font-data text-xs text-ink">{ref}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {rule.mitreAtlas.length > 0 && (
-                <div className="bg-paper p-4">
-                  <div className="font-data text-xs text-stone mb-2">MITRE ATLAS</div>
-                  <div className="flex flex-col gap-1">
-                    {rule.mitreAtlas.map((ref) => (
-                      <span key={ref} className="font-data text-xs text-ink">{ref}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
+        <div className="mb-8" />
         {/* Validation stats — wild scan results */}
         {detail?.wildSamples !== undefined && (
           <div className="mb-8">
             <h2 className="font-display text-sm font-semibold text-ink mb-3">
               {zh ? "實地驗證" : "Wild Validation"}
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-fog">
+            <div className="flex flex-wrap gap-px bg-fog border border-fog">
               {detail.wildValidated && (
-                <div className="bg-paper p-4">
+                <div className="bg-paper p-4 flex-1 min-w-[160px]">
                   <div className="font-data text-xs text-stone mb-1">
                     {zh ? "驗證日期" : "Validated"}
                   </div>
@@ -262,7 +261,7 @@ export default async function RuleDetailPage({
                   </div>
                 </div>
               )}
-              <div className="bg-paper p-4">
+              <div className="bg-paper p-4 flex-1 min-w-[160px]">
                 <div className="font-data text-xs text-stone mb-1">
                   {zh ? "樣本數" : "Samples"}
                 </div>
@@ -271,7 +270,7 @@ export default async function RuleDetailPage({
                 </div>
               </div>
               {detail.wildFpRate !== undefined && (
-                <div className="bg-paper p-4">
+                <div className="bg-paper p-4 flex-1 min-w-[160px]">
                   <div className="font-data text-xs text-stone mb-1">
                     {zh ? "誤報率（實地語料）" : "False Positive Rate (in-the-wild)"}
                   </div>
@@ -495,6 +494,8 @@ export default async function RuleDetailPage({
             </div>
           </div>
         )}
+      </div>
+      </SheetRow>
       </div>
     </>
   );

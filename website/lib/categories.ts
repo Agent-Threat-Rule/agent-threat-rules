@@ -12,6 +12,9 @@ const CATEGORY_DISPLAY_NAMES: Record<string, { en: string; zh: string }> = {
   "privilege-escalation": { en: "Privilege Escalation", zh: "權限提升" },
   "excessive-autonomy": { en: "Excessive Autonomy", zh: "過度自主" },
   "model-level-attacks": { en: "Model-Level Attacks", zh: "模型層級攻擊" },
+  "data-poisoning": { en: "Data Poisoning", zh: "資料投毒" },
+  "model-abuse": { en: "Model Abuse", zh: "模型濫用" },
+  "model-security": { en: "Model Security", zh: "模型安全" },
 };
 
 export function categoryDisplayName(category: string, locale: string = "en"): string {

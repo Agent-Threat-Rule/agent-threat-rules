@@ -1,0 +1,102 @@
+import { CATEGORY_DESC } from "./category-desc";
+import { categoryDisplayName } from "./categories";
+
+/**
+ * Documentation sidebar: the standard as one navigable document, in the same
+ * order a reader meets it. Paths are below the locale prefix; some point at
+ * pages that live outside /docs and are linked, not duplicated.
+ */
+
+export type Bilingual = { en: string; zh: string };
+
+export interface DocsLink {
+  path: string;
+  label: Bilingual;
+}
+
+export interface DocsSection {
+  key: string;
+  numeral: string;
+  label: Bilingual;
+  links: ReadonlyArray<DocsLink>;
+}
+
+export const CATEGORY_ORDER: ReadonlyArray<string> = Object.keys(CATEGORY_DESC);
+
+/** Letter used for a category on the docs pages and the home figure: A, B, C... in CATEGORY_ORDER. */
+export function categoryLetter(category: string): string {
+  const i = CATEGORY_ORDER.indexOf(category);
+  return i >= 0 ? String.fromCharCode(65 + i) : "?";
+}
+
+export const DOCS_SECTIONS: ReadonlyArray<DocsSection> = [
+  {
+    key: "standard",
+    numeral: "I",
+    label: { en: "Standard", zh: "標準" },
+    links: [
+      { path: "/docs", label: { en: "Overview", zh: "總覽" } },
+      { path: "/spec", label: { en: "Specification", zh: "規格" } },
+      { path: "/quality-standard", label: { en: "Maturity and lanes", zh: "成熟度與 lane" } },
+      { path: "/changelog", label: { en: "Changelog", zh: "版本歷程" } },
+      { path: "/errata", label: { en: "Errata", zh: "勘誤" } },
+      { path: "/glossary", label: { en: "Glossary", zh: "詞彙表" } },
+    ],
+  },
+  {
+    key: "categories",
+    numeral: "II",
+    label: { en: "Threat categories", zh: "威脅類別" },
+    links: CATEGORY_ORDER.map((c) => ({
+      path: `/docs/categories/${c}`,
+      label: { en: `${categoryLetter(c)}. ${categoryDisplayName(c, "en")}`, zh: `${categoryLetter(c)}. ${categoryDisplayName(c, "zh")}` },
+    })),
+  },
+  {
+    key: "crosswalks",
+    numeral: "III",
+    label: { en: "Crosswalks", zh: "框架對照" },
+    links: [
+      { path: "/coverage", label: { en: "Coverage overview", zh: "覆蓋總覽" } },
+      { path: "/compliance", label: { en: "Compliance mappings", zh: "合規對應" } },
+      { path: "/compliance/nist-ai-rmf", label: { en: "NIST AI RMF", zh: "NIST AI RMF" } },
+    ],
+  },
+  {
+    key: "implement",
+    numeral: "IV",
+    label: { en: "Implement", zh: "實作" },
+    links: [
+      { path: "/integrate", label: { en: "Integrate", zh: "整合" } },
+      { path: "/docs/integrations", label: { en: "Integrations matrix", zh: "整合對照表" } },
+      { path: "/conformance", label: { en: "Conformance", zh: "符規" } },
+      { path: "/implementers", label: { en: "Implementer report", zh: "實作者報告" } },
+    ],
+  },
+  {
+    key: "taxonomies",
+    numeral: "V",
+    label: { en: "Taxonomies", zh: "分類法" },
+    links: [
+      { path: "/atd", label: { en: "ATD techniques", zh: "ATD 技法" } },
+      { path: "/threats", label: { en: "Threat feed", zh: "威脅情資" } },
+    ],
+  },
+  {
+    key: "governance",
+    numeral: "VI",
+    label: { en: "Community and governance", zh: "社群與治理" },
+    links: [
+      { path: "/community", label: { en: "Community", zh: "社群" } },
+      { path: "/governance", label: { en: "Governance", zh: "治理" } },
+      { path: "/charter", label: { en: "Charter", zh: "章程" } },
+      { path: "/contribute", label: { en: "Contribute", zh: "參與貢獻" } },
+      { path: "/citations", label: { en: "Citation", zh: "引用" } },
+      { path: "/responsible-use", label: { en: "Responsible use", zh: "負責任使用" } },
+    ],
+  },
+];
+
+export function pick(text: Bilingual, locale: string): string {
+  return locale === "zh" ? text.zh : text.en;
+}

@@ -3,7 +3,8 @@ import { locales } from "@/lib/i18n";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { HtmlLang } from "@/components/HtmlLang";
-import { ScrollProgress } from "@/components/ScrollProgress";
+import { getSpecMeta } from "@/lib/spec-meta";
+import { loadVersionLabels } from "@/lib/versions";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -18,6 +19,13 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
   const lang = (locales.includes(locale as Locale) ? locale : "en") as Locale;
+  const versions = await loadVersionLabels();
+  const meta = {
+    specVersion: getSpecMeta().specVersion,
+    npmLabel: versions.npmVerified ? "npm" : "package.json",
+    npmVersion: versions.npm,
+    updated: versions.generatedAt,
+  };
 
   return (
     <>
@@ -28,8 +36,7 @@ export default async function LocaleLayout({
         Skip to content
       </a>
       <HtmlLang locale={lang} />
-      <ScrollProgress />
-      <Nav locale={lang} />
+      <Nav locale={lang} meta={meta} />
       <main id="main-content" className="flex-1">{children}</main>
       <Footer locale={lang} />
     </>
