@@ -58,17 +58,37 @@ if (!BODY_FILE || !existsSync(BODY_FILE)) {
   process.exit(1);
 }
 
-const issueBody = readFileSync(BODY_FILE, "utf8");
+const issueBody = readFileSync(BODY_FILE, "utf8").replace(/\r\n/g, "\n");
 
-// Parse GitHub issue form body: each section is "### Field Name\n\nvalue"
+// The headings of .github/ISSUE_TEMPLATE/new-rule.yml, in form order. A rendered
+// issue form is "### <label>\n\n<value>" per field.
+const FORM_HEADINGS = [
+  "Attack Type",
+  "Description",
+  "OWASP/MITRE/CVE References",
+  "Example Attack Payload",
+  "Potential False Positives",
+] as const;
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// A section ends only at the NEXT FORM HEADING, not at any "###": an attack
+// payload is free text and can itself contain markdown headings.
+const NEXT_HEADING = FORM_HEADINGS.map(escapeRegExp).join("|");
+
 function parseSection(body: string, heading: string): string {
   const re = new RegExp(
-    `###\\s*${heading}\\s*\\n+([\\s\\S]*?)(?=\\n###|$)`,
-    "i"
+    // (?![\s\S]) is end of input: with the "m" flag, $ would end at every line.
+    `^###[ \\t]*${escapeRegExp(heading)}[ \\t]*\\n+([\\s\\S]*?)(?=\\n###[ \\t]*(?:${NEXT_HEADING})[ \\t]*\\n|(?![\\s\\S]))`,
+    "im"
   );
   const m = body.match(re);
   if (!m) return "";
-  return m[1].trim();
+  const value = m[1].trim();
+  // GitHub renders an optional field left empty as "_No response_".
+  return value === "_No response_" ? "" : value;
 }
 
 const attackType = parseSection(issueBody, "Attack Type");
@@ -83,6 +103,9 @@ if (!description) missing.push("Description");
 if (!payload) missing.push("Example Attack Payload");
 if (missing.length) {
   console.error(`error: missing required fields: ${missing.join(", ")}`);
+  // Machine-readable marker the workflow reads to tell the reporter exactly
+  // which fields to fill in. Only fixed field names, never issue text.
+  console.log(`::missing-fields::${missing.join(", ")}`);
   process.exit(2);
 }
 
@@ -168,7 +191,10 @@ const externalBlock = `\n  external:\n    - "https://github.com/Agent-Threat-Rul
 
 const refsSection = `references:${cveBlock}${owaspBlock}${atlasBlock}${attackBlock}${externalBlock}`;
 
-const payloadIndented = indent(payload, 2);
+// example_payload is a key at depth 2 (under _triage), so its block scalar
+// must sit deeper than the key. At 2 spaces the file is not valid YAML, and
+// nothing downstream (the safety gate included) can read the proposal.
+const payloadIndented = indent(payload, 4);
 
 const yaml = `# ATR rule proposal -- generated from GitHub Issue #${issueNum}
 # Submitted by: @${AUTHOR}
