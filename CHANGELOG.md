@@ -6,6 +6,30 @@ All notable changes to ATR will be documented in this file.
 
 ### Added
 
+- **Holdout v1 and per-rule enforce-lane evidence.** `data/holdout/v1/` is a
+  corpus of 6,247 attacks and 17,657 benign samples from twelve public
+  datasets that no rule was written from and no merge gate reads, screened
+  against every text the repository held (rule test cases, gate corpora,
+  attack corpora, proposals). The screen found that 647 of the 666 jailbreak
+  prompts in one public dataset were already in this repository. Its data card
+  (`data/holdout/v1/DATACARD.md`) lists sources, licences, labelling and known
+  gaps. `scripts/measure-holdout-evidence.ts` measures every stable and test
+  rule on it: held-out true and false positives with 95% Clopper-Pearson
+  intervals, declared evasion tests, retention under attacker transforms,
+  per-rule latency and ReDoS-baseline status, and a verdict against an
+  explicit evidence bar (`scripts/lib/holdout-evidence.ts`). It never edits a
+  rule. Rules are chosen on one hash-defined half of the corpus and the
+  resulting lane is reported on the other half. Measured on main at 4.2.4: the
+  current enforce lane (103 stable rules) detects 35 of 6,247 held-out attacks
+  (0.56%, 95% CI 0.39–0.78%) with 4 of 17,657 benign samples flagged (0.02%,
+  0.01–0.06%); 101 of the 103 stable rules catch fewer than 3 held-out
+  attacks, carry a known backtracking condition, or depend on an embedding
+  confirmation the enforce lane withholds. Every rule, on every probe, loses
+  its detections when the payload follows 150,000 characters of benign text.
+  `tests/holdout-isolation.test.ts` keeps the corpus out of sample;
+  `.github/workflows/holdout-evidence.yml` re-measures it, with the per-rule
+  bar advisory until the promote/demote list it produces has been acted on.
+
 - **`pyatr.moderation`, an OpenAI-compatible moderation endpoint.**
   `moderation_result(input)` returns the `/v1/moderations` response shape,
   and `python -m pyatr.moderation` runs a standard-library reference server
