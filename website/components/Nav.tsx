@@ -40,7 +40,7 @@ export function Nav({ locale, meta }: { locale: Locale; meta: HeaderMeta }) {
       {barOpen && (
         <div className="bg-brand-tint text-[13px] text-ink">
           <div className="max-w-[1120px] mx-auto px-6 h-9 flex items-center justify-center gap-3 relative">
-            <span>{zh ? "ATR 社群開放加入：專家與貢獻者" : "The ATR community is open: experts and contributors"}</span>
+            <span>{zh ? "ATR 社群開放加入，專家和貢獻者都歡迎" : "The ATR community is open to experts and contributors"}</span>
             <span className="w-px h-3.5 bg-ink/20" aria-hidden="true" />
             <Link href={`${prefix}/community/join`} className="hover:underline underline-offset-4">{zh ? "加入 →" : "Join →"}</Link>
             <button onClick={() => setBarOpen(false)} className="absolute right-6 text-stone hover:text-ink px-1" aria-label={zh ? "關閉公告" : "Dismiss announcement"}>×</button>
@@ -61,8 +61,8 @@ export function Nav({ locale, meta }: { locale: Locale; meta: HeaderMeta }) {
               </span>
             </div>
             <div className={cell}>
-              <span className="text-[11px] text-stone leading-tight">{zh ? "維護" : "Maintained by"}</span>
-              <span className="text-[13px] text-ink leading-tight mt-1 whitespace-nowrap">{zh ? "ATR 維護者（TSC 籌組中）" : "ATR maintainers (TSC forming)"}</span>
+              <span className="text-[11px] text-stone leading-tight">{zh ? "維護者" : "Maintained by"}</span>
+              <span className="text-[13px] text-ink leading-tight mt-1 whitespace-nowrap">{zh ? "ATR 維護者，TSC 籌組中" : "ATR maintainers, TSC forming"}</span>
             </div>
             <Link
               href={`/${otherLocale}${pathname.replace(/^\/(en|zh)/, "")}`}
@@ -116,7 +116,7 @@ export function Nav({ locale, meta }: { locale: Locale; meta: HeaderMeta }) {
               })}
             </ul>
             <Link href={`${prefix}/spec`} className="flex items-center px-4 border-l border-fog w-[200px] text-[14px] text-ink hover:bg-white transition-colors">
-              {zh ? "閱讀規格" : "Read the spec"}
+              {zh ? "讀規格" : "Read the spec"}
             </Link>
             <Link href={`${prefix}/community/join`} className="flex items-center px-4 border-l border-fog w-[200px] text-[14px] text-ink hover:bg-white transition-colors">
               {zh ? "加入社群" : "Join the community"}

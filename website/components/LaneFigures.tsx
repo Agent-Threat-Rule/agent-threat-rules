@@ -39,7 +39,7 @@ export function RecallCell({ m, label, zh }: { m: BenchmarkMeasurement; label: s
       <div className="font-data text-xs text-stone mt-1">
         {m.enforce
           ? `enforce ${pct(m.enforce.recall)}`
-          : zh ? "enforce 未記錄" : "enforce not recorded"}
+          : zh ? "沒有 enforce 數字" : "no enforce figure"}
       </div>
     </div>
   );

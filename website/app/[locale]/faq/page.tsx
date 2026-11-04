@@ -39,43 +39,43 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
     {
       q: zh ? "ATR 是什麼？" : "What is ATR?",
       a: zh
-        ? <>AI 代理威脅的開放偵測規則標準：一份<Link href={`${p}/spec`} className={a}>規格</Link>、一組版本化的 YAML 規則，以及讓任何引擎證明自己符合規格的測試套件。</>
+        ? <>AI 代理威脅的開放偵測規則標準。內容有一份<Link href={`${p}/spec`} className={a}>規格</Link>、一組有版本的 YAML 規則，還有一套測試，任何引擎都能拿來證明自己符合規格。</>
         : <>An open detection-rule standard for AI agent threats: a <Link href={`${p}/spec`} className={a}>specification</Link>, a versioned set of YAML rules, and a test suite any engine can use to show it conforms.</>,
     },
     {
       q: zh ? "要錢嗎？" : "Does it cost anything?",
       a: zh
-        ? <>不用。規則與規格以 MIT 授權，任何人都能使用、實作、修改。<Link href={`${p}/community/membership`} className={a}>機構會員</Link>是選擇性的，而且尚未開放；會員買不到任何規則的結果。</>
-        : <>No. The rules and the specification are MIT licensed: anyone may use, implement and modify them. <Link href={`${p}/community/membership`} className={a}>Organization membership</Link> is optional and not yet open, and it never buys the outcome of a rule.</>,
+        ? <>不用錢。規則和規格都是 MIT 授權，誰都能使用、實作、修改。<Link href={`${p}/community/membership`} className={a}>機構會員</Link>是選擇性的，而且還沒開放。會員也買不到任何規則的結果。</>
+        : <>No. The rules and the specification are MIT licensed, so anyone may use, implement and modify them. <Link href={`${p}/community/membership`} className={a}>Organization membership</Link> is optional and not yet open. It never buys the outcome of a rule.</>,
     },
     {
       q: zh ? "誰在維護？" : "Who maintains it?",
       a: zh
-        ? <>目前由維護者在過渡期管理，技術指導委員會（TSC）正在籌組。見<Link href={`${p}/governance`} className={a}>治理</Link>與<Link href={`${p}/charter`} className={a}>章程</Link>。</>
-        : <>Maintainers, during a transition while the Technical Steering Committee is being seated. See <Link href={`${p}/governance`} className={a}>governance</Link> and the <Link href={`${p}/charter`} className={a}>charter</Link>.</>,
+        ? <>現在是過渡期，由維護者管理。技術指導委員會（TSC）正在籌組。詳見<Link href={`${p}/governance`} className={a}>治理</Link>與<Link href={`${p}/charter`} className={a}>章程</Link>。</>
+        : <>The maintainers, for now. This is a transition period while the Technical Steering Committee is being seated. See <Link href={`${p}/governance`} className={a}>governance</Link> and the <Link href={`${p}/charter`} className={a}>charter</Link>.</>,
     },
     {
       q: zh ? "ATR 會認證產品或組織嗎？" : "Does ATR certify products or organizations?",
       a: zh
-        ? <>ATR 不稽核、不認證組織或它們的部署。引擎的符規是依公開<Link href={`${p}/conformance`} className={a}>測試套件</Link>自我宣告；ATR-Certified 標示依測試結果判定，與會員資格無關。稽核員可以用<Link href={`${p}/docs/auditor-kit`} className={a}>稽核員工具包</Link>自行驗證。</>
-        : <>ATR does not audit or certify organizations or their deployments. Engine conformance is self-declared against the public <Link href={`${p}/conformance`} className={a}>test suite</Link>; the ATR-Certified designation follows those results and never membership. Auditors can verify a deployment with the <Link href={`${p}/docs/auditor-kit`} className={a}>auditor kit</Link>.</>,
+        ? <>不會。ATR 不稽核，也不認證組織或它們的部署。引擎符不符合規格，是對照公開的<Link href={`${p}/conformance`} className={a}>測試套件</Link>自我宣告。ATR-Certified 標示只看測試結果，與會員資格無關。稽核員可以用<Link href={`${p}/docs/auditor-kit`} className={a}>稽核員工具包</Link>自己驗證。</>
+        : <>No. ATR does not audit or certify organizations or their deployments. Engines self-declare conformance against the public <Link href={`${p}/conformance`} className={a}>test suite</Link>. The ATR-Certified designation follows those results, never membership. Auditors can verify a deployment themselves with the <Link href={`${p}/docs/auditor-kit`} className={a}>auditor kit</Link>.</>,
     },
     {
       q: zh ? "lane 是什麼？" : "What is a lane?",
       a: zh
-        ? <>lane 決定哪些成熟度的規則會觸發。enforce 只跑 maturity stable（可以開阻擋）；alert 跑 stable 與 test；hunt 跑全部生效規則，是預設。阻擋預設關閉。</>
-        : <>A lane decides which rule maturities may fire. Enforce runs maturity stable only (the lane to run with blocking on); alert runs stable and test; hunt runs every effective rule and is the default. Blocking is off by default.</>,
+        ? <>lane 決定哪些成熟度的規則可以觸發。enforce 只跑 maturity 為 stable 的規則，要開阻擋就用這條。alert 跑 stable 和 test。hunt 跑全部生效的規則，也是預設。阻擋預設是關的。</>
+        : <>A lane decides which rule maturities may fire. Enforce runs maturity stable only, and it is the lane to run with blocking on. Alert runs stable and test. Hunt runs every effective rule and is the default. Blocking is off by default.</>,
     },
     {
       q: zh ? "為什麼有三個規則數？" : "Why are there three rule counts?",
       a: zh
-        ? <>main 上有 {stats.ruleFileCount} 個規則檔，其中 {stats.ruleCount} 條生效（至少一個 lane 會載入），{stats.ruleInertCount} 條 inert（status 為 draft 或 deprecated，任何 lane 都不載入）。只引用一個數字會多報或少報，所以全站都標口徑。</>
-        : <>There are {stats.ruleFileCount} rule files on main: {stats.ruleCount} are effective (loaded by at least one lane) and {stats.ruleInertCount} are inert (status draft or deprecated; no lane loads them). Quoting one number alone overstates or understates, so every figure on this site says what it counts.</>,
+        ? <>main 上有 {stats.ruleFileCount} 個規則檔。其中 {stats.ruleCount} 條生效，也就是至少有一個 lane 會載入。{stats.ruleInertCount} 條是 inert，status 為 draft 或 deprecated，任何 lane 都不載入。只講一個數字，不是多報就是少報，所以全站每個數字都標明算的是什麼。</>
+        : <>There are {stats.ruleFileCount} rule files on main. {stats.ruleCount} are effective, meaning at least one lane loads them. {stats.ruleInertCount} are inert: their status is draft or deprecated, and no lane loads them. Any one number alone overstates or understates, so every figure on this site says what it counts.</>,
     },
     {
       q: zh ? "要引用哪個版本？" : "Which version should I cite?",
       a: zh
-        ? <>引用規格時用規格版本；引用軟體時用 npm 版本。兩者分開標示，格式見<Link href={`${p}/citations`} className={a}>引用</Link>。</>
+        ? <>引用規格就用規格版本，引用軟體就用 npm 版本。兩個版本分開標示，格式見<Link href={`${p}/citations`} className={a}>引用</Link>頁面。</>
         : <>Cite the specification version for the specification, and the npm version for the software. They are labelled apart; formats are on the <Link href={`${p}/citations`} className={a}>citation page</Link>.</>,
     },
     {
@@ -87,8 +87,8 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
     {
       q: zh ? "ATR 會把我的資料送出去嗎？" : "Does ATR send my data anywhere?",
       a: zh
-        ? <>參考引擎在你的程序內評估規則。回報到外部服務預設關閉，而且沒有內建端點；要開啟，必須明確設定，並自行指定接收方。</>
-        : <>The reference engine evaluates rules in your process. Reporting to an outside service is off by default and has no built-in endpoint; turning it on needs an explicit flag and a receiver you choose.</>,
+        ? <>參考引擎在你自己的程序裡評估規則。回報到外部服務預設是關的，也沒有內建的接收端點。要打開，必須明確設定，並且自己指定接收方。</>
+        : <>The reference engine evaluates rules inside your own process. Reporting to an outside service is off by default and has no built-in endpoint. Turning it on takes an explicit flag and a receiver you choose.</>,
     },
     {
       q: zh ? "發現安全漏洞怎麼回報？" : "How do I report a security vulnerability?",

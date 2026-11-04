@@ -132,7 +132,7 @@ export function CommunityWall({
               {/* Contribution count */}
               <div className="text-right shrink-0">
                 <div className="font-data text-xl md:text-2xl font-bold text-ink">{country.contributions}</div>
-                <div className="font-data text-xs text-mist">{zh ? "貢獻" : "contribs"}</div>
+                <div className="font-data text-xs text-mist">{zh ? "次貢獻" : "contributions"}</div>
               </div>
             </motion.div>
           );
@@ -167,7 +167,7 @@ export function CommunityWall({
       {open.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           <span className="font-data text-xs text-mist tracking-[1px] uppercase mr-1">
-            {zh ? "審查中" : "Pending"}
+            {zh ? "審查中" : "In review"}
           </span>
           {open.map((item) => (
             <a
@@ -191,10 +191,10 @@ export function CommunityWall({
           rel="noopener noreferrer"
           className="font-data text-xs text-blue hover:underline"
         >
-          {zh ? "加入社群 →" : "Add yourself to the wall →"}
+          {zh ? "把自己加上來 →" : "Add yourself to the wall →"}
         </a>
         <span className="font-data text-xs text-mist">
-          {contributors.length} {zh ? "位貢獻者" : "contributors"} · {countries.length} {zh ? "個國家" : "countries"} · {merged.length} {zh ? "個整合" : "integrations"}
+          {contributors.length} {zh ? "位貢獻者" : "contributors"} · {countries.length} {zh ? "個國家" : "countries"} · {merged.length} {zh ? "個已合併的整合" : "merged integrations"}
         </span>
       </div>
     </div>

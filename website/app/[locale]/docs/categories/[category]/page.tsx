@@ -63,8 +63,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ local
       <GlanceTable
         rows={[
           { label: zh ? "規則檔" : "Rule files", value: `${rules.length}` },
-          { label: zh ? "生效" : "Effective", value: zh ? `${effective.length}（至少一個 lane 載入）` : `${effective.length} (loaded by at least one lane)` },
-          { label: zh ? "enforce lane" : "Enforce lane", value: zh ? `${enforce.length}（maturity stable）` : `${enforce.length} (maturity stable)` },
+          { label: zh ? "生效" : "Effective", value: zh ? `${effective.length} 條，至少一個 lane 會載入` : `${effective.length}, loaded by at least one lane` },
+          { label: zh ? "enforce lane" : "Enforce lane", value: zh ? `${enforce.length} 條，只收 stable` : `${enforce.length}, stable only` },
           { label: zh ? "下載" : "Download", value: <a href="/rules/index.csv" className="text-blue hover:underline underline-offset-4">rules/index.csv</a> },
         ]}
       />
@@ -72,7 +72,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ local
       {(atlas.length > 0 || agentic.length > 0) && (
         <section className="mt-12">
           <h2 className="text-[20px] text-ink">{zh ? "最常見的框架對照" : "Most frequent crosswalks"}</h2>
-          <p className="mt-2 text-[13px] text-stone">{zh ? "括號內是這一類中帶有該項的規則數。" : "In brackets: how many rules in this category carry the item."}</p>
+          <p className="mt-2 text-[13px] text-stone">{zh ? "括號裡的數字，是這一類有幾條規則帶這一項。" : "The number in brackets is how many rules in this category carry that item."}</p>
           <div className="mt-5 grid md:grid-cols-2 gap-8">
             {[{ name: "MITRE ATLAS", list: atlas }, { name: "OWASP Agentic Top 10", list: agentic }].filter((x) => x.list.length > 0).map((fw) => (
               <div key={fw.name}>
@@ -116,7 +116,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ local
                     <td className={`py-2.5 pr-4 text-[12.5px] ${r.severity === "critical" ? "text-critical" : r.severity === "high" ? "text-high" : "text-graphite"}`}>{r.severity}</td>
                     <td className="py-2.5 pr-4 text-[12.5px] text-graphite">{normalizeMaturity(r.maturity)}</td>
                     <td className="py-2.5 text-[12.5px] text-graphite whitespace-nowrap">
-                      {lanes.length > 0 ? lanes.join(" · ") : <span className="text-high">{zh ? "無（inert）" : "none (inert)"}</span>}
+                      {lanes.length > 0 ? lanes.join(" · ") : <span className="text-high">{zh ? "無，不生效" : "none, inert"}</span>}
                     </td>
                   </tr>
                 );

@@ -31,7 +31,7 @@ export function EcosystemWall({
     <div ref={ref}>
       {/* Merged — logo wall */}
       <div className="text-[13px] text-stone mb-4">
-        {zh ? "已整合" : "Integrated"}
+        {zh ? "已合併" : "Merged"}
       </div>
       <div className="flex flex-wrap gap-4 mb-8">
         {merged.map((item, i) => (
@@ -66,7 +66,7 @@ export function EcosystemWall({
 
       {/* Open PRs — compact list */}
       <div className="text-[13px] text-stone mb-3">
-        {zh ? "審查中" : "Under Review"} ({open.length})
+        {zh ? "審查中" : "In review"} ({open.length})
       </div>
       <div className="flex flex-wrap gap-2">
         {open.map((item, i) => (

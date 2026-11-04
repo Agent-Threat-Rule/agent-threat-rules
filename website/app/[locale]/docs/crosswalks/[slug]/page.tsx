@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     locale,
     path: `/docs/crosswalks/${slug}`,
     title: `ATR × ${doc.framework}`,
-    description: `How ATR detection rules map to ${doc.framework}. ATR's own document; not an endorsement by ${doc.owner}.`,
+    description: `How ATR detection rules map to ${doc.framework}. Written by ATR maintainers, not endorsed by ${doc.owner}.`,
   });
 }
 
@@ -44,16 +44,16 @@ export default async function CrosswalkPage({ params }: { params: Promise<{ loca
       generatedAt={versions.generatedAt}
     >
       <div className="flex flex-col gap-3">
-        <Callout label={zh ? "非背書" : "Not an endorsement"}>
+        <Callout label={zh ? "不是背書" : "Not an endorsement"}>
           {zh
-            ? `這是 ATR 維護者寫的對照，${doc.owner} 沒有審查或背書。對照不代表符合任何法規。`
-            : `This mapping is written by ATR maintainers. ${doc.owner} has not reviewed or endorsed it, and it is not evidence of compliance with any regulation.`}
+            ? `這份對照是 ATR 維護者寫的。${doc.owner} 沒有審過，也沒有背書。對照不代表符合任何法規。`
+            : `ATR maintainers wrote this mapping. ${doc.owner} has not reviewed or endorsed it. It is not evidence of compliance with any regulation.`}
         </Callout>
         <Callout label={zh ? "來源" : "Source"}>
           <a href={`${REPO_BLOB}/${doc.file}`} className="text-blue hover:underline underline-offset-4" target="_blank" rel="noopener noreferrer">{doc.file}</a>
           {doc.committed && <> · {zh ? "最後提交" : "last commit"} {doc.committed}</>}
           {doc.declared && <> · {doc.declared}</>}
-          {zh && <> · 原文為英文</>}
+          {zh && <> · 原文是英文</>}
         </Callout>
       </div>
       <div className="mt-6 max-w-[780px]">{renderMarkdown(doc.body, { locale, baseDir })}</div>

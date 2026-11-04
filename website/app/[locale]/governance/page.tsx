@@ -19,7 +19,7 @@ export async function generateMetadata({
     path: "/governance",
     title: "Governance",
     description:
-      "ATR governance model: named maintainers, merge policy, succession plan, and the lead maintainer's conflict-of-interest disclosure.",
+      "How ATR is governed: who maintains it, how rules merge, what happens if the lead maintainer steps away, and the lead maintainer's conflict-of-interest disclosure.",
   });
 }
 
@@ -47,8 +47,8 @@ export default async function GovernancePage({
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-12">
           {zh
-            ? "一個標準的可信度，來自它的流程可以被任何人審查——不是來自單一權威說了算。ATR 是 MIT 授權的開放標準，不隸屬任何公司。誰維護、規則怎麼進、spec 怎麼改、首席維護者有什麼利益衝突，全部寫在這一頁，也全部寫在 GitHub 上可被審計。"
-            : "A standard earns trust when its process can be audited by anyone — not when a single authority vouches for it. ATR is an MIT-licensed open standard, not owned by any company. Who maintains it, how a rule gets in, how the spec changes, what the lead maintainer's conflicts are — all of it is on this page, and all of it is auditable on GitHub."}
+            ? "誰在維護、規則怎麼進來、spec 怎麼改、首席維護者有什麼利益衝突，全部寫在這一頁，也都能在 GitHub 上查。ATR 是 MIT 授權的開放標準，不隸屬任何公司。標準值不值得信任，看的是流程能不能被任何人檢查，不是有沒有哪個權威替它掛保證。"
+            : "Who maintains ATR, how a rule gets in, how the spec changes, what conflicts the lead maintainer has: all of it is on this page, and all of it can be audited on GitHub. ATR is an MIT-licensed open standard, and no company owns it. A standard earns trust when anyone can audit its process, not when one authority vouches for it."}
         </p>
       </Reveal>
 
@@ -58,7 +58,7 @@ export default async function GovernancePage({
           {zh ? "現任維護者" : "Current maintainers"}
         </div>
         <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-6">
-          {zh ? "負責規則品質、PR 審核、與發布。" : "Responsible for rule quality, PR review, and releases."}
+          {zh ? "負責規則品質、PR 審查和發版。" : "Responsible for rule quality, PR review and releases."}
         </h2>
       </Reveal>
       <Reveal delay={0.1}>
@@ -73,8 +73,8 @@ export default async function GovernancePage({
               <div>
                 <p className="text-sm text-graphite leading-[1.7] mb-3">
                   {zh
-                    ? "ATR 的創始人與主要維護者。負責規則品質門檻設計（RFC-001）、社群外展、以及生態系整合審核。GitHub: eeee2345 (Adamthereal)。"
-                    : "Founder and primary maintainer of ATR. Responsible for RFC-001 quality standard design, community outreach, and ecosystem integration review. GitHub: eeee2345 (Adamthereal)."}
+                    ? "ATR 的創辦人和主要維護者。負責設計規則品質門檻（RFC-001）、對外聯繫社群，也審查外部整合。GitHub：eeee2345（Adamthereal）。"
+                    : "Founder and main maintainer of ATR. Owns the RFC-001 quality bar, community outreach and the review of ecosystem integrations. GitHub: eeee2345 (Adamthereal)."}
                 </p>
                 <a
                   href="mailto:adam@agentthreatrule.org"
@@ -88,8 +88,8 @@ export default async function GovernancePage({
           <div className="p-6 md:p-8 bg-ash/30">
             <p className="text-sm text-stone leading-[1.7]">
               {zh
-                ? "ATR 目前是單一維護者啟動的——和 Linus Torvalds 1991 年的 Linux、Florian Roth 的 Sigma 同一條路徑：一個人開頭，定義格式與品質門檻，社群再接手治理。這是誠實的現狀，不是道歉。第二位維護者的招募正在進行（見下方條件），把標準託管到中立基金會（Linux Foundation、OpenSSF 或同級）的評估也在路線圖上。終點是 Technical Steering Committee；起點本來就只能有一個人。"
-                : "ATR was started by a single maintainer — the same path Linus Torvalds took with Linux in 1991, and Florian Roth with Sigma: one person defines the format and the quality bar, the community takes over governance. That is the honest present state, not an apology. Recruitment of a second maintainer is underway (criteria below), and evaluating transfer to a neutral foundation (Linux Foundation, OpenSSF, or equivalent) is on the roadmap. The destination is a Technical Steering Committee; every standard that reaches one started with someone willing to write the first rule."}
+                ? "ATR 是一位維護者開始的。1991 年 Linus Torvalds 的 Linux、Florian Roth 的 Sigma，走的都是同一條路：一個人先定下格式和品質門檻，再由社群接手治理。這是現況，不是道歉。第二位維護者正在招募，條件寫在下面。把標準託管給中立基金會（Linux Foundation、OpenSSF 或同等級的組織）的評估，也已經在路線圖上。終點是技術指導委員會（TSC）。起點本來就只能有一個人。"
+                : "ATR was started by a single maintainer. Linus Torvalds took the same path with Linux in 1991, and Florian Roth with Sigma: one person defines the format and the quality bar, then the community takes over governance. That is where things stand, and it is not an apology. A second maintainer is being recruited (criteria below). Evaluating a transfer to a neutral foundation, such as the Linux Foundation, OpenSSF or an equivalent, is on the roadmap. The goal is a Technical Steering Committee. Every standard that reached one started with someone willing to write the first rule."}
             </p>
           </div>
         </div>
@@ -101,14 +101,14 @@ export default async function GovernancePage({
           {zh ? "合併政策" : "Merge policy"}
         </div>
         <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
-          {zh ? "每條規則要過六道關才能 merge。" : "Six gates before any rule merges."}
+          {zh ? "每條規則要過六道關，才能合併。" : "Six gates before any rule merges."}
         </h2>
       </Reveal>
       <Reveal delay={0.05}>
         <p className="text-sm text-graphite leading-[1.7] max-w-[640px] mb-5">
           {zh
-            ? "這些閘是機器執行的，每一道都在公開的 CI log 裡留痕——任何人都能看到一條規則為什麼通過、或為什麼被擋。品質不靠維護者的判斷力背書，而靠可重跑的測試。"
-            : "These gates are machine-enforced, and every one leaves a trace in a public CI log — anyone can see why a rule passed, or why it was blocked. Quality is not vouched for by a maintainer's judgment; it is demonstrated by tests anyone can re-run."}
+            ? "這些關卡由機器執行，每一道都會在公開的 CI log 留下紀錄。一條規則為什麼通過、為什麼被擋，誰都看得到。品質不靠維護者的眼光擔保，靠的是任何人都能重跑的測試。"
+            : "Machines enforce these gates, and each one leaves a trace in a public CI log. Anyone can see why a rule passed or why it was blocked. Quality does not rest on a maintainer's judgment. It rests on tests anyone can re-run."}
         </p>
       </Reveal>
       <Reveal delay={0.1}>
@@ -117,38 +117,38 @@ export default async function GovernancePage({
             {
               gate: zh ? "1 · 語法驗證" : "1 · Schema validation",
               desc: zh
-                ? "合法 YAML schema、有效 regex（無 ReDoS）、至少 1 TP + 1 TN。"
-                : "Valid YAML schema, valid regex (no ReDoS), at least 1 TP and 1 TN.",
+                ? "YAML schema 合法，regex 有效且沒有 ReDoS，至少 1 個 TP 和 1 個 TN。"
+                : "A valid YAML schema, a valid regex with no ReDoS, and at least 1 TP and 1 TN.",
             },
             {
               gate: zh ? "2 · RFC-001 品質門檻" : "2 · RFC-001 quality gate",
               desc: zh
-                ? "信心分數（精準度、野外驗證、覆蓋深度、已知規避手法的文件）決定規則進哪一條偵測車道。分數沒到，規則不會被升到 enforce——但仍可以 advisory 形式存在。門檻是公開的公式，不是維護者的喜好。"
-                : "A confidence score — precision, in-the-wild validation, coverage depth, documented evasions — decides which detection lane a rule enters. Below the bar, a rule is never promoted to enforce, but may still exist as advisory. The threshold is a published formula, not a maintainer's preference.",
+                ? "信心分數決定規則進哪一條偵測車道。分數看的是精確度、野外驗證、覆蓋深度，以及已知的繞過手法有沒有寫下來。分數不夠的規則永遠不會升到 enforce，但仍可以用 advisory 的形式存在。門檻是公開的公式，不是維護者的喜好。"
+                : "A confidence score decides which detection lane a rule enters. It weighs precision, in-the-wild validation, coverage depth and documented evasions. A rule below the bar is never promoted to enforce, though it may still exist as advisory. The threshold is a published formula, not a maintainer's preference.",
             },
             {
               gate: zh ? "3 · 良性語料 0 FP" : "3 · Benign corpus 0 FP",
               desc: zh
-                ? "新規則必須在每個 PR 的良性語料閘上 0 誤報。這是 merge 時的最低門檻；發布後，誤報率會在更大的良性語料上逐車道公開量測，不靠單一數字蓋過。"
-                : "A new rule must record zero false positives on the per-PR benign corpus gate. This is the floor at merge time; after release, false-positive rates are measured lane by lane on a larger benign corpus and published, never hidden behind a single figure.",
+                ? "每個 PR 都會跑良性語料閘，新規則在上面必須是 0 誤報。這是合併時的最低門檻。發布之後，誤報率會在更大的良性語料上逐車道量測、公開，不會被單一數字蓋過去。"
+                : "A new rule must record zero false positives on the benign corpus gate that runs on every PR. That is the floor at merge time. After release, false-positive rates are measured lane by lane on a larger benign corpus and published, never hidden behind a single figure.",
             },
             {
               gate: zh ? "4 · 跨規則衝突檢查" : "4 · Cross-rule conflict check",
               desc: zh
-                ? "新規則不得與現有規則在相同輸入產生矛盾結果。"
-                : "New rule must not conflict with existing rules on the same input.",
+                ? "同一個輸入，新規則不能跟現有規則給出互相矛盾的結果。"
+                : "On the same input, a new rule must not conflict with existing rules.",
             },
             {
-              gate: zh ? "5 · 人工審核" : "5 · Human review",
+              gate: zh ? "5 · 人工審查" : "5 · Human review",
               desc: zh
-                ? "維護者審核 regex 形狀、test case 覆蓋、以及來源文件。Stable 等級需要 human-reviewed provenance。"
-                : "Maintainer reviews regex shape, test case coverage, and source citation. Stable tier requires human-reviewed provenance.",
+                ? "維護者審 regex 的形狀、test case 的覆蓋，還有來源文件。要到 Stable 等級，來源必須經過人工審查。"
+                : "A maintainer reviews the regex shape, test-case coverage and source citation. The stable tier requires provenance that a human has reviewed.",
             },
             {
-              gate: zh ? "6 · PR 合規性" : "6 · PR compliance",
+              gate: zh ? "6 · PR 規範" : "6 · PR compliance",
               desc: zh
-                ? "每個 PR 最多 10 條新規則。test_cases 必須包含 true_positives + true_negatives。"
-                : "Maximum 10 new rules per PR. test_cases must include true_positives and true_negatives.",
+                ? "每個 PR 最多 10 條新規則。test_cases 必須同時有 true_positives 和 true_negatives。"
+                : "At most 10 new rules per PR. test_cases must include both true_positives and true_negatives.",
             },
           ].map((item) => (
             <div key={item.gate} className="bg-paper p-5 md:p-6">
@@ -165,14 +165,14 @@ export default async function GovernancePage({
           {zh ? "決策流程" : "Decision-making"}
         </div>
         <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
-          {zh ? "每種改動有自己的審核門檻。" : "Different changes have different bars."}
+          {zh ? "改什麼，就過什麼樣的關。" : "Different changes have different bars."}
         </h2>
       </Reveal>
       <Reveal delay={0.05}>
         <p className="text-sm text-graphite leading-[1.7] max-w-[640px] mb-5">
           {zh
-            ? "改一條規則和改 spec 不是同一回事。規則錯了可以撤、可以修；spec 是每一個相容引擎共同遵守的契約，動它要給所有 implementer 看得到、來得及反應的時間。門檻的高低，照的是這個改動會牽動多少人。"
-            : "Changing a rule and changing the spec are not the same act. A wrong rule can be deprecated or revised; the spec is the contract every conforming engine relies on, so changing it has to be visible to every implementer with time to react. The bar scales with how many people a change moves."}
+            ? "改一條規則跟改 spec 是兩回事。規則錯了，可以撤下，也可以修正。spec 是每一個相容引擎都依賴的契約，要改，就得讓所有實作者都看得到，也來得及反應。門檻多高，看這個改動會牽動多少人。"
+            : "Changing a rule and changing the spec are different acts. A wrong rule can be deprecated or revised. The spec is the contract every conforming engine relies on, so a change to it has to reach every implementer with time to react. The bar rises with the number of people a change affects."}
         </p>
       </Reveal>
       <Reveal delay={0.1}>
@@ -181,47 +181,47 @@ export default async function GovernancePage({
             {
               kind: zh ? "新增規則" : "Add a rule",
               quorum: zh
-                ? "1 名維護者核可 + 自動安全閘通過"
+                ? "1 位維護者核可，加上自動安全閘通過"
                 : "1 maintainer approval + automated safety-gate pass",
               detail: zh
-                ? "規則 PR 走六道安全閘(見上面合併政策),通過後一位維護者人工 review 即可 merge。不需要二人核可,因為安全閘已經涵蓋了規則的客觀品質。"
-                : "Rule PRs run through the six safety gates (see Merge policy above). Once they pass, a single maintainer review is sufficient to merge. Two-reviewer requirement is not enforced because the safety gates already cover objective quality.",
+                ? "規則 PR 先跑六道安全閘（見上面的合併政策）。通過之後，一位維護者人工審過就能合併。不要求兩人核可，因為規則的客觀品質已經由安全閘把關。"
+                : "Rule PRs run through the six safety gates (see Merge policy above). Once they pass, one maintainer's review is enough to merge. A second reviewer is not required, because the gates already cover objective quality.",
             },
             {
-              kind: zh ? "修改 spec(SPEC.md)" : "Spec amendment (SPEC.md)",
+              kind: zh ? "修改 spec（SPEC.md）" : "Spec amendment (SPEC.md)",
               quorum: zh
-                ? "RFC issue 先開 + 14 天公開評論窗口(複雜提案延長至 30 天)+ 2 名維護者核可"
-                : "RFC issue opened first + 14-day public comment window (extended to 30 for complex proposals) + 2 maintainer approvals",
+                ? "先開 RFC issue，公開徵求意見 14 天（複雜提案延長到 30 天），再由 2 位維護者核可"
+                : "RFC issue first + 14-day public comment window (30 days for complex proposals) + 2 maintainer approvals",
               detail: zh
-                ? "spec 是所有相容引擎的契約。任何 spec 變動都要先以 issue 形式提出 RFC、開 14 天公開評論窗口(複雜提案延長至 30 天)讓所有 implementer 看到,然後才接受 PR。在目前 BDFL 階段,「2 名核可」將由首席維護者加上一名外部 reviewer(待指定後)滿足。TSC 成立後改為 TSC 過半數核可。"
-                : "The spec is the contract between all conforming engines. Any spec change is opened first as an RFC issue with a 14-day public comment window (extended to 30 for complex proposals) so every implementer sees it, then the PR is accepted. Under the current BDFL phase the 'two approvals' bar will be satisfied by the lead maintainer plus one external reviewer once designated. When the TSC is formed the bar becomes a TSC majority.",
+                ? "spec 是所有相容引擎之間的契約。任何 spec 變動，都要先用 issue 提出 RFC，公開徵求意見 14 天（複雜提案延長到 30 天），讓每個實作者都看到，之後才收 PR。現在是 BDFL 階段，「2 位核可」會由首席維護者加上一位外部 reviewer 達成，這位 reviewer 還在等指定。TSC 成立之後，改成 TSC 過半數核可。"
+                : "The spec is the contract between all conforming engines. Any spec change starts as an RFC issue with a 14-day public comment window (30 days for complex proposals), so every implementer sees it. Only then is the PR accepted. In the current BDFL phase, the two-approval bar will be met by the lead maintainer plus one external reviewer, once that reviewer is designated. When the TSC is formed, the bar becomes a TSC majority.",
             },
             {
-              kind: zh ? "breaking change(SemVer 主版號)" : "Breaking change (SemVer major bump)",
+              kind: zh ? "破壞性變更（SemVer 主版號）" : "Breaking change (SemVer major bump)",
               quorum: zh
-                ? "spec amendment 流程 + 30 天提前公告 + CHANGELOG 條目"
+                ? "走修改 spec 的流程，加上 30 天前公告，以及一筆 CHANGELOG 紀錄"
                 : "Spec-amendment process + 30-day advance notice + CHANGELOG entry",
               detail: zh
-                ? "任何破壞 rule schema、engine API、或既有 rule_id 語意的改動都算 breaking。提前 30 天在 GOVERNANCE.md 標題、CHANGELOG、@adopters 通知,讓上游採用者有時間應對。"
-                : "Any change that breaks the rule schema, the engine API, or the semantics of an existing rule_id counts as breaking. A 30-day advance notice goes out via GOVERNANCE.md, CHANGELOG, and an @adopters notification so upstream adopters have time to react.",
+                ? "會破壞 rule schema、engine API，或改變既有 rule_id 語意的改動，都算破壞性變更。要提前 30 天在 GOVERNANCE.md 標題、CHANGELOG 公告，並通知 @adopters，讓上游採用者有時間因應。"
+                : "Any change that breaks the rule schema, the engine API or the meaning of an existing rule_id is breaking. Notice goes out 30 days ahead through GOVERNANCE.md, the CHANGELOG and an @adopters notification, so upstream adopters have time to react.",
             },
             {
-              kind: zh ? "新增 / 撤換維護者" : "Add or remove a maintainer",
+              kind: zh ? "新增或撤換維護者" : "Add or remove a maintainer",
               quorum: zh
-                ? "所有現任維護者核可 + 被邀請者書面同意"
-                : "All current maintainers approve + the invited party agrees in writing",
+                ? "所有現任維護者核可，加上受邀者書面同意"
+                : "All current maintainers approve + the invited person agrees in writing",
               detail: zh
-                ? "目前只有一名維護者,所以加第二位維護者要這名維護者本人同意。當有 2+ 名維護者時,新增需要全員核可。撤換需要 2/3 多數(BDFL 階段不適用)。"
-                : "There is currently one maintainer, so adding a second requires that maintainer to agree. Once 2+ maintainers exist, additions require unanimous approval. Removal requires a 2/3 majority (not applicable under BDFL).",
+                ? "現在只有一位維護者，所以加入第二位，要這位維護者本人同意。有兩位以上維護者之後，新增要全員核可。撤換要 2/3 多數，BDFL 階段不適用。"
+                : "There is one maintainer today, so adding a second needs that maintainer's agreement. Once there are two or more, additions need unanimous approval. Removal needs a 2/3 majority, which does not apply under BDFL.",
             },
             {
-              kind: zh ? "把 rule 標記為 deprecated" : "Deprecate a rule",
+              kind: zh ? "把規則標為 deprecated" : "Deprecate a rule",
               quorum: zh
-                ? "1 名維護者核可,加 30 天 grace period"
+                ? "1 位維護者核可，另有 30 天緩衝期"
                 : "1 maintainer approval, with a 30-day grace period",
               detail: zh
-                ? "deprecated 規則仍會留在 corpus 但 engine MUST NOT 預設啟用。30 天後可以從 corpus 刪除;之前已採用的下游可以 pin 到 deprecated 版本。"
-                : "Deprecated rules remain in the corpus but engines MUST NOT enable them by default. After 30 days the rule may be removed from the corpus; downstream adopters who depended on it can pin to a deprecated version.",
+                ? "deprecated 的規則仍留在規則庫裡，但引擎 MUST NOT 預設啟用。30 天後可以從規則庫移除。已經在用的下游，可以釘在 deprecated 的版本。"
+                : "A deprecated rule stays in the corpus, but engines MUST NOT enable it by default. After 30 days it may be removed from the corpus. Downstream adopters who depended on it can pin to a deprecated version.",
             },
           ].map((row) => (
             <div key={row.kind} className="p-5 md:p-6 border-b border-fog last:border-b-0">
@@ -247,20 +247,20 @@ export default async function GovernancePage({
           {zh ? "工作小組" : "Working group"}
         </div>
         <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
-          {zh ? "目前還沒有,但路徑開放。" : "There isn't one yet, and the path to forming one is open."}
+          {zh ? "目前還沒有。要成立，路是開的。" : "There isn't one yet. The way to start one is open."}
         </h2>
       </Reveal>
       <Reveal delay={0.1}>
         <div className="bg-paper border border-fog p-6 md:p-8 mb-12 text-sm text-graphite leading-[1.7]">
           <p className="mb-3">
             {zh
-              ? "OASIS CTI、OpenTelemetry SIG、OWASP Working Group 都開定期會議。ATR 還沒到需要排程會議的規模——目前所有討論都在 GitHub Issues 與 PR 上非同步、公開、留痕進行。一個只有少數 implementer 的標準，不該先有委員會再有需求。"
-              : "OASIS CTI, OpenTelemetry SIGs, and OWASP Working Groups all run scheduled meetings. ATR is not yet at the scale where standing meetings earn their cost — for now every discussion happens asynchronously, in the open, on the public record in GitHub Issues and PRs. A standard with a handful of implementers should not stand up a committee before there is demand for one."}
+              ? "OASIS CTI、OpenTelemetry SIG、OWASP 工作小組都有固定會議。ATR 還沒到需要固定開會的規模。現在所有討論都在 GitHub Issues 和 PR 上非同步進行，公開，也都留下紀錄。實作者只有少數幾個的標準，不該在有需求之前，先成立委員會。"
+              : "OASIS CTI, the OpenTelemetry SIGs and OWASP working groups all hold scheduled meetings. ATR is not yet big enough for standing meetings to be worth their cost. For now every discussion happens asynchronously and in the open, on the record in GitHub Issues and PRs. A standard with a handful of implementers should not set up a committee before anyone asks for one."}
           </p>
           <p className="mb-3">
             {zh
-              ? "成立工作小組的路徑是開放的，而且是需求驅動的：如果你有實際的整合工作、想推動 spec 的某個方向、或代表一個 implementer 想要在標準化過程中有結構化的話語權，開一個標題以 [WG-proposal] 開頭的 issue。當 3 個或以上獨立的 implementer 表達相同需求，維護者會發起固定週期（雙週）的工作小組會議。觸發條件寫在這裡，誰都能援引。"
-              : "The path to forming one is open, and it is demand-driven: if you have active integration work, want to push the spec in a particular direction, or represent an implementer that wants structured voice in the process, open an issue titled with the prefix [WG-proposal]. When three or more independent implementers express the same need, the maintainers will schedule a recurring (bi-weekly) working-group meeting. The trigger is written here, and anyone may invoke it."}
+              ? "要不要成立，看需求。你如果手上有實際在做的整合、想把 spec 往某個方向推，或代表一個實作者，想在標準化過程裡有固定的發言管道，就開一個標題以 [WG-proposal] 開頭的 issue。只要有 3 個以上彼此獨立的實作者提出同樣的需求，維護者就會開始每兩週一次的工作小組會議。觸發條件寫在這裡，誰都可以援引。"
+              : "Whether one forms depends on demand. If you have integration work under way, want to push the spec in a particular direction, or represent an implementer that wants a structured voice in the process, open an issue whose title starts with [WG-proposal]. When three or more independent implementers ask for the same thing, the maintainers will schedule a recurring working-group meeting every two weeks. The trigger is written here, and anyone may invoke it."}
           </p>
         </div>
       </Reveal>
@@ -271,44 +271,44 @@ export default async function GovernancePage({
           {zh ? "想成為維護者" : "Become a maintainer"}
         </div>
         <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
-          {zh ? "我們正在主動招募。" : "We are actively recruiting."}
+          {zh ? "正在積極招募。" : "Actively recruiting."}
         </h2>
       </Reveal>
       <Reveal delay={0.1}>
         <div className="bg-paper border border-fog p-6 md:p-8 mb-12 text-sm text-graphite leading-[1.7]">
           <p className="mb-3">
             {zh
-              ? "單一維護者是 ATR 目前已知的最大結構風險，這一點我們公開講。從一個人到一個 Technical Steering Committee（TSC），是每個開放標準都走過的路——分散治理的方式，是真的有人 merge 過足夠多的東西、值得拿到 commit 權。我們正在主動招募第二位、第三位維護者。"
-              : "A single maintainer is the largest known structural risk to ATR, and we state it plainly. The path from one person to a Technical Steering Committee (TSC) is the one every open standard walks — governance distributes when contributors have merged enough to have earned commit rights, not before. We are actively recruiting a second and third maintainer."}
+              ? "只有一位維護者，是 ATR 目前已知最大的結構風險，這點直接講明。從一個人走到技術指導委員會（TSC），每個開放標準都走過。治理要分散出去，前提是有貢獻者真的合併過夠多東西，值得拿到 commit 權限，不會提早。第二位、第三位維護者正在積極招募。"
+              : "Having a single maintainer is the largest known structural risk to ATR, and this page says so plainly. Every open standard walks the path from one person to a Technical Steering Committee (TSC). Governance spreads once contributors have merged enough to earn commit rights, not before. A second and a third maintainer are being actively recruited."}
           </p>
           <p className="mb-3 font-semibold text-ink">
-            {zh ? "候選條件:" : "Candidate criteria:"}
+            {zh ? "候選條件：" : "Candidate criteria:"}
           </p>
           <ul className="list-disc pl-6 mb-3 space-y-1">
             <li>
               {zh
-                ? "過去六個月內,在 ATR repo merge 過至少三個 substantive PR(新規則、schema 修正、engine 改進、或文件實質改寫)"
-                : "Merged at least three substantive PRs in the ATR repo in the prior six months (new rules, schema fixes, engine improvements, or substantive documentation rewrites)"}
+                ? "過去六個月內，在 ATR repo 合併過至少三個有實質內容的 PR（新規則、schema 修正、引擎改進，或文件的實質改寫）"
+                : "At least three substantive PRs merged in the ATR repo in the past six months (new rules, schema fixes, engine improvements, or substantive documentation rewrites)"}
             </li>
             <li>
               {zh
-                ? "熟悉 SPEC.md 的內容到能解釋 conformance 條款的程度"
-                : "Familiar enough with SPEC.md to explain its conformance clauses"}
+                ? "熟悉 SPEC.md，能解釋其中的符規條款"
+                : "Knows SPEC.md well enough to explain its conformance clauses"}
             </li>
             <li>
               {zh
-                ? "能配合非同步審核(沒有實時要求,但 PR 平均應在 7 天內收到第一次審核回應)"
-                : "Able to accommodate asynchronous review (no real-time requirement, but PRs should receive a first review response within an average of 7 days)"}
+                ? "能配合非同步審查。不需要即時回應，但 PR 平均應在 7 天內收到第一次審查回覆"
+                : "Can review asynchronously. There is no real-time requirement, but PRs should get a first review response within 7 days on average"}
             </li>
             <li>
               {zh
-                ? "在公開場合(GitHub、issue 留言、conference)代表 ATR 時,語氣維持中立、不暗示任何商業利益"
-                : "When representing ATR publicly (GitHub, issue comments, conferences), maintains a neutral register and does not imply any commercial interest"}
+                ? "在公開場合（GitHub、issue 留言、研討會）代表 ATR 時，語氣保持中立，不暗示任何商業利益"
+                : "Keeps a neutral tone when representing ATR in public (GitHub, issue comments, conferences), and does not imply any commercial interest"}
             </li>
           </ul>
           <p>
-            {zh ? "申請方式:" : "How to apply: "}
-            {zh ? "寄信至 " : ""}
+            {zh ? "申請方式：" : "How to apply: "}
+            {zh ? "寄信到 " : "write to "}
             <a
               href="mailto:adam@agentthreatrule.org?subject=ATR%20maintainer%20application"
               className="text-blue hover:underline"
@@ -316,8 +316,8 @@ export default async function GovernancePage({
               adam@agentthreatrule.org
             </a>
             {zh
-              ? " 主旨「ATR maintainer application」,內容包含你近期的 PR 連結與你想接哪一塊(rules / spec / engine / documentation)。"
-              : " with subject 'ATR maintainer application'. Include links to your recent PRs and which area you want to take on (rules / spec / engine / documentation)."}
+              ? "，主旨寫「ATR maintainer application」。信裡附上你最近的 PR 連結，以及你想負責哪一塊（rules / spec / engine / documentation）。"
+              : " with the subject 'ATR maintainer application'. Include links to your recent PRs and the area you want to take on (rules / spec / engine / documentation)."}
           </p>
         </div>
       </Reveal>
@@ -328,7 +328,7 @@ export default async function GovernancePage({
           {zh ? "繼承計畫" : "Succession plan"}
         </div>
         <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
-          {zh ? "如果首席維護者無法履行職責。" : "If the lead maintainer becomes unavailable."}
+          {zh ? "如果首席維護者沒辦法繼續。" : "If the lead maintainer becomes unavailable."}
         </h2>
       </Reveal>
       <Reveal delay={0.1}>
@@ -336,18 +336,18 @@ export default async function GovernancePage({
           <div className="space-y-4 text-sm text-graphite leading-[1.7]">
             <p>
               {zh
-                ? "短期（30 天內）：GitHub 的 CODEOWNERS 檔案與 CI 自動化維護繼續運作，已合併的規則繼續透過 npm 發布。ATR 不依賴單一伺服器或閉源系統——規則是純文字 YAML，任何人都可以 fork。"
-                : "Short term (within 30 days): The CODEOWNERS file and CI automation continue to function on GitHub. Merged rules continue to publish via npm. ATR has no dependency on a single server or closed system — rules are plain-text YAML and anyone can fork."}
+                ? "短期（30 天內）：GitHub 上的 CODEOWNERS 檔和 CI 自動化照常運作，已合併的規則繼續經由 npm 發布。ATR 不依賴任何單一伺服器或封閉系統。規則是純文字 YAML，誰都可以 fork。"
+                : "Short term (within 30 days): the CODEOWNERS file and CI automation keep running on GitHub, and merged rules keep publishing through npm. ATR does not depend on a single server or a closed system. The rules are plain-text YAML, and anyone can fork them."}
             </p>
             <p>
               {zh
-                ? "中期:第二位維護者(招募進行中)接任 PR 審核職責。如果 30 天後仍未找到正式維護者,外部臨時維護者的招募條件是:在過去六個月內 merge 過至少三個 substantive PR、對 schema 有實作熟悉度、且能配合非同步審核。具體人選不會在這個頁面公告;當邀請發出且對方同意後,姓名才會出現在「現任維護者」區塊。"
-                : "Medium term: a second maintainer (recruitment ongoing) takes over PR review. If none is identified within 30 days, interim maintainers will be sought from external contributors who meet the following criteria: merged at least three substantive PRs in the prior six months, demonstrated familiarity with the schema implementation, and able to accommodate asynchronous review. Specific names are NOT published on this page until the invitation has been sent AND the candidate has accepted — at which point the new maintainer appears under 'Current maintainers' above."}
+                ? "中期：由第二位維護者（招募中）接手 PR 審查。如果 30 天後還沒找到正式維護者，會從外部貢獻者裡找臨時維護者，條件是：過去六個月內合併過至少三個有實質內容的 PR、實際熟悉 schema 的實作，而且能配合非同步審查。具體人選不會先在這一頁公布。邀請發出、對方也同意之後，名字才會出現在「現任維護者」。"
+                : "Medium term: a second maintainer (recruitment ongoing) takes over PR review. If none is found within 30 days, interim maintainers will be sought among external contributors who have merged at least three substantive PRs in the past six months, have shown hands-on familiarity with the schema implementation, and can review asynchronously. No names are published on this page until the invitation has been sent AND the candidate has accepted. Then the new maintainer appears under 'Current maintainers' above."}
             </p>
             <p>
               {zh
-                ? "長期：ATR 路線圖包含將標準轉移至中立基金會（Linux Foundation 或 OpenSSF）的評估。轉移條件：有兩名以上外部維護者，以及至少一個組織願意提供資源支持治理。"
-                : "Long term: The ATR roadmap includes evaluating transfer to a neutral foundation (Linux Foundation or OpenSSF). Transfer requires: two or more external maintainers, and at least one organization willing to fund governance overhead."}
+                ? "長期：ATR 的路線圖包括評估把標準移交給中立基金會（Linux Foundation 或 OpenSSF）。移交的條件是：有兩位以上的外部維護者，以及至少一個組織願意提供資源支持治理。"
+                : "Long term: the ATR roadmap includes evaluating a transfer to a neutral foundation (Linux Foundation or OpenSSF). A transfer requires two or more external maintainers, and at least one organization willing to fund the overhead of governance."}
             </p>
           </div>
         </div>
@@ -359,7 +359,7 @@ export default async function GovernancePage({
           {zh ? "利益衝突揭露" : "Conflict-of-interest disclosure"}
         </div>
         <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
-          {zh ? "為什麼揭露這件事。" : "Why this disclosure exists."}
+          {zh ? "為什麼要揭露。" : "Why this disclosure exists."}
         </h2>
       </Reveal>
       <Reveal delay={0.1}>
@@ -367,18 +367,18 @@ export default async function GovernancePage({
           <div className="space-y-4 text-sm text-graphite leading-[1.7]">
             <p>
               {zh
-                ? "ATR（Agent Threat Rules）是 MIT 授權的開放標準，由 Agent-Threat-Rule GitHub 組織維護。首席維護者在 AI agent 安全領域另持有商業利益（commercial affiliation）。我們不掩蓋這件事，而是寫下來——揭露本身就是治理機制。一個標準的中立性，不靠維護者沒有利益來證明，而靠他的決策過程公開到任何人都能檢查有沒有被利益扭曲。"
-                : "ATR (Agent Threat Rules) is an MIT-licensed open standard maintained under the Agent-Threat-Rule GitHub organization. The lead maintainer also holds a commercial affiliation in AI agent security. We do not hide this; we write it down — the disclosure itself is the governance mechanism. A standard's neutrality is not proven by a maintainer having no interests, but by a decision process open enough that anyone can check whether those interests bent it."}
+                ? "ATR（Agent Threat Rules）是 MIT 授權的開放標準，在 Agent-Threat-Rule 這個 GitHub 組織底下維護。首席維護者在 AI agent 資安領域另有商業關係。這件事不藏，直接寫下來，揭露本身就是治理機制。標準是否中立，不是靠維護者沒有利益來證明。靠的是決策過程公開到任何人都能檢查，這些利益有沒有讓決定走樣。"
+                : "ATR (Agent Threat Rules) is an MIT-licensed open standard maintained under the Agent-Threat-Rule GitHub organization. The lead maintainer also holds a commercial affiliation in AI agent security. It is not hidden. It is written down here, and the disclosure is itself the governance mechanism. A standard's neutrality is not proven by a maintainer having no interests. It is proven by a decision process open enough that anyone can check whether those interests bent it."}
             </p>
             <p>
               {zh
-                ? "界限：ATR 的規則、CHANGELOG、benchmark 資料、以及文件不得被任何商業利益所操控。ATR 的 issue tracker 與 PR review 流程對所有人開放，包括該商業利益的競爭對手——他們可以提規則、可以審你的 PR、可以 fork 整套標準。GOVERNANCE.md 在 GitHub 上公開查閱。中立不是宣稱來的，是這些開放的入口逐一證成的。"
-                : "The boundary: ATR's rules, CHANGELOG, benchmark data, and documentation must not be distorted by any commercial interest. ATR's issue tracker and PR review process is open to everyone — including competitors of that commercial interest, who may propose rules, review pull requests, and fork the entire standard. GOVERNANCE.md is publicly auditable on GitHub. Neutrality is not asserted; it is what these open doors, one by one, demonstrate."}
+                ? "界線是：ATR 的規則、CHANGELOG、benchmark 資料和文件，都不得被任何商業利益左右。ATR 的 issue tracker 和 PR 審查對所有人開放，包括這個商業利益的競爭對手。他們可以提規則、審 PR，也可以把整套標準 fork 走。GOVERNANCE.md 在 GitHub 上公開，誰都能查。中立不是嘴上說的，是這些開著的門一扇一扇證明出來的。"
+                : "The boundary: ATR's rules, CHANGELOG, benchmark data and documentation must not be distorted by any commercial interest. ATR's issue tracker and PR review are open to everyone, including competitors of that commercial interest. They may propose rules, review pull requests and fork the entire standard. GOVERNANCE.md is public on GitHub for anyone to audit. Neutrality is not something ATR asserts. These open doors, one by one, are what demonstrate it."}
             </p>
             <p>
               {zh
-                ? "如果你觀察到任何違反這個界限的情況，請在 GitHub 開 issue 或寄信至 contact@agentthreatrule.org。"
-                : "If you observe any violation of this boundary, please open an issue on GitHub or email contact@agentthreatrule.org."}
+                ? "如果你看到有人越過這條界線，請在 GitHub 開 issue，或寫信到 contact@agentthreatrule.org。"
+                : "If you see this boundary being crossed, open an issue on GitHub or email contact@agentthreatrule.org."}
             </p>
           </div>
         </div>
@@ -394,8 +394,8 @@ export default async function GovernancePage({
         <div className="bg-ash p-6 md:p-8 mb-12 text-sm text-graphite leading-[1.7]">
           <p className="mb-3">
             {zh
-              ? "所有貢獻都以 MIT 授權發布。貢獻者保留以任何方式使用其攻擊研究的所有權利——ATR 只攜帶偵測，不佔有研究本身。"
-              : "All contributions are published under MIT license. Contributors retain all rights to use their attack research in any form — ATR carries the detection, not ownership of the research."}
+              ? "所有貢獻都以 MIT 授權發布。你的攻擊研究，你保留以任何形式使用的全部權利。ATR 帶走的只是偵測，研究本身仍然是你的。"
+              : "All contributions are published under the MIT license. Contributors keep every right to use their attack research in any form. ATR carries the detection, not ownership of the research."}
           </p>
           <p>
             {zh

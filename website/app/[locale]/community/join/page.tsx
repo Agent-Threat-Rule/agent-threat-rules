@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: locale === "zh" ? "加入社群" : "Join the community",
     description:
       locale === "zh"
-        ? "以專家或貢獻者身分加入 ATR 社群：誰適合、做什麼、怎麼申請，以及我們如何處理你的資料。"
+        ? "以專家或貢獻者的身分加入 ATR 社群：誰適合、要做什麼、怎麼申請，以及你的資料怎麼處理。"
         : "Join the ATR community as an expert or a contributor: who it is for, what you do, how to apply, and how your data is handled.",
   });
 }
@@ -34,17 +34,17 @@ const ROWS: ReadonlyArray<{ label: B; expert: B; contributor: B }> = [
   {
     label: { en: "Who", zh: "誰" },
     expert: { en: "CISOs, heads of AI security, auditors, policy and insurance specialists who decide how agents are deployed or assessed.", zh: "決定 AI 代理怎麼部署或怎麼被評估的人：CISO、AI 安全主管、稽核、政策與保險專家。" },
-    contributor: { en: "Practitioners: detection engineers, red-teamers, researchers, engine and integration developers.", zh: "實務者：偵測工程師、紅隊、研究者、引擎與整合開發者。" },
+    contributor: { en: "Practitioners: detection engineers, red-teamers, researchers, engine and integration developers.", zh: "動手做的人：偵測工程師、紅隊、研究人員、寫引擎和整合的開發者。" },
   },
   {
     label: { en: "What you do", zh: "做什麼" },
-    expert: { en: "Set the quarterly coverage priorities and review framework crosswalks. Advisory: no merge or veto rights.", zh: "訂每季的覆蓋優先順序、審框架對照。屬於建議性質，沒有合併或否決權。" },
-    contributor: { en: "Write, test and review rules; report evasions and false positives; join a working group.", zh: "撰寫、測試、審查規則；回報繞過與誤判；加入工作組。" },
+    expert: { en: "Set the quarterly coverage priorities and review the framework crosswalks. The role is advisory, with no merge or veto rights.", zh: "排定每季該優先覆蓋什麼，審查框架對照。只提供建議，沒有合併權，也沒有否決權。" },
+    contributor: { en: "Write, test and review rules; report evasions and false positives; join a working group.", zh: "寫規則、測規則、審規則，回報繞過和誤判，也可以加入工作組。" },
   },
   {
     label: { en: "Rights", zh: "權利" },
-    expert: { en: "Open issues and pull requests like anyone. Merging is limited to maintainers with repository permission.", zh: "跟任何人一樣可以提 issue 與 pull request。合併權限只給有 repository 權限的維護者。" },
-    contributor: { en: "The same. Sustained review work is how contributors are nominated as maintainers.", zh: "相同。長期投入審查的貢獻者，會被提名為維護者。" },
+    expert: { en: "Open issues and pull requests like anyone. Merging is limited to maintainers with repository permission.", zh: "跟所有人一樣，可以提 issue 和 pull request。只有握有 repo 權限的維護者能合併。" },
+    contributor: { en: "The same. Contributors are nominated as maintainers through sustained review work.", zh: "一樣。長期投入審查的貢獻者，會被提名為維護者。" },
   },
   {
     label: { en: "Intake", zh: "收件" },
@@ -57,14 +57,14 @@ const STEPS: ReadonlyArray<B> = [
   { en: "You apply through the GitHub form, or by email if you do not use GitHub.", zh: "用 GitHub 表單申請；不用 GitHub 的人用 email。" },
   { en: "A maintainer reviews the application and drafts your directory entry.", zh: "維護者審閱申請，並草擬你在名錄上的文字。" },
   { en: "You confirm the exact text, photo and organization line, or change them.", zh: "你確認名錄上的文字、照片、所屬單位，或要求修改。" },
-  { en: "The entry is merged by pull request and appears on the community page.", zh: "以 pull request 合併後，出現在社群頁。" },
+  { en: "The entry is merged by pull request and appears on the community page.", zh: "名錄條目以 pull request 合併，之後就會出現在社群頁。" },
 ];
 
 const PRIVACY: ReadonlyArray<B> = [
   { en: "Your email address is used to reply to you and is never published.", zh: "你的 email 只用來回覆你，絕不公開。" },
   { en: "Nothing is listed until you confirm the exact text. Your organization appears only if you allow it, and listing it is not an endorsement by it.", zh: "你確認文字之前，什麼都不會公開。所屬單位只有你同意才列，而且列名不代表該單位背書。" },
-  { en: "A photo is optional and shown in greyscale; without one, your GitHub avatar is used.", zh: "照片可不提供，網頁上灰階顯示；沒有提供就用你的 GitHub 頭像。" },
-  { en: `To be removed or to have an unsuccessful application deleted, write to ${CONTACT}. No reason needed.`, zh: `要求移除，或刪除未通過的申請，寫信到 ${CONTACT}，不需說明理由。` },
+  { en: "A photo is optional and shown in greyscale. Without one, your GitHub avatar is used.", zh: "照片可以不給。有的話，網頁上以灰階顯示；沒有，就用你的 GitHub 頭像。" },
+  { en: `To be removed or to have an unsuccessful application deleted, write to ${CONTACT}. No reason needed.`, zh: `要從名錄移除，或要刪掉沒有通過的申請，寫信到 ${CONTACT}。不需要說明理由。` },
   { en: "A GitHub application is a public issue. Use email if you would rather apply privately.", zh: "用 GitHub 申請會是一則公開的 issue。想私下申請，請用 email。" },
 ];
 
@@ -109,7 +109,7 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
           ))}
         </div>
         <p className="mt-4 text-[13px] text-stone">
-          {zh ? "Steering（TSC 與維護者）不開放申請，依章程由貢獻提名。" : "Steering (the TSC and maintainers) is not by application; seats follow the charter, by nomination from contribution."}
+          {zh ? "指導小組（TSC 與維護者）不開放申請。席位依章程，從貢獻中提名。" : "Steering (the TSC and maintainers) is not open to applications. Seats follow the charter: people are nominated from their contributions."}
         </p>
       </section>
 
@@ -141,7 +141,7 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
       </section>
 
       <section className="mt-14">
-        <SectionHead mark="§2" label={zh ? "你的資料" : "Your data"} title={zh ? "我們怎麼處理你的資料" : "How your data is handled"} />
+        <SectionHead mark="§2" label={zh ? "你的資料" : "Your data"} title={zh ? "你的資料怎麼處理" : "How your data is handled"} />
         <ul className="border-t border-fog">
           {PRIVACY.map((p) => (
             <li key={p.en} className="py-3 border-b border-fog text-[14px] leading-[1.6] text-graphite">{pick(p)}</li>

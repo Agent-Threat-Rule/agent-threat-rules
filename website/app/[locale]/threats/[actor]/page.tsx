@@ -83,7 +83,7 @@ export default async function ActorPage({
             {statusLabel[actor.status][locale]}
           </span>
           <span className="font-data text-xs text-stone">
-            {actor.skillsMalicious} / {actor.skillsPublished} {zh ? "歸因為惡意" : "attributed malicious"} ({actor.malRatio})
+            {actor.skillsMalicious} / {actor.skillsPublished} {zh ? `歸因為惡意（${actor.malRatio}）` : `attributed malicious (${actor.malRatio})`}
           </span>
           <span className="text-fog">·</span>
           <span className="font-data text-xs text-stone">
@@ -98,7 +98,7 @@ export default async function ActorPage({
       </Reveal>
 
       {/* Overview table */}
-      <Section label={zh ? "檔案概要" : "Overview"} delay={0.2}>
+      <Section label={zh ? "概要" : "Overview"} delay={0.2}>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-fog">
           <DataRow label={zh ? "首次發現" : "First seen"} value={actor.firstSeen} />
           <DataRow label={zh ? "最新活動" : "Last activity"} value={actor.lastActivity} />
@@ -107,7 +107,7 @@ export default async function ActorPage({
             value={actor.skillsPublished.toString()}
           />
           <DataRow
-            label={zh ? "歸因為惡意的比例(帳號層級)" : "Attributed-malicious ratio (publisher-level)"}
+            label={zh ? "歸因為惡意的比例（帳號層級）" : "Attributed-malicious ratio (publisher-level)"}
             value={`${actor.skillsMalicious} / ${actor.skillsPublished} (${actor.malRatio})`}
           />
           <DataRow
@@ -122,7 +122,7 @@ export default async function ActorPage({
       </Section>
 
       {/* TTPs */}
-      <Section label={zh ? "戰術、技術、程序 (TTPs)" : "Tactics, Techniques & Procedures"} delay={0.25}>
+      <Section label={zh ? "戰術、技術與程序（TTPs）" : "Tactics, Techniques & Procedures"} delay={0.25}>
         <SubSection title={zh ? "偽裝手法" : "Disguises"}>
           <ul className="space-y-2">
             {actor.disguises.map((d, i) => (
@@ -133,7 +133,7 @@ export default async function ActorPage({
             ))}
           </ul>
         </SubSection>
-        <SubSection title={zh ? "Payload 遞送" : "Payload mechanisms"}>
+        <SubSection title={zh ? "payload 投遞方式" : "Payload mechanisms"}>
           <ol className="space-y-3 list-none">
             {actor.payloadMechanisms.map((m, i) => (
               <li key={i} className="text-sm text-graphite leading-[1.7] pl-8 relative">
@@ -162,7 +162,7 @@ export default async function ActorPage({
       </Section>
 
       {/* IOCs */}
-      <Section label={zh ? "入侵指標 (IOCs)" : "Indicators of Compromise"} delay={0.3}>
+      <Section label={zh ? "入侵指標（IOCs）" : "Indicators of Compromise"} delay={0.3}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {actor.iocs.c2Servers && actor.iocs.c2Servers.length > 0 && (
             <IocBlock title={zh ? "C2 伺服器" : "C2 servers"} items={actor.iocs.c2Servers} />
@@ -171,11 +171,11 @@ export default async function ActorPage({
             <IocBlock title="URLs" items={actor.iocs.urls} />
           )}
           {actor.iocs.filePatterns && actor.iocs.filePatterns.length > 0 && (
-            <IocBlock title={zh ? "檔案樣態" : "File patterns"} items={actor.iocs.filePatterns} />
+            <IocBlock title={zh ? "檔案特徵" : "File patterns"} items={actor.iocs.filePatterns} />
           )}
           {actor.iocs.namingPatterns && actor.iocs.namingPatterns.length > 0 && (
             <IocBlock
-              title={zh ? "命名樣態" : "Naming patterns"}
+              title={zh ? "命名規律" : "Naming patterns"}
               items={actor.iocs.namingPatterns}
             />
           )}
@@ -197,8 +197,8 @@ export default async function ActorPage({
             </div>
             <p className="text-xs text-mist mt-2 leading-[1.7]">
               {zh
-                ? "僅在隔離環境下解碼:`echo \"...\" | base64 -d` 會還原原始 payload。請勿在正式機器上執行。"
-                : 'Decode in an isolated environment only: `echo "..." | base64 -d` recovers the raw payload. Do not run it on a live machine.'}
+                ? "只在隔離環境裡解碼。`echo \"...\" | base64 -d` 會還原出原始 payload，別在正式機器上跑。"
+                : 'Decode only in an isolated environment. `echo "..." | base64 -d` recovers the raw payload. Do not run it on a live machine.'}
             </p>
           </div>
         )}
@@ -221,21 +221,21 @@ export default async function ActorPage({
             </div>
             <p className="text-xs text-mist mt-3 leading-[1.7]">
               {zh
-                ? "每個規則 ID 永久穩定（ATR-YYYY-NNNNN），對外引用安全。點開可看完整 YAML 定義、攻擊樣本與已記錄的規避手法。"
-                : "Each rule ID is permanent and stable (ATR-YYYY-NNNNN), safe to cite. Open one for the full YAML definition, attack samples, and documented evasion techniques."}
+                ? "規則 ID 的格式是 ATR-YYYY-NNNNN，發布後不會變，可以放心引用。點開看完整的 YAML 定義、攻擊樣本，和已記錄的規避手法。"
+                : "Rule IDs follow ATR-YYYY-NNNNN and never change, so they are safe to cite. Open one for the full YAML definition, attack samples and documented evasion techniques."}
             </p>
           </>
         ) : (
           <p className="text-sm text-mist leading-[1.7]">
             {zh
-              ? "這個行為者的手法尚無對應的已發布規則。偵測規則一經審查合併便會列於此處。"
-              : "No published rule maps to this actor's techniques yet. Detection rules appear here once reviewed and merged."}
+              ? "這個行為者的手法，目前還沒有已發布的規則對應。規則審查、合併之後，會列在這裡。"
+              : "No published rule maps to this actor's techniques yet. Rules show up here once they are reviewed and merged."}
           </p>
         )}
       </Section>
 
       {/* Framework mappings */}
-      <Section label={zh ? "上層框架對照" : "Maps to Established Frameworks"} delay={0.4}>
+      <Section label={zh ? "對應的框架" : "Framework Mappings"} delay={0.4}>
         <div className="space-y-5">
           <div>
             <div className="text-[13px] text-stone mb-2">
@@ -270,7 +270,7 @@ export default async function ActorPage({
       </Section>
 
       {/* Affected registries */}
-      <Section label={zh ? "受影響的 Registry" : "Affected Registries"} delay={0.45}>
+      <Section label={zh ? "受影響的 registry" : "Affected Registries"} delay={0.45}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-fog">
           {actor.registries.map((r) => (
             <div key={r.name} className="bg-paper p-5">

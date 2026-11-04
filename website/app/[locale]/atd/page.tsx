@@ -26,17 +26,17 @@ export async function generateMetadata({
   return pageMetadata({
     locale,
     path: "/atd",
-    title: "ATD — Agentic Threat Detection",
+    title: "ATD: Agentic Threat Detection",
     description:
       locale === "zh"
-        ? "Agentic Threat Detection (ATD):agent 原生威脅技法的開放知識庫。為每種 runtime 攻擊手法命名,對映 OWASP/ATLAS/CWE/AVID,讓偵測規則有處可掛。"
-        : "Agentic Threat Detection (ATD): an open knowledge base of agent-native threat techniques. Names every runtime attack technique, maps it to OWASP/ATLAS/CWE/AVID, and gives detection rules something to hang from.",
+        ? "Agentic Threat Detection（ATD）：收錄 agent 特有威脅技法的開放知識庫。替每一種 runtime 攻擊手法命名，對到 OWASP、ATLAS、CWE、AVID，讓偵測規則有地方掛。"
+        : "Agentic Threat Detection (ATD): an open knowledge base of agent-native threat techniques. It names every runtime attack technique, maps it to OWASP, ATLAS, CWE and AVID, and gives detection rules something to hang from.",
   });
 }
 
 const ATD_VERSION = "0.1.0";
-const ATD_STATUS_EN = "Editor's Draft — pre-governance";
-const ATD_STATUS_ZH = "Editor's Draft — 治理前草案";
+const ATD_STATUS_EN = "Editor's Draft · pre-governance";
+const ATD_STATUS_ZH = "Editor's Draft · 治理前草案";
 const ATD_DATE = "2026-06-13";
 const ATD_DOI = "10.5281/zenodo.19178002";
 
@@ -49,9 +49,9 @@ function proofCard(m: BenchmarkMeasurement | null, zh: boolean, corpus: { en: st
   if (!m) return null;
   const v = m.enforce ? `${pctHunt(m.recall)} / ${pct(m.enforce.recall)}` : pctHunt(m.recall);
   const lanes = m.enforce ? "hunt / enforce" : "hunt";
-  const extra = note ? (zh ? `;${note.zh}` : `; ${note.en}`) : "";
+  const extra = note ? (zh ? `；${note.zh}` : `; ${note.en}`) : "";
   return zh
-    ? { v, l: `recall,${lanes}(${corpus.zh} n=${count(m.samples)}·${measuredStamp(m, true)}${extra})` }
+    ? { v, l: `召回率，${lanes}（${corpus.zh}，n=${count(m.samples)}，${measuredStamp(m, true, true)}${extra}）` }
     : { v, l: `recall, ${lanes} (${corpus.en}, n=${count(m.samples)}, ${measuredStamp(m, false)}${extra})` };
 }
 
@@ -76,17 +76,17 @@ const SECTIONS: Section[] = [
     status: "informative",
     en: {
       title: "Abstract",
-      body: `<p>Agentic Threat Detection (ATD) is the open, machine-readable knowledge base of agent-native threat techniques. Agents fail in ways no prior security taxonomy has a name for — a poisoned tool description, a forged agent card, a memory write that lies dormant for three sessions. ATD gives each of those a name, a permanent ID, and a stable definition, then maps it to the established prose frameworks — <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10</a>, <a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a>, <a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a>, <a href="https://avidml.org/" target="_blank" rel="noopener noreferrer">AVID</a> — with real-world evidence that the attack has actually occurred.</p>
-<p>Those frameworks tell you <em>what</em> can go wrong with an agent. ATD is the layer underneath that names <em>how</em> each technique manifests at the point it can be observed at runtime — the prompt, the tool call, the tool response, the inter-agent message, the memory write, the trace. That is where a detection rule has to hang, and until a technique is named, every team reinvents the description from scratch. A technique enters the catalog the moment an attack is documented — before any detection rule exists for it — so the vocabulary always leads the tooling, never lags it. Where a technique has earned a gate-passing detection rule, ATD binds the two; coverage is a property to grow, not a condition of entry. ATD is to agent threats what <a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> is to AI attacks and <a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a> is to software weaknesses: a single, citable index that a whole ecosystem can point at.</p>
-<p>The catalog today names <strong>${"{TECH}"} techniques across ${"{TACTICS}"} tactics</strong>, every one mapped to at least one upstream framework, with <strong>${"{RULES}"} already bound to a live, gate-passing detection rule</strong>. That is the breadth a reference is measured by — and the rate it grows tells you the surface is still expanding.</p>
-<p class="atd-note"><strong>Status:</strong> an Editor's Draft — a request for comments and an open invitation to co-author. It is not yet a ratified standard; it earns that title when it meets the §8 neutrality bar. We publish it openly to gather collaborators and mapping partners, not to claim authority.</p>`,
+      body: `<p>Agentic Threat Detection (ATD) is the open, machine-readable knowledge base of agent-native threat techniques. Agents fail in ways no earlier security taxonomy has a name for. A poisoned tool description. A forged agent card. A memory write that lies dormant for three sessions. ATD gives each one a name, a permanent ID and a stable definition. Then it maps each to the established prose frameworks, <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10</a>, <a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a>, <a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a> and <a href="https://avidml.org/" target="_blank" rel="noopener noreferrer">AVID</a>, with real-world evidence that the attack has actually happened.</p>
+<p>Those frameworks tell you <em>what</em> can go wrong with an agent. ATD is the layer underneath. It names <em>how</em> each technique shows up at the point where it can be observed at runtime: the prompt, the tool call, the tool response, the message between agents, the memory write, the trace. That is where a detection rule has to hang. Until a technique has a name, every team writes the description again from scratch. A technique enters the catalog as soon as an attack is documented, before any detection rule exists for it, so the vocabulary leads the tooling instead of trailing it. Once a technique has a detection rule that passes the gate, ATD binds the two. Coverage is something to grow. It is not a condition of entry. ATD is to agent threats what <a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> is to AI attacks and <a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a> is to software weaknesses: one citable index a whole ecosystem can point at.</p>
+<p>Today the catalog names <strong>${"{TECH}"} techniques across ${"{TACTICS}"} tactics</strong>. Every one maps to at least one upstream framework, and <strong>${"{RULES}"} are already bound to a live detection rule that passes the gate</strong>. Breadth is what a reference is measured by. The rate it grows says the attack surface is still expanding.</p>
+<p class="atd-note"><strong>Status:</strong> Editor's Draft. It is a request for comments and an open invitation to co-author. It is not a ratified standard yet, and earns that title only when it meets the neutrality bar in §8. It is published openly to find collaborators and mapping partners, not to claim authority.</p>`,
     },
     zh: {
-      title: "Abstract (摘要)",
-      body: `<p>Agentic Threat Detection (ATD) 是 agent 原生威脅技法的開放、機器可讀知識庫。agent 出錯的方式,既有的安全分類大多沒有名字 ── 一段被下毒的 tool description、一張偽造的 agent card、一次潛伏三個 session 的 memory 寫入。ATD 為每一種命名、給它一個永久 ID 與穩定定義,再對映既有的論述型框架 ── <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10</a>、<a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a>、<a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a>、<a href="https://avidml.org/" target="_blank" rel="noopener noreferrer">AVID</a> ── 並附帶該攻擊確實發生過的真實佐證。</p>
-<p>那些框架告訴你 agent <em>會出什麼錯</em>。ATD 是其下的一層,為每條技法<em>如何</em>在可觀測之處顯現命名 ── prompt、tool call、tool response、inter-agent 訊息、memory 寫入、trace。那正是偵測規則必須掛上的地方;而在技法被命名之前,每個團隊都從零重寫一遍描述。一條技法在攻擊被記錄的當下就進入目錄 ── 早於任何偵測規則的存在 ── 讓詞彙永遠領先工具,而非落後。當技法已長出一條通過閘門的偵測規則,ATD 把兩者綁定;覆蓋率是要成長的屬性,不是進入的條件。ATD 之於 agent 威脅,如同 <a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> 之於 AI 攻擊、<a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a> 之於軟體弱點:一套整個生態都能指向的、可引用的索引。</p>
-<p>目錄至今已為 <strong>${"{TACTICS}"} 個戰術下的 ${"{TECH}"} 條技法</strong>命名,每條至少對映一個上游框架,其中 <strong>${"{RULES}"} 條已綁定一條 live、通過閘門的偵測規則</strong>。這正是一套參考被衡量的廣度 ── 而它成長的速度,告訴你這片攻擊面仍在擴張。</p>
-<p class="atd-note"><strong>狀態:</strong>Editor's Draft ── 一份 request for comments,公開邀請共同撰寫。它<strong>尚未</strong>是 ratified standard;唯有達到 §8 的中立門檻後才冠此名。我們公開它是為了徵集協作者與對映夥伴,不是宣稱權威。</p>`,
+      title: "摘要",
+      body: `<p>Agentic Threat Detection（ATD）是一套開放、機器可讀的知識庫，收錄 agent 特有的威脅技法。agent 出事的方式，既有的資安分類大多叫不出名字。一段被下毒的 tool description，一張偽造的 agent card，一次寫進記憶後潛伏了三個 session 的內容。ATD 替每一種取名，給它永久 ID 和穩定的定義，再對到既有的文字型框架：<a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10</a>、<a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a>、<a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a>、<a href="https://avidml.org/" target="_blank" rel="noopener noreferrer">AVID</a>，並附上這種攻擊真的發生過的佐證。</p>
+<p>那些框架告訴你 agent <em>會出什麼錯</em>。ATD 在它們底下一層，說明每條技法在 runtime 看得到的地方<em>怎麼</em>現形：prompt、tool call、tool response、agent 之間的訊息、記憶寫入、trace。偵測規則就得掛在這些地方。技法還沒有名字之前，每個團隊都得從頭寫一遍描述。攻擊一被記錄下來，技法就進目錄，不必等偵測規則出現，所以用詞永遠走在工具前面。等某條技法有了通過閘門的偵測規則，ATD 就把兩者綁在一起。覆蓋率是要慢慢長的，不是入門條件。ATD 之於 agent 威脅，就像 <a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> 之於 AI 攻擊、<a href="https://cwe.mitre.org/" target="_blank" rel="noopener noreferrer">CWE</a> 之於軟體弱點：一份整個生態都能指著引用的索引。</p>
+<p>目錄目前已替 <strong>${"{TACTICS}"} 個戰術底下的 ${"{TECH}"} 條技法</strong>命名。每一條至少對到一個上游框架，其中 <strong>${"{RULES}"} 條已綁定一條上線中、通過閘門的偵測規則</strong>。參考資料看的就是這個廣度。它長得多快，也說明這片攻擊面還在擴大。</p>
+<p class="atd-note"><strong>狀態：</strong>Editor's Draft。這是一份徵求意見稿，歡迎一起撰寫。它<strong>還不是</strong>正式通過的標準，要達到 §8 的中立門檻才算得上。公開它是為了找協作者和對照夥伴，不是要宣稱權威。</p>`,
     },
   },
   {
@@ -94,24 +94,24 @@ const SECTIONS: Section[] = [
     id: "scope",
     status: "normative",
     en: {
-      title: "Scope — what ATD is and is not",
-      body: `<p>ATD enumerates <strong>agent-runtime threat techniques detectable in agent I/O</strong>: prompt/content, tool calls, tool responses, inter-agent messages, memory operations, traces, screen state, and payment mandates.</p>
+      title: "Scope: what ATD is and is not",
+      body: `<p>ATD lists <strong>agent-runtime threat techniques that can be detected in agent I/O</strong>: prompts and content, tool calls, tool responses, messages between agents, memory operations, traces, screen state and payment mandates.</p>
 <ul>
-<li>ATD <strong>MUST NOT</strong> mint vulnerability instance identifiers. A specific CVE in a specific MCP server lives in CVE / GHSA / OSV / AVID; ATD references it, it does not replace it.</li>
-<li>ATD <strong>MUST NOT</strong> present itself as a competing top-level risk taxonomy. The "top ten agentic risks" framing belongs to OWASP ASI; ATD sits beneath it and makes it runnable.</li>
-<li>ATD <strong>MUST</strong> map every technique to at least one upstream framework, or document the gap where none exists yet.</li>
+<li>ATD <strong>MUST NOT</strong> mint identifiers for vulnerability instances. A specific CVE in a specific MCP server belongs in CVE, GHSA, OSV or AVID. ATD references it and does not replace it.</li>
+<li>ATD <strong>MUST NOT</strong> present itself as a competing top-level risk taxonomy. The "top ten agentic risks" framing belongs to OWASP ASI. ATD sits beneath it and makes it runnable.</li>
+<li>ATD <strong>MUST</strong> map every technique to at least one upstream framework, or document the gap where no mapping exists yet.</li>
 </ul>
-<p>This boundary is deliberate. Vulnerability registries that mirrored CVE's territory (e.g. the now-archived GSD) fragmented and stalled. ATD fills the uncovered <em>executable detection</em> layer, it does not re-fight a settled lane.</p>`,
+<p>The boundary is deliberate. Vulnerability registries that copied CVE's territory, such as the now-archived GSD, fragmented and stalled. ATD fills the <em>executable detection</em> layer that nobody covers. It does not refight a settled lane.</p>`,
     },
     zh: {
-      title: "Scope ── ATD 是什麼、不是什麼",
-      body: `<p>ATD 列舉 <strong>可在 agent I/O 觀測到的 agent-runtime 威脅技法</strong>:prompt/content、tool call、tool response、inter-agent 訊息、memory 操作、trace、螢幕狀態、payment mandate。</p>
+      title: "範圍：ATD 是什麼、不是什麼",
+      body: `<p>ATD 列的是<strong>能在 agent I/O 觀測到的 agent-runtime 威脅技法</strong>：prompt 與內容、tool call、tool response、agent 之間的訊息、記憶操作、trace、螢幕狀態、payment mandate。</p>
 <ul>
-<li>ATD <strong>MUST NOT</strong> 鑄造漏洞實例識別碼。特定 MCP server 的特定 CVE 屬於 CVE / GHSA / OSV / AVID;ATD 引用它,不取代它。</li>
-<li>ATD <strong>MUST NOT</strong> 自居為競爭性的頂層風險分類。「agentic 十大風險」的框架屬於 OWASP ASI;ATD 在其下,讓它可執行。</li>
-<li>ATD <strong>MUST</strong> 為每條技法至少對映一個上游框架,或在尚無對映時記錄該缺口。</li>
+<li>ATD <strong>MUST NOT</strong> 替漏洞實例發識別碼。某個 MCP server 的某個 CVE，歸 CVE、GHSA、OSV 或 AVID 管。ATD 引用它，不取代它。</li>
+<li>ATD <strong>MUST NOT</strong> 把自己當成另一套互相競爭的頂層風險分類。「agentic 十大風險」這個框架屬於 OWASP ASI。ATD 在它底下，讓它跑得起來。</li>
+<li>ATD <strong>MUST</strong> 讓每條技法至少對到一個上游框架。還對不到的，要把缺口記下來。</li>
 </ul>
-<p>此邊界是刻意的。鏡像 CVE 地盤的漏洞登錄(如已封存的 GSD)碎片化而停擺。ATD 填的是無人覆蓋的 <em>可執行偵測</em> 層,不重打已定的戰場。</p>`,
+<p>這條界線是刻意劃的。過去搶 CVE 地盤的漏洞登錄，例如已經封存的 GSD，最後四分五裂、停擺。ATD 補的是沒人做的<em>可執行偵測</em>這一層，不去重打已經定下來的仗。</p>`,
     },
   },
   {
@@ -120,23 +120,23 @@ const SECTIONS: Section[] = [
     status: "normative",
     en: {
       title: "Conceptual model",
-      body: `<p>ATD uses two axes, borrowed from proven standards:</p>
+      body: `<p>ATD uses two axes, both borrowed from standards that already work:</p>
 <ul>
-<li><strong>Tactic / Technique matrix</strong> (MITRE ATLAS model): a <code>Tactic</code> is the adversary's goal-phase; a <code>Technique</code> is a concrete, detectable attack pattern; a <code>Sub-technique</code> is a variant.</li>
-<li><strong>Abstraction hierarchy</strong> (CWE model): each technique is tagged <code>pillar</code> / <code>class</code> / <code>base</code> / <code>variant</code>.</li>
+<li><strong>Tactic / Technique matrix</strong>, from MITRE ATLAS. A <code>Tactic</code> is the adversary's goal phase. A <code>Technique</code> is a concrete attack pattern that can be detected. A <code>Sub-technique</code> is a variant.</li>
+<li><strong>Abstraction hierarchy</strong>, from CWE. Each technique is tagged <code>pillar</code>, <code>class</code>, <code>base</code> or <code>variant</code>.</li>
 </ul>
-<p><strong>Identifiers.</strong> Tactics are <code>ATD-TA1</code> … <code>ATD-TA9</code>. Techniques are <code>ATD-T0001</code> (zero-padded, sequential, permanent, never reused); sub-techniques use dotted notation <code>ATD-T0001.001</code>. Each individual detection rule additionally carries a UUIDv4 so rules survive renaming — techniques are the catalog, rules are the executable instances bound to them.</p>
-<p><strong>Maturity.</strong> Every technique and every rule carries a status on the ladder <code>experimental → test → stable</code> (plus <code>deprecated</code>). Production consumers <strong>SHOULD</strong> auto-sync only <code>stable</code>.</p>`,
+<p><strong>Identifiers.</strong> Tactics run <code>ATD-TA1</code> … <code>ATD-TA9</code>. Techniques are <code>ATD-T0001</code>: zero-padded, sequential, permanent and never reused. Sub-techniques use dotted notation, as in <code>ATD-T0001.001</code>. Each detection rule also carries a UUIDv4, so a rule survives renaming. Techniques are the catalog. Rules are the executable instances bound to them.</p>
+<p><strong>Maturity.</strong> Every technique and every rule has a status on the ladder <code>experimental → test → stable</code>, plus <code>deprecated</code>. Production consumers <strong>SHOULD</strong> auto-sync only <code>stable</code>.</p>`,
     },
     zh: {
       title: "概念模型",
-      body: `<p>ATD 採用兩條軸,借自已驗證的標準:</p>
+      body: `<p>ATD 用兩條軸，都借自已經證明可行的標準：</p>
 <ul>
-<li><strong>Tactic / Technique 矩陣</strong>(MITRE ATLAS 模型):<code>Tactic</code> 是對手的目標階段;<code>Technique</code> 是具體、可偵測的攻擊模式;<code>Sub-technique</code> 是變體。</li>
-<li><strong>抽象層級</strong>(CWE 模型):每條技法標 <code>pillar</code> / <code>class</code> / <code>base</code> / <code>variant</code>。</li>
+<li><strong>Tactic / Technique 矩陣</strong>，來自 MITRE ATLAS。<code>Tactic</code> 是攻擊者的目標階段，<code>Technique</code> 是具體、可偵測的攻擊模式，<code>Sub-technique</code> 是它的變體。</li>
+<li><strong>抽象層級</strong>，來自 CWE。每條技法標上 <code>pillar</code>、<code>class</code>、<code>base</code> 或 <code>variant</code>。</li>
 </ul>
-<p><strong>識別碼。</strong>Tactic 為 <code>ATD-TA1</code> … <code>ATD-TA9</code>。Technique 為 <code>ATD-T0001</code>(補零、序列、永久、不重用);sub-technique 用點記法 <code>ATD-T0001.001</code>。每條偵測規則另帶 UUIDv4,使規則在改名後仍可追蹤 ── technique 是 catalog,rule 是綁定其上的可執行實例。</p>
-<p><strong>成熟度。</strong>每條技法與規則皆帶階梯狀態 <code>experimental → test → stable</code>(加 <code>deprecated</code>)。production 消費者 <strong>SHOULD</strong> 只自動同步 <code>stable</code>。</p>`,
+<p><strong>識別碼。</strong>Tactic 是 <code>ATD-TA1</code> … <code>ATD-TA9</code>。Technique 是 <code>ATD-T0001</code>，補零、依序編號、永久有效，不會重用。sub-technique 用點號，例如 <code>ATD-T0001.001</code>。每條偵測規則另外帶一個 UUIDv4，改名之後還追得到。technique 是目錄，rule 是綁在上面、可以執行的實例。</p>
+<p><strong>成熟度。</strong>每條技法和規則都有一個階段：<code>experimental → test → stable</code>，另外還有 <code>deprecated</code>。正式環境的使用端 <strong>SHOULD</strong> 只自動同步 <code>stable</code>。</p>`,
     },
   },
   {
@@ -145,7 +145,7 @@ const SECTIONS: Section[] = [
     status: "normative",
     en: {
       title: "Entry schema",
-      body: `<p>A technique entry is a YAML/JSON document validated against a normative JSON Schema (Draft 2020-12), shipped in-repo. It is designed to be compatible with the OSV and Sigma ecosystems. Required fields:</p>
+      body: `<p>A technique entry is a YAML or JSON document, validated against a normative JSON Schema (Draft 2020-12) that ships in the repo. It is designed to be compatible with the OSV and Sigma ecosystems. Required fields:</p>
 <pre><code>atd_id            ATD-T####            permanent
 schema_version    SemVer, no "v"       additive-minor guarantee (OSV)
 title             short imperative phrase
@@ -158,11 +158,11 @@ detection_surface content | tool_input | tool_response |
 mappings          owasp_asi[] · mitre_atlas[] · cwe[] · avid[] · maestro_layer[]
 references         advisory / CVE / research URLs (evidence it is real)
 detection_rules   UUIDv4[] into the rule corpus</code></pre>
-<p>A detection rule reuses the ATR rule schema already in production: regex/conditions, <code>true_positives</code> <strong>and</strong> <code>true_negatives</code> (a precision test), false-positive notes, response actions, and a valid <code>agent_source.type</code>.</p>`,
+<p>A detection rule reuses the ATR rule schema already in production: regex or conditions, <code>true_positives</code> <strong>and</strong> <code>true_negatives</code> as a precision test, false-positive notes, response actions, and a valid <code>agent_source.type</code>.</p>`,
     },
     zh: {
-      title: "Entry schema",
-      body: `<p>technique entry 是 YAML/JSON 文件,對 normative JSON Schema(Draft 2020-12)驗證,隨 repo 發布,設計上與 OSV 及 Sigma 生態相容。必填欄位:</p>
+      title: "條目結構",
+      body: `<p>technique 條目是一份 YAML 或 JSON 文件，要通過 repo 裡附的 normative JSON Schema（Draft 2020-12）驗證。設計上和 OSV、Sigma 生態相容。必填欄位：</p>
 <pre><code>atd_id            ATD-T####            永久
 schema_version    SemVer, 無 "v"        加法式 minor 保證(OSV)
 title             簡短祈使片語
@@ -175,7 +175,7 @@ detection_surface content | tool_input | tool_response |
 mappings          owasp_asi[] · mitre_atlas[] · cwe[] · avid[] · maestro_layer[]
 references         advisory / CVE / research URL(真實證據)
 detection_rules   UUIDv4[] 指向 rule corpus</code></pre>
-<p>detection rule 重用已在 production 的 ATR rule schema:regex/conditions、<code>true_positives</code> <strong>與</strong> <code>true_negatives</code>(精準度測試)、false-positive 註記、response action、合法的 <code>agent_source.type</code>。</p>`,
+<p>偵測規則沿用已經在正式環境跑的 ATR 規則 schema：regex 或 conditions、<code>true_positives</code> <strong>和</strong> <code>true_negatives</code>（用來測精準度）、誤報註記、回應動作，以及合法的 <code>agent_source.type</code>。</p>`,
     },
   },
   {
@@ -183,14 +183,14 @@ detection_rules   UUIDv4[] 指向 rule corpus</code></pre>
     id: "mappings",
     status: "informative",
     en: {
-      title: "Mappings &amp; interoperability",
-      body: `<p>Legitimacy comes from interoperability, not from declaring authority. Every ATD technique maps to OWASP ASI, MITRE ATLAS and CWE where a slot exists; AVID and the MAESTRO layer are added where they apply. Where a technique falls in a gap no upstream framework yet names, ATD records the gap and feeds it back to those projects as a proposed technique and case study — the catalog grows by crosswalk, not by claiming a lane of its own.</p>
-<p>ATD is designed to interoperate with — not compete against — <a href="https://avidml.org/" target="_blank" rel="noopener noreferrer">AVID</a>, which already operates a governed, submission-open AI vulnerability registry. ATD supplies the executable detection AVID's "Detection" report type expects.</p>`,
+      title: "Mappings & interoperability",
+      body: `<p>Legitimacy comes from interoperability, not from declaring authority. Every ATD technique maps to OWASP ASI, MITRE ATLAS and CWE wherever a slot exists. AVID and the MAESTRO layer are added where they apply. When a technique falls in a gap no upstream framework names yet, ATD records the gap and feeds it back to those projects as a proposed technique and case study. The catalog grows by crosswalk. It does not claim a lane of its own.</p>
+<p>ATD is designed to interoperate with <a href="https://avidml.org/" target="_blank" rel="noopener noreferrer">AVID</a>, not compete with it. AVID already operates a governed AI vulnerability registry that is open to submissions. ATD supplies the executable detection that AVID's "Detection" report type expects.</p>`,
     },
     zh: {
-      title: "對映與互通",
-      body: `<p>合法性來自互通,而非自封權威。每條 ATD 技法在有對應槽時對映 OWASP ASI、MITRE ATLAS、CWE;在適用時加上 AVID 與 MAESTRO 層。當一條技法落在上游框架尚未命名的缺口,ATD 記錄該缺口,並以提議技法與案例研究回饋給那些專案 ── 目錄靠 crosswalk 成長,而非自闢一條地盤。</p>
-<p>ATD 設計上與 <a href="https://avidml.org/" target="_blank" rel="noopener noreferrer">AVID</a> 互通而非競爭 ── AVID 已營運一個有治理、開放投稿的 AI 漏洞登錄。ATD 提供 AVID「Detection」報告類型所期待的可執行偵測。</p>`,
+      title: "對照與互通",
+      body: `<p>正當性來自互通，不是自己宣布權威。只要有對應的位置，每條 ATD 技法都會對到 OWASP ASI、MITRE ATLAS 和 CWE。適用的話，再加上 AVID 和 MAESTRO 層。技法落在上游框架還沒命名的缺口時，ATD 會記下這個缺口，再以提議技法和案例研究的形式，回饋給那些專案。目錄靠對照長大，不另立地盤。</p>
+<p>ATD 設計上要和 <a href="https://avidml.org/" target="_blank" rel="noopener noreferrer">AVID</a> 互通，不是競爭。AVID 已經在營運一個有治理、開放投稿的 AI 漏洞登錄。AVID 的「Detection」報告類型需要可執行的偵測，ATD 補的就是這一塊。</p>`,
     },
   },
   {
@@ -200,17 +200,17 @@ detection_rules   UUIDv4[] 指向 rule corpus</code></pre>
     en: {
       title: "Conformance",
       body: `<ul>
-<li>A <strong>conformant technique entry</strong> MUST validate against the JSON Schema, carry at least one framework mapping (or a documented gap), and cite at least one reference.</li>
-<li>A <strong>conformant detection rule</strong> MUST pass the precision gate: every declared true-positive matches, zero false positives on the published benign corpus, and no cross-rule conflict.</li>
+<li>A <strong>conformant technique entry</strong> MUST validate against the JSON Schema, carry at least one framework mapping or a documented gap, and cite at least one reference.</li>
+<li>A <strong>conformant detection rule</strong> MUST pass the precision gate. Every declared true positive matches. The published benign corpus produces zero false positives. No rule conflicts with another.</li>
 <li>A <strong>conformant consumer</strong> MUST honor the maturity field and SHOULD expose the <code>ATD-T####</code> id on every detection it emits.</li>
 </ul>`,
     },
     zh: {
-      title: "Conformance",
+      title: "符規",
       body: `<ul>
-<li><strong>conformant technique entry</strong> MUST 通過 JSON Schema 驗證,至少帶一個框架對映(或記錄缺口),並至少引一個 reference。</li>
-<li><strong>conformant detection rule</strong> MUST 通過精準度閘:每條宣告的 true-positive 命中、對公開 benign corpus 零誤報、無跨規則衝突。</li>
-<li><strong>conformant consumer</strong> MUST 尊重 maturity 欄,並 SHOULD 在每筆偵測上揭露 <code>ATD-T####</code> id。</li>
+<li><strong>符規的技法條目</strong> MUST 通過 JSON Schema 驗證，至少帶一個框架對照或記錄下來的缺口，並至少引用一個來源。</li>
+<li><strong>符規的偵測規則</strong> MUST 通過精準度閘門：每個宣告的正例都要命中，在公開的良性語料上零誤報，規則之間沒有衝突。</li>
+<li><strong>符規的使用端</strong> MUST 遵守 maturity 欄位，並 SHOULD 在每筆偵測上帶出 <code>ATD-T####</code> id。</li>
 </ul>`,
     },
   },
@@ -219,20 +219,19 @@ detection_rules   UUIDv4[] 指向 rule corpus</code></pre>
     id: "governance",
     status: "informative",
     en: {
-      title: "Governance &amp; status",
-      body: `<p>ATD is governed by a written charter and published as an open draft and an invitation to co-author. It earns the title <em>standard</em> when it meets a concrete, public neutrality bar adopted from the OpenSSF project lifecycle — <strong>at least three maintainers across at least two organizations</strong> — and we are actively seating them.</p>
-<p>Governance follows a Minimal Viable Governance charter: lazy consensus of maintainers, a simple-majority Technical Steering Committee fallback, charter amendments by a two-thirds vote, and no single-person veto. The specification is CC-BY-4.0 and forkable by design — no party can hold it hostage — with a committed roadmap to a neutral foundation home (an OpenSSF working group, or the OWASP GenAI Security Project).</p>
-<p class="atd-note">Call for collaborators — if your team works on agent security, <strong>map your tooling to ATD, submit a technique, or take a maintainer seat</strong>. See <a href="/${"{LOCALE}"}/contribute">/contribute</a>.</p>`,
+      title: "Governance & status",
+      body: `<p>ATD is governed by a written charter. It is published as an open draft and an invitation to co-author. It earns the title <em>standard</em> when it meets a concrete, public neutrality bar taken from the OpenSSF project lifecycle: <strong>at least three maintainers from at least two organizations</strong>. Those seats are actively being filled.</p>
+<p>Governance follows a Minimal Viable Governance charter. Maintainers decide by lazy consensus, with a simple-majority vote of the Technical Steering Committee as the fallback. Charter amendments need a two-thirds vote, and no single person has a veto. The specification is CC-BY-4.0 and forkable by design, so no party can hold it hostage. There is a committed roadmap to a neutral foundation home: an OpenSSF working group, or the OWASP GenAI Security Project.</p>
+<p class="atd-note">Call for collaborators. If your team works on agent security, <strong>map your tooling to ATD, submit a technique, or take a maintainer seat</strong>. See <a href="/${"{LOCALE}"}/contribute">/contribute</a>.</p>`,
     },
     zh: {
       title: "治理與狀態",
-      body: `<p>ATD 依書面 charter 治理,以開放草案發布,並公開邀請共同撰寫。它在達到一條具體、公開的中立門檻(採自 OpenSSF 專案生命週期:<strong>至少三名 maintainer,橫跨至少兩個組織</strong>)後冠上 <em>standard</em> 之名 ── 我們正在積極就位。</p>
-<p>治理採 Minimal Viable Governance charter:maintainer 的 lazy consensus、Technical Steering Committee 簡單多數 fallback、章程修訂需三分之二投票、無單人否決。規格以 CC-BY-4.0 授權且設計上可 fork ── 無任何一方能挾持它 ── 並承諾遷往中立基金會(OpenSSF working group,或 OWASP GenAI Security Project)。</p>
-<p class="atd-note">徵求協作者 ── 若你的團隊從事 agent 安全,<strong>把工具對映到 ATD、投一條技法、或擔任 maintainer 席位</strong>。見 <a href="/${"{LOCALE}"}/contribute">/contribute</a>。</p>`,
+      body: `<p>ATD 依書面章程治理，以開放草案的形式發布，歡迎一起撰寫。要達到一條具體、公開的中立門檻，它才稱得上 <em>standard</em>。這條門檻取自 OpenSSF 的專案生命週期：<strong>至少三位 maintainer，分屬至少兩個組織</strong>。這些席位正在積極補上。</p>
+<p>治理採 Minimal Viable Governance 章程。maintainer 之間用 lazy consensus 決定，談不攏時由 Technical Steering Committee 簡單多數表決。修改章程要三分之二同意，沒有任何一個人能否決。規格以 CC-BY-4.0 授權，設計上就能 fork，沒有哪一方能綁架它。另外也已承諾遷到中立的基金會：OpenSSF 的 working group，或 OWASP GenAI Security Project。</p>
+<p class="atd-note">徵求協作者。如果你的團隊在做 agent 安全，<strong>可以把工具對到 ATD、投一條技法，或接下 maintainer 席位</strong>。請看 <a href="/${"{LOCALE}"}/contribute">/contribute</a>。</p>`,
     },
   },
 ];
-
 export default async function ATDPage({
   params,
 }: {
@@ -279,7 +278,7 @@ export default async function ATDPage({
 
         <p className="atd-eyebrow">
           {locale === "zh"
-            ? "agent 威脅技法權威知識庫 · 草案 RFC · 徵求協作者 · ATR 之伴隨標準"
+            ? "agent 威脅技法的權威知識庫 · RFC 草案 · 徵求協作者 · 與 ATR 搭配的標準"
             : "Authoritative knowledge base of agent threat techniques · draft RFC · call for collaborators · companion to ATR"}
         </p>
 
@@ -287,8 +286,8 @@ export default async function ATDPage({
 
         <p className="atd-sub">
           {locale === "zh"
-            ? "agent runtime 威脅手法的權威開放知識庫 —— 為每一種攻擊手法命名、給它一個穩定的 ID、對映到 OWASP、MITRE ATLAS、CWE、AVID,讓偵測有處可掛。如同 ATLAS 之於 AI 攻擊、CWE 之於軟體弱點:這個時代 agent 威脅的命名與索引。"
-            : "The authoritative open knowledge base of agent-runtime threat techniques — it gives every attack technique a name, a stable ID, and a crosswalk to OWASP, MITRE ATLAS, CWE and AVID, so detection has somewhere to hang. What MITRE ATLAS is to AI attacks and CWE is to software weaknesses: the naming and index of agent threats for this era."}
+            ? "agent runtime 威脅手法的權威開放知識庫。每一種攻擊手法都有名字、穩定的 ID，也對到 OWASP、MITRE ATLAS、CWE、AVID，讓偵測有地方掛。ATLAS 替 AI 攻擊命名，CWE 替軟體弱點命名。ATD 做的，是這個時代 agent 威脅的命名和索引。"
+            : "The authoritative open knowledge base of agent-runtime threat techniques. Every attack technique gets a name, a stable ID and a crosswalk to OWASP, MITRE ATLAS, CWE and AVID, so detection has somewhere to hang. MITRE ATLAS names AI attacks. CWE names software weaknesses. ATD is the naming and index of agent threats for this era."}
         </p>
 
         <div className="doc-status not-prose" role="note">
@@ -298,7 +297,7 @@ export default async function ATDPage({
           <span className="pipe">·</span>
           <span><span className="opacity-70">{locale === "zh" ? "日期" : "Date"}</span> {ATD_DATE}</span>
           <span className="pipe">·</span>
-          <span><span className="opacity-70">{locale === "zh" ? "正式版" : "Canonical"}</span> <a href={`/${locale}/atd`}>/atd</a></span>
+          <span><span className="opacity-70">{locale === "zh" ? "正式網址" : "Canonical"}</span> <a href={`/${locale}/atd`}>/atd</a></span>
           <span className="pipe">·</span>
           <span><span className="opacity-70">{locale === "zh" ? "編輯" : "Editor"}</span> Adam Lin</span>
         </div>
@@ -307,19 +306,19 @@ export default async function ATDPage({
       <section aria-label="coverage" className="mb-10 md:mb-12">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
-            { v: String(ATD_STATS.techniques), l: locale === "zh" ? "技法已編目" : "techniques cataloged" },
+            { v: String(ATD_STATS.techniques), l: locale === "zh" ? "條技法已編目" : "techniques cataloged" },
             { v: String(ATD_STATS.withCve), l: locale === "zh" ? "有 CVE 佐證" : "CVE-backed" },
-            { v: String(ATD_STATS.withLiveRule), l: locale === "zh" ? "已綁定偵測規則(覆蓋率,非門檻)" : "bound to a rule (coverage, not a gate)" },
+            { v: String(ATD_STATS.withLiveRule), l: locale === "zh" ? "條已綁定偵測規則（這是覆蓋率，不是門檻）" : "bound to a rule (coverage, not a gate)" },
             ...[
               proofCard(
                 selfTest,
                 zh,
-                { en: "in-house self-test corpus", zh: "自家 self-test 語料" },
+                { en: "in-house self-test corpus", zh: "ATR 內部自測語料" },
                 selfTest && selfTest.falsePositives !== null && selfTest.benign !== null
-                  ? { en: `${count(selfTest.falsePositives)} of ${count(selfTest.benign)} benign flagged in the hunt lane; not out-of-sample`, zh: `hunt lane 在 ${count(selfTest.benign)} 個良性樣本上誤報 ${count(selfTest.falsePositives)};不是樣本外證據` }
+                  ? { en: `${count(selfTest.falsePositives)} of ${count(selfTest.benign)} benign samples flagged in the hunt lane, not out-of-sample`, zh: `hunt lane 在 ${count(selfTest.benign)} 個良性樣本上誤報 ${count(selfTest.falsePositives)} 次，不能當樣本外證據` }
                   : undefined,
               ),
-              proofCard(garak, zh, { en: "garak in-the-wild", zh: "garak 野外" }, { en: "partly closed-book: many rules were written from this corpus", zh: "部分屬 closed-book:有不少規則是從這份語料寫的" }),
+              proofCard(garak, zh, { en: "garak in-the-wild", zh: "garak in-the-wild" }, { en: "partly closed-book, since many rules were written from this corpus", zh: "部分屬於 closed-book，不少規則就是從這份語料寫出來的" }),
             ].flatMap((c) => c ?? []),
           ].map((m, i) => (
             <div key={i} style={{ background: "var(--spec-tint)", borderRadius: "10px", padding: "0.9rem 1rem" }}>
@@ -330,9 +329,9 @@ export default async function ATDPage({
         </div>
         <p className="text-stone" style={{ fontSize: "0.8rem", marginTop: "0.9rem", lineHeight: 1.6 }}>
           {locale === "zh" ? (
-            <>ATD 的偵測規則由 ATR 發布 —— 已合併進 Cisco AI Defense 的開源 skill-scanner、用於 Microsoft Agent Governance Toolkit 的範例,並於 MISP/CIRCL 對映。consumer 整合的是 ATR 規則,非對本草案標準的背書。DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>。</>
+            <>ATD 的偵測規則隨 ATR 發布。ATR 已合併進 Cisco AI Defense 的開源 skill-scanner，用在 Microsoft Agent Governance Toolkit 的範例裡，也在 MISP/CIRCL 有對照。這些使用端整合的是 ATR 規則，不代表它們背書這份草案標準。DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>。</>
           ) : (
-            <>ATD&apos;s detection rules ship in ATR — merged into Cisco AI Defense&apos;s open-source skill-scanner, used in Microsoft Agent Governance Toolkit examples, and mapped in MISP/CIRCL. Consumers integrate ATR rules; this is not an endorsement of this draft standard. DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>.</>
+            <>ATD&apos;s detection rules ship in ATR. ATR has been merged into Cisco AI Defense&apos;s open-source skill-scanner, is used in Microsoft Agent Governance Toolkit examples, and is mapped in MISP/CIRCL. Those consumers integrate ATR rules. That is not an endorsement of this draft standard. DOI{" "}<a className="text-navy underline" href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a>.</>
           )}
         </p>
       </section>
@@ -374,7 +373,7 @@ export default async function ATDPage({
               <li>
                 <a href="#downloads">
                   <span className="toc-section-num">§9</span>
-                  {locale === "zh" ? "下載與產物" : "Downloads & artifacts"}
+                  {locale === "zh" ? "下載與檔案" : "Downloads & artifacts"}
                 </a>
               </li>
             </ol>
@@ -431,8 +430,8 @@ export default async function ATDPage({
             <div className="spec-body">
               <p>
                 {locale === "zh"
-                  ? `這是完整目錄 ── ${ATD_STATS.techniques} 條技法,沿 ${ATD_TACTICS.length} 個戰術階段排列,從 MCP 協定層一路到 multi-agent 動態與 agentic commerce。每條都有一個永久 ID、一段穩定定義,並對映 OWASP ASI / MITRE ATLAS / CWE,附上真實 CVE 或研究佐證。其中 ${ATD_STATS.withLiveRule} 條已綁定一條 live 的 ATR 偵測規則 ── 其餘是僅被記錄的技法,在此地位完全相同:命名一個威脅不需要先有規則。已記錄而尚無公開實例者誠實標 research / aspirational,絕不偽裝成 CVE。每個框架識別碼都對原始來源現驗 (2026-06-14)。`
-                  : `This is the full index — ${ATD_STATS.techniques} techniques laid out along ${ATD_TACTICS.length} tactic phases, from the MCP protocol layer through multi-agent dynamics to agentic commerce. Each carries a permanent ID, a stable definition, and a crosswalk to OWASP ASI / MITRE ATLAS / CWE, backed by a real CVE or research citation. ${ATD_STATS.withLiveRule} are already bound to a live ATR detection rule; the rest are documented techniques and stand on exactly equal footing here — naming a threat does not wait for a rule to exist. Documented entries with no public instance are honestly marked research / aspirational, never dressed up as a CVE. Every framework id is verified against its primary source (2026-06-14).`}
+                  ? `這是完整目錄。${ATD_STATS.techniques} 條技法，依 ${ATD_TACTICS.length} 個戰術階段排列，從 MCP 協定層、multi-agent 之間的互動，一路到 agentic commerce。每條都有永久 ID 和穩定的定義，對到 OWASP ASI、MITRE ATLAS、CWE，並附真實的 CVE 或研究佐證。其中 ${ATD_STATS.withLiveRule} 條已綁定一條上線中的 ATR 偵測規則。其餘只做了記錄，但在這裡的地位完全一樣：替威脅命名，不必等規則先出現。已記錄、但還沒有公開實例的，標成 research 或 aspirational，絕不假裝成 CVE。每個框架識別碼都在 2026-06-14 對原始來源核對過。`
+                  : `This is the full index. ${ATD_STATS.techniques} techniques, laid out along ${ATD_TACTICS.length} tactic phases, from the MCP protocol layer through multi-agent dynamics to agentic commerce. Each carries a permanent ID, a stable definition and a crosswalk to OWASP ASI, MITRE ATLAS and CWE, backed by a real CVE or a research citation. ${ATD_STATS.withLiveRule} are already bound to a live ATR detection rule. The rest are documented techniques and stand on exactly equal footing here, because naming a threat does not wait for a rule. Entries with no public instance are marked research or aspirational, never dressed up as a CVE. Every framework ID was checked against its primary source on 2026-06-14.`}
               </p>
             </div>
             {ATD_TACTICS.map((tac) => {
@@ -453,7 +452,7 @@ export default async function ATDPage({
                           <span className="text-ink" style={{ fontWeight: 500, fontSize: "0.96rem" }}>{t.title}</span>
                           {t.atrRule && (
                             <Link href={`/${locale}/rules/${t.atrRule}`} style={{ fontFamily: "var(--font-data)", fontSize: "0.68rem", background: "var(--navy)", color: "#fff", borderRadius: "3px", padding: "2px 7px", textDecoration: "none" }}>
-                              {locale === "zh" ? "live 規則 ↗" : "live rule ↗"}
+                              {locale === "zh" ? "上線規則 ↗" : "live rule ↗"}
                             </Link>
                           )}
                         </div>
@@ -464,7 +463,7 @@ export default async function ATDPage({
                           ) : t.evidence.kind === "research" ? (
                             <a href={t.evidence.url} target="_blank" rel="noopener noreferrer" style={{ background: "var(--ash)", color: "var(--graphite)", borderRadius: "3px", padding: "2px 7px", textDecoration: "none" }}>{locale === "zh" ? "研究 ↗" : "research ↗"}</a>
                           ) : (
-                            <span style={{ background: "var(--ash)", color: "var(--mist)", borderRadius: "3px", padding: "2px 7px" }}>{locale === "zh" ? "前瞻(尚無實例)" : "aspirational"}</span>
+                            <span style={{ background: "var(--ash)", color: "var(--mist)", borderRadius: "3px", padding: "2px 7px" }}>{locale === "zh" ? "前瞻，尚無實例" : "aspirational"}</span>
                           )}
                           {t.asi.map((a) => <span key={a} style={{ background: "#EAF1FB", color: "#185FA5", borderRadius: "3px", padding: "2px 6px" }}>{a}</span>)}
                           {t.atlas.map((a) => <span key={a} style={{ background: "var(--spec-tint)", color: "var(--navy)", borderRadius: "3px", padding: "2px 6px" }}>{a}</span>)}
@@ -492,28 +491,28 @@ export default async function ATDPage({
           <section id="downloads" aria-labelledby="downloads-heading">
             <h2 id="downloads-heading">
               <a href="#downloads" className="section-anchor" aria-hidden="true">§9</a>
-              {locale === "zh" ? "下載與產物" : "Downloads & artifacts"}
+              {locale === "zh" ? "下載與檔案" : "Downloads & artifacts"}
               <InformativeBadge className="ml-2 align-middle" />
             </h2>
             <div className="spec-body">
               <ul>
-                <li><a href="/atd/atd-techniques.json" target="_blank" rel="noopener noreferrer">atd-techniques.json</a> — {locale === "zh" ? "完整 enumeration(機器可讀,OSV/Sigma 相容欄位)" : "the full enumeration (machine-readable; OSV/Sigma-compatible fields)"}</li>
-                <li><a href="/atd/atd-technique.schema.json" target="_blank" rel="noopener noreferrer">atd-technique.schema.json</a> — {locale === "zh" ? "normative JSON Schema (Draft 2020-12)" : "the normative JSON Schema (Draft 2020-12)"}</li>
-                <li><Link href={`/${locale}/spec`}>/spec</Link> — {locale === "zh" ? "ATR 規則格式(技法綁定的可執行規則)" : "the ATR rule format (the executable rules techniques bind to)"}</li>
-                <li>DOI <a href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a> — {locale === "zh" ? "研究與引用 artifact" : "research & citation artifact"}</li>
+                <li><a href="/atd/atd-techniques.json" target="_blank" rel="noopener noreferrer">atd-techniques.json</a> — {locale === "zh" ? "完整目錄，機器可讀，欄位與 OSV、Sigma 相容" : "the full enumeration, machine-readable, with OSV- and Sigma-compatible fields"}</li>
+                <li><a href="/atd/atd-technique.schema.json" target="_blank" rel="noopener noreferrer">atd-technique.schema.json</a> — {locale === "zh" ? "normative JSON Schema（Draft 2020-12）" : "the normative JSON Schema (Draft 2020-12)"}</li>
+                <li><Link href={`/${locale}/spec`}>/spec</Link> — {locale === "zh" ? "ATR 規則格式，技法綁定的可執行規則就照這個寫" : "the ATR rule format, used by the executable rules that techniques bind to"}</li>
+                <li>DOI <a href={`https://doi.org/${ATD_DOI}`} target="_blank" rel="noopener noreferrer">{ATD_DOI}</a> — {locale === "zh" ? "研究與引用用的存檔" : "research & citation artifact"}</li>
               </ul>
             </div>
           </section>
 
           <hr className="my-12 border-fog" />
           <p className="spec-meta">
-            {locale === "zh" ? "編輯" : "Editor"}: Adam Lin —{" "}
+            {locale === "zh" ? "編輯：" : "Editor: "}Adam Lin ·{" "}
             {locale === "zh" ? "規格" : "Specification"} CC-BY-4.0 ·{" "}
-            {locale === "zh" ? "Schema 與工具" : "Schema &amp; tooling"} Apache-2.0 ·{" "}
-            {locale === "zh" ? "規則庫" : "Rule corpus"} MIT — ISO 8601 {ATD_DATE} —{" "}
+            {locale === "zh" ? "Schema 與工具" : "Schema & tooling"} Apache-2.0 ·{" "}
+            {locale === "zh" ? "規則庫" : "Rule corpus"} MIT · ISO 8601 {ATD_DATE} ·{" "}
             {locale === "zh"
-              ? "Editor's Draft,治理前;非 ratified standard。"
-              : "Editor's Draft, pre-governance; not a ratified standard."}
+              ? "Editor's Draft，治理前，還不是正式通過的標準。"
+              : "Editor's Draft, pre-governance. Not a ratified standard."}
           </p>
         </div>
       </div>

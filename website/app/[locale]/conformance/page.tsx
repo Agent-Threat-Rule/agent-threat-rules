@@ -27,8 +27,8 @@ export async function generateMetadata({
     title: "Conformance",
     description:
       locale === "zh"
-        ? "ATR 的三個符規等級 (L1 Engine / L2 Publisher / L3 Sub-range Authority) 的規範性定義,以及 L1 測試套件與自我認證程序。"
-        : "Normative definition of the three ATR conformance levels (L1 Engine / L2 Publisher / L3 Sub-range Authority), the L1 test suite, and the self-certification procedure.",
+        ? "ATR 三個符規等級（L1 Engine、L2 Publisher、L3 Sub-range Authority）的規範定義，加上 L1 測試套件和自我認證程序。"
+        : "The normative definition of ATR's three conformance levels (L1 Engine, L2 Publisher, L3 Sub-range Authority), plus the L1 test suite and the self-certification procedure.",
   });
 }
 
@@ -58,7 +58,7 @@ export default async function ConformancePage({
           className="text-xs uppercase tracking-[0.18em] text-stone mb-3"
           style={{ fontFamily: "var(--font-data)" }}
         >
-          {zh ? "符規 — Conformance" : "Conformance"}
+          {zh ? "符規" : "Conformance"}
         </p>
         <h1
           className="text-3xl md:text-5xl font-bold text-navy-ink mb-4 leading-[1.1]"
@@ -126,7 +126,7 @@ export default async function ConformancePage({
               className="text-xs uppercase tracking-wider text-stone mb-2"
               style={{ fontFamily: "var(--font-body)" }}
             >
-              {zh ? "完整規格" : "Full Specification"}
+              {zh ? "完整規格" : "Full specification"}
             </p>
             <Link
               href={`${prefix}/spec`}
@@ -176,8 +176,8 @@ export default async function ConformancePage({
             <p>{t(locale, "conformance.l3.body")}</p>
             <p className="text-sm text-stone mt-3" style={{ maxWidth: "42em" }}>
               {zh
-                ? "TSC 尚未就任。授權之核發於 TSC 就任後生效;在此之前,由首席維護者 (BDFL) 行使此角色。"
-                : "The TSC is not yet seated. Authority is granted once the TSC is seated; until then the lead maintainer (BDFL) acts in this role."}
+                ? "TSC 還沒就任。授權要等 TSC 就任後才會核發。在那之前，由首席維護者（BDFL）擔任這個角色。"
+                : "The TSC is not yet seated. Authority is granted once it is. Until then the lead maintainer (BDFL) acts in this role."}
             </p>
           </section>
 
@@ -208,8 +208,8 @@ export default async function ConformancePage({
             </pre>
             <p className="text-sm text-stone mt-4" style={{ maxWidth: "42em" }}>
               {zh
-                ? "每個 fixture 為一份 YAML 檔,內含目標規則、輸入 event、與預期評估結果三段。Engine 實作者於本地 clone repo、跑測試套件、產出 pass/fail 報告。"
-                : "Each fixture is a YAML file with three blocks: the target rule, the input event, and the expected evaluation outcome. Engine implementers clone the repo, run the test suite locally, and produce a pass/fail report."}
+                ? "每個 fixture 是一份 YAML 檔，分三段：目標規則、輸入的 event、預期的評估結果。寫引擎的人在本機 clone repo，跑一遍測試套件，就會產出 pass/fail 報告。"
+                : "Each fixture is a YAML file in three blocks: the target rule, the input event and the expected evaluation result. Engine implementers clone the repo, run the suite locally, and get a pass/fail report."}
             </p>
           </section>
 
@@ -224,12 +224,12 @@ export default async function ConformancePage({
             <p>{t(locale, "conformance.self.body")}</p>
             <p className="text-sm text-stone mt-3" style={{ maxWidth: "42em" }}>
               {zh
-                ? "TSC 尚未就任。上述驗證職責於 TSC 就任後由 TSC 行使;在此之前,由首席維護者 (BDFL) 行使此角色。"
-                : "The TSC is not yet seated. This verification role is exercised by the TSC once it is seated; until then the lead maintainer (BDFL) acts in this role."}
+                ? "TSC 還沒就任。上面這項驗證，等 TSC 就任後由 TSC 負責。在那之前，由首席維護者（BDFL）來做。"
+                : "The TSC is not yet seated. Once it is, the TSC does this verification. Until then the lead maintainer (BDFL) does it."}
             </p>
             <p>
               {zh
-                ? "通過測試套件後,實作者於 "
+                ? "通過測試套件之後，實作者到 "
                 : "After passing the test suite, implementers open a pull request against "}
               <a
                 href={ADOPTERS_URL}
@@ -240,8 +240,8 @@ export default async function ConformancePage({
                 ADOPTERS.md ↗
               </a>
               {zh
-                ? " 開立 pull request,內容包含組織名稱、規格版本、整合日期 (ISO 8601)、可驗證之公開證據連結、自我宣告之符規等級。維護者以七日內完成 schema 驗證並合併為目標。完整流程與已合併之實作者見 "
-                : ", including organization name, spec version, integration date (ISO 8601), a verifiable public evidence link, and a self-declared conformance level. Maintainers aim to validate and merge within seven days. The full procedure and the list of merged implementers live at "}
+                ? " 開一個 pull request，寫上組織名稱、規格版本、整合日期（ISO 8601）、一個查得到的公開證據連結，以及自己宣告的符規等級。維護者的目標是七天內做完 schema 驗證並合併。完整流程和已合併的實作者，見 "
+                : ". The entry gives the organization name, the spec version, the integration date (ISO 8601), a public evidence link anyone can verify, and the conformance level they claim. Maintainers aim to validate and merge within seven days. The full procedure and the list of merged implementers are at "}
               <Link href={`${prefix}/implementers`} className="text-navy underline">
                 /implementers
               </Link>

@@ -21,7 +21,7 @@ export async function generateMetadata({
     path: "/changelog",
     title: "Changelog",
     description:
-      "Version history for Agent Threat Rules (ATR). Detection rules, engine changes, and ecosystem milestones.",
+      "Version history for Agent Threat Rules (ATR): detection rules, engine changes and ecosystem milestones.",
   });
 }
 
@@ -59,18 +59,18 @@ export default async function ChangelogPage({
         <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.035em] font-medium text-ink">
           {zh ? "每一次發布。" : "Every release."}
           <br />
-          {zh ? "可追溯。" : "On the record."}
+          {zh ? "都查得到。" : "On the record."}
         </h1>
       </Reveal>
       <Reveal delay={0.1}>
         <p className="text-sm md:text-base text-graphite max-w-[640px] mt-5 md:mt-6 leading-[1.8]">
           {zh ? (
             <>
-              從 <code className="font-data text-xs bg-ash px-1.5 py-0.5">CHANGELOG.md</code> 於建置時自動產生——這頁就是那份檔案。規則 ID 一經發布永不改號；rule_version 可升，ID 穩定，外部論文、CI 腳本、稽核軌跡都能安全引用。版號跟著 npm 釋出線走（目前 <code className="font-data text-xs bg-ash px-1.5 py-0.5">{releaseLabel}</code>，頁面產生於 {versions.generatedAt}）；書面核心規範（SPEC.md）另有自己的版號（目前 <code className="font-data text-xs bg-ash px-1.5 py-0.5">{specVersion}</code>），狀態為 Working Draft。完整 commit 歷史在 GitHub。
+              這頁在建置時由 <code className="font-data text-xs bg-ash px-1.5 py-0.5">CHANGELOG.md</code> 自動產生，內容就是那份檔案。規則 ID 發布後不會改號。rule_version 可以往上升，ID 不動，所以論文、CI 腳本、稽核紀錄都能放心引用。版號跟著 npm 的發布走，目前是 <code className="font-data text-xs bg-ash px-1.5 py-0.5">{releaseLabel}</code>，本頁產生於 {versions.generatedAt}。書面的核心規格 SPEC.md 有自己的版號，目前是 <code className="font-data text-xs bg-ash px-1.5 py-0.5">{specVersion}</code>，狀態是 Working Draft。完整的 commit 歷史在 GitHub。
             </>
           ) : (
             <>
-              Generated from <code className="font-data text-xs bg-ash px-1.5 py-0.5">CHANGELOG.md</code> at build time — this page is that file. Rule IDs are permanent once published; <code className="font-data text-xs bg-ash px-1.5 py-0.5">rule_version</code> may bump, but the ID stays stable, safe for papers, CI scripts, and audit trails to cite. Version numbers track the npm release line (currently <code className="font-data text-xs bg-ash px-1.5 py-0.5">{releaseLabel}</code>, as of {versions.generatedAt}); the written core specification (SPEC.md) carries its own version (currently <code className="font-data text-xs bg-ash px-1.5 py-0.5">{specVersion}</code>) with Working Draft status. Full commit history is on GitHub.
+              This page is <code className="font-data text-xs bg-ash px-1.5 py-0.5">CHANGELOG.md</code>, generated from it at build time. Rule IDs are permanent once published. <code className="font-data text-xs bg-ash px-1.5 py-0.5">rule_version</code> may go up, but the ID stays the same, so papers, CI scripts and audit trails can cite it safely. Version numbers follow the npm release line, currently <code className="font-data text-xs bg-ash px-1.5 py-0.5">{releaseLabel}</code> as of {versions.generatedAt}. The written core specification, SPEC.md, has its own version, currently <code className="font-data text-xs bg-ash px-1.5 py-0.5">{specVersion}</code>, with Working Draft status. The full commit history is on GitHub.
             </>
           )}
         </p>
@@ -82,14 +82,14 @@ export default async function ChangelogPage({
           rel="noopener noreferrer"
           className="font-data text-xs md:text-sm text-blue hover:underline inline-block mt-4"
         >
-          {zh ? "在 GitHub 查看完整 release 歷史 →" : "View full release history on GitHub →"}
+          {zh ? "到 GitHub 看完整的 release 歷史 →" : "Full release history on GitHub →"}
         </a>
       </Reveal>
 
       {entries.length === 0 ? (
         <Reveal delay={0.2}>
           <p className="text-sm text-mist mt-10">
-            {zh ? "尚無版本資料。" : "No changelog entries available."}
+            {zh ? "還沒有版本資料。" : "No changelog entries available."}
           </p>
         </Reveal>
       ) : (

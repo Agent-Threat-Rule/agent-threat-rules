@@ -74,7 +74,7 @@ export function DocsShell({
             <div className="mt-16 pt-6 border-t border-fog flex flex-wrap items-center justify-between gap-3 font-data text-[11px] text-stone">
               <span>{zh ? `本頁產生於 ${generatedAt}` : `Page generated ${generatedAt}`}</span>
               <a href={feedback} target="_blank" rel="noopener noreferrer" className="hover:text-ink">
-                {zh ? "這頁有幫助嗎？回饋 →" : "Was this page helpful? Send feedback →"}
+                {zh ? "哪裡寫錯或漏了？開 issue 回報 →" : "Something wrong or missing? Open an issue →"}
               </a>
             </div>
           </article>

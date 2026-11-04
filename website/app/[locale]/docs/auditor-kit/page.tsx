@@ -17,8 +17,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: locale === "zh" ? "稽核員工具包" : "Auditor kit",
     description:
       locale === "zh"
-        ? "稽核員怎麼確認一個組織真的在跑 ATR：七個問題、各要索取什麼、各怎麼驗證。"
-        : "How an auditor checks that an organization really runs ATR: seven questions, what to request for each, and how to verify it.",
+        ? "稽核員怎麼確認一個組織真的在跑 ATR：七個問題，每題要索取什麼、怎麼驗。"
+        : "How an auditor checks that an organization really runs ATR: seven questions, what to ask for on each, and how to verify it.",
   });
 }
 
@@ -28,43 +28,43 @@ const QUESTIONS: ReadonlyArray<{ q: B; request: B; verify: B; ev: string }> = [
   {
     q: { en: "Which version of the rules is running?", zh: "跑的是哪一版規則？" },
     request: { en: "The dependency lockfile or image manifest.", zh: "相依套件鎖定檔或映像檔清單。" },
-    verify: { en: "Compare the pinned version with the npm registry and the release tag; old versions stay listed in the changelog.", zh: "把鎖定的版本對照 npm 與發布標籤；舊版本都留在版本歷程裡。" },
+    verify: { en: "Compare the pinned version with the npm registry and the release tag. Old versions stay listed in the changelog.", zh: "把鎖定的版本拿去對 npm 和發布標籤。舊版本都還列在版本歷程裡。" },
     ev: "EV-01",
   },
   {
     q: { en: "Which lane runs, and may it block?", zh: "跑哪個 lane？能不能阻擋？" },
-    request: { en: "The deployment configuration for lane and blocking.", zh: "lane 與阻擋的部署設定。" },
-    verify: { en: "Check the claim against the lane counts in rules/index.json: the enforce lane loads only maturity stable.", zh: "對照 rules/index.json 的 lane 數量：enforce lane 只載入 maturity stable。" },
+    request: { en: "The deployment configuration for lane and blocking.", zh: "lane 和阻擋的部署設定。" },
+    verify: { en: "Check the claim against the lane counts in rules/index.json. The enforce lane loads only stable rules.", zh: "拿 rules/index.json 的 lane 數量來對。enforce lane 只載入 stable 的規則。" },
     ev: "EV-02",
   },
   {
     q: { en: "Are the rules actually evaluated?", zh: "規則真的有在評估嗎？" },
     request: { en: "A sample of detection records from the period under review.", zh: "審查期間的偵測紀錄樣本。" },
-    verify: { en: "In a staging environment, send one of a rule's published true-positive inputs and confirm a record names that rule ID.", zh: "在測試環境送入某條規則公開的正例輸入，確認紀錄寫出該規則 ID。" },
+    verify: { en: "In a staging environment, send one of a rule's published true-positive inputs. Confirm that a record names the rule ID.", zh: "在測試環境送入某條規則公開的正例輸入，看紀錄有沒有寫出那條規則的 ID。" },
     ev: "EV-03",
   },
   {
-    q: { en: "Do the rules behave as published?", zh: "規則行為跟公開的一致嗎？" },
+    q: { en: "Do the rules behave as published?", zh: "規則的行為，跟公開的一樣嗎？" },
     request: { en: "The self-test output for the pinned version.", zh: "鎖定版本的自測輸出。" },
-    verify: { en: "Re-run the self-tests yourself on the same version; they need no network and no account.", zh: "自己在同一版本重跑自測；不需要網路，也不需要帳號。" },
+    verify: { en: "Re-run the self-tests yourself on the same version. They need no network and no account.", zh: "在同一版本上自己重跑自測。不用網路，也不用帳號。" },
     ev: "EV-04",
   },
   {
     q: { en: "Does the engine follow the specification?", zh: "引擎符合規格嗎？" },
-    request: { en: "Conformance results for the engine in use.", zh: "所用引擎的符規結果。" },
-    verify: { en: "Results are self-declared; re-run the suite, and check the implementer report for the engine's declaration.", zh: "結果是自我宣告；重跑套件，並在實作者報告查該引擎的宣告。" },
+    request: { en: "Conformance results for the engine in use.", zh: "正在用的引擎的符規結果。" },
+    verify: { en: "Results are self-declared. Re-run the suite, then look up the engine's declaration in the implementer report.", zh: "結果是自我宣告的。自己重跑一次套件，再到實作者報告裡找這個引擎的宣告。" },
     ev: "EV-05",
   },
   {
     q: { en: "How accurate are the rules?", zh: "規則準確嗎？" },
-    request: { en: "The measurement files the organization cites, with the lane.", zh: "組織引用的量測檔，以及對應的 lane。" },
-    verify: { en: "A figure without its lane, version and caveat is not comparable. Several corpora are partly the ones rules were written from.", zh: "沒有標 lane、版本與注意事項的數字無法比較。有幾個語料部分就是撰寫規則時用的。" },
+    request: { en: "The measurement files the organization cites, with the lane.", zh: "組織引用的量測檔，和對應的 lane。" },
+    verify: { en: "A figure without its lane, version and caveat can't be compared. Several corpora are partly the same ones the rules were written from.", zh: "沒標 lane、版本和注意事項的數字，沒辦法比較。有幾個語料，其中一部分就是寫規則時用的。" },
     ev: "EV-06",
   },
   {
     q: { en: "What is known not to work?", zh: "有哪些已知做不到？" },
-    request: { en: "The organization's view of LIMITATIONS.md and errata for the version.", zh: "組織對該版本 LIMITATIONS.md 與勘誤的掌握。" },
-    verify: { en: "Inert rules (status draft or deprecated) fire in no lane; they are not coverage.", zh: "inert 規則（status 為 draft 或 deprecated）在任何 lane 都不觸發，不能算覆蓋。" },
+    request: { en: "What the organization knows of LIMITATIONS.md and the errata for that version.", zh: "組織對這一版的 LIMITATIONS.md 和勘誤掌握多少。" },
+    verify: { en: "Inert rules are draft or deprecated and fire in no lane. They do not count as coverage.", zh: "不生效的規則是 draft 或 deprecated，在哪個 lane 都不會觸發，不能算進覆蓋範圍。" },
     ev: "EV-08",
   },
 ];
@@ -85,8 +85,8 @@ export default async function AuditorKitPage({ params }: { params: Promise<{ loc
       title={zh ? "稽核員工具包" : "Auditor kit"}
       lead={
         zh
-          ? "稽核員怎麼確認一個組織真的在跑 ATR，以及跑的是它聲稱的那個設定。每一步都能用公開資料自己驗，不需要找 ATR 維護者。"
-          : "How an auditor checks that an organization really runs ATR, in the configuration it claims. Every step can be verified from public material, without asking the ATR maintainers."
+          ? "稽核員怎麼確認一個組織真的在跑 ATR，跑的也是它說的那個設定。每一步都能拿公開資料自己驗，不必找 ATR 維護者。"
+          : "How an auditor checks that an organization really runs ATR, in the configuration it claims. Every step can be checked against public material. There is no need to ask the ATR maintainers."
       }
       generatedAt={versions.generatedAt}
     >
@@ -100,10 +100,10 @@ export default async function AuditorKitPage({ params }: { params: Promise<{ loc
       />
 
       <div className="mt-8">
-        <Callout label={zh ? "不稽核組織" : "No audits by ATR"}>
+        <Callout label={zh ? "ATR 不做稽核" : "No audits by ATR"}>
           {zh
-            ? "ATR 不稽核、也不認證組織或它們的部署，沒有授權任何人代表 ATR 這麼做。引擎的符規是依公開測試套件自我宣告。這份工具包只幫稽核員驗證一個部署的說法。"
-            : "ATR does not audit or certify organizations or their deployments, and has authorized no one to do so on its behalf. Engine conformance is self-declared against the public test suite. This kit only helps an auditor verify what a deployment claims."}
+            ? "ATR 不稽核、也不認證任何組織或部署，也沒有授權任何人代表 ATR 做這件事。引擎符不符規，是對照公開測試套件自我宣告的。這份工具包只幫稽核員驗證一個部署的說法。"
+            : "ATR does not audit or certify organizations or their deployments. It has authorized no one to do so on its behalf. Engine conformance is self-declared against the public test suite. This kit only helps an auditor check what one deployment claims."}
         </Callout>
       </div>
 

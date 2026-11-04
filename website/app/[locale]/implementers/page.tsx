@@ -26,11 +26,11 @@ export async function generateMetadata({
   return pageMetadata({
     locale,
     path: "/implementers",
-    title: "Implementer Report",
+    title: locale === "zh" ? "實作者報告" : "Implementer Report",
     description:
       locale === "zh"
-        ? "已整合 ATR 的組織,每一筆的憑據都是公開 repo 裡一個已合併的 pull request。透過對 ADOPTERS.md registry 的 pull request 自我宣告。"
-        : "Organizations that have integrated ATR, each evidenced by a merged pull request in a public repository. Self-declared via pull request to the ADOPTERS.md registry.",
+        ? "已經整合 ATR 的組織。每一筆的憑據，都是公開 repo 裡一個已合併的 pull request。登記方式是自己對 ADOPTERS.md 送 pull request。"
+        : "Organizations that have integrated ATR. Each one is backed by a merged pull request in a public repository, and each declared itself with a pull request to ADOPTERS.md.",
   });
 }
 
@@ -117,7 +117,7 @@ export default async function ImplementersPage({
           className="text-xs uppercase tracking-[0.18em] text-stone mb-3"
           style={{ fontFamily: "var(--font-data)" }}
         >
-          {zh ? "實作者報告 — Implementer Report" : "Implementer Report"}
+          {zh ? "實作者報告" : "Implementer Report"}
         </p>
         <h1
           className="text-3xl md:text-5xl font-bold text-navy-ink mb-4 leading-[1.1]"
@@ -143,11 +143,11 @@ export default async function ImplementersPage({
           style={{ maxWidth: "42em", fontFamily: "var(--font-body)" }}
         >
           {zh
-            ? "本報告中的「符規等級 (Conformance)」係依 /spec 中定義之 L1 / L2 / L3 等級判讀。"
-            : "Conformance levels in this report follow the L1 / L2 / L3 definitions established in /spec."}
+            ? "這份報告裡的符規等級，照 /spec 定義的 L1、L2、L3 判讀。"
+            : "Conformance levels here follow the L1 / L2 / L3 definitions in /spec."}
           {" "}
           <Link href={`${prefix}/spec`} className="text-navy underline">
-            {zh ? "查看符規等級定義" : "View conformance level definitions"} →
+            {zh ? "看等級怎麼定義" : "See how the levels are defined"} →
           </Link>
         </p>
       </header>
@@ -158,12 +158,12 @@ export default async function ImplementersPage({
           <a href="#current" className="section-anchor" aria-hidden="true">
             §1
           </a>
-          {zh ? "目前實作者" : "Current Implementers"}
+          {zh ? "目前的實作者" : "Current implementers"}
         </h2>
         <p>
           {zh
-            ? "下表列出已整合或引用 ATR 的組織。符規等級欄位區分 L1 Engine(在自家偵測引擎中實際執行 ATR 規則)與 L1 Citation / L1 Galaxy(引用或編入分類法)。Engine 一行的份量最重——它代表又有一個獨立團隊只憑規格就把這個格式實作出來,而且在自家引擎裡跑得起來。每一筆紀錄連結至構成公開採用證據的合併 pull request 或整合 commit;沒有任何一筆是私下宣稱的,全部可在 GitHub 上自行驗證。"
-            : "The following organizations have integrated or referenced ATR. The Conformance column distinguishes L1 Engine (ATR rules actually running inside the organization's own detection engine) from L1 Citation / L1 Galaxy (referenced or incorporated into a taxonomy). An Engine row carries the most weight — it means another independent team implemented the format from the spec alone and ran it inside their own engine. Each entry links to the merged pull request or integration commit that constitutes the public adoption record; nothing here is asserted privately — every row is verifiable on GitHub."}
+            ? "下面這些組織整合或引用了 ATR。符規等級欄分兩種。L1 Engine 是 ATR 規則真的在對方自己的偵測引擎裡跑；L1 Citation、L1 Galaxy 是引用，或編進了分類法。Engine 那幾列份量最重：規則在對方維護的引擎裡跑。這幾筆的 PR 是 ATR 維護者開的，由對方的維護者審過後合併。每一筆都連到構成公開採用紀錄的那個已合併 PR 或整合 commit。沒有一筆是私下宣稱的，全都能在 GitHub 上自己查。"
+            : "These organizations have integrated or referenced ATR. The Conformance column separates two kinds. L1 Engine means ATR rules actually run inside the organization's own detection engine. L1 Citation and L1 Galaxy mean ATR is referenced, or built into a taxonomy. An Engine row carries the most weight: the rules run in an engine the other organisation maintains. The ATR maintainer opened those pull requests, and that organisation's maintainers reviewed and merged them. Each entry links to the merged pull request or integration commit that makes up the public adoption record. Nothing here is asserted privately, and every row can be checked on GitHub."}
         </p>
 
         {/* Desktop / tablet table */}
@@ -245,8 +245,8 @@ export default async function ImplementersPage({
 
         <p className="text-sm text-stone mt-4" style={{ maxWidth: "42em" }}>
           {zh
-            ? "本報告由 ADOPTERS.md 為單一可信來源 (single source of truth) 自動生成。維護者不預先審核採用者 — 只要 PR 符合 schema、附上可驗證的公開證據連結即可合併。"
-            : "This report is generated from ADOPTERS.md as the single source of truth. Maintainers do not pre-approve adopters — a schema-conforming PR with a verifiable public evidence link is sufficient for merge."}
+            ? "這份報告從 ADOPTERS.md 自動產生，資料只有這一個來源。維護者不事先審核採用者。PR 符合 schema，附上查得到的公開證據連結，就能合併。"
+            : "This report is generated from ADOPTERS.md, the single source of truth. Maintainers do not pre-approve adopters. A PR that fits the schema and links to public evidence anyone can verify is enough to merge."}
           {" "}
           <a
             href={ADOPTERS_URL}
@@ -261,12 +261,12 @@ export default async function ImplementersPage({
         {/* Separate aside: standards-body submissions in review — NOT adoptions */}
         <div className="border border-fog  p-4 mt-6 bg-paper" style={{ maxWidth: "42em" }}>
           <p className="text-xs uppercase tracking-[0.18em] text-stone mb-2" style={{ fontFamily: "var(--font-data)" }}>
-            {zh ? "標準機構 submission(仍開著,非採用)" : "Standards-body submissions (open, not adoptions)"}
+            {zh ? "送交標準機構的提案（仍開著，不算採用）" : "Standards-body submissions (open, not adoptions)"}
           </p>
           <p className="text-sm text-graphite" style={{ fontFamily: "var(--font-body)" }}>
             {zh
-              ? "ATR 把兩份 AI RMF profile 範例以 PR #338 提交給 NIST 的 usnistgov/oscal-content。NIST 在 7 月把自己的 AI RMF catalog 加進 develop 分支,8 月這個 PR 依它重做,目前仍開著、等待 NIST 審查。這不是 NIST 採用、不是 NIST 背書,因此不列入上方實作者表。"
-              : "ATR offered two AI RMF profile examples to NIST's usnistgov/oscal-content repo as PR #338. NIST added its own AI RMF catalog to the develop branch in July, and the PR was reworked against it in August; it is open and awaiting NIST review. This is not a NIST adoption or endorsement, so it is not listed in the implementers table above."}
+              ? "ATR 把兩份 AI RMF profile 範例以 PR #338 送進 NIST 的 usnistgov/oscal-content。NIST 7 月把自己的 AI RMF catalog 加進 develop 分支，8 月這個 PR 照著它重做，現在還開著，等 NIST 審查。這不是 NIST 採用，也不是 NIST 背書，所以不列在上面的實作者表裡。"
+              : "ATR offered two AI RMF profile examples to NIST's usnistgov/oscal-content repo as PR #338. NIST added its own AI RMF catalog to the develop branch in July, and the PR was reworked against it in August. It is still open, waiting for NIST review. This is not a NIST adoption or endorsement, so it is not in the implementers table above."}
             {" "}
             <a
               href="https://github.com/usnistgov/oscal-content/pull/338"
@@ -286,25 +286,24 @@ export default async function ImplementersPage({
           <a href="#self-certify" className="section-anchor" aria-hidden="true">
             §2
           </a>
-          {zh ? "如何自我認證" : "How to self-certify"}
+          {zh ? "怎麼自我認證" : "How to self-certify"}
         </h2>
         <p>
           {zh
-            ? "ATR 採用 self-certification 模型:符規靠跑出來,不靠宣稱。實作者於本地執行 conformance 測試套件,再對 ADOPTERS.md 提出 PR 加入整合 metadata。沒有審查委員會、沒有付費認證——加入這份報告唯一的門檻,就是公開地通過測試。下列三步驟為 self-certification 的最小流程。"
-            : "ATR follows a self-certification model: conformance is demonstrated, not asserted. Implementers run the conformance test suite locally, then open a pull request against ADOPTERS.md with their integration metadata. There is no review board and no paid certification — the only price of admission to this report is passing the tests in the open. The minimal self-certification procedure is three steps."}
+            ? "ATR 用的是自我認證：符不符規，要跑出來，不是說出來。實作者在本機跑符規測試套件，再對 ADOPTERS.md 送 PR，附上整合資料。沒有審查委員會，也沒有付費認證。要進這份報告，唯一的門檻是公開通過測試。最精簡的流程是下面三步。"
+            : "ATR uses self-certification. Conformance is shown by running the tests, not by saying so. Implementers run the conformance test suite locally, then open a pull request against ADOPTERS.md with their integration metadata. There is no review board and no paid certification. The only way into this report is passing the tests in the open. The minimal procedure has three steps."}
         </p>
 
         <ol>
           <li>
             <strong>
               {zh
-                ? "在本地執行 conformance 測試套件"
-                : "Run the conformance test suite locally"}
-              .
+                ? "在本機跑符規測試套件。"
+                : "Run the conformance test suite locally."}
             </strong>{" "}
             {zh
-              ? "Test suite 由 YAML fixtures 組成,儲存於主 repository 的 "
-              : "The test suite consists of YAML fixtures stored under "}
+              ? "測試套件由 YAML fixture 組成，放在主 repo 的 "
+              : "The test suite is a set of YAML fixtures under "}
             <a
               href={CONFORMANCE_FIXTURES_URL}
               target="_blank"
@@ -314,17 +313,16 @@ export default async function ImplementersPage({
               <code>spec/conformance/</code> ↗
             </a>
             {zh
-              ? "。每個 fixture 配對一條規則與其在固定事件 (event) 上的預期評估結果。實作通過的條件是:每個 fixture 都如宣告般評估。"
-              : ". Each fixture pairs a rule with its expected evaluation outcome on a fixed event. An implementation passes if every fixture evaluates as declared."}
+              ? "。每個 fixture 把一條規則，和它在一個固定 event 上該有的評估結果配成一對。每個 fixture 都照宣告的結果評估出來，實作就算通過。"
+              : ". Each fixture pairs a rule with the result it should give on a fixed event. An implementation passes when every fixture evaluates as declared."}
           </li>
           <li>
             <strong>
               {zh
-                ? "對 ADOPTERS.md 提交 pull request"
-                : "Open a pull request against ADOPTERS.md"}
-              .
+                ? "對 ADOPTERS.md 送 pull request。"
+                : "Open a pull request against ADOPTERS.md."}
             </strong>{" "}
-            {zh ? "提交目標為 " : "Submit against "}
+            {zh ? "PR 送到主分支的 " : "Submit against "}
             <a
               href={ADOPTERS_URL}
               target="_blank"
@@ -334,24 +332,23 @@ export default async function ImplementersPage({
               ADOPTERS.md ↗
             </a>
             {zh
-              ? " 於主分支。維護者通常於 7 日內完成 schema 驗證並合併。"
-              : " on the main branch. Maintainers typically validate the schema and merge within seven days."}
+              ? "。維護者通常七天內做完 schema 驗證並合併。"
+              : " on the main branch. Maintainers usually validate the schema and merge within seven days."}
           </li>
           <li>
             <strong>
-              {zh ? "於 PR 中包含完整整合 metadata" : "Include full integration metadata in the PR"}
-              .
+              {zh ? "PR 裡附上完整的整合資料。" : "Include full integration metadata in the PR."}
             </strong>{" "}
             {zh
-              ? "至少包含:組織名稱、整合所使用之規格版本、整合日期 (ISO 8601)、公開可驗證之證據連結 (PR、commit、或對外文件 URL),以及自我宣告之符規等級 (L1 Engine / L2 Publisher / L3 Sub-range Authority)。"
-              : "At minimum: organization name, the spec version your integration targets, the integration date (ISO 8601), a publicly verifiable evidence link (PR, commit, or public documentation URL), and a self-declared conformance level (L1 Engine / L2 Publisher / L3 Sub-range Authority)."}
+              ? "至少要有：組織名稱、整合用的規格版本、整合日期（ISO 8601）、公開查得到的證據連結（PR、commit 或公開文件的網址），以及自己宣告的符規等級（L1 Engine、L2 Publisher 或 L3 Sub-range Authority）。"
+              : "At minimum: the organization name, the spec version your integration targets, the integration date (ISO 8601), a public evidence link anyone can check (a PR, a commit or a public documentation URL), and the conformance level you claim (L1 Engine, L2 Publisher or L3 Sub-range Authority)."}
           </li>
         </ol>
 
         <p className="text-sm text-stone mt-4" style={{ maxWidth: "42em" }}>
           {zh
-            ? "TSC 保留隨時對任一已發布之 self-certification 重跑測試套件以驗證其結果之權利。"
-            : "The TSC reserves the right to re-run the test suite against any published self-certification at any time to verify the declared outcome."}
+            ? "TSC 保留權利，隨時可以對任何已發布的自我認證重跑測試套件，確認結果跟宣告的一樣。"
+            : "The TSC reserves the right to re-run the test suite against any published self-certification at any time, to check the declared result."}
         </p>
       </section>
 
@@ -365,14 +362,14 @@ export default async function ImplementersPage({
           <a href="#levels" className="section-anchor" aria-hidden="true">
             §3
           </a>
-          {zh ? "符規等級摘要" : "Conformance levels at a glance"}
+          {zh ? "符規等級一覽" : "Conformance levels at a glance"}
           {" "}
           <InformativeBadge />
         </h2>
         <p>
           {zh
-            ? "本節為非規範性 (informative) 摘要。正式之規範性文字請見 /conformance。"
-            : "This section is informative. The normative text for each level lives at /conformance."}
+            ? "這一節只是摘要，不具規範效力。正式的規範文字在 /conformance。"
+            : "This section is informative. The normative text for each level is at /conformance."}
         </p>
 
         <h3>{t(locale, "conformance.l1.title")}</h3>
@@ -386,12 +383,12 @@ export default async function ImplementersPage({
 
         <p className="text-sm text-stone mt-4" style={{ maxWidth: "42em" }}>
           <Link href={`${prefix}/conformance`} className="text-navy underline">
-            {zh ? "查看完整規範性文字" : "Read the full normative text"} →
+            {zh ? "看完整的規範文字" : "Read the full normative text"} →
           </Link>
-          {" — "}
+          {zh ? "：" : ": "}
           {zh
-            ? "包含測試套件結構、自我認證程序、與符規驗證流程。"
-            : "Includes test-suite structure, self-certification procedure, and conformance verification flow."}
+            ? "測試套件的結構、自我認證程序，還有符規怎麼驗證。"
+            : "the test-suite structure, the self-certification procedure, and how conformance gets verified."}
         </p>
       </section>
 

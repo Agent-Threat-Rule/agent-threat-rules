@@ -48,7 +48,7 @@ export function AdopterTabs({ items, locale }: { items: AdopterItem[]; locale: s
 
       <div role="tabpanel" className="grid md:grid-cols-[220px_1fr] border-t border-fog bg-white">
         <div className="px-8 pt-8 md:pb-8 md:border-r border-fog">
-          <div className="text-[13px] text-stone">{zh ? "自" : "Since"}</div>
+          <div className="text-[13px] text-stone">{zh ? "開始時間" : "Since"}</div>
           <div className="mt-1 text-[15px] text-ink tabular-nums">{current.since}</div>
         </div>
         <div className="p-8 flex flex-col">

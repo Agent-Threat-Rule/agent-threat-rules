@@ -19,7 +19,7 @@ export async function generateMetadata({
     locale,
     path: "/rules",
     title: "Rules",
-    description: "Browse all ATR detection rules. Filter by category, severity, and search by name or CVE.",
+    description: "Every ATR detection rule. Filter by category or severity, or search by name or CVE.",
   });
 }
 
@@ -47,8 +47,8 @@ export default async function RulesPage({ params }: { params: Promise<{ locale: 
         {/* What each count counts. Same calibers as stats.json ruleCount. */}
         <p className="mt-4 font-data text-xs text-stone leading-[1.8] max-w-[860px]">
           {zh
-            ? `main 上 ${stats.ruleFileCount} 個規則檔:${stats.ruleCount} 條生效(至少一個 lane 會載入),${stats.ruleInertCount} 條 inert(status 為 draft 或 deprecated,任何 lane 都不載入)。各 lane 載入數:enforce ${lanes.enforce}(maturity stable)· alert ${lanes.alert}(stable + test)· hunt ${lanes.hunt}(預設,全部生效規則)。`
-            : `${stats.ruleFileCount} rule files on main: ${stats.ruleCount} effective (loaded by at least one lane), ${stats.ruleInertCount} inert (status draft or deprecated; no lane loads them). Rules per lane: enforce ${lanes.enforce} (maturity stable) · alert ${lanes.alert} (stable + test) · hunt ${lanes.hunt} (the default; every effective rule).`}
+            ? `main 上有 ${stats.ruleFileCount} 個規則檔。${stats.ruleCount} 條生效，至少有一個 lane 會載入；另外 ${stats.ruleInertCount} 條是 draft 或 deprecated，哪個 lane 都不載入。enforce 載入 ${lanes.enforce} 條，只收 stable；alert 載入 ${lanes.alert} 條，收 stable 和 test；hunt 是預設，載入全部 ${lanes.hunt} 條生效規則。`
+            : `${stats.ruleFileCount} rule files on main. ${stats.ruleCount} are effective, which means at least one lane loads them. The other ${stats.ruleInertCount} are draft or deprecated, and no lane loads them. Enforce loads ${lanes.enforce} rules, stable only. Alert loads ${lanes.alert}, stable and test. Hunt is the default and loads all ${lanes.hunt} effective rules.`}
         </p>
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-data text-xs">
           <a href="/rules/index.json" className="text-blue hover:underline" download>
@@ -57,7 +57,7 @@ export default async function RulesPage({ params }: { params: Promise<{ locale: 
           <a href="/rules/index.csv" className="text-blue hover:underline" download>
             {zh ? "下載 CSV" : "Download CSV"}
           </a>
-          <span className="text-mist">{zh ? "與本頁同一份資料於建置時產生" : "Built from the same data as this page"}</span>
+          <span className="text-mist">{zh ? "跟這頁同一份資料，建置時產生" : "Built from the same data as this page"}</span>
         </div>
       </div>
 

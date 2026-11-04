@@ -71,8 +71,8 @@ export async function Footer({ locale }: { locale: Locale }) {
             <a href={NPM_PACKAGE_URL} className="hover:text-ink">{versions.npmVerified ? "npm" : "package.json"} {versions.npm}</a>
             <Link href={`${prefix}/rules`} className="hover:text-ink">
               {zh
-                ? `${stats.ruleCount} 條生效規則（main 上 ${stats.ruleFileCount} 個檔，${stats.ruleInertCount} 條 inert）`
-                : `${stats.ruleCount} effective rules (${stats.ruleFileCount} files on main, ${stats.ruleInertCount} inert)`}
+                ? `${stats.ruleCount} 條生效規則，main 上共 ${stats.ruleFileCount} 個檔，${stats.ruleInertCount} 條 inert`
+                : `${stats.ruleCount} effective rules, ${stats.ruleFileCount} files on main, ${stats.ruleInertCount} inert`}
             </Link>
             <Link href={`${prefix}/citations`} className="hover:text-ink">DOI 10.5281/zenodo.19178002</Link>
             <span>{zh ? "頁面產生於" : "Page generated"} {versions.generatedAt}</span>

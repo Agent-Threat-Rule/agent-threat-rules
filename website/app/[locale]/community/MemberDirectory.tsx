@@ -8,13 +8,13 @@ type Tab = Tier | "all";
 
 const TAB_LABELS: Record<Tab, { en: string; zh: string }> = {
   all: { en: "All members", zh: "全部成員" },
-  steering: { en: "Steering", zh: "Steering" },
+  steering: { en: "Steering", zh: "指導小組" },
   expert: { en: "Experts", zh: "專家" },
   contributor: { en: "Contributors", zh: "貢獻者" },
 };
 
 const TIER_NOTE: Record<Tier, { en: string; zh: string }> = {
-  steering: { en: "Steering", zh: "Steering" },
+  steering: { en: "Steering", zh: "指導小組" },
   expert: { en: "Expert", zh: "專家" },
   contributor: { en: "Contributor", zh: "貢獻者" },
 };
@@ -68,7 +68,7 @@ export function MemberDirectory({ members, locale }: { members: Member[]; locale
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={zh ? "搜尋姓名或單位" : "Search by name or organization"}
+          placeholder={zh ? "搜尋姓名或所屬單位" : "Search by name or organization"}
           aria-label={zh ? "搜尋成員" : "Search members"}
           className="w-full md:w-72 bg-ash border border-fog px-3 py-2 text-[13px] text-ink placeholder:text-mist focus:outline-none focus:border-stone rounded-[3px]"
         />

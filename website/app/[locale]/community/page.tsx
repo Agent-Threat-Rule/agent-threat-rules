@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: locale === "zh" ? "社群" : "Community",
     description:
       locale === "zh"
-        ? "維護 ATR 的人：Steering、專家與貢獻者，以及 GitHub 上的貢獻紀錄。"
+        ? "維護 ATR 的人：指導小組、專家和貢獻者，還有 GitHub 上的貢獻紀錄。"
         : "The people who maintain ATR: steering, experts and contributors, and the contributions GitHub records.",
   });
 }
@@ -29,7 +29,7 @@ const DISCUSSIONS = "https://github.com/Agent-Threat-Rule/agent-threat-rules/dis
 const WORKING_GROUPS: ReadonlyArray<{ name: { en: string; zh: string }; scope: { en: string; zh: string } }> = [
   {
     name: { en: "Rule quality and evasion", zh: "規則品質與繞過" },
-    scope: { en: "Red-team the rules, report bypasses and false positives, and tighten the rules that cause them.", zh: "對規則做紅隊測試、回報繞過與誤判，並收窄造成誤判的規則。" },
+    scope: { en: "Red-team the rules, report bypasses and false positives, and tighten the rules that cause them.", zh: "拿規則做紅隊測試，回報繞過和誤判，把造成誤判的規則收窄。" },
   },
   {
     name: { en: "Framework crosswalks", zh: "框架對照" },
@@ -43,8 +43,8 @@ const WORKING_GROUPS: ReadonlyArray<{ name: { en: string; zh: string }; scope: {
 
 const CADENCE: ReadonlyArray<{ when: { en: string; zh: string }; what: { en: string; zh: string } }> = [
   { when: { en: "Monthly", zh: "每月" }, what: { en: "A written community update in GitHub Discussions, also sent by email to members.", zh: "一則書面社群更新，發在 GitHub Discussions，並寄給成員。" } },
-  { when: { en: "Quarterly", zh: "每季" }, what: { en: "A coverage-priorities survey. Results are published and cited in the release notes.", zh: "一次「優先覆蓋」問卷，結果公開，並寫進版本說明。" } },
-  { when: { en: "Every release", zh: "每次發版" }, what: { en: "Contributors are named in the release notes and on the rules they wrote.", zh: "版本說明與規則頁點名貢獻者。" } },
+  { when: { en: "Quarterly", zh: "每季" }, what: { en: "A survey on what to cover next. The results are published and cited in the release notes.", zh: "一份問卷，問接下來該優先覆蓋什麼。結果公開，也會寫進版本說明。" } },
+  { when: { en: "Every release", zh: "每次發版" }, what: { en: "Contributors are named in the release notes and on the rules they wrote.", zh: "版本說明和貢獻者寫的規則上，都會列出他們的名字。" } },
   { when: { en: "Optional", zh: "選擇性" }, what: { en: "An open call when there is something to decide live. Decisions are written back to GitHub.", zh: "有需要即時討論的事才開線上會議；決定一律寫回 GitHub。" } },
 ];
 
@@ -68,8 +68,8 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
           </h1>
           <p className="mt-6 text-[17px] leading-[1.6] text-graphite max-w-[560px] text-pretty">
             {zh
-              ? "專家為覆蓋優先順序與框架對照提供意見；貢獻者撰寫與審查規則。每個人都能提 issue 與 pull request，合併權限只給有 repository 權限的維護者。"
-              : "Experts advise on coverage priorities and framework crosswalks; contributors write and review rules. Anyone may open issues and pull requests; merging is limited to maintainers with repository permission."}
+              ? "專家對該先覆蓋什麼、框架怎麼對照提供意見。貢獻者寫規則，也審規則。誰都可以提 issue 和 pull request，但只有握有 repo 權限的維護者能合併。"
+              : "Experts advise on what to cover first and how the frameworks map. Contributors write and review rules. Anyone may open issues and pull requests. Only maintainers with repository permission can merge."}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href={`${prefix}/community/join`} className="bg-ink text-white text-[14px] px-5 py-2.5 hover:bg-black transition-colors">
@@ -81,9 +81,9 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
           </div>
         </div>
         <div className="self-end border-t border-fog pt-4 font-data text-[11.5px] leading-[1.7] text-stone">
-          <div className="text-ink mb-2">{zh ? "創始成員 — 2026 年 11 月" : "Founding members — November 2026"}</div>
+          <div className="text-ink mb-2">{zh ? "創始成員 · 2026 年 11 月" : "Founding members · November 2026"}</div>
           {zh
-            ? "名錄只列本人同意公開的人，列名文字經本人確認。所屬單位的列名不代表該單位背書。要求移除，不問理由。"
+            ? "名錄只列本人同意公開的人，文字也經過本人確認。列出所屬單位，不代表該單位背書。要求移除，不問理由。"
             : "Only people who agreed to be listed appear here, with text they confirmed. Listing an organization is not an endorsement by it. Removal on request, no questions asked."}
         </div>
       </section>
@@ -100,14 +100,14 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
         <SectionHead
           mark="§1"
           label={zh ? "GitHub 貢獻紀錄" : "On GitHub"}
-          title={zh ? "在 repository 留下貢獻的人" : "People with contributions in the repository"}
+          title={zh ? "在 repo 裡留下貢獻的人" : "People with contributions in the repository"}
           body={
             contributors
               ? zh
-                ? `GitHub 列為 contributor 的 ${contributors.length} 人，不含機器人與維護者的次要帳號。這是公開紀錄，與上方名錄分開計算。`
-                : `The ${contributors.length} people GitHub lists as contributors, bots and maintainers' secondary accounts excluded. This is the public record, counted apart from the directory above.`
+                ? `GitHub 列為貢獻者的 ${contributors.length} 人，不算機器人，也不算維護者的次要帳號。這是公開紀錄，跟上面的名錄分開計算。`
+                : `The ${contributors.length} people GitHub lists as contributors, not counting bots or maintainers' secondary accounts. This is the public record, counted separately from the directory above.`
               : zh
-                ? "本次建置未能讀到 GitHub 的貢獻者清單。"
+                ? "這次建置沒有讀到 GitHub 的貢獻者清單。"
                 : "The GitHub contributor list could not be read when this page was built."
           }
         />
@@ -136,7 +136,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
           mark="§2"
           label={zh ? "工作組" : "Working groups"}
           title={zh ? "三個工作組，負責人從缺" : "Three working groups, leads wanted"}
-          body={zh ? "工作在 GitHub Discussions 非同步進行。負責人由維護者依貢獻提名，目前三組都在徵求。" : "Work happens asynchronously in GitHub Discussions. Leads are nominated by maintainers from contribution; all three seats are open."}
+          body={zh ? "工作在 GitHub Discussions 上非同步進行。負責人由維護者看貢獻提名，三組目前都還在找。" : "Work happens asynchronously in GitHub Discussions. Maintainers nominate leads based on contribution. All three seats are open."}
         />
         <ul className="border-t border-fog">
           {WORKING_GROUPS.map((wg) => (
@@ -158,7 +158,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
         <SectionHead
           mark="§3"
           label={zh ? "成員會收到什麼" : "What members get"}
-          title={zh ? "只承諾做得到的事" : "Only what we can keep doing"}
+          title={zh ? "只承諾做得到的事" : "Only promises that can be kept"}
         />
         <dl className="border-t border-fog">
           {CADENCE.map((c) => (

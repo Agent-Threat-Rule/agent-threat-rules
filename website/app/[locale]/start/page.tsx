@@ -21,8 +21,8 @@ export async function generateMetadata({
     title: locale === "zh" ? "從這裡開始" : "Start here",
     description:
       locale === "zh"
-        ? "依你的來意找到 ATR 的入口:整合、寫規則或回報誤判、採購與稽核、引用、治理,以及政府與標準組織。"
-        : "Find the part of ATR you came for: integrating it, writing rules or reporting false positives, procurement and audit, citation, governance, and government or standards work.",
+        ? "看你為什麼來，找到 ATR 對應的入口。整合、寫規則、回報誤判、採購稽核、引用、治理，政府和標準組織也有一張。"
+        : "Find the part of ATR you came for. Integrating it, writing rules, reporting false positives, procurement and audit, citing it, governance, and work for governments or standards bodies.",
   });
 }
 
@@ -40,12 +40,12 @@ export default async function StartPage({ params }: { params: Promise<{ locale: 
             {zh ? "從這裡開始" : "Start here"}
           </div>
           <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-2 text-balance">
-            {zh ? "你為什麼來?" : "What brings you to ATR?"}
+            {zh ? "你是為了什麼來的？" : "What brings you to ATR?"}
           </h1>
           <p className="text-base text-stone font-light max-w-[640px]">
             {zh
-              ? "選最接近你來意的一張卡。每張卡只指向兩個現有頁面。"
-              : "Pick the card closest to why you are here. Each one points at two existing pages."}
+              ? "挑一張最像你的卡。每張卡只連到兩頁。"
+              : "Pick the card closest to why you are here. Each one links to two pages."}
           </p>
         </div>
       </Reveal>

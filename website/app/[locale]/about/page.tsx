@@ -20,7 +20,7 @@ export async function generateMetadata({
     path: "/about",
     title: "About",
     description:
-      "ATR is the open detection standard for AI agent threats. Mission, history, governance, and maintainers.",
+      "ATR is the open detection standard for AI agent threats. Where it came from, how it is run, and who maintains it.",
   });
 }
 
@@ -40,8 +40,8 @@ const MILESTONES: Milestone[] = [
       zh: "ATR 啟動 · v0.1.0 發布",
     },
     detail: {
-      en: "29 rules across 9 threat categories, TypeScript engine, 325 passing tests.",
-      zh: "29 條規則，9 個威脅類別，TypeScript 偵測引擎，325 個測試全通過。",
+      en: "29 rules in 9 threat categories, a TypeScript engine, and 325 tests, all passing.",
+      zh: "29 條規則，9 個威脅類別，一個 TypeScript 偵測引擎，325 個測試全部通過。",
     },
   },
   {
@@ -51,8 +51,8 @@ const MILESTONES: Milestone[] = [
       zh: "Cisco AI Defense 合併 34 條規則（PR #79）",
     },
     detail: {
-      en: "First enterprise adoption. 1,272 additions, merged one day after submission.",
-      zh: "首個企業級採用。新增 1,272 行，送出後隔日合併。",
+      en: "First enterprise adoption. 1,272 lines added, merged the day after it was submitted.",
+      zh: "第一個企業採用。新增 1,272 行，送出隔天就合併。",
     },
   },
   {
@@ -62,8 +62,8 @@ const MILESTONES: Milestone[] = [
       zh: "v1.0.0 發布",
     },
     detail: {
-      en: "Coverage milestone: OWASP Agentic 10/10, PINT F1 76.7.",
-      zh: "覆蓋里程碑：OWASP Agentic 10/10、PINT F1 76.7。",
+      en: "OWASP Agentic coverage reached 10/10. PINT F1: 76.7.",
+      zh: "OWASP Agentic 覆蓋到 10/10。PINT F1 為 76.7。",
     },
   },
   {
@@ -73,19 +73,19 @@ const MILESTONES: Milestone[] = [
       zh: "Microsoft AGT 合併 15 條規則的 ATR 範例（PR #908）",
     },
     detail: {
-      en: "Merged as an example directory: 554 additions, adapted as PolicyDocument. The rule YAML is no longer in the AGT repository.",
-      zh: "以範例目錄合併:新增 554 行,改寫為 PolicyDocument 格式。規則 YAML 現已不在 AGT repo。",
+      en: "Merged as an example directory, 554 lines added, adapted to the PolicyDocument format. The rule YAML is no longer in the AGT repository.",
+      zh: "以範例目錄的形式合併，新增 554 行，改寫成 PolicyDocument 格式。這些規則 YAML 現在已經不在 AGT 的 repo 裡。",
     },
   },
   {
     date: "2026-04-14",
     title: {
-      en: "Mass malware campaign research published",
-      zh: "大規模惡意軟體行動研究發布",
+      en: "Research on a mass malware campaign published",
+      zh: "發表大規模惡意軟體行動的研究",
     },
     detail: {
-      en: "Scanned 101,280 agent skills and MCP definitions across five registries; 1,434 flagged (engine v2.0.0, as of 2026-04-13). Documented malicious skills from three coordinated threat accounts and notified NousResearch via issue #9809.",
-      zh: "跨五個 registry 掃描 101,280 個 agent skill 與 MCP 定義，1,434 個被標記（engine v2.0.0，資料日期 2026-04-13）。記錄三個協同帳號的惡意 skill，並透過 issue #9809 通報 NousResearch。",
+      en: "101,280 agent skills and MCP definitions scanned across five registries, and 1,434 flagged (engine v2.0.0, data as of 2026-04-13). The research documented malicious skills from three coordinated threat accounts and notified NousResearch in issue #9809.",
+      zh: "在五個 registry 掃描了 101,280 個 agent skill 與 MCP 定義，1,434 個被標記（engine v2.0.0，資料截至 2026-04-13）。研究記錄了來自三個協同帳號的惡意 skill，並在 issue #9809 通報 NousResearch。",
     },
   },
   {
@@ -95,74 +95,74 @@ const MILESTONES: Milestone[] = [
       zh: "v2.0.0 發布",
     },
     detail: {
-      en: "113 detection rules across 8 categories. Full coverage mapping to MITRE ATLAS, OWASP Agentic, OWASP LLM, and OWASP AST.",
-      zh: "113 條偵測規則，跨 8 個類別。完整對照 MITRE ATLAS、OWASP Agentic、OWASP LLM、OWASP AST。",
+      en: "113 detection rules in 8 categories, with full coverage mappings to MITRE ATLAS, OWASP Agentic, OWASP LLM and OWASP AST.",
+      zh: "113 條偵測規則，分成 8 個類別。對 MITRE ATLAS、OWASP Agentic、OWASP LLM、OWASP AST 都有完整對照。",
     },
   },
   {
     date: "2026-04-21",
     title: {
       en: "v2.0.11 · NVIDIA garak coverage",
-      zh: "v2.0.11 · NVIDIA garak 覆蓋",
+      zh: "v2.0.11 · 涵蓋 NVIDIA garak",
     },
     detail: {
-      en: "193 new rules, many of them written from the NVIDIA garak probe corpus (311 total). garak in-the-wild jailbreak subset recall at the time: 97.1% (647/666), with every rule loaded (detection lanes came later; it is what today's hunt lane loads). Many of these rules were written from that same corpus, so the figure is partly closed-book, not an out-of-sample result.",
-      zh: "新增 193 條規則，其中不少是從 NVIDIA garak probe corpus 寫出來的（總計 311 條）。garak in-the-wild jailbreak 子集召回率（當時）：97.1%（647/666），載入全部規則（當時還沒有偵測 lane，等同今天的 hunt lane）。這批規則有不少正是從同一份語料寫出來的，所以這個數字部分屬於 closed-book，不是樣本外成績。",
+      en: "193 new rules, many written from the NVIDIA garak probe corpus, for 311 in total. Recall on garak's in-the-wild jailbreak subset was 97.1% (647/666) at the time, with every rule loaded. Detection lanes came later; that setup is what today's hunt lane loads. Many of these rules were written from that same corpus, so the figure is partly closed-book. It is not an out-of-sample result.",
+      zh: "新增 193 條規則，不少是照著 NVIDIA garak 的 probe 語料寫的，總數來到 311 條。當時在 garak in-the-wild 越獄子集上的召回率是 97.1%（647/666），載入的是全部規則。那時還沒有偵測車道，這個設定等於今天的 hunt 車道。因為不少規則正是從同一份語料寫出來的，這個數字有一部分是開卷考，不是樣本外的成績。",
     },
   },
   {
     date: "2026-04-22",
     title: {
       en: "ATR rule pack merged into cisco-ai-defense/skill-scanner (PR #99)",
-      zh: "ATR 規則集合併進 cisco-ai-defense/skill-scanner (PR #99)",
+      zh: "ATR 規則集合併進 cisco-ai-defense/skill-scanner（PR #99）",
     },
     detail: {
-      en: "Follow-up PR after the 34-rule PoC, landing the ATR rule pack in the Cisco AI Defense team's open-source skill-scanner repo. Two consumption paths exist there: the rule-packs CLI and skill-scanner. This is a merged pull request in a public repository, not a statement about Cisco's commercial product.",
-      zh: "34 條 PoC 之後的跟進 PR,把 ATR 規則集送進 Cisco AI Defense 團隊的開源 skill-scanner repo。該 repo 裡有兩條消費路徑:rule-packs CLI 與 skill-scanner。這是公開 repo 裡一個已合併的 PR,不是對 Cisco 商業產品的陳述。",
+      en: "A follow-up to the 34-rule PoC. It lands the ATR rule pack in skill-scanner, the Cisco AI Defense team's open-source repository, which consumes it two ways: through the rule-packs CLI and through skill-scanner itself. This is a merged pull request in a public repository. It is not a statement about Cisco's commercial product.",
+      zh: "34 條 PoC 之後的後續 PR，把 ATR 規則集放進 Cisco AI Defense 團隊的開源 skill-scanner repo。這個 repo 有兩條使用路徑：rule-packs CLI 和 skill-scanner。這是公開 repo 裡一個已合併的 PR，講的不是 Cisco 的商業產品。",
     },
   },
   {
     date: "2026-04-26",
     title: {
-      en: "Microsoft AGT example expanded to 287 rules + weekly sync workflow (PR #1277)",
-      zh: "Microsoft AGT 範例擴充至 287 條規則 + 每週同步 workflow (PR #1277)",
+      en: "Microsoft AGT example grows to 287 rules, plus a weekly sync workflow (PR #1277)",
+      zh: "Microsoft AGT 範例擴充到 287 條規則，加上每週同步 workflow（PR #1277）",
     },
     detail: {
-      en: "Follow-up to PR #908's 15-rule example. Adds 272 more rules (287 total) and a weekly sync workflow. The rule YAML has since left the AGT repository, and the workflow is pinned to an old ATR release.",
-      zh: "PR #908 (15 條範例) 的跟進。新增 272 條規則 (合計 287 條) 與每週同步 workflow。規則 YAML 之後已不在 AGT repo,workflow 釘在舊版 ATR。",
+      en: "Builds on PR #908's 15-rule example with 272 more rules (287 in total) and a weekly sync workflow. The rule YAML has since left the AGT repository, and the workflow is pinned to an old ATR release.",
+      zh: "接續 PR #908 的 15 條範例，再加 272 條（合計 287 條）和一個每週同步的 workflow。之後規則 YAML 已經不在 AGT repo 裡，workflow 也還釘在舊版 ATR。",
     },
   },
   {
     date: "2026-05-10",
     title: {
-      en: "MISP / CIRCL taxonomy + galaxy merged",
-      zh: "MISP / CIRCL taxonomy + galaxy 合併",
+      en: "MISP / CIRCL taxonomy and galaxy merged",
+      zh: "MISP / CIRCL 合併 taxonomy 與 galaxy",
     },
     detail: {
-      en: "Alexandre Dulaunoy (CIRCL) merged ATR rule-ID taxonomy (misp-taxonomies #323) and threat-intel galaxy (misp-galaxy #1207) into MISP's core distribution. First neutral standards-body adoption.",
-      zh: "Alexandre Dulaunoy (CIRCL) 把 ATR rule-ID taxonomy (misp-taxonomies #323) 跟 threat-intel galaxy (misp-galaxy #1207) 合進 MISP 主分發。第一個中立標準機構採用。",
+      en: "Alexandre Dulaunoy (CIRCL) merged the ATR rule-ID taxonomy (misp-taxonomies #323) and a threat-intel galaxy (misp-galaxy #1207) into MISP's core distribution. It was the first adoption by a neutral standards body.",
+      zh: "CIRCL 的 Alexandre Dulaunoy 把 ATR 的規則編號 taxonomy（misp-taxonomies #323）和威脅情資 galaxy（misp-galaxy #1207）合進 MISP 的主要發行版。這是第一個中立標準機構的採用。",
     },
   },
   {
     date: "2026-05-11",
     title: {
-      en: "OWASP Agent Security Regression Harness (#74) + Gen Digital Sage (#33) both merged",
-      zh: "OWASP Agent Security Regression Harness (#74) 與 Gen Digital Sage (#33) 同日合併",
+      en: "OWASP Agent Security Regression Harness (#74) and Gen Digital Sage (#33) merged on the same day",
+      zh: "OWASP Agent Security Regression Harness（#74）與 Gen Digital Sage（#33）同一天合併",
     },
     detail: {
-      en: "OWASP Foundation's regression-harness project references ATR as its canonical agent-threat detection ruleset (PR #74, merged by Mert Satilmaz). On the same day, Gen Digital (Norton / Avast / LifeLock parent) merged the full ATR rule pack into the Sage agentic-AI risk-scoring layer (PR #33).",
-      zh: "OWASP Foundation 的 regression-harness 專案把 ATR 列為標準 agent-threat 偵測 ruleset (PR #74, Mert Satilmaz 合併)。同一天,Gen Digital (Norton / Avast / LifeLock 母集團) 把完整 ATR 規則集合進 Sage agentic-AI 風險評分層 (PR #33)。",
+      en: "The OWASP Foundation's regression-harness project references ATR as its canonical agent-threat detection ruleset (PR #74, merged by Mert Satilmaz). The same day, Gen Digital, the parent of Norton, Avast and LifeLock, merged the full ATR rule pack into the Sage agentic-AI risk-scoring layer (PR #33).",
+      zh: "OWASP Foundation 的 regression-harness 專案把 ATR 列為標準的 agent 威脅偵測規則集（PR #74，由 Mert Satilmaz 合併）。同一天，Norton、Avast、LifeLock 的母集團 Gen Digital，把完整的 ATR 規則集合進 Sage 的 agentic AI 風險評分層（PR #33）。",
     },
   },
   {
     date: "2026-05-22",
     title: {
-      en: "ATR website standards-form rewrite",
-      zh: "ATR 官網標準體裁重寫",
+      en: "ATR website rewritten in standards form",
+      zh: "ATR 官網改寫成標準文件的體裁",
     },
     detail: {
-      en: "Hero, footer, and information architecture rewritten to match peer-format positioning (Sigma / YARA / ATT&CK / NIST AI RMF). Integration intake pipeline shipped: structured issue form, auto-triage workflow, ADOPTERS.md as machine-readable source of truth.",
-      zh: "Hero、footer、資訊架構全面改寫為標準體裁,與 Sigma / YARA / ATT&CK / NIST AI RMF 對齊。Integration intake 管線上線:結構化 issue form、自動 triage workflow、ADOPTERS.md 作為機器可讀來源。",
+      en: "The hero, footer and information architecture were rewritten to read like peer standards such as Sigma, YARA, ATT&CK and NIST AI RMF. An intake pipeline for integrations shipped with it: a structured issue form, an auto-triage workflow, and ADOPTERS.md as the machine-readable source of truth.",
+      zh: "首頁主視覺、頁尾和資訊架構全部改寫，向 Sigma、YARA、ATT&CK、NIST AI RMF 這類標準的寫法看齊。整合申請流程同時上線：結構化的 issue 表單、自動分流的 workflow，以及作為機器可讀來源的 ADOPTERS.md。",
     },
   },
   {
@@ -172,19 +172,19 @@ const MILESTONES: Milestone[] = [
       zh: "v3.5.0 · 偵測車道上線",
     },
     detail: {
-      en: "v3.5.0 (652 rules at release) introduced detection lanes (enforce / alert / hunt) — maturity-driven precision, with false-positive rates reported per lane rather than as a single figure.",
-      zh: "v3.5.0（發布時 652 條規則）引入偵測車道(enforce / alert / hunt)——以成熟度驅動精確度,誤報率逐車道揭露,而非用單一數字概括。",
+      en: "v3.5.0 (652 rules at release) introduced detection lanes: enforce, alert and hunt. Precision follows rule maturity, and false-positive rates are reported per lane instead of as a single figure.",
+      zh: "v3.5.0（發布時 652 條規則）加入偵測車道：enforce、alert、hunt。精確度跟著規則成熟度走，誤報率逐車道公布，不用單一數字概括。",
     },
   },
   {
     date: "2026-07",
     title: {
       en: "Adoption re-verified · auto-publish flywheel",
-      zh: "採用全面現驗 · 自動發布飛輪",
+      zh: "採用紀錄全部重驗 · 自動發布飛輪",
     },
     detail: {
-      en: "Every adopter PR state re-verified against GitHub — new shipped integrations recorded across FINOS, SigmaHQ, rulezet/CIRCL, AMD GAIA, and AG2. The crystallization flywheel now auto-publishes new rules to npm on merge; rule count, spec version, and the adopter wall on this site are all rebuilt from repo state at deploy time.",
-      zh: "所有採用者 PR 狀態對 GitHub 全面現驗——FINOS、SigmaHQ、rulezet/CIRCL、AMD GAIA、AG2 等新出貨整合入列。結晶飛輪已在 merge 時自動發布新規則到 npm;本站的規則數、規範版本、採用者牆全部在部署時從 repo 狀態重建。",
+      en: "Every adopter PR was re-checked against GitHub, and newly shipped integrations were recorded, among them FINOS, SigmaHQ, rulezet/CIRCL, AMD GAIA and AG2. The crystallization flywheel now publishes new rules to npm automatically when they merge. The rule count, spec version and adopter wall on this site are all rebuilt from the repository at deploy time.",
+      zh: "每個採用者 PR 的狀態都對 GitHub 重新驗過一次，新上線的整合也一併記錄，包括 FINOS、SigmaHQ、rulezet/CIRCL、AMD GAIA、AG2。結晶飛輪現在會在規則合併時自動發布到 npm。本站的規則數、規格版本和採用者牆，都在部署時從 repo 重新產生。",
     },
   },
 ];
@@ -211,38 +211,38 @@ export default async function AboutPage({
         <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.035em] font-medium text-ink">
           {zh ? "一個開放標準。" : "An open standard."}
           <br />
-          {zh ? "一位維護者開始。" : "Started by one maintainer."}
+          {zh ? "從一位維護者開始。" : "Started by one maintainer."}
         </h1>
       </Reveal>
       <Reveal delay={0.1}>
         <p className="text-sm md:text-base text-graphite max-w-[640px] mt-5 md:mt-6 leading-[1.8]">
           {zh
-            ? "ATR 是 AI agent 安全威脅的開放式偵測標準。本頁說明它為何存在、如何運作、誰在維護。"
-            : "ATR is the open detection standard for AI agent security threats. This page explains why it exists, how it works, and who maintains it."}
+            ? "ATR 是 AI agent 安全威脅的開放偵測標準。這一頁講它為什麼會有、怎麼運作，還有現在是誰在維護。"
+            : "ATR is the open detection standard for AI agent security threats. This page covers why it exists and how it works. It also names who maintains it."}
         </p>
       </Reveal>
 
       {/* Mission */}
-      <Section label={zh ? "使命" : "Mission"} delay={0.15}>
+      <Section label={zh ? "它做什麼" : "What it does"} delay={0.15}>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh
-            ? "ATR 為 AI agent 提供可執行的偵測規則。其他框架（MITRE ATLAS、OWASP Agentic、NIST AI RMF）分類威脅並定義風險管理流程；ATR 提供能在真實 agent 成品——SKILL.md、MCP tool 描述、agent config——上運作的偵測規則。ATR 之於 MITRE ATLAS，等同於 Sigma 規則之於 ATT&CK。"
-            : "ATR provides executable detection rules for AI agents. Other frameworks — MITRE ATLAS, OWASP Agentic, NIST AI RMF — categorize threats and define risk management processes. ATR provides the detection rules that operate on real agent artifacts: SKILL.md files, MCP tool descriptions, agent configs. ATR is to MITRE ATLAS what Sigma rules are to ATT&CK."}
+            ? "ATR 寫的是能直接執行的偵測規則。MITRE ATLAS、OWASP Agentic、NIST AI RMF 這些框架，負責把威脅分類、定義風險管理的流程。ATR 的規則則直接跑在 agent 真正用到的檔案上：SKILL.md、MCP 工具描述、agent 設定檔。ATR 之於 MITRE ATLAS，就像 Sigma 規則之於 ATT&CK。"
+            : "ATR is detection rules you can run. Frameworks such as MITRE ATLAS, OWASP Agentic and NIST AI RMF sort threats into categories and define how to manage risk. ATR's rules run on the files an agent actually uses: SKILL.md files, MCP tool descriptions, agent configs. ATR is to MITRE ATLAS what Sigma rules are to ATT&CK."}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "規則以 MIT 授權公開，YAML 格式儲存於 GitHub。任何人都可以整合、修改、或貢獻回上游。沒有付費功能，沒有廠商鎖定。"
-            : "Rules are published under MIT license in YAML format on GitHub. Anyone may integrate, modify, or contribute upstream. There are no paid features. There is no vendor lock-in."}
+            ? "規則用 MIT 授權公開，以 YAML 格式放在 GitHub 上。誰都可以整合、修改，或把改動送回上游。沒有付費功能，也沒有廠商鎖定。"
+            : "The rules are YAML files on GitHub under the MIT license. Anyone may integrate them, change them, or send changes back upstream. Nothing is paid, and nothing locks you to a vendor."}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? <>標準由社群驅動。從六月起，規則集從 462 條成長到 {ruleCount} 條，來源是 CVE 與安全公告掃描、benchmark 漏報挖掘與貢獻者；每一條都經由維護者合併的 pull request 進入 main。</>
-            : <>The standard is community-driven. Since June the ruleset has grown from 462 to {ruleCount} rules, from CVE and advisory sweeps, benchmark-miss mining and contributors; each rule reaches main through a pull request a maintainer merges.</>}
+            ? <>標準由社群推動。六月到現在，規則從 462 條增加到 {ruleCount} 條。來源有 CVE 與安全公告的掃描、從 benchmark 漏報裡挖出來的攻擊，還有貢獻者送來的規則。每一條都是透過維護者合併的 pull request 進到 main。</>
+            : <>The standard is community-driven. Since June the ruleset has grown from 462 to {ruleCount} rules. They come from sweeps of CVEs and advisories, from attacks the benchmark missed, and from contributors. Each one reaches main through a pull request that a maintainer merges.</>}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "但成長從不是目的——對精確度誠實才是。v3.5.0 引入偵測車道:每條規則標明成熟度,使用者自己決定要信任到什麼程度。enforce 車道只讓最成熟的規則開火;預設的 hunt 車道把全部規則當建議性訊號跑。ATR 逐車道揭露誤報率,從不用單一個好看的數字一概而論——而各車道目前的誤報率數字已被撤回、等待重新量測,因為量測所用的良性語料被發現混入真實越獄樣本。一個標準的可信度,取決於它願不願意公開自己最差的數字,以及在一個數字站不住時願不願意把它撤掉。"
-            : "But growth was never the point — honesty about precision is. The v3.5.0 release introduced detection lanes: every rule declares a maturity, and the consumer decides how far to trust it. The enforce lane fires only the most mature rules; the default hunt lane runs everything as advisory. ATR reports false-positive rates lane by lane, never as a single flattering number — and the current per-lane figures are withdrawn pending re-measurement, because the benign corpus they were measured on was found to contain real jailbreak samples. A standard earns trust by publishing its worst figure, and by withdrawing any figure it can no longer stand behind."}
+            ? "但規則變多從來不是重點，精確度講不講實話才是。v3.5.0 加入了偵測車道：每條規則都標明成熟度，用的人自己決定要信到什麼程度。enforce 車道只讓最成熟的規則觸發。預設的 hunt 車道會跑全部規則，結果只當建議。ATR 的誤報率一條車道一條車道公布，從不拿一個好看的數字概括。目前各車道的誤報率已經撤回，等重新量測。原因是量測用的良性語料，被發現混進了真實的越獄樣本。一個標準值不值得信任，要看它敢不敢公開自己最差的數字，也要看數字站不住的時候，它肯不肯撤掉。"
+            : "Growth was never the point. Being honest about precision is. The v3.5.0 release introduced detection lanes: every rule declares a maturity, and whoever runs the rules decides how far to trust them. The enforce lane fires only the most mature rules. The default hunt lane runs everything, as advisory. ATR reports false-positive rates lane by lane, never as one flattering number. The current per-lane figures are withdrawn pending re-measurement, because the benign corpus they were measured on turned out to contain real jailbreak samples. A standard earns trust by publishing its worst figure, and by withdrawing any figure it can no longer stand behind."}
         </p>
       </Section>
 
@@ -277,13 +277,13 @@ export default async function AboutPage({
       <Section label={zh ? "治理" : "Governance"} delay={0.25}>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh
-            ? "所有規則變更都透過公開的 GitHub Pull Request 提交與審查。規則採納標準包括：描述清楚、有 test cases（真/假陽性範例）、遵守 schema 規範、不與現有規則衝突。"
-            : "All rule changes are submitted and reviewed via public GitHub pull requests. Adoption criteria include: clear description, test cases covering true and false positives, schema compliance, and no conflict with existing rules."}
+            ? "每一個規則變更，都以公開的 GitHub pull request 提交和審查。收規則的條件包括：描述清楚、附上真陽性和假陽性的 test case、符合 schema，而且不跟現有規則衝突。"
+            : "Every rule change is proposed and reviewed in a public GitHub pull request. The acceptance criteria include a clear description, test cases covering true and false positives, schema compliance, and no conflict with existing rules."}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "規則嚴格按 CVE/CWE 風格編號（ATR-YYYY-NNNNN），一經發布永不改 ID。規則可以修訂（rule_version++），但 ID 穩定——外部文件、論文、CI 腳本都可以安全引用。"
-            : "Rules use CVE/CWE-style identifiers (ATR-YYYY-NNNNN). IDs never change after publication. Rules may be revised (rule_version++), but the ID remains stable — safe for external documentation, academic citations, and CI scripts to reference."}
+            ? "規則編號照 CVE/CWE 的方式編（ATR-YYYY-NNNNN），發布之後永遠不改。規則內容可以修訂（rule_version++），編號不變。外部文件、論文、CI 腳本都可以放心引用。"
+            : "Rule IDs follow the CVE/CWE style (ATR-YYYY-NNNNN) and never change after publication. A rule can be revised (rule_version++) while its ID stays the same, so external docs, papers and CI scripts can cite it safely."}
         </p>
         <div className="mt-5">
           <a
@@ -292,7 +292,7 @@ export default async function AboutPage({
             rel="noopener noreferrer"
             className="font-data text-xs md:text-sm text-blue hover:underline"
           >
-            {zh ? "閱讀完整治理文件 (GOVERNANCE.md) →" : "Read full governance document (GOVERNANCE.md) →"}
+            {zh ? "完整治理文件（GOVERNANCE.md）→" : "Read the full governance document (GOVERNANCE.md) →"}
           </a>
         </div>
       </Section>
@@ -301,13 +301,13 @@ export default async function AboutPage({
       <Section label={zh ? "維護者" : "Maintainers"} delay={0.3}>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh
-            ? "ATR 由 林冠辛 發起並主要維護。這是一個單人啟動的專案——就像 Linus Torvalds 1991 年的 Linux、Florian Roth 的 Sigma。重點是社群能不能實質貢獻，而不是 founders 名單有多長。"
-            : "ATR was founded and is primarily maintained by Kuan-Hsin Lin. This is a project started by one person — the same way Linus Torvalds started Linux in 1991, or Florian Roth started Sigma. What matters is whether the community can contribute substantively, not how long the founders list is."}
+            ? "ATR 由林冠辛發起，現在也主要由他維護。專案是一個人開始的。1991 年的 Linux 是 Linus Torvalds 一個人開始的，Sigma 是 Florian Roth。重要的是社群能不能真的貢獻進來，不是創辦人名單有多長。"
+            : "Kuan-Hsin Lin started ATR and is still its main maintainer. One person started it, the way Linus Torvalds started Linux in 1991 and Florian Roth started Sigma. What matters is whether the community can make real contributions, not how long the founders list is."}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "目前的外部採用包含三筆已合併的上游整合(Cisco AI Defense 的開源 skill-scanner、Microsoft AGT 的 ATR 範例目錄、Gen Digital Sage 已合併的規則包 —— 憑據都是公開 repo 裡已合併的 PR),兩個標準機構已合併(MISP/CIRCL 的 taxonomies #323 + galaxy #1207、OWASP A-S-R-H #74),以及兩個仍開著、尚未合併的提案(提交給 NIST OSCAL 內容倉庫的 usnistgov/oscal-content#338,提供 AI RMF profile 範例,等待 NIST 審查,非 NIST 背書;OpenTelemetry GenAI SIG 的 agent.threat.detection.* PR #165)——這種「企業把鞋帶綁緊就提 PR」的採用模式,是 ATR 想要的治理質感。"
-            : "External adoption to date includes three merged upstream integrations (the ATR rule pack in Cisco AI Defense's open-source skill-scanner, ATR example directories in Microsoft AGT, and Gen Digital's merged Sage pack — each evidenced by a merged pull request in a public repository); two standards-body integrations actually merged (MISP / CIRCL taxonomies #323 + galaxy #1207, and OWASP A-S-R-H #74); and two open, unmerged proposals (usnistgov/oscal-content#338, offering AI RMF profile examples to NIST's OSCAL content repository and awaiting NIST review, not a NIST endorsement; and the agent.threat.detection.* semantic-conventions PR #165 in OpenTelemetry's GenAI SIG). This pattern — enterprises integrating via pull request instead of private forks — is the governance texture ATR is built for."}
+            ? "到目前為止的外部採用：三個已合併的上游整合，每一個都有公開 repo 裡已合併的 PR 為憑。分別是 Cisco AI Defense 開源 skill-scanner 裡的 ATR 規則集、Microsoft AGT 的 ATR 範例目錄，以及 Gen Digital 已合併的 Sage 規則包。兩個標準機構已經合併：MISP / CIRCL（taxonomies #323 與 galaxy #1207）和 OWASP A-S-R-H（#74）。另有兩個提案還開著，尚未合併。一個是送到 NIST OSCAL 內容庫的 usnistgov/oscal-content#338，提供 AI RMF profile 範例，正在等 NIST 審查，不是 NIST 背書。另一個是 OpenTelemetry GenAI SIG 的 PR #165，定義 agent.threat.detection.* 語意慣例。這些企業是用 pull request 整合進來的，不是私下 fork。ATR 想要的就是這種採用方式。"
+            : "External adoption so far: three merged upstream integrations, each backed by a merged pull request in a public repository. They are the ATR rule pack in Cisco AI Defense's open-source skill-scanner, ATR example directories in Microsoft AGT, and Gen Digital's merged Sage pack. Two standards bodies have merged ATR work: MISP / CIRCL (taxonomies #323 and galaxy #1207) and OWASP A-S-R-H (#74). Two proposals are still open and unmerged. One is usnistgov/oscal-content#338, which offers AI RMF profile examples to NIST's OSCAL content repository and is awaiting NIST review; it is not a NIST endorsement. The other is PR #165 in OpenTelemetry's GenAI SIG, for the agent.threat.detection.* semantic conventions. These enterprises integrated through pull requests, not private forks. That is the kind of adoption ATR is built for."}
         </p>
         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
           <a
@@ -331,8 +331,8 @@ export default async function AboutPage({
       <Section label={zh ? "獨立聲明" : "Independence"} delay={0.35}>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh
-            ? "ATR 不屬於任何商業公司。不是任何安全產品的一部分，也不被任何廠商控制。規則是公共財，任何人（包括競爭廠商）都可以採用、擴充、或 fork。"
-            : "ATR is not owned by any commercial entity. It is not a feature of any security product and is not controlled by any vendor. The rules are a public good — anyone, including competing vendors, may adopt, extend, or fork them."}
+            ? "ATR 不屬於任何商業公司，不是哪個資安產品的功能，也不受任何廠商控制。規則是公共財。誰都可以採用、擴充或 fork，競爭廠商也一樣。"
+            : "No commercial entity owns ATR. It is not a feature of any security product, and no vendor controls it. The rules are a public good. Anyone may adopt, extend or fork them, competing vendors included."}
         </p>
       </Section>
     </div>

@@ -20,7 +20,7 @@ export async function generateMetadata({
     path: "/compliance",
     title: "Compliance",
     description:
-      "Regulation says you must manage AI agent risk. ATR maps every rule to the framework it answers to — OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, ISO 42001, plus candidate SAF-MCP technique mappings — so compliance becomes a detection that runs, not a document that asserts.",
+      "Regulations say you must manage AI agent risk. ATR maps every rule to the frameworks it answers to: OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act and ISO 42001, plus candidate SAF-MCP technique mappings. Compliance becomes a detection that runs, not a document that asserts.",
   });
 }
 
@@ -37,39 +37,39 @@ function buildFrameworks(ruleCount: number) {
       coverage: "Every rule",
       coverage_zh: "每條規則",
       desc_en: `All ${ruleCount} rules carry an OWASP LLM Top 10 (2025) reference.`,
-      desc_zh: `全部 ${ruleCount} 條規則皆帶有 OWASP LLM Top 10 (2025) 參照。`,
+      desc_zh: `全部 ${ruleCount} 條規則都標了 OWASP LLM Top 10（2025）的參照。`,
       link: null,
     },
     {
       id: "OWASP Agentic Top 10",
       coverage: "Every rule",
       coverage_zh: "每條規則",
-      desc_en: `All ${ruleCount} rules carry an OWASP Agentic Top 10 reference; all 10 ASI risk categories are covered.`,
-      desc_zh: `全部 ${ruleCount} 條規則皆帶有 OWASP Agentic Top 10 參照；10 個 ASI 風險類別全覆蓋。`,
+      desc_en: `All ${ruleCount} rules carry an OWASP Agentic Top 10 reference, and all 10 ASI risk categories are covered.`,
+      desc_zh: `全部 ${ruleCount} 條規則都標了 OWASP Agentic Top 10 的參照，10 個 ASI 風險類別都有涵蓋。`,
       link: null,
     },
     {
       id: "MITRE ATLAS",
       coverage: "Every rule",
       coverage_zh: "每條規則",
-      desc_en: `All ${ruleCount} rules carry a MITRE ATLAS technique reference, grouped by tactic in the rule explorer. (ATR's own ATLAS crosswalk.)`,
-      desc_zh: `全部 ${ruleCount} 條規則皆帶有 MITRE ATLAS 技術參照，在規則瀏覽器中依戰術分組。（ATR 自行整理的 ATLAS 交叉對照。）`,
+      desc_en: `All ${ruleCount} rules carry a MITRE ATLAS technique reference, and the rule explorer groups them by tactic. The ATLAS crosswalk is ATR's own.`,
+      desc_zh: `全部 ${ruleCount} 條規則都標了 MITRE ATLAS 的技術參照，規則瀏覽器裡按戰術分組。這份 ATLAS 對照是 ATR 自己整理的。`,
       link: null,
     },
     {
       id: "NIST AI RMF",
       coverage: "Every rule",
       coverage_zh: "每條規則",
-      desc_en: `All ${ruleCount} rules carry NIST AI RMF subcategory mappings across the GV/MP/MS/MG functions. A community-authored OSCAL catalog (CC0) is self-published, and two example AI RMF profiles are in an open pull request to NIST's OSCAL content repository (#338), awaiting NIST review. Not a NIST endorsement or adoption.`,
-      desc_zh: `全部 ${ruleCount} 條規則皆帶有 NIST AI RMF subcategory 對應,涵蓋 GV/MP/MS/MG 四大 function。社群撰寫的 OSCAL catalog 已自行 publish(CC0),兩份 AI RMF profile 範例在提交給 NIST OSCAL 內容倉庫的 PR #338 中,仍開著、等待 NIST 審查。這不是 NIST 背書或採用。`,
+      desc_en: `All ${ruleCount} rules carry NIST AI RMF subcategory mappings across the GV, MP, MS and MG functions. A community-written OSCAL catalog (CC0) is self-published. Two example AI RMF profiles sit in an open pull request (#338) to NIST's OSCAL content repository, waiting for NIST review. This is not a NIST endorsement or adoption.`,
+      desc_zh: `全部 ${ruleCount} 條規則都對到 NIST AI RMF 的子類別，涵蓋 GV、MP、MS、MG 四個功能。社群寫的 OSCAL catalog 已經自行發布（CC0）。兩份 AI RMF profile 範例，放在送給 NIST OSCAL 內容 repo 的 PR #338 裡，還開著，等 NIST 審查。這不是 NIST 的背書，也不是 NIST 採用。`,
       link: "nist-ai-rmf",
     },
     {
       id: "EU AI Act",
       coverage: "Every rule",
       coverage_zh: "每條規則",
-      desc_en: `All ${ruleCount} rules map to high-risk-AI obligations (Articles 9, 10, 12, 13, 14, 15). The Act names the duty; ATR supplies the runtime detection that produces evidence against the named article. It is detection evidence, not a compliance guarantee by itself.`,
-      desc_zh: `全部 ${ruleCount} 條規則皆對應到高風險 AI 義務（第 9、10、12、13、14、15 條）。法案說的是義務,ATR 給的是能對著該條文跑出證據的執行期偵測。是偵測證據,本身並非合規保證。`,
+      desc_en: `All ${ruleCount} rules map to high-risk AI obligations (Articles 9, 10, 12, 13, 14 and 15). The Act names the duty. ATR supplies runtime detection that produces evidence against that article. Detection evidence on its own is not a compliance guarantee.`,
+      desc_zh: `全部 ${ruleCount} 條規則都對到高風險 AI 的義務（第 9、10、12、13、14、15 條）。法案寫的是義務，ATR 給的是執行期的偵測，能對著那一條跑出證據。光有偵測證據，不等於保證合規。`,
       link: null,
     },
     {
@@ -77,15 +77,15 @@ function buildFrameworks(ruleCount: number) {
       coverage: "Every rule",
       coverage_zh: "每條規則",
       desc_en: `All ${ruleCount} rules map to AI management system clauses (6.2, 8.1–8.4, 9.1).`,
-      desc_zh: `全部 ${ruleCount} 條規則皆對應到 AI 管理系統條款（6.2、8.1–8.4、9.1）。`,
+      desc_zh: `全部 ${ruleCount} 條規則都對到 AI 管理系統的條款（6.2、8.1–8.4、9.1）。`,
       link: null,
     },
     {
       id: "SAF-MCP",
       coverage: "55/78 techniques",
-      coverage_zh: "55/78 個 technique",
-      desc_en: "Technique-level inventory: 55 of 78 active SAF Framework Model v2 techniques have at least one reviewed ATR rule (partial or adjacent). These are candidate mappings and have not been validated by SAF; SAF validates external mappings in its own registry.",
-      desc_zh: "技術層級清單：SAF Framework Model v2 的 78 項有效技術中，55 項至少有一條經審查的 ATR 規則對應（partial 或 adjacent）。屬候選對照，尚未經 SAF 驗證；是否驗證由 SAF 在自己的 registry 決定。",
+      coverage_zh: "55/78 項技術",
+      desc_en: "Counted per technique: 55 of 78 active SAF Framework Model v2 techniques have at least one reviewed ATR rule, as a partial or adjacent match. These are candidate mappings. SAF has not validated them, and SAF validates outside mappings in its own registry.",
+      desc_zh: "按技術算：SAF Framework Model v2 的 78 項有效技術裡，55 項至少有一條審查過的 ATR 規則對到（partial 或 adjacent）。這些是候選對照，SAF 還沒驗證。要不要驗證，由 SAF 在自己的 registry 決定。",
       link: null,
     },
   ];
@@ -106,19 +106,19 @@ export default async function CompliancePage({
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[1120px] mx-auto">
       <Reveal>
         <div className="text-[13px] text-stone mb-3">
-          {zh ? "合規覆蓋" : "Compliance Coverage"}
+          {zh ? "合規對應" : "Compliance coverage"}
         </div>
       </Reveal>
       <Reveal delay={0.05}>
         <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium text-ink mb-4">
-          {zh ? "6 個框架。每條規則都映射。" : "6 frameworks. Every rule mapped."}
+          {zh ? "6 個框架，每條規則都對上了。" : "6 frameworks. Every rule mapped."}
         </h1>
       </Reveal>
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-4">
           {zh
-            ? `每一條法規都說同一句話:你必須管理 AI agent 風險。它們沒說的是怎麼在真實成品上證明你做到了。ATR 的 ${stats.ruleCount} 條規則,每一條都帶有六個框架對應——OWASP LLM、OWASP Agentic、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001——CI 會檢查每個對應都合法、每條規則都有對應。一條義務於是接上一個能在 SKILL.md、MCP tool 描述、agent config 上跑的偵測。SAF-MCP 為技術層級候選對照(${stats.safeMcp},未經 SAF 驗證)。所有 metadata 皆 MIT 授權、可下載、可審核。`
-            : `Every regulation says the same thing: you must manage AI agent risk. None of them say how to prove it on a real artifact. Each of ATR's ${stats.ruleCount} rules carries six framework mappings — OWASP LLM, OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act, and ISO 42001 — with CI checking that every mapping is valid and that every rule has one. Each obligation thus connects to a detection that runs on a SKILL.md file, an MCP tool description, an agent config. SAF-MCP is mapped at the technique level as candidate mappings (${stats.safeMcp}, not validated by SAF). All metadata is MIT-licensed, downloadable, and auditable.`}
+            ? `每一部法規都在講同一件事：你得管好 AI agent 的風險。沒有一部告訴你，怎麼在真實的成品上證明你做到了。ATR 的 ${stats.ruleCount} 條規則，每一條都帶著六個框架的對應：OWASP LLM、OWASP Agentic、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001。CI 會檢查每個對應都合法，每條規則也都有對應。一條義務就這樣接上一個偵測，能在 SKILL.md、MCP 工具說明、agent 設定檔上跑。SAF-MCP 是技術層級的候選對照（${stats.safeMcp}，SAF 尚未驗證）。所有 metadata 都採 MIT 授權，可以下載，也可以稽核。`
+            : `Every regulation says the same thing: you must manage AI agent risk. None of them says how to prove it on a real artifact. Each of ATR's ${stats.ruleCount} rules carries six framework mappings: OWASP LLM, OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act and ISO 42001. CI checks that every mapping is valid and that every rule has one. So each obligation connects to a detection that runs on a SKILL.md file, an MCP tool description or an agent config. SAF-MCP is mapped per technique, as candidate mappings (${stats.safeMcp}, not validated by SAF). All of the metadata is MIT-licensed. You can download it and audit it.`}
         </p>
       </Reveal>
 
@@ -131,8 +131,8 @@ export default async function CompliancePage({
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {zh
-                ? "合規官員無法把一個 URL 當成採購證據提交。下載結構化的合規映射包(PDF + JSON):每條規則的框架對應、rule ID 索引、品質分數摘要。因為是開放標準,審稿者不必信任 ATR——他們可以自己驗每一條對應。"
-                : "A compliance officer cannot submit a URL as procurement evidence. Download the structured compliance mapping package (PDF + JSON): per-rule framework mappings, a rule ID index, a quality-score summary. Because it is an open standard, a reviewer does not have to trust ATR — they can verify every mapping themselves."}
+                ? "合規人員不能交一個網址當採購證據。這裡可以下載結構化的合規對應包（PDF + JSON），裡面有每條規則的框架對應、規則編號索引，還有品質分數摘要。ATR 是開放標準，審的人不必相信 ATR，每一條對應都能自己驗。"
+                : "A compliance officer can't file a URL as procurement evidence. Download the structured compliance mapping package (PDF + JSON). It holds the framework mappings for each rule, an index by rule ID and a summary of quality scores. Because ATR is an open standard, a reviewer doesn't have to trust it. They can check every mapping themselves."}
             </p>
           </div>
           <div className="flex flex-col gap-3 flex-shrink-0">
@@ -142,7 +142,7 @@ export default async function CompliancePage({
               rel="noopener noreferrer"
               className="bg-ink text-white px-5 py-2.5  text-sm font-semibold hover:bg-black transition-colors text-center"
             >
-              {zh ? "下載合規映射包 (GitHub Releases) →" : "Download compliance mapping (GitHub Releases) →"}
+              {zh ? "下載合規對應包（GitHub Releases）→" : "Download compliance mapping (GitHub Releases) →"}
             </a>
             <a
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/docs"
@@ -150,7 +150,7 @@ export default async function CompliancePage({
               rel="noopener noreferrer"
               className="font-data text-xs text-blue hover:underline text-center"
             >
-              {zh ? "在 GitHub 查看合規文件 →" : "Browse compliance docs on GitHub →"}
+              {zh ? "在 GitHub 看合規文件 →" : "Browse compliance docs on GitHub →"}
             </a>
           </div>
         </div>
@@ -160,8 +160,8 @@ export default async function CompliancePage({
       <Reveal delay={0.18}>
         <p className="text-xs text-stone leading-[1.7] max-w-[720px] mb-4">
           {zh
-            ? "所有對應皆為 ATR 自行整理的交叉對照文件,並非上述各機構的背書。"
-            : "All mappings are ATR's own crosswalk documents, not endorsements by the named bodies."}
+            ? "所有對應都是 ATR 自己整理的對照文件，不代表上面這些機構背書。"
+            : "Every mapping is ATR's own crosswalk. None is endorsed by the bodies named here."}
         </p>
       </Reveal>
 
@@ -186,7 +186,7 @@ export default async function CompliancePage({
                       href={`/${locale}/compliance/${fw.link}`}
                       className="font-data text-xs text-blue hover:underline"
                     >
-                      {zh ? "詳細頁面 →" : "Detail page →"}
+                      {zh ? "看細節 →" : "Details →"}
                     </Link>
                   ) : null}
                 </div>
@@ -200,12 +200,12 @@ export default async function CompliancePage({
       <Reveal>
         <div className="bg-paper border border-fog p-5 md:p-6 mb-8">
           <div className="text-[13px] text-stone mb-2">
-            {zh ? "可逐條驗證" : "Rule-by-rule verifiability"}
+            {zh ? "每一條都能驗" : "Check it rule by rule"}
           </div>
           <p className="text-sm text-graphite leading-[1.7] mb-3">
             {zh
-              ? "「符合某框架」是宣稱;指出偵測某攻擊的那一段 regex,是證據。ATR 的合規對應寫在每條規則的 YAML 裡——具體的 compliance metadata,引用偵測此攻擊的確切 regex 或 token,而非泛指「與該框架對齊」。任何人都能把對應和它聲稱偵測的東西擺在一起看。"
-              : "'Aligned with a framework' is an assertion. The exact regex that detects an attack is evidence. ATR's compliance mappings live in each rule's YAML — specific compliance metadata citing the precise regex or token that detects the attack, never a generic claim of 'alignment with framework.' Anyone can put the mapping next to the thing it claims to detect and check."}
+              ? "說「符合某個框架」，是一種宣稱。把偵測攻擊的那段 regex 指出來，才是證據。ATR 的合規對應寫在每條規則的 YAML 裡，引用的是偵測這個攻擊的那段 regex 或 token，不是一句籠統的「與框架對齊」。誰都能把對應和它說要偵測的東西擺在一起比。"
+              : "'Aligned with a framework' is an assertion. The regex that detects the attack is evidence. ATR's compliance mappings live in each rule's YAML. They cite the exact regex or token that detects the attack, never a generic 'aligned with the framework'. Anyone can put a mapping next to the thing it claims to detect and check it."}
           </p>
           <a
             href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/rules"
@@ -213,12 +213,12 @@ export default async function CompliancePage({
             rel="noopener noreferrer"
             className="font-data text-xs text-blue hover:underline"
           >
-            {zh ? "在 GitHub 查看 raw rule YAML →" : "Browse raw rule YAML on GitHub →"}
+            {zh ? "在 GitHub 看規則的原始 YAML →" : "Browse raw rule YAML on GitHub →"}
           </a>
           <p className="text-sm text-graphite leading-[1.7] mt-4 mb-3">
             {zh
-              ? "認為某條對應有誤？這是開放標準——歡迎 fork、挑戰，並提 PR 或開 issue 修正任何 mapping。"
-              : "Think a mapping is wrong? This is an open standard — fork it, challenge it, and open a PR or issue to correct any mapping."}
+              ? "覺得哪一條對應錯了？這是開放標準。fork 它、挑戰它，開 PR 或 issue 來改。"
+              : "Think a mapping is wrong? It's an open standard. Fork it, challenge it, and open a PR or an issue to fix the mapping."}
           </p>
           <a
             href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new"
@@ -226,7 +226,7 @@ export default async function CompliancePage({
             rel="noopener noreferrer"
             className="font-data text-xs text-blue hover:underline"
           >
-            {zh ? "開 issue 挑戰某條對應 →" : "Open an issue to challenge a mapping →"}
+            {zh ? "開 issue 挑戰一條對應 →" : "Open an issue to challenge a mapping →"}
           </a>
         </div>
       </Reveal>
@@ -235,7 +235,7 @@ export default async function CompliancePage({
       <Reveal>
         <div className="flex flex-wrap gap-4">
           <Link href={`/${locale}/compliance/nist-ai-rmf`} className="font-data text-xs text-blue hover:underline">
-            {zh ? "NIST AI RMF 詳細頁面" : "NIST AI RMF detail"} &rarr;
+            {zh ? "NIST AI RMF 細節" : "NIST AI RMF detail"} &rarr;
           </Link>
           <span className="text-fog">|</span>
           <Link href={`/${locale}/coverage`} className="font-data text-xs text-blue hover:underline">

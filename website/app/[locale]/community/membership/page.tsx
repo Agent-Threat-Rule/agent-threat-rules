@@ -42,15 +42,15 @@ const TIERS: ReadonlyArray<{ name: string; who: B; fee: string }> = [
 const FREE: ReadonlyArray<B> = [
   { en: "Using and implementing the rules and the specification (MIT licence).", zh: "使用與實作規則和規格（MIT 授權）。" },
   { en: "Joining the community as a person, writing and reviewing rules.", zh: "以個人身分加入社群、撰寫與審查規則。" },
-  { en: "Being listed as an adopter, with public evidence of the integration.", zh: "附公開證據，列名為採用者。" },
+  { en: "Being listed as an adopter, with public evidence of the integration.", zh: "附上整合的公開證據，列名為採用者。" },
 ];
 
 const BENEFITS: ReadonlyArray<B> = [
   { en: "Logo by tier on the membership page, and a member case page.", zh: "會員頁依級別顯示 logo，並有一頁會員案例。" },
-  { en: "One seat on the Members Council: one organization, one vote, at every tier. The Council advises on coverage priorities and crosswalk needs.", zh: "會員議會一席：不論級別，一個單位一票。議會對覆蓋優先順序與框架對照需求提出建議。" },
+  { en: "One seat on the Members Council: one organization, one vote, at every tier. The Council advises on coverage priorities and crosswalk needs.", zh: "會員議會一席：不論級別，一個單位一票。議會對該優先覆蓋什麼、需要哪些框架對照提出建議。" },
   { en: "A written maintainers' briefing each quarter, with an optional call.", zh: "每季一份維護者書面簡報，可加一場選擇性的線上會議。" },
   { en: "A first response within 7 days on false-positive reports and integration issues you raise. A response time, not an outcome.", zh: "你提出的誤判回報與整合問題，7 天內第一次回應。承諾的是回應時間，不是結果。" },
-  { en: "Help mapping your engine against the L1 conformance suite.", zh: "協助你的引擎對照 L1 符規測試套件。" },
+  { en: "Help mapping your engine against the L1 conformance suite.", zh: "協助你把引擎拿去對照 L1 符規測試套件。" },
 ];
 
 const NOT_FOR_SALE: ReadonlyArray<B> = [
@@ -80,8 +80,8 @@ export default async function MembershipPage({ params }: { params: Promise<{ loc
       </h1>
       <p className="mt-5 text-[17px] leading-[1.6] text-graphite max-w-[640px] text-pretty">
         {zh
-          ? "會員年費支持規則的維護、量測與審查。年費依全集團員工數分級。錢買得到曝光與一個建議席位，買不到任何規則的結果。"
-          : "Dues fund the maintenance, measurement and review of the rules. They scale with an organization's consolidated headcount. Money buys visibility and an advisory seat; it never buys the outcome of a rule."}
+          ? "會員年費用在規則的維護、量測和審查。年費依全集團員工數分級。錢買得到曝光和一個建議席位，買不到任何一條規則的結果。"
+          : "Dues pay for maintaining, measuring and reviewing the rules. They scale with an organization's consolidated headcount. Money buys visibility and an advisory seat. It never buys the outcome of a rule."}
       </p>
 
       {!MEMBERSHIP_OPEN && (
@@ -127,7 +127,7 @@ export default async function MembershipPage({ params }: { params: Promise<{ loc
           <ul className="flex flex-col gap-3">{FREE.map((f) => <li key={f.en} className="text-[13.5px] leading-[1.6] text-graphite border-t border-fog pt-3">{pick(f)}</li>)}</ul>
         </section>
         <section>
-          <SectionHead mark="§2" label={zh ? "會員得到" : "Members get"} title={zh ? "做得到的承諾" : "What we can deliver"} />
+          <SectionHead mark="§2" label={zh ? "會員得到" : "Members get"} title={zh ? "做得到的承諾" : "Promises that can be kept"} />
           <ul className="flex flex-col gap-3">{BENEFITS.map((f) => <li key={f.en} className="text-[13.5px] leading-[1.6] text-graphite border-t border-fog pt-3">{pick(f)}</li>)}</ul>
         </section>
         <section>

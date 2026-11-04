@@ -18,8 +18,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: locale === "zh" ? "框架對照" : "Framework crosswalks",
     description:
       locale === "zh"
-        ? "ATR 規則對照到外部框架與指引的文件。ATR 自己的文件，不是框架方的背書，也不是合規保證。"
-        : "Documents mapping ATR rules to external frameworks and guidance. ATR's own documents: not endorsements by the framework owners, and not a compliance guarantee.",
+        ? "把 ATR 規則對到外部框架與指引的文件。這些是 ATR 自己寫的，框架方沒有背書，也不是合規保證。"
+        : "Documents that map ATR rules to outside frameworks and guidance. ATR wrote them. The framework owners have not endorsed them, and they are not a compliance guarantee.",
   });
 }
 
@@ -41,15 +41,15 @@ export default async function CrosswalksIndexPage({ params }: { params: Promise<
       title={zh ? "框架對照" : "Framework crosswalks"}
       lead={
         zh
-          ? "每一份對照都是 ATR 維護者寫的文件，說明哪些規則回應框架的哪些條目。框架方沒有審查或背書這些對照；對照也不代表符合任何法規。"
-          : "Each crosswalk is a document written by ATR maintainers, saying which rules answer which items of a framework. The framework owners have not reviewed or endorsed them, and a mapping is not evidence of compliance with any regulation."
+          ? "每份對照都是 ATR 維護者寫的，寫明哪些規則回應框架裡的哪些條目。框架方沒有審過，也沒有背書。對照也不代表符合任何法規。"
+          : "ATR maintainers write each crosswalk. It says which rules answer which items in a framework. The framework owners have not reviewed or endorsed them, and a mapping is not evidence of compliance with any regulation."
       }
       generatedAt={versions.generatedAt}
     >
       <Callout label={zh ? "日期" : "Dates"}>
         {zh
-          ? "每份文件裡的規則數與引用是撰寫當時的快照。表中列出文件自己寫的日期，以及最後一次提交的日期。"
-          : "Rule counts and citations inside each document are a snapshot from when it was written. The table shows the date each document declares and the date of its last commit."}
+          ? "文件裡的規則數和引用，停在撰寫的那一天。表格列出文件自己寫的日期，和最後一次提交的日期。"
+          : "Rule counts and citations inside a document stay as they were the day it was written. The table shows the date each document gives and the date of its last commit."}
       </Callout>
 
       <div className="mt-8 overflow-x-auto">
@@ -79,11 +79,11 @@ export default async function CrosswalksIndexPage({ params }: { params: Promise<
 
       {drafts.length > 0 && (
         <section className="mt-12">
-          <h2 className="text-[18px] text-ink">{zh ? "內部草稿（未發布）" : "Internal drafts (not published)"}</h2>
+          <h2 className="text-[18px] text-ink">{zh ? "內部草稿，尚未發布" : "Internal drafts, not published"}</h2>
           <p className="mt-2 text-[13.5px] leading-[1.6] text-stone max-w-[640px]">
             {zh
-              ? "以下文件的標頭寫明是內部草稿、尚未發布，所以網站只列名稱，不顯示內容。"
-              : "These documents say in their own header that they are internal drafts and not published, so the site lists their names and does not show their content."}
+              ? "這幾份文件的標頭寫著是內部草稿、還沒發布。網站只列名稱，不放內容。"
+              : "These documents call themselves unpublished internal drafts in their own header. The site lists their names and leaves the content out."}
           </p>
           <ul className="mt-4 border-t border-fog">
             {drafts.map((d) => (

@@ -23,7 +23,7 @@ export async function generateMetadata({
     path: "/threats",
     title: "Threat Feed",
     description:
-      "Public blacklist of flagged AI agent skills, generated from open ATR ecosystem scans. Threat Cloud is an optional reference service that can also feed reports.",
+      "A public blacklist of flagged AI agent skills, built from open ATR ecosystem scans. Threat Cloud is an optional reference service that can also feed reports.",
   });
 }
 
@@ -106,8 +106,8 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
       <Reveal delay={0.2}>
         <p className="text-base text-stone font-light mb-8 max-w-[560px] leading-[1.8]">
           {zh
-            ? <>一個偵測標準若只活在規格書裡，就沒有意義。<br />ATR 在野外掃描了 {stats.megaScanTotal.toLocaleString()} 個真實 skill 與 MCP server 定義，標記 {stats.megaScanFlagged.toLocaleString()} 個有風險項目（engine v2.0.0，{stats.megaScanDate}），<br className="sm:hidden" />並把背後的行為者公開記錄下來。<br /><br className="sm:hidden" />名單與規則都以 MIT 授權公開——任何人都能查詢、引用、自行核對。</>
-            : <>A detection standard that only lives in a spec is worth nothing. ATR scanned {stats.megaScanTotal.toLocaleString()} real agent skills and MCP server definitions in the wild and flagged {stats.megaScanFlagged.toLocaleString()} of them (engine v2.0.0, {stats.megaScanDate}), documenting the actors behind them.<br /><br className="sm:hidden" />The list and the rules are public under MIT — anyone can query, cite, and verify them.</>}
+            ? <>偵測標準如果只寫在規格書裡，就沒有意義。<br />ATR 在野外掃了 {stats.megaScanTotal.toLocaleString()} 個真實的 skill 和 MCP server 定義，標記出 {stats.megaScanFlagged.toLocaleString()} 個有風險（engine v2.0.0，{stats.megaScanDate}）。<br className="sm:hidden" />背後的行為者，也公開記錄下來。<br /><br className="sm:hidden" />名單和規則都用 MIT 授權公開。誰都可以查詢、引用，自己核對一遍。</>
+            : <>A detection standard that only lives in a spec is worth nothing. ATR scanned {stats.megaScanTotal.toLocaleString()} real agent skills and MCP server definitions in the wild and flagged {stats.megaScanFlagged.toLocaleString()} of them (engine v2.0.0, {stats.megaScanDate}). It also documented the actors behind them.<br /><br className="sm:hidden" />The list and the rules are public under MIT. Anyone can query and cite them, and check the work.</>}
         </p>
       </Reveal>
 
@@ -116,11 +116,11 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog mb-8">
           <div className="bg-paper p-4 md:p-5">
             <div className="font-data text-2xl md:text-3xl font-bold text-critical">{bl.total_flagged.toLocaleString()}</div>
-            <div className="font-data text-xs text-stone mt-1">{zh ? "本檔已標記" : "flagged in this file"}</div>
+            <div className="font-data text-xs text-stone mt-1">{zh ? "這份檔案標記的" : "flagged in this file"}</div>
           </div>
           <div className="bg-paper p-4 md:p-5">
             <div className="font-data text-2xl md:text-3xl font-bold text-critical">{bl.threat_actors.length}</div>
-            <div className="font-data text-xs text-stone mt-1">{zh ? "已記錄行為者" : "documented actors"}</div>
+            <div className="font-data text-xs text-stone mt-1">{zh ? "記錄在案的行為者" : "documented actors"}</div>
           </div>
           <div className="bg-paper p-4 md:p-5">
             <div className="font-data text-2xl md:text-3xl font-bold text-ink">{bl.severity.critical}</div>
@@ -133,8 +133,8 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
         </div>
         <p className="text-xs text-mist mb-8 leading-[1.7] max-w-[620px]">
           {zh
-            ? `這些數字是這份公開黑名單檔案自身的統計，快照日期 ${bl.generated}。「已標記」是規則命中，不是人工判定的惡意結論；行為者是以整個帳號為單位裁定的發布者層級歸因，不是逐檔分析。對外可引用的野外掃描數字為 ${stats.megaScanTotal.toLocaleString()} 個掃描項目 / ${stats.megaScanFlagged.toLocaleString()} 個標記項目（engine v2.0.0，${stats.megaScanDate}）。`
-            : `These counts describe this public blacklist file itself, snapshotted ${bl.generated}. "Flagged" means a rule matched, not a human verdict of malice, and the actors are publisher-level attribution applied account-wide rather than per-file analysis. The wild-scan figures cleared for external citation are ${stats.megaScanTotal.toLocaleString()} items scanned / ${stats.megaScanFlagged.toLocaleString()} flagged (engine v2.0.0, ${stats.megaScanDate}).`}
+            ? `這些數字是這份公開黑名單檔案本身的統計，快照日期 ${bl.generated}。「已標記」代表規則命中，不是人判定的惡意。行為者是以整個帳號為單位、在發布者層級歸因的，不是逐檔分析。可以對外引用的野外掃描數字，是掃描 ${stats.megaScanTotal.toLocaleString()} 個、標記 ${stats.megaScanFlagged.toLocaleString()} 個（engine v2.0.0，${stats.megaScanDate}）。`
+            : `These counts describe this public blacklist file itself, as of ${bl.generated}. "Flagged" means a rule matched. It is not a human verdict of malice. Actors are attributed at the publisher level, across the whole account, not file by file. The wild-scan figures cleared for external citation are ${stats.megaScanTotal.toLocaleString()} items scanned and ${stats.megaScanFlagged.toLocaleString()} flagged (engine v2.0.0, ${stats.megaScanDate}).`}
         </p>
       </Reveal>
 
@@ -147,13 +147,13 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
                 {zh ? "已知威脅行為者" : "Known Threat Actors"}
               </div>
               <span className="font-data text-[11px] text-mist">
-                {zh ? "點擊查看完整檔案" : "Click for full profile"}
+                {zh ? "點進去看完整檔案" : "Click for full profile"}
               </span>
             </div>
             <p className="text-sm text-graphite mt-3 max-w-[620px] leading-[1.7]">
               {zh
-                ? "ATR 不只列規則,也追蹤寫出這些攻擊的人。以下三個行為者在同一次掃描中被揪出——他們把惡意 skill 偽裝成錢包工具、圖像生成器、商業助手,散佈到公開 registry。每個檔案都附上實際證據:C2 位址、封存檔密碼、命名模式、對映的 ATLAS 技法。野外觀察到的手法,變成回流標準的偵測規則。"
-                : "ATR tracks the people who write the attacks, not just the rules that catch them. The three actors below surfaced in a single scan — distributing malicious skills disguised as wallet tools, image generators, and business assistants across public registries. Each profile carries the actual evidence: C2 addresses, archive passwords, naming patterns, the mapped ATLAS technique. What is observed in the wild becomes a detection rule that flows back into the standard."}
+                ? `ATR 不只列規則，也追寫出這些攻擊的人。下面這 ${actors.length} 個行為者，是在同一次掃描裡找出來的。他們把惡意 skill 偽裝成錢包工具、圖像生成器、商業助手，放上公開的 registry 散布。每份檔案都附實際證據：C2 位址、壓縮檔密碼、命名模式，還有對應的 ATLAS 技法。在野外看到的手法，會寫成偵測規則，回到標準裡。`
+                : `ATR tracks the people who write the attacks, not only the rules that catch them. The ${actors.length} actors below turned up in a single scan. They spread malicious skills across public registries, dressed up as wallet tools, image generators and business assistants. Each profile carries the actual evidence: C2 addresses, archive passwords, naming patterns and the mapped ATLAS technique. What shows up in the wild becomes a detection rule, and that rule goes back into the standard.`}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-fog">
@@ -176,14 +176,14 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
                 </div>
                 <div className="font-data text-xs text-stone mt-2">
                   {zh
-                    ? `個歸因為惡意的 skill(帳號層級歸因,${a.malRatio})`
+                    ? `個 skill 歸為惡意（帳號層級歸因，${a.malRatio}）`
                     : `skills attributed as malicious (publisher-level, ${a.malRatio})`}
                 </div>
                 <p className="text-sm text-graphite mt-4 leading-[1.7] line-clamp-3">
                   {zh ? a.summary.zh : a.summary.en}
                 </p>
                 <div className="font-data text-xs text-blue mt-4 group-hover:underline">
-                  {zh ? "查看完整檔案 →" : "View full profile →"}
+                  {zh ? "看完整檔案 →" : "View full profile →"}
                 </div>
               </Link>
             ))}
@@ -197,21 +197,21 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
           <Reveal>
             <div className="flex items-center gap-2 mb-4">
               <div className="font-data text-xs font-medium text-green tracking-[2px] uppercase">
-                {zh ? "ATR 認證白名單" : "ATR Verified Whitelist"}
+                {zh ? "掃描沒有高風險發現的 skill" : "Skills with no high-risk findings"}
               </div>
               <span className="inline-flex items-center gap-1 bg-green/15 text-green text-[10px] font-bold px-2 py-0.5  tracking-wide uppercase">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="shrink-0">
                   <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="currentColor"/>
                 </svg>
-                {zh ? "已驗證" : "VERIFIED"}
+                {zh ? `${wl.generated} 掃描` : `Scanned ${wl.generated}`}
               </span>
             </div>
           </Reveal>
           <Reveal delay={0.1}>
             <p className="text-sm text-graphite mb-6 max-w-[520px] leading-[1.8]">
               {zh
-                ? <>同一套規則也用來證明乾淨。這些 skill 通過最新一次 ATR {stats.ruleCount} 條規則掃描,<br className="sm:hidden" />零 CRITICAL / HIGH 發現——同一個可稽核標準,既標記惡意,也背書良性。</>
-                : <>The same ruleset proves what is clean. These skills passed the latest ATR {stats.ruleCount}-rule scan with zero CRITICAL / HIGH findings — one auditable standard that flags the malicious and vouches for the benign.</>}
+                ? <>同一套規則也掃過這些 skill。它們在 {wl.generated} 那次 ATR 掃描裡沒有任何 CRITICAL 或 HIGH 發現，下載也超過 100 次。這不是認證，只代表那次掃描沒有規則在高風險等級命中；之後的版本沒有重掃。</>
+                : <>The same rules scanned these skills too. In the ATR scan of {wl.generated} they had no CRITICAL or HIGH findings, and each has more than 100 downloads. This is not a certification. It only means no rule matched at high severity in that scan, and later rule versions have not rescanned them.</>}
             </p>
           </Reveal>
           <Reveal delay={0.2}>
@@ -243,7 +243,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
                 rel="noopener noreferrer"
                 className="font-data text-xs text-green hover:underline inline-block mt-4"
               >
-                {zh ? `查看全部 ${wl.total_verified} 個已認證 skill →` : `View all ${wl.total_verified} verified skills →`}
+                {zh ? `看全部 ${wl.total_verified} 個已認證的 skill →` : `View all ${wl.total_verified} verified skills →`}
               </a>
             </Reveal>
           )}
@@ -263,8 +263,8 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
               </div>
               <p className="text-sm text-graphite mt-2 leading-[1.7]">
                 {zh
-                  ? "所有被標記的 skill 都在一份機器可讀的 blacklist.json 裡——每筆都附上命中規則與證據。任何 CI、registry 或 agent framework 都能直接拉取,不需註冊、不需金鑰、不收過路費。"
-                  : "Every flagged skill lives in one machine-readable blacklist.json — each entry carries the rule it hit and the evidence behind it. Any CI, registry, or agent framework can pull it directly: no signup, no key, no toll."}
+                  ? "每個被標記的 skill，都在同一份機器可讀的 blacklist.json 裡，每筆附上命中的規則和證據。任何 CI、registry 或 agent framework 都能直接拉。不用註冊，不用金鑰，也不收費。"
+                  : "Every flagged skill is in one machine-readable blacklist.json. Each entry carries the rule it hit and the evidence behind it. Any CI, registry or agent framework can pull it directly. No signup, no key, no fee."}
               </p>
             </div>
             <div className="flex flex-col gap-2 md:shrink-0">
@@ -274,7 +274,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
                 rel="noopener noreferrer"
                 className="bg-ink text-paper font-data text-xs px-5 py-2.5 rounded-[2px] hover:bg-graphite transition-colors text-center whitespace-nowrap"
               >
-                {zh ? "查看完整 blacklist.json →" : "View full blacklist.json →"}
+                {zh ? "看完整的 blacklist.json →" : "View full blacklist.json →"}
               </a>
               <a
                 href="https://raw.githubusercontent.com/Agent-Threat-Rule/agent-threat-rules/main/data/public-blacklist.json"
@@ -282,7 +282,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
                 rel="noopener noreferrer"
                 className="font-data text-xs text-blue hover:underline text-center"
               >
-                {zh ? "下載 raw JSON" : "Download raw JSON"}
+                {zh ? "下載原始 JSON" : "Download raw JSON"}
               </a>
             </div>
           </div>
@@ -293,8 +293,8 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
       <Reveal delay={0.5}>
         <p className="text-xs text-mist mt-6 leading-[1.8] max-w-[480px]">
           {zh
-            ? <>此清單由開放的 ATR 生態系掃描自動產生，<br className="sm:hidden" />並以 MIT 授權的規則為本體。<br />被標記是訊號,不是定罪 — <br className="sm:hidden" />請對照命中的規則自行判斷。<br />認為標錯了?開一個 GitHub Issue,我們公開審。</>
-            : <>This list is generated from open ATR ecosystem scans,<br className="sm:hidden" /> built on the MIT-licensed rules.<br />A flag is a signal, not a verdict — <br className="sm:hidden" />check the rule it hit and judge for yourself.<br />Think we got one wrong? Open a GitHub Issue; we review it in the open.</>}
+            ? <>這份清單由公開的 ATR 生態掃描自動產生，<br className="sm:hidden" />依據的是 MIT 授權的規則。<br />被標記是一個訊號，不是定罪。<br className="sm:hidden" />請對照命中的規則，自己判斷。<br />覺得標錯了？開一個 GitHub Issue，審查過程公開。</>
+            : <>This list is generated from open ATR ecosystem scans,<br className="sm:hidden" /> built on the MIT-licensed rules.<br />A flag is a signal, not a verdict.<br className="sm:hidden" /> Check the rule it hit and judge for yourself.<br />Think one is wrong? Open a GitHub Issue. The review happens in the open.</>}
         </p>
       </Reveal>
 
@@ -302,8 +302,8 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
       <Reveal delay={0.55}>
         <p className="text-xs text-mist mt-4 leading-[1.8] max-w-[480px]">
           {zh
-            ? "Threat Cloud 是 ATR 維護者運營的選用參考服務，並非標準的一部分。標準本體是規格加上 MIT 授權的規則，透過 npm / PyPI / 純 YAML 完全可離線使用；Threat Cloud 只提供 hosted 便利（規則同步、威脅提交），不用它也能達到同樣結果。"
-            : "Threat Cloud is an optional reference service operated by the ATR maintainers — not part of the standard. The standard is the spec plus the MIT-licensed rules, fully usable offline via npm / PyPI / raw YAML. Threat Cloud only adds hosted convenience (rule sync, threat submission); the same outcomes are reachable without it."}
+            ? "Threat Cloud 是 ATR 維護者營運的參考服務，用不用都可以，它不屬於標準。標準本身是規格加上 MIT 授權的規則，透過 npm、PyPI 或直接拿 YAML，都能完全離線使用。Threat Cloud 只是代管上方便一些，像是同步規則、提交威脅。不用它，也能得到一樣的結果。"
+            : "Threat Cloud is an optional reference service run by the ATR maintainers. It is not part of the standard. The standard is the spec plus the MIT-licensed rules, and it works fully offline through npm, PyPI or raw YAML. Threat Cloud only adds hosted convenience, such as rule sync and threat submission. You get the same results without it."}
         </p>
       </Reveal>
     </div>

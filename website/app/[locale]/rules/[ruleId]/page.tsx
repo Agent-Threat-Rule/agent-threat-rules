@@ -34,7 +34,7 @@ function buildCrosswalks(rule: RuleSummary, zh: boolean): Crosswalk[] {
   const all: Crosswalk[] = [
     {
       name: "MITRE ATLAS",
-      help: zh ? "MITRE 的 AI 攻擊技術知識庫；這裡列 technique 層級的 ID" : "MITRE's knowledge base of attacks on AI systems; technique-level IDs",
+      help: zh ? "MITRE 整理的 AI 攻擊知識庫，這裡列到 technique 層級" : "MITRE's catalogue of attacks on AI systems, listed at technique level",
       items: rule.mitreAtlas.map((ref) => {
         const id = atlasId(ref);
         return { text: ref, href: id ? `https://atlas.mitre.org/techniques/${id}` : undefined };
@@ -42,17 +42,17 @@ function buildCrosswalks(rule: RuleSummary, zh: boolean): Crosswalk[] {
     },
     {
       name: "OWASP Agentic Top 10",
-      help: zh ? "OWASP 針對 AI 代理應用的十大風險" : "OWASP's top ten risks for agentic AI applications",
+      help: zh ? "OWASP 列出的 agent 應用十大風險" : "OWASP's top ten risks for agentic AI applications",
       items: rule.owaspAgentic.map((text) => ({ text })),
     },
     {
       name: "OWASP LLM Top 10",
-      help: zh ? "OWASP 針對大型語言模型應用的十大風險" : "OWASP's top ten risks for LLM applications",
+      help: zh ? "OWASP 列出的大型語言模型應用十大風險" : "OWASP's top ten risks for LLM applications",
       items: rule.owaspLlm.map((text) => ({ text })),
     },
     {
       name: "CVE",
-      help: zh ? "這條規則偵測的已公開漏洞，連到 NVD" : "Published vulnerabilities this rule detects, linked to NVD",
+      help: zh ? "這條規則偵測的公開漏洞，連到 NVD" : "Published vulnerabilities this rule detects, linked to NVD",
       items: rule.cves.map((cve) => ({ text: cve, href: `https://nvd.nist.gov/vuln/detail/${cve}` })),
     },
   ];
@@ -182,10 +182,10 @@ export default async function RuleDetailPage({
         <dl className="mt-8 grid grid-cols-2 md:grid-cols-5 border-t border-b border-fog">
           {[
             { label: zh ? "嚴重度" : "Severity", value: rule.severity, tone: rule.severity === "critical" ? "text-critical" : rule.severity === "high" ? "text-high" : "text-ink" },
-            { label: "Maturity", value: normalizeMaturity(rule.maturity), tone: "text-ink" },
+            { label: zh ? "成熟度" : "Maturity", value: normalizeMaturity(rule.maturity), tone: "text-ink" },
             { label: zh ? "載入的 lane" : "Lanes", value: lanes.length > 0 ? lanes.join(" · ") : zh ? "無（inert）" : "none (inert)", tone: lanes.length > 0 ? "text-ink" : "text-high" },
             { label: zh ? "掃描目標" : "Scan target", value: rule.scanTarget ?? "—", tone: "text-ink" },
-            { label: "Status", value: rule.status ?? "—", tone: "text-ink" },
+            { label: zh ? "狀態" : "Status", value: rule.status ?? "—", tone: "text-ink" },
           ].map((cell) => (
             <div key={cell.label} className="py-4 pr-4 md:border-r border-fog last:border-r-0 [&:not(:first-child)]:md:pl-4">
               <dt className="font-data text-[10px] uppercase tracking-[0.08em] text-mist">{cell.label}</dt>
@@ -197,7 +197,7 @@ export default async function RuleDetailPage({
         {crosswalks.length > 0 && (
           <section className="mt-10" aria-labelledby="crosswalks-heading">
             <h2 id="crosswalks-heading" className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-4">
-              {zh ? "框架對照" : "Crosswalks"}
+              {zh ? "框架對照" : "Framework mappings"}
             </h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
               {crosswalks.map((cw) => (
@@ -248,7 +248,7 @@ export default async function RuleDetailPage({
         {detail?.wildSamples !== undefined && (
           <div className="mb-8">
             <h2 className="font-display text-sm font-semibold text-ink mb-3">
-              {zh ? "實地驗證" : "Wild Validation"}
+              {zh ? "野外驗證" : "Tested in the wild"}
             </h2>
             <div className="flex flex-wrap gap-px bg-fog border border-fog">
               {detail.wildValidated && (
@@ -272,7 +272,7 @@ export default async function RuleDetailPage({
               {detail.wildFpRate !== undefined && (
                 <div className="bg-paper p-4 flex-1 min-w-[160px]">
                   <div className="font-data text-xs text-stone mb-1">
-                    {zh ? "誤報率（實地語料）" : "False Positive Rate (in-the-wild)"}
+                    {zh ? "誤報率，野外樣本" : "False positive rate, wild samples"}
                   </div>
                   <div className="font-data text-sm text-ink">{detail.wildFpRate}%</div>
                 </div>
@@ -286,7 +286,7 @@ export default async function RuleDetailPage({
           <div className="mb-8">
             <div className="flex items-baseline justify-between gap-2 flex-wrap mb-3">
               <h2 className="font-display text-sm font-semibold text-ink">
-                {zh ? "偵測條件" : "Detection Conditions"}
+                {zh ? "偵測條件" : "Detection conditions"}
               </h2>
               {detail.detectionCombinator && (
                 <span className="font-data text-[10px] text-mist uppercase tracking-wide">
@@ -321,7 +321,7 @@ export default async function RuleDetailPage({
         {detail && detail.truePositives.length > 0 && (
           <div className="mb-8">
             <h2 className="font-display text-sm font-semibold text-ink mb-3">
-              {zh ? "攻擊範例（規則會觸發）" : "Attack Examples (Rule Triggers)"}
+              {zh ? "會觸發的攻擊範例" : "Attacks it catches"}
             </h2>
             <ol className="space-y-3">
               {detail.truePositives.map((tc, i) => (
@@ -339,8 +339,8 @@ export default async function RuleDetailPage({
             </ol>
             <p className="text-xs text-mist mt-3 leading-[1.7]">
               {zh
-                ? "以上為真實攻擊 payload 的脫敏版本，與規則一同版本化，作為 regression test——確保未來的修訂不會悄悄漏掉它們。"
-                : "Real-world attack payloads, sanitized and versioned alongside the rule as regression tests — so a future revision can't silently stop catching them."}
+                ? "這些是真實攻擊 payload 的脫敏版本，跟規則一起版本化，當作回歸測試。之後改規則時要是漏掉其中一個，不會沒人發現。"
+                : "Real-world attack payloads, sanitized and versioned with the rule as regression tests. A later revision can't quietly stop catching them."}
             </p>
           </div>
         )}
@@ -349,7 +349,7 @@ export default async function RuleDetailPage({
         {detail && detail.trueNegatives.length > 0 && (
           <div className="mb-8">
             <h2 className="font-display text-sm font-semibold text-ink mb-3">
-              {zh ? "正常樣本（規則不會觸發）" : "Benign Examples (Rule Doesn't Trigger)"}
+              {zh ? "不會觸發的正常樣本" : "Benign inputs it leaves alone"}
             </h2>
             <ol className="space-y-3">
               {detail.trueNegatives.map((tc, i) => (
@@ -372,7 +372,7 @@ export default async function RuleDetailPage({
         {detail && detail.falsePositives.length > 0 && (
           <div className="mb-8">
             <h2 className="font-display text-sm font-semibold text-ink mb-3">
-              {zh ? "已知誤報情境" : "Known False Positive Contexts"}
+              {zh ? "已知的誤報情境" : "Known false positives"}
             </h2>
             <ul className="space-y-2">
               {detail.falsePositives.map((fp, i) => (
@@ -389,7 +389,7 @@ export default async function RuleDetailPage({
         {detail && detail.evasionTests.length > 0 && (
           <div className="mb-8">
             <h2 className="font-display text-sm font-semibold text-ink mb-3">
-              {zh ? "已記錄的規避手法" : "Documented Evasion Techniques"}
+              {zh ? "已記錄的繞過手法" : "Documented bypasses"}
             </h2>
             <ol className="space-y-3">
               {detail.evasionTests.map((ev, i) => (
@@ -410,8 +410,8 @@ export default async function RuleDetailPage({
             </ol>
             <p className="text-xs text-mist mt-3 leading-[1.7]">
               {zh
-                ? "這些是公開記錄的繞過手法。一個標準的可信度，取決於它願不願意公開自己最差的數字——所以已知限制寫在規則裡，而不是藏起來。"
-                : "Publicly documented bypasses. A standard earns trust by publishing its worst figures, not hiding them — so known limitations ship inside the rule, not in a footnote."}
+                ? "這些繞過手法是公開記錄的。已知的限制直接寫在規則裡，不藏起來。"
+                : "These bypasses are documented in public. Known limits ship inside the rule, not in a footnote."}
             </p>
           </div>
         )}
@@ -421,7 +421,7 @@ export default async function RuleDetailPage({
           <div className="mb-8">
             <div className="flex items-baseline justify-between gap-2 flex-wrap mb-3">
               <h2 className="font-display text-sm font-semibold text-ink">
-                {zh ? "完整 YAML 定義" : "Full YAML Definition"}
+                {zh ? "完整 YAML" : "Full YAML"}
               </h2>
               <a
                 href={`https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/${rule.filePath}`}
@@ -441,7 +441,7 @@ export default async function RuleDetailPage({
         {/* Revision history */}
         <div className="mb-10 border-t border-fog pt-6">
           <h2 className="font-display text-sm font-semibold text-ink mb-3">
-            {zh ? "修訂歷史" : "Revision History"}
+            {zh ? "修訂紀錄" : "Revision history"}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-fog">
             {rule.date && (
@@ -467,7 +467,7 @@ export default async function RuleDetailPage({
             rel="noopener noreferrer"
             className="font-data text-xs text-blue hover:underline inline-block mt-3"
           >
-            {zh ? "在 GitHub 查看完整 commit 歷史 →" : "View full commit history on GitHub →"}
+            {zh ? "到 GitHub 看完整的 commit 紀錄 →" : "Full commit history on GitHub →"}
           </a>
         </div>
 
@@ -475,7 +475,7 @@ export default async function RuleDetailPage({
         {related.length > 0 && (
           <div className="border-t border-fog pt-8">
             <h2 className="font-display text-sm font-semibold text-ink mb-4">
-              {zh ? `更多 ${categoryDisplay} 規則` : `More ${categoryDisplay} Rules`}
+              {zh ? `更多${categoryDisplay}規則` : `More ${categoryDisplay} rules`}
             </h2>
             <div className="grid grid-cols-1 gap-px bg-fog">
               {related.map((r) => (

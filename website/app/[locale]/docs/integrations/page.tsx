@@ -19,8 +19,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: locale === "zh" ? "整合對照表" : "Integrations matrix",
     description:
       locale === "zh"
-        ? "每一筆公開採用，對應到它使用的 ATR 元件與它運作的層級，附公開證據。"
-        : "Every public adoption mapped to the ATR component it consumes and the layer it runs in, with public evidence.",
+        ? "每一筆公開採用用了 ATR 哪個元件、跑在哪一層，都附公開證據。"
+        : "Each public adoption, mapped to the ATR component it uses and the layer it runs in, with public evidence.",
   });
 }
 
@@ -41,19 +41,19 @@ export default async function IntegrationsMatrixPage({ params }: { params: Promi
       title={zh ? "整合對照表" : "Integrations matrix"}
       lead={
         zh
-          ? "每一筆公開採用使用了 ATR 的哪個元件、在哪一層運作。分類只根據 ADOPTERS.md 該筆自己的描述；描述沒寫的，標為「未說明」，不猜。"
-          : "Which ATR component each public adoption consumes, and the layer it runs in. The classification reads only that entry's own sentence in ADOPTERS.md; where the sentence names no component, it says so instead of guessing."
+          ? "每一筆公開採用，用的是 ATR 哪個元件，在哪一層跑。分類只看 ADOPTERS.md 裡那一筆自己怎麼寫。沒寫的，就標「未說明」，不用猜的。"
+          : "Which ATR component each public adoption uses, and the layer it runs in. The classification reads only that entry's own sentence in ADOPTERS.md. If the sentence names no component, the table says so rather than guess."
       }
       generatedAt={versions.generatedAt}
     >
       <Callout label={zh ? "中立" : "Neutral"}>
         {zh
-          ? "這張表依同一套規則列出所有採用者，不排名、不推薦。合併過的 pull request 證明曾經整合，不代表今天仍在使用。要更正某一筆，請改 ADOPTERS.md。"
-          : "Every adopter is listed by the same rules, with no ranking or recommendation. A merged pull request shows an integration happened; it does not prove it is still in use. To correct an entry, edit ADOPTERS.md."}
+          ? "所有採用者都照同一套規則列出，不排名，也不推薦。PR 合併過，證明當時整合過，不代表今天還在用。哪一筆寫錯了，直接改 ADOPTERS.md。"
+          : "Every adopter is listed by the same rules. No ranking, no recommendation. A merged pull request shows an integration happened. It does not prove the integration is still in use. To correct an entry, edit ADOPTERS.md."}
       </Callout>
 
       <section className="mt-12">
-        <h2 className="text-[20px] text-ink">{zh ? "依元件" : "By component"}</h2>
+        <h2 className="text-[20px] text-ink">{zh ? "按元件看" : "By component"}</h2>
         <div className="mt-5 grid sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-fog">
           {byComponent.map(({ c, rows: rs }) => (
             <a key={c.key} href={`#${c.key}`} className="p-5 border-r border-b border-fog bg-white/40 hover:bg-white transition-colors">
