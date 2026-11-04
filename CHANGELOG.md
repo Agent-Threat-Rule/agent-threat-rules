@@ -26,6 +26,15 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **24 model-abuse rules no longer map to OWASP ASI08 or LLM02.** The rules
+  for harmful-request facilitation (fraud, trafficking, extremist content,
+  doxxing and the like, ATR-2026-00298, -00299, -01830 to -01856) carried
+  ASI08 Cascading Failures and LLM02 Sensitive Information Disclosure, which
+  describe neither the attack nor its effect. Each keeps ASI01 and LLM01,
+  which it already had. ATR-2026-00209 (runaway tool invocation through a
+  retry directive) now maps to LLM10 Unbounded Consumption instead of LLM09
+  Misinformation. Only `references.owasp_agentic` and `references.owasp_llm`
+  changed; detection is identical.
 - **NIST AI RMF mappings now cite the subcategory their rationale describes.**
   The generator's hand-written reference table gave MG.2.3 the meaning of
   MG.2.4, GV.1.2 the meaning of GV.2.1 and MP.5.2 the meaning of MG.1.3, so
