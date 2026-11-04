@@ -37,13 +37,27 @@ jobs:
           TITLE: ${{ github.event.issue.title }}
           AUTHOR: ${{ github.event.issue.user.login }}
         run: |
-          set -e
+          set -eo pipefail
+          # pipefail: without it the converter's own exit code is lost in the
+          # pipe to tee, and a body missing required fields fails later, at an
+          # unrelated git step, with no clue for the reporter.
+          set +e
           npx tsx scripts/issue-to-proposal.ts \
             --issue "$ISSUE_NUMBER" \
             --title "$TITLE" \
             --body-file /tmp/issue-body.txt \
             --author "$AUTHOR" \
             --write | tee /tmp/convert.out
+          STATUS=$?
+          set -e
+          # The converter prints only fixed field names after this marker, never
+          # issue text, so the value is safe to reuse in the failure comment.
+          MISSING=$(grep "::missing-fields::" /tmp/convert.out | sed 's/::missing-fields:://' | head -1 || true)
+          echo "missing=$MISSING" >> "$GITHUB_OUTPUT"
+          if [ "$STATUS" -ne 0 ]; then
+            echo "::error::issue-to-proposal exited $STATUS${MISSING:+ (missing: $MISSING)}"
+            exit "$STATUS"
+          fi
           # Extract the proposal file path from output marker
           PROPOSAL_FILE=$(grep "::proposal-file::" /tmp/convert.out | sed 's/::proposal-file:://')
           echo "proposal_file=$PROPOSAL_FILE" >> "$GITHUB_OUTPUT"
@@ -146,10 +160,17 @@ jobs:
         if: failure()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          # Fixed field names printed by the converter, never issue text.
+          MISSING: ${{ steps.convert.outputs.missing }}
         run: |
-          gh issue comment ${{ github.event.issue.number }} --body "$(cat <<'EOF'
-          The bot failed to convert this issue into a proposal automatically. A maintainer will review manually.
+          if [ -n "$MISSING" ]; then
+            BODY="The bot could not turn this issue into a draft proposal because these required fields are empty: ${MISSING}.
 
-          If you filed this issue, make sure the **Attack Type**, **Description**, and **Example Attack Payload** fields are filled in — they are required.
-          EOF
-          )"
+          Edit the issue to fill them in; a maintainer re-runs the conversion by re-applying the \`new-rule\` label. For new issues, use the [New Rule Proposal form](https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=new-rule.yml): it lays the fields out the way the converter reads them."
+          else
+            BODY="The bot failed to convert this issue into a proposal automatically. A maintainer will review it manually.
+
+          If you filed this issue, make sure the **Attack Type**, **Description**, and **Example Attack Payload** fields are filled in. They are required."
+          fi
+          gh issue comment "$ISSUE_NUMBER" --body "$BODY"

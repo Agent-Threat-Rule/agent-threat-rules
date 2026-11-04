@@ -26,6 +26,16 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **A "New Rule Proposal" issue now becomes a readable draft proposal.**
+  `scripts/issue-to-proposal.ts` indented the example payload at the same
+  depth as its `example_payload:` key, so every proposal file it wrote was
+  invalid YAML that nothing downstream, the safety gate included, could read.
+  A payload containing its own `###` heading was cut at that heading, and an
+  optional field left empty was read as the text `_No response_`. When
+  required fields are empty the converter now names them, and the workflow
+  passes the names to its comment on the issue; before, the converter's exit
+  code was lost in a pipe and the job failed at a later git step with a generic
+  message.
 - **The Pydantic AI guard now scans typed tool events and blocks on the
   enforce lane only** (#772). It used `pyatr.scan()`, which evaluates text as
   user input, so most rules written for `tool_args` or `tool_response` never
