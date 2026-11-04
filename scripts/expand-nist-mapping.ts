@@ -92,45 +92,44 @@ if (!apiKey) {
 const client = new Anthropic({ apiKey });
 
 // ---------------------------------------------------------------------------
-// NIST AI RMF subcategory reference (RMF 1.0 + Generative AI Profile)
+// NIST AI RMF subcategory reference, built from the validator's allowlist
+// (data/compliance-frameworks/nist_ai_rmf.json) so the prompt and CI share one
+// source. A hand-written table used to live here; it gave MG.2.3 the meaning of
+// MG.2.4, GV.1.2 the meaning of GV.2.1 and MP.5.2 the meaning of MG.1.3, and
+// hundreds of generated mappings carried those errors (errata 2026-11-04).
 // ---------------------------------------------------------------------------
 
-const NIST_RMF_REFERENCE = `
-NIST AI RMF 1.0 (NIST AI 100-1) and Generative AI Profile (NIST AI 600-1)
-have four core functions, each broken into categories and subcategories.
+const NIST_FUNCTIONS: ReadonlyArray<[string, string]> = [
+  ["GV", "GOVERN"],
+  ["MP", "MAP"],
+  ["MS", "MEASURE"],
+  ["MG", "MANAGE"],
+];
 
-GOVERN (GV) — policies, processes, accountability
-  GV.1.1  Legal/regulatory requirements involving AI are understood and managed
-  GV.1.2  Accountability roles for AI risk management are formally assigned
-  GV.1.3  Processes are in place to determine the needed level of risk management
-  GV.6.1  Policies and procedures address third-party / supplier AI risks
-  GV.6.2  Contingency processes for failures of third-party AI are in place
+function buildNistReference(): string {
+  const allowlistPath = resolve(__dirname, "../data/compliance-frameworks/nist_ai_rmf.json");
+  const { valids } = JSON.parse(readFileSync(allowlistPath, "utf-8")) as { valids: Record<string, string> };
+  const order = (id: string) => id.split(".").slice(1).map(Number);
+  const sections = NIST_FUNCTIONS.map(([prefix, name]) => {
+    const rows = Object.entries(valids)
+      .filter(([id]) => id.startsWith(`${prefix}.`))
+      .sort(([a], [b]) => {
+        const [a1, a2] = order(a);
+        const [b1, b2] = order(b);
+        return a1 - b1 || a2 - b2;
+      })
+      .map(([id, text]) => `  ${id.padEnd(8)}${text}`);
+    return `${name} (${prefix})\n${rows.join("\n")}`;
+  });
+  return [
+    "NIST AI RMF 1.0 (NIST AI 100-1) subcategories. Use only these identifiers, with",
+    "the meaning given here; it is the same list CI validates against.",
+    "",
+    sections.join("\n\n"),
+  ].join("\n");
+}
 
-MAP (MP) — context establishment
-  MP.1.1  Intended purposes, beneficial uses, context-specific laws are documented
-  MP.2.3  Scientific integrity / TEVV considerations identified
-  MP.3.3  AI capabilities, targeted usage, goals, expected benefits documented
-  MP.5.1  Likelihood and magnitude of impact for identified risks characterized
-  MP.5.2  AI risk responses are planned and prioritized
-
-MEASURE (MS) — performance and risk measurement
-  MS.1.1  Approaches and metrics for measurement are identified
-  MS.2.5  AI system robustness/reliability is evaluated and documented
-  MS.2.6  AI system safety/security risk magnitude is evaluated continuously
-  MS.2.7  AI system security/resilience is evaluated and documented
-  MS.2.10 Privacy risk is assessed
-
-MANAGE (MG) — risk treatment
-  MG.2.3  Mechanisms exist to supersede, disengage, or deactivate AI systems
-  MG.3.1  AI risks and benefits from third-party entities are managed
-  MG.3.2  Pre-trained models which are used for development are monitored
-  MG.4.1  Post-deployment AI monitoring plans are implemented
-  MG.4.2  Measurable continuous improvement activities are integrated
-
-GenAI Profile (NIST AI 600-1) adds GAI-specific risks. When a rule detects
-prompt injection, jailbreak, hallucination, data leakage, or content provenance
-issues, prefer the GAI Profile mapping.
-`;
+const NIST_RMF_REFERENCE = buildNistReference();
 
 // ---------------------------------------------------------------------------
 // Few-shot example loader (gold standard from manual mappings)

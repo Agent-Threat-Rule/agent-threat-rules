@@ -26,6 +26,20 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **NIST AI RMF mappings now cite the subcategory their rationale describes.**
+  The generator's hand-written reference table gave MG.2.3 the meaning of
+  MG.2.4, GV.1.2 the meaning of GV.2.1 and MP.5.2 the meaning of MG.1.3, so
+  the rationales written for those items described a different subcategory.
+  Each MG.2.3 item was re-read and moved to the subcategory its context
+  describes: 242 that call for disengaging, quarantining or superseding the
+  system now cite MG.2.4; 263 that describe a planned risk response or
+  runtime treatment cite MG.1.3; 51 about responding to a previously unknown
+  risk stay on MG.2.3. All 25 GV.1.2 items describe accountability roles and
+  now cite GV.2.1. No rule cited MP.5.2. In 511 files only the subcategory
+  and the ID written in its own rationale changed; every other field,
+  including detection, is identical. `scripts/expand-nist-mapping.ts` now
+  builds its reference from `data/compliance-frameworks/nist_ai_rmf.json`,
+  the list CI already validates against, instead of its own table.
 - **Mapping rationales no longer claim that a rule satisfies a requirement.**
   124 rule files said that deploying the rule "satisfies" an EU AI Act
   article (or a NIST, ISO or OWASP item). `docs/COMPLIANCE-COVERAGE-POLICY.md`
