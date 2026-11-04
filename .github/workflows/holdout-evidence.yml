@@ -1,0 +1,90 @@
+name: Holdout evidence
+
+# The enforce lane is the one a user may turn blocking on for. Its recall and
+# false-positive rate are measured on data/holdout/v1/, a corpus no rule was
+# written from and no merge gate reads (see data/holdout/v1/DATACARD.md).
+#
+# Two jobs:
+#
+#   isolation  Fast, required. The holdout files match their manifest, no rule
+#              test case or evasion test contains a holdout sample, nothing but
+#              the measurement reads the directory, and the interval arithmetic
+#              is right. A failure here means the holdout stopped being held out.
+#
+#   measure    Slow (about 10 minutes). Re-measures every stable and test rule
+#              on the holdout and publishes the lane figures, each with n and a
+#              95% Clopper-Pearson interval, in the job summary and as an
+#              artifact. It then checks every live stable rule against the
+#              evidence bar in scripts/lib/holdout-evidence.ts.
+#
+#              That check is ADVISORY (continue-on-error) until the maintainer
+#              has acted on the promote/demote list it produces: on main today
+#              most stable rules catch no held-out attack, so a hard gate would
+#              fail every rules PR. Making it required is a one-line change and
+#              a maintainer decision, recorded in the commit that makes it.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "rules/**"
+      - "src/engine.ts"
+      - "src/corpus-event.ts"
+      - "data/holdout/**"
+      - "data/redos-baseline.json"
+      - "scripts/measure-holdout-evidence.ts"
+      - "scripts/lib/holdout*.ts"
+      - "scripts/lib/binomial-ci.ts"
+      - "scripts/holdout/**"
+      - "tests/holdout-*.test.ts"
+      - ".github/workflows/holdout-evidence.yml"
+  push:
+    branches: [main]
+    paths:
+      - "rules/**"
+      - "src/engine.ts"
+      - "data/holdout/**"
+      - "scripts/measure-holdout-evidence.ts"
+      - "scripts/lib/holdout*.ts"
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolation:
+    name: Holdout stays held out
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - run: npm ci
+      - run: npx vitest run tests/holdout-isolation.test.ts tests/holdout-evidence.test.ts
+
+  measure:
+    name: Enforce-lane evidence on holdout v1
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - run: npm ci
+
+      - name: Measure
+        run: npx tsx scripts/measure-holdout-evidence.ts --workers 4 --out-dir "$RUNNER_TEMP/holdout-evidence" --summary "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: holdout-evidence
+          path: ${{ runner.temp }}/holdout-evidence/
+
+      - name: Every stable rule meets the evidence bar
+        continue-on-error: true
+        run: npx tsx scripts/measure-holdout-evidence.ts --check "$RUNNER_TEMP/holdout-evidence/rules.json"
