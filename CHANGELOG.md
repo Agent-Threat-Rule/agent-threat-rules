@@ -6,6 +6,13 @@ All notable changes to ATR will be documented in this file.
 
 ### Added
 
+- **`pyatr.moderation`, an OpenAI-compatible moderation endpoint.**
+  `moderation_result(input)` returns the `/v1/moderations` response shape,
+  and `python -m pyatr.moderation` runs a standard-library reference server
+  on `127.0.0.1`. Every match is listed in `atr_matches`; `flagged` is true
+  only for a match at or above `block_severity` (default `high`) in `lane`
+  (default `enforce`, stable rules), so gateways that block on `flagged`
+  block on stable rules only unless they opt into another lane.
 - **pyatr detection lanes.** `ATREngine(lane=...)` takes `"enforce"`
   (maturity `stable` only), `"alert"` (`stable` and `test`) or `"hunt"` (every
   rule, the default, so existing callers see no change), with the same mapping

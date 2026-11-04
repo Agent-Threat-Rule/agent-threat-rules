@@ -39,6 +39,41 @@ for match in engine.evaluate(event):
 and `lane_allows(match, "enforce")` tells an integration that scans every rule
 whether a given match falls in the lane it blocks on.
 
+### As an OpenAI-compatible moderation endpoint
+
+Gateways and frameworks that call an OpenAI-style `/v1/moderations` endpoint
+can use ATR as that backend. `pyatr.moderation` returns the OpenAI response
+shape, and its reference server needs only the standard library:
+
+```bash
+python -m pyatr.moderation --port 8000    # POST http://127.0.0.1:8000/v1/moderations
+```
+
+```python
+from pyatr.moderation import load_engine, moderation_result
+
+engine = load_engine()  # load once, reuse per request
+moderation_result("some prompt", engine=engine)
+# {"id": "modr-atr", "model": "agent-threat-rules",
+#  "results": [{"flagged": False, "categories": {}, "category_scores": {},
+#               "atr_matches": [...]}]}
+```
+
+Every rule is evaluated and every match is listed in `atr_matches`, but
+`flagged` is true only for a match at or above `block_severity` (default
+`"high"`) in `lane` (default `"enforce"`, stable rules). Lower-maturity rules
+produce false positives on benign text, so flagging on them is opt-in
+(`--lane hunt`), and the default flags far fewer attacks: of the user-input
+true positives in this repository's rule tests, the defaults flag about one in
+eight, and `--lane hunt` almost three in four. `categories` and `category_scores` are keyed by the ATR rule
+ids that flagged, not by OpenAI's fixed category names. A string `input` gives
+one result, a list of strings one result per string, and a list of content
+parts one result for their text (images are not scanned); any other `input` is
+rejected with a 400 rather than reported as clean. The server binds to
+`127.0.0.1` by default, has no authentication, requires `Content-Length`
+(chunked bodies get a 411), and rejects bodies over 1 MB; put a production
+server in front of it for anything beyond local use.
+
 ### CLI Commands
 
 #### Scan events
