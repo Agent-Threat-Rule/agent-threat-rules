@@ -402,7 +402,10 @@ name other rules than the one retired.
   tier unless `blocking` is set (explicit config only; `atr guard` maps
   `--blocking` / `ATR_BLOCKING` onto it), and the hook emits no
   `permissionDecision` in that state. The directive is now a named, documented
-  switch instead of an interpretation.
+  switch instead of an interpretation. With blocking on, an action above
+  `observe` is dispatched only when a blocking-eligible match (a live
+  `maturity: stable` rule at `high` or `critical`, `isBlockingEligible` in
+  `src/enforcement.ts`) declares it.
 - ~~The hook answers `permissionDecision: "allow"` when no rule matches.~~
   **Addressed (Unreleased).** It no longer answers at all in that case. `allow`
   is affirmative approval in the Claude Code contract, so "no rule matched" was

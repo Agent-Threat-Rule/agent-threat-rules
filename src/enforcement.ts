@@ -15,6 +15,15 @@
  *             and the ActionExecutor refuses to dispatch any response action
  *             above the OBSERVE blast-radius tier. Detection output is
  *             unchanged in both modes.
+ *             When ON, only a BLOCKING-ELIGIBLE match may drive a block: a
+ *             live rule the enforce lane admits (maturity: stable) at
+ *             severity high or critical, not decided by a model. The lane
+ *             above decides what is reported; it does not widen what may
+ *             block. See isBlockingEligible at the bottom of this module —
+ *             every surface that can block (the guard hook, the
+ *             ActionExecutor, the Mastra processor, the openshell-filter and
+ *             nemoclaw-preflight entry points, `atr scan --fail-on`, and the
+ *             GitHub Action's gate) asks it, and nothing re-derives it.
  *
  * WHY BLOCKING IS OPT-IN
  *
@@ -55,9 +64,13 @@
  * Not "the only function in the package that touches process.env" — that is
  * false and an earlier revision of this comment said it. Ten files under src/
  * read the environment in code, including `adapters/openshell-filter.ts` and
- * `adapters/nemoclaw-preflight.ts`, which read `ATR_MIN_SEVERITY` and block by
- * default. Those adapters are outside this switch and stay that way; see the
- * scope limit in CHANGELOG.md.
+ * `adapters/nemoclaw-preflight.ts`. Those two are process entry points (a
+ * supervisor execs them; nobody constructs them in-process), so they read
+ * ATR_BLOCKING and ATR_MIN_SEVERITY themselves, through `resolveBlocking` and
+ * `parseBlockingSeverity` below. They used to block by default on any
+ * hunt-lane match at ATR_MIN_SEVERITY or above, recorded as a deliberate scope
+ * limit in CHANGELOG.md; that limit is lifted, and they are report-only
+ * unless ATR_BLOCKING turns blocking on.
  *
  * `grep -rl "process\.env" src/` returns eleven, not ten: `src/index.ts` only
  * names it in a comment. The correction above was itself first written as
@@ -89,8 +102,9 @@
  * @module agent-threat-rules/enforcement
  */
 
-import type { ModelDecisions } from './verdict.js';
-import { LANES, type Lane } from './quality/rule-contract.js';
+import type { ATRMatch, ATRSeverity, ATRVerdict } from './types.js';
+import { isModelDecided, modelDecisionsFromConfig, type ModelDecisions } from './verdict.js';
+import { LANES, laneAllows, requiresConfirm, type Lane } from './quality/rule-contract.js';
 import { ACTION_TIERS, actionTier } from './quality/action-eligibility.js';
 
 /** Environment variable naming the detection lane. */
@@ -313,12 +327,13 @@ export interface EnforcementPolicy {
  * would produce "ATR does not act" too, and silently, minus the detection.
  *
  * WHY AN UNREADABLE LANE ALSO FORCES BLOCKING OFF
- * Falling back to hunt while blocking is on is the one combination that makes
- * the degraded posture MORE dangerous than the requested one: the operator
- * asked to block on maturity=stable rules only, and would instead block on
- * every maturity including draft. So when the requested lane cannot be honoured
- * the process drops to advisory. An explicit `--blocking` does not override
- * this: the flag says "you may block", not "block on a lane I never chose".
+ * This was written when the detection lane also decided what could block, and
+ * falling back to hunt while blocking was on meant blocking on every maturity.
+ * That widening can no longer happen — only blocking-eligible matches
+ * (isBlockingEligible) may block, whatever the lane — but the rule is kept:
+ * an operator whose enforcement configuration cannot be read has not told ATR
+ * what they want, and "ATR does not act" stays the only degraded posture. An
+ * explicit `--blocking` does not override it.
  */
 export function resolveEnforcementPolicy(
   flags: { readonly lane?: Lane | undefined; readonly blocking?: boolean | undefined } = {},
@@ -355,9 +370,8 @@ export function resolveEnforcementPolicy(
   if (!laneHonoured && blocking) {
     blocking = false;
     notes.push(
-      `Blocking disabled: ${LANE_ENV_VAR} could not be read, and blocking on the ` +
-        `fallback lane "${DEFAULT_LANE}" would enforce on more rule maturities ` +
-        `than you asked for. Fix ${LANE_ENV_VAR} to re-enable enforcement.`
+      `Blocking disabled: ${LANE_ENV_VAR} could not be read, so the enforcement ` +
+        `posture is not the one you configured. Fix ${LANE_ENV_VAR} to re-enable enforcement.`
     );
   }
 
@@ -377,4 +391,148 @@ export function resolveEnforcementPolicy(
  */
 export function isEnforcementAction(action: string): boolean {
   return actionTier(action) > ACTION_TIERS.OBSERVE;
+}
+
+// ---------------------------------------------------------------------------
+// What may drive a block once blocking is on
+// ---------------------------------------------------------------------------
+
+/**
+ * The lane whose rules may drive a block. Not configurable.
+ *
+ * The detection lane (ATR_LANE / --lane / `lane:`) decides what is REPORTED.
+ * It used to decide what could block as well, so `atr guard --blocking` with
+ * the default hunt lane blocked on any maturity, draft-adjacent `experimental`
+ * rules included, and every adapter that blocked by default did so on hunt.
+ * Turning blocking on must not widen what can block to whatever the reporting
+ * lane happens to be: a block is an action on someone's agent, and only rules
+ * whose false-positive rate the project stands behind (maturity: stable, the
+ * enforce lane) may take it. Reporting stays as broad as the operator likes.
+ */
+export const BLOCKING_LANE: Lane = 'enforce';
+
+/** The lowest severity that may drive a block. */
+export const BLOCKING_MIN_SEVERITY: ATRSeverity = 'high';
+
+/**
+ * Severities that may drive a block, most severe first. A threshold an
+ * operator sets (Mastra `blockSeverities`, ATR_MIN_SEVERITY, `--fail-on`) may
+ * narrow this set and is rejected if it would widen it.
+ */
+export const BLOCKING_SEVERITIES: readonly ATRSeverity[] = Object.freeze(['critical', 'high']);
+
+const BLOCKING_SEVERITY_SET: ReadonlySet<string> = new Set(BLOCKING_SEVERITIES);
+
+/**
+ * Parse a blocking severity threshold as a person types it. Returns null for
+ * anything that is not `high` or `critical` — including `medium`, `low` and
+ * typos — so the caller reports it instead of mapping it to a default. The
+ * entry points used to map an unknown ATR_MIN_SEVERITY to `high` in silence
+ * and accepted `low`, which turned a medium-severity hunt rule into a block.
+ */
+export function parseBlockingSeverity(value: string): 'high' | 'critical' | null {
+  const normalized = value.trim().toLowerCase();
+  return normalized === 'high' || normalized === 'critical' ? normalized : null;
+}
+
+/**
+ * The severities at or above a threshold, restricted to BLOCKING_SEVERITIES.
+ *
+ * @throws TypeError when the threshold is not `high` or `critical`.
+ */
+export function blockingSeveritiesFrom(threshold: string): readonly ATRSeverity[] {
+  const parsed = parseBlockingSeverity(threshold);
+  if (parsed === null) {
+    throw new TypeError(
+      `Invalid blocking severity "${threshold}". Expected one of: ` +
+        `${BLOCKING_SEVERITIES.join(', ')}. Only high and critical matches may block; ` +
+        `lower severities are reported, never blocked on.`
+    );
+  }
+  return Object.freeze(parsed === 'critical' ? ['critical'] : [...BLOCKING_SEVERITIES]);
+}
+
+/** Inputs to isBlockingEligible beyond the match itself. */
+export interface BlockingEligibilityOptions {
+  /**
+   * What a model-decided match may do (computeVerdict's setting). Default
+   * 'advisory': a match a model decided never drives a block.
+   */
+  readonly modelDecisions?: ModelDecisions;
+  /**
+   * The lane the match was DETECTED in. Default 'hunt'. It matters for one
+   * thing: the engine runs the embedding confirmation of a `confirm: embedding`
+   * rule only in the enforce and alert lanes, so a match of such a rule from a
+   * hunt-lane engine was never confirmed. An enforce-lane engine would have
+   * dropped it, so it may not block here either.
+   */
+  readonly detectionLane?: Lane;
+  /**
+   * Severities that may block, from blockingSeveritiesFrom(). Default: high
+   * and critical. A value outside BLOCKING_SEVERITIES is ignored rather than
+   * honoured, so this can only narrow.
+   */
+  readonly severities?: readonly ATRSeverity[];
+}
+
+/**
+ * May this match drive a block (a permission deny, an action above OBSERVE, a
+ * non-zero gate exit, an abort)?
+ *
+ * All of these must hold:
+ *   - the rule is live: status neither `draft` nor `deprecated`;
+ *   - its maturity is admitted by the enforce lane — `laneAllows(maturity,
+ *     'enforce')`, the engine's own gate, which normalises a missing or odd
+ *     maturity to `experimental` and so refuses it;
+ *   - its severity is high or critical (or the narrower `severities` given);
+ *   - a model did not decide it, unless modelDecisions is 'enforce';
+ *   - it is not an unconfirmed `confirm: embedding` match (see detectionLane).
+ *
+ * Synthetic matches the engine builds for its optional Tier 0 invariant and
+ * Tier 1 blacklist checks carry no maturity, so by this rule they report and do
+ * not block. That is the rule as stated, applied without exceptions; giving
+ * them a block path would mean deciding they are `stable`, which is a policy
+ * call for whoever configures those tiers, not something this function infers.
+ */
+export function isBlockingEligible(
+  match: Pick<ATRMatch, 'rule' | 'decidedBy'>,
+  options: BlockingEligibilityOptions = {}
+): boolean {
+  const { rule } = match;
+  if (rule.status === 'draft' || rule.status === 'deprecated') return false;
+  if (!laneAllows(rule.maturity, BLOCKING_LANE)) return false;
+  const severities = options.severities ?? BLOCKING_SEVERITIES;
+  const severity = String(rule.severity ?? '').toLowerCase();
+  if (!BLOCKING_SEVERITY_SET.has(severity) || !severities.includes(severity as ATRSeverity)) {
+    return false;
+  }
+  const detectionLane = laneFromConfig(options.detectionLane);
+  if (detectionLane === 'hunt' && requiresConfirm(rule)) return false;
+  const modelDecisions = modelDecisionsFromConfig(options.modelDecisions);
+  return !(modelDecisions === 'advisory' && isModelDecided(match));
+}
+
+/** The matches that may drive a block, in their original order. */
+export function blockingMatches<M extends Pick<ATRMatch, 'rule' | 'decidedBy'>>(
+  matches: readonly M[],
+  options: BlockingEligibilityOptions = {}
+): readonly M[] {
+  return Object.freeze(matches.filter((m) => isBlockingEligible(m, options)));
+}
+
+/**
+ * The blocking-eligible matches of a verdict computeVerdict produced.
+ *
+ * The verdict already applied its modelDecisions setting: a model-decided
+ * match is listed in `verdict.advisory` exactly when that setting was
+ * 'advisory'. Reading the setting back from the verdict keeps the two from
+ * disagreeing — a caller cannot pass 'enforce' here for a verdict that held a
+ * model's decision back, or the reverse.
+ */
+export function verdictBlockingMatches(
+  verdict: Pick<ATRVerdict, 'matches' | 'advisory'>,
+  options: Omit<BlockingEligibilityOptions, 'modelDecisions'> = {}
+): readonly ATRMatch[] {
+  const modelDecisions: ModelDecisions = verdict.advisory && verdict.advisory.length > 0 ? 'advisory' : 'enforce';
+  return blockingMatches(verdict.matches, { ...options, modelDecisions });
 }

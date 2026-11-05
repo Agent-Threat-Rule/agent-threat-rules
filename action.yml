@@ -11,21 +11,29 @@ inputs:
     required: false
     default: '.'
   severity:
-    description: 'Minimum severity to report (informational, low, medium, high, critical)'
+    description: >-
+      Minimum severity to report in SARIF and the threat-count output
+      (informational, low, medium, high, critical). Reporting only: it does not
+      decide whether the job fails - see fail-on-finding.
     required: false
     default: 'medium'
   lane:
     description: >-
-      Detection lane: enforce (maturity=stable rules only), alert (stable+test),
-      or hunt (all maturities). Default hunt keeps CI visibility broad. This
-      action only reports findings - it never blocks an agent - so there is no
-      blocking opt-in here; see ATR_BLOCKING for the runtime guard.
+      Detection lane for REPORTING: enforce (maturity=stable rules only), alert
+      (stable+test), or hunt (all maturities). Default hunt keeps CI visibility
+      broad. It does not change what can fail the job: that is always the
+      enforce lane at high/critical severity, and only with fail-on-finding.
     required: false
     default: 'hunt'
   fail-on-finding:
-    description: 'Fail the action if threats are found'
+    description: >-
+      Fail the job on a finding. OFF BY DEFAULT: the action reports to SARIF
+      and annotations and passes. When 'true', the job fails only on a high or
+      critical finding from a live maturity=stable rule (the enforce lane),
+      whatever the lane and severity inputs say. Other findings are reported
+      and never fail the job.
     required: false
-    default: 'true'
+    default: 'false'
   sarif-file:
     description: 'Path to write SARIF output file'
     required: false
@@ -141,15 +149,36 @@ runs:
         printf 'threat_count=%s\n' "$THREAT_COUNT" >> "$GITHUB_OUTPUT"
 
         if [ "${THREAT_COUNT}" -gt "0" ]; then
-          echo "::warning::ATR found ${THREAT_COUNT} AI agent security threat(s). See SARIF results for details."
+          echo "::warning::ATR found ${THREAT_COUNT} AI agent security threat(s) in the ${ATR_SCAN_LANE} lane. See SARIF results for details."
         else
           echo "::notice::ATR scan clean. No threats detected."
         fi
 
-        if [ "$ATR_FAIL_ON_FINDING" = "true" ] && [ "${THREAT_COUNT}" -gt "0" ]; then
-          echo "::error::ATR found ${THREAT_COUNT} threat(s). Failing build. Set fail-on-finding: false to warn only."
-          exit 1
+        # --- enforce-lane gate (fail-on-finding) ---
+        # The pass/fail decision is a SECOND scan in the enforce lane with
+        # --fail-on high, not a count of the SARIF above. The SARIF is the
+        # reporting scan (the lane input, default hunt), and it carries no rule
+        # maturity, so filtering it would mean re-deriving the lane gate here.
+        # The second scan asks the CLI itself: its enforce lane admits only live
+        # maturity=stable rules (and drops unconfirmed confirm-rules), and
+        # --fail-on counts only high/critical matches that a model did not
+        # decide. That is the same rule every ATR surface blocks on, and it
+        # holds for CLI versions that predate the blocking-eligibility rule,
+        # because the lane and threshold are passed explicitly.
+        if [ "$ATR_FAIL_ON_FINDING" = "true" ]; then
+          GATE_STDERR=$(mktemp)
+          atr scan "$ATR_PATH" --lane enforce --severity high --fail-on high --json > /dev/null 2>"$GATE_STDERR"
+          GATE_STATUS=$?
+          if [ "$GATE_STATUS" -ne 0 ]; then
+            echo "::error::ATR enforce-lane gate failed (exit code $GATE_STATUS): a high or critical finding from a maturity=stable rule, or the gate scan itself could not run. Its output follows. Set fail-on-finding: false to report only."
+            tr -d '\033' < "$GATE_STDERR" | sed 's/\[[0-9;]*m//g' >&2
+            rm -f "$GATE_STDERR"
+            exit 1
+          fi
+          rm -f "$GATE_STDERR"
+          echo "::notice::ATR enforce-lane gate passed: no high or critical finding from a maturity=stable rule."
         fi
+        # --- end enforce-lane gate ---
 
     - name: Upload SARIF to GitHub Security
       if: always() && inputs.upload-sarif == 'true'

@@ -9,26 +9,34 @@
 # integration subclasses AbstractCapability (the documented path for reusable,
 # distributable capabilities) and uses two hooks:
 #   - before_tool_execute: scan the tool name + validated args BEFORE the tool
-#                          runs; raise ModelRetry to block a call, which
-#                          Pydantic AI surfaces to the model as a failed call.
+#                          runs; with blocking on, raise ModelRetry to block a
+#                          call, which Pydantic AI surfaces to the model as a
+#                          failed call.
 #   - after_tool_execute:  scan the tool RESULT to catch indirect prompt
 #                          injection returned by tools (web pages, files, other
-#                          MCP servers). Records by default; blocks when
-#                          block_on_result=True.
+#                          MCP servers). Records; with blocking on, also blocks
+#                          when block_on_result=True.
 #
 # Each check builds a typed AgentEvent (a `tool_call` event carrying
 # `tool_name` and `tool_args`, or a `tool_response` event) so that rules
 # written for tool traffic see the field they read. Every rule is evaluated
-# and every match is recorded, but only matches whose rule is in
-# `block_lane` (default "enforce": maturity stable) can block. Rules of lower
-# maturity are for hunting and alerting, not for stopping an agent.
+# and every match is recorded.
+#
+# ADVISORY BY DEFAULT: without `blocking=True` the guard never raises
+# ModelRetry. With it, only a match from the enforce lane (maturity stable) at
+# `block_severity` ("high", the default, or "critical") blocks. Rules of lower
+# maturity are for hunting and alerting, not for stopping an agent. The guard
+# used to block by default on stable critical matches, and `block_lane` /
+# `block_severity` could widen that to every rule and every severity; both now
+# reject anything wider than the enforce lane at high.
 #
 #   pip install pydantic-ai "pyatr>=0.4.1"
 #
 # Usage:
 #   from pydantic_ai import Agent
 #   from pydantic_ai_atr import ATRGuard
-#   agent = Agent("openai:gpt-5", tools=[...], capabilities=[ATRGuard()])
+#   agent = Agent("openai:gpt-5", tools=[...], capabilities=[ATRGuard()])               # report only
+#   agent = Agent("openai:gpt-5", tools=[...], capabilities=[ATRGuard(blocking=True)])  # may block
 
 from __future__ import annotations
 
@@ -67,6 +75,10 @@ except Exception:  # allow import (and unit-testing the scan logic) without pyda
 
 LANES = ("enforce", "alert", "hunt")
 
+# Mirrors pyatr.enforcement: only the enforce lane at high/critical may block.
+BLOCKING_LANE = "enforce"
+BLOCKING_SEVERITIES = ("critical", "high")
+
 _CLIP_MARK = "\n[... ATR: middle of value not scanned ...]\n"
 
 
@@ -102,18 +114,22 @@ class ATRGuard(AbstractCapability):
 
     Attach via ``Agent(..., capabilities=[ATRGuard()])``. Every rule is
     evaluated against each tool call and tool result, and every match is
-    recorded in ``audit_log``. A match blocks only when its severity is at or
-    above ``block_severity`` and its rule is in ``block_lane``. A blocked tool
+    recorded in ``audit_log``. Nothing is blocked unless ``blocking=True``;
+    then a match blocks only when its severity is at or above
+    ``block_severity`` and its rule is in the enforce lane. A blocked tool
     call is raised as ``ModelRetry`` before the tool runs.
 
     Args:
-        block_severity: Minimum severity that can block. One of
-            ``"low" | "medium" | "high" | "critical"``. Default ``"critical"``.
-        block_lane: Lane whose rules can block. ``"enforce"`` (default) is
-            rules with ``maturity: stable``; ``"alert"`` adds ``test``;
-            ``"hunt"`` is every rule, at the cost of false positives.
-        block_on_result: Also block (not just record) when a tool RESULT has a
-            blocking match. Default ``False`` (record only).
+        blocking: Allow the guard to raise ``ModelRetry``. Default ``False``
+            (advisory: record only).
+        block_severity: Minimum severity that can block once blocking is on:
+            ``"high"`` (default) or ``"critical"``. Lower values raise
+            ``ValueError``.
+        block_lane: Kept for compatibility; must be ``"enforce"`` (rules with
+            ``maturity: stable``). ``"alert"`` and ``"hunt"`` raise
+            ``ValueError``: rules of lower maturity never block.
+        block_on_result: With blocking on, also block (not just record) when a
+            tool RESULT has a blocking match. Default ``False`` (record only).
         on_flag: Optional callback invoked with each finding's audit entry.
         max_scan_chars: Longest value scanned in full. A longer value is
             scanned as its first and last ``max_scan_chars // 2`` characters,
@@ -126,17 +142,28 @@ class ATRGuard(AbstractCapability):
     def __init__(
         self,
         *,
-        block_severity: str = "critical",
+        blocking: bool = False,
+        block_severity: str = "high",
         block_lane: str = "enforce",
         block_on_result: bool = False,
         on_flag: Callable[[dict], None] | None = None,
         max_scan_chars: int | None = 10_000,
         rules_dir: str | Path | None = None,
     ) -> None:
-        if block_severity not in SEVERITY_ORDER:
-            raise ValueError(f"block_severity must be one of {sorted(SEVERITY_ORDER)}, got {block_severity!r}")
-        if block_lane not in LANES:
-            raise ValueError(f"block_lane must be one of {LANES}, got {block_lane!r}")
+        if not isinstance(blocking, bool):
+            # "false" is truthy; refuse it rather than turn blocking on.
+            raise TypeError(f"blocking must be a bool, got {blocking!r}")
+        if block_severity not in BLOCKING_SEVERITIES:
+            raise ValueError(
+                f"block_severity must be one of {BLOCKING_SEVERITIES}, got {block_severity!r}: "
+                "only high and critical matches from stable rules may block"
+            )
+        if block_lane != BLOCKING_LANE:
+            raise ValueError(
+                f"block_lane must be {BLOCKING_LANE!r}, got {block_lane!r}: only rules with "
+                "maturity stable may block; other lanes are recorded in audit_log"
+            )
+        self.blocking = blocking
         if max_scan_chars is not None and max_scan_chars < 2:
             raise ValueError(f"max_scan_chars must be None or at least 2, got {max_scan_chars!r}")
         self.block_severity = block_severity
@@ -168,6 +195,8 @@ class ATRGuard(AbstractCapability):
         return self._engine
 
     def _blocks(self, match: Any) -> bool:
+        if not self.blocking:
+            return False
         return _at_or_above(match.severity, self.block_severity) and lane_allows(match, self.block_lane)
 
     def _record(self, where: str, tool_name: str, match: Any, *, blocks: bool, truncated: bool) -> None:

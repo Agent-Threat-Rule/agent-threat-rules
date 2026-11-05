@@ -15,6 +15,7 @@ import { createTCReporter, resolveTcUrl } from '../tc-reporter.js';
 import { createSemanticJudgeFromConfig } from './semantic-judge-config.js';
 import { isModelDecided, type ModelDecisions } from '../verdict.js';
 import { toolsDocumentToEvents } from './mcp-tools-document.js';
+import { BLOCKING_SEVERITIES, blockingSeveritiesFrom, isBlockingEligible, parseBlockingSeverity } from '../enforcement.js';
 
 const SEVERITY_ORDER = ['informational', 'low', 'medium', 'high', 'critical'] as const;
 
@@ -59,8 +60,9 @@ export interface ScanOptions {
    * Detection lane (which rule maturities may fire). Undefined means the
    * engine's built-in default; `src/cli.ts` resolves `--lane` and `ATR_LANE`
    * and always passes an explicit value, because the engine itself no longer
-   * reads the environment. Scanning never blocks anything, so the blocking
-   * opt-in has no meaning here; only the lane does.
+   * reads the environment. The lane decides what is reported. It does not
+   * decide what fails the run: --fail-on (the scan's opt-in to fail) counts
+   * blocking-eligible matches only, whatever the lane — see failOnPredicate.
    */
   readonly lane?: Lane;
 }
@@ -133,8 +135,15 @@ export async function cmdScanUnified(
     console.error(`${DIM}Threat Cloud: anonymous reporting enabled via --report-to-cloud${RESET}`);
   }
 
-  if (options.failOn !== undefined && !SEVERITY_ORDER.includes(options.failOn as typeof SEVERITY_ORDER[number])) {
-    console.error(`${RED}Error: --fail-on must be one of: ${SEVERITY_ORDER.join(', ')}${RESET}`);
+  if (options.failOn !== undefined && parseBlockingSeverity(options.failOn) === null) {
+    // medium/low/informational used to be accepted here. --fail-on is the
+    // scan's blocking switch, and only high and critical matches from stable
+    // rules may block, so a lower threshold is a usage error, not a default.
+    console.error(
+      `${RED}Error: --fail-on must be one of: ${BLOCKING_SEVERITIES.join(', ')}. ` +
+        `Only high and critical matches from maturity: stable rules fail a scan; ` +
+        `lower severities are reported with --severity.${RESET}`,
+    );
     process.exit(1);
   }
 
@@ -166,6 +175,24 @@ export async function cmdScanUnified(
   }
 }
 
+/**
+ * Which matches count toward --fail-on: blocking-eligible ones
+ * (src/enforcement.ts) at or above the threshold. The scan's lane (default
+ * hunt) still decides what is REPORTED; only a live maturity: stable rule at
+ * high or critical severity, not held back as a model's decision, can fail the
+ * run. This is the same rule `atr guard --blocking` and every adapter apply, so
+ * `--fail-on high` means one thing everywhere.
+ */
+function failOnPredicate(engine: ATREngine, failOn: string | undefined): (m: ATRMatch) => boolean {
+  if (failOn === undefined) return () => false;
+  const eligibility = {
+    severities: blockingSeveritiesFrom(failOn),
+    detectionLane: engine.getLane(),
+    modelDecisions: engine.getModelDecisions(),
+  };
+  return (m) => isBlockingEligible(m, eligibility);
+}
+
 // ── Mixed directory scan ──────────────────────────────────────
 
 async function scanDirectory(
@@ -191,7 +218,7 @@ async function scanDirectory(
   await engine.loadRules();
   const heldBack = (m: ATRMatch): boolean => engine.getModelDecisions() === 'advisory' && isModelDecided(m);
   const minIdx = SEVERITY_ORDER.indexOf((options.severity ?? 'informational') as typeof SEVERITY_ORDER[number]);
-  const failIdx = options.failOn === undefined ? -1 : SEVERITY_ORDER.indexOf(options.failOn as typeof SEVERITY_ORDER[number]);
+  const failsGate = failOnPredicate(engine, options.failOn);
   const findings: Array<{ kind: 'mcp' | 'skill'; file: string; result: ScanResult; filtered: ATRMatch[] }> = [];
   let mcpEventsScanned = 0;
   let skillsScanned = 0;
@@ -213,9 +240,7 @@ async function scanDirectory(
     if (filtered.length === 0) return;
     findings.push({ kind, file, result, filtered });
     totalThreats += filtered.length;
-    if (failIdx >= 0) {
-      failHits += filtered.filter((m) => !heldBack(m) && SEVERITY_ORDER.indexOf(m.rule.severity) >= failIdx).length;
-    }
+    failHits += filtered.filter(failsGate).length;
   };
 
   for (const file of configs) {
@@ -368,7 +393,7 @@ async function scanMcpEvents(
     (options.severity ?? 'informational') as typeof SEVERITY_ORDER[number],
   );
 
-  const failIdx = options.failOn !== undefined ? SEVERITY_ORDER.indexOf(options.failOn as typeof SEVERITY_ORDER[number]) : -1;
+  const failsGate = failOnPredicate(engine, options.failOn);
   const allResults: Array<{ event: AgentEvent; result: ScanResult; filtered: ATRMatch[] }> = [];
   let totalThreats = 0;
   let failHits = 0;
@@ -390,11 +415,7 @@ async function scanMcpEvents(
     if (filtered.length > 0) {
       allResults.push({ event, result, filtered });
       totalThreats += filtered.length;
-      if (failIdx >= 0) {
-        failHits += filtered.filter(
-          (m) => !heldBack(m) && SEVERITY_ORDER.indexOf(m.rule.severity) >= failIdx,
-        ).length;
-      }
+      failHits += filtered.filter(failsGate).length;
     }
   }
 
@@ -515,7 +536,7 @@ async function scanSkillFiles(
     (options.severity ?? 'informational') as typeof SEVERITY_ORDER[number],
   );
 
-  const failIdx = options.failOn !== undefined ? SEVERITY_ORDER.indexOf(options.failOn as typeof SEVERITY_ORDER[number]) : -1;
+  const failsGate = failOnPredicate(engine, options.failOn);
   const allResults: Array<{ file: string; result: ScanResult; filtered: ATRMatch[] }> = [];
   let totalThreats = 0;
   let failHits = 0;
@@ -536,11 +557,7 @@ async function scanSkillFiles(
     if (filtered.length > 0) {
       allResults.push({ file, result, filtered });
       totalThreats += filtered.length;
-      if (failIdx >= 0) {
-        failHits += filtered.filter(
-          (m) => !heldBack(m) && SEVERITY_ORDER.indexOf(m.rule.severity) >= failIdx,
-        ).length;
-      }
+      failHits += filtered.filter(failsGate).length;
     }
   }
 

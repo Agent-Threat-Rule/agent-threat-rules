@@ -1893,6 +1893,7 @@ export class ATREngine {
         verdict,
         sessionId: event.sessionId,
         metadata: event.metadata ? Object.freeze({ ...event.metadata }) : undefined,
+        lane,
       });
       actionResults = await executor.execute(context);
     }

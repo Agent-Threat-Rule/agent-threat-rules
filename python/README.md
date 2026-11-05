@@ -61,7 +61,9 @@ moderation_result("some prompt", engine=engine)
 
 Every rule is evaluated and every match is listed in `atr_matches`, but
 `flagged` is true only for a match at or above `block_severity` (default
-`"high"`) in `lane` (default `"enforce"`, stable rules). Lower-maturity rules
+`"high"`) in `lane` (default `"enforce"`, stable rules). `flagged` is a signal:
+the endpoint blocks nothing itself, and with the defaults it flags exactly the
+matches every other ATR surface would block on. Lower-maturity rules
 produce false positives on benign text, so flagging on them is opt-in
 (`--lane hunt`), and the default flags far fewer attacks: of the user-input
 true positives in this repository's rule tests, the defaults flag about one in
@@ -82,9 +84,10 @@ Evaluate a JSON file of events against all ATR rules:
 
 ```bash
 pyatr scan events.json --rules-dir ../rules
+pyatr scan events.json --fail-on high      # CI gate: see below
 ```
 
-The events file is a JSON array of objects with `content`, `event_type` (default `llm_input`), and optional `fields`/`metadata` dicts. Exit code 2 if threats are found.
+The events file is a JSON array of objects with `content`, `event_type` (default `llm_input`), and optional `fields`/`metadata` dicts. Every match is printed and the exit code is 0. With `--fail-on high` or `--fail-on critical` the exit code is 2 when a match from a `maturity: stable` rule (the enforce lane) is at or above that severity; other matches are printed and do not fail the run. `pyatr.enforcement.is_blocking_eligible(match)` is the same test for your own code. (Before this, `pyatr scan` exited 2 on any match of any rule.)
 
 #### Validate rules
 

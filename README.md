@@ -136,9 +136,13 @@ pip install pyatr
     path: '.'
     severity: 'medium'
     upload-sarif: 'true'
+    # fail-on-finding: 'true'   # opt in to failing the job; off by default
 ```
 
-Results render in the GitHub Security tab via SARIF v2.1.0.
+Results render in the GitHub Security tab via SARIF v2.1.0. The action reports
+and passes by default. With `fail-on-finding: 'true'` it fails the job only on a
+`high` or `critical` finding from a `maturity: stable` rule (the enforce lane),
+whatever `lane` and `severity` say about reporting.
 
 ### Docker
 
@@ -236,15 +240,43 @@ run). Turning blocking on is the explicit operator directive [SPEC.md](SPEC.md)
 ([spec/atr-method-v1.1.md](spec/atr-method-v1.1.md) §5.6 says the same thing for
 hash matches specifically; §5.5 of SPEC.md is the engine-wide one.)
 
+**With blocking on, only a blocking-eligible match can block**: a live rule
+(status neither `draft` nor `deprecated`) with `maturity: stable` — what the
+`enforce` lane admits — at severity `high` or `critical`, and not decided by a
+model. Every other match is still reported exactly as before; it just cannot
+block. The detection lane decides what is *reported*, not what may block, so
+`atr guard --blocking` on the default `hunt` lane reports every rule and blocks
+on stable ones only. The same rule, from one function (`isBlockingEligible` in
+`src/enforcement.ts`, `pyatr.enforcement` in Python), applies on every surface
+that can block, and every one of them is off until you turn it on:
+
+| Surface | Turn blocking on | What it does when on |
+|---|---|---|
+| `atr guard` (agent hook) | `--blocking` / `ATR_BLOCKING=1` | `deny`; never `ask`, never `allow` |
+| `ActionExecutor` | `blocking: true` | runs actions above `observe` declared by an eligible match |
+| Mastra `ATRProcessor` | `blocking: true` | `abort()`; `blockSeverities` may narrow to `critical` |
+| `openshell-filter` | `ATR_BLOCKING=1` | exit 1 (deny) |
+| `nemoclaw-preflight` | `ATR_BLOCKING=1` | exit 1 (block); an incomplete scan exits 2 |
+| `atr scan` | `--fail-on high\|critical` | exit 1 |
+| GitHub Action | `fail-on-finding: 'true'` | fails the job |
+| `pyatr scan` | `--fail-on high\|critical` | exit 2 |
+| LangChain / Pydantic AI | `blocking=True` | halts the agent / raises `ModelRetry` |
+| goose hook | `ATR_BLOCKING=1` | exit 2 (deny) |
+
+A severity threshold on any of them (`ATR_MIN_SEVERITY`, `blockSeverities`,
+`block_severity`, `--fail-on`) accepts only `high` or `critical`; a lower value
+is rejected with an error rather than mapped to a default.
+
 **ATR never answers `permissionDecision: "allow"` — in either mode.** That
 decision is not neutral in the Claude Code contract; it is an affirmative
 approval that suppresses the host's own permission prompt, so answering it on
 every operation ATR had not looked for would make a hooked session permit *more*
 than an unhooked one. A permission decision is emitted only to **restrain** —
-`deny` or `ask` — and only with blocking on. Any other verdict omits the whole
+`deny` — and only with blocking on, for a blocking-eligible match. Any other verdict omits the whole
 `hookSpecificOutput` envelope, and the finding travels in `atr_decision`,
-`atr_reason` and `matched_rules` instead. Turning blocking on does not bring the
-affirmative decision back.
+`atr_reason` and `matched_rules` instead (with blocking on, `atr_detection`
+carries the detection verdict and `atr_blocking_rules` the rules behind a
+`deny`). Turning blocking on does not bring the affirmative decision back.
 
 | Switch | CLI flag | Environment (CLI only) | Library config | Default |
 |---|---|---|---|---|
@@ -265,19 +297,22 @@ An unrecognised value in the *environment* warns on stderr, falls back to the
 safe default and keeps running (exit 0), because `atr guard` runs as a Claude
 Code command hook where a non-zero exit discards every detection and prints no
 reason. If `ATR_LANE` is the variable that could not be read, blocking is forced
-off even when `--blocking` was passed — the fallback lane is the broadest one,
-and enforcing on a lane the operator never chose is the only degradation that
-would be more dangerous than the request.
+off even when `--blocking` was passed: an operator whose enforcement
+configuration cannot be read has not said what they want, and "ATR does not
+act" is the only degraded posture.
 
 ```bash
 atr guard                                 # advisory: report only (the default)
-atr guard --lane enforce --blocking       # blocking on, and only the live rules
-                                          # that are maturity: stable may fire
+atr guard --blocking                      # report every rule; deny only on
+                                          # stable high/critical rules
+ATR_BLOCKING=1 atr guard                  # the same, via the environment
+atr guard --lane enforce --blocking       # also REPORT only stable rules
                                           # (see the recall note below)
-ATR_LANE=enforce ATR_BLOCKING=1 atr guard # the same, via the environment
 ```
 
-**`--lane enforce` costs recall, and the cost is large.** It loads only
+**Blocking on stable rules only costs recall, and the cost is large** — whether
+you get there through blocking (which always blocks on the enforce lane) or by
+also narrowing reporting with `--lane enforce`. The enforce lane is only
 `maturity: stable` rules: **103 of the 823 live rules** at ATR 4.1.5, and each
 weekly measurement records the count it ran with as `rules_in_lane` in its
 `breakdown.enforce_lane`. That is the trade being made every time enforcement is

@@ -10,9 +10,23 @@
  * sandbox) runs this as a script against L7 request/response bodies. The body
  * arrives on stdin; the script signals the verdict via exit code:
  *
- *   exit 0  -> allow  (no rule at/above the deny threshold matched)
- *   exit 1  -> deny   (the verdict JSON, with reasons, is written to stdout)
- *   exit 2  -> internal error (supervisor applies its on_timeout/on_error policy)
+ *   exit 0  -> allow  (report-only mode, or no blocking-eligible match)
+ *   exit 1  -> deny   (blocking on AND a blocking-eligible match; the verdict
+ *                      JSON, with reasons, is written to stdout)
+ *   exit 2  -> internal error, including a bad ATR_MIN_SEVERITY or
+ *              ATR_BLOCKING value (supervisor applies its on_error policy)
+ *
+ * REPORT-ONLY BY DEFAULT. Without ATR_BLOCKING=1 this filter never exits 1:
+ * the verdict JSON on stdout carries every finding at or above
+ * ATR_MIN_SEVERITY, `decision` is `allow`, and `mode` is `report-only`. With
+ * it, the body is denied only for a blocking-eligible match
+ * (src/enforcement.ts, isBlockingEligible): a live maturity: stable rule at
+ * high or critical severity. This filter used to deny by default on any
+ * hunt-lane match at ATR_MIN_SEVERITY, which could be lowered to `low`, and
+ * mapped an unreadable ATR_MIN_SEVERITY to `high` in silence. Both are gone:
+ * the threshold accepts only `high` or `critical`, and anything else stops the
+ * process with a message. This is a process entry point, so it reads its own
+ * environment; library callers pass `blocking` in FilterOptions instead.
  *
  * Two run modes:
  *   one-shot (default): read the whole body from stdin, evaluate, exit.
@@ -35,7 +49,9 @@
  *
  * Environment (aligned with engines/{go,typescript}/INTERFACE-CONTRACT.md):
  *   ATR_RULES_DIR | ATR_CORPUS_PATH  rule directory (default: bundled rules)
- *   ATR_MIN_SEVERITY                 deny at or above this severity (default high)
+ *   ATR_BLOCKING                     1/true/yes/on to allow exit 1 (default off)
+ *   ATR_MIN_SEVERITY                 report, and deny when blocking, at or above
+ *                                    this severity: high (default) or critical
  *   ATR_FORENSIC_MODE                "1"/"true" to retain raw matched values
  *   ATR_MAX_BODY_BYTES               stdin hard cap (default 524288)
  *
@@ -48,7 +64,15 @@
 
 import { createInterface } from 'node:readline';
 import { ATREngine } from '../engine.js';
-import type { AgentEvent, ATRMatch } from '../types.js';
+import type { AgentEvent, ATRMatch, ATRSeverity } from '../types.js';
+import {
+  BLOCKING_MIN_SEVERITY,
+  blockingFromConfig,
+  blockingMatches,
+  blockingSeveritiesFrom,
+  parseBlockingSeverity,
+  resolveBlocking,
+} from '../enforcement.js';
 
 /** L7 traffic direction, mirroring OpenShell #1272 `content_filters[].direction`. */
 export type Direction = 'request' | 'response';
@@ -65,7 +89,7 @@ const SEVERITY_RANK: Readonly<Record<string, number>> = Object.freeze({
   critical: 4,
 });
 
-const DEFAULT_MIN_SEVERITY = 'high';
+const DEFAULT_MIN_SEVERITY: ATRSeverity = BLOCKING_MIN_SEVERITY;
 const DEFAULT_MAX_BODY_BYTES = 512 * 1024;
 const REDACTED = '[REDACTED]';
 
@@ -76,8 +100,16 @@ function severityRank(severity: string): number {
 export interface FilterOptions {
   /** Inbound response (agent will consume) vs outbound request (agent is sending). */
   readonly direction: Direction;
-  /** Deny when a matched rule's severity is at or above this (default "high"). */
+  /**
+   * Report (and, when blocking, deny on) matches at or above this severity:
+   * "high" or "critical". Anything else throws.
+   */
   readonly minSeverity: string;
+  /**
+   * Allow a deny verdict. OFF BY DEFAULT: the filter reports and allows. When
+   * on, only a blocking-eligible match (src/enforcement.ts) denies.
+   */
+  readonly blocking?: boolean;
   /** Directory of ATR rule YAML files. Omit to use the rules bundled with the package. */
   readonly rulesDir?: string;
   /** When true, include the raw matched value instead of redacting it. */
@@ -98,9 +130,17 @@ export interface Finding {
   readonly 'atr.matched_value_redacted': string;
 }
 
+/** Whether the filter may deny. */
+export type FilterMode = 'report-only' | 'blocking';
+
 export interface FilterVerdict {
   readonly decision: Decision;
+  /** `report-only` (the default) never denies; `blocking` denies on eligible matches. */
+  readonly mode: FilterMode;
+  /** Every match at or above minSeverity, whatever the mode. */
   readonly findings: readonly Finding[];
+  /** Rule ids of the findings that may deny; empty in report-only mode. */
+  readonly blockingRuleIds: readonly string[];
 }
 
 /**
@@ -142,12 +182,16 @@ function toFinding(match: ATRMatch, channel: string, forensic: boolean): Finding
  */
 export class OpenShellFilter {
   private readonly engine: ATREngine;
-  private readonly denyRank: number;
+  private readonly reportRank: number;
+  private readonly blockSeverities: readonly ATRSeverity[];
+  private readonly mode: FilterMode;
   private loadPromise: Promise<number> | null = null;
 
   constructor(private readonly options: FilterOptions) {
+    this.blockSeverities = blockingSeveritiesFrom(options.minSeverity);
+    this.mode = blockingFromConfig(options.blocking) ? 'blocking' : 'report-only';
     this.engine = new ATREngine(options.rulesDir ? { rulesDir: options.rulesDir } : {});
-    this.denyRank = severityRank(options.minSeverity);
+    this.reportRank = severityRank(options.minSeverity);
   }
 
   /** Load rules exactly once, even under concurrent first calls. */
@@ -157,13 +201,13 @@ export class OpenShellFilter {
   }
 
   /**
-   * Inspect one body. Returns a deny verdict when any rule at or above the
-   * configured deny threshold matches; otherwise allow. Never throws on
-   * benign/empty input.
+   * Inspect one body. Every match at or above minSeverity is a finding. The
+   * verdict is deny only in blocking mode and only for a blocking-eligible
+   * match; otherwise allow. Never throws on benign/empty input.
    */
   async inspect(body: string): Promise<FilterVerdict> {
     await this.ensureLoaded();
-    if (!body.trim()) return { decision: 'allow', findings: [] };
+    if (!body.trim()) return { decision: 'allow', mode: this.mode, findings: [], blockingRuleIds: [] };
 
     const channel = directionToEventType(this.options.direction);
     const event: AgentEvent = {
@@ -172,12 +216,19 @@ export class OpenShellFilter {
       content: body,
     };
 
-    const matches = this.engine.evaluate(event);
-    const blocking = matches.filter((m) => severityRank(m.rule.severity) >= this.denyRank);
+    const reported = this.engine
+      .evaluate(event)
+      .filter((m) => severityRank(m.rule.severity) >= this.reportRank);
+    // evaluate() is synchronous and hunt-lane: no model decides a match, and an
+    // unconfirmed confirm-rule cannot block (detectionLane defaults to hunt).
+    const blocking =
+      this.mode === 'blocking' ? blockingMatches(reported, { severities: this.blockSeverities }) : [];
 
     return {
       decision: blocking.length > 0 ? 'deny' : 'allow',
-      findings: blocking.map((m) => toFinding(m, channel, this.options.forensic)),
+      mode: this.mode,
+      findings: reported.map((m) => toFinding(m, channel, this.options.forensic)),
+      blockingRuleIds: blocking.map((m) => m.rule.id),
     };
   }
 }
@@ -195,14 +246,34 @@ function argValue(argv: readonly string[], flag: string): string | undefined {
   return i >= 0 && i + 1 < argv.length ? argv[i + 1] : undefined;
 }
 
-/** Build FilterOptions from argv + the ATR_* environment contract. */
+/**
+ * Read ATR_MIN_SEVERITY: unset or empty means high; `high` or `critical` (any
+ * case) is taken; anything else throws, which the CLI turns into exit 2 with
+ * the message on stderr. It used to fall back to `high` in silence.
+ */
+export function minSeverityFromEnv(raw: string | undefined): ATRSeverity {
+  if (raw === undefined || raw.trim() === '') return DEFAULT_MIN_SEVERITY;
+  const parsed = parseBlockingSeverity(raw);
+  if (parsed === null) {
+    throw new Error(
+      `invalid ATR_MIN_SEVERITY="${raw}"; expected "high" or "critical". ` +
+        `Lower severities may not block, and the threshold is not guessed.`,
+    );
+  }
+  return parsed;
+}
+
+/**
+ * Build FilterOptions from argv + the ATR_* environment contract.
+ *
+ * @throws on a missing/invalid --direction, ATR_MIN_SEVERITY or ATR_BLOCKING.
+ */
 export function optionsFromEnv(argv: readonly string[]): FilterOptions {
-  const minRaw = (process.env['ATR_MIN_SEVERITY'] ?? DEFAULT_MIN_SEVERITY).toLowerCase();
-  const minSeverity = SEVERITY_RANK[minRaw] !== undefined ? minRaw : DEFAULT_MIN_SEVERITY;
   const forensicRaw = process.env['ATR_FORENSIC_MODE'];
   return {
     direction: parseDirection(argValue(argv, '--direction')),
-    minSeverity,
+    minSeverity: minSeverityFromEnv(process.env['ATR_MIN_SEVERITY']),
+    blocking: resolveBlocking(undefined, process.env),
     rulesDir: process.env['ATR_RULES_DIR'] ?? process.env['ATR_CORPUS_PATH'] ?? undefined,
     forensic: forensicRaw === '1' || forensicRaw === 'true',
   };

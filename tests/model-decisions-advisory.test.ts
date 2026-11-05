@@ -429,8 +429,11 @@ describe("atr scan --semantic --fail-on", () => {
   function yamlRule(id: string, extra: string[]): string {
     return [
       `title: fixture ${id}`, `id: ${id}`, "rule_version: 1", "status: experimental",
+      // maturity: stable — --fail-on counts only blocking-eligible matches
+      // (src/enforcement.ts), so the model-decision setting is the only thing
+      // these two cases may differ on.
       "description: fixture", "author: test", "date: 2026/10/20", "schema_version: '0.1'",
-      "maturity: test", "severity: high",
+      "maturity: stable", "severity: high",
       "tags:", "  category: prompt-injection", "  scan_target: mcp", "  confidence: high",
       "agent_source:", "  type: llm_io", "  framework: [any]", "  provider: [any]",
       ...extra,

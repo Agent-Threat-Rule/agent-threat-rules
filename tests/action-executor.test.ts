@@ -5,12 +5,16 @@
  * error handling, dry-run mode, and the onActionComplete callback.
  *
  * Cases whose subject is an action above the OBSERVE blast-radius tier pass
- * `blocking: true`: dispatching those is opt-in and off by default. The default
- * (suppressed, adapter untouched) is pinned in tests/enforcement.test.ts.
+ * `blocking: true`, and their verdict carries a blocking-eligible match (a
+ * maturity: stable critical rule) that declares the actions: dispatching those
+ * is opt-in, off by default, and limited to eligible matches. The default
+ * (suppressed, adapter untouched) is pinned in tests/enforcement.test.ts, and
+ * the eligibility limit in tests/blocking-eligibility.test.ts.
  */
 
 import { describe, it, expect, vi } from "vitest";
 import { ActionExecutor } from "../src/action-executor.js";
+import { FIXTURES, fixtureMatch } from "./fixtures/blocking-rules.js";
 import type {
   ATRAction,
   ATRVerdict,
@@ -52,8 +56,12 @@ function createMockAdapter(
   } as unknown as PlatformAdapter;
 }
 
-/** Build a minimal ExecutionContext with the given actions */
+/**
+ * Build a minimal ExecutionContext with the given actions, declared by one
+ * blocking-eligible match (maturity: stable, critical).
+ */
 function makeContext(actions: readonly ATRAction[]): ExecutionContext {
+  const match = fixtureMatch(FIXTURES.stableCritical, {}, actions);
   const verdict: ATRVerdict = {
     outcome: "deny",
     reason: "test verdict",
@@ -61,7 +69,7 @@ function makeContext(actions: readonly ATRAction[]): ExecutionContext {
     highestSeverity: "critical",
     highestConfidence: 0.95,
     actions: Object.freeze([...actions]),
-    matches: Object.freeze([]),
+    matches: Object.freeze([match]),
     timestamp: new Date().toISOString(),
   };
 
@@ -73,7 +81,7 @@ function makeContext(actions: readonly ATRAction[]): ExecutionContext {
 
   return Object.freeze({
     event,
-    matches: Object.freeze([]),
+    matches: Object.freeze([match]),
     verdict,
   });
 }

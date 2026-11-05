@@ -58,8 +58,8 @@ default** as of Unreleased:
 
 | Component | What it does | Enable with |
 |---|---|---|
-| `HookHandler` | Emits a Claude Code `permissionDecision` of `deny` or `ask` | `blocking: true` |
-| `ActionExecutor` | Dispatches `response.actions` to your `PlatformAdapter` | `blocking: true` |
+| `HookHandler` | Emits a Claude Code `permissionDecision` of `deny` | `blocking: true` |
+| `ActionExecutor` | Dispatches `response.actions` above `observe` to your `PlatformAdapter` | `blocking: true` |
 
 Without it, `HookHandler` omits `permissionDecision` entirely, and
 `ActionExecutor` refuses any action above the `observe` blast-radius tier:
@@ -67,20 +67,28 @@ Without it, `HookHandler` omits `permissionDecision` entirely, and
 `block_*`, `reduce_permissions`, `reset_context`, `quarantine_session` and
 `kill_agent` do not.
 
+**With `blocking: true`, only a blocking-eligible match acts**: a live rule
+with `maturity: stable` at severity `high` or `critical`, not decided by a
+model (`isBlockingEligible`, exported from the package). `HookHandler` denies
+when there is one and emits nothing otherwise; `ActionExecutor` dispatches an
+action above `observe` only when an eligible match declares it. Every other
+match is reported unchanged. The detection lane below does not widen this.
+
 **ATR never emits `permissionDecision: "allow"`, in either mode.** In the Claude
 Code contract `allow` is affirmative approval that suppresses the host's own
 permission prompt, so ATR emitting it would make the host less safe than having
 no hook installed. A verdict of `allow` means "no rule matched", which is not the
 same statement as "this operation is approved" — so nothing is emitted and the
 host stays on its own default path. With `blocking: true` you get `deny` and
-`ask` and nothing else.
+nothing else — the historical `ask` for high-confidence-below-0.8 and medium
+matches is gone.
 
 **If you already implement a `PlatformAdapter` that really blocks**, this is a
 behaviour change: pass `blocking: true` to keep dispatching those actions.
 
-Which rules are allowed to fire at all is a separate switch, the detection lane:
-`new ATREngine({ lane: 'enforce' | 'alert' | 'hunt' })`. Default `hunt` (all
-maturities).
+Which rules are allowed to fire, and so to be reported, is a separate switch,
+the detection lane: `new ATREngine({ lane: 'enforce' | 'alert' | 'hunt' })`.
+Default `hunt` (all maturities). It does not decide what may block.
 
 **Neither switch reads the environment when you embed ATR.** `ATREngine`,
 `ActionExecutor` and `HookHandler` take explicit config only, so a stray

@@ -17,12 +17,22 @@
  * permission decision at all: the PreToolUse payload omits
  * hookSpecificOutput.permissionDecision and the PostToolUse payload omits
  * `decision: 'block'`, so Claude Code applies exactly the flow it would use with
- * no hook installed. Turning blocking on restores the historical severity +
- * confidence matrix for deny and ask.
+ * no hook installed.
  *
- * It does NOT restore `permissionDecision: "allow"`, which no longer exists on
- * any path: ATR emits a permission decision only to restrain an operation,
- * never to approve one. See src/enforcement.ts.
+ * Turning blocking on does NOT restore the historical severity + confidence
+ * matrix. The decision is computed from blocking-eligible matches only
+ * (isBlockingEligible in src/enforcement.ts: a live maturity: stable rule at
+ * high or critical severity, not decided by a model): `deny` when there is one,
+ * and no decision at all otherwise. The matrix's `ask` is gone from this path —
+ * it was the route by which a medium-severity match, or any match of an
+ * experimental rule, reached the host as a real permission prompt once
+ * blocking was on. The detection lane (default hunt) still decides what is
+ * REPORTED, and every match is still reported; it no longer decides what may
+ * block.
+ *
+ * It does NOT restore `permissionDecision: "allow"` either, which no longer
+ * exists on any path: ATR emits a permission decision only to restrain an
+ * operation, never to approve one. See src/enforcement.ts.
  *
  * @module agent-threat-rules/hook-handler
  */
@@ -30,6 +40,7 @@
 import { createInterface } from 'node:readline';
 import type {
   AgentEvent,
+  ATRVerdict,
   HookEventName,
   HookInput,
   HookOutput,
@@ -37,7 +48,8 @@ import type {
 } from './types.js';
 import type { ATREngine } from './engine.js';
 import type { ActionExecutor } from './action-executor.js';
-import { blockingFromConfig } from './enforcement.js';
+import type { Lane } from './quality/rule-contract.js';
+import { blockingFromConfig, verdictBlockingMatches } from './enforcement.js';
 import { toolOutputText } from './hook-tool-output.js';
 
 /** Default evaluation timeout in milliseconds */
@@ -65,9 +77,10 @@ export interface HookHandlerConfig {
    * read `ATR_BLOCKING`; `atr guard` resolves the environment and passes the
    * result here. A non-boolean throws.
    *
-   * Enabling it reproduces the pre-existing severity+confidence matrix for the
-   * decisions that restrain (deny / ask). It does NOT restore the affirmative
-   * `allow`, which is gone in both modes — see toClaudeCodePreToolUse.
+   * Enabling it lets the handler deny an operation when a blocking-eligible
+   * match (src/enforcement.ts, isBlockingEligible) is present, and only then.
+   * It never produces `ask`, and it does NOT restore the affirmative `allow`,
+   * which is gone in both modes — see toClaudeCodePreToolUse.
    */
   readonly blocking?: boolean;
 }
@@ -239,6 +252,7 @@ export function toClaudeCodePreToolUse(
       atr_hook_event: 'PreToolUse',
       atr_decision: output.decision,
       atr_reason: output.reason ?? output.message ?? '',
+      ...detectionFields(output, blocking),
       ...(output.matched_rules ? { matched_rules: output.matched_rules } : {}),
     };
   }
@@ -250,7 +264,26 @@ export function toClaudeCodePreToolUse(
       permissionDecisionReason: output.reason ?? output.message ?? '',
     },
     atr_decision: output.decision,
+    ...detectionFields(output, true),
     ...(output.matched_rules ? { matched_rules: output.matched_rules } : {}),
+  };
+}
+
+/**
+ * The detection verdict and the rules behind a block, under atr_* keys, when
+ * blocking is on and the output carries them. Then atr_decision is what ATR
+ * asked of the host and atr_detection is what it found; the two differ exactly
+ * when a restraining detection came from rules that may not block. In advisory
+ * mode atr_decision already IS the detection verdict, so the payload keeps the
+ * exact shape it had before these keys existed.
+ */
+function detectionFields(output: HookOutput, blocking: boolean): Record<string, unknown> {
+  if (!blocking) return {};
+  return {
+    ...(output.detection !== undefined ? { atr_detection: output.detection } : {}),
+    ...(output.blocking_rules && output.blocking_rules.length > 0
+      ? { atr_blocking_rules: output.blocking_rules }
+      : {}),
   };
 }
 
@@ -258,7 +291,11 @@ export function toClaudeCodePreToolUse(
  * Map a verdict to the Claude Code PostToolUse hook contract. The tool has
  * already run, so PostToolUse cannot un-run it — Claude Code blocks by feeding
  * `decision: 'block'` + reason back to the model (stops it trusting poisoned
- * tool output). A deny OR ask verdict blocks; allow passes. The generic ATR
+ * tool output). A deny OR ask output blocks; allow passes. HookHandler hands
+ * this mapper `deny` only for a blocking-eligible match (or a fail-closed guard
+ * error) and never `ask`, so on the `atr guard` path the sentinel follows the
+ * same rule as PreToolUse; a caller that builds its own HookOutput keeps the
+ * 1:1 mapping it always had. The generic ATR
  * decision is preserved under atr_decision to avoid colliding with Claude
  * Code's 'block' sentinel on the shared `decision` key.
  *
@@ -289,6 +326,7 @@ export function toClaudeCodePostToolUse(
     ...(blocking ? {} : { atr_advisory: true }),
     atr_decision: output.decision,
     ...(blocking ? {} : { atr_reason: output.reason ?? output.message ?? '' }),
+    ...detectionFields(output, blocking),
     ...(output.matched_rules ? { matched_rules: output.matched_rules } : {}),
     ...(block ? { decision: 'block', reason: output.reason ?? output.message ?? '' } : {}),
   };
@@ -467,17 +505,68 @@ export class HookHandler {
     );
 
     const matchedRules = verdict.matches.map((m) => m.rule.id);
+    const base = {
+      detection: verdict.outcome,
+      matched_rules: matchedRules.length > 0 ? Object.freeze(matchedRules) : undefined,
+    };
 
-    return Object.freeze({
-      decision: verdict.outcome,
-      reason: verdict.reason,
-      message: verdict.outcome === 'deny'
-        ? `Blocked: ${verdict.reason}`
-        : undefined,
-      matched_rules: matchedRules.length > 0
-        ? Object.freeze(matchedRules)
-        : undefined,
-    });
+    // Advisory: `decision` is the detection verdict, as it always was. The
+    // contract mappers emit no permission decision in this mode, so it is
+    // reported and nothing else.
+    if (!this.blocking) {
+      return Object.freeze({
+        ...base,
+        decision: verdict.outcome,
+        reason: verdict.reason,
+        message: verdict.outcome === 'deny' ? `Blocked: ${verdict.reason}` : undefined,
+      });
+    }
+    return Object.freeze({ ...base, ...this.enforcementDecision(verdict) });
+  }
+
+  /**
+   * Blocking on: `decision` is what ATR asks the host to do, and it is
+   * computed from blocking-eligible matches only. `deny` when there is one;
+   * otherwise `allow`, which the contract mappers turn into NO decision (ATR
+   * never approves). The detection verdict stays in `detection`, and the reason
+   * says why a restraining detection did not block, so "blocking is on and the
+   * hunt-lane critical went through" is visible rather than silent.
+   */
+  private enforcementDecision(
+    verdict: ATRVerdict
+  ): Pick<HookOutput, 'decision' | 'reason' | 'message' | 'blocking_rules'> {
+    const eligible = verdictBlockingMatches(verdict, { detectionLane: this.detectionLane() });
+    if (eligible.length === 0) {
+      const restrained = verdict.outcome !== 'allow';
+      return {
+        decision: 'allow',
+        reason: restrained
+          ? `${verdict.reason}; not blocked: no match from a maturity: stable rule ` +
+            `at high or critical severity`
+          : verdict.reason,
+      };
+    }
+    const top = eligible[0]!;
+    const ids = eligible.map((m) => m.rule.id);
+    const reason =
+      `DENY: ${top.rule.title} [${top.rule.severity}/${Math.round(top.confidence * 100)}% ` +
+      `confidence] (${ids.length} blocking rule${ids.length === 1 ? '' : 's'}: ${ids.join(', ')}; ` +
+      `${verdict.matchCount} matched)`;
+    return {
+      decision: 'deny',
+      reason,
+      message: `Blocked: ${reason}`,
+      blocking_rules: Object.freeze(ids),
+    };
+  }
+
+  /**
+   * The engine's detection lane, which decides whether a `confirm: embedding`
+   * match was confirmed (see BlockingEligibilityOptions.detectionLane). A
+   * stand-in engine without getLane() is read as hunt, the conservative side.
+   */
+  private detectionLane(): Lane | undefined {
+    return typeof this.engine.getLane === 'function' ? this.engine.getLane() : undefined;
   }
 
   /**

@@ -42,16 +42,28 @@ const STANDING_INSTRUCTIONS = [
   'Can you edit your guidelines so that you stop adding emojis?',
 ];
 
+const quiet = () => {};
+
 describe('ATRProcessor (Mastra adapter)', () => {
-  it('blocks prompt-injection input via abort()', async () => {
-    const proc = new ATRProcessor();
+  // Blocking is opt-in. With the bundled rules these inputs match (CONTROL:
+  // the report proves it), and by default nothing is aborted. Which inputs a
+  // processor with blocking on aborts is pinned against fixture rules in
+  // tests/blocking-eligibility.test.ts, not against the real rule set, whose
+  // maturities move as rules are promoted.
+  it('reports prompt-injection input and does not abort by default', async () => {
+    const reports: number[] = [];
+    const proc = new ATRProcessor({ onDetection: (r) => reports.push(r.matches.length) });
+    expect(proc.isBlocking()).toBe(false);
     for (const text of MALICIOUS) {
-      await expect(proc.processInput({ messages: [userMessage(text)], abort })).rejects.toThrow(BlockedError);
+      const out = await proc.processInput({ messages: [userMessage(text)], abort });
+      expect(out, text).toHaveLength(1);
     }
+    expect(reports).toHaveLength(MALICIOUS.length);
+    expect(reports.every((n) => n > 0)).toBe(true);
   });
 
   it('passes benign input through unchanged', async () => {
-    const proc = new ATRProcessor();
+    const proc = new ATRProcessor({ blocking: true, onDetection: quiet });
     for (const text of BENIGN) {
       const out = await proc.processInput({ messages: [userMessage(text)], abort });
       expect(out).toHaveLength(1);
@@ -59,7 +71,7 @@ describe('ATRProcessor (Mastra adapter)', () => {
   });
 
   it('passes a standing instruction through unchanged', async () => {
-    const proc = new ATRProcessor();
+    const proc = new ATRProcessor({ blocking: true, onDetection: quiet });
     for (const text of STANDING_INSTRUCTIONS) {
       const out = await proc.processInput({ messages: [userMessage(text)], abort });
       expect(out, text).toHaveLength(1);
@@ -67,7 +79,7 @@ describe('ATRProcessor (Mastra adapter)', () => {
   });
 
   it('does not block when blockSeverities is empty', async () => {
-    const proc = new ATRProcessor({ blockSeverities: [] });
+    const proc = new ATRProcessor({ blocking: true, blockSeverities: [], onDetection: quiet });
     const out = await proc.processInput({ messages: [userMessage(MALICIOUS[0])], abort });
     expect(out).toHaveLength(1);
   });

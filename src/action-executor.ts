@@ -7,8 +7,13 @@
  *
  * ENFORCEMENT GATE: actions above the OBSERVE blast-radius tier are dispatched
  * only when the operator has enabled blocking (`blocking: true` here; the CLI
- * maps ATR_BLOCKING / `atr guard --blocking` onto it). Without it they are
- * recorded as suppressed and the adapter is never called. See
+ * maps ATR_BLOCKING / `atr guard --blocking` onto it), AND only when a
+ * blocking-eligible match declares the action — a live maturity: stable rule
+ * at high or critical severity, not decided by a model (isBlockingEligible in
+ * src/enforcement.ts). Otherwise they are recorded as suppressed and the
+ * adapter is never called. Before, turning blocking on dispatched every
+ * declared action of every match in the verdict, so a hunt-lane experimental
+ * rule could quarantine a session. OBSERVE actions run either way. See
  * src/enforcement.ts for why this is opt-in and
  * src/quality/action-eligibility.ts for the tier ladder this gate reads.
  *
@@ -21,7 +26,11 @@ import type {
   ExecutionContext,
   PlatformAdapter,
 } from "./types.js";
-import { isEnforcementAction, blockingFromConfig } from "./enforcement.js";
+import {
+  isEnforcementAction,
+  blockingFromConfig,
+  verdictBlockingMatches,
+} from "./enforcement.js";
 import { TIER_NAMES, actionTier } from "./quality/action-eligibility.js";
 
 /** Priority order: lower number = higher priority (executed first) */
@@ -64,6 +73,18 @@ export const ACTION_METHOD_MAP: Readonly<Record<ATRAction, keyof PlatformAdapter
   kill_agent: "killAgent",
 };
 
+/** Why an action above OBSERVE was not dispatched, in words an operator can act on. */
+function suppressionMessage(action: ATRAction, blocking: boolean): string {
+  const head = `[advisory] Suppressed ${action} (tier ${TIER_NAMES[actionTier(action)]}): `;
+  return blocking
+    ? head +
+        `no blocking-eligible match declares it. Only a maturity: stable rule at ` +
+        `high or critical severity may drive an action above observe.`
+    : head +
+        `blocking is disabled. Enable it with blocking: true (atr guard: ` +
+        `--blocking or ATR_BLOCKING=1).`;
+}
+
 export interface ActionExecutorConfig {
   readonly adapter: PlatformAdapter;
   readonly dryRun?: boolean;
@@ -74,7 +95,8 @@ export interface ActionExecutorConfig {
    * (block_input / block_output / block_tool / reduce_permissions /
    * reset_context / quarantine_session / kill_agent) is refused before the
    * adapter is touched; OBSERVE actions (alert / snapshot / shadow / escalate)
-   * run exactly as before.
+   * run exactly as before. When true, such an action runs only if a
+   * blocking-eligible match in the verdict declares it.
    *
    * This field is the only input — the executor does not read `ATR_BLOCKING`.
    * A non-boolean throws rather than being coerced: `blocking: "false"` is
@@ -115,10 +137,11 @@ export class ActionExecutor {
    */
   async execute(context: ExecutionContext): Promise<readonly ActionResult[]> {
     const actions = this.deduplicateAndSort(context.verdict.actions);
+    const permitted = this.permittedEnforcementActions(context);
     const results: ActionResult[] = [];
 
     for (const action of actions) {
-      const result = await this.executeOne(action, context);
+      const result = await this.executeOne(action, context, permitted);
       results.push(result);
 
       if (this.onActionComplete) {
@@ -127,6 +150,16 @@ export class ActionExecutor {
     }
 
     return Object.freeze(results);
+  }
+
+  /**
+   * The actions above OBSERVE this verdict may dispatch: those declared by its
+   * blocking-eligible matches, and none at all while blocking is off.
+   */
+  private permittedEnforcementActions(context: ExecutionContext): ReadonlySet<string> {
+    if (!this.blocking) return new Set();
+    const eligible = verdictBlockingMatches(context.verdict, { detectionLane: context.lane });
+    return new Set(eligible.flatMap((m) => m.rule.response?.actions ?? []));
   }
 
   /**
@@ -149,6 +182,7 @@ export class ActionExecutor {
   private async executeOne(
     action: ATRAction,
     context: ExecutionContext,
+    permitted: ReadonlySet<string>,
   ): Promise<ActionResult> {
     const timestamp = new Date().toISOString();
 
@@ -156,14 +190,11 @@ export class ActionExecutor {
     // false for an action that enforcement policy forbids. The adapter is never
     // reached, so a downstream adapter that really blocks cannot act while the
     // hook channel is telling the host nothing.
-    if (!this.blocking && isEnforcementAction(action)) {
+    if (isEnforcementAction(action) && !permitted.has(action)) {
       return Object.freeze({
         action,
         success: true,
-        message:
-          `[advisory] Suppressed ${action} (tier ${TIER_NAMES[actionTier(action)]}): ` +
-          `blocking is disabled. Enable it with blocking: true (atr guard: ` +
-          `--blocking or ATR_BLOCKING=1).`,
+        message: suppressionMessage(action, this.blocking),
         timestamp,
       });
     }
