@@ -32,9 +32,10 @@
  *   - The ATR engine folds Unicode confusables and normalizes NFKC/NFC before
  *     matching; Quarry matches the raw text, so obfuscated input can match in
  *     ATR and not here.
- *   - JavaScript and RE2 differ in a few classes: JS `\s` also matches NBSP,
- *     U+2028 and the BOM, JS `.` excludes `\r`, and a JS pattern without the
- *     `u` flag counts an astral character as two. The tests catch a
+ *   - JavaScript and RE2 differ in a few classes: JS `\s` also matches `\v`,
+ *     NBSP, the other Unicode spaces and the BOM (RE2's is ASCII only), JS `.` excludes `\r`, and a JS pattern without the
+ *     `u` flag counts an astral character as two. RE2's case folding also
+ *     maps U+017F to `s` and U+212A to `k`. The tests catch a
  *     difference only where a test case exercises it.
  *   - Quarry reports matches; the rules carry the ATR severity as metadata
  *     and blocking is the application's decision.
@@ -123,7 +124,9 @@ function quarryString(s: string): string {
     .replace(/"/g, '\\"')
     .replace(/\n/g, '\\n')
     .replace(/\r/g, '\\r')
-    .replace(/\t/g, '\\t');
+    .replace(/\t/g, '\\t')
+    // literal_eval rejects a raw NUL, and other control characters read better escaped.
+    .replace(/[\x00-\x1f]/g, (c) => `\\x${c.charCodeAt(0).toString(16).padStart(2, '0')}`);
   return `"${escaped}"`;
 }
 
@@ -138,7 +141,9 @@ function quarryRegexString(pattern: string): string {
   for (let i = 0; i < pattern.length; i++) {
     const ch = pattern[i]!;
     if (ch === '\\' && i + 1 < pattern.length) {
-      out += ch + pattern[i + 1]!;
+      // A backslash before a line break is an identity escape in JS; RE2 reads `\n` the same way.
+      const next = pattern[i + 1]!;
+      out += next === '\n' ? '\\n' : next === '\r' ? '\\r' : next === '\t' ? '\\t' : ch + next;
       i++;
     } else if (ch === '"') out += '\\"';
     else if (ch === '\n') out += '\\n';
@@ -239,6 +244,22 @@ function plainTextKey(fields: ReadonlySet<string>): string {
   return 'user_input';
 }
 
+/**
+ * Tool-call argument text Quarry accepts: the text itself when it is a JSON
+ * object, else `{"input": <text>}`. The wrapped text is JSON-escaped, so a
+ * pattern that relies on a quote, backslash or control character in it can
+ * miss; the coverage check then reports that true positive.
+ */
+function asJsonObjectText(text: string): string {
+  try {
+    const parsed: unknown = JSON.parse(text);
+    if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) return text;
+  } catch {
+    // not JSON
+  }
+  return JSON.stringify({ input: text });
+}
+
 /** The conversation for one ATR test case, or null when the case has no mappable field. */
 function testConversation(tc: Record<string, unknown>, fields: ReadonlySet<string>): Conversation | null {
   const str = (v: unknown): string => (typeof v === 'string' ? v : JSON.stringify(v));
@@ -257,12 +278,14 @@ function testConversation(tc: Record<string, unknown>, fields: ReadonlySet<strin
   const tool = name ?? DEFAULT_TOOL;
   const messages: Message[] = [];
   if (parts['user_input'] !== undefined) messages.push({ role: 'user', content: parts['user_input'] });
+  // Quarry requires tool-call arguments to be a JSON object, so other text is wrapped as one.
+  const args = parts['tool_args'] === undefined ? undefined : asJsonObjectText(parts['tool_args']);
   const calls = parts['tool_args'] !== undefined || parts['tool_response'] !== undefined || name !== undefined;
   if (calls) {
     messages.push({
       role: 'assistant',
       content: null,
-      tool_calls: [{ id: CALL_ID, type: 'function', function: { name: tool, arguments: parts['tool_args'] ?? '{}' } }],
+      tool_calls: [{ id: CALL_ID, type: 'function', function: { name: tool, arguments: args ?? '{}' } }],
     });
     if (parts['tool_response'] !== undefined) messages.push({ role: 'tool', tool_call_id: CALL_ID, content: parts['tool_response'] });
   }

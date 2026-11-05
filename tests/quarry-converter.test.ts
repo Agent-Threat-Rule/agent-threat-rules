@@ -55,6 +55,34 @@ describe("ruleToQuarry", () => {
     expect(file.rule).toContain('$p0 = "say\\s+\\"hi\\"\\\\\\n" regex nocase');
   });
 
+  it("writes a backslash before a line break as the line break escape", () => {
+    const file = asFile(ruleToQuarry(rule({ conditions: [{ field: "user_input", operator: "regex", value: "a\\\nb" }] })));
+    expect(file.rule).toContain('$p0 = "a\\nb" regex nocase');
+    expect(file.rule.split("\n").find((l) => l.includes("$p0"))).toBe('    $p0 = "a\\nb" regex nocase');
+  });
+
+  it("escapes control characters in metadata", () => {
+    const file = asFile(ruleToQuarry(rule({ title: "a\u0000b" })));
+    expect(file.rule).toContain('    title = "a\\x00b"');
+  });
+
+  it("wraps tool arguments that are not a JSON object, as Quarry requires", () => {
+    const file = asFile(
+      ruleToQuarry(
+        rule({
+          conditions: [{ field: "tool_args", operator: "regex", value: "systemctl\\s+stop" }],
+          test_cases: {
+            true_positives: [{ tool_args: "systemctl stop auditd", expected: "triggered" }, { input: 'say "systemctl stop"', expected: "triggered" }],
+            true_negatives: [{ tool_args: '{"cmd":"ls"}', expected: "not_triggered" }],
+          },
+        } as Partial<ATRRule>),
+      ),
+    );
+    const args = file.tests.map((t) => (t.conversation.messages[0] as { tool_calls: { function: { arguments: string } }[] }).tool_calls[0]!.function.arguments);
+    expect(args).toEqual(['{"input":"systemctl stop auditd"}', '{"input":"say \\"systemctl stop\\""}', '{"cmd":"ls"}']);
+    expect(file.uncoveredTruePositives).toEqual([]);
+  });
+
   it("escapes metadata as a decoded string", () => {
     const file = asFile(ruleToQuarry(rule({ title: 'a "quoted" \\ title' })));
     expect(file.rule).toContain('    title = "a \\"quoted\\" \\\\ title"');
