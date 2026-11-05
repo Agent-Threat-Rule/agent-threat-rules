@@ -282,7 +282,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "spec.abstract.h": "Abstract",
     "spec.status.h": "Status of This Document",
     "spec.status.body":
-      "This document is a Working Draft published by the ATR Community. Although the rule format has been shipping in production for over a year, the surrounding governance is still transitioning from a single-maintainer model (BDFL) to a Technical Steering Committee. Discussion of this document takes place on the public GitHub repository.",
+      "This document is a Working Draft published by the ATR Community. Although the rule format has been shipping in production for over a year, the surrounding governance is still transitioning from a lead-maintainer model (BDFL) to a Technical Steering Committee. Discussion of this document takes place on the public GitHub repository.",
 
     // Implementers page
     "implementers.title": "Implementer report",
@@ -662,7 +662,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "spec.abstract.h": "摘要 (Abstract)",
     "spec.status.h": "本文件狀態 (Status of This Document)",
     "spec.status.body":
-      "本文件為 ATR 社群發布的 Working Draft。儘管規則格式已在生產環境運行超過一年,周邊治理仍處於從單一維護者模型 (BDFL) 過渡到技術指導委員會 (TSC) 的階段。本文件的討論於公開 GitHub repository 進行。",
+      "本文件為 ATR 社群發布的 Working Draft。儘管規則格式已在生產環境運行超過一年,周邊治理仍處於從首席維護者模型 (BDFL) 過渡到技術指導委員會 (TSC) 的階段。本文件的討論於公開 GitHub repository 進行。",
 
     "implementers.title": "實作者報告",
     "implementers.subtitle":

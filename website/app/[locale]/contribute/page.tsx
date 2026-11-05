@@ -327,8 +327,8 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
         <div className="border border-fog p-6 mb-12 text-sm text-graphite leading-relaxed">
           <p className="mb-3">
             {zh
-              ? "ATR 目前只有一位維護者，正在積極招募第二位、第三位。候選條件、決策結構和申請方式，都寫在治理頁。"
-              : "ATR has a single maintainer today and is actively recruiting a second and a third. The candidate criteria, how decisions are made and how to apply are all on the governance page."}
+              ? "ATR 有多位維護者，但合併目前集中在首席維護者手上，所以還在招募更多人。候選條件、決策結構和申請方式，都寫在治理頁。"
+              : "ATR has several maintainers, but merging is still concentrated with the lead maintainer, so more are being recruited. The candidate criteria, how decisions are made and how to apply are all on the governance page."}
           </p>
           <a href={`/${locale}/governance`} className="font-data text-xs text-blue hover:underline">
             {zh ? "看治理頁的「想成為維護者」" : "See 'Become a maintainer' on the governance page"} &rarr;

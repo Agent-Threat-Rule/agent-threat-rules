@@ -88,8 +88,8 @@ export default async function GovernancePage({
           <div className="p-6 md:p-8 bg-ash/30">
             <p className="text-sm text-stone leading-[1.7]">
               {zh
-                ? "ATR 是一位維護者開始的。1991 年 Linus Torvalds 的 Linux、Florian Roth 的 Sigma，走的都是同一條路：一個人先定下格式和品質門檻，再由社群接手治理。這是現況，不是道歉。第二位維護者正在招募，條件寫在下面。把標準託管給中立基金會（Linux Foundation、OpenSSF 或同等級的組織）的評估，也已經在路線圖上。終點是技術指導委員會（TSC）。起點本來就只能有一個人。"
-                : "ATR was started by a single maintainer. Linus Torvalds took the same path with Linux in 1991, and Florian Roth with Sigma: one person defines the format and the quality bar, then the community takes over governance. That is where things stand, and it is not an apology. A second maintainer is being recruited (criteria below). Evaluating a transfer to a neutral foundation, such as the Linux Foundation, OpenSSF or an equivalent, is on the roadmap. The goal is a Technical Steering Committee. Every standard that reached one started with someone willing to write the first rule."}
+                ? "除了首席維護者，GitHub 上另有兩位維護者有寫入權限，還有一位協作者負責整理 issue。不過到現在為止，PR 的合併還是集中在首席維護者手上，這是接下來要分散出去的地方。更多維護者的招募條件寫在下面。把標準託管給中立基金會（Linux Foundation、OpenSSF 或同等級的組織）的評估在路線圖上，終點是技術指導委員會（TSC）。"
+                : "Besides the lead maintainer, two more maintainers have write access on GitHub, and one collaborator triages issues. Merging pull requests is still concentrated with the lead maintainer, and that is the next thing to spread out. The criteria for more maintainers are below. Evaluating a transfer to a neutral foundation, such as the Linux Foundation, OpenSSF or an equivalent, is on the roadmap. The goal is a Technical Steering Committee."}
             </p>
           </div>
         </div>
@@ -193,8 +193,8 @@ export default async function GovernancePage({
                 ? "先開 RFC issue，公開徵求意見 14 天（複雜提案延長到 30 天），再由 2 位維護者核可"
                 : "RFC issue first + 14-day public comment window (30 days for complex proposals) + 2 maintainer approvals",
               detail: zh
-                ? "spec 是所有相容引擎之間的契約。任何 spec 變動，都要先用 issue 提出 RFC，公開徵求意見 14 天（複雜提案延長到 30 天），讓每個實作者都看到，之後才收 PR。現在是 BDFL 階段，「2 位核可」會由首席維護者加上一位外部 reviewer 達成，這位 reviewer 還在等指定。TSC 成立之後，改成 TSC 過半數核可。"
-                : "The spec is the contract between all conforming engines. Any spec change starts as an RFC issue with a 14-day public comment window (30 days for complex proposals), so every implementer sees it. Only then is the PR accepted. In the current BDFL phase, the two-approval bar will be met by the lead maintainer plus one external reviewer, once that reviewer is designated. When the TSC is formed, the bar becomes a TSC majority.",
+                ? "spec 是所有相容引擎之間的契約。任何 spec 變動，都要先用 issue 提出 RFC，公開徵求意見 14 天（複雜提案延長到 30 天），讓每個實作者都看到，之後才收 PR。現在是 BDFL 階段，「2 位核可」是首席維護者加上另一位維護者。TSC 成立之後，改成 TSC 過半數核可。"
+                : "The spec is the contract between all conforming engines. Any spec change starts as an RFC issue with a 14-day public comment window (30 days for complex proposals), so every implementer sees it. Only then is the PR accepted. In the current BDFL phase, the two approvals are the lead maintainer's and one other maintainer's. When the TSC is formed, the bar becomes a TSC majority.",
             },
             {
               kind: zh ? "破壞性變更（SemVer 主版號）" : "Breaking change (SemVer major bump)",
@@ -211,8 +211,8 @@ export default async function GovernancePage({
                 ? "所有現任維護者核可，加上受邀者書面同意"
                 : "All current maintainers approve + the invited person agrees in writing",
               detail: zh
-                ? "現在只有一位維護者，所以加入第二位，要這位維護者本人同意。有兩位以上維護者之後，新增要全員核可。撤換要 2/3 多數，BDFL 階段不適用。"
-                : "There is one maintainer today, so adding a second needs that maintainer's agreement. Once there are two or more, additions need unanimous approval. Removal needs a 2/3 majority, which does not apply under BDFL.",
+                ? "新增要所有現任維護者核可。撤換要 2/3 多數，BDFL 階段不適用。"
+                : "Adding a maintainer needs every current maintainer's approval. Removal needs a 2/3 majority, which does not apply under BDFL.",
             },
             {
               kind: zh ? "把規則標為 deprecated" : "Deprecate a rule",
@@ -278,8 +278,8 @@ export default async function GovernancePage({
         <div className="bg-paper border border-fog p-6 md:p-8 mb-12 text-sm text-graphite leading-[1.7]">
           <p className="mb-3">
             {zh
-              ? "只有一位維護者，是 ATR 目前已知最大的結構風險，這點直接講明。從一個人走到技術指導委員會（TSC），每個開放標準都走過。治理要分散出去，前提是有貢獻者真的合併過夠多東西，值得拿到 commit 權限，不會提早。第二位、第三位維護者正在積極招募。"
-              : "Having a single maintainer is the largest known structural risk to ATR, and this page says so plainly. Every open standard walks the path from one person to a Technical Steering Committee (TSC). Governance spreads once contributors have merged enough to earn commit rights, not before. A second and a third maintainer are being actively recruited."}
+              ? "合併集中在一個人手上，是 ATR 目前已知最大的結構風險，這點直接講明。治理要分散出去，前提是有貢獻者真的合併過夠多東西，值得拿到 commit 權限，不會提早。更多維護者正在招募。"
+              : "Merges resting with one person is the largest known structural risk to ATR, and this page says so plainly. Governance spreads once contributors have merged enough to earn commit rights, not before. More maintainers are being recruited."}
           </p>
           <p className="mb-3 font-semibold text-ink">
             {zh ? "候選條件：" : "Candidate criteria:"}
@@ -341,8 +341,8 @@ export default async function GovernancePage({
             </p>
             <p>
               {zh
-                ? "中期：由第二位維護者（招募中）接手 PR 審查。如果 30 天後還沒找到正式維護者，會從外部貢獻者裡找臨時維護者，條件是：過去六個月內合併過至少三個有實質內容的 PR、實際熟悉 schema 的實作，而且能配合非同步審查。具體人選不會先在這一頁公布。邀請發出、對方也同意之後，名字才會出現在「現任維護者」。"
-                : "Medium term: a second maintainer (recruitment ongoing) takes over PR review. If none is found within 30 days, interim maintainers will be sought among external contributors who have merged at least three substantive PRs in the past six months, have shown hands-on familiarity with the schema implementation, and can review asynchronously. No names are published on this page until the invitation has been sent AND the candidate has accepted. Then the new maintainer appears under 'Current maintainers' above."}
+                ? "中期：由其他現任維護者接手 PR 審查和合併。人手不夠時，會從外部貢獻者裡找臨時維護者，條件是：過去六個月內合併過至少三個有實質內容的 PR、實際熟悉 schema 的實作，而且能配合非同步審查。邀請發出、對方也同意之前，不會公布人選。"
+                : "Medium term: the other current maintainers take over PR review and merging. If that is not enough, interim maintainers will be sought among external contributors who have merged at least three substantive PRs in the past six months, have shown hands-on familiarity with the schema implementation, and can review asynchronously. No candidate is named before the invitation has been sent and accepted."}
             </p>
             <p>
               {zh
