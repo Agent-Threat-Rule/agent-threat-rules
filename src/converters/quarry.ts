@@ -451,13 +451,13 @@ export function rulesToQuarry(rules: readonly ATRRule[], options: QuarryExportOp
   return { files, skipped };
 }
 
-/** `quarry.yaml`, loading the exported rules. */
+/** `quarry.yaml`, loading the exported rules. Quarry resolves `rules/` against the working directory. */
 export const QUARRY_CONFIG = 'config_version: 2\nrules:\n  - rules/\n';
 
 /** `check_atr_tests.py`: runs each rule's ATR test conversations through Quarry. */
 export const QUARRY_CHECK_SCRIPT = `"""Run the ATR test cases exported with these rules through Quarry.
 
-From this directory, with Quarry installed:
+With Quarry installed:
 
     python check_atr_tests.py
 
@@ -468,6 +468,7 @@ Exits 1 if any case fails or any scan is incomplete.
 """
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -478,6 +479,8 @@ HERE = Path(__file__).resolve().parent
 
 
 def main() -> int:
+    # Quarry resolves the rules path in quarry.yaml against the working directory.
+    os.chdir(HERE)
     scanner = DSLScanner(QuarryConfig.from_yaml(HERE / "quarry.yaml"))
     total = failed = 0
     for path in sorted((HERE / "tests").glob("*.json")):

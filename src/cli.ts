@@ -1271,8 +1271,9 @@ async function convertToQuarry(rulesDir: string, outputDir: string | undefined, 
       console.log(`    ${f.ruleId}: ${parts.join('; ')}`);
     }
   }
-  console.log(`  Scan with: quarry scan -c ${join(dir, 'quarry.yaml')} -t <conversations>`);
-  console.log(`  Check with: cd ${dir} && python check_atr_tests.py`);
+  // Quarry resolves the rules path in quarry.yaml against the working directory.
+  console.log(`  Scan with: cd ${dir} && quarry scan -c quarry.yaml -t <conversations>`);
+  console.log(`  Check with: python ${join(dir, 'check_atr_tests.py')}`);
 }
 
 // --- Badge command ---
