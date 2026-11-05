@@ -4,6 +4,7 @@ import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
+import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -203,6 +204,7 @@ export default async function AboutPage({
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
       {/* Header */}
       <Reveal>
+        <Seal name="column" size={72} className="text-ink mb-7" />
         <div className="text-[13px] text-stone mb-3">
           {zh ? "關於 ATR" : "About ATR"}
         </div>
@@ -231,8 +233,8 @@ export default async function AboutPage({
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "規則用 MIT 授權公開，以 YAML 格式放在 GitHub 上。誰都可以整合、修改，或把改動送回上游。沒有付費功能，也沒有廠商鎖定。"
-            : "The rules are YAML files on GitHub under the MIT license. Anyone may integrate them, change them, or send changes back upstream. Nothing is paid, and nothing locks you to a vendor."}
+            ? "規則用 MIT 授權公開，以 YAML 格式放在 GitHub 上。誰都可以整合、修改，或把改動送回上游。沒有付費功能，也沒有廠商鎖定。利益揭露：維護者創辦並控制 PANGUARD AI, INC.，這家公司販售以 ATR 為基礎的 agent 資安產品。"
+            : "The rules are YAML files on GitHub under the MIT license. Anyone may integrate them, change them, or send changes back upstream. Nothing is paid, and nothing locks you to a vendor. Interests: the maintainer founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR."}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
@@ -331,8 +333,8 @@ export default async function AboutPage({
       <Section label={zh ? "獨立聲明" : "Independence"} delay={0.35}>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh
-            ? "ATR 不屬於任何商業公司，不是哪個資安產品的功能。規則是公共財。誰都可以採用、擴充或 fork，競爭廠商也一樣。利益揭露：維護者創辦並控制 PANGUARD AI, INC.，這家公司販售以 ATR 為基礎的 agent 資安產品。"
-            : "No commercial entity owns ATR. It is not a feature of any security product. The rules are a public good. Anyone may adopt, extend or fork them, competing vendors included. Interests: the maintainer founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR."}
+            ? "ATR 不屬於任何商業公司，不是哪個資安產品的功能。規則是公共財。誰都可以採用、擴充或 fork，競爭廠商也一樣。"
+            : "No commercial entity owns ATR. It is not a feature of any security product. The rules are a public good. Anyone may adopt, extend or fork them, competing vendors included."}
         </p>
       </Section>
     </div>

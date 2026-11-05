@@ -4,6 +4,7 @@ import { locales, type Locale } from "@/lib/i18n";
 import { posts } from "@/lib/posts";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -36,6 +37,7 @@ export default async function BlogIndexPage({
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
       <Reveal>
+        <Seal name="scroll" size={72} className="text-ink mb-7" />
         <div className="text-[13px] text-stone mb-3">
           Blog
         </div>

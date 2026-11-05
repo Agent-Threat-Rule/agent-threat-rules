@@ -43,6 +43,7 @@ export default async function PartnerSyncPage({ params }: { params: Promise<{ lo
     <>
       <SheetRow>
         <ToolHero
+          emblem="key"
           zh={zh}
           name={zh ? "夥伴即時同步" : "Partner live sync"}
           status={{ en: "Not open", zh: "目前沒有開放" }}

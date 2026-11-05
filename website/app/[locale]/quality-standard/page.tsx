@@ -4,6 +4,7 @@ import { loadVersionLabels, npmInstallSpec } from "@/lib/versions";
 import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -230,6 +231,7 @@ export default async function QualityStandardPage({
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
       {/* ── HERO ───────────────────────────────────────────── */}
       <Reveal>
+        <Seal name="scales" size={72} className="text-ink mb-7" />
         <div className="text-[13px] text-stone mb-3">
           {locale === "zh" ? "RFC-001 · 品質標準" : "RFC-001 · Quality Standard"}
         </div>

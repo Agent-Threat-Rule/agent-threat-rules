@@ -6,6 +6,7 @@ import { loadGithubContributors, loadMembers } from "@/lib/community";
 import { SectionHead } from "@/components/SectionHead";
 import { SheetRow } from "@/components/Sheet";
 import { MemberDirectory } from "./MemberDirectory";
+import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -62,6 +63,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
       <SheetRow grid>
       <section className="grid lg:grid-cols-[1.3fr_1fr] gap-12 px-8 md:px-12 pt-24 pb-20">
         <div>
+          <Seal name="laurel" size={72} className="text-ink mb-7" />
           <div className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-6">{zh ? "社群" : "Community"}</div>
           <h1 className="text-[40px] md:text-[48px] leading-[1.1] tracking-[-0.02em] font-medium text-ink max-w-[620px] text-balance">
             {zh ? "維護 ATR 的人" : "The people who maintain ATR"}

@@ -10,6 +10,7 @@ import { join } from "node:path";
 import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
+import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -89,6 +90,7 @@ export default async function ErrataPage({
     >
       {/* Header */}
       <header className="mb-8 md:mb-10 max-w-3xl">
+        <Seal name="scroll" size={72} className="text-ink mb-7" />
         <p
           className="text-xs uppercase tracking-[0.18em] text-stone mb-3"
           style={{ fontFamily: "var(--font-data)" }}

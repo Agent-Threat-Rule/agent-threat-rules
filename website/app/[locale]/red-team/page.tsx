@@ -6,6 +6,7 @@ import { RED_TEAM_TOOLS } from "@/lib/red-team-tools";
 import { ablationLanes } from "@/lib/ablation";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -135,6 +136,7 @@ export default async function RedTeamPage({
       ============================================================ */}
       <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
         <Reveal>
+          <Seal name="xiphos" size={72} className="text-ink mb-7" />
           <div className="text-[13px] text-stone mb-6">
             {zh ? "給紅隊" : "For red teams"}
           </div>

@@ -4,6 +4,7 @@ import { loadSiteStats } from "@/lib/stats";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
+import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -105,13 +106,14 @@ export default async function CompliancePage({
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[1120px] mx-auto">
       <Reveal>
+        <Seal name="scales" size={72} className="text-ink mb-7" />
         <div className="text-[13px] text-stone mb-3">
           {zh ? "合規對應" : "Compliance coverage"}
         </div>
       </Reveal>
       <Reveal delay={0.05}>
         <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium text-ink mb-4">
-          {zh ? "6 個框架，每條規則都對上了。" : "6 frameworks. Every rule mapped."}
+          {zh ? "每條規則都標了 6 個框架的對應條目。" : "Every rule is tagged against 6 frameworks."}
         </h1>
       </Reveal>
       <p className="mt-4 mb-6 max-w-[640px] border-l-2 border-high pl-3 text-[13px] leading-[1.7] text-graphite">

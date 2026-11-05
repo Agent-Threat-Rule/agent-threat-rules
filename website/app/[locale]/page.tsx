@@ -17,7 +17,9 @@ import { CATEGORY_DESC } from "@/lib/category-desc";
 import { CATEGORY_ORDER } from "@/lib/docs-nav";
 import { pageMetadata, SITE_NAME } from "@/lib/seo";
 import { SheetRow } from "@/components/Sheet";
-import { CategoryRing } from "@/components/CategoryRing";
+import { CategoryFrieze } from "@/components/classical/CategoryFrieze";
+import { Emblem, Meander, Seal } from "@/components/classical/Emblem";
+import { CATEGORY_EMBLEM, type EmblemName } from "@/lib/emblems";
 import { AgentConsole } from "@/components/home/AgentConsole";
 import { RuleBirth, type BirthRule } from "@/components/home/RuleBirth";
 import { AdoptGuide } from "@/components/AdoptGuide";
@@ -238,30 +240,26 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* Coverage */}
       <SheetRow>
-        <div className="grid lg:grid-cols-[1fr_1fr] gap-12 px-6 md:px-14 py-24 md:py-28">
-          <div className="lg:sticky lg:top-36 self-start">
-            <CategoryRing title={zh ? "威脅覆蓋" : "Threat coverage"} categories={categories.map((c) => categoryDisplayName(c, "en"))} references={REFERENCES} />
-          </div>
-          <div>
-            <div className={KICKER}>{zh ? "涵蓋範圍" : "Coverage"}</div>
-            <h2 className={`mt-4 ${H2}`}>{title(zh ? "有紀錄的攻擊，就有名字。" : "A documented attack gets a name.")}</h2>
-            <p className="mt-5 text-[16px] leading-[1.75] text-graphite">
-              {zh ? "十個類別，從被下毒的工具說明，到被悄悄換掉的目標。" : "Ten categories, from a poisoned tool description to a goal quietly swapped for another."}
-            </p>
-            <ol className="mt-8">
-              {categories.map((c, i) => (
-                <li key={c} className="py-4 border-t border-fog">
-                  <div className="flex items-baseline justify-between gap-4">
-                    <h3 className="text-[16px] text-ink">
-                      <span className="font-data text-[12px] text-stone mr-2">{String.fromCharCode(65 + i)}.</span>
-                      <Link href={`${prefix}/docs/categories/${c}`} className="hover:underline underline-offset-4">{categoryDisplayName(c, locale)}</Link>
-                    </h3>
-                    <span className="font-data text-[11px] text-stone whitespace-nowrap tabular-nums">{effectiveByCategory.get(c) ?? 0}</span>
-                  </div>
-                  <p className="mt-1 text-[13.5px] leading-[1.6] text-graphite">{pick(CATEGORY_DESC[c])}</p>
-                </li>
-              ))}
-            </ol>
+        <div className="px-6 md:px-14 py-24 md:py-28">
+          <div className={KICKER}>{zh ? "涵蓋範圍" : "Coverage"}</div>
+          <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "有紀錄的攻擊，就有名字。" : "A documented attack gets a name.")}</h2>
+          <p className="mt-5 text-[16px] leading-[1.75] text-graphite max-w-[620px]">
+            {zh ? "十個類別，從被下毒的工具說明，到被悄悄換掉的目標。每一格都連到該類別的規則。" : "Ten categories, from a poisoned tool description to a goal quietly swapped for another. Each panel opens the rules in its category."}
+          </p>
+          <div className="mt-12">
+            <CategoryFrieze
+              countLabel={zh ? "條規則" : "rules"}
+              inscription={REFERENCES}
+              items={categories.map((c, i) => ({
+                key: c,
+                letter: String.fromCharCode(65 + i),
+                name: categoryDisplayName(c, locale),
+                desc: pick(CATEGORY_DESC[c]),
+                count: effectiveByCategory.get(c) ?? 0,
+                href: `${prefix}/docs/categories/${c}`,
+                emblem: CATEGORY_EMBLEM[c] ?? "aspis",
+              }))}
+            />
           </div>
         </div>
       </SheetRow>
@@ -299,7 +297,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </ul>
           </div>
           <p className="mt-6 text-[12.5px] text-stone">
-            {zh ? "左邊的對照取自規則檔本身；右邊每一份對照文件都公開在 repository 裡。" : "The mappings on the left come from the rule file itself. Each crosswalk on the right is a public document in the repository."}
+            {zh ? "左邊的對照取自規則檔本身；右邊每一份對照文件都公開在 repository 裡。部分對應已知有誤、正在重做，修正前只能當作參考，不能當稽核證據。" : "The mappings on the left come from the rule file itself. Each crosswalk on the right is a public document in the repository. Some mappings are known to be wrong and are being redone; until then treat them as a reference, not audit evidence."}{" "}
+            <Link href={`${prefix}/errata`} className="underline underline-offset-4 hover:text-ink">{zh ? "看勘誤" : "See the errata"}</Link>
           </p>
         </div>
       </SheetRow>
@@ -316,7 +315,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             return (
               <li key={key} className={`border-fog ${i > 0 ? "border-t md:border-t-0 md:border-l" : ""}`}>
                 <Link href={`${prefix}${tool.href}`} className="group flex flex-col h-full p-6 md:p-8 hover:bg-ash/50 transition-colors">
-                  <div className="relative h-[150px] mb-6 flex items-center justify-center">
+                  <div className="relative h-[170px] mb-6 flex items-center justify-center">
                     <div className="absolute inset-0 grid-paper grid-paper-fade" aria-hidden="true" />
                     <ToolGlyph kind={key} />
                   </div>
@@ -355,14 +354,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <div className="grid md:grid-cols-3 gap-6 px-6 md:px-14 pb-24">
           {latestRelease && (
             <Link href={`${prefix}/changelog`} className="group">
-              <Thumb tone="bg-brand-tint">{`v${latestRelease.version}`}</Thumb>
+              <Thumb emblem="laurel" wreath label={`v${latestRelease.version}`} />
               <div className="mt-4 text-[15px] leading-snug text-ink group-hover:underline underline-offset-4">{zh ? `版本 ${latestRelease.version} 發布` : `Release ${latestRelease.version}`}</div>
               <div className="mt-1 font-data text-[11px] text-stone">{zh ? "發版" : "Release"} · {latestRelease.date}</div>
             </Link>
           )}
-          {latestPosts.map((post, i) => (
+          {latestPosts.map((post) => (
             <Link key={post.slug} href={`${prefix}/blog/${post.slug}`} className="group">
-              <Thumb tone={i === 0 ? "bg-[#FFF1E8]" : "bg-ash"} mono>{post.atrRules[0] ?? (zh ? "文章" : "Note")}</Thumb>
+              <Thumb emblem={post.atrRules[0] ? "stele" : "scroll"} label={post.atrRules[0] ?? (zh ? "文章" : "Note")} />
               <div className="mt-4 text-[15px] leading-snug text-ink line-clamp-2 group-hover:underline underline-offset-4">{pick(post.title)}</div>
               <div className="mt-1 font-data text-[11px] text-stone">{zh ? "文章" : "Note"} · {post.date}</div>
             </Link>
@@ -391,48 +390,35 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   );
 }
 
-function Thumb({ tone, mono = false, children }: { tone: string; mono?: boolean; children: string }) {
+/** Card image for the latest items: an engraved emblem framed by two Greek-key bands. */
+function Thumb({ emblem, label, wreath = false }: { emblem: EmblemName; label: string; wreath?: boolean }) {
   return (
-    <div className={`relative aspect-[16/10] ${tone} overflow-hidden`}>
-      <div className="absolute inset-0 grid-paper opacity-50" aria-hidden="true" />
-      <div className={`relative h-full flex items-center justify-center text-ink ${mono ? "font-data text-[15px]" : "text-[24px] tracking-[-0.02em]"}`}>{children}</div>
+    <div className="relative aspect-[16/10] bg-white border border-fog overflow-hidden flex flex-col">
+      <Meander className="text-fog" height={10} />
+      <div className="relative flex-1 flex flex-col items-center justify-center gap-3">
+        <div className="absolute inset-0 grid-paper grid-paper-fade opacity-60" aria-hidden="true" />
+        {wreath ? (
+          <div className="relative flex items-center justify-center">
+            <Emblem name="laurel" size={124} stroke={1.05} className="text-graphite" />
+            <span className="absolute pb-2 text-[19px] tracking-[-0.02em] text-ink">{label}</span>
+          </div>
+        ) : (
+          <>
+            <Emblem name={emblem} size={64} stroke={1.15} className="relative text-ink" />
+            <span className="relative font-data text-[12.5px] text-ink">{label}</span>
+          </>
+        )}
+      </div>
+      <div className="rotate-180">
+        <Meander className="text-fog" height={10} />
+      </div>
     </div>
   );
 }
 
-/** Small drawings for the three tool cards. */
+const TOOL_EMBLEM: Record<"rules" | "router" | "eval", EmblemName> = { rules: "stele", router: "labyrinth", eval: "scales" };
+
+/** An engraved emblem for each tool card: the rule tablet, the labyrinth, the scales. */
 function ToolGlyph({ kind }: { kind: "rules" | "router" | "eval" }) {
-  if (kind === "rules") {
-    return (
-      <div className="relative w-[200px] space-y-1.5">
-        {[
-          ["ATR-2026-00128", "bg-alert"],
-          ["ATR-2026-00161", "bg-alert"],
-          ["ATR-2026-02403", "bg-[#F5A46E]"],
-        ].map(([id, tone]) => (
-          <div key={id} className="flex items-center gap-2 bg-white border border-fog px-2.5 py-1.5 shadow-[0_6px_16px_-10px_rgba(0,0,0,0.3)]">
-            <span className={`w-1.5 h-1.5 ${tone}`} />
-            <span className="font-data text-[10.5px] text-ink">{id}</span>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  if (kind === "router") {
-    return (
-      <div className="relative grid grid-cols-5 gap-1.5 w-[170px]">
-        {Array.from({ length: 10 }, (_, i) => (
-          <span key={i} className={`aspect-square border ${i < 4 ? "bg-white border-ink" : "border-fog bg-white/60"}`} />
-        ))}
-      </div>
-    );
-  }
-  const hits = new Set([3, 17, 26, 31, 33, 36]);
-  return (
-    <div className="relative grid grid-cols-10 gap-[3px] w-[180px]">
-      {Array.from({ length: 40 }, (_, i) => (
-        <span key={i} className={`aspect-square ${hits.has(i) ? "bg-alert" : "bg-ink"}`} />
-      ))}
-    </div>
-  );
+  return <Seal name={TOOL_EMBLEM[kind]} size={136} className="relative text-ink" />;
 }

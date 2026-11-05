@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: "ATR Router",
     description: zh
       ? "先讀出 agent 碰得到什麼，只挑跟它有關的測試，結果用對方習慣的格式交回。尚未公開。"
-      : "Reads what an agent can reach, keeps only the tests that apply, and returns the result in the format the reader uses. Not yet published.",
+      : "Reads what an agent can reach, keeps only the tests that apply, and returns the result in the format the reader uses. Not yet public.",
   });
 }
 
@@ -61,7 +61,8 @@ export default async function RouterPage({ params }: { params: Promise<{ locale:
         <ToolHero
           zh={zh}
           name="ATR Router"
-          status={{ en: "Not yet published", zh: "尚未公開" }}
+          emblem="labyrinth"
+          status={{ en: "Not yet public", zh: "尚未公開" }}
           title={{ en: "First, work out what to test.", zh: "先想清楚，要測什麼。" }}
           lead={{
             en: "Every agent reaches different things. One reads mail, another can pay, another runs code. Test them all with the same list and you either miss what matters or waste the run. Router reads what your agent can reach first, keeps the tests that apply, and hands the result back in the format your reader already uses.",

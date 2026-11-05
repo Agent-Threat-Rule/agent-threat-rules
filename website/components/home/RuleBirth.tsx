@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { useSteps } from "@/lib/use-steps";
+import { Emblem } from "@/components/classical/Emblem";
+import type { EmblemName } from "@/lib/emblems";
 
 export interface BirthRule {
   id: string;
@@ -23,9 +25,10 @@ export interface BirthRule {
 
 type B = { en: string; zh: string };
 
-const STEPS: ReadonlyArray<{ key: string; label: B; head: B; body: B }> = [
+const STEPS: ReadonlyArray<{ key: string; emblem: EmblemName; label: B; head: B; body: B }> = [
   {
     key: "incident",
+    emblem: "torch",
     label: { en: "Incident", zh: "事件" },
     head: { en: "Someone finds a new way in", zh: "有人找到新的入口" },
     body: {
@@ -35,6 +38,7 @@ const STEPS: ReadonlyArray<{ key: string; label: B; head: B; body: B }> = [
   },
   {
     key: "rule",
+    emblem: "stele",
     label: { en: "Rule", zh: "規則" },
     head: { en: "It is written down once", zh: "寫下來，一次就好" },
     body: {
@@ -44,6 +48,7 @@ const STEPS: ReadonlyArray<{ key: string; label: B; head: B; body: B }> = [
   },
   {
     key: "tests",
+    emblem: "scales",
     label: { en: "Tests", zh: "測試" },
     head: { en: "It has to prove both ways", zh: "該抓的抓，不該抓的放" },
     body: {
@@ -53,6 +58,7 @@ const STEPS: ReadonlyArray<{ key: string; label: B; head: B; body: B }> = [
   },
   {
     key: "release",
+    emblem: "laurel",
     label: { en: "Release", zh: "發布" },
     head: { en: "Everyone gets it", zh: "所有人一起拿到" },
     body: {
@@ -77,7 +83,10 @@ export function RuleBirth({ locale, rule }: { locale: string; rule: BirthRule })
       <div className="grid grid-cols-4 border-b border-fog" role="tablist">
         {STEPS.map((s, i) => (
           <button key={s.key} role="tab" aria-selected={i === step} onClick={() => setStep(i)} className="relative text-left pb-3 pt-1 text-[13px] transition-colors">
-            <span className={i === step ? "text-ink" : "text-mist hover:text-ink"}>{pick(s.label)}</span>
+            <span className={`inline-flex items-center gap-2 ${i === step ? "text-ink" : "text-mist hover:text-ink"}`}>
+              <Emblem name={s.emblem} size={20} stroke={1.2} className="hidden sm:block" />
+              {pick(s.label)}
+            </span>
             <span className="absolute left-0 right-3 -bottom-px h-[2px] bg-fog overflow-hidden">
               <span
                 key={`${step}-${i}`}

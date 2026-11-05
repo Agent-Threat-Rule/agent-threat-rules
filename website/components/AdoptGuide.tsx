@@ -14,14 +14,14 @@ export function AdoptGuide({ locale }: { locale: string }) {
 
   return (
     <div className="grid lg:grid-cols-[260px_1fr] gap-x-16">
-      <div role="tablist" aria-label={zh ? "你是誰" : "Who you are"} className="flex lg:flex-col gap-x-6 overflow-x-auto border-b lg:border-b-0 border-fog -mx-1 px-1">
+      <div role="tablist" aria-label={zh ? "你是誰" : "Who you are"} className="flex flex-wrap lg:flex-nowrap lg:flex-col gap-x-6 border-b lg:border-b-0 border-fog -mx-1 px-1">
         {AUDIENCES.map((item, i) => (
           <button
             key={item.key}
             role="tab"
             aria-selected={i === active}
             onClick={() => setActive(i)}
-            className={`shrink-0 text-left py-3 lg:py-2.5 text-[16px] lg:text-[18px] whitespace-nowrap transition-colors border-b-2 lg:border-b-0 ${
+            className={`shrink-0 text-left py-2.5 lg:py-2.5 text-[16px] lg:text-[18px] whitespace-nowrap transition-colors border-b-2 lg:border-b-0 ${
               i === active ? "text-ink border-brand" : "text-mist border-transparent hover:text-ink"
             }`}
           >

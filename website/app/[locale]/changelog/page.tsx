@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { loadVersionLabels } from "@/lib/versions";
+import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -51,6 +52,7 @@ export default async function ChangelogPage({
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
       <Reveal>
+        <Seal name="laurel" size={72} className="text-ink mb-7" />
         <div className="text-[13px] text-stone mb-3">
           {zh ? "版本歷程" : "Changelog"}
         </div>

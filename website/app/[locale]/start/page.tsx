@@ -4,6 +4,7 @@ import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
 import { START_ROUTES } from "@/lib/start-routes";
+import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -36,6 +37,7 @@ export default async function StartPage({ params }: { params: Promise<{ locale: 
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
       <Reveal>
         <div className="mb-10">
+          <Seal name="torch" size={72} className="text-ink mb-7" />
           <div className="text-[13px] text-stone mb-3">
             {zh ? "從這裡開始" : "Start here"}
           </div>

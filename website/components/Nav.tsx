@@ -51,7 +51,7 @@ export function Nav({ locale, meta }: { locale: Locale; meta: HeaderMeta }) {
       <header className="sticky top-0 z-50 bg-paper/95 backdrop-blur-sm">
         <div className="max-w-[1120px] mx-auto border-x border-fog">
           <div className="flex items-stretch h-16 border-b border-fog">
-            <Link href={prefix} className="flex items-center px-6 mr-auto" aria-label="ATR home">
+            <Link href={prefix} className="flex items-center px-6 mr-auto" aria-label={zh ? "ATR 首頁" : "ATR home"}>
               <img src="/atr-logo-ink.png" alt="Agent Threat Rules (ATR)" className="h-11 w-auto" />
             </Link>
             <div className={cell}>
@@ -74,7 +74,7 @@ export function Nav({ locale, meta }: { locale: Locale; meta: HeaderMeta }) {
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="md:hidden flex flex-col gap-1.5 items-center justify-center px-5 border-l border-fog"
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-label={menuOpen ? (zh ? "關閉選單" : "Close menu") : zh ? "開啟選單" : "Open menu"}
               aria-expanded={menuOpen}
               aria-controls="mobile-nav-drawer"
             >
@@ -124,27 +124,30 @@ export function Nav({ locale, meta }: { locale: Locale; meta: HeaderMeta }) {
           </nav>
         </div>
 
-        {menuOpen && (
-          <div id="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label={zh ? "主選單" : "Main menu"} className="fixed inset-0 top-16 z-40 md:hidden">
-            <div className="absolute inset-0 bg-ink/10" onClick={() => setMenuOpen(false)} aria-hidden="true" />
-            <div className="absolute top-0 right-0 w-80 max-w-full h-full overflow-y-auto bg-paper border-l border-fog p-6">
-              {NAV_GROUPS.map((group) => (
-                <div key={group.key} className="mb-6">
-                  <div className="font-data text-[10px] uppercase tracking-[0.08em] text-mist mb-2">{pick(group.label, locale)}</div>
-                  {group.links.map((link) => (
-                    <Link key={link.path} href={`${prefix}${link.path}`} onClick={() => setMenuOpen(false)} className="block py-2 text-[15px] text-ink border-b border-fog">
-                      {pick(link.label, locale)}
-                    </Link>
-                  ))}
-                </div>
-              ))}
-              <div className="font-data text-[11px] text-stone leading-relaxed">
-                {zh ? "規格" : "Spec"} {meta.specVersion} · {meta.npmLabel} {meta.npmVersion} · {zh ? "更新" : "Updated"} {meta.updated}
+      </header>
+      {menuOpen && (
+        <div id="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label={zh ? "主選單" : "Main menu"} className="fixed inset-0 z-[60] md:hidden">
+          <div className="absolute inset-0 bg-ink/10" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+          <div className="absolute top-0 right-0 w-80 max-w-full h-full overflow-y-auto bg-paper border-l border-fog px-6 pb-6">
+            <div className="sticky top-0 -mx-6 mb-4 px-6 h-16 flex items-center justify-end bg-paper border-b border-fog">
+              <button onClick={() => setMenuOpen(false)} className="text-[22px] leading-none text-ink px-2 py-1" aria-label={zh ? "關閉選單" : "Close menu"}>×</button>
+            </div>
+            {NAV_GROUPS.map((group) => (
+              <div key={group.key} className="mb-6">
+                <div className="font-data text-[10px] uppercase tracking-[0.08em] text-mist mb-2">{pick(group.label, locale)}</div>
+                {group.links.map((link) => (
+                  <Link key={link.path} href={`${prefix}${link.path}`} onClick={() => setMenuOpen(false)} className="block py-2 text-[15px] text-ink border-b border-fog">
+                    {pick(link.label, locale)}
+                  </Link>
+                ))}
               </div>
+            ))}
+            <div className="font-data text-[11px] text-stone leading-relaxed">
+              {zh ? "規格" : "Spec"} {meta.specVersion} · {meta.npmLabel} {meta.npmVersion} · {zh ? "更新" : "Updated"} {meta.updated}
             </div>
           </div>
-        )}
-      </header>
+        </div>
+      )}
     </>
   );
 }

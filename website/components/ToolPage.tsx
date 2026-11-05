@@ -2,20 +2,24 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { SheetRow } from "@/components/Sheet";
 import { clauses } from "@/lib/clauses";
+import { Seal } from "@/components/classical/Emblem";
+import type { EmblemName } from "@/lib/emblems";
 
 type B = { en: string; zh: string };
 
 /** Shared layout for the ATR Router and ATR Eval pages. */
-export function ToolHero({ zh, name, status, title, lead }: { zh: boolean; name: string; status: B; title: B; lead: B }) {
+export function ToolHero({ zh, name, status, title, lead, emblem }: { zh: boolean; name: string; status: B; title: B; lead: B; emblem: EmblemName }) {
   const pick = (b: B) => (zh ? b.zh : b.en);
   return (
-    <div className="px-6 md:px-14 pt-16 md:pt-24 pb-14">
+    <div className="relative px-6 md:px-14 pt-16 md:pt-24 pb-14">
+      <Seal name={emblem} size={200} className="hidden lg:block absolute right-14 top-24 text-ink" />
+      <Seal name={emblem} size={72} className="lg:hidden mb-7 text-ink" />
       <div className="text-[15px] text-stone">
         {name}
         <span className="ml-3 text-[12px] text-alert-ink">{pick(status)}</span>
       </div>
-      <h1 className="mt-6 text-[40px] sm:text-[56px] lg:text-[72px] leading-[1.06] tracking-[-0.035em] font-medium text-ink max-w-[960px] text-balance">{zh ? clauses(title.zh) : title.en}</h1>
-      <p className="mt-8 text-[17px] md:text-[19px] leading-[1.7] text-graphite max-w-[680px] text-pretty">{pick(lead)}</p>
+      <h1 className="mt-6 text-[40px] sm:text-[56px] lg:text-[72px] leading-[1.06] tracking-[-0.035em] font-medium text-ink max-w-[960px] lg:max-w-[calc(100%-240px)] text-balance">{zh ? clauses(title.zh) : title.en}</h1>
+      <p className="mt-8 text-[17px] md:text-[19px] leading-[1.7] text-graphite max-w-[680px] lg:max-w-[min(680px,calc(100%-240px))] text-pretty">{pick(lead)}</p>
     </div>
   );
 }

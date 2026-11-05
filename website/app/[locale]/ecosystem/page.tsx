@@ -17,6 +17,7 @@ import {
 } from "@/components/IntegrationTypeIcon";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -73,6 +74,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
       {/* Header */}
       <Reveal>
+        <Seal name="laurel" size={72} className="text-ink mb-7" />
         <div className="text-[13px] text-stone mb-3">
           {zh ? "生態系" : "Ecosystem"}
         </div>

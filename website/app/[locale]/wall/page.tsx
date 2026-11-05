@@ -5,6 +5,7 @@ import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
+import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -72,6 +73,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
     <div className="pt-20 pb-16 px-5 md:px-6 max-w-[860px] mx-auto">
       {/* Hero */}
       <Reveal>
+        <Seal name="laurel" size={72} className="text-ink mb-7" />
         <div className="text-[13px] text-stone mb-3">
           {zh ? "社群" : "Community"}
         </div>

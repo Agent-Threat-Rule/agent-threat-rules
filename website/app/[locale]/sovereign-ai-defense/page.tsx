@@ -5,6 +5,7 @@ import { count, findBenchmark, measuredStamp, pct, pctHunt } from "@/lib/recall"
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { getSpecMeta } from "@/lib/spec-meta";
+import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -59,6 +60,7 @@ export default async function SovereignAIDefensePage({
 
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[880px] mx-auto">
+      <Seal name="aspis" size={72} className="text-ink mb-7" />
       {/* Header eyebrow */}
       <Reveal>
         <div className="font-data text-[11px] md:text-xs font-medium text-blue tracking-[1.5px] md:tracking-[3px] uppercase mb-5">

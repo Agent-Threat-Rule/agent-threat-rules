@@ -48,6 +48,7 @@ export default async function GarakIntegratePage({ params }: { params: Promise<{
     <>
       <SheetRow>
         <ToolHero
+          emblem="key"
           zh={zh}
           name="NVIDIA garak × ATR"
           status={{ en: "Submissions not open", zh: "目前沒有開放提交" }}

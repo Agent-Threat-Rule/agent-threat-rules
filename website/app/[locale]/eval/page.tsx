@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: "ATR Eval",
     description: zh
       ? "測你的 agent 讀到的內容能不能把它拐走。每題重跑多次，結果簽名，誰都能重算。尚未公開。"
-      : "Tests whether what your agent reads can hijack it. Every test runs many times, and the signed result can be recomputed by anyone. Not yet published.",
+      : "Tests whether what your agent reads can hijack it. Every test runs many times, and the signed result can be recomputed by anyone. Not yet public.",
   });
 }
 
@@ -67,7 +67,8 @@ export default async function EvalPage({ params }: { params: Promise<{ locale: s
         <ToolHero
           zh={zh}
           name="ATR Eval"
-          status={{ en: "Not yet published", zh: "尚未公開" }}
+          emblem="scales"
+          status={{ en: "Not yet public", zh: "尚未公開" }}
           title={{ en: "Once is luck. Ten times is evidence.", zh: "跑一次是運氣，跑十次才算數。" }}
           lead={{
             en: "ATR Eval tests whether what your agent reads can steer it into leaking data, running code, changing records or spending money. Each test runs at least ten times in a fresh world, a fixed check decides the outcome, and the result is signed.",
