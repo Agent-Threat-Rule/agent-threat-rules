@@ -442,7 +442,13 @@ export class ATREngine {
     const rulesDir = this.config.rulesDir ?? this.findBundledRulesDir();
     if (rulesDir) {
       try {
-        const fileRules = loadRulesFromDirectory(rulesDir);
+        // A rule passed in config overrides the directory's rule with that id.
+        // Compiled patterns are keyed by id, so keeping both ran the directory
+        // copy's regex under the passed rule's name. Duplicates inside the
+        // directory are left in place for the id-collision and measurement
+        // gates to see.
+        const passed = new Set((this.config.rules ?? []).map((r) => r.id));
+        const fileRules = loadRulesFromDirectory(rulesDir).filter((r) => !passed.has(r.id));
         this.rules.push(...fileRules);
       } catch {
         // Directory may not exist yet
