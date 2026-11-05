@@ -161,6 +161,7 @@ atr convert generic-regex         # export rules as JSON (all patterns)
 atr convert splunk                # export to Splunk SPL
 atr convert elastic               # export to Elasticsearch Query DSL
 atr convert numbat --output dir    # numbat rule directory with companion tests (stable rules)
+atr convert quarry --output dir    # Project Quarry rule directory with test conversations (stable rules)
 atr stats                         # rule collection statistics
 atr mcp                           # start MCP server for IDE integration
 atr scaffold                      # interactive rule generator

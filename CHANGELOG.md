@@ -6,6 +6,21 @@ All notable changes to ATR will be documented in this file.
 
 ### Added
 
+- **`atr convert quarry` exports rules for [Project Quarry](https://github.com/cisco-ai-defense/project-quarry).**
+  Each rule becomes a Quarry `.rule` file named by its ATR id, with the
+  rule's title, severity, category, maturity and version as metadata, and
+  its patterns declared `regex nocase`. `user_input`, `agent_output`,
+  `tool_args`, `tool_response`, `tool_name` and `tool_description` map onto
+  Quarry's user and assistant messages, tool calls, tool responses and tool
+  definitions, with `user_input` and `agent_output` also read on tool
+  responses as the engine does. An `all` rule's conditions must hold on one
+  item of a shared surface, as they hold on one event in the engine. The
+  export writes `quarry.yaml`, one test file per rule with its true
+  positives and negatives as OpenAI-shaped conversations, and
+  `check_atr_tests.py`, which runs them through Quarry's scanner. Dropped
+  conditions, skipped rules and true positives a rule no longer catches are
+  listed as for numbat. The default `--lane enforce` exports stable rules
+  only.
 - **`atr convert numbat` exports rules for [numbat](https://github.com/perplexityai/numbat).**
   Each rule becomes a numbat operator rule (`atr.atr-yyyy-nnnnn`,
   monitor-only) and a companion `_tests.yaml` built from the rule's own true
