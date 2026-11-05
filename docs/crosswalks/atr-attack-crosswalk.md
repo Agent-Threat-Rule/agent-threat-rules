@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 844
+- ATR rules total: 845
 - Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 229
 - Distinct enterprise ATT&CK techniques referenced: 87
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 844
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 845
 - Distinct MITRE ATLAS techniques referenced: 62
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 844
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 845
 - ATR categories (distinct `tags.category` values): 10
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -170,7 +170,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI03:2026, ASI04:2026, ASI05:202
 
 ### context-exfiltration
 
-Rules in category: 138
+Rules in category: 139
 
 ATT&CK techniques (join key):
 

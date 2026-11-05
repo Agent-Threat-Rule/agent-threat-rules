@@ -11,7 +11,7 @@ This is a **curated thematic mapping**, not an id-equality join. ATR carries no 
 
 Regenerate with `python3 scripts/generate-ast-crosswalk.py`. CI runs `--check` so a stale copy fails the build.
 
-Rules in corpus at generation time: **844**.
+Rules in corpus at generation time: **845**.
 
 ## Coverage by AST control
 
@@ -19,10 +19,10 @@ Rules in corpus at generation time: **844**.
 |-----|-------|-----------|-------------------------------|
 | AST01 | Malicious Skills | 214 | ASI05 (78), ASI04 (68), ASI01 (61) |
 | AST02 | Supply Chain Compromise | 58 | ASI04 (31), ASI05 (15), ASI01 (12) |
-| AST03 | Over-Privileged Skills | 257 | ASI03 (95), ASI01 (90), ASI02 (74) |
+| AST03 | Over-Privileged Skills | 258 | ASI03 (95), ASI01 (90), ASI02 (74) |
 | AST04 | Insecure Metadata | 123 | ASI05 (63), ASI02 (44), ASI04 (38) |
 | AST05 | Untrusted External Instructions | 362 | ASI01 (341), ASI04 (15), ASI06 (15) |
-| AST06 | Weak Isolation | 138 | ASI01 (73), ASI03 (46), ASI02 (31) |
+| AST06 | Weak Isolation | 139 | ASI01 (73), ASI03 (46), ASI02 (31) |
 | AST07 | Update Drift | 0 | - |
 | AST08 | Poor Scanning | 0 | - |
 | AST09 | No Governance | 40 | ASI02 (16), ASI01 (15), ASI03 (13) |
@@ -33,7 +33,7 @@ Rules in corpus at generation time: **844**.
 | ATR category | Rules | AST control(s) | Rationale |
 |--------------|-------|----------------|-----------|
 | prompt-injection (254) | 254 | AST05 Untrusted External Instructions | Injected/untrusted instructions are exactly the AST05 external-instruction class. |
-| context-exfiltration (138) | 138 | AST03 Over-Privileged Skills | Reading/exfiltrating data beyond the skill's need is over-privilege. |
+| context-exfiltration (139) | 139 | AST03 Over-Privileged Skills | Reading/exfiltrating data beyond the skill's need is over-privilege. |
 |  |  | AST06 Weak Isolation | Cross-context data leakage indicates weak isolation between skills/sessions. |
 | tool-poisoning (123) | 123 | AST01 Malicious Skills | A poisoned tool/skill is a malicious skill at the point of use. |
 |  |  | AST04 Insecure Metadata | Tool-description / metadata poisoning is the AST04 insecure-metadata surface. |
