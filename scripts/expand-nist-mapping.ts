@@ -219,7 +219,6 @@ ${NIST_RMF_REFERENCE}
 - Choose 1-3 subcategories per rule. One MUST be marked \`strength: primary\` (the rule directly evidences this subcategory). Others are \`strength: secondary\`.
 - The \`context\` field must be 1-3 sentences explaining WHY this rule's detection signature corresponds to this subcategory. Be specific about what the rule detects and how that detection produces evidence for the subcategory.
 - Quote subcategory IDs verbatim (e.g., "GV.1.2", "MG.2.3").
-- If the rule is GenAI-specific (prompt injection, jailbreak), prefer GenAI Profile angle.
 - Do NOT guess subcategories outside the reference list above.
 - Do NOT invent new subcategory IDs.
 - Do NOT reference any other framework (no EU AI Act, no ISO, no OWASP).
@@ -445,7 +444,7 @@ ${finalTargets.map((r) => `| ${r.parsed.id} | pending QA | ${r.parsed.id}.propos
 
 For each proposal:
 1. Open \`<rule-id>.proposal.yaml\`
-2. Verify \`subcategory\` IDs match RMF 1.0 / GAI Profile
+2. Verify \`subcategory\` IDs and meanings match the NIST AI RMF 1.0 reference list
 3. Verify \`context\` is specific (not generic)
 4. Verify \`strength\` (primary/secondary) is sensible
 5. If OK: copy \`raw_yaml\` block into the rule's \`compliance.nist_ai_rmf:\` slot

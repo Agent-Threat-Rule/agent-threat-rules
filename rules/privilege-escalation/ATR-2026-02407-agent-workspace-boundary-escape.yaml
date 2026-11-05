@@ -76,8 +76,8 @@ compliance:
   nist_ai_rmf:
     - function: Manage
       subcategory: MG.2.4
-      context: "MANAGE 2.4 requires mechanisms to sustain the value of deployed AI when a risk materialises. Blocking the tool call that touches a host-root bridge mount, or that configures the traffic-control action behind CVE-2026-46331, is the runtime treatment for this escape path when the vendor ships no dedicated fix."
-      strength: primary
+      context: "Detecting host-root bridge access, namespace escalation and sandbox-hardening rollback provides a signal for an operator to consider superseding, disengaging or deactivating an agent operating outside its intended workspace, as addressed by MG.2.4. The rule declares block_tool, alert, snapshot and escalate actions, but its test maturity and response metadata do not establish applied system deactivation or assigned and understood responsibilities; those require deployment-specific evidence."
+      strength: partial
     - function: Map
       subcategory: MP.5.1
       context: "MAP 5.1 requires the likelihood and magnitude of each identified impact to be characterised. Local execution modes that mount the whole host root into the agent VM must be mapped as host-wide read/write impact, not workspace-scoped impact, because guest-root is the only barrier."

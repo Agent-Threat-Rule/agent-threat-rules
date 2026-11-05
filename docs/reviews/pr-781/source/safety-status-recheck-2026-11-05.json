@@ -1,0 +1,104 @@
+{
+  "checked_at_utc": "2026-11-05 04:17:39 UTC",
+  "pr": {
+    "url": "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/781",
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "head": "fix/mapping-nist",
+    "head_sha": "8973e93c89c692806a5011e39b44aff77ce914af",
+    "base": "fix/mapping-wording",
+    "base_sha": "d38e56cba35d268d4d6d19247035ba5a25740412",
+    "updated_at": "2026-11-05T01:51:59Z"
+  },
+  "discussion": {
+    "comment_count": 2,
+    "comments": [
+      {
+        "id": 6645073046,
+        "url": "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/781#issuecomment-6645073046",
+        "user": "eeee2345",
+        "updated_at": "2026-11-04T23:29:25Z"
+      },
+      {
+        "id": 6647429839,
+        "url": "https://github.com/Agent-Threat-Rule/agent-threat-rules/pull/781#issuecomment-6647429839",
+        "user": "eeee2345",
+        "updated_at": "2026-11-05T01:51:58Z",
+        "body": "Update on the local check-rules-safety run: I stopped it after 2 h 55 min at full CPU, unfinished. It was re-running every one of the 538 rules touched by #779 and this PR against the benign corpora, and several of those rules are slow on long inputs (the ReDoS baseline lists some), so it never got through.\n\nFor this PR the gate cannot show anything new. Only `compliance.nist_ai_rmf` changed; the engine never reads `compliance`; and parsing all 511 files before and after shows every other field, detection included, is identical. So every rule matches exactly what it matches on main.\n\nWhen this PR retargets to main, validate.yml will run the same gate in CI and may hit the same wall. A follow-up worth doing: have check-rules-safety skip rules whose detection, agent_source and test cases are unchanged from the base.\n"
+      }
+    ],
+    "safety_comment_changed_since_initial_review": false
+  },
+  "combined_commit_status": {
+    "statuses": []
+  },
+  "pr_triggered_workflow_runs": {
+    "workflow_runs": [
+      {
+        "id": 41934078699,
+        "name": "ATR Security Scan",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 3204,
+        "jobs_url": "https://api.github.com/repos/Agent-Threat-Rule/agent-threat-rules/actions/runs/41934078699/jobs",
+        "logs_url": "https://api.github.com/repos/Agent-Threat-Rule/agent-threat-rules/actions/runs/41934078699/logs",
+        "workflow_id": 252700519
+      },
+      {
+        "id": 41934078881,
+        "name": "Maturity FP gate",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 248,
+        "jobs_url": "https://api.github.com/repos/Agent-Threat-Rule/agent-threat-rules/actions/runs/41934078881/jobs",
+        "logs_url": "https://api.github.com/repos/Agent-Threat-Rule/agent-threat-rules/actions/runs/41934078881/logs",
+        "workflow_id": 311642516
+      },
+      {
+        "id": 41934078897,
+        "name": "no-private-leak",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 1512,
+        "jobs_url": "https://api.github.com/repos/Agent-Threat-Rule/agent-threat-rules/actions/runs/41934078897/jobs",
+        "logs_url": "https://api.github.com/repos/Agent-Threat-Rule/agent-threat-rules/actions/runs/41934078897/logs",
+        "workflow_id": 296467971
+      },
+      {
+        "id": 41934078709,
+        "name": "ReDoS Gate",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 372,
+        "jobs_url": "https://api.github.com/repos/Agent-Threat-Rule/agent-threat-rules/actions/runs/41934078709/jobs",
+        "logs_url": "https://api.github.com/repos/Agent-Threat-Rule/agent-threat-rules/actions/runs/41934078709/logs",
+        "workflow_id": 345705114
+      }
+    ]
+  },
+  "workflow_query_limit": "The connector returns the first page of pull-request-triggered workflow runs. Four returned workflows succeeded; none is Validate ATR Rules / Validate Rules & Build. These are not a completed check-rules-safety result.",
+  "safety_gate": {
+    "status": "incomplete",
+    "latest_author_report": "Stopped after 2 h 55 min, unfinished; no newer completion in the current PR discussion.",
+    "previous_local_attempt": {
+      "timeout_seconds": 180,
+      "exit_code": 124,
+      "result": "incomplete, not passed",
+      "targets": [
+        "ATR-2026-02408",
+        "ATR-2026-02407"
+      ]
+    },
+    "new_run_performed": false,
+    "reason": "Head, discussion and gate configuration are unchanged. Repeating the prior timed-out run without new evidence is not warranted.",
+    "gate_modified": false,
+    "gate_bypassed": false,
+    "active_safety_processes": 0
+  },
+  "independent_local_integrity_check": {
+    "command": "git diff --exit-code 8973e93c89c692806a5011e39b44aff77ce914af -- scripts/check-rules-safety.ts .github/workflows/validate.yml",
+    "exit_code": 0,
+    "byte_comparison": "Both files identical to frozen head."
+  }
+}
