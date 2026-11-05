@@ -1,0 +1,46 @@
+
+ RUN  v3.2.4 /workspace/atr-nist-review
+
+ ✓ tests/enforcement.test.ts (58 tests) 21084ms
+   ✓ lane has a real entrance > is hunt by default  698ms
+   ✓ lane has a real entrance > takes the lane from programmatic config  498ms
+   ✓ lane has a real entrance > actually gates firing: a maturity=test rule fires in hunt, not in enforce  993ms
+   ✓ ATR_LANE / ATR_BLOCKING do not reach a library constructor > ATR_LANE=enforce leaves an embedded engine in hunt, and still detecting  437ms
+   ✓ ATR_LANE / ATR_BLOCKING do not reach a library constructor > a typo in ATR_LANE cannot throw out of the constructor either  384ms
+   ✓ ATR_LANE / ATR_BLOCKING do not reach a library constructor > ATR_BLOCKING=1 does not arm an embedded executor  459ms
+   ✓ ATR_LANE / ATR_BLOCKING do not reach a library constructor > ATR_BLOCKING=1 does not arm an embedded HookHandler  302ms
+   ✓ response actions obey the same switch > suppresses enforcement actions and keeps observation ones (real engine path)  306ms
+   ✓ response actions obey the same switch > dispatches them once blocking is on  355ms
+   ✓ HookHandler carries the policy > is advisory by default and keeps the verdict intact  450ms
+   ✓ atr guard CLI > is advisory by default: detection reported, no permissionDecision  876ms
+   ✓ atr guard CLI > --blocking turns the decision on  740ms
+   ✓ atr guard CLI > ATR_BLOCKING turns it on without a flag  892ms
+   ✓ atr guard CLI > --no-blocking beats ATR_BLOCKING  813ms
+   ✓ atr guard CLI > --lane enforce keeps a maturity=test rule from firing, and approves nothing  783ms
+   ✓ atr guard CLI > ATR_LANE does the same, and --lane overrides it  1553ms
+   ✓ atr guard CLI > rejects a misspelled lane instead of quietly running in hunt  687ms
+   ✓ atr guard CLI > rejects contradictory blocking flags  744ms
+   ✓ atr guard CLI > a typo in ATR_BLOCKING warns but still starts the guard and still detects  758ms
+   ✓ atr guard CLI > a typo in ATR_LANE warns, keeps detecting, and refuses to block  988ms
+   ✓ atr scan --lane end to end > fires a maturity=test rule in the default lane  964ms
+   ✓ atr scan --lane end to end > --lane enforce keeps it from firing; --lane hunt lets it fire  2223ms
+   ✓ atr scan --lane end to end > reads ATR_LANE, and --lane overrides it  1433ms
+   ✓ atr scan --lane end to end > accepts ATR_LANE=ENFORCE, which used to fall back to hunt in silence  699ms
+   ✓ atr scan --lane end to end > exits 1 on a misspelled --lane instead of quietly scanning in hunt  723ms
+   ✓ atr scan --lane end to end > warns but still scans when ATR_LANE is misspelled  718ms
+ ✓ tests/action-eligibility.test.ts (33 tests) 2612ms
+   ✓ repository conformance > every live rule declares only actions its measured evidence earns  359ms
+   ✓ repository conformance > the gate refuses, with exit 2, evidence that holds a record for a rule that is not live  1392ms
+   ✓ repository conformance > calls a rule inert exactly when the measuring engine does not evaluate it  571ms
+ ✓ tests/nist-core-reference.test.ts (7 tests) 4ms
+
+ Test Files  3 passed (3)
+      Tests  98 passed (98)
+   Start at  02:48:45
+   Duration  26.62s (transform 625ms, setup 0ms, collect 763ms, tests 23.70s, environment 1ms, prepare 236ms)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

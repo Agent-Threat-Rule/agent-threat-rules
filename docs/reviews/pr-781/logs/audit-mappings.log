@@ -1,0 +1,75 @@
+
+> agent-threat-rules@4.2.4 audit:mappings
+> tsx scripts/audit-mappings.ts --require-full=references:owasp_llm,references:owasp_agentic,references:mitre_atlas,compliance:eu_ai_act,compliance:nist_ai_rmf,compliance:iso_42001
+
+
+ATR Mapping Coverage Audit
+────────────────────────────────────────────────────────────────
+Rules audited: 844    Parse errors: 0
+
+THREAT frameworks  (references:)
+  owasp_llm             844   100.0%
+  owasp_agentic         844   100.0%
+  mitre_atlas           844   100.0%
+  research              273    32.3%
+  mitre_attack          229    27.1%
+  cve                   162    19.2%
+  external              112    13.3%
+  cwe                    82     9.7%
+  ghsa                   20     2.4%
+  owasp_ast              17     2.0%
+  vulnerablemcp_id        6     0.7%
+  papers                  3     0.4%
+  safe_mcp                3     0.4%
+  euvd                    3     0.4%
+  mcps_id                 1     0.1%
+
+REGULATORY frameworks  (compliance:)
+  eu_ai_act             844   100.0%
+  nist_ai_rmf           844   100.0%
+  iso_42001             844   100.0%
+  owasp_llm             256    30.3%
+  owasp_agentic         203    24.1%
+  cen_jtc21              14     1.7%
+  nist_csf                6     0.7%
+
+Priority compliance coverage by category
+  category                   eu_ai_act   nist_ai_rmf     iso_42001
+  prompt-injection       258/258 (100%) 258/258 (100%) 258/258 (100%)
+  context-exfiltration   138/138 (100%) 138/138 (100%) 138/138 (100%)
+  tool-poisoning         118/118 (100%) 118/118 (100%) 118/118 (100%)
+  agent-manipulation     108/108 (100%) 108/108 (100%) 108/108 (100%)
+  privilege-escalation    77/77 (100%)  77/77 (100%)  77/77 (100%)
+  skill-compromise        52/52 (100%)  52/52 (100%)  52/52 (100%)
+  model-abuse             41/41 (100%)  41/41 (100%)  41/41 (100%)
+  excessive-autonomy      39/39 (100%)  39/39 (100%)  39/39 (100%)
+  data-poisoning            9/9 (100%)    9/9 (100%)    9/9 (100%)
+  model-security            4/4 (100%)    4/4 (100%)    4/4 (100%)
+
+Gaps
+  Rules with NO compliance block: 0 (0.0%)
+  Rules missing eu_ai_act: 0 (0.0%)
+  Rules missing nist_ai_rmf: 0 (0.0%)
+  Rules missing iso_42001: 0 (0.0%)
+
+Distinct identifiers in use (drift / typo check)
+  eu_ai_act: 15(842)  9(640)  14(353)  10(92)  12(22)  13(16)  50(8)
+  nist_ai_rmf: MS.2.7(673)  MP.5.1(480)  MG.1.3(263)  MG.2.4(243)  MG.3.2(165)  MS.2.6(128)  GV.6.1(82)  MS.2.10(81)  MG.3.1(53)  MG.2.3(51)  GV.2.1(25)  MS.2.5(24)  MG.4.1(23)  GV.1.1(5)  GV.4.1(4)  MS.1.1(3)  MG.4.3(3)  MP.3.3(3)  MS.4.1(3)  MP.2.3(2)  MG.2.2(2)  GV.3.2(2)  MP.3.4(1)  MG.4.2(1)  GV.4.2(1)  GV.6.2(1)  MP.2.2(1)
+  iso_42001: 8.1(835)  6.2(441)  8.3(252)  8.4(123)  9.1(19)  6.1.2(4)  8.2(3)  7.5(1)
+  mitre_atlas: 62 distinct techniques
+
+
+Coverage-floor check (--require-full), corpus = 844 rules
+  PASS references:owasp_llm — 844/844
+  PASS references:owasp_agentic — 844/844
+  PASS references:mitre_atlas — 844/844
+  PASS compliance:eu_ai_act — 844/844
+  PASS compliance:nist_ai_rmf — 844/844
+  PASS compliance:iso_42001 — 844/844
+  all required frameworks at 100%
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice
