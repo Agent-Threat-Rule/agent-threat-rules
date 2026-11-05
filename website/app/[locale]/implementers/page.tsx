@@ -1,7 +1,8 @@
-/* ATR Implementer Report — W3C-style formal table of organizations
- * that have merged ATR into their own public repositories. Self-declared
- * via PR against ADOPTERS.md. A merged PR is not a statement about any
- * vendor's commercial product.
+/* ATR Implementer Report — formal table of pull requests that other
+ * organisations merged into their own public repositories. Every one was
+ * opened by the ATR maintainer; none is a self-certification or a
+ * conformance claim. A merged PR is not a statement about any vendor's
+ * commercial product.
  * Replaces the older /ecosystem marketing layout with a numbered,
  * peer-reviewable report.
  */
@@ -29,61 +30,76 @@ export async function generateMetadata({
     title: locale === "zh" ? "實作者報告" : "Implementer Report",
     description:
       locale === "zh"
-        ? "已經整合 ATR 的組織。每一筆的憑據，都是公開 repo 裡一個已合併的 pull request。登記方式是自己對 ADOPTERS.md 送 pull request。"
-        : "Organizations that have integrated ATR. Each one is backed by a merged pull request in a public repository, and each declared itself with a pull request to ADOPTERS.md.",
+        ? "別的組織合併進自家公開 repo 的 ATR pull request。每一筆都由 ATR 維護者開出，都不是符規宣告。"
+        : "ATR pull requests that other organisations merged into their own public repositories. The ATR maintainer opened each one, and none is a conformance claim.",
   });
 }
 
-// Implementer data — kept in sync with the homepage IMPLEMENTERS array.
-// This is the canonical formal report; the homepage shows the same set
-// in a condensed adoption section.
+// Merged pull requests in other organisations' public repositories.
+// Checked with `gh pr view` on 2026-11-04: every PR here was opened by the ATR
+// maintainer (eeee2345) and merged by that project's maintainer on the date
+// shown (UTC). OWASP #74: the four scenario files do not mention ATR.
+// Cisco: skill-scanner #289 comment by vineethsai7, 2026-11-02.
+// None of these is a conformance claim, so the table has no level column.
 const IMPLEMENTERS = [
   {
     org: "Microsoft Agent Governance Toolkit",
-    role: "L1 Citation",
-    version: "3.0.0-alpha",
+    what: {
+      en: "Example directory: an adapter that runs ATR rules through the ACS annotator",
+      zh: "範例目錄：把 ATR 規則接進 ACS annotator 執行的 adapter",
+    },
     date: "2026-06-15",
+    mergedBy: "imran-siddique",
     refLabel: "PR #3025",
     refUrl: "https://github.com/microsoft/agent-governance-toolkit/pull/3025",
   },
   {
     org: "Cisco AI Defense (skill-scanner)",
-    role: "L1 Engine",
-    version: "2.2.0",
+    what: {
+      en: "ATR rule pack. On 2026-11-02 a maintainer wrote that they will likely remove ATR because the false-positive rate is too high. A report-only pack (#289) is open.",
+      zh: "ATR 規則包。2026-11-02 對方維護者留言，說誤報率太高，大概會把 ATR 移除。改成只回報的規則包（#289）還在審。",
+    },
     date: "2026-04-22",
+    mergedBy: "vineethsai7",
     refLabel: "PR #99",
     refUrl: "https://github.com/cisco-ai-defense/skill-scanner/pull/99",
   },
   {
-    org: "MISP — CIRCL (galaxy)",
-    role: "L1 Galaxy",
-    version: "2.2.0",
+    org: "MISP (CIRCL), galaxy",
+    what: { en: "ATR galaxy and cluster", zh: "ATR 的 galaxy 和 cluster" },
     date: "2026-05-10",
+    mergedBy: "adulau",
     refLabel: "galaxy #1207",
     refUrl: "https://github.com/MISP/misp-galaxy/pull/1207",
   },
   {
-    org: "MISP — CIRCL (taxonomies)",
-    role: "L1 Citation",
-    version: "2.2.0",
+    org: "MISP (CIRCL), taxonomies",
+    what: { en: "agent-threat-rules taxonomy", zh: "agent-threat-rules 分類法" },
     date: "2026-05-10",
+    mergedBy: "adulau",
     refLabel: "taxonomies #323",
     refUrl: "https://github.com/MISP/misp-taxonomies/pull/323",
   },
   {
-    org: "OWASP A-S-R-H Project",
-    role: "L1 Citation",
-    version: "2.2.0",
+    org: "OWASP Agent Security Regression Harness",
+    what: {
+      en: "4 regression scenarios derived from ATR rules. The scenario files do not name ATR.",
+      zh: "4 個從 ATR 規則改寫的回歸情境。情境檔裡沒有標註 ATR。",
+    },
     date: "2026-05-11",
+    mergedBy: "mertsatilmaz",
     refLabel: "PR #74",
     refUrl:
       "https://github.com/OWASP/Agent-Security-Regression-Harness/pull/74",
   },
   {
-    org: "Gen Digital Sage (Norton / Avast / LifeLock)",
-    role: "L1 Engine",
-    version: "2.2.0",
+    org: "Gen Digital Sage",
+    what: {
+      en: "Agent-layer threat patterns in threats/agent-layer.yaml",
+      zh: "threats/agent-layer.yaml 裡的 agent 層威脅 pattern",
+    },
     date: "2026-05-11",
+    mergedBy: "vaclavbelak",
     refLabel: "PR #33",
     refUrl: "https://github.com/gendigitalinc/sage/pull/33",
   },
@@ -92,7 +108,7 @@ const IMPLEMENTERS = [
 const ADOPTERS_URL =
   "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ADOPTERS.md";
 const CONFORMANCE_FIXTURES_URL =
-  "https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/spec/conformance";
+  "https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/conformance/v1.0";
 
 export default async function ImplementersPage({
   params,
@@ -135,7 +151,9 @@ export default async function ImplementersPage({
             maxWidth: "42em",
           }}
         >
-          {t(locale, "implementers.subtitle")}
+          {zh
+            ? "一份規格，要有不只一個引擎用同樣的方式實作出來，才算數。ATR 還沒有這種證據。這份報告列的是別的專案合併的 pull request，全部由 ATR 維護者開出。它們說明 ATR 規則去了哪裡，不代表有人光靠規格就做出了引擎。"
+            : "A specification counts once more than one engine implements it the same way. ATR does not have that evidence yet. This report lists pull requests that other projects merged, all opened by the ATR maintainer. They show where ATR rules ended up. They do not show that anyone built an engine from the spec alone."}
         </p>
         <DocumentStatus locale={locale} />
         <p
@@ -143,8 +161,8 @@ export default async function ImplementersPage({
           style={{ maxWidth: "42em", fontFamily: "var(--font-body)" }}
         >
           {zh
-            ? "這份報告裡的符規等級，照 /spec 定義的 L1、L2、L3 判讀。"
-            : "Conformance levels here follow the L1 / L2 / L3 definitions in /spec."}
+            ? "這份報告裡沒有任何一列宣告符規等級。"
+            : "No row in this report claims a conformance level."}
           {" "}
           <Link href={`${prefix}/spec`} className="text-navy underline">
             {zh ? "看等級怎麼定義" : "See how the levels are defined"} →
@@ -162,8 +180,8 @@ export default async function ImplementersPage({
         </h2>
         <p>
           {zh
-            ? "下面這些組織整合或引用了 ATR。符規等級欄分兩種。L1 Engine 是 ATR 規則真的在對方自己的偵測引擎裡跑；L1 Citation、L1 Galaxy 是引用，或編進了分類法。Engine 那幾列份量最重：規則在對方維護的引擎裡跑。這幾筆的 PR 是 ATR 維護者開的，由對方的維護者審過後合併。每一筆都連到構成公開採用紀錄的那個已合併 PR 或整合 commit。沒有一筆是私下宣稱的，全都能在 GitHub 上自己查。"
-            : "These organizations have integrated or referenced ATR. The Conformance column separates two kinds. L1 Engine means ATR rules actually run inside the organization's own detection engine. L1 Citation and L1 Galaxy mean ATR is referenced, or built into a taxonomy. An Engine row carries the most weight: the rules run in an engine the other organisation maintains. The ATR maintainer opened those pull requests, and that organisation's maintainers reviewed and merged them. Each entry links to the merged pull request or integration commit that makes up the public adoption record. Nothing here is asserted privately, and every row can be checked on GitHub."}
+            ? "每一列都是合併進別的組織公開 repo 的一個 pull request。這些 PR 全都是 ATR 維護者開的，再由對方專案的維護者審過後合併。表裡沒有任何實作跑過符規測試套件，所以這些都不是符規宣告。PR 合併過，表示當時整合過，不代表今天還在用。每一列都能在 GitHub 上自己查。"
+            : "Each row is a pull request merged into another organisation's public repository. The ATR maintainer opened every one of them, and that project's maintainers reviewed and merged it. No implementation here has run the conformance suite, so none of these is a conformance claim. A merged pull request shows the integration happened. It does not show it is still in use. Every row can be checked on GitHub."}
         </p>
 
         {/* Desktop / tablet table */}
@@ -172,9 +190,9 @@ export default async function ImplementersPage({
             <thead>
               <tr>
                 <th>{t(locale, "implementers.col.org")}</th>
-                <th>{t(locale, "implementers.col.role")}</th>
-                <th>{t(locale, "implementers.col.version")}</th>
-                <th>{t(locale, "implementers.col.date")}</th>
+                <th>{zh ? "合併了什麼" : "What was merged"}</th>
+                <th>{zh ? "誰開的 PR" : "Opened by"}</th>
+                <th>{zh ? "合併（UTC）" : "Merged (UTC)"}</th>
                 <th>{t(locale, "implementers.col.ref")}</th>
               </tr>
             </thead>
@@ -182,9 +200,13 @@ export default async function ImplementersPage({
               {IMPLEMENTERS.map((imp) => (
                 <tr key={imp.refUrl}>
                   <td className="font-semibold text-navy-ink">{imp.org}</td>
-                  <td className="font-data text-xs tnum">{imp.role}</td>
-                  <td className="font-data text-xs tnum">{imp.version}</td>
-                  <td className="font-data text-xs tnum">{imp.date}</td>
+                  <td className="text-sm">{zh ? imp.what.zh : imp.what.en}</td>
+                  <td className="text-xs">{zh ? "ATR 維護者" : "ATR maintainer"}</td>
+                  <td className="font-data text-xs tnum">
+                    {imp.date}
+                    <br />
+                    {zh ? "由 " : "by "}@{imp.mergedBy}
+                  </td>
                   <td>
                     <a
                       href={imp.refUrl}
@@ -219,17 +241,17 @@ export default async function ImplementersPage({
                 style={{ fontFamily: "var(--font-data)" }}
               >
                 <dt className="text-stone">
-                  {t(locale, "implementers.col.role")}
+                  {zh ? "合併了什麼" : "What was merged"}
                 </dt>
-                <dd>{imp.role}</dd>
+                <dd>{zh ? imp.what.zh : imp.what.en}</dd>
                 <dt className="text-stone">
-                  {t(locale, "implementers.col.version")}
+                  {zh ? "誰開的 PR" : "Opened by"}
                 </dt>
-                <dd>{imp.version}</dd>
+                <dd>{zh ? "ATR 維護者" : "ATR maintainer"}</dd>
                 <dt className="text-stone">
-                  {t(locale, "implementers.col.date")}
+                  {zh ? "合併（UTC）" : "Merged (UTC)"}
                 </dt>
-                <dd>{imp.date}</dd>
+                <dd>{imp.date} @{imp.mergedBy}</dd>
               </dl>
               <a
                 href={imp.refUrl}
@@ -245,8 +267,8 @@ export default async function ImplementersPage({
 
         <p className="text-sm text-stone mt-4" style={{ maxWidth: "42em" }}>
           {zh
-            ? "這份報告從 ADOPTERS.md 自動產生，資料只有這一個來源。維護者不事先審核採用者。PR 符合 schema，附上查得到的公開證據連結，就能合併。"
-            : "This report is generated from ADOPTERS.md, the single source of truth. Maintainers do not pre-approve adopters. A PR that fits the schema and links to public evidence anyone can verify is enough to merge."}
+            ? "這張表是手動維護的。完整的採用名單在 ADOPTERS.md。維護者不事先審核採用者，PR 符合 schema，附上查得到的公開證據連結，就能合併。"
+            : "This table is kept by hand. The full list of adopters is ADOPTERS.md. Maintainers do not pre-approve adopters. A PR that fits the schema and links to public evidence anyone can verify is enough to merge."}
           {" "}
           <a
             href={ADOPTERS_URL}
@@ -290,8 +312,8 @@ export default async function ImplementersPage({
         </h2>
         <p>
           {zh
-            ? "ATR 用的是自我認證：符不符規，要跑出來，不是說出來。實作者在本機跑符規測試套件，再對 ADOPTERS.md 送 PR，附上整合資料。沒有審查委員會，也沒有付費認證。要進這份報告，唯一的門檻是公開通過測試。最精簡的流程是下面三步。"
-            : "ATR uses self-certification. Conformance is shown by running the tests, not by saying so. Implementers run the conformance test suite locally, then open a pull request against ADOPTERS.md with their integration metadata. There is no review board and no paid certification. The only way into this report is passing the tests in the open. The minimal procedure has three steps."}
+            ? "ATR 用的是自我認證：符不符規，要跑出來，不是說出來。實作者在本機跑符規測試套件，再對 ADOPTERS.md 送 PR，附上整合資料。沒有審查委員會，也沒有付費認證。到目前為止，還沒有人用這個方式自我認證。最精簡的流程是下面三步。"
+            : "ATR uses self-certification. Conformance is shown by running the tests, not by saying so. Implementers run the conformance test suite locally, then open a pull request against ADOPTERS.md with their integration metadata. There is no review board and no paid certification. No one has self-certified this way yet. The minimal procedure has three steps."}
         </p>
 
         <ol>
@@ -302,19 +324,19 @@ export default async function ImplementersPage({
                 : "Run the conformance test suite locally."}
             </strong>{" "}
             {zh
-              ? "測試套件由 YAML fixture 組成，放在主 repo 的 "
-              : "The test suite is a set of YAML fixtures under "}
+              ? "測試套件放在主 repo 的 "
+              : "The test suite is under "}
             <a
               href={CONFORMANCE_FIXTURES_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="text-navy underline"
             >
-              <code>spec/conformance/</code> ↗
+              <code>conformance/v1.0/</code> ↗
             </a>
             {zh
-              ? "。每個 fixture 把一條規則，和它在一個固定 event 上該有的評估結果配成一對。每個 fixture 都照宣告的結果評估出來，實作就算通過。"
-              : ". Each fixture pairs a rule with the result it should give on a fixed event. An implementation passes when every fixture evaluates as declared."}
+              ? "。每個 fixture 是一個以規則編號命名的資料夾，input.yaml 是輸入，expect.json 是預期結果。每個 fixture 都照預期跑出來，實作就算通過。參考引擎目前還沒全部通過，沒過的列在套件的 README。"
+              : ". Each fixture is a directory named after the rule, with the input in input.yaml and the expected result in expect.json. An implementation passes when every fixture comes out as expected. The reference engine does not pass all of them yet; the suite's README lists the ones that fail."}
           </li>
           <li>
             <strong>

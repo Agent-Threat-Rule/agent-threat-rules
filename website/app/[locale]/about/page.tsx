@@ -139,8 +139,8 @@ const MILESTONES: Milestone[] = [
       zh: "MISP / CIRCL 合併 taxonomy 與 galaxy",
     },
     detail: {
-      en: "Alexandre Dulaunoy (CIRCL) merged the ATR rule-ID taxonomy (misp-taxonomies #323) and a threat-intel galaxy (misp-galaxy #1207) into MISP's core distribution. It was the first adoption by a neutral standards body.",
-      zh: "CIRCL 的 Alexandre Dulaunoy 把 ATR 的規則編號 taxonomy（misp-taxonomies #323）和威脅情資 galaxy（misp-galaxy #1207）合進 MISP 的主要發行版。這是第一個中立標準機構的採用。",
+      en: "Alexandre Dulaunoy (CIRCL) merged the ATR rule-ID taxonomy (misp-taxonomies #323) and a threat-intel galaxy (misp-galaxy #1207) into MISP's taxonomy and galaxy repositories. The ATR maintainer opened both pull requests.",
+      zh: "CIRCL 的 Alexandre Dulaunoy 把 ATR 的規則編號 taxonomy（misp-taxonomies #323）和威脅情資 galaxy（misp-galaxy #1207）合進 MISP 的 taxonomy 與 galaxy 兩個 repo。兩個 PR 都是 ATR 維護者開的。",
     },
   },
   {
@@ -150,8 +150,8 @@ const MILESTONES: Milestone[] = [
       zh: "OWASP Agent Security Regression Harness（#74）與 Gen Digital Sage（#33）同一天合併",
     },
     detail: {
-      en: "The OWASP Foundation's regression-harness project references ATR as its canonical agent-threat detection ruleset (PR #74, merged by Mert Satilmaz). The same day, Gen Digital, the parent of Norton, Avast and LifeLock, merged the full ATR rule pack into the Sage agentic-AI risk-scoring layer (PR #33).",
-      zh: "OWASP Foundation 的 regression-harness 專案把 ATR 列為標準的 agent 威脅偵測規則集（PR #74，由 Mert Satilmaz 合併）。同一天，Norton、Avast、LifeLock 的母集團 Gen Digital，把完整的 ATR 規則集合進 Sage 的 agentic AI 風險評分層（PR #33）。",
+      en: "The OWASP Agent Security Regression Harness project merged four regression scenarios derived from ATR rules (PR #74, merged by Mert Satilmaz). The scenario files do not mention ATR. The same day, Gen Digital, the parent of Norton, Avast and LifeLock, merged the full ATR rule pack into the Sage agentic-AI risk-scoring layer (PR #33).",
+      zh: "OWASP 的 Agent Security Regression Harness 專案合併了四個從 ATR 規則改寫的回歸情境（PR #74，由 Mert Satilmaz 合併），情境檔裡沒有提到 ATR。同一天，Norton、Avast、LifeLock 的母集團 Gen Digital，把完整的 ATR 規則集合進 Sage 的 agentic AI 風險評分層（PR #33）。",
     },
   },
   {
@@ -306,8 +306,8 @@ export default async function AboutPage({
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "到目前為止的外部採用：三個已合併的上游整合，每一個都有公開 repo 裡已合併的 PR 為憑。分別是 Cisco AI Defense 開源 skill-scanner 裡的 ATR 規則集、Microsoft AGT 的 ATR 範例目錄，以及 Gen Digital 已合併的 Sage 規則包。兩個標準機構已經合併：MISP / CIRCL（taxonomies #323 與 galaxy #1207）和 OWASP A-S-R-H（#74）。另有兩個提案還開著，尚未合併。一個是送到 NIST OSCAL 內容庫的 usnistgov/oscal-content#338，提供 AI RMF profile 範例，正在等 NIST 審查，不是 NIST 背書。另一個是 OpenTelemetry GenAI SIG 的 PR #165，定義 agent.threat.detection.* 語意慣例。這些企業是用 pull request 整合進來的，不是私下 fork。ATR 想要的就是這種採用方式。"
-            : "External adoption so far: three merged upstream integrations, each backed by a merged pull request in a public repository. They are the ATR rule pack in Cisco AI Defense's open-source skill-scanner, ATR example directories in Microsoft AGT, and Gen Digital's merged Sage pack. Two standards bodies have merged ATR work: MISP / CIRCL (taxonomies #323 and galaxy #1207) and OWASP A-S-R-H (#74). Two proposals are still open and unmerged. One is usnistgov/oscal-content#338, which offers AI RMF profile examples to NIST's OSCAL content repository and is awaiting NIST review; it is not a NIST endorsement. The other is PR #165 in OpenTelemetry's GenAI SIG, for the agent.threat.detection.* semantic conventions. These enterprises integrated through pull requests, not private forks. That is the kind of adoption ATR is built for."}
+            ? "到目前為止的外部採用：三個已合併的上游整合，每一個都有公開 repo 裡已合併的 PR 為憑。分別是 Cisco AI Defense 開源 skill-scanner 裡的 ATR 規則集、Microsoft AGT 的 ATR 範例目錄，以及 Gen Digital 已合併的 Sage 規則包。MISP 收下了 ATR 的 taxonomy（#323）和 galaxy（#1207），由 CIRCL 的維護者合併。OWASP Agent Security Regression Harness 合併了四個從 ATR 改寫的回歸情境（#74），檔案裡沒有標註 ATR。另有兩個提案還開著，尚未合併。一個是送到 NIST OSCAL 內容庫的 usnistgov/oscal-content#338，提供 AI RMF profile 範例，正在等 NIST 審查，不是 NIST 背書。另一個是 OpenTelemetry GenAI SIG 的 PR #165，定義 agent.threat.detection.* 語意慣例。這些企業是用 pull request 整合進來的，不是私下 fork。ATR 想要的就是這種採用方式。"
+            : "External adoption so far: three merged upstream integrations, each backed by a merged pull request in a public repository. They are the ATR rule pack in Cisco AI Defense's open-source skill-scanner, ATR example directories in Microsoft AGT, and Gen Digital's merged Sage pack. MISP took in an ATR taxonomy (#323) and galaxy (#1207), merged by a CIRCL maintainer. The OWASP Agent Security Regression Harness merged four regression scenarios derived from ATR (#74); the files do not credit ATR. Two proposals are still open and unmerged. One is usnistgov/oscal-content#338, which offers AI RMF profile examples to NIST's OSCAL content repository and is awaiting NIST review; it is not a NIST endorsement. The other is PR #165 in OpenTelemetry's GenAI SIG, for the agent.threat.detection.* semantic conventions. These enterprises integrated through pull requests, not private forks. That is the kind of adoption ATR is built for."}
         </p>
         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
           <a
@@ -331,8 +331,8 @@ export default async function AboutPage({
       <Section label={zh ? "獨立聲明" : "Independence"} delay={0.35}>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh
-            ? "ATR 不屬於任何商業公司，不是哪個資安產品的功能，也不受任何廠商控制。規則是公共財。誰都可以採用、擴充或 fork，競爭廠商也一樣。"
-            : "No commercial entity owns ATR. It is not a feature of any security product, and no vendor controls it. The rules are a public good. Anyone may adopt, extend or fork them, competing vendors included."}
+            ? "ATR 不屬於任何商業公司，不是哪個資安產品的功能。規則是公共財。誰都可以採用、擴充或 fork，競爭廠商也一樣。利益揭露：維護者創辦並控制 PANGUARD AI, INC.，這家公司販售以 ATR 為基礎的 agent 資安產品。"
+            : "No commercial entity owns ATR. It is not a feature of any security product. The rules are a public good. Anyone may adopt, extend or fork them, competing vendors included. Interests: the maintainer founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR."}
         </p>
       </Section>
     </div>

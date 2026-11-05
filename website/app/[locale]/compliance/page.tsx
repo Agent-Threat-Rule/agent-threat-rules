@@ -20,7 +20,7 @@ export async function generateMetadata({
     path: "/compliance",
     title: "Compliance",
     description:
-      "Regulations say you must manage AI agent risk. ATR maps every rule to the frameworks it answers to: OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act and ISO 42001, plus candidate SAF-MCP technique mappings. Compliance becomes a detection that runs, not a document that asserts.",
+      "Regulations say you must manage AI agent risk. ATR maps every rule to the frameworks it answers to: OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act and ISO 42001, plus candidate SAF-MCP technique mappings. The mappings are detection evidence an operator can cite, not a statement of compliance.",
   });
 }
 
@@ -68,8 +68,8 @@ function buildFrameworks(ruleCount: number) {
       id: "EU AI Act",
       coverage: "Every rule",
       coverage_zh: "每條規則",
-      desc_en: `All ${ruleCount} rules map to high-risk AI obligations (Articles 9, 10, 12, 13, 14 and 15). The Act names the duty. ATR supplies runtime detection that produces evidence against that article. Detection evidence on its own is not a compliance guarantee.`,
-      desc_zh: `全部 ${ruleCount} 條規則都對到高風險 AI 的義務（第 9、10、12、13、14、15 條）。法案寫的是義務，ATR 給的是執行期的偵測，能對著那一條跑出證據。光有偵測證據，不等於保證合規。`,
+      desc_en: `Each of the ${ruleCount} rules cites at least one of Articles 9, 10, 12, 13, 14 and 15. Those articles cover high-risk AI systems only. The citation names the duty the rule's runtime detection can give evidence for. It does not mean a system that runs ATR complies with the Act.`,
+      desc_zh: `${ruleCount} 條規則，每條至少引用第 9、10、12、13、14、15 條其中一條。這幾條只管高風險 AI 系統。引用的意思是：這條規則在執行期的偵測，可以當作那項義務的證據。不代表跑了 ATR 的系統就符合法案。`,
       link: null,
     },
     {
@@ -120,6 +120,14 @@ export default async function CompliancePage({
           : "Some framework mappings are known to be wrong and are being redone; detection is not affected. Until the corrections ship, treat the mappings as candidate relevance, not as audit evidence."}{" "}
         <a href={`/${locale}/errata`} className="text-blue hover:underline">{zh ? "看勘誤" : "See the errata"}</a>
       </p>
+      {/* EU AI Act applicability. Article 26 = deployer obligations per
+          data/compliance-frameworks/eu_ai_act.json; the Article 40 sentence
+          follows the note in data/compliance-frameworks/cen_jtc21.json. */}
+      <p className="mb-6 max-w-[640px] border-l-2 border-fog pl-3 text-[13px] leading-[1.7] text-graphite">
+        {zh
+          ? "EU AI Act 的第 9 到 15 條，只適用於高風險 AI 系統。是不是高風險，依第 6 條與附件 III 判定。這些義務主要落在提供者（provider）身上，部署者（deployer）另有第 26 條的義務。ATR 對到這些條文，是營運方可以在自己的風險管理裡引用的偵測證據，不是合規。部分規則也引用 CEN-CENELEC JTC 21 的標準。在這裡引用標準，不會產生第 40 條的符合性推定。"
+          : "Articles 9 to 15 of the EU AI Act apply to high-risk AI systems, as classified under Article 6 and Annex III. The obligations sit mainly with the provider. A deployer has its own duties under Article 26. An ATR mapping to one of these articles is detection evidence an operator may cite in its own risk management. It is not compliance. Some rules also cite CEN-CENELEC JTC 21 standards. Citing a standard here does not create a presumption of conformity under Article 40."}
+      </p>
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-4">
           {zh
@@ -128,7 +136,7 @@ export default async function CompliancePage({
         </p>
       </Reveal>
 
-      {/* Procurement download */}
+      {/* Procurement: no packaged download exists (no release carries an asset), so link the policy and allowlists */}
       <Reveal delay={0.15}>
         <div className="bg-ash border border-fog p-5 md:p-6 mb-10 flex flex-col md:flex-row md:items-center md:gap-8">
           <div className="flex-1 mb-4 md:mb-0">
@@ -137,26 +145,26 @@ export default async function CompliancePage({
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {zh
-                ? "合規人員不能交一個網址當採購證據。這裡可以下載結構化的合規對應包（PDF + JSON），裡面有每條規則的框架對應、規則編號索引，還有品質分數摘要。ATR 是開放標準，審的人不必相信 ATR，每一條對應都能自己驗。"
-                : "A compliance officer can't file a URL as procurement evidence. Download the structured compliance mapping package (PDF + JSON). It holds the framework mappings for each rule, an index by rule ID and a summary of quality scores. Because ATR is an open standard, a reviewer doesn't have to trust it. They can check every mapping themselves."}
+                ? "目前沒有打包好的下載檔。每條規則的對應寫在它自己的 YAML 裡，各框架允許引用的編號放在 repo 的 data/compliance-frameworks/。對應代表什麼、不代表什麼，寫在合規對應政策裡。ATR 是開放標準，審的人不必相信 ATR，每一條對應都能自己驗。"
+                : "There is no packaged download yet. Each rule's mappings live in its own YAML file, and the identifiers each framework allows live in data/compliance-frameworks/ in the repo. The coverage policy says what a mapping means and what it does not. Because ATR is an open standard, a reviewer doesn't have to trust it. They can check every mapping themselves."}
             </p>
           </div>
           <div className="flex flex-col gap-3 flex-shrink-0">
             <a
-              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/releases/latest"
+              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/COMPLIANCE-COVERAGE-POLICY.md"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-ink text-white px-5 py-2.5  text-sm font-semibold hover:bg-black transition-colors text-center"
             >
-              {zh ? "下載合規對應包（GitHub Releases）→" : "Download compliance mapping (GitHub Releases) →"}
+              {zh ? "讀合規對應政策 →" : "Read the coverage policy →"}
             </a>
             <a
-              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/docs"
+              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/data/compliance-frameworks"
               target="_blank"
               rel="noopener noreferrer"
               className="font-data text-xs text-blue hover:underline text-center"
             >
-              {zh ? "在 GitHub 看合規文件 →" : "Browse compliance docs on GitHub →"}
+              {zh ? "在 GitHub 看各框架的編號清單 →" : "Framework identifier lists on GitHub →"}
             </a>
           </div>
         </div>

@@ -29,8 +29,8 @@ export async function generateMetadata({
     title: "ATD: Agentic Threat Detection",
     description:
       locale === "zh"
-        ? "Agentic Threat Detection（ATD）：收錄 agent 特有威脅技法的開放知識庫。替每一種 runtime 攻擊手法命名，對到 OWASP、ATLAS、CWE、AVID，讓偵測規則有地方掛。"
-        : "Agentic Threat Detection (ATD): an open knowledge base of agent-native threat techniques. It names every runtime attack technique, maps it to OWASP, ATLAS, CWE and AVID, and gives detection rules something to hang from.",
+        ? "Agentic Threat Detection（ATD）：收錄 agent 特有威脅技法的開放知識庫草案。替收進來的 runtime 攻擊手法命名，對到 OWASP、ATLAS、CWE、AVID，讓偵測規則有地方掛。"
+        : "Agentic Threat Detection (ATD): a draft open knowledge base of agent-native threat techniques. It names the runtime attack techniques it lists, maps them to OWASP, ATLAS, CWE and AVID, and gives detection rules something to hang from.",
   });
 }
 
@@ -278,16 +278,16 @@ export default async function ATDPage({
 
         <p className="atd-eyebrow">
           {locale === "zh"
-            ? "agent 威脅技法的權威知識庫 · RFC 草案 · 徵求協作者 · 與 ATR 搭配的標準"
-            : "Authoritative knowledge base of agent threat techniques · draft RFC · call for collaborators · companion to ATR"}
+            ? "agent 威脅技法的開放知識庫 · RFC 草案 · 徵求協作者 · 與 ATR 搭配"
+            : "Open knowledge base of agent threat techniques · draft RFC · call for collaborators · companion to ATR"}
         </p>
 
         <h1>Agentic Threat Detection</h1>
 
         <p className="atd-sub">
           {locale === "zh"
-            ? "agent runtime 威脅手法的權威開放知識庫。每一種攻擊手法都有名字、穩定的 ID，也對到 OWASP、MITRE ATLAS、CWE、AVID，讓偵測有地方掛。ATLAS 替 AI 攻擊命名，CWE 替軟體弱點命名。ATD 做的，是這個時代 agent 威脅的命名和索引。"
-            : "The authoritative open knowledge base of agent-runtime threat techniques. Every attack technique gets a name, a stable ID and a crosswalk to OWASP, MITRE ATLAS, CWE and AVID, so detection has somewhere to hang. MITRE ATLAS names AI attacks. CWE names software weaknesses. ATD is the naming and index of agent threats for this era."}
+            ? "一份收錄 agent runtime 威脅手法的開放知識庫，還在草案階段。收進來的每一種手法都有名字、穩定的 ID，也對到 OWASP、MITRE ATLAS、CWE、AVID，讓偵測有地方掛。ATLAS 替 AI 攻擊命名，CWE 替軟體弱點命名。ATD 想替 agent 威脅做同樣的事。"
+            : "An open knowledge base of agent-runtime threat techniques, still in draft. Each technique it lists gets a name, a stable ID and a crosswalk to OWASP, MITRE ATLAS, CWE and AVID, so detection has somewhere to hang. MITRE ATLAS names AI attacks. CWE names software weaknesses. ATD sets out to do the same for agent threats."}
         </p>
 
         <div className="doc-status not-prose" role="note">

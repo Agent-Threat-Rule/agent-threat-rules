@@ -6,9 +6,9 @@
     "predev": "node scripts/fetch-npm-version.mjs && node scripts/fetch-contributors.mjs",
     "dev": "next dev",
     "prebuild": "node scripts/fetch-npm-version.mjs && node scripts/fetch-contributors.mjs",
-    "build": "next build && next-sitemap",
+    "build": "next build && next-sitemap && node scripts/set-html-lang.mjs",
     "deploy": "node scripts/fetch-npm-version.mjs && node scripts/fetch-contributors.mjs && next build && next-sitemap && wrangler pages deploy out --project-name=agentthreatrule --commit-dirty=true",
-    "postbuild": "next-sitemap",
+    "postbuild": "next-sitemap && node scripts/set-html-lang.mjs",
     "start": "next start",
     "lint": "eslint",
     "check:seo": "node scripts/check-seo.mjs"

@@ -169,7 +169,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             {/* Self-test */}
             <div className="bg-paper p-6">
-              <div className="text-[13px] text-stone mb-4">{t(locale, "research.self")}</div>
+              <div className="text-[13px] text-stone mb-4">{zh ? "回歸檢查：ATR 自己的測試案例" : "Regression check on ATR's own test cases"}</div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <MetricCell value={selfTestRun.precision} label="Precision · hunt" />
                 <RecallCell m={selfTestRun} label="Recall" zh={zh} />
@@ -179,6 +179,11 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
                 </div>
               </div>
               <div className="font-data text-xs text-stone mt-3">{measuredStamp(selfTestRun, zh)}</div>
+              <p className="text-xs text-mist mt-2 leading-[1.7]">
+                {zh
+                  ? "這份語料有一部分就是規則自己的 true positive，分數高是應該的。它檢查的是規則還抓不抓得到當初要抓的東西。它不是基準測試，不要拿來跟左邊比。"
+                  : "This corpus is built partly from the rules' own true positives, so a high score is expected. It checks that the rules still catch what they were written to catch. It is not a benchmark and does not compare with the corpus on the left."}
+              </p>
             </div>
           </div>
         </Reveal>
@@ -250,8 +255,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
       <Reveal delay={0.15}>
         <p className="text-sm text-graphite leading-[1.7] mb-6 max-w-[760px]">
           {locale === "zh"
-            ? `這個掃描每天都在跑。新攻擊一出現，就寫成偵測規則，放回標準裡。紅隊巨量掃描和 CVE 攝取這兩條線，各自跑完一整輪之後改成每天更新，把規則從 462 條推到現在 main 上的 ${stats.ruleCount} 條生效規則，另有 ${stats.ruleInertCount} 條 inert（${npmReleaseText(versions, true)}，頁面產生於 ${versions.generatedAt}）。`
-            : `The scan runs every day. When a new attack shows up, it becomes a detection rule and goes back into the standard. Two pipelines, one fed by red-team mega-scans and one by CVE ingestion, each finished a full sweep and then switched to daily updates. They took the ruleset from 462 to the ${stats.ruleCount} effective rules on main today, plus ${stats.ruleInertCount} inert (${npmReleaseText(versions, false)}, as of ${versions.generatedAt}).`}
+            ? `上面的野外掃描是 ${stats.megaScanDate} 跑的。規則的來源還有 CVE 與安全公告的掃描、benchmark 漏抓的樣本，以及貢獻者。規則從 462 條長到現在 main 上的 ${stats.ruleCount} 條生效規則，另有 ${stats.ruleInertCount} 條 inert（${npmReleaseText(versions, true)}，頁面產生於 ${versions.generatedAt}）。`
+            : `The wild scan above ran on ${stats.megaScanDate}. Rules also come from CVE and advisory sweeps, from benchmark misses and from contributors. The ruleset has grown from 462 to the ${stats.ruleCount} effective rules on main today, plus ${stats.ruleInertCount} inert (${npmReleaseText(versions, false)}, as of ${versions.generatedAt}).`}
         </p>
       </Reveal>
       <Reveal delay={0.2}>
@@ -314,8 +319,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {locale === "zh"
-                ? "誤報率拿真實的良性樣本來量，也就是經過人工或社群審查的正常 skill，再除以總偵測數。數字按 lane 分開列，不合成一個好看的數字。enforce lane 只跑最成熟的規則，預設的 hunt lane 則把全部規則當成提醒訊號來跑。之前在這裡公布的各 lane 誤報率已經撤回，等重新量測。原因是當時用的良性語料裡，後來發現混進了真的越獄樣本，基準站不住。重測完成之前，這裡不放數字。每一個已記錄的誤報情境，還是會寫進規則 YAML 的 false_positives 欄位，並顯示在規則頁上。"
-                : "False positive rate is measured against real benign samples, meaning skills that passed manual or community review, divided by total detections. It is reported per lane, not as one flattering number. The enforce lane runs only the most mature rules. The default hunt lane runs every rule as an advisory signal. The per-lane figures once published here are withdrawn until they are re-measured: the benign corpus behind them turned out to contain real jailbreak samples, so the baseline didn't hold. No figure appears here until the re-measurement is done. Every documented FP context still goes into the rule YAML's false_positives field and shows on the rule page."}
+                ? "誤報率拿真實的良性樣本來量，也就是經過人工或社群審查的正常 skill：被誤判的良性樣本數，除以掃過的良性樣本總數。數字按 lane 分開列，不合成一個好看的數字。enforce lane 只跑最成熟的規則，預設的 hunt lane 則把全部規則當成提醒訊號來跑。之前在這裡公布的各 lane 誤報率已經撤回，等重新量測。原因是當時用的良性語料裡，後來發現混進了真的越獄樣本，基準站不住。重測完成之前，這裡不放數字。每一個已記錄的誤報情境，還是會寫進規則 YAML 的 false_positives 欄位，並顯示在規則頁上。"
+                : "False positive rate is measured on real benign samples, meaning skills that passed manual or community review: the benign samples flagged, divided by all benign samples scanned. It is reported per lane, not as one flattering number. The enforce lane runs only the most mature rules. The default hunt lane runs every rule as an advisory signal. The per-lane figures once published here are withdrawn until they are re-measured: the benign corpus behind them turned out to contain real jailbreak samples, so the baseline didn't hold. No figure appears here until the re-measurement is done. Every documented FP context still goes into the rule YAML's false_positives field and shows on the rule page."}
             </p>
           </div>
           <div className="border-l-2 border-fog pl-4">

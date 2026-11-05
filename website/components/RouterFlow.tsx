@@ -17,7 +17,7 @@ const STILL = 13000;
 
 const OUTPUTS = [
   { name: "SARIF", to: { en: "for CI", zh: "給 CI" } },
-  { name: "OSCAL", to: { en: "for NIST and GRC tools", zh: "給 NIST 與 GRC 工具" } },
+  { name: "OSCAL", to: { en: "for GRC tools", zh: "給 GRC 工具" } },
   { name: "receipt.dsse.json", to: { en: "for auditors and insurers", zh: "給稽核與保險" } },
 ];
 const ADAPTERS = ["agent.yaml", "Claude Code", "Grok Build"];

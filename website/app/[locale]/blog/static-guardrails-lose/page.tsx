@@ -64,9 +64,10 @@ export default async function StaticGuardrailsPostPage({
       {zh ? (
         <article className="text-[15px] text-graphite leading-[1.9] space-y-5">
           <p>
-            2026 年 6 月 9 日,一位 NIST 資深科學家發表了一份數學證明:沒有任何有限的
+            NIST 資深科學家 Apostol Vassilev 在期刊 IEEE Security and Privacy 發表論文,NIST
+            在 2026 年 6 月 9 日公布,論文給出一份數學證明:沒有任何有限的
             guardrail 集合,能普遍抵禦對抗式 prompt。論證借用哥德爾——任何固定的防禦,都留有
-            一個攻擊者找得到的縫。
+            一個攻擊者找得到的縫。這是一位研究者的論文,不是 NIST 的正式立場。
           </p>
           <p>
             結論不是「把牆蓋得更高」,而是停止把 AI 安全當成「一次到位」,改成{" "}
@@ -80,7 +81,7 @@ export default async function StaticGuardrailsPostPage({
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">這個方向,業界已經在走</h2>
           <p>
-            你不必只聽標準機構說。2026 年 6 月 16 日,NVIDIA 發布了 SkillSpector——一個開源
+            你不必只聽一篇論文說。2026 年 6 月 16 日,NVIDIA 發布了 SkillSpector——一個開源
             掃描器,在 agent skill 安裝前檢查其中的惡意模式。當全球最大的 AI 硬體公司都做起
             安裝前 skill 掃描,這個品類就不再是空想。
           </p>
@@ -99,7 +100,7 @@ export default async function StaticGuardrailsPostPage({
           <p>
             真正關鍵的是更新迴圈。新的攻擊 payload 進來,一條規則被起草、對乾淨語料做 0 誤報
             機審、然後上線。社群貢獻加上自動審核,把規則更新週期從委員會的數週,壓縮到一小時內。
-            攻擊跑得快,防禦就得至少一樣快——這正是靜態 guardrail 做不到、而 NIST 證明說你不能
+            攻擊跑得快,防禦就得至少一樣快——這正是靜態 guardrail 做不到、而 Vassilev 的證明說你不能
             跳過的事。
           </p>
           <p>
@@ -162,9 +163,11 @@ export default async function StaticGuardrailsPostPage({
       ) : (
         <article className="text-[15px] text-graphite leading-[1.9] space-y-5">
           <p>
-            On June 9, 2026, a senior NIST scientist published a mathematical proof that no finite
+            In a paper in the journal IEEE Security and Privacy, which NIST announced on June 9,
+            2026, NIST senior scientist Apostol Vassilev published a mathematical proof that no finite
             set of guardrails is universally robust against adversarial prompts. The argument
-            borrows from G&ouml;del: any fixed defense leaves a gap an attacker can find.
+            borrows from G&ouml;del: any fixed defense leaves a gap an attacker can find. It is one
+            researcher&rsquo;s paper, not a NIST position.
           </p>
           <p>
             The conclusion is not &ldquo;build a taller wall.&rdquo; It is to stop treating AI
@@ -180,7 +183,7 @@ export default async function StaticGuardrailsPostPage({
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">The industry is already moving this way</h2>
           <p>
-            You do not have to take a standards body&rsquo;s word for it. On June 16, 2026, NVIDIA
+            You do not have to take one paper&rsquo;s word for it. On June 16, 2026, NVIDIA
             shipped SkillSpector — an open-source scanner that inspects agent skills for malicious
             patterns before they install. When the largest AI hardware company builds an
             install-time skill scanner, the category stops being speculative.
@@ -208,7 +211,7 @@ export default async function StaticGuardrailsPostPage({
             Community contribution plus automated review compresses the rule-update cycle from the
             weeks a committee takes to under an hour. The attacks move fast, so the defense has to
             move at least as fast — the exact thing a static guardrail cannot do, and the exact
-            thing the NIST proof says you cannot skip.
+            thing Vassilev&rsquo;s proof says you cannot skip.
           </p>
           <p>
             The rules are grounded in what is actually in the wild, not hypotheticals. A scan of

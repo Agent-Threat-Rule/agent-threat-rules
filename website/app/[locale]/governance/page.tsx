@@ -365,10 +365,15 @@ export default async function GovernancePage({
       <Reveal delay={0.1}>
         <div className="bg-paper border border-fog p-6 md:p-8 mb-12">
           <div className="space-y-4 text-sm text-graphite leading-[1.7]">
+            <p className="text-ink">
+              {zh
+                ? "利益揭露：維護者創辦並控制 PANGUARD AI, INC.，這家公司販售以 ATR 為基礎的 agent 資安產品。"
+                : "Interests: the maintainer founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR."}
+            </p>
             <p>
               {zh
-                ? "ATR（Agent Threat Rules）是 MIT 授權的開放標準，在 Agent-Threat-Rule 這個 GitHub 組織底下維護。首席維護者在 AI agent 資安領域另有商業關係。這件事不藏，直接寫下來，揭露本身就是治理機制。標準是否中立，不是靠維護者沒有利益來證明。靠的是決策過程公開到任何人都能檢查，這些利益有沒有讓決定走樣。"
-                : "ATR (Agent Threat Rules) is an MIT-licensed open standard maintained under the Agent-Threat-Rule GitHub organization. The lead maintainer also holds a commercial affiliation in AI agent security. It is not hidden. It is written down here, and the disclosure is itself the governance mechanism. A standard's neutrality is not proven by a maintainer having no interests. It is proven by a decision process open enough that anyone can check whether those interests bent it."}
+                ? "ATR（Agent Threat Rules）是 MIT 授權的開放標準，在 Agent-Threat-Rule 這個 GitHub 組織底下維護。上面這件事不藏，直接寫下來，揭露本身就是治理的一部分。標準是否中立，不是靠維護者沒有利益來證明。靠的是決策過程公開到任何人都能檢查，這些利益有沒有讓決定走樣。"
+                : "ATR (Agent Threat Rules) is an MIT-licensed open standard maintained under the Agent-Threat-Rule GitHub organization. The interest above is not hidden. Writing it down is part of the governance. A standard's neutrality is not proven by a maintainer having no interests. It is proven by a decision process open enough that anyone can check whether those interests bent it."}
             </p>
             <p>
               {zh

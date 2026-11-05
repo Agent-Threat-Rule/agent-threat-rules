@@ -7,10 +7,9 @@ import type { Metadata } from "next";
 import { locales, type Locale } from "@/lib/i18n";
 import { loadSiteStats } from "@/lib/stats";
 import { getSpecMeta } from "@/lib/spec-meta";
-import { loadVersionLabels } from "@/lib/versions";
 import { loadAdopters } from "@/lib/adopters";
 import { loadAllRules, loadRuleDetail, categoryDisplayName } from "@/lib/rules";
-import { rulesLanes } from "@/lib/lanes";
+import { rulesLanes, type Lane } from "@/lib/lanes";
 import { loadCrosswalks } from "@/lib/crosswalks";
 import { loadChangelog } from "@/lib/changelog";
 import { posts } from "@/lib/posts";
@@ -47,7 +46,31 @@ type B = { en: string; zh: string };
 
 // The rule the "how a rule is born" section follows, from incident to release.
 const BIRTH_RULE = "ATR-2026-02403";
+// Fixed historical dates for that rule, all UTC:
+// - reported: the Manifold Security report date cited in the rule file itself.
+// - mergedToMain: GitHub mergedAt of Agent-Threat-Rule/agent-threat-rules#390, the
+//   PR that added the rule file (git log --diff-filter=A: commit 0d12b20).
+// - firstNpm: the first npm release whose tarball contains the file (3.5.11 does
+//   not, 3.5.12 does), dated by `npm view agent-threat-rules time`.
 const BIRTH_REPORTED = "2026-07-22";
+const BIRTH_MERGED_TO_MAIN = "2026-08-03";
+const BIRTH_FIRST_NPM = { version: "3.5.12", date: "2026-08-11" };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+function daysBetween(from: string, to: string): number {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS);
+}
+
+function laneSentence(lanes: ReadonlyArray<Lane>, maturity: string, zh: boolean): string {
+  if (lanes.length === 0) return zh ? "它目前不在任何偵測車道裡。" : "No detection lane loads it today.";
+  const list = lanes.join(zh ? "、" : " and ");
+  if (lanes.includes("enforce")) {
+    return zh ? `它的成熟度是 ${maturity}，${list} 車道都會載入。` : `Its maturity is ${maturity}, so the ${list} lanes load it.`;
+  }
+  return zh
+    ? `它的成熟度是 ${maturity}，所以只在 ${list} 車道裡跑，enforce 車道不會載入。`
+    : `Its maturity is ${maturity}, so it runs in the ${list} lanes and the enforce lane does not load it.`;
+}
 
 // Individual maintainers listed in ADOPTERS.md; the strip names organisations.
 const INDIVIDUALS = new Set(["Independent", "Ajay Nyayapathi"]);
@@ -72,7 +95,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const title = (text: string) => (zh ? clauses(text) : text);
 
   const stats = loadSiteStats();
-  const versions = await loadVersionLabels();
   const specVersion = getSpecMeta().specVersion;
   const rules = loadAllRules();
   const adopters = loadAdopters();
@@ -101,9 +123,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         truePositives: detail.truePositives.length,
         trueNegatives: detail.trueNegatives.length,
         mappings: [...detail.owaspAgentic, ...detail.owaspLlm, ...detail.mitreAtlas.map((m) => m.split(" - ")[0])],
-        npmVersion: versions.npm,
+        reported: BIRTH_REPORTED,
+        mergedToMain: BIRTH_MERGED_TO_MAIN,
+        firstNpmVersion: BIRTH_FIRST_NPM.version,
+        firstNpmDate: BIRTH_FIRST_NPM.date,
       }
     : null;
+  const birthLanes = detail ? rulesLanes({ status: detail.status, maturity: detail.maturity }) : [];
 
   const figures: Array<[string, string]> = [
     [String(stats.ruleCount), zh ? "條生效規則" : "effective rules"],
@@ -128,8 +154,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </h1>
             <p className="mt-6 text-[17px] leading-[1.7] text-graphite max-w-[500px] text-pretty">
               {zh
-                ? "agent 會讀網頁、收信、裝工具，也會照著裡面藏的指令做事。ATR 把每一種已知的攻擊寫成規則：有編號、有測試，在你自己的環境裡跑，誰都能用。"
-                : "Agents read web pages, open mail and install tools, and they follow instructions hidden inside them. ATR writes every known attack down as a rule with an ID and tests. It runs in your own environment, and anyone can use it."}
+                ? "agent 會讀網頁、收信、裝工具，也會照著裡面藏的指令做事。ATR 把有紀錄的攻擊寫成規則，每條都有編號、有測試。規則在你自己的環境裡跑，比對到就回報。誰都能用。"
+                : "Agents read web pages, open mail and install tools, and they follow instructions hidden inside them. ATR writes documented attacks down as rules, each with an ID and tests. The rules run in your own environment and report what they match. Anyone can use them."}
             </p>
             <div className="mt-8 flex flex-wrap gap-2">
               <Link href={`${prefix}/start`} className={`${BUTTON} bg-ink text-white hover:bg-black`}>{zh ? "從這裡開始" : "Start here"}</Link>
@@ -184,8 +210,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </p>
             <p className="text-ink">
               {zh
-                ? "ATR 做的事情很小：把看過的每一種攻擊寫下來，讓下一個人不用再被同一招騙一次。"
-                : "What ATR does is small. It writes down every attack it has seen, so the next person doesn't fall for the same trick."}
+                ? "ATR 做的事情很小：把有紀錄的攻擊寫下來，讓下一個人認得出同一招。"
+                : "What ATR does is small. It writes down attacks that have been documented, so the next person can spot the same trick."}
             </p>
           </div>
         </div>
@@ -198,7 +224,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <div className={KICKER}>{zh ? "一條規則怎麼來" : "How a rule is made"}</div>
             <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "一個人碰到的攻擊，變成所有人的規則。" : "One team's incident becomes everyone's rule.")}</h2>
             <p className="mt-5 text-[16px] leading-[1.75] text-graphite max-w-[620px]">
-              {zh ? `以 ${birth.id} 為例：事件在 ${BIRTH_REPORTED} 被回報，規則日期是 ${birth.date}。` : `Take ${birth.id}: the incident was reported on ${BIRTH_REPORTED}, and the rule is dated ${birth.date}.`}
+              {zh
+                ? `以 ${birth.id} 為例：事件在 ${birth.reported} 被回報，規則日期是 ${birth.date}。${birth.mergedToMain} 合進 main，${birth.firstNpmDate} 跟著 npm ${birth.firstNpmVersion} 發出。從回報到使用者裝得到，花了 ${daysBetween(birth.reported, birth.firstNpmDate)} 天。`
+                : `Take ${birth.id}. The incident was reported on ${birth.reported} and the rule is dated ${birth.date}. It reached main on ${birth.mergedToMain} and shipped on npm in ${birth.firstNpmVersion} on ${birth.firstNpmDate}: ${daysBetween(birth.reported, birth.firstNpmDate)} days from report to users.`}{" "}
+              {laneSentence(birthLanes, birth.maturity, zh)}
             </p>
             <div className="mt-12">
               <RuleBirth locale={locale} rule={birth} />
@@ -215,7 +244,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
           <div>
             <div className={KICKER}>{zh ? "涵蓋範圍" : "Coverage"}</div>
-            <h2 className={`mt-4 ${H2}`}>{title(zh ? "每一種已知攻擊，都有名字。" : "Every known attack has a name.")}</h2>
+            <h2 className={`mt-4 ${H2}`}>{title(zh ? "有紀錄的攻擊，就有名字。" : "A documented attack gets a name.")}</h2>
             <p className="mt-5 text-[16px] leading-[1.75] text-graphite">
               {zh ? "十個類別，從被下毒的工具說明，到被悄悄換掉的目標。" : "Ten categories, from a poisoned tool description to a goal quietly swapped for another."}
             </p>

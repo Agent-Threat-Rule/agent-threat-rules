@@ -19,7 +19,10 @@ export const AUDIENCES: ReadonlyArray<Audience> = [
     key: "build",
     who: { en: "You build agents", zh: "做 agent 的人" },
     need: { en: "Your agent spends its day reading things other people wrote. Web pages, tool descriptions, files from strangers.", zh: "你的 agent 每天都在讀別人寫的東西。網頁、工具說明、陌生人傳來的檔案。" },
-    how: { en: "Put ATR in front of every input and every tool call. It runs inside your own process, so the data stays where it is.", zh: "把 ATR 接在每個輸入、每次工具呼叫前面。它跟你的程式跑在同一個地方，資料哪裡也不去。" },
+    how: {
+      en: "Run ATR on what your agent reads and on its tool calls. By default it reports what it finds and blocks nothing. Blocking is a separate switch, meant to run with the enforce lane, which loads only the stable rules and catches far fewer attacks. ATR runs inside your own process, so the data stays where it is.",
+      zh: "讓 ATR 看你的 agent 讀進來的東西，還有每次工具呼叫。預設只回報，不擋任何東西。要擋是另一個開關，搭配 enforce 車道用。這條車道只載入 stable 規則，抓到的攻擊少很多。ATR 跟你的程式跑在同一個地方，資料哪裡也不去。",
+    },
     where: { en: "Node · MCP stdio · Claude Code hook · goose · LangChain · Pydantic AI · Mastra", zh: "Node · MCP stdio · Claude Code hook · goose · LangChain · Pydantic AI · Mastra" },
     first: { label: { en: "Integration guide", zh: "整合說明" }, href: "/docs/integrations", code: "npm install agent-threat-rules" },
   },

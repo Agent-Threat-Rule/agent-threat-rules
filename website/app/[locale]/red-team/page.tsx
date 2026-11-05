@@ -22,7 +22,7 @@ export async function generateMetadata({
     path: "/red-team",
     title: "Red Team: your attack becomes the standard",
     description:
-      "ATR is an open detection standard fed by red-team research. A probe found today becomes a versioned rule that reaches Cisco AI Defense, MISP and OWASP. The finder's name stays on the rule ID for good.",
+      "ATR is an open detection standard fed by red-team research. A probe becomes a versioned rule with an ID that never changes, and the finder's name can go on its author line.",
   });
 }
 
@@ -32,18 +32,32 @@ interface AttributionStat {
   detail: string;
 }
 
+/*
+ * Dates checked 2026-11-04:
+ * - Microsoft Security Blog "When prompts become shells", 2026-05-07
+ *   (microsoft.com/en-us/security/blog/2026/05/07/prompts-become-shells-rce-vulnerabilities-ai-agent-frameworks/).
+ * - CVE-2026-26030 record published 2026-02-19T16:00Z (cveawg.mitre.org;
+ *   GHSA-xjw9-4gw8-4rqx published the same day).
+ * - microsoft/agent-governance-toolkit #1981 opened 2026-05-11T06:07:03Z by copilot-swe-agent.
+ * - ATR commit d80373cc (rules ATR-2026-00440/00441) 2026-05-11T08:22:50Z.
+ * - `npm view agent-threat-rules time`: 2.1.2 published 2026-05-11T08:24:50Z.
+ * - PR authors via `gh pr view`: AGT #2308/#3025, skill-scanner #79/#99,
+ *   misp-galaxy #1207, misp-taxonomies #323, OWASP harness #74, sage #33 were
+ *   all opened by eeee2345; skill-scanner #80 by vineethsai7.
+ * - skill-scanner #289: vineethsai7 comment 2026-11-02.
+ */
 const ATTRIBUTION_STATS: AttributionStat[] = [
   {
-    number: "2h 16m",
-    label: "Copilot PR to merged rule",
+    number: "4 days",
+    label: "From Microsoft's write-up to the rule on npm",
     detail:
-      "On 2026-05-07 Microsoft Security disclosed Semantic Kernel CVE-2026-26030. On 2026-05-10 the ATR maintainer filed AGT#1937, mapping it to ATR rules. An AGT maintainer assigned that issue to Microsoft's Copilot SWE Agent, and at 06:07 UTC on 2026-05-11 it opened a regression-test PR that assumed ATR already covered the CVE. The paired rules merged into ATR at 08:22 UTC. v2.1.2 was on npm at 08:24. From the reported gap to a shared detection took hours.",
+      "Microsoft Security wrote up Semantic Kernel CVE-2026-26030 on its blog on 2026-05-07. The CVE record itself had been public since 2026-02-19, so counted from the record it took 80 days. On 2026-05-10 the ATR maintainer filed AGT#1937, mapping the CVE to ATR rules. An AGT maintainer assigned that issue to Microsoft's Copilot SWE Agent, and at 06:07 UTC on 2026-05-11 it opened a regression-test PR that assumed ATR already covered the CVE. The paired rules merged into ATR at 08:22 UTC, 2h 16m after that PR opened. v2.1.2 was on npm at 08:24.",
   },
   {
     number: "5",
-    label: "Independent organizations have merged ATR work",
+    label: "Projects whose maintainers merged ATR pull requests",
     detail:
-      'Microsoft Agent Governance Toolkit, in its example directories. Cisco AI Defense, as a rule pack in skill-scanner. CIRCL/MISP, where the project lead merged the taxonomies and galaxy. OWASP A-S-R-H, whose lead merged it with "Welcome to the team". Gen Digital Sage, merged by the security team at the parent company of Norton and Avast.',
+      "The ATR maintainer opened these pull requests, and each project's own maintainers reviewed and merged them. The one exception is Cisco's rule-packs CLI (#80), which a Cisco maintainer wrote. Microsoft Agent Governance Toolkit took them as example directories. Cisco AI Defense took a rule pack in skill-scanner. On 2026-11-02 a Cisco maintainer wrote that they will likely remove ATR because the false-positive rate is too high, and a report-only pack (#289) is under review. CIRCL/MISP merged a taxonomy and a galaxy. The OWASP Agent Security Regression Harness merged four scenarios derived from ATR rules, and the files do not name ATR. Gen Digital Sage merged agent-layer threat patterns.",
   },
   {
     number: "RULECOUNT",
@@ -76,7 +90,7 @@ const CONTRIBUTOR_BENEFITS: ContributorBenefit[] = [
   {
     for: "Corporate red teams",
     benefit:
-      "The variant your team found stops being an internal finding. It becomes something every defender can name. Your team is listed as the discoverer in the rule corpus that Cisco AI Defense, MISP, OWASP A-S-R-H and Gen Digital Sage pull from.",
+      "The variant your team found stops being an internal finding. It becomes something every defender can name. Your team can be named as the author in the ATR rule corpus, parts of which projects at Cisco AI Defense, MISP and Gen Digital Sage have merged.",
     proof:
       "An ATR maintainer filed an issue mapping two CVEs to ATR rules. Microsoft's Copilot SWE Agent was assigned it and opened a PR that assumed ATR coverage (AGT #1937 → #1981, merged 2026-05-11). Authoring an ATR-2026-NNNNN rule is a record anyone can check. It sits in a public corpus, not on a slide.",
   },
@@ -133,7 +147,7 @@ export default async function RedTeamPage({
                 <br />
                 它變成一條規則。
                 <br />
-                <span className="text-blue">2 小時 16 分鐘。</span>
+                <span className="text-blue">四天後上了 npm。</span>
               </>
             ) : (
               <>
@@ -141,7 +155,7 @@ export default async function RedTeamPage({
                 <br />
                 It becomes a rule.
                 <br />
-                <span className="text-blue">2 hours 16 minutes.</span>
+                <span className="text-blue">Four days later it was on npm.</span>
               </>
             )}
           </h1>
@@ -150,14 +164,15 @@ export default async function RedTeamPage({
           <p className="font-display text-[clamp(18px,2.2vw,24px)] text-stone font-light leading-snug mb-10 max-w-[760px]">
             {zh ? (
               <>
-                Cisco AI Defense 的 skill-scanner 內建一份 ATR 規則。MISP 匯出到 STIX 時，會帶著發現者的名字。你寫下一次的攻擊，每個防守的人都能叫得出它的名字。
+                以 Semantic Kernel CVE-2026-26030 為例：Microsoft 在 2026-05-07 發文說明，對應的 ATR 規則在 2026-05-11 隨 v2.1.2 上了 npm。這個 CVE 的紀錄其實 2 月就公開了。你寫下一次的攻擊，每個防守的人都能叫得出它的名字。
               </>
             ) : (
               <>
-                Cisco AI Defense ships the rules in skill-scanner. MISP exports
-                them to STIX with the discoverer&apos;s name attached. Write an
-                attack down once and every defender can call it by the same
-                name.
+                Take Semantic Kernel CVE-2026-26030. Microsoft wrote it up on
+                2026-05-07, and the matching ATR rules reached npm in v2.1.2 on
+                2026-05-11. The CVE record itself had been public since
+                February. Write an attack down once and every defender can call
+                it by the same name.
               </>
             )}
           </p>
@@ -346,18 +361,18 @@ export default async function RedTeamPage({
                 <div className="md:col-span-10">
                   <h3 className="font-display text-xl font-bold mb-3">
                     {zh
-                      ? "規則自動往下游走"
-                      : "The rule moves downstream on its own"}
+                      ? "下游的副本要靠 PR 更新"
+                      : "Downstream copies are refreshed by pull request"}
                   </h3>
                   <p className="text-base text-paper/80 leading-relaxed mb-2">
                     {zh
-                      ? "Cisco AI Defense 跟著 release tag 更新。MISP 的 taxonomy 和 galaxy 每次 release 都會重新拉。OWASP A-S-R-H 在 fixture 裡直接引用規則編號。"
-                      : "Cisco AI Defense pins to release tags. The MISP taxonomy and galaxy pull on every release. OWASP A-S-R-H references rule IDs in its fixtures."}
+                      ? "合併進別的專案的 ATR 規則不會自己更新。要由 ATR 維護者再開 PR：例如 MISP galaxy 在 2026-07-14 的 #1236，Cisco 規則包在 2026-08-03 的 #142。直接用 npm 套件的人，裝新版就拿得到新規則。"
+                      : "ATR rules merged into other projects do not update themselves. The ATR maintainer refreshes them by pull request: for example the MISP galaxy in #1236 on 2026-07-14 and the Cisco pack in #142 on 2026-08-03. If you use the npm package, a new release brings the new rules."}
                   </p>
                   <p className="text-sm text-paper/60">
                     {zh
-                      ? "Microsoft Copilot 的 regression PR，從開出來到對應的規則合併進 ATR，花了 2 小時 16 分鐘（06:07 → 08:22 UTC）。兩分鐘後，v2.1.2 上了 npm。"
-                      : "Microsoft Copilot's regression PR went from opened to the matching rules merged into ATR in 2h 16m (06:07 → 08:22 UTC). Two minutes later, v2.1.2 was on npm."}
+                      ? "Microsoft Copilot 的 regression PR，從開出來到對應的規則合併進 ATR，花了 2 小時 16 分鐘（2026-05-11 06:07 → 08:22 UTC）。兩分鐘後，v2.1.2 上了 npm。這段只算 PR 到合併；從 Microsoft 5/7 發文算起是四天。"
+                      : "Microsoft Copilot's regression PR went from opened to the matching rules merged into ATR in 2h 16m (2026-05-11, 06:07 → 08:22 UTC). Two minutes later, v2.1.2 was on npm. That counts from the PR only. From Microsoft's write-up on 2026-05-07, it was four days."}
                   </p>
                 </div>
               </div>

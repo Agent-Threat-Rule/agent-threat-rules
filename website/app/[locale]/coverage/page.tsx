@@ -47,12 +47,27 @@ const STATUS_COLORS: Record<string, string> = {
   GAP: "bg-stone/10 text-stone",
 };
 
+/** The mapping writes some statuses with a note, as "GAP (meta-concern)"; the colour keys on the first word. */
+function statusColor(status: string): string {
+  return STATUS_COLORS[status.split(" ")[0]] ?? "";
+}
+
+/** AST10 rows with no rule, and the ones the mapping marks as process or meta-level concerns. */
+function ast10Gaps(rows: ReadonlyArray<{ id: string; ruleCount: number; status: string }>) {
+  const none = rows.filter((m) => m.ruleCount === 0);
+  return {
+    none: none.map((m) => m.id),
+    notPattern: none.filter((m) => /meta|process/i.test(m.status)).map((m) => m.id),
+  };
+}
+
 export default async function CoveragePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
   const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
   const coverage = loadCoverageData();
   const stats = loadSiteStats();
   const pint = findBenchmark(stats, "pint");
+  const gaps = ast10Gaps(coverage.owaspAst10);
 
   return (
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
@@ -120,7 +135,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
       {/* OWASP Agentic Top 10 */}
       <Reveal>
         <h2 className="font-display text-2xl font-medium tracking-[-1px] mb-1 mt-12">OWASP Agentic Top 10</h2>
-        <p className="text-sm text-stone mb-6">{coverage.owaspAgenticCovered}/10 {locale === "zh" ? "個類別，每一類都有實際會觸發的規則。不是打勾，是偵測。" : "categories, each backed by rules that fire. Detections, not a checklist."}</p>
+        <p className="text-sm text-stone mb-6">{stats.owaspAgentic} {locale === "zh" ? "個類別，每一類都有實際會觸發的規則。不是打勾，是偵測。" : "categories, each backed by rules that fire. Detections, not a checklist."}</p>
       </Reveal>
       <Reveal delay={0.1}>
         <div className="border border-fog">
@@ -136,7 +151,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
               <div className="px-4 py-3 text-sm text-ink">{m.category}</div>
               <div className="px-4 py-3 font-data text-sm text-ink">{m.ruleCount}</div>
               <div className="px-4 py-3">
-                <span className={`font-data text-xs font-semibold uppercase tracking-wide px-2.5 py-1  ${STATUS_COLORS[m.status] ?? ""}`}>
+                <span className={`font-data text-xs font-semibold uppercase tracking-wide px-2.5 py-1  ${statusColor(m.status)}`}>
                   {m.status}
                 </span>
               </div>
@@ -148,7 +163,11 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
       {/* OWASP AST10 */}
       <Reveal>
         <h2 className="font-display text-2xl font-medium tracking-[-1px] mb-1 mt-12">OWASP Agentic Skills Top 10 (AST10)</h2>
-        <p className="text-sm text-stone mb-6">{coverage.ast10Covered}/10 {locale === "zh" ? "個類別有規則覆蓋。有 3 個類別講的是流程和後設層面，沒辦法用 pattern 偵測。" : "categories with rule coverage. 3 categories are about process or meta-level concerns, which pattern matching cannot detect."}</p>
+        <p className="text-sm text-stone mb-6">
+          {stats.owaspAst10} {locale === "zh" ? "個類別有規則覆蓋。" : "categories with rule coverage."}
+          {gaps.none.length > 0 && (locale === "zh" ? `${gaps.none.join("、")} 沒有規則。` : ` ${gaps.none.join(" and ")} have no rule.`)}
+          {gaps.notPattern.length > 0 && (locale === "zh" ? `對應表把 ${gaps.notPattern.join("、")} 列為流程或後設層面的問題，沒辦法用 pattern 偵測。` : ` The mapping lists ${gaps.notPattern.join(" and ")} as process or meta-level concerns, which pattern matching cannot detect.`)}
+        </p>
       </Reveal>
       <Reveal delay={0.1}>
         <div className="border border-fog">
@@ -164,7 +183,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
               <div className="px-4 py-3 text-sm text-ink">{m.category}</div>
               <div className="px-4 py-3 font-data text-sm text-ink">{m.ruleCount}</div>
               <div className="px-4 py-3">
-                <span className={`font-data text-xs font-semibold uppercase tracking-wide px-2.5 py-1  ${STATUS_COLORS[m.status] ?? ""}`}>
+                <span className={`font-data text-xs font-semibold uppercase tracking-wide px-2.5 py-1  ${statusColor(m.status)}`}>
                   {m.status}
                 </span>
               </div>

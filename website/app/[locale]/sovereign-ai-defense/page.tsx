@@ -257,18 +257,14 @@ export default async function SovereignAIDefensePage({
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (
             <>
-              監管者自己也清楚。EU AI Act 是在 agentic AI 出現之前談定的——它的風險分級假設的是
-              「輔助人類決策」的系統,而不是自己決策、自己行動的系統。NIST 在 2026 年 2 月啟動
-              AI Agent Standards Initiative。框架正在追趕;ATR 認為,它們底下仍然缺的,
+              NIST 在 2026 年 2 月啟動 AI Agent Standards Initiative。ATR 認為，這些框架底下仍然缺的，
               是一個<strong className="text-ink">可執行的偵測層</strong>。
             </>
           ) : (
             <>
-              The regulators know it. The EU AI Act was negotiated before agentic AI arrived — its risk tiers
-              assume systems that <strong className="text-ink">assist</strong> a human decision, not systems that decide and act on their
-              own. NIST launched its AI Agent Standards Initiative in February 2026.
-              The frameworks are catching up; in ATR&rsquo;s view, what they still need underneath them is an
-              {" "}<strong className="text-ink">executable detection layer</strong>.
+              NIST launched its AI Agent Standards Initiative in February 2026. In ATR&rsquo;s view, what the
+              frameworks still need underneath them is an{" "}
+              <strong className="text-ink">executable detection layer</strong>.
             </>
           )}
         </p>
@@ -299,20 +295,13 @@ export default async function SovereignAIDefensePage({
             NIST · {zh ? "2026-01-12 新聞稿:CAISI 發布 AI agent 系統安全 RFI" : "News release, 2026-01-12: CAISI's RFI on securing AI agent systems"}
           </a>
         </Callout>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-fog border border-fog mt-7">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[2px] bg-fog border border-fog mt-7">
           <StatCell
             label={zh ? "擔憂" : "CONCERNED"}
             value="87"
             unit="%"
             note={zh ? "組織擔憂 AI Agent 安全 · 但只有 11% 已準備" : "but only 11% report being prepared · CSA 2026"}
             valueColor="critical"
-          />
-          <StatCell
-            label={zh ? "開放標準" : "OPEN STANDARDS"}
-            value="0"
-            unit=""
-            note={zh ? "agent 偵測層此前沒有廠商中立的開放標準" : "vendor-neutral open standards for the agent detection layer, before ATR"}
-            valueColor="blue"
           />
           <StatCell
             label="MYTHOS"
@@ -333,8 +322,8 @@ export default async function SovereignAIDefensePage({
         </h2>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh
-            ? `MIT License · ${ruleCount} 條偵測規則 · Protocol-agnostic。從真實攻擊情資產生,對應 NVIDIA garak、OWASP Agentic 與 MITRE ATLAS 的分類。任何國家可採用,任何組織可貢獻,沒有地緣政治風險,沒有 vendor lock-in。`
-            : `MIT License · ${ruleCount} detection rules · protocol-agnostic. Derived from real attack corpora, classified to NVIDIA garak / OWASP Agentic / MITRE ATLAS taxonomies. Adoptable by any country, contributable by any organization. No geopolitical risk. No vendor lock-in.`}
+            ? `MIT License · ${ruleCount} 條偵測規則 · Protocol-agnostic。從真實攻擊情資產生,對應 NVIDIA garak、OWASP Agentic 與 MITRE ATLAS 的分類。任何國家可採用,任何組織可貢獻,沒有 vendor lock-in。`
+            : `MIT License · ${ruleCount} detection rules · protocol-agnostic. Derived from real attack corpora, classified to NVIDIA garak / OWASP Agentic / MITRE ATLAS taxonomies. Adoptable by any country, contributable by any organization. No vendor lock-in.`}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (

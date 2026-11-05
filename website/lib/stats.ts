@@ -3,8 +3,31 @@ import { join } from "node:path";
 import { loadAllRules } from "./rules";
 import { loadAdopters, adopterLogoUrl, type Adopter, type AdopterTier } from "./adopters";
 import { countLanes, type LaneCounts } from "./lanes";
+import { loadCoverageData } from "./coverage";
 
 const DATA_DIR = join(process.cwd(), "..", "data");
+const DOCS_DIR = join(process.cwd(), "..", "docs");
+
+/** Shown in place of a coverage figure whose source file could not be read. */
+const NO_FIGURE = "—";
+
+/** "covered/total" from parsed mapping rows: a row counts as covered when it names at least one rule. */
+function coveredOf(rows: ReadonlyArray<{ ruleCount: number }>): string {
+  if (rows.length === 0) return NO_FIGURE;
+  return `${rows.filter((r) => r.ruleCount > 0).length}/${rows.length}`;
+}
+
+/** "covered/active" from the Summary block of the generated docs/SAFE-MCP-MAPPING.md. */
+function safMcpCoverage(): string {
+  try {
+    const md = readFileSync(join(DOCS_DIR, "SAFE-MCP-MAPPING.md"), "utf-8");
+    const active = /^- Active techniques in the framework model: (\d+)$/m.exec(md);
+    const covered = /^- Techniques with at least one reviewed ATR rule \(partial or adjacent\): (\d+)$/m.exec(md);
+    return active && covered ? `${covered[1]}/${active[1]}` : NO_FIGURE;
+  } catch {
+    return NO_FIGURE;
+  }
+}
 const MEASUREMENTS_DIR = join(DATA_DIR, "measurements");
 
 function readJson<T>(path: string): T | null {
@@ -385,6 +408,7 @@ export function loadSiteStats(): SiteStats {
 }
 
 function computeSiteStats(): SiteStats {
+  const coverage = loadCoverageData();
   const clawhub = readJson<ClawHubStats>(
     join(DATA_DIR, "clawhub-scan", "ecosystem-stats.json"),
   );
@@ -481,9 +505,11 @@ function computeSiteStats(): SiteStats {
 
     ecosystemIntegrations: ecosystemFromAdopters(),
 
-    owaspAgentic: "10/10",
-    safeMcp: "55/78",
-    owaspAst10: "7/10",
+    // Computed from the mapping documents, never typed in: docs/OWASP-MAPPING.md,
+    // docs/OWASP-AST10-MAPPING.md (via lib/coverage.ts) and docs/SAFE-MCP-MAPPING.md.
+    owaspAgentic: coveredOf(coverage.owaspAgentic),
+    safeMcp: safMcpCoverage(),
+    owaspAst10: coveredOf(coverage.owaspAst10),
 
     benchmarks: loadBenchmarkMeasurements(),
   };

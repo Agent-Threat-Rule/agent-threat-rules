@@ -44,8 +44,8 @@ const POINTS = [
   {
     head: { en: "Who gets the result", zh: "結果交給誰" },
     body: {
-      en: "Developers get SARIF that drops straight into CI. Teams that report against NIST get OSCAL that passes the official schema. Auditors and insurers get the signed receipt from ATR Eval.",
-      zh: "開發者拿到 SARIF，直接進 CI。要向 NIST 交代的，拿 OSCAL，已經過官方 schema 驗證。稽核和保險公司，拿 ATR Eval 簽過名的收據。",
+      en: "Developers get SARIF that drops straight into CI. GRC tools get OSCAL, valid against the OSCAL schema. Auditors and insurers get the signed receipt from ATR Eval.",
+      zh: "開發者拿到 SARIF，直接進 CI。GRC 工具拿 OSCAL，格式符合 OSCAL schema。稽核和保險公司，拿 ATR Eval 簽過名的收據。",
     },
   },
 ];

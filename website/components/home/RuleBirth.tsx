@@ -14,7 +14,11 @@ export interface BirthRule {
   truePositives: number;
   trueNegatives: number;
   mappings: string[];
-  npmVersion: string;
+  /** Fixed historical dates (UTC); the page that builds this cites their sources. */
+  reported: string;
+  mergedToMain: string;
+  firstNpmVersion: string;
+  firstNpmDate: string;
 }
 
 type B = { en: string; zh: string };
@@ -43,8 +47,8 @@ const STEPS: ReadonlyArray<{ key: string; label: B; head: B; body: B }> = [
     label: { en: "Tests", zh: "測試" },
     head: { en: "It has to prove both ways", zh: "該抓的抓，不該抓的放" },
     body: {
-      en: "Every rule carries examples it must catch and examples it must leave alone. A named maintainer reviews it before it ships.",
-      zh: "每條規則都附上必須抓到的例子，也附上必須放過的例子。放出去之前，由一位具名的維護者審過。",
+      en: "Every rule carries examples it must catch and examples it must leave alone. CI reruns them on every pull request and every push to main.",
+      zh: "每條規則都附上必須抓到的例子，也附上必須放過的例子。每個 PR、每次推上 main，CI 都會把這些例子重跑一遍。",
     },
   },
   {
@@ -52,8 +56,8 @@ const STEPS: ReadonlyArray<{ key: string; label: B; head: B; body: B }> = [
     label: { en: "Release", zh: "發布" },
     head: { en: "Everyone gets it", zh: "所有人一起拿到" },
     body: {
-      en: "It ships in the next numbered release. Every agent that updates ATR now knows this trick, and nobody had to sign anything or pay for it.",
-      zh: "它跟著下一個版號發布。每一個更新了 ATR 的 agent，從此都認得這一招，沒有人需要簽約，也不用付錢。",
+      en: "It ships in the next numbered release on npm. An agent that updates ATR gets the rule in the lanes its maturity allows. Nobody had to sign anything or pay for it.",
+      zh: "它跟著下一個 npm 版號發布。更新了 ATR 的 agent 就拿得到這條規則，在它成熟度允許的車道裡跑。沒有人需要簽約，也不用付錢。",
     },
   },
 ];
@@ -89,7 +93,7 @@ export function RuleBirth({ locale, rule }: { locale: string; rule: BirthRule })
         <div className="relative min-h-[320px] flex items-center justify-center py-8">
           <div className="absolute inset-0 grid-paper grid-paper-fade pointer-events-none" aria-hidden="true" />
           <div key={current.key} className="relative w-full max-w-[460px] animate-[fadein_450ms_ease-out]">
-            {current.key === "incident" && <IncidentCard zh={zh} />}
+            {current.key === "incident" && <IncidentCard zh={zh} reported={rule.reported} />}
             {current.key === "rule" && <RuleCard rule={rule} />}
             {current.key === "tests" && <TestsCard zh={zh} rule={rule} />}
             {current.key === "release" && <ReleaseCard zh={zh} rule={rule} />}
@@ -109,12 +113,12 @@ export function RuleBirth({ locale, rule }: { locale: string; rule: BirthRule })
 
 const CARD = "bg-white border border-fog shadow-[0_20px_50px_-30px_rgba(0,0,0,0.3)]";
 
-function IncidentCard({ zh }: { zh: boolean }) {
+function IncidentCard({ zh, reported }: { zh: boolean; reported: string }) {
   return (
     <div className={`${CARD} p-5`}>
       <div className="flex items-center justify-between font-data text-[10.5px] text-stone">
         <span>{zh ? "事件回報" : "Incident report"}</span>
-        <span>2026-07-22</span>
+        <span>{reported}</span>
       </div>
       <div className="mt-3 text-[15px] leading-snug text-ink">Azure DevOps MCP · repo_get_pull_request_by_id</div>
       <div className="mt-4 border border-fog bg-ash/40 p-3 font-data text-[11px] leading-[1.7] text-graphite">
@@ -185,17 +189,21 @@ function TestsCard({ zh, rule }: { zh: boolean; rule: BirthRule }) {
 function ReleaseCard({ zh, rule }: { zh: boolean; rule: BirthRule }) {
   return (
     <div className={`${CARD} p-5`}>
-      <div className="font-data text-[12px] text-stone">$ npm install agent-threat-rules@{rule.npmVersion}</div>
+      <div className="font-data text-[12px] text-stone">$ npm install agent-threat-rules@{rule.firstNpmVersion}</div>
       <div className="mt-4 flex items-center gap-3">
         <span className="w-2 h-2 bg-brand" />
         <span className="font-data text-[12.5px] text-ink">{rule.id}</span>
-        <span className="text-[12px] text-stone">{zh ? "已包含" : "included"}</span>
+        <span className="text-[12px] text-stone">{zh ? "首次收進這一版" : "first included in this release"}</span>
       </div>
       <div className="mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[12.5px]">
         <span className="text-stone">{zh ? "事件回報" : "Reported"}</span>
-        <span className="font-data text-ink">2026-07-22</span>
+        <span className="font-data text-ink">{rule.reported}</span>
         <span className="text-stone">{zh ? "規則日期" : "Rule dated"}</span>
         <span className="font-data text-ink">{rule.date}</span>
+        <span className="text-stone">{zh ? "合進 main" : "Reached main"}</span>
+        <span className="font-data text-ink">{rule.mergedToMain}</span>
+        <span className="text-stone">{zh ? "npm 發布" : "Shipped on npm"}</span>
+        <span className="font-data text-ink">{rule.firstNpmDate} · {rule.firstNpmVersion}</span>
       </div>
     </div>
   );

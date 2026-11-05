@@ -10,6 +10,32 @@ import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
 import { RFC2119 } from "@/components/spec/RFC2119";
 import { NormativeBadge } from "@/components/spec/Badges";
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
+import { loadSiteStats } from "@/lib/stats";
+
+const REPO = "https://github.com/Agent-Threat-Rule/agent-threat-rules";
+const REPO_ROOT = join(process.cwd(), "..");
+
+/** Number of sub-directories under a repo path (one per rule or case); 0 when missing. */
+function countDirs(...parts: string[]): number {
+  try {
+    return readdirSync(join(REPO_ROOT, ...parts), { withFileTypes: true }).filter((d) => d.isDirectory()).length;
+  } catch {
+    return 0;
+  }
+}
+
+/** Fixture counts read from disk at build time, so the page never types them in. */
+function loadSuiteCounts() {
+  const tpRules = countDirs("conformance", "v1.0", "fixtures", "tp");
+  const tnRules = countDirs("conformance", "v1.0", "fixtures", "tn");
+  return {
+    suiteRules: Math.max(tpRules, tnRules),
+    edgeCases: countDirs("conformance", "v1.0", "fixtures", "edge"),
+    proposedFixtures: countDirs("spec", "conformance", "baseline", "fixtures"),
+  };
+}
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -45,6 +71,8 @@ export default async function ConformancePage({
   const meta = getSpecMeta();
   const prefix = `/${locale}`;
   const zh = locale === "zh";
+  const suite = loadSuiteCounts();
+  const ruleCount = loadSiteStats().ruleCount;
 
   return (
     <main
@@ -73,7 +101,9 @@ export default async function ConformancePage({
           className="text-base md:text-xl text-graphite leading-snug mb-6"
           style={{ fontFamily: "var(--font-body)", maxWidth: "42em" }}
         >
-          {t(locale, "conformance.subtitle")}
+          {zh
+            ? "在台北寫的規則，要能原封不動跑在西雅圖的引擎上。靠的就是符規。三個等級講清楚，一個系統要做到什麼，才能說自己實作了 ATR。測試 fixture 放在 repository 裡，目前還沒有任何引擎宣稱符規。"
+            : "A rule written in Taipei should run unchanged on an engine in Seattle. Conformance is what makes that true. Three levels spell out what a system has to do before it can say it implements ATR. The test fixtures are in the repository, and no engine claims conformance yet."}
         </p>
         <DocumentStatus locale={locale} />
       </header>
@@ -193,23 +223,56 @@ export default async function ConformancePage({
               </a>
               {t(locale, "conformance.testsuite.h")}
             </h2>
-            <p>{t(locale, "conformance.testsuite.body")}</p>
+            <p>
+              {zh ? (
+                <>
+                  符規的測試材料放在兩個地方，兩邊還沒有統一。今天能跑的是{" "}
+                  <a href={`${REPO}/tree/main/conformance/v1.0`} target="_blank" rel="noopener noreferrer" className="text-navy underline">
+                    conformance/v1.0/ ↗
+                  </a>
+                  。裡面有 {suite.suiteRules} 條規則的 true positive 和 true negative fixture，另有 {suite.edgeCases} 個邊界案例。目前有 {ruleCount} 條規則，其餘的還沒有 fixture。這套測試在參考引擎上還沒有全部跑過，沒過的 fixture 逐一列在它的 README。
+                </>
+              ) : (
+                <>
+                  Conformance material lives in two places, and they are not reconciled yet. The suite you can run today is{" "}
+                  <a href={`${REPO}/tree/main/conformance/v1.0`} target="_blank" rel="noopener noreferrer" className="text-navy underline">
+                    conformance/v1.0/ ↗
+                  </a>
+                  . It has true-positive and true-negative fixtures for {suite.suiteRules} rules, plus {suite.edgeCases} edge cases. There are {ruleCount} rules, so the rest have no fixture yet. The suite does not yet pass end to end on the reference engine. Its README lists each fixture that fails.
+                </>
+              )}
+            </p>
             <pre>
-              <code>{`spec/
-└── conformance/
-    ├── L1/
-    │   ├── 001-basic-match.yaml
-    │   ├── 002-scan-target-mismatch.yaml
-    │   ├── 003-status-draft-skip.yaml
-    │   └── …
-    ├── L2/
-    │   └── …
-    └── README.md`}</code>
+              <code>{`conformance/v1.0/
+├── fixtures/
+│   ├── tp/<rule_id>/input.yaml + expect.json
+│   ├── tn/<rule_id>/input.yaml + expect.json
+│   └── edge/<case_id>/input.yaml + expect.json
+├── runner/run-conformance.ts
+├── README.md
+└── SUITE.md
+
+spec/conformance/        (${zh ? "未批准" : "not ratified"})
+├── baseline/
+├── README.md
+└── SIGNING.md`}</code>
             </pre>
             <p className="text-sm text-stone mt-4" style={{ maxWidth: "42em" }}>
-              {zh
-                ? "每個 fixture 是一份 YAML 檔，分三段：目標規則、輸入的 event、預期的評估結果。寫引擎的人在本機 clone repo，跑一遍測試套件，就會產出 pass/fail 報告。"
-                : "Each fixture is a YAML file in three blocks: the target rule, the input event and the expected evaluation result. Engine implementers clone the repo, run the suite locally, and get a pass/fail report."}
+              {zh ? (
+                <>
+                  <a href={`${REPO}/tree/main/spec/conformance`} target="_blank" rel="noopener noreferrer" className="text-navy underline">
+                    spec/conformance/ ↗
+                  </a>{" "}
+                  是提案中的語料庫，它的 README 標明尚未批准，也寫明目前沒有引擎宣稱符合 ATR。裡面目前只有 {suite.proposedFixtures} 個 fixture。conformance/v1.0 的 README 用測試結果來定義 L1 到 L3，跟本頁的三個等級不是同一套。
+                </>
+              ) : (
+                <>
+                  <a href={`${REPO}/tree/main/spec/conformance`} target="_blank" rel="noopener noreferrer" className="text-navy underline">
+                    spec/conformance/ ↗
+                  </a>{" "}
+                  is a proposed corpus. Its README marks it as not ratified and says no engine claims ATR conformance. It holds {suite.proposedFixtures} {suite.proposedFixtures === 1 ? "fixture" : "fixtures"} so far. The conformance/v1.0 README defines L1 to L3 by test results, which is not the same as the three levels on this page.
+                </>
+              )}
             </p>
           </section>
 
