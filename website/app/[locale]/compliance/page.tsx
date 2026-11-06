@@ -87,7 +87,7 @@ function buildFrameworks(ruleCount: number) {
       coverage: "55/78 techniques",
       coverage_zh: "55/78 項技術",
       desc_en: "Counted per technique: 55 of 78 active SAF Framework Model v2 techniques have at least one reviewed ATR rule, as a partial or adjacent match. These are candidate mappings. SAF has not validated them, and SAF validates outside mappings in its own registry.",
-      desc_zh: "按技術算：SAF Framework Model v2 的 78 項有效技術裡，55 項至少有一條審查過的 ATR 規則對到（partial 或 adjacent）。這些是候選對照，SAF 還沒驗證。要不要驗證，由 SAF 在自己的 registry 決定。",
+      desc_zh: "按技術算：SAF Framework Model v2 的 78 項有效技術中，55 項至少有一條審查過的 ATR 規則對到（partial 或 adjacent）。這些是候選對照，SAF 還沒驗證。要不要驗證，由 SAF 在自己的 registry 決定。",
       link: null,
     },
   ];
