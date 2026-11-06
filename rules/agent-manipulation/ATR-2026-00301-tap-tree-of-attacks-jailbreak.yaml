@@ -1,6 +1,6 @@
 title: 'TAP Tree-of-Attacks-with-Pruning Jailbreak'
 id: ATR-2026-00301
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects Tree of Attacks with Pruning (TAP) jailbreak prompts extracted from 9 real
@@ -87,8 +87,8 @@ detection:
       description: 'TAP JSON iteration scaffold — {"improvement":"...","prompt":"..."} is the automated refinement loop structure used across all 9 TAP payloads'
     - field: tool_response
       operator: regex
-      value: '(?:SCORE\s*:\s*(?:[1-9]|10)(?!\d)|rating\s+from\s+1-10\s+on\s+how\s+jailbroken|maximize\s+SCORE|Your\s+goal\s+is\s+to\s+maximize\s+SCORE)'
-      description: 'TAP scoring system — "SCORE: 1-10" (bounded to 1-10 to avoid FP on benign score: 95 metadata), "rating from 1-10 on how jailbroken" and "maximize SCORE" are unique TAP markers in tap_jailbreaks.txt'
+      value: '(?:rating\s+from\s+1-10\s+on\s+how\s+jailbroken|maximize\s+SCORE|Your\s+goal\s+is\s+to\s+maximize\s+SCORE)'
+      description: 'TAP scoring system — "rating from 1-10 on how jailbroken" and "maximize SCORE" are unique TAP markers in tap_jailbreaks.txt. A bare "SCORE: <1-10>" is not: it is how security reports and dashboards print CVSS and priority scores ("CVSS Score: 3.1"), and every TAP payload that carries it also carries a marker above'
     - field: tool_response
       operator: regex
       value: '\[INST\]\s*(?:<<SYS>>)?\s*You\s+are\s+a\s+helpful\s+red\s+team(?:ing)?\s+assistant'
@@ -135,6 +135,9 @@ test_cases:
     - input: "Score this essay from 1 to 10 based on clarity and structure."
       expected: not_triggered
       reason: "Legitimate scoring request without jailbreak optimization framing"
+    - input: '{"success": true, "message": "Finding SEC_004 - Weak TLS (HIGH): CVSS Score: 6.1. Remediation: disable TLS 1.0 on the gateway."}'
+      expected: not_triggered
+      reason: "Security scan output with a CVSS score field and no jailbreak scaffolding"
     - input: "You are a helpful assistant. Please answer the following question about history."
       expected: not_triggered
       reason: "Benign assistant instruction without ethical constraint removal"

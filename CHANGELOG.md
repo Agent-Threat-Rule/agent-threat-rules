@@ -56,6 +56,25 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **ATR-2026-01462 and -00301 stop matching ordinary report fields.** A
+  replay of the 303 recorded conversations in
+  [ADR-Bench](https://github.com/uber/ADR) found both firing on benign tool
+  output and agent replies. Each change removes one alternative from one
+  condition, and `rule_version` goes to 2. ATR-2026-01462 #0 (maturity
+  `stable`, so it runs in the enforce lane with `block_input`) took a bare
+  `Priority Level: CRITICAL` as an authority claim, which blocked a vehicle
+  maintenance report; the structured override tokens (`[SYSTEM OVERRIDE`,
+  `ROOT_ADMIN`, `OMEGA CLEARANCE`, `AUTHORIZATION: ROOT`) still match, and
+  every corpus payload with the priority field carries one of them.
+  ATR-2026-00301 #2 took a bare `SCORE: <1-10>` as TAP scoring, which
+  matched `CVSS Score: 3.1` in security scan output; `maximize SCORE` and
+  `rating from 1-10 on how jailbroken` still match. Each rule gains a true
+  negative for the case. Benign false positives over the 14,172 samples of
+  the benign gate: 00301 12 to 0, 01462 0. On ADR-Bench (261 benign, 42
+  malicious conversations), benign conversations flagged in the enforce lane
+  go from 1 to 0 and in the alert lane at high or critical severity from 27
+  to 24, with the same 10 malicious conversations caught.
+
 - **A rule passed to the engine now overrides the bundled rule with its id.**
   `new ATREngine({ rules })` with `loadRules()` also loads the rules directory
   (the bundled tree by default). A passed rule and a directory rule with the

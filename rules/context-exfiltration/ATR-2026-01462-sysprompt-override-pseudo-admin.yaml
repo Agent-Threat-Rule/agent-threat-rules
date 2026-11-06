@@ -1,6 +1,6 @@
 title: "System Prompt Override via Pseudo-Admin / Authority Injection"
 id: ATR-2026-01462
-rule_version: 1
+rule_version: 2
 status: stable
 description: >
   Detects attempts to override or replace the system prompt by injecting fake
@@ -94,9 +94,13 @@ detection:
     # persona name ("...Trolley Problem, and System Override."), so it cannot
     # fire on its own. ROOT_ADMIN / OMEGA CLEARANCE / AUTHORIZATION: ROOT remain
     # standalone — they are structured injection tokens, not prose.
+    # "PRIORITY LEVEL: CRITICAL" is not among them: it is an ordinary field in
+    # tickets, alerts and maintenance reports ("Priority Level: CRITICAL" under a
+    # vehicle service schedule), and every corpus payload that carries it also
+    # carries one of the tokens above.
     - field: content
       operator: regex
-      value: "(?i)((?:<!--|\\[)\\s*SYSTEM\\s+OVERRIDE\\b|SYSTEM\\s+OVERRIDE\\s+(?:BEGIN|MODE|ACTIVE|NOW|ENABLED)|ROOT_?ADMIN|OMEGA\\s+CLEARANCE|PRIORITY\\s+LEVEL\\s*:\\s*CRITICAL|AUTHORIZATION\\s*:\\s*(ROOT|ADMIN|FULL|OMEGA))"
+      value: "(?i)((?:<!--|\\[)\\s*SYSTEM\\s+OVERRIDE\\b|SYSTEM\\s+OVERRIDE\\s+(?:BEGIN|MODE|ACTIVE|NOW|ENABLED)|ROOT_?ADMIN|OMEGA\\s+CLEARANCE|AUTHORIZATION\\s*:\\s*(ROOT|ADMIN|FULL|OMEGA))"
       description: "System override (structurally framed) / root admin / omega clearance authority claim"
 
     # Layer 2: ADMIN_OVERRIDE: TRUE + CONTENT_FILTER: DISABLED / SAFETY_OVERRIDE: ACTIVE
@@ -168,3 +172,6 @@ test_cases:
     - input: "Please override the default formatting and use a numbered list instead."
       expected: not_triggered
       description: "Legitimate formatting override request — no system prompt override"
+    - input: "Fleet maintenance summary\nVehicle: VAN-12\nDays since last service: 45\nPriority Level: CRITICAL\nRecommended schedule: within 1 day"
+      expected: not_triggered
+      description: "Maintenance report with a priority field — no override or authority claim"
