@@ -325,8 +325,8 @@ export default async function SovereignAIDefensePage({
         </h2>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh
-            ? `MIT License · ${ruleCount} 條偵測規則 · Protocol-agnostic。從真實攻擊情資產生，對應 NVIDIA garak、OWASP Agentic 與 MITRE ATLAS 的分類。任何國家可採用，任何組織可貢獻，沒有 vendor lock-in。`
-            : `MIT License · ${ruleCount} detection rules · protocol-agnostic. Derived from real attack corpora, classified to NVIDIA garak / OWASP Agentic / MITRE ATLAS taxonomies. Adoptable by any country, contributable by any organization. No vendor lock-in.`}
+            ? `MIT License · ${ruleCount} 條偵測規則 · Protocol-agnostic。從真實攻擊情資產生，對應 NVIDIA garak、OWASP Agentic 與 MITRE ATLAS 的分類；這些對應是 ATR 自己做的，沒有經過這些單位背書。任何國家可採用，任何組織可貢獻，沒有 vendor lock-in。`
+            : `MIT License · ${ruleCount} detection rules · protocol-agnostic. Derived from real attack corpora, classified to NVIDIA garak / OWASP Agentic / MITRE ATLAS taxonomies (ATR's own mappings, not endorsed by those bodies). Adoptable by any country, contributable by any organization. No vendor lock-in.`}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (
@@ -684,6 +684,11 @@ atr convert splunk               # or export into the SOC you already run`}</cod
             <div className="font-data text-[11px] text-mist tracking-[1px] uppercase mt-3">
               MIT License · Open Standard
             </div>
+            <p className="mt-3 max-w-[420px]">
+              {zh
+                ? "利益揭露：維護者創辦並控制 PANGUARD AI, INC.，這家公司販售以 ATR 為基礎的 agent 資安產品。"
+                : "Interests: the maintainer founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR."}
+            </p>
           </div>
           <div className="md:text-right">
             <a href="https://agentthreatrule.org" className="font-display font-semibold text-sm text-blue hover:underline">

@@ -503,6 +503,11 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
           </a>
         </div>
       </Reveal>
+      <p className="text-xs text-stone mt-10 max-w-2xl">
+        {zh
+          ? "利益揭露：維護者創辦並控制 PANGUARD AI, INC.，這家公司販售以 ATR 為基礎的 agent 資安產品。"
+          : "Interests: the maintainer founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR."}
+      </p>
     </div>
     </Phrased>
   );

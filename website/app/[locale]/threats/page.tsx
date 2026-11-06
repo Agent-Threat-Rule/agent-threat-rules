@@ -194,7 +194,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
         </div>
       </Reveal>
 
-      {/* ── Whitelist: ATR Verified ── */}
+      {/* ── Whitelist: scanned with no high/critical findings ── */}
       <section className="py-10 md:py-14 px-5 md:px-6 bg-[#F0FAF0] border-y border-green/20 -mx-5 md:-mx-6">
         <div className="max-w-[1120px] mx-auto">
           <Reveal>
@@ -225,15 +225,11 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
                     <div className="font-data text-xs font-medium text-ink truncate">{entry.skill}</div>
                     <span className="font-data text-[10px] text-stone shrink-0">{entry.downloads.toLocaleString()} {zh ? "下載" : "dl"}</span>
                   </div>
-                  {/* ATR Official Badge */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/atr-badge-clean.svg"
-                    alt="ATR Scanned - No Issues"
-                    width={170}
-                    height={20}
-                    className="block"
-                  />
+                  {/* A plain scan note, not the "No Issues" badge: a scan with no
+                      high-severity match is not a statement that a skill is safe. */}
+                  <div className="font-data text-[10px] text-green">
+                    {zh ? `${wl.generated} 掃描：沒有高風險命中` : `Scan ${wl.generated}: no high/critical findings`}
+                  </div>
                 </div>
               ))}
             </div>
@@ -246,7 +242,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
                 rel="noopener noreferrer"
                 className="font-data text-xs text-green hover:underline inline-block mt-4"
               >
-                {zh ? `看全部 ${wl.total_verified} 個已認證的 skill` : `View all ${wl.total_verified} verified skills`}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
+                {zh ? `看全部 ${wl.total_verified} 個在 ${wl.generated} 掃描中沒有高風險命中的 skill` : `View all ${wl.total_verified} skills with no high/critical findings in the ${wl.generated} scan`}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
             </Reveal>
           )}

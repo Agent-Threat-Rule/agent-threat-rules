@@ -339,8 +339,8 @@ export default async function GovernancePage({
           <div className="space-y-4 text-sm text-graphite leading-[1.7]">
             <p>
               {zh
-                ? "短期（30 天內）：GitHub 上的 CODEOWNERS 檔和 CI 自動化照常運作，已合併的規則繼續經由 npm 發布。ATR 不依賴任何單一伺服器或封閉系統。規則是純文字 YAML，誰都可以 fork。"
-                : "Short term (within 30 days): the CODEOWNERS file and CI automation keep running on GitHub, and merged rules keep publishing through npm. ATR does not depend on a single server or a closed system. The rules are plain-text YAML, and anyone can fork them."}
+                ? "短期（30 天內）：GitHub 上的 CODEOWNERS 檔和 CI 照常運作，PR 照樣能審查、合併。但發新的 npm 版本，要有發布權限的維護者用 2FA 核准，CI 只能先 stage。ATR 不依賴任何單一伺服器或封閉系統。規則是純文字 YAML，誰都可以 fork。"
+                : "Short term (within 30 days): the CODEOWNERS file and CI keep running on GitHub, and pull requests can still be reviewed and merged. A new npm release, though, needs a maintainer with publish rights to approve it with 2FA; CI can only stage it. ATR does not depend on a single server or a closed system. The rules are plain-text YAML, and anyone can fork them."}
             </p>
             <p>
               {zh

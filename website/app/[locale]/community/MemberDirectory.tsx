@@ -7,13 +7,15 @@ type Tab = Tier | "all";
 
 const TAB_LABELS: Record<Tab, { en: string; zh: string }> = {
   all: { en: "All members", zh: "全部成員" },
-  steering: { en: "Steering", zh: "指導小組" },
+  // The tier key stays "steering" in members.yaml; the TSC is not seated yet,
+  // so the label names what the tier holds today: maintainers.
+  steering: { en: "Maintainers", zh: "維護者" },
   expert: { en: "Experts", zh: "專家" },
   contributor: { en: "Contributors", zh: "貢獻者" },
 };
 
 const TIER_NOTE: Record<Tier, { en: string; zh: string }> = {
-  steering: { en: "Steering", zh: "指導小組" },
+  steering: { en: "Maintainer", zh: "維護者" },
   expert: { en: "Expert", zh: "專家" },
   contributor: { en: "Contributor", zh: "貢獻者" },
 };

@@ -6,6 +6,8 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Phrased from "@/components/Phrased";
 import { Sign } from "@/components/Sign";
+import { loadAllRules } from "@/lib/rules";
+import { provenanceBreakdown, shareOf } from "@/lib/provenance";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -106,54 +108,57 @@ const MATURITY_LEVELS = [
   },
 ];
 
+// The path every rule takes today, whoever drafted it. Stages 2 to 4 are CI
+// jobs in .github/workflows (validate.yml, rule-quality.yml, redos-gate.yml,
+// re2-portability.yml, maturity-fp-gate.yml); stage 6 is publish.yml.
 const GAUNTLET_STAGES = [
   {
     stage: "1",
-    title: "LLM Drafter",
-    titleZh: "LLM 起草",
-    detailZh: "Claude Sonnet 依照嚴格的提示產生 YAML 規則，要求至少 3 個條件、5 個以上 TP/TN、3 個以上繞過測試，以及 OWASP 與 MITRE 對應。",
+    title: "Pull request",
+    titleZh: "Pull request",
+    detailZh: "規則來自 CVE 與安全公告掃描、benchmark 漏報挖掘和貢獻者。不管是人寫的還是 LLM 協助起草的，都要開 pull request 才能進 main。",
     detail:
-      "Claude Sonnet generates a YAML rule against a strict prompt requiring 3+ conditions, 5+ TP/TN, 3+ evasion tests, and OWASP + MITRE mapping.",
+      "Rules come from CVE and advisory sweeps, benchmark-miss mining and contributors. Whether a person or an LLM drafted it, a rule reaches main only through a pull request.",
   },
   {
     stage: "2",
-    title: "Syntax Gate",
-    titleZh: "語法閘",
-    detailZh: "抽出 regex，剔除無效的 pattern，把 PCRE 轉成 JS 的寫法。壞掉的規則直接丟掉，並記下原因。",
+    title: "Schema and own tests",
+    titleZh: "Schema 與自身測試",
+    detailZh: "規則要符合 schema，對應的框架條款要在允許清單裡，而且要抓到自己列出的每一個真陽性樣本。",
     detail:
-      "Regex extraction, invalid pattern rejection, PCRE-to-JS normalization. Broken rules are dropped, and the reason is logged.",
+      "The rule must match the schema, its framework mappings must be on the allowlists, and it must catch every true positive it lists.",
   },
   {
     stage: "3",
-    title: "Quality Gate",
-    titleZh: "品質閘",
-    detailZh: "跑 RFC-001 公式：偵測深度、測試覆蓋、參考對應、文件完整度。低於門檻就退回。",
+    title: "Benign corpus",
+    titleZh: "良性語料",
+    detailZh: "新規則在公開的良性 skill 語料和「提到攻擊但不是攻擊」的研究語料上都不能有誤報，也不能命中其他規則的真陰性樣本。",
     detail:
-      "The RFC-001 formula runs: detection depth, test coverage, reference mapping, documentation completeness. A rule below the bar is rejected.",
+      "A new rule may not fire on the public benign skill corpus or on the corpus of text that mentions attacks without being one, and may not match any other rule's true negatives.",
   },
   {
     stage: "4",
-    title: "Canary Observation",
-    titleZh: "Canary 觀察",
-    detailZh: "通過的規則進入 canary 觀察期。要再往上升級，得看獨立確認的次數和野外誤報的量測結果。",
+    title: "Regex safety",
+    titleZh: "Regex 安全",
+    detailZh: "regex 要過 ReDoS 閘和 RE2 可攜性檢查。已知的舊問題記在 baseline 裡，數量只能減少，不能增加。",
     detail:
-      "Accepted rules enter a canary window. Independent confirmations and wild FP measurements gate further promotion.",
+      "Regexes must pass the ReDoS gate and the RE2 portability check. Known older problems are tracked in a baseline that may shrink but not grow.",
   },
   {
     stage: "5",
-    title: "Human Review",
-    titleZh: "人工審查",
-    detailZh: "來源一開始標成 llm-generated，經人工審查後改成 human-reviewed，規則才可能升到 stable。",
+    title: "Maintainer review",
+    titleZh: "維護者審查",
+    detailZh: "由維護者審查後合併。把規則升到 stable 的 PR，還要在良性語料上維持零誤報，否則 CI 不會過。",
     detail:
-      "Provenance starts as llm-generated. Human review upgrades to human-reviewed before the rule can reach stable.",
+      "A maintainer reviews and merges. A pull request that promotes a rule to stable must also stay at zero false positives on the benign corpus, or CI fails.",
   },
   {
     stage: "6",
-    title: "Upstream PR",
-    titleZh: "上游 PR",
-    detailZh: "升級的規則會對公開的 ATR repository 開 pull request，公開審查後合併。",
+    title: "Staged release",
+    titleZh: "分段發布",
+    detailZh: "維護者推版本 tag 後，CI 把新版 stage 到 npm，再由維護者用 2FA 核准才會上線。",
     detail:
-      "Promoted rules open pull requests against the public ATR repository for open review and merge.",
+      "After a maintainer pushes a version tag, CI stages the release on npm, and it goes live only once a maintainer approves it with 2FA.",
   },
 ];
 
@@ -240,18 +245,6 @@ const EVIDENCE = [
   { stat: "Withdrawn", statZh: "已撤回", label: "Per-lane false-positive rates, withdrawn pending re-measurement", labelZh: "各車道的誤報率，已撤回，等重新量測" },
 ];
 
-const EXAMPLE_RULE = {
-  title: "Hidden Credential Exfiltration with Silent Execution Override",
-  id: "ATR-2026-DRAFT-8f3c9a72",
-  severity: "critical",
-  layers: 5,
-  tpTn: "5 + 5",
-  evasions: 3,
-  owasp: ["LLM01:2025 — Prompt Injection", "ASI01:2026 — Agent Behaviour Hijack"],
-  mitre: "AML.T0051 — LLM Prompt Injection",
-  provenance: "llm-generated",
-};
-
 /* =============================================================
    PAGE
    ============================================================= */
@@ -264,6 +257,7 @@ export default async function QualityStandardPage({
   const { locale: raw } = await params;
   const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
   const installSpec = npmInstallSpec(await loadVersionLabels());
+  const prov = provenanceBreakdown(loadAllRules());
 
   return (
     <Phrased>
@@ -343,55 +337,57 @@ export default async function QualityStandardPage({
         </dl>
       </Reveal>
 
-      {/* ── PROVENANCE RATIO ───────────────────────────────── */}
+      {/* ── PROVENANCE RATIO ─────────────────────────────────
+          Counted from rules/ at build time (lib/provenance.ts); no share on
+          this page is typed by hand. */}
       <Reveal>
         <div className="text-[13px] text-stone mb-3">
           {locale === "zh" ? "規則來源組成" : "Rule provenance breakdown"}
         </div>
         <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-2">
           {locale === "zh"
-            ? "哪些規則是人工審核的，哪些是 LLM 生成的。"
-            : "What fraction is human-reviewed vs. LLM-generated."}
+            ? "哪些規則的對應經過人工確認。"
+            : "Which rules have mappings a person checked."}
         </h2>
         <p className="text-sm text-stone mb-6 max-w-2xl">
           {locale === "zh"
-            ? "ATR 公開這個數字，因為任何下游採用者都應該在評估信任度時知道它。"
-            : "ATR publishes this number because every downstream adopter should know it when evaluating trust."}
+            ? `規則的 metadata_provenance 欄位記錄每個對應（OWASP、MITRE、CWE 等）是誰或什麼設定的，有些規則也記下 payload 取自哪個語料。下面三個數字在建置時從 ${prov.total} 條生效規則算出。這個欄位描述的是對應，不是偵測邏輯由誰撰寫。`
+            : `A rule's metadata_provenance field records who or what set each mapping (OWASP, MITRE, CWE and so on), and for some rules which corpus a payload came from. The three figures below are counted from the ${prov.total} effective rules at build time. The field describes the mappings, not who wrote the detection logic.`}
         </p>
       </Reveal>
       <Reveal delay={0.1}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-fog border border-fog mb-6">
           <div className="bg-paper p-5 md:p-6">
             <div className="text-[13px] text-stone mb-2">
-              {locale === "zh" ? "人工審核" : "Human-reviewed"}
+              {locale === "zh" ? "有人工確認的對應" : "Human-checked mappings"}
             </div>
-            <div className="font-display text-3xl font-medium text-ink mb-1">~30%</div>
+            <div className="font-display text-3xl font-medium text-ink mb-1">{shareOf(prov.human, prov.total)}</div>
             <p className="text-sm text-stone leading-relaxed">
               {locale === "zh"
-                ? "規則創始時由人工撰寫，或已通過人工 review 升級到 stable。這些規則的 metadata_provenance 標記為 human-reviewed。"
-                : "Rules authored by humans at origin or promoted to stable via human review. These rules carry metadata_provenance: human-reviewed."}
+                ? `${prov.human} 條規則至少有一個欄位標記為 human-reviewed 或 human-authored。`
+                : `${prov.human} rules mark at least one field human-reviewed or human-authored.`}
             </p>
           </div>
           <div className="bg-paper p-5 md:p-6">
             <div className="text-[13px] text-stone mb-2">
-              {locale === "zh" ? "LLM 生成 + 雙重閘門驗證" : "LLM-generated + 2-gate validated"}
+              {locale === "zh" ? "有來源紀錄，沒有人工標記" : "Recorded, not marked by a person"}
             </div>
-            <div className="font-display text-3xl font-medium text-ink mb-1">~65%</div>
+            <div className="font-display text-3xl font-medium text-ink mb-1">{shareOf(prov.other, prov.total)}</div>
             <p className="text-sm text-stone leading-relaxed">
               {locale === "zh"
-                ? "由 LLM 草擬，通過語法關 + RFC-001 品質關 + 0 FP benign corpus 驗證。標記為 llm-generated，信心分數上限 70，直到人工 review。"
-                : "Drafted by LLM, passed syntax gate and RFC-001 quality gate, validated against benign corpus with 0 FP. Tagged llm-generated; confidence capped at 70 until human review."}
+                ? `${prov.other} 條規則有這個欄位，但只記了自動產生的對應、同步來源或 payload 語料，沒有欄位標記為人工確認。`
+                : `${prov.other} rules have the field, but it records only auto-generated mappings, sync feeds or payload corpora; no field is marked as checked by a person.`}
             </p>
           </div>
           <div className="bg-paper p-5 md:p-6">
             <div className="text-[13px] text-stone mb-2">
-              {locale === "zh" ? "語料庫指紋（保留為實驗性）" : "Corpus fingerprints (kept experimental)"}
+              {locale === "zh" ? "沒有來源紀錄" : "No provenance recorded"}
             </div>
-            <div className="font-display text-3xl font-medium text-ink mb-1">~5%</div>
+            <div className="font-display text-3xl font-medium text-ink mb-1">{shareOf(prov.none, prov.total)}</div>
             <p className="text-sm text-stone leading-relaxed">
               {locale === "zh"
-                ? "非常字面的模式，從特定語料庫取出。泛化這些規則會帶來無法接受的 FP。保留為 experimental，不用於生產封鎖，明確標注。"
-                : "Highly literal patterns extracted from specific corpora. Generalizing them would produce unacceptable FP. Kept as experimental, not used for production blocking, explicitly labeled."}
+                ? `${prov.none} 條規則沒有 metadata_provenance 欄位，大多早於這個欄位出現。它們的對應無從判斷由誰設定。`
+                : `${prov.none} rules have no metadata_provenance field, most of them older than the field. Who set their mappings is not recorded.`}
             </p>
           </div>
         </div>
@@ -400,13 +396,13 @@ export default async function QualityStandardPage({
         <div className="border-t border-ink pt-5 mb-16">
           <p className="text-sm text-ink leading-relaxed mb-3">
             {locale === "zh"
-              ? "LLM 生成的規則為什麼可以信任？因為雙重閘門設計讓來源和信任度是分開追蹤的。LLM 生成的規則可以通過 experimental gate 快速迭代；升級到 stable（企業在生產環境封鎖的層級）需要人工 review。採用者可以自己決定：只部署 human-reviewed 規則、只部署 stable、或者兩者都用。"
-              : "Why trust LLM-generated rules? Because the two-dimensional compliance model tracks origin and trust separately. LLM-generated rules can pass the experimental gate for fast iteration; stable promotion requires human review. Adopters can decide: deploy only human-reviewed rules, only stable-tier rules, or both."}
+              ? `這份標準要求升到 stable 的規則，來源要經過人工確認。目前 ${prov.stable} 條 stable 規則裡，只有 ${prov.stableHuman} 條有這份紀錄，多數 stable 規則早於這項檢查。採用者決定要封鎖哪些規則時，可以自己對照這個欄位。`
+              : `The standard asks that a rule reaching stable has provenance a person checked. Today ${prov.stableHuman} of the ${prov.stable} stable rules carry that record; most stable rules predate the check. Adopters deciding which rules to block on can check the field themselves.`}
           </p>
           <p className="text-sm text-stone leading-relaxed">
             {locale === "zh"
-              ? "規則集透過 CVE 與安全公告掃描、benchmark 漏報挖掘與貢獻者擴張，每一條都經由維護者合併的 pull request 進入 main。human-reviewed 的比例隨著人工 review 持續積累而上升，而這個比例本身，是公開的。"
-              : "The ruleset grows through CVE and advisory sweeps, benchmark-miss mining and contributors, and each rule reaches main through a pull request a maintainer merges. The human-reviewed share rises as human review accumulates — and that share is itself published."}
+              ? "規則集透過 CVE 與安全公告掃描、benchmark 漏報挖掘與貢獻者擴張，每一條都經由維護者合併的 pull request 進入 main。"
+              : "The ruleset grows through CVE and advisory sweeps, benchmark-miss mining and contributors, and each rule reaches main through a pull request a maintainer merges."}
           </p>
         </div>
       </Reveal>
@@ -562,8 +558,8 @@ export default async function QualityStandardPage({
         </h2>
         <p className="text-sm text-stone mb-6 max-w-2xl">
           {locale === "zh"
-            ? "draft → experimental → test → stable → deprecated。每一階的晉升條件都明確，由機器檢查。規則靠累積的證據往上走，放得再久也不會自己升級。品質退化時自動降級，不需要人工決策。"
-            : "draft → experimental → test → stable → deprecated. Each gate is explicit and mechanical — a rule moves up on the evidence it has accumulated, never on how long it has sat in the repository. When quality regresses, demotion fires automatically, with no human in the loop."}
+            ? "draft → experimental → test → stable → deprecated。每一階的晉升條件都明確，由機器檢查。規則靠累積的證據往上走，放得再久也不會自己升級。品質退化時，系統會開 PR 把規則降級，由人審查後合併。"
+            : "draft → experimental → test → stable → deprecated. Each gate is explicit and mechanical — a rule moves up on the evidence it has accumulated, never on how long it has sat in the repository. When quality regresses, a pull request demotes the rule, and a person reviews it before it merges."}
         </p>
       </Reveal>
 
@@ -600,12 +596,12 @@ export default async function QualityStandardPage({
       <Reveal>
         <div className="bg-paper border border-critical/30 p-5 md:p-6 mb-8">
           <div className="font-data text-xs text-critical tracking-wider uppercase mb-2">
-            {locale === "zh" ? "自動降級" : "Automatic demotion"}
+            {locale === "zh" ? "降級" : "Demotion"}
           </div>
           <p className="text-sm text-ink leading-relaxed">
             {locale === "zh"
-              ? "Stable 規則若野外 false positive rate 超過 2%，或 30 天內累積 3 次未解決的 FP 回報，會自動降級為 experimental。不需人工決策。系統自我修正。"
-              : "Stable rules with a wild false positive rate above 2%, or three unresolved false positive reports within 30 days, are automatically demoted to experimental. No human decision required. The system self-corrects."}
+              ? "每週把每條 stable 規則對目前整份良性語料重跑一次。只要命中任何一筆良性樣本，就自動開 PR 把它從 stable 降到 test，退出封鎖車道，但仍在 alert 和 hunt 車道告警。這個 PR 跟其他規則改動一樣，要過 CI、由人審查後才合併。良性語料會收進確認過的誤報回報，所以會一直變大。"
+              : "Every week each stable rule is re-run against the whole current benign corpus. A rule that matches any benign sample is demoted from stable to test in an automatically opened pull request: it leaves the blocking lane but keeps alerting in the alert and hunt lanes. That pull request goes through CI and human review like any other rule change. The benign corpus grows as confirmed false-positive reports are added to it."}
           </p>
         </div>
       </Reveal>
@@ -707,17 +703,17 @@ export default async function QualityStandardPage({
         </div>
         <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-2">
           {locale === "zh"
-            ? "一條規則在抵達生產環境前要過六關"
-            : "Six stages before a rule reaches production"}
+            ? "一條規則從 PR 到 npm 要過六關"
+            : "Six steps between a pull request and npm"}
         </h2>
         <p className="text-sm text-stone mb-6 max-w-2xl">
           {locale === "zh"
-            ? "LLM 草擬的規則必須通過六個獨立的驗證階段才能保護使用者。每個階段都有機械化、公開的判斷條件。"
-            : "An LLM-drafted rule passes through six independent verification stages before it ever protects a user. Each stage has mechanical, public criteria."}
+            ? "每條規則都走同一條路，不管是誰起草的。第 2 到第 4 關是 CI 自動檢查，條件都寫在公開的 workflow 裡。"
+            : "Every rule takes the same path, whoever drafted it. Steps 2 to 4 run in CI, and their criteria are in the public workflows."}
         </p>
       </Reveal>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-fog border border-fog mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-fog border border-fog mb-16">
         {GAUNTLET_STAGES.map((s) => (
           <Reveal key={s.stage}>
             <div className="bg-paper p-5 md:p-6 h-full">
@@ -732,105 +728,6 @@ export default async function QualityStandardPage({
           </Reveal>
         ))}
       </div>
-
-      {/* ── REAL RULE EXAMPLE ──────────────────────────────── */}
-      <Reveal>
-        <div className="bg-paper border border-blue/40 mb-16">
-          <div className="border-b border-blue/30 bg-ink/5 px-5 md:px-6 py-3 flex items-center justify-between flex-wrap gap-2">
-            <span className="font-data text-xs text-blue tracking-wider uppercase font-semibold">
-              {locale === "zh"
-                ? "實際結晶輸出 · 通過品質關"
-                : "Live Crystallization Output · Gate Passed"}
-            </span>
-            <code className="font-data text-xs text-stone">{EXAMPLE_RULE.id}</code>
-          </div>
-          <div className="p-5 md:p-6">
-            <h3 className="font-display text-lg md:text-xl font-bold text-ink mb-2">
-              {EXAMPLE_RULE.title}
-            </h3>
-            <div className="inline-block font-data text-xs text-critical bg-critical/10 px-2 py-0.5  tracking-wider uppercase mb-5">
-              severity · {EXAMPLE_RULE.severity}
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog border border-fog mb-5">
-              <div className="bg-paper p-4">
-                <div className="font-display text-2xl font-medium text-blue mb-1">
-                  {EXAMPLE_RULE.layers}
-                </div>
-                <div className="font-data text-xs text-stone">
-                  {locale === "zh" ? "偵測層" : "Detection layers"}
-                </div>
-              </div>
-              <div className="bg-paper p-4">
-                <div className="font-display text-2xl font-medium text-blue mb-1">
-                  {EXAMPLE_RULE.tpTn}
-                </div>
-                <div className="font-data text-xs text-stone">
-                  {locale === "zh" ? "TP + TN 測試" : "TP + TN cases"}
-                </div>
-              </div>
-              <div className="bg-paper p-4">
-                <div className="font-display text-2xl font-medium text-blue mb-1">
-                  {EXAMPLE_RULE.evasions}
-                </div>
-                <div className="font-data text-xs text-stone">
-                  {locale === "zh" ? "規避測試" : "Evasion tests"}
-                </div>
-              </div>
-              <div className="bg-paper p-4">
-                <div className="font-display text-2xl font-medium text-blue mb-1">
-                  100%
-                </div>
-                <div className="font-data text-xs text-stone">
-                  {locale === "zh" ? "必要欄位完備" : "Required fields"}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-5 mb-5">
-              <div>
-                <div className="font-data text-xs text-stone tracking-wider uppercase mb-2">
-                  OWASP
-                </div>
-                {EXAMPLE_RULE.owasp.map((o) => (
-                  <div
-                    key={o}
-                    className="font-data text-xs text-ink mb-1.5 flex items-center gap-2"
-                  >
-                    <span className="text-blue">✓</span>
-                    {o}
-                  </div>
-                ))}
-              </div>
-              <div>
-                <div className="font-data text-xs text-stone tracking-wider uppercase mb-2">
-                  MITRE ATLAS
-                </div>
-                <div className="font-data text-xs text-ink flex items-center gap-2">
-                  <span className="text-blue">✓</span>
-                  {EXAMPLE_RULE.mitre}
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-fog pt-4 flex items-center justify-between flex-wrap gap-3">
-              <div>
-                <div className="font-data text-xs text-stone tracking-wider uppercase mb-1">
-                  {locale === "zh" ? "來源" : "Provenance"}
-                </div>
-                <code className="font-data text-xs text-critical">
-                  {EXAMPLE_RULE.provenance}
-                </code>
-              </div>
-              <p className="text-xs text-stone italic text-right max-w-xs">
-                {locale === "zh"
-                  ? "誠實標記為 LLM 生成。信心分數封頂 70，直到人工 review 升級為 human-reviewed。"
-                  : "Tagged honestly as LLM-generated. Confidence capped at 70 until human review upgrades it."}
-              </p>
-            </div>
-          </div>
-        </div>
-      </Reveal>
 
       {/* ── COMPARISON ─────────────────────────────────────── */}
       <Reveal>
@@ -990,6 +887,11 @@ console.log('Issues:', gate.issues);`}
               {locale === "zh" ? "瀏覽規則" : "Browse rules"}
             </a>
           </div>
+          <p className="text-xs text-stone mt-10 max-w-xl mx-auto">
+            {locale === "zh"
+              ? "利益揭露：維護者創辦並控制 PANGUARD AI, INC.，這家公司販售以 ATR 為基礎的 agent 資安產品。"
+              : "Interests: the maintainer founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR."}
+          </p>
         </div>
       </Reveal>
     </div>

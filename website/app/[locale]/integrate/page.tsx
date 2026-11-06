@@ -424,7 +424,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
                 { label: locale === "zh" ? "新攻擊反應" : "New attack response", atr: locale === "zh" ? "新規則經由 pull request 加入，隨 npm 發版送出。沒有承諾多久回應" : "New rules arrive by pull request and reach you in an npm release. No response time is promised", own: locale === "zh" ? "看你的團隊有多少人力" : "Depends on how much time your team has" },
                 { label: locale === "zh" ? "繞過測試" : "Evasion testing", atr: locale === "zh" ? "附 evasion_tests、記下已知繞過手法的規則，不到一半" : "Fewer than half the rules carry evasion tests that record known bypasses", own: locale === "zh" ? "要另外花時間建" : "Takes dedicated time to build" },
                 { label: locale === "zh" ? "OWASP / MITRE 對應" : "OWASP / MITRE mapping", atr: locale === "zh" ? "內建。Agentic 10/10，每條規則也都對到 MITRE ATLAS" : "Built in. Agentic 10/10, and every rule maps to MITRE ATLAS", own: locale === "zh" ? "要手動對上好幾個小時" : "Hours of mapping by hand" },
-                { label: locale === "zh" ? "維護成本" : "Maintenance", atr: locale === "zh" ? "社群維護，MIT 授權，不用錢。" : "Maintained by the community. MIT. Free.", own: locale === "zh" ? "要一直有人顧" : "Needs engineering time, indefinitely" },
+                { label: locale === "zh" ? "維護成本" : "Maintenance", atr: locale === "zh" ? "由維護者公開維護，誰都能貢獻。MIT 授權，不用錢。" : "Maintained in public by its maintainers, with contributions from anyone. MIT. Free.", own: locale === "zh" ? "要一直有人顧" : "Needs engineering time, indefinitely" },
                 { label: locale === "zh" ? "誰在用" : "Ecosystem", atr: locale === "zh" ? "Cisco、Microsoft、MISP 的開源專案都已合併" : "Merged into open-source projects at Cisco, Microsoft and MISP", own: locale === "zh" ? "各自維護，規則不共用" : "Kept on its own, shared with no one" },
               ].map((row) => (
                 <div key={row.label} className="text-sm border-b border-fog">
@@ -457,15 +457,15 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
               <div>
                 <div className="font-display text-sm font-semibold mb-1">MIT License</div>
-                <p className="text-stone leading-[1.6]">{locale === "zh" ? "可以商用、修改、散布、再授權，沒有限制。" : "Use it commercially, change it, redistribute it, sublicense it. No restrictions."}</p>
+                <p className="text-stone leading-[1.6]">{locale === "zh" ? "可以商用、修改、散布、再授權，只要保留授權聲明。" : "Use it commercially, change it, redistribute it, sublicense it. Keep the license notice."}</p>
               </div>
               <div>
                 <div className="font-display text-sm font-semibold mb-1">{locale === "zh" ? "無 CLA" : "No CLA"}</div>
-                <p className="text-stone leading-[1.6]">{locale === "zh" ? "不用簽貢獻者授權協議。貢獻一律採 MIT 授權，屬於社群。" : "There is no Contributor License Agreement. Contributions are MIT-licensed and belong to the community."}</p>
+                <p className="text-stone leading-[1.6]">{locale === "zh" ? "不用簽貢獻者授權協議。貢獻者保有自己的著作權，以 MIT 授權釋出。" : "There is no Contributor License Agreement. Contributors keep their copyright and license their work under MIT."}</p>
               </div>
               <div>
                 <div className="font-display text-sm font-semibold mb-1">{locale === "zh" ? "不屬於任何廠商" : "Vendor neutral"}</div>
-                <p className="text-stone leading-[1.6]">{locale === "zh" ? "ATR 不歸任何一家公司，是由社群治理的開放標準。" : "No company owns ATR. It is an open standard, governed by its community."}</p>
+                <p className="text-stone leading-[1.6]">{locale === "zh" ? "ATR 不歸任何一家公司，是開放標準。目前在過渡章程下由首席維護者決定合併，章程會把決策移交給 TSC。" : "No company owns ATR. It is an open standard. Under a transitional charter the lead maintainer decides what merges today, and the charter moves decisions to a TSC."}</p>
                 <p className="text-stone leading-[1.6] mt-2">{locale === "zh" ? "利益揭露：維護者創辦並控制 PANGUARD AI, INC.，這家公司販售以 ATR 為基礎的 agent 資安產品。" : "Interests: the maintainer founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR."}</p>
               </div>
             </div>

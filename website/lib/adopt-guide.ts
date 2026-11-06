@@ -20,8 +20,8 @@ export const AUDIENCES: ReadonlyArray<Audience> = [
     who: { en: "You build agents", zh: "做 agent 的人" },
     need: { en: "Your agent spends its day reading things other people wrote. Web pages, tool descriptions, files from strangers.", zh: "你的 agent 每天都在讀別人寫的東西。網頁、工具說明、陌生人傳來的檔案。" },
     how: {
-      en: "Run ATR on what your agent reads and on its tool calls. By default it reports what it finds and blocks nothing. Blocking is a separate switch, meant to run with the enforce lane, which loads only the stable rules and catches far fewer attacks. ATR runs inside your own process, so the data stays where it is.",
-      zh: "讓 ATR 檢查你的 agent 讀進來的內容，以及每一次工具呼叫。預設只回報，不擋任何東西。要攔截得另外打開開關，搭配 enforce 車道使用。這條車道只載入 stable 規則，抓到的攻擊少很多。ATR 跑在你自己的程式裡，資料不會離開。",
+      en: "Run ATR on what your agent reads and on its tool calls. The engine and the Claude Code hook report what they find and block nothing by default; blocking is a separate switch. Some adapters do block out of the box: Mastra, OpenShell and NemoClaw stop on high or critical matches unless you change their settings. Blocking is meant to run with the enforce lane, which loads only the stable rules and catches far fewer attacks. ATR runs inside your own process, so the data stays where it is.",
+      zh: "讓 ATR 檢查你的 agent 讀進來的內容，以及每一次工具呼叫。引擎和 Claude Code hook 預設只回報，不擋任何東西，要攔截得另外打開開關。有些轉接器裝好就會擋：Mastra、OpenShell、NemoClaw 預設遇到 high 或 critical 命中就攔下，要改得調它們的設定。攔截原本是要搭配 enforce 車道使用，這條車道只載入 stable 規則，抓到的攻擊少很多。ATR 跑在你自己的程式裡，資料不會離開。",
     },
     where: { en: "Node · MCP stdio · Claude Code hook · goose · LangChain · Pydantic AI · Mastra", zh: "Node · MCP stdio · Claude Code hook · goose · LangChain · Pydantic AI · Mastra" },
     first: { label: { en: "Integration guide", zh: "整合說明" }, href: "/docs/integrations", code: "npm install agent-threat-rules" },

@@ -42,6 +42,13 @@ export interface RuleSummary {
   responseActions?: string[];
   detectionTier?: string;
   confidence?: string;
+  /** String values of YAML `metadata_provenance` (who or what set each mapping field); undefined when the rule has none. */
+  provenance?: readonly string[];
+}
+
+function provenanceValues(raw: unknown): readonly string[] | undefined {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  return Object.freeze(Object.values(raw).filter((v): v is string => typeof v === "string"));
 }
 
 interface RawRule {
@@ -69,6 +76,7 @@ interface RawRule {
   response?: {
     actions?: string[];
   };
+  metadata_provenance?: unknown;
 }
 
 function loadRulesRecursive(dir: string, rootDir: string): RuleSummary[] {
@@ -111,6 +119,7 @@ function loadRulesRecursive(dir: string, rootDir: string): RuleSummary[] {
           responseActions: raw.response?.actions,
           detectionTier: raw.detection_tier,
           confidence: raw.tags?.confidence,
+          provenance: provenanceValues(raw.metadata_provenance),
         });
       } catch {
         // Skip malformed files

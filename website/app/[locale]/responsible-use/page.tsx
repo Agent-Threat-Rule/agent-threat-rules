@@ -84,8 +84,8 @@ export default async function ResponsibleUsePage({
             {
               title: zh ? "標準映射與合規文件" : "Standards mapping and compliance documentation",
               desc: zh
-                ? "每條 ATR 規則都對應到 OWASP、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001 的條目。這些對應可以當成可執行的覆蓋證據，向稽核或採購說明，哪些框架要求已經有對應的偵測。"
-                : "Every ATR rule carries crosswalks to OWASP, MITRE ATLAS, NIST AI RMF, EU AI Act and ISO 42001. Use those mappings as executable coverage evidence, to show auditors or procurement which framework requirements have a matching detection.",
+                ? "每條 ATR 規則都對應到 OWASP、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001 的條目。這些對應可以當成可執行的覆蓋證據，向稽核或採購說明，哪些框架要求已經有對應的偵測。這些對應是 ATR 自己做的，框架方沒有審查或背書。"
+                : "Every ATR rule carries crosswalks to OWASP, MITRE ATLAS, NIST AI RMF, EU AI Act and ISO 42001. Use those mappings as executable coverage evidence, to show auditors or procurement which framework requirements have a matching detection. ATR wrote these mappings; the framework owners have not reviewed or endorsed them.",
             },
             {
               title: zh ? "研究與學術引用" : "Research and academic citation",

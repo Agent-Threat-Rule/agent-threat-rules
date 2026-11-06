@@ -242,6 +242,9 @@ export default async function RuleDetailPage({
                 </div>
               ))}
             </dl>
+            <p className="mt-3 text-[12px] text-stone">
+              {zh ? "這些對應是 ATR 自己做的，框架方沒有審查或背書。" : "ATR wrote these mappings. The framework owners have not reviewed or endorsed them."}
+            </p>
           </section>
         )}
 
@@ -361,8 +364,8 @@ export default async function RuleDetailPage({
             </ol>
             <p className="text-xs text-mist mt-3 leading-[1.7]">
               {zh
-                ? "這些是真實攻擊 payload 的脫敏版本，跟規則一起版本化，當作回歸測試。之後改規則時，如果其中一個範例不再命中，一定看得出來。"
-                : "Real-world attack payloads, sanitized and versioned with the rule as regression tests. If a later revision stops catching one, it shows."}
+                ? "規則必須抓到的攻擊範例，很多是照公開回報的攻擊改寫的，有些是照攻擊的形狀寫出來的。範例跟規則一起版本化，當作回歸測試。之後改規則時，如果其中一個範例不再命中，一定看得出來。"
+                : "Attack examples the rule must catch, many based on reported attacks and some written to match their shape. They are versioned with the rule as regression tests. If a later revision stops catching one, it shows."}
             </p>
           </div>
         )}

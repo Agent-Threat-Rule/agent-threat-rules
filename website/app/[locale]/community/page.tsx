@@ -20,8 +20,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: locale === "zh" ? "社群" : "Community",
     description:
       locale === "zh"
-        ? "維護 ATR 的人：指導小組、專家和貢獻者，還有 GitHub 上的貢獻紀錄。"
-        : "The people who maintain ATR: steering, experts and contributors, and the contributions GitHub records.",
+        ? "維護 ATR 的人：維護者、專家和貢獻者，還有 GitHub 上的貢獻紀錄。TSC 籌組中。"
+        : "The people who maintain ATR: maintainers, experts and contributors, and the contributions GitHub records. The TSC is being formed.",
   });
 }
 
@@ -131,8 +131,8 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
         <SectionHead
           mark="§2"
           label={zh ? "工作組" : "Working groups"}
-          title={zh ? "三個工作組，負責人從缺" : "Three working groups, leads wanted"}
-          body={zh ? "工作在 GitHub Discussions 上非同步進行。負責人由維護者看貢獻提名，三組目前都還在找。" : "Work happens asynchronously in GitHub Discussions. Maintainers nominate leads based on contribution. All three seats are open."}
+          title={zh ? "三個規劃中的工作組，都還沒成立" : "Three planned working groups, none formed yet"}
+          body={zh ? "這三組是規劃，目前都還沒成立，也沒有負責人。成立的條件寫在治理頁：三個以上彼此獨立的實作者提出同樣的需求。在那之前，相關的工作都在 GitHub 上非同步進行。" : "These are planned, not running: none has formed and none has a lead. The governance page sets the condition for starting one, three or more independent implementers asking for the same thing. Until then the work happens asynchronously on GitHub."}
         />
         <ul className="border-t border-fog">
           {WORKING_GROUPS.map((wg) => (
@@ -141,7 +141,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
                 <div className="text-[15px] text-ink">{pick(wg.name)}</div>
                 <p className="mt-1 text-[13px] leading-[1.6] text-stone">{pick(wg.scope)}</p>
               </div>
-              <div className="font-data text-[11px] text-high sm:text-right">{zh ? "徵求負責人" : "Lead wanted"}</div>
+              <div className="font-data text-[11px] text-high sm:text-right">{zh ? "規劃中" : "Planned"}</div>
             </li>
           ))}
         </ul>

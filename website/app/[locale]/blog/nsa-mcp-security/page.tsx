@@ -120,7 +120,7 @@ export default async function NsaMcpPostPage({
             >
               完整對映在這裡
             </a>
-            。
+            。這份對映是 ATR 自己做的，NSA 沒有審查，也沒有背書。
           </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">跑起來</h2>
@@ -220,7 +220,7 @@ export default async function NsaMcpPostPage({
             >
               The full mapping is here
             </a>
-            .
+            . The mapping is ATR&rsquo;s own work; the NSA has not reviewed or endorsed it.
           </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">Run it</h2>

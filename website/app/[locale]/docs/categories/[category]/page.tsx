@@ -74,7 +74,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ local
       {(atlas.length > 0 || agentic.length > 0) && (
         <section className="mt-12">
           <h2 className="text-[20px] text-ink">{zh ? "最常見的框架對照" : "Most frequent crosswalks"}</h2>
-          <p className="mt-2 text-[13px] text-stone">{zh ? "括號裡的數字，是這一類有幾條規則帶這一項。" : "The number in brackets is how many rules in this category carry that item."}</p>
+          <p className="mt-2 text-[13px] text-stone">{zh ? "括號裡的數字，是這一類有幾條規則帶這一項。這些對應是 ATR 自己做的，框架方沒有審查或背書。" : "The number in brackets is how many rules in this category carry that item. ATR wrote these mappings; the framework owners have not reviewed or endorsed them."}</p>
           <div className="mt-5 grid md:grid-cols-2 gap-8">
             {[{ name: "MITRE ATLAS", list: atlas }, { name: "OWASP Agentic Top 10", list: agentic }].filter((x) => x.list.length > 0).map((fw) => (
               <div key={fw.name}>

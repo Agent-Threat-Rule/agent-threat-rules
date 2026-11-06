@@ -220,6 +220,11 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
           {locale === "zh" ? "看有 MITRE 對應的規則" : "Browse rules with MITRE mappings"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
         </Link>
       </Reveal>
+      <p className="text-xs text-stone mt-12 max-w-2xl">
+        {locale === "zh"
+          ? "利益揭露：維護者創辦並控制 PANGUARD AI, INC.，這家公司販售以 ATR 為基礎的 agent 資安產品。"
+          : "Interests: the maintainer founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR."}
+      </p>
     </div>
     </Phrased>
   );

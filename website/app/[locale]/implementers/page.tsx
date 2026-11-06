@@ -372,8 +372,8 @@ export default async function ImplementersPage({
 
         <p className="text-sm text-stone mt-4" style={{ maxWidth: "42em" }}>
           {zh
-            ? "TSC 保留權利，隨時可以對任何已發布的自我認證重跑測試套件，確認結果跟宣告的一樣。"
-            : "The TSC reserves the right to re-run the test suite against any published self-certification at any time, to check the declared result."}
+            ? "維護者保留權利，隨時可以對任何已發布的自我宣告重跑測試套件，確認結果跟宣告的一樣。TSC 還在籌組，成立後由 TSC 接手。"
+            : "The maintainers reserve the right to re-run the test suite against any published self-declaration at any time, to check the declared result. The TSC is being formed and takes this over once seated."}
         </p>
       </section>
 

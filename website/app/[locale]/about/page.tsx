@@ -181,12 +181,12 @@ const MILESTONES: Milestone[] = [
   {
     date: "2026-07",
     title: {
-      en: "Adoption re-verified · auto-publish flywheel",
-      zh: "採用紀錄全部重驗 · 自動發布飛輪",
+      en: "Adoption re-verified · site rebuilt from the repo",
+      zh: "採用紀錄全部重驗 · 網站改由 repo 產生",
     },
     detail: {
-      en: "Every adopter PR was re-checked against GitHub, and newly shipped integrations were recorded, among them FINOS, SigmaHQ, rulezet/CIRCL, AMD GAIA and AG2. The crystallization flywheel now publishes new rules to npm automatically when they merge. The rule count, spec version and adopter wall on this site are all rebuilt from the repository at deploy time.",
-      zh: "每個採用者 PR 的狀態都對 GitHub 重新驗過一次，新上線的整合也一併記錄，包括 FINOS、SigmaHQ、rulezet/CIRCL、AMD GAIA、AG2。結晶飛輪現在會在規則合併時自動發布到 npm。本站的規則數、規格版本和採用者牆，都在部署時從 repo 重新產生。",
+      en: "Every adopter PR was re-checked against GitHub, and newly shipped integrations were recorded, among them FINOS, SigmaHQ, rulezet/CIRCL, AMD GAIA and AG2. The rule count, spec version and adopter wall on this site are all rebuilt from the repository at deploy time.",
+      zh: "每個採用者 PR 的狀態都對 GitHub 重新驗過一次，新上線的整合也一併記錄，包括 FINOS、SigmaHQ、rulezet/CIRCL、AMD GAIA、AG2。本站的規則數、規格版本和採用者牆，都在部署時從 repo 重新產生。",
     },
   },
 ];
@@ -334,8 +334,8 @@ export default async function AboutPage({
       <Section label={zh ? "獨立聲明" : "Independence"} delay={0.35}>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh
-            ? "ATR 不屬於任何商業公司，不是哪個資安產品的功能。規則是公共財。誰都可以採用、擴充或 fork，競爭廠商也一樣。"
-            : "No commercial entity owns ATR. It is not a feature of any security product. The rules are a public good. Anyone may adopt, extend or fork them, competing vendors included."}
+            ? "ATR 不屬於任何商業公司，規則獨立發布，不附屬於任何產品。產品可以拿它當基礎，上面揭露的維護者公司賣的產品也是。規則是公共財。誰都可以採用、擴充或 fork，競爭廠商也一樣。"
+            : "No commercial entity owns ATR, and the rules are published on their own, not as part of any product. Products may build on them, including those sold by the maintainer's company disclosed above. The rules are a public good. Anyone may adopt, extend or fork them, competing vendors included."}
         </p>
       </Section>
     </div>

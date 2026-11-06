@@ -293,7 +293,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </ul>
           </div>
           <p className="mt-6 text-[12.5px] text-stone">
-            {zh ? "左邊的對應取自規則檔本身，右邊每一份對照文件都公開在 repo 裡。有些對應已知有誤，正在重做；修正之前只能當參考，不能當稽核證據。" : "The mappings on the left come from the rule file itself. Each crosswalk on the right is a public document in the repository. Some mappings are known to be wrong and are being redone. Until they are fixed, use them as a reference only, not as audit evidence."}{" "}
+            {zh ? "左邊的對應取自規則檔本身，右邊每一份對照文件都公開在 repo 裡。這些對照是 ATR 自己寫的，列出的機構沒有審查或背書。有些對應已知有誤，正在重做；修正之前只能當參考，不能當稽核證據。" : "The mappings on the left come from the rule file itself. Each crosswalk on the right is a public document in the repository. ATR wrote these crosswalks; the bodies named have not reviewed or endorsed them. Some mappings are known to be wrong and are being redone. Until they are fixed, use them as a reference only, not as audit evidence."}{" "}
             <Link href={`${prefix}/errata`} className="underline underline-offset-4 hover:text-ink">{zh ? "看勘誤" : "See the errata"}</Link>
           </p>
         </div>

@@ -94,6 +94,11 @@ export default async function RouterPage({ params }: { params: Promise<{ locale:
             ? "Router 還沒公開。現在只在維護者手上跑，發布時間還沒定。"
             : "Router is not public. It runs on the maintainers' machines today, and there is no release date."}
         </p>
+        <p>
+          {zh
+            ? "利益揭露：維護者創辦並控制 PANGUARD AI, INC.，這家公司販售以 ATR 為基礎的 agent 資安產品。"
+            : "Interests: the maintainer founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR."}
+        </p>
       </ToolLimits>
 
       <ToolNext href={`/${locale}/eval`} label={zh ? "挑好之後，交給 ATR Eval 去跑" : "Once the tests are picked, ATR Eval runs them"} />

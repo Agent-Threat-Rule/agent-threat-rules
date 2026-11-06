@@ -697,12 +697,12 @@ export default async function RedTeamPage({
                   : "Moved to the test corpora. JBB-Behaviors is the standard input for a jailbreak leaderboard. It describes what is being asked for, not attack patterns. It is used for benchmarking, not for writing rules.",
               },
               {
-                name: zh ? "4 條語料庫指紋規則（維持原樣）" : "4 corpus-fingerprint rules (KEPT-AS-IS)",
-                org: "ATR-GARAK-a7fcb4e5 + 3 others",
+                name: zh ? "語料庫指紋規則（維持原樣）" : "Corpus-fingerprint rules (kept as-is)",
+                org: zh ? "例如 ATR-2026-02016" : "e.g. ATR-2026-02016",
                 decision: zh ? "保留，不泛化" : "Kept, not generalized",
                 reason: zh
-                  ? "這 4 條規則的 regex 非常死，是語料庫的指紋，不是能推廣的攻擊模式。硬要放寬，誤報率會高到不能接受。所以保留成 experimental，明確標成語料庫指紋，不拿來在正式環境封鎖。"
-                  : "These 4 rules have very literal regexes. They fingerprint a corpus; they are not attack patterns that generalize. Loosening them would push the FP rate past what is acceptable. They stay experimental, are marked as corpus fingerprints, and are not used for production blocking.",
+                  ? "少數規則鎖定某份語料裡非常字面的字串，例如 ATR-2026-02016 比對 HackAPrompt 裡倒著拼的 canary 字。它們是那份語料的指紋，不是能推廣的攻擊模式，規則描述裡也寫明了。硬要放寬，誤報率會高到不能接受，所以維持字面比對。描述裡這樣標明的規則都停在 test，封鎖車道只載入 stable，所以它們只告警、不封鎖。"
+                  : "A few rules anchor on very literal strings from one corpus, such as the reversed canary word from HackAPrompt in ATR-2026-02016. They fingerprint that corpus rather than an attack pattern that generalizes, and their descriptions say so. Loosening them would push the FP rate past what is acceptable, so they stay literal. The rules whose descriptions say this are all at test maturity; the blocking lane loads only stable, so they alert and never block.",
               },
             ].map((item) => (
               <div key={item.name} className="py-5 border-b border-fog">
@@ -783,6 +783,11 @@ export default async function RedTeamPage({
             {zh
               ? `${stats.ruleCount} 條規則已部署，分在 ${stats.categoryCount} 個威脅類別。每一條都有 author 欄位和固定的規則編號。`
               : `${stats.ruleCount} rules deployed across ${stats.categoryCount} threat categories. Each has an author field and a stable rule ID.`}
+          </p>
+          <p className="text-xs text-stone mt-3 max-w-[640px]">
+            {zh
+              ? "利益揭露：維護者創辦並控制 PANGUARD AI, INC.，這家公司販售以 ATR 為基礎的 agent 資安產品。"
+              : "Interests: the maintainer founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR."}
           </p>
         </Reveal>
       </section>

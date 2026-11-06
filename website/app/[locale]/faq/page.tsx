@@ -58,14 +58,14 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
     {
       q: zh ? "ATR 會認證產品或組織嗎？" : "Does ATR certify products or organizations?",
       a: zh
-        ? <>不會。ATR 不稽核，也不認證組織或它們的部署。引擎符不符合規格，是對照公開的<Link href={`${p}/conformance`} className={a}>測試套件</Link>自我宣告。ATR-Certified 標示只看測試結果，與會員資格無關。稽核員可以用<Link href={`${p}/docs/auditor-kit`} className={a}>稽核員工具包</Link>自己驗證。</>
-        : <>No. ATR does not audit or certify organizations or their deployments. Engines self-declare conformance against the public <Link href={`${p}/conformance`} className={a}>test suite</Link>. The ATR-Certified designation follows those results, never membership. Auditors can verify a deployment themselves with the <Link href={`${p}/docs/auditor-kit`} className={a}>auditor kit</Link>.</>,
+        ? <>不會。ATR 不稽核，也不認證組織或它們的部署。引擎符不符合規格，是對照公開的<Link href={`${p}/conformance`} className={a}>測試套件</Link>自我宣告，也就是 L1 符規自我宣告，不是 ATR 發的認證，和會員資格也無關。稽核員可以用<Link href={`${p}/docs/auditor-kit`} className={a}>稽核員工具包</Link>自己驗證。</>
+        : <>No. ATR does not audit or certify organizations or their deployments. Engines self-declare conformance against the public <Link href={`${p}/conformance`} className={a}>test suite</Link>. That is a self-declared L1 conformance, not a certification issued by ATR, and it has nothing to do with membership. Auditors can verify a deployment themselves with the <Link href={`${p}/docs/auditor-kit`} className={a}>auditor kit</Link>.</>,
     },
     {
       q: zh ? "lane 是什麼？" : "What is a lane?",
       a: zh
-        ? <>lane 決定哪些成熟度的規則可以觸發。enforce 只跑 maturity 為 stable 的規則，要開阻擋就用這條。alert 跑 stable 和 test。hunt 跑全部生效的規則，也是預設。阻擋預設是關的。</>
-        : <>A lane decides which rule maturities may fire. Enforce runs maturity stable only, and it is the lane to run with blocking on. Alert runs stable and test. Hunt runs every effective rule and is the default. Blocking is off by default.</>,
+        ? <>lane 決定哪些成熟度的規則可以觸發。enforce 只跑 maturity 為 stable 的規則，要開阻擋就用這條。alert 跑 stable 和 test。hunt 跑全部生效的規則，也是預設。引擎和 Claude Code hook 的阻擋預設是關的；Mastra、OpenShell、NemoClaw 轉接器則預設會擋 high 和 critical 的命中。</>
+        : <>A lane decides which rule maturities may fire. Enforce runs maturity stable only, and it is the lane to run with blocking on. Alert runs stable and test. Hunt runs every effective rule and is the default. Blocking is off by default in the engine and the Claude Code hook; the Mastra, OpenShell and NemoClaw adapters block high and critical matches by default.</>,
     },
     {
       q: zh ? "為什麼有三個規則數？" : "Why are there three rule counts?",

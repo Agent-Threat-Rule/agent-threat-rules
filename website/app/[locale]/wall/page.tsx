@@ -212,8 +212,8 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               en: "Submit a Rule",
               zh: "提交新規則",
               desc: zh
-                ? "用 YAML 寫一條偵測規則。必須附真實攻擊 payload 與真／假陽性 test case，不是文字描述——這樣它才能被 peer-review、被 conformance 測試、被任何引擎重現。"
-                : "Write a detection rule in YAML. It must carry real attack payloads and true/false-positive test cases, not a prose description — so it can be peer-reviewed, conformance-tested, and reproduced by any engine.",
+                ? "用 YAML 寫一條偵測規則。要附上攻擊範例，以及真陽性和真陰性的 test case，不能只有文字描述。這樣別人才能審查、跑符規測試，任何引擎也都能重現。"
+                : "Write a detection rule in YAML. It must carry attack examples with true-positive and true-negative test cases, not just a prose description, so it can be peer-reviewed, conformance-tested and reproduced by any engine.",
               href: `${prefix}/contribute`,
               time: "1-2 hr",
               impact: zh ? "高" : "High",
