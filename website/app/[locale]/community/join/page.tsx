@@ -91,8 +91,8 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
       </h1>
       <p className="mt-5 text-[17px] leading-[1.6] text-graphite max-w-[620px] text-pretty">
         {zh
-          ? "ATR 是一份開放標準，由寫規則的人與用規則做決策的人一起維護。加入免費。機構會員是另一回事，見機構會員頁。"
-          : "ATR is an open standard kept by the people who write rules and the people who make decisions with them. Joining is free. Organization membership is separate; see the membership page."}
+          ? "ATR 是一份開放標準，由寫規則的人與用規則做決策的人一起維護。加入免費。機構會員是另一回事，目前還沒開放。"
+          : "ATR is an open standard kept by the people who write rules and the people who make decisions with them. Joining is free. Organization membership is separate and not open yet."}
       </p>
 
       <section className="mt-12" aria-labelledby="tiers-heading">

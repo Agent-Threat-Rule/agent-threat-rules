@@ -53,8 +53,8 @@ export const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     label: { en: "Tools", zh: "工具" },
     path: "/router",
     links: [
-      { path: "/router", label: { en: "ATR Router", zh: "ATR Router" } },
-      { path: "/eval", label: { en: "ATR Eval", zh: "ATR Eval" } },
+      { path: "/router", label: { en: "ATR Router (not public yet)", zh: "ATR Router（尚未公開）" } },
+      { path: "/eval", label: { en: "ATR Eval (not public yet)", zh: "ATR Eval（尚未公開）" } },
     ],
   },
   {
@@ -77,7 +77,6 @@ export const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     links: [
       { path: "/community", label: { en: "People", zh: "成員" } },
       { path: "/community/join", label: { en: "Join", zh: "加入" } },
-      { path: "/community/membership", label: { en: "Organization membership", zh: "機構會員" } },
       { path: "/contribute", label: { en: "Contribute", zh: "參與貢獻" } },
       { path: "/governance", label: { en: "Governance", zh: "治理" } },
       { path: "/charter", label: { en: "Charter", zh: "章程" } },

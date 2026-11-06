@@ -46,8 +46,8 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
     {
       q: zh ? "要錢嗎？" : "Does it cost anything?",
       a: zh
-        ? <>不用錢。規則和規格都是 MIT 授權，誰都能使用、實作、修改。<Link href={`${p}/community/membership`} className={a}>機構會員</Link>是選擇性的，而且還沒開放。會員也買不到任何規則的結果。</>
-        : <>No. The rules and the specification are MIT licensed, so anyone may use, implement and modify them. <Link href={`${p}/community/membership`} className={a}>Organization membership</Link> is optional and not yet open. It never buys the outcome of a rule.</>,
+        ? <>不用錢。規則和規格都是 MIT 授權，誰都能使用、實作、修改。機構會員還沒開放。會員也買不到任何規則的結果。</>
+        : <>No. The rules and the specification are MIT licensed, so anyone may use, implement and modify them. Organization membership is not open yet. It never buys the outcome of a rule.</>,
     },
     {
       q: zh ? "誰在維護？" : "Who maintains it?",

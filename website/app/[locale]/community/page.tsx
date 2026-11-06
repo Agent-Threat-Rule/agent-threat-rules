@@ -78,9 +78,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
             <Link href={`${prefix}/community/join`} className="bg-ink text-white text-[14px] px-5 py-2.5 hover:bg-black transition-colors">
               {zh ? "加入社群" : "Join the community"}
             </Link>
-            <Link href={`${prefix}/community/membership`} className="border border-ink/20 text-ink text-[14px] px-5 py-2.5 rounded-[3px] hover:border-ink transition-colors">
-              {zh ? "機構會員" : "Organization membership"}
-            </Link>
           </div>
         </div>
         <div className="self-end border-t border-fog pt-4 font-data text-[11.5px] leading-[1.7] text-stone">

@@ -12,15 +12,21 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  return pageMetadata({
-    locale,
-    path: "/community/membership",
-    title: locale === "zh" ? "機構會員" : "Organization membership",
-    description:
-      locale === "zh"
-        ? "ATR 機構會員：依員工數分級的年費、會員得到什麼、什麼永遠免費、什麼不賣。"
-        : "ATR organization membership: annual dues by headcount, what members get, what stays free, and what is not for sale.",
-  });
+  // Held back until the maintainer approves the dues and Open Source Collective
+  // confirms in writing that it will receive them: no links point here, and
+  // search engines are told not to index it.
+  return {
+    ...pageMetadata({
+      locale,
+      path: "/community/membership",
+      title: locale === "zh" ? "機構會員" : "Organization membership",
+      description:
+        locale === "zh"
+          ? "ATR 機構會員：依員工數分級的年費、會員得到什麼、什麼永遠免費、什麼不賣。"
+          : "ATR organization membership: annual dues by headcount, what members get, what stays free, and what is not for sale.",
+    }),
+    robots: { index: false, follow: false },
+  };
 }
 
 // Dues are not invoiced until the fiscal host has confirmed in writing how
