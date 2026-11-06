@@ -28,7 +28,7 @@ export async function Footer({ locale }: { locale: Locale }) {
         <div className="font-data text-[10.5px] uppercase tracking-[0.12em] text-stone mb-10 leading-tight">
           <div className="text-ink">{zh ? "網站索引" : "Site index"}</div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-x-6 gap-y-10">
           {NAV_GROUPS.map((group) => (
             <div key={group.key}>
               <div className="text-[13px] text-ink mb-3">{pick(group.label, locale)}</div>
@@ -55,7 +55,6 @@ export async function Footer({ locale }: { locale: Locale }) {
               ))}
               <li><a href={REPO} className={linkClass}>GitHub</a></li>
               <li><a href={NPM_PACKAGE_URL} className={linkClass}>npm</a></li>
-              <li><a href="mailto:contact@agentthreatrule.org" className={linkClass}>contact@agentthreatrule.org</a></li>
             </ul>
           </div>
         </div>
@@ -74,6 +73,7 @@ export async function Footer({ locale }: { locale: Locale }) {
                 : `${stats.ruleCount} effective rules, ${stats.ruleFileCount} files on main, ${stats.ruleInertCount} inert`}
             </Link>
             <Link href={`${prefix}/citations`} className="hover:text-ink">DOI 10.5281/zenodo.19178002</Link>
+            <a href="mailto:contact@agentthreatrule.org" className="hover:text-ink">contact@agentthreatrule.org</a>
             <span>{zh ? "頁面產生於" : "Page generated"} {versions.generatedAt}</span>
           </div>
         </div>

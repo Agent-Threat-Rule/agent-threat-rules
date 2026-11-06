@@ -114,7 +114,8 @@ export default async function CompliancePage({
           {zh ? "每條規則都標了 6 個框架的對應條目。" : "Every rule is tagged against 6 frameworks."}
         </h1>
       </Reveal>
-      <p className="mt-4 mb-6 max-w-[640px] border-l-2 border-high pl-3 text-[13px] leading-[1.7] text-graphite">
+      <div className="mt-4 mb-8 max-w-[640px] border-y border-fog py-4 space-y-3 text-[13px] leading-[1.7] text-graphite">
+      <p>
         {zh
           ? "部分框架對應已知有誤，正在重做；偵測不受影響。修正發布前，請把對應當成可能相關的參考，不要當成稽核證據。"
           : "Some framework mappings are known to be wrong and are being redone; detection is not affected. Until the corrections ship, treat the mappings as candidate relevance, not as audit evidence."}{" "}
@@ -123,11 +124,12 @@ export default async function CompliancePage({
       {/* EU AI Act applicability. Article 26 = deployer obligations per
           data/compliance-frameworks/eu_ai_act.json; the Article 40 sentence
           follows the note in data/compliance-frameworks/cen_jtc21.json. */}
-      <p className="mb-6 max-w-[640px] border-l-2 border-fog pl-3 text-[13px] leading-[1.7] text-graphite">
+      <p>
         {zh
           ? "EU AI Act 的第 9 到 15 條，只適用於高風險 AI 系統。是不是高風險，依第 6 條與附件 III 判定。這些義務主要落在提供者（provider）身上，部署者（deployer）另有第 26 條的義務。ATR 對到這些條文，是營運方可以在自己的風險管理裡引用的偵測證據，不是合規。部分規則也引用 CEN-CENELEC JTC 21 的標準。在這裡引用標準，不會產生第 40 條的符合性推定。"
           : "Articles 9 to 15 of the EU AI Act apply to high-risk AI systems, as classified under Article 6 and Annex III. The obligations sit mainly with the provider. A deployer has its own duties under Article 26. An ATR mapping to one of these articles is detection evidence an operator may cite in its own risk management. It is not compliance. Some rules also cite CEN-CENELEC JTC 21 standards. Citing a standard here does not create a presumption of conformity under Article 40."}
       </p>
+      </div>
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-4">
           {zh
@@ -138,7 +140,7 @@ export default async function CompliancePage({
 
       {/* Procurement: no packaged download exists (no release carries an asset), so link the policy and allowlists */}
       <Reveal delay={0.15}>
-        <div className="bg-ash border border-fog p-5 md:p-6 mb-10 flex flex-col md:flex-row md:items-center md:gap-8">
+        <div className="border-y border-ink py-5 md:py-6 mb-10 flex flex-col md:flex-row md:items-center md:gap-8">
           <div className="flex-1 mb-4 md:mb-0">
             <div className="text-[13px] text-stone mb-2">
               {zh ? "給採購團隊" : "For procurement teams"}
@@ -154,7 +156,7 @@ export default async function CompliancePage({
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/COMPLIANCE-COVERAGE-POLICY.md"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-ink text-white px-5 py-2.5  text-sm font-semibold hover:bg-black transition-colors text-center"
+              className="text-[14px] text-ink underline underline-offset-[6px] decoration-ink/30 hover:decoration-ink"
             >
               {zh ? "讀合規對應政策 →" : "Read the coverage policy →"}
             </a>
@@ -162,7 +164,7 @@ export default async function CompliancePage({
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/data/compliance-frameworks"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-data text-xs text-blue hover:underline text-center"
+              className="text-[13px] text-stone hover:text-ink"
             >
               {zh ? "在 GitHub 看各框架的編號清單 →" : "Framework identifier lists on GitHub →"}
             </a>

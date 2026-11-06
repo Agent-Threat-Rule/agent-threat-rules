@@ -1,8 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { useSteps } from "@/lib/use-steps";
 
 export interface BirthRule {
   id: string;
@@ -62,151 +58,46 @@ const STEPS: ReadonlyArray<{ key: string; label: B; head: B; body: B }> = [
   },
 ];
 
-const DURATIONS = [5200, 5200, 5200, 5200];
-
+/**
+ * How one rule came to be, set out as a register: four entries, each with what
+ * happened and the record that shows it. Static on purpose; the dates are the
+ * point, and every one of them can be checked.
+ */
 export function RuleBirth({ locale, rule }: { locale: string; rule: BirthRule }) {
   const zh = locale === "zh";
   const pick = (b: B) => (zh ? b.zh : b.en);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const [hover, setHover] = useState(false);
-  const [step, setStep] = useSteps(rootRef, DURATIONS, hover);
-  const current = STEPS[step];
+  const record: Record<string, Array<[string, string]>> = {
+    incident: [[zh ? "回報" : "Reported", rule.reported], [zh ? "回報者" : "Reporter", "Manifold Security"]],
+    rule: [[zh ? "編號" : "ID", rule.id], [zh ? "規則日期" : "Rule dated", rule.date]],
+    tests: [[zh ? "必須抓到" : "Must catch", String(rule.truePositives)], [zh ? "必須放過" : "Must leave alone", String(rule.trueNegatives)]],
+    release: [[zh ? "合進 main" : "Reached main", rule.mergedToMain], [zh ? "npm 發布" : "Shipped on npm", `${rule.firstNpmDate} · ${rule.firstNpmVersion}`]],
+  };
 
   return (
-    <div ref={rootRef} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      <div className="grid grid-cols-4 border-b border-fog" role="tablist">
+    <div>
+      <ol className="border-t border-ink">
         {STEPS.map((s, i) => (
-          <button key={s.key} role="tab" aria-selected={i === step} onClick={() => setStep(i)} className="relative text-left pb-3 pt-1 text-[13px] transition-colors">
-            <span className={i === step ? "text-ink" : "text-mist hover:text-ink"}>
-              <span className="font-data text-[11px] mr-2">{String(i + 1).padStart(2, "0")}</span>
-              {pick(s.label)}
-            </span>
-            <span className="absolute left-0 right-3 -bottom-px h-[2px] bg-fog overflow-hidden">
-              <span
-                key={`${step}-${i}`}
-                className={`block h-full bg-ink ${i < step ? "w-full" : i === step ? "w-0 animate-[grow_5200ms_linear_forwards]" : "w-0"}`}
-                style={i === step && hover ? { animationPlayState: "paused" } : undefined}
-              />
-            </span>
-          </button>
+          <li key={s.key} className="grid md:grid-cols-[48px_1fr_260px] gap-x-8 gap-y-3 py-7 border-b border-fog">
+            <span className="font-title text-[18px] text-stone" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+            <div className="max-w-[620px]">
+              <div className="text-[12.5px] text-stone">{pick(s.label)}</div>
+              <h3 className="mt-1 font-title text-[22px] leading-snug text-ink">{pick(s.head)}</h3>
+              <p className="mt-3 text-[15px] leading-[1.75] text-graphite text-pretty">{pick(s.body)}</p>
+            </div>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 self-start md:pt-6 text-[13px]">
+              {record[s.key].map(([k, v]) => (
+                <div key={k} className="contents">
+                  <dt className="text-stone">{k}</dt>
+                  <dd className="font-data text-ink tabular-nums">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </li>
         ))}
-      </div>
-
-      <div className="mt-10 grid lg:grid-cols-[1.15fr_1fr] gap-10 lg:gap-16 items-center">
-        <div className="relative min-h-[320px] flex items-center justify-center py-8">
-          <div key={current.key} className="relative w-full max-w-[460px] animate-[fadein_450ms_ease-out]">
-            {current.key === "incident" && <IncidentCard zh={zh} reported={rule.reported} />}
-            {current.key === "rule" && <RuleCard rule={rule} />}
-            {current.key === "tests" && <TestsCard zh={zh} rule={rule} />}
-            {current.key === "release" && <ReleaseCard zh={zh} rule={rule} />}
-          </div>
-        </div>
-        <div key={`t-${current.key}`} className="animate-[fadein_450ms_ease-out]">
-          <h3 className="text-[24px] md:text-[28px] leading-[1.25] tracking-[-0.02em] font-medium text-ink">{pick(current.head)}</h3>
-          <p className="mt-4 text-[16px] leading-[1.8] text-graphite max-w-[480px]">{pick(current.body)}</p>
-          <Link href={`/${locale}/rules/${rule.id}`} className="mt-6 inline-block text-[14px] text-ink underline underline-offset-[6px] decoration-brand decoration-2 hover:decoration-ink">
-            {zh ? `看 ${rule.id} 全文` : `Read ${rule.id}`}
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const CARD = "bg-white border border-ink";
-
-function IncidentCard({ zh, reported }: { zh: boolean; reported: string }) {
-  return (
-    <div className={`${CARD} p-5`}>
-      <div className="flex items-center justify-between font-data text-[10.5px] text-stone">
-        <span>{zh ? "事件回報" : "Incident report"}</span>
-        <span>{reported}</span>
-      </div>
-      <div className="mt-3 text-[15px] leading-snug text-ink">Azure DevOps MCP · repo_get_pull_request_by_id</div>
-      <div className="mt-4 border border-fog bg-ash/40 p-3 font-data text-[11px] leading-[1.7] text-graphite">
-        <div className="text-mist">PR #4021 · Fix typo in README</div>
-        <div>Small docs fix.</div>
-        <div className="mt-1 text-alert-ink bg-alert/10 px-1 -mx-1">&lt;!-- {zh ? "網頁上看不到的指令" : "an instruction the web page hides"} --&gt;</div>
-      </div>
-      <div className="mt-3 flex gap-2 text-[11px] font-data">
-        <span className="px-1.5 py-0.5 border border-fog text-stone">{zh ? "回報者 Manifold Security" : "Reported by Manifold Security"}</span>
-      </div>
-    </div>
-  );
-}
-
-function RuleCard({ rule }: { rule: BirthRule }) {
-  const rows: Array<[string, string]> = [
-    ["id", rule.id],
-    ["severity", rule.severity],
-    ["maturity", rule.maturity],
-    ["category", rule.category],
-    ["date", rule.date],
-  ];
-  return (
-    <div className={`${CARD} font-data text-[11.5px] leading-[1.9]`}>
-      <div className="px-5 py-2.5 border-b border-fog text-stone">{rule.id}.yaml</div>
-      <div className="px-5 py-4">
-        <div className="text-ink">title: <span className="text-graphite">&quot;{rule.title}&quot;</span></div>
-        {rows.map(([k, v]) => (
-          <div key={k} className="text-ink">
-            {k}: <span className={k === "id" ? "text-brand-ink" : "text-graphite"}>{v}</span>
-          </div>
-        ))}
-        <div className="text-ink">references:</div>
-        {rule.mappings.slice(0, 4).map((m) => (
-          <div key={m} className="pl-4 text-graphite">- {m}</div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TestsCard({ zh, rule }: { zh: boolean; rule: BirthRule }) {
-  return (
-    <div className={`${CARD} p-5`}>
-      <div className="flex items-baseline justify-between text-[12px]">
-        <span className="text-ink">{zh ? "必須抓到" : "Must catch"}</span>
-        <span className="font-data text-stone">{rule.truePositives}</span>
-      </div>
-      <div className="mt-2 grid grid-cols-12 gap-1">
-        {Array.from({ length: rule.truePositives }, (_, i) => (
-          <span key={i} className="aspect-square bg-alert animate-[fadein_300ms_ease-out_both]" style={{ animationDelay: `${i * 70}ms` }} />
-        ))}
-      </div>
-      <div className="mt-5 flex items-baseline justify-between text-[12px]">
-        <span className="text-ink">{zh ? "必須放過" : "Must leave alone"}</span>
-        <span className="font-data text-stone">{rule.trueNegatives}</span>
-      </div>
-      <div className="mt-2 grid grid-cols-12 gap-1">
-        {Array.from({ length: rule.trueNegatives }, (_, i) => (
-          <span key={i} className="aspect-square bg-brand animate-[fadein_300ms_ease-out_both]" style={{ animationDelay: `${(rule.truePositives + i) * 50}ms` }} />
-        ))}
-      </div>
-      <div className="mt-5 pt-3 border-t border-fog text-[11.5px] text-stone">{zh ? "測試案例寫在規則檔裡，任何人都能重跑。" : "The test cases live in the rule file. Anyone can rerun them."}</div>
-    </div>
-  );
-}
-
-function ReleaseCard({ zh, rule }: { zh: boolean; rule: BirthRule }) {
-  return (
-    <div className={`${CARD} p-5`}>
-      <div className="font-data text-[12px] text-stone">$ npm install agent-threat-rules@{rule.firstNpmVersion}</div>
-      <div className="mt-4 flex items-center gap-3">
-        <span className="w-2 h-2 bg-brand" />
-        <span className="font-data text-[12.5px] text-ink">{rule.id}</span>
-        <span className="text-[12px] text-stone">{zh ? "首次收進這一版" : "first included in this release"}</span>
-      </div>
-      <div className="mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[12.5px]">
-        <span className="text-stone">{zh ? "事件回報" : "Reported"}</span>
-        <span className="font-data text-ink">{rule.reported}</span>
-        <span className="text-stone">{zh ? "規則日期" : "Rule dated"}</span>
-        <span className="font-data text-ink">{rule.date}</span>
-        <span className="text-stone">{zh ? "合進 main" : "Reached main"}</span>
-        <span className="font-data text-ink">{rule.mergedToMain}</span>
-        <span className="text-stone">{zh ? "npm 發布" : "Shipped on npm"}</span>
-        <span className="font-data text-ink">{rule.firstNpmDate} · {rule.firstNpmVersion}</span>
-      </div>
+      </ol>
+      <Link href={`/${locale}/rules/${rule.id}`} className="mt-6 inline-block text-[14px] text-ink underline underline-offset-[6px] decoration-ink/30 hover:decoration-ink">
+        {zh ? `看 ${rule.id} 全文` : `Read ${rule.id}`}
+      </Link>
     </div>
   );
 }

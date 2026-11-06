@@ -190,8 +190,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* Coverage */}
       <SheetRow>
-        <div className="px-6 md:px-14 py-24 md:py-28">
-          <div className={KICKER}>{zh ? "涵蓋範圍" : "Coverage"}</div>
+        <div className="px-6 md:px-14 py-20 md:py-24">
+          <div className={KICKER}><span className="font-title text-ink mr-2">§ 1</span>{zh ? "涵蓋範圍" : "Coverage"}</div>
           <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "有紀錄的攻擊，就有名字。" : "A documented attack gets a name.")}</h2>
           <p className="mt-5 text-[16px] leading-[1.75] text-graphite max-w-[620px]">
             {zh ? "十個類別，從被下毒的工具說明，到被悄悄換掉的目標。每一格都連到該類別的規則。" : "Ten categories, from a poisoned tool description to a goal quietly swapped for another. Each panel opens the rules in its category."}
@@ -215,9 +215,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* Why now */}
       <SheetRow>
-        <div className="px-6 md:px-14 py-24 md:py-32 grid lg:grid-cols-[1fr_1.15fr] gap-10 lg:gap-20">
+        <div className="px-6 md:px-14 py-20 md:py-24 grid lg:grid-cols-[1fr_1.15fr] gap-10 lg:gap-20">
           <div>
-            <div className={KICKER}>{zh ? "為什麼是現在" : "Why now"}</div>
+            <div className={KICKER}><span className="font-title text-ink mr-2">§ 2</span>{zh ? "為什麼是現在" : "Why now"}</div>
             <h2 className={`mt-4 ${H2}`}>{title(zh ? "以前，我們有幾十年，可以慢慢來。" : "We used to have decades.")}</h2>
           </div>
           <div className="space-y-5 text-[17px] md:text-[18px] leading-[1.8] text-graphite max-w-[600px]">
@@ -243,13 +243,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       {/* How a rule is born */}
       {birth && (
         <SheetRow>
-          <div className="px-6 md:px-14 pt-24 md:pt-28 pb-24">
-            <div className={KICKER}>{zh ? "一條規則怎麼來" : "How a rule is made"}</div>
+          <div className="px-6 md:px-14 pt-20 md:pt-24 pb-20">
+            <div className={KICKER}><span className="font-title text-ink mr-2">§ 3</span>{zh ? "一條規則怎麼來" : "How a rule is made"}</div>
             <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "一個人碰到的攻擊，變成所有人的規則。" : "One team's incident becomes everyone's rule.")}</h2>
             <p className="mt-5 text-[16px] leading-[1.75] text-graphite max-w-[620px]">
-              {zh
-                ? `以 ${birth.id} 為例：事件在 ${birth.reported} 被回報，規則日期是 ${birth.date}。${birth.mergedToMain} 合進 main，${birth.firstNpmDate} 跟著 npm ${birth.firstNpmVersion} 發出。從回報到使用者裝得到，花了 ${daysBetween(birth.reported, birth.firstNpmDate)} 天。`
-                : `Take ${birth.id}. The incident was reported on ${birth.reported} and the rule is dated ${birth.date}. It reached main on ${birth.mergedToMain} and shipped on npm in ${birth.firstNpmVersion} on ${birth.firstNpmDate}: ${daysBetween(birth.reported, birth.firstNpmDate)} days from report to users.`}{" "}
+              {zh ? `以 ${birth.id} 為例，從回報到使用者裝得到，花了 ${daysBetween(birth.reported, birth.firstNpmDate)} 天。` : `Take ${birth.id}: ${daysBetween(birth.reported, birth.firstNpmDate)} days from report to users.`}{" "}
               {laneSentence(birthLanes, birth.maturity, zh)}
             </p>
             <div className="mt-12">
@@ -261,8 +259,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* Crosswalks */}
       <SheetRow>
-        <div className="px-6 md:px-14 py-24 md:py-28">
-          <div className={KICKER}>{zh ? "框架對照" : "Crosswalks"}</div>
+        <div className="px-6 md:px-14 py-20 md:py-24">
+          <div className={KICKER}><span className="font-title text-ink mr-2">§ 4</span>{zh ? "框架對照" : "Crosswalks"}</div>
           <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "一條規則，對到你要交代的每一份框架。" : "One rule, mapped to the frameworks you answer to.")}</h2>
           <div className="mt-14 grid lg:grid-cols-[380px_1fr] gap-10 lg:gap-0 items-center">
             {birth && (
@@ -300,8 +298,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* Three tools */}
       <SheetRow>
-        <div className="px-6 md:px-14 pt-24 md:pt-28 pb-12">
-          <div className={KICKER}>{zh ? "三件工具" : "Three tools"}</div>
+        <div className="px-6 md:px-14 pt-20 md:pt-24 pb-10">
+          <div className={KICKER}><span className="font-title text-ink mr-2">§ 5</span>{zh ? "三件工具" : "Three tools"}</div>
           <h2 className={`mt-4 ${H2}`}>{title(zh ? "認出攻擊，挑對測試，再把它證明出來。" : "Spot the attack, pick the tests, prove it.")}</h2>
         </div>
         <ul className="grid md:grid-cols-3 border-t border-fog">
@@ -317,7 +315,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   </div>
                   <p className="mt-2 text-[15px] text-ink">{pick(tool.line)}</p>
                   <p className="mt-1.5 text-[14px] leading-[1.65] text-graphite flex-1">{pick(tool.body)}</p>
-                  <span className="mt-5 text-[13px] text-ink group-hover:underline underline-offset-4">{zh ? "了解更多 →" : "Learn more →"}</span>
                 </Link>
               </li>
             );
@@ -327,8 +324,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* Where to start */}
       <SheetRow>
-        <div className="px-6 md:px-14 py-24 md:py-28">
-          <div className={KICKER}>{zh ? "怎麼採用" : "Adopting ATR"}</div>
+        <div className="px-6 md:px-14 py-20 md:py-24">
+          <div className={KICKER}><span className="font-title text-ink mr-2">§ 6</span>{zh ? "怎麼採用" : "Adopting ATR"}</div>
           <h2 className={`mt-4 mb-12 ${H2}`}>{title(zh ? "從哪裡開始，看你是誰。" : "Where you start depends on who you are.")}</h2>
           <AdoptGuide locale={locale} />
         </div>
@@ -336,14 +333,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* Latest */}
       <SheetRow>
-        <div className="px-6 md:px-14 pt-24 pb-8 flex items-end justify-between gap-6">
+        <div className="px-6 md:px-14 pt-20 pb-8 flex items-end justify-between gap-6">
           <div>
-            <div className={KICKER}>{zh ? "最新" : "Latest"}</div>
+            <div className={KICKER}><span className="font-title text-ink mr-2">§ 7</span>{zh ? "最新" : "Latest"}</div>
             <h2 className={`mt-4 ${H2}`}>{zh ? "最近發生的事" : "Recent work"}</h2>
           </div>
           <Link href={`${prefix}/blog`} className="text-[13px] text-ink hover:underline underline-offset-4 whitespace-nowrap">{zh ? "全部文章 →" : "All posts →"}</Link>
         </div>
-        <ul className="mx-6 md:mx-14 mb-24 border-t border-ink">
+        <ul className="mx-6 md:mx-14 mb-20 border-t border-ink">
           {latestRelease && (
             <LatestRow href={`${prefix}/changelog`} date={latestRelease.date} kind={zh ? "發版" : "Release"} title={zh ? `版本 ${latestRelease.version} 發布` : `Release ${latestRelease.version}`} />
           )}
@@ -355,7 +352,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* Close */}
       <SheetRow>
-        <div className="px-6 md:px-14 py-24 md:py-32">
+        <div className="px-6 md:px-14 py-20 md:py-24">
           <div>
             <p className="font-title text-[28px] md:text-[40px] leading-[1.3] text-ink max-w-[820px] text-balance">
               {title(zh ? "ATR 永遠免費、開放。沒有一條規則能用錢買進來。" : "ATR is free and open, for good. No rule can be bought into it.")}

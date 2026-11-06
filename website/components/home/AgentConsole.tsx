@@ -27,7 +27,7 @@ export function AgentConsole({ locale, ruleCount }: { locale: string; ruleCount:
   const zh = locale === "zh";
   const rootRef = useRef<HTMLDivElement>(null);
   // Server renders the first session complete; the loop starts from there.
-  const [tick, setTick] = useSteps(rootRef, DURATIONS, false, BEATS.length - 1);
+  const [tick] = useSteps(rootRef, DURATIONS, false, BEATS.length - 1);
   const sIndex = Math.floor(tick / BEATS.length);
   const beat = tick % BEATS.length;
   const scenario = data.scenarios[sIndex];
@@ -42,18 +42,8 @@ export function AgentConsole({ locale, ruleCount }: { locale: string; ruleCount:
   return (
     <div ref={rootRef} className="relative w-full min-w-0">
 
-      <div className="relative flex gap-1 mb-3" role="tablist" aria-label={zh ? "情境" : "Scenario"}>
-        {data.scenarios.map((s, i) => (
-          <button
-            key={s.key}
-            role="tab"
-            aria-selected={i === sIndex}
-            onClick={() => setTick(i * BEATS.length + 1)}
-            className={`text-[12.5px] mr-4 pb-1 border-b transition-colors ${i === sIndex ? "border-ink text-ink" : "border-transparent text-stone hover:text-ink"}`}
-          >
-            {zh ? LABELS[s.key].zh : LABELS[s.key].en}
-          </button>
-        ))}
+      <div className="mb-3 text-[12.5px] text-stone" aria-live="polite">
+        {zh ? "例" : "Example"} · <span className="text-ink">{zh ? LABELS[scenario.key].zh : LABELS[scenario.key].en}</span>
       </div>
 
       <div className="relative bg-white border border-ink">

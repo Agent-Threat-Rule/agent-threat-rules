@@ -8,11 +8,11 @@ import { LANES, normalizeMaturity, rulesLanes, type Lane } from "@/lib/lanes";
 
 const SEVERITY_ORDER: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3, informational: 4 };
 const SEVERITY_COLORS: Record<string, string> = {
-  critical: "bg-critical/10 text-critical",
-  high: "bg-high/10 text-high",
-  medium: "bg-medium/10 text-medium",
-  low: "bg-ink/10 text-blue",
-  informational: "bg-stone/10 text-stone",
+  critical: "text-ink font-semibold",
+  high: "text-ink",
+  medium: "text-graphite",
+  low: "text-stone",
+  informational: "text-stone",
 };
 
 /** Lane filter value: a lane, or "inert" for files no lane loads. */
@@ -103,12 +103,12 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
           placeholder={t(locale, "rules.search")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[240px] bg-ash border border-fog px-4 py-2.5 font-data text-sm text-ink placeholder:text-mist focus:outline-none focus:border-stone"
+          className="flex-1 min-w-[240px] bg-white border border-fog px-4 py-2.5 font-data text-sm text-ink placeholder:text-mist focus:outline-none focus:border-stone"
         />
         <select
           value={selectedCategory ?? ""}
           onChange={(e) => setSelectedCategory(e.target.value || null)}
-          className="bg-ash border border-fog px-4 py-2.5 text-sm text-stone font-data appearance-none cursor-pointer focus:outline-none"
+          className="bg-white border border-fog px-4 py-2.5 text-sm text-stone font-data appearance-none cursor-pointer focus:outline-none"
         >
           <option value="">{t(locale, "rules.all_categories")}</option>
           {categories.map((c) => (
@@ -120,7 +120,7 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
         <select
           value={selectedSeverity ?? ""}
           onChange={(e) => setSelectedSeverity(e.target.value || null)}
-          className="bg-ash border border-fog px-4 py-2.5 text-sm text-stone font-data appearance-none cursor-pointer focus:outline-none"
+          className="bg-white border border-fog px-4 py-2.5 text-sm text-stone font-data appearance-none cursor-pointer focus:outline-none"
         >
           <option value="">{t(locale, "rules.all_severities")}</option>
           {severities.map((s) => (
@@ -133,7 +133,7 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
           value={selectedLane ?? ""}
           onChange={(e) => setSelectedLane((e.target.value || null) as LaneFilter | null)}
           aria-label={zh ? "依 lane 篩選" : "Filter by lane"}
-          className="bg-ash border border-fog px-4 py-2.5 text-sm text-stone font-data appearance-none cursor-pointer focus:outline-none"
+          className="bg-white border border-fog px-4 py-2.5 text-sm text-stone font-data appearance-none cursor-pointer focus:outline-none"
         >
           <option value="">{zh ? "所有 lane 與 inert" : "All lanes and inert"}</option>
           {laneOptions.map((o) => (
@@ -173,14 +173,14 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
           </button>
         </div>
       ) : (
-        <div className="border border-fog">
+        <div className="border-t border-ink">
           {/* Header */}
-          <div className="hidden lg:grid grid-cols-[150px_1fr_130px_90px_100px_110px_120px] border-b border-fog bg-ash">
+          <div className="hidden lg:grid grid-cols-[150px_1fr_130px_90px_100px_110px_120px] border-b border-ink">
             <div className="px-4 py-3 font-data text-xs text-stone uppercase tracking-wider font-semibold">{t(locale, "rules.col.id")}</div>
             <div className="px-4 py-3 font-data text-xs text-stone uppercase tracking-wider font-semibold">{t(locale, "rules.col.name")}</div>
             <div className="px-4 py-3 font-data text-xs text-stone uppercase tracking-wider font-semibold">{t(locale, "rules.col.category")}</div>
             <div className="px-4 py-3 font-data text-xs text-stone uppercase tracking-wider font-semibold">{t(locale, "rules.col.severity")}</div>
-            <div className="px-4 py-3 font-data text-xs text-stone uppercase tracking-wider font-semibold">Maturity</div>
+            <div className="px-4 py-3 font-data text-xs text-stone uppercase tracking-wider font-semibold">{zh ? "成熟度" : "Maturity"}</div>
             <div className="px-4 py-3 font-data text-xs text-stone uppercase tracking-wider font-semibold">{zh ? "掃描目標" : "Scan target"}</div>
             <div className="px-4 py-3 font-data text-xs text-stone uppercase tracking-wider font-semibold">{t(locale, "rules.col.cves")}</div>
           </div>
@@ -196,7 +196,7 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
                 <div className="px-4 py-3 text-sm text-ink">{rule.title}</div>
                 <div className="px-4 py-3 font-data text-xs text-stone">{categoryDisplayName(rule.category, locale)}</div>
                 <div className="px-4 py-3">
-                  <span className={`font-data text-xs font-semibold uppercase tracking-wide px-2.5 py-1  ${SEVERITY_COLORS[rule.severity] ?? "bg-stone/10 text-stone"}`}>
+                  <span className={`font-data text-xs uppercase tracking-wide ${SEVERITY_COLORS[rule.severity] ?? "text-stone"}`}>
                     {rule.severity}
                   </span>
                 </div>

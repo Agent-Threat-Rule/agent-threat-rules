@@ -38,7 +38,7 @@ export default async function RulesPage({ params }: { params: Promise<{ locale: 
         <div className="text-[13px] text-stone mb-3">
           {t(locale, "rules.label")}
         </div>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-2">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.15] tracking-[-0.01em] mb-2 text-balance">
           {t(locale, "rules.heading", { count: String(stats.ruleCount) })}
         </h1>
         <p className="text-base text-stone font-light">
