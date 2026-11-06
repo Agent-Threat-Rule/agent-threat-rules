@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { locales, type Locale } from "@/lib/i18n";
 import { loadSiteStats } from "@/lib/stats";
+import { getSpecMeta } from "@/lib/spec-meta";
 import { loadAdopters } from "@/lib/adopters";
 import { loadAllRules, loadRuleDetail, categoryDisplayName } from "@/lib/rules";
 import { rulesLanes, type Lane } from "@/lib/lanes";
@@ -94,6 +95,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const title = (text: string) => (zh ? clauses(text) : text);
 
   const stats = loadSiteStats();
+  const specVersion = getSpecMeta().specVersion;
   const rules = loadAllRules();
   const adopters = loadAdopters();
   const crosswalks = loadCrosswalks().filter((c) => c.published);
@@ -145,7 +147,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <div className={KICKER}>
               {zh ? "開放標準 · Agent Threat Rules" : "Open standard · Agent Threat Rules"}
             </div>
-            <h1 className="mt-6 text-[42px] sm:text-[56px] lg:text-[66px] leading-[1.06] tracking-[-0.01em] text-ink">
+            <h1 className="mt-6 text-[42px] sm:text-[56px] lg:text-[64px] leading-[1.06] tracking-[-0.01em] text-ink">
               {zh ? <>AI agent 的<br />資安規則。</> : <>Security rules<br />for AI agents.</>}
             </h1>
             <p className="mt-6 text-[17px] leading-[1.7] text-graphite max-w-[500px] text-pretty">
@@ -353,6 +355,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <div>
             <p className="font-title text-[28px] md:text-[40px] leading-[1.3] text-ink max-w-[820px] text-balance">
               {title(zh ? "規則公開，免費使用，不接受付費收錄。" : "The rules are public and free to use. No rule is accepted for payment.")}
+            </p>
+            <p className="mt-5 font-data text-[12px] text-stone">
+              {zh ? "規格" : "Specification"} {specVersion} · DOI 10.5281/zenodo.19178002 · MIT
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-2">
               <Link href={`${prefix}/spec`} className={`${TEXT_LINK} decoration-ink/30`}>{zh ? "讀規格全文" : "Read the specification"}</Link>

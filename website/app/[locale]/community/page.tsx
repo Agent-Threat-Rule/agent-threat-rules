@@ -63,7 +63,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
       <section className="grid lg:grid-cols-[1.3fr_1fr] gap-12 px-6 md:px-14 pt-24 pb-20">
         <div>
           <div className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-6">{zh ? "社群" : "Community"}</div>
-          <h1 className="text-[40px] md:text-[48px] leading-[1.1] tracking-[-0.01em] font-medium text-ink max-w-[620px] text-balance">
+          <h1 className="text-[32px] md:text-[48px] leading-[1.1] tracking-[-0.01em] font-medium text-ink max-w-[620px] text-balance">
             {zh ? "維護 ATR 的人" : "The people who maintain ATR"}
           </h1>
           <p className="mt-6 text-[17px] leading-[1.6] text-graphite max-w-[560px] text-pretty">

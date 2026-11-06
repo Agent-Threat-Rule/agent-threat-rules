@@ -20,7 +20,7 @@ export async function generateMetadata({
     path: "/blog",
     title: "Blog",
     description:
-      "Timestamped notes from the Agent Threat Rules project: new detection rules, campaign analysis, and public bets on where agent security is heading — each dated and open to scrutiny.",
+      "Dated notes from the Agent Threat Rules project: new detection rules, campaign analysis, and public calls on where agent security is heading. Each one is open to scrutiny.",
   });
 }
 
@@ -41,15 +41,15 @@ export default async function BlogIndexPage({
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
-          {zh ? "下注，留時間戳。" : "Bets, timestamped."}
+        <h1 className="text-[32px] md:text-[48px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
+          {zh ? "判斷，都留日期。" : "Calls, with dates."}
         </h1>
       </Reveal>
       <Reveal delay={0.1}>
         <p className="text-sm md:text-base text-graphite max-w-[640px] mt-5 md:mt-6 leading-[1.8]">
           {zh
-            ? "新規則、攻擊活動分析、對 agent 安全走向的公開判斷。每一篇寫下日期、附上證據，接受檢驗——下注就該留得下紀錄。"
-            : "New rules, campaign analysis, and public calls on where agent security is heading. Each one dated, evidenced, and open to scrutiny — a bet should leave a record."}
+            ? "新規則、攻擊活動分析，還有對 agent 安全走向的公開判斷。每一篇都標日期、附證據，隨時可以被檢驗。"
+            : "New rules, campaign analysis, and public calls on where agent security is heading. Each one is dated, backed by evidence, and open to scrutiny."}
         </p>
       </Reveal>
 

@@ -437,7 +437,7 @@ export default async function RuleDetailPage({
                 {zh ? "在 GitHub 編輯 →" : "Edit on GitHub →"}
               </a>
             </div>
-            <pre className="bg-ash border border-fog p-4 md:p-5 font-data text-[11px] md:text-xs text-graphite leading-[1.7] overflow-x-auto max-h-[480px] overflow-y-auto">
+            <pre className="border-t border-ink pt-4 font-data text-[11px] md:text-xs text-graphite leading-[1.7] overflow-x-auto max-h-[480px] overflow-y-auto">
               {detail.rawYaml}
             </pre>
           </div>

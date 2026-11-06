@@ -594,7 +594,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "coverage.heading":
       "框架替威脅取名字，ATR 負責把它抓出來。",
     "coverage.sub":
-      "MITRE ATLAS、OWASP、NIST AI RMF、ISO 42001 等六份框架，說明的是什麼可能出錯。ATR 是能實際執行的那一層：規則會在真實的 agent 成品上觸發。每條規則都附有對這六份框架的對照，由 CI 強制檢查。",
+      "MITRE ATLAS、OWASP、NIST AI RMF、ISO 42001 等六份框架，說明的是什麼可能出錯。ATR 是能實際執行的那一層：規則會在真實的 agent 檔案上觸發。每條規則都附有對這六份框架的對照，由 CI 強制檢查。",
     "integrate.label": "整合",
     "integrate.heading":
       "接法不只一種，規則都是同一套。",

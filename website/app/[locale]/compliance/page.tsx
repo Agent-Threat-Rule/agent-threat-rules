@@ -110,7 +110,7 @@ export default async function CompliancePage({
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium text-ink mb-4">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.12] tracking-[-0.01em] font-medium text-ink mb-4">
           {zh ? "每條規則都標了 6 個框架的對應條目。" : "Every rule is tagged against 6 frameworks."}
         </h1>
       </Reveal>
@@ -214,7 +214,7 @@ export default async function CompliancePage({
 
       {/* Per-rule verifiability note */}
       <Reveal>
-        <div className="bg-paper border border-fog p-5 md:p-6 mb-8">
+        <div className="border-t border-ink pt-5 mb-8">
           <div className="text-[13px] text-stone mb-2">
             {zh ? "每一條都能驗" : "Check it rule by rule"}
           </div>

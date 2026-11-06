@@ -78,7 +78,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-2">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.12] tracking-[-0.01em] font-medium mb-2">
           {zh ? "誰在採用這個標準。" : "Who ships the standard."}
         </h1>
       </Reveal>

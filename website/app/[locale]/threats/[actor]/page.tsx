@@ -73,7 +73,7 @@ export default async function ActorPage({
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.01em] font-medium text-ink break-all">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.06] tracking-[-0.01em] font-medium text-ink break-all">
           {actor.name}
         </h1>
       </Reveal>
@@ -188,7 +188,7 @@ export default async function ActorPage({
             <div className="text-[13px] text-stone mb-2">
               {zh ? "Base64 樣本" : "Base64 samples"}
             </div>
-            <div className="bg-ash border border-fog p-4 font-data text-xs text-graphite overflow-x-auto leading-[1.8]">
+            <div className="border-t border-ink pt-4 font-data text-xs text-graphite overflow-x-auto leading-[1.8]">
               {actor.iocs.base64Samples.map((s, i) => (
                 <div key={i} className="break-all">
                   {s}

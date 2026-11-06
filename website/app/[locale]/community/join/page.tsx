@@ -63,7 +63,7 @@ const STEPS: ReadonlyArray<B> = [
 const PRIVACY: ReadonlyArray<B> = [
   { en: "Your email address is used to reply to you and is never published.", zh: "你的 email 只用來回覆你，絕不公開。" },
   { en: "Nothing is listed until you confirm the exact text. Your organization appears only if you allow it, and listing it is not an endorsement by it.", zh: "你確認文字之前，什麼都不會公開。所屬單位只有你同意才列，而且列名不代表該單位背書。" },
-  { en: "A photo is optional and shown in greyscale. Without one, your GitHub avatar is used.", zh: "照片可以不給。有的話，網頁上以灰階顯示；沒有，就用你的 GitHub 頭像。" },
+  { en: "A photo is optional and shown in grayscale. Without one, your GitHub avatar is used.", zh: "照片可以不給。有的話，網頁上以灰階顯示；沒有，就用你的 GitHub 頭像。" },
   { en: `To be removed or to have an unsuccessful application deleted, write to ${CONTACT}. No reason needed.`, zh: `要從名錄移除，或要刪掉沒有通過的申請，寫信到 ${CONTACT}。不需要說明理由。` },
   { en: "A GitHub application is a public issue. Use email if you would rather apply privately.", zh: "用 GitHub 申請會是一則公開的 issue。想私下申請，請用 email。" },
 ];
@@ -83,7 +83,7 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
       <div className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-6">
         <Link href={`${prefix}/community`} className="hover:text-ink">{zh ? "社群" : "Community"}</Link> <span className="text-mist">/ {zh ? "加入" : "Join"}</span>
       </div>
-      <h1 className="text-[36px] md:text-[44px] leading-[1.1] tracking-[-0.01em] font-medium text-ink text-balance">
+      <h1 className="text-[32px] md:text-[48px] leading-[1.1] tracking-[-0.01em] font-medium text-ink text-balance">
         {zh ? "加入 ATR 社群" : "Join the ATR community"}
       </h1>
       <p className="mt-5 text-[17px] leading-[1.6] text-graphite max-w-[620px] text-pretty">

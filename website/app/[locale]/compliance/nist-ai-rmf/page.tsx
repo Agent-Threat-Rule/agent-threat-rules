@@ -94,7 +94,7 @@ export default async function NistAiRmfPage({
 
       {/* H1 */}
       <Reveal delay={0.05}>
-        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
           {zh ? "NIST AI RMF 定義流程。" : "NIST AI RMF defines the process."}
           <br />
           <span className="text-blue">{zh ? "ATR 讓它偵測得到。" : "ATR makes it detectable."}</span>
@@ -141,7 +141,7 @@ export default async function NistAiRmfPage({
 
       {/* Community OSCAL contribution — submission status (honest framing) */}
       <Reveal delay={0.14}>
-        <div className="bg-paper border border-fog p-5 md:p-6 mt-8 mb-4">
+        <div className="border-t border-ink pt-5 mt-8 mb-4">
           <div className="text-[13px] text-stone mb-2">
             {zh ? "社群 OSCAL 貢獻 · 目前狀態" : "Community OSCAL contribution · current status"}
           </div>

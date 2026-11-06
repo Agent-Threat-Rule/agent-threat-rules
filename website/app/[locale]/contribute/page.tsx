@@ -34,7 +34,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-2 max-w-[600px]">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.12] tracking-[-0.01em] font-medium mb-2 max-w-[600px]">
           {zh
             ? "你找到的攻擊，可以變成所有人的規則。"
             : "The attack you found can become everyone's rule."}

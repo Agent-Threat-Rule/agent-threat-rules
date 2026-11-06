@@ -208,7 +208,7 @@ export default async function AboutPage({
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
           {zh ? "一個開放標準。" : "An open standard."}
           <br />
           {zh ? "從一位維護者開始。" : "Started by one maintainer."}

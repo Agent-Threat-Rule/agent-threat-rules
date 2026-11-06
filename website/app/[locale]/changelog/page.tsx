@@ -56,7 +56,7 @@ export default async function ChangelogPage({
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
           {zh ? "每一次發布。" : "Every release."}
           <br />
           {zh ? "都查得到。" : "On the record."}

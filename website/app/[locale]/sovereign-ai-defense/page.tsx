@@ -77,10 +77,10 @@ export default async function SovereignAIDefensePage({
 
       {/* H1 */}
       <Reveal delay={0.08}>
-        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
           {zh ? "每個國家都在建主權 AI。" : "Every country is building sovereign AI."}
           <br />
-          {zh ? "保護它的偵測知識,不該屬於任何單一廠商。" : "The detection knowledge that defends it should belong to no single vendor."}
+          {zh ? "保護它的偵測知識，不該屬於任何單一廠商。" : "The detection knowledge that defends it should belong to no single vendor."}
           <br />
           <span className="text-blue">{zh ? "標準層必須是中立的。" : "That layer has to be neutral."}</span>
         </h1>
@@ -96,8 +96,8 @@ export default async function SovereignAIDefensePage({
         <p className="text-[18px] md:text-[21px] font-medium text-ink leading-[1.5] max-w-[720px]">
           {zh ? (
             <>
-              各國正大規模投資自主可控的主權 AI。但保護這些 agent 的偵測規則,
-              至今多半來自單一國家的私有廠商——這正是主權 AI 本來要消除的依賴。
+              各國正大規模投資自主可控的主權 AI。但保護這些 agent 的偵測規則，
+              至今多半來自單一國家的私有廠商。這正是主權 AI 想擺脫的依賴。
             </>
           ) : (
             <>
@@ -111,8 +111,8 @@ export default async function SovereignAIDefensePage({
           {zh ? (
             <>
               ATR 是這個語境裡的<strong className="text-ink">中立基礎建設</strong>:MIT 授權、{ruleCount} 條機器可讀的偵測規則、
-              社群維護,任何國家或組織都能採用、稽核、擴充、或 fork——不依賴任何單一廠商。
-              目前的外部採用已包含 Cisco AI Defense 的開源 skill-scanner 與 Gen Digital Sage 的已合併規則集、Microsoft AGT 的 ATR 範例目錄,以及 MISP、OWASP 的引用——每一筆的憑據都是公開 repo 裡一個已合併的 PR。
+              社群維護。任何國家或組織都能採用、稽核、擴充或 fork，不必依賴單一廠商。
+              目前的外部採用包括：Cisco AI Defense 的開源 skill-scanner 與 Gen Digital Sage 已合併的規則集，Microsoft AGT 已合併的 ATR 範例目錄，以及 MISP、OWASP 的引用。每一筆都有公開 repo 裡已合併的 PR 為憑。
             </>
           ) : (
             <>
@@ -141,7 +141,7 @@ export default async function SovereignAIDefensePage({
               unit="%"
               note={
                 zh
-                  ? `enforce lane(封鎖用,只載 stable 規則)${garak.enforce ? pct(garak.enforce.recall) : "未記錄"} · ${count(garak.samples)} in-the-wild · ${measuredStamp(garak, true)} · 部分屬 closed-book:有不少規則是從這份語料寫出來的`
+                  ? `enforce 車道（封鎖用，只載 stable 規則）${garak.enforce ? pct(garak.enforce.recall) : "未記錄"} · ${count(garak.samples)} in-the-wild · ${measuredStamp(garak, true)} · 部分屬 closed-book:有不少規則是從這份語料寫出來的`
                   : `enforce lane (for blocking, stable rules only) ${garak.enforce ? pct(garak.enforce.recall) : "not recorded"} · ${count(garak.samples)} in-the-wild · ${measuredStamp(garak, false)} · partly closed-book: many rules were written from this corpus`
               }
             />
@@ -166,8 +166,8 @@ export default async function SovereignAIDefensePage({
           {zh ? (
             <>
               許多國家已把 AI 視為<strong className="text-ink">必須自主掌握的國家能力</strong>,
-              並大規模投資於自己語言、自己資料、自己算力上的模型,以避免關鍵系統依賴外國平台。
-              這股投資橫跨多個地區:
+              並大規模投資於自己語言、自己資料、自己算力上的模型，以避免關鍵系統依賴外國平台。
+              這股投資橫跨多個地區：
             </>
           ) : (
             <>
@@ -211,7 +211,7 @@ export default async function SovereignAIDefensePage({
         </div>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-7">
           {zh
-            ? "驅動力是主權焦慮——各國不希望關鍵資料與智慧跑到美國雲端,也不願在關鍵時刻被外國平台關閉或審查。光是亞太的主權 AI 基礎建設市場,2026 年估計就有 90–140 億美元,並預計在 2030 年達到 230–470 億美元。"
+            ? "驅動力是主權焦慮，各國不希望關鍵資料與智慧跑到美國雲端，也不願在關鍵時刻被外國平台關閉或審查。光是亞太的主權 AI 基礎建設市場，2026 年估計就有 90–140 億美元，並預計在 2030 年達到 230–470 億美元。"
             : "The driver is sovereignty anxiety — no country wants its critical data and intelligence running in US clouds, nor wants to be shut off or censored by foreign platforms at critical moments. The Asia-Pacific sovereign-AI infrastructure market alone is estimated at $9–14B in 2026, projected to reach $23–47B by 2030."}
         </p>
         <Callout borderColor="blue">
@@ -236,15 +236,15 @@ export default async function SovereignAIDefensePage({
       <Section label="02 · THE NEUTRALITY PROBLEM" delay={0.05}>
         <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh
-            ? "自主掌握模型容易,自主掌握防禦它的偵測知識難"
+            ? "自主掌握模型容易，自主掌握防禦它的偵測知識難"
             : "Owning the model is one thing. Owning the detection knowledge that defends it is another."}
         </h2>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh ? (
             <>
               這些國家都有了自己的模型、自己的算力。
-              但當這些 AI 變成 <strong className="text-ink">Agent</strong>——會自主行動、調度工具、串接 MCP、執行交易——
-              <strong className="text-ink">沒有一套被廣泛接受的安全檢測標準</strong>。
+              但當這些 AI 變成 <strong className="text-ink">Agent</strong>，會自己行動、調度工具、串接 MCP、執行交易，
+              <strong className="text-ink">卻沒有一套廣泛接受的 agent 偵測標準</strong>。
             </>
           ) : (
             <>
@@ -271,9 +271,9 @@ export default async function SovereignAIDefensePage({
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (
             <>
-              目前多數可用的偵測規則庫是閉源的,且集中在少數國家的私有廠商手裡。
-              一個國家可以自主掌握模型,卻仍得透過閉源、無法稽核的規則庫去防禦它。
-              <strong className="text-ink">無法被開啟、檢視、fork 的防禦知識,是不完整的主權。</strong>
+              目前多數可用的偵測規則庫是閉源的，且集中在少數國家的私有廠商手裡。
+              一個國家可以自主掌握模型，卻仍得透過閉源、無法稽核的規則庫去防禦它。
+              <strong className="text-ink">無法被開啟、檢視、fork 的防禦知識，是不完整的主權。</strong>
             </>
           ) : (
             <>
@@ -292,7 +292,7 @@ export default async function SovereignAIDefensePage({
             rel="noopener noreferrer"
             className="block font-data text-[10px] tracking-[0.1em] text-stone mt-3 uppercase hover:underline"
           >
-            NIST · {zh ? "2026-01-12 新聞稿:CAISI 發布 AI agent 系統安全 RFI" : "News release, 2026-01-12: CAISI's RFI on securing AI agent systems"}
+            NIST · {zh ? "2026-01-12 新聞稿：CAISI 發布 AI agent 系統安全 RFI" : "News release, 2026-01-12: CAISI's RFI on securing AI agent systems"}
           </a>
         </Callout>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[2px] bg-fog border border-fog mt-7">
@@ -307,7 +307,7 @@ export default async function SovereignAIDefensePage({
             label="MYTHOS"
             value="83.1"
             unit="%"
-            note={zh ? "自動漏洞挖掘成功率 · 攻擊能力快速演進,簽章式偵測難跟上" : "automated vuln discovery · attack capability evolving faster than signature detection"}
+            note={zh ? "自動漏洞挖掘成功率 · 攻擊能力快速演進，簽章式偵測難跟上" : "automated vuln discovery · attack capability evolving faster than signature detection"}
             valueColor="critical"
           />
         </div>
@@ -317,12 +317,12 @@ export default async function SovereignAIDefensePage({
       <Section label="03 · WHY A NEUTRAL STANDARD" delay={0.05}>
         <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh
-            ? "為什麼這個語境需要的是開放標準,而不是另一個產品"
+            ? "為什麼這個語境需要的是開放標準，而不是另一個產品"
             : "Why this context calls for an open standard, not another product"}
         </h2>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh
-            ? `MIT License · ${ruleCount} 條偵測規則 · Protocol-agnostic。從真實攻擊情資產生,對應 NVIDIA garak、OWASP Agentic 與 MITRE ATLAS 的分類。任何國家可採用,任何組織可貢獻,沒有 vendor lock-in。`
+            ? `MIT License · ${ruleCount} 條偵測規則 · Protocol-agnostic。從真實攻擊情資產生，對應 NVIDIA garak、OWASP Agentic 與 MITRE ATLAS 的分類。任何國家可採用，任何組織可貢獻，沒有 vendor lock-in。`
             : `MIT License · ${ruleCount} detection rules · protocol-agnostic. Derived from real attack corpora, classified to NVIDIA garak / OWASP Agentic / MITRE ATLAS taxonomies. Adoptable by any country, contributable by any organization. No vendor lock-in.`}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
@@ -359,8 +359,8 @@ export default async function SovereignAIDefensePage({
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh ? (
             <>
-              任何銀行、醫院或半導體廠的資安中心,都已經跑在某套既有的偵測堆疊上——
-              Splunk、Elastic、各種 SIEM。一個中立標準如果要求大家換掉這些,就沒人會採用。
+              任何銀行、醫院或半導體廠的資安中心，都已經跑在某套既有的偵測堆疊上，
+              Splunk、Elastic、各種 SIEM。一個中立標準如果要求大家換掉這些，就沒人會採用。
             </>
           ) : (
             <>
@@ -373,9 +373,9 @@ export default async function SovereignAIDefensePage({
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh ? (
             <>
-              所以 ATR 規則設計成<strong className="text-ink">可匯出</strong>:同一條機器可讀的規則,
-              可以轉成 Splunk SPL、Elastic 查詢、或通用 regex,直接餵進既有的偵測管線。
-              標準存在於規則本身,不綁定任何一家廠商的執行引擎。
+              所以 ATR 規則設計成<strong className="text-ink">可匯出</strong>:同一條機器可讀的規則，
+              可以轉成 Splunk SPL、Elastic 查詢、或通用 regex，直接餵進既有的偵測管線。
+              標準存在於規則本身，不綁定任何一家廠商的執行引擎。
             </>
           ) : (
             <>
@@ -388,7 +388,7 @@ export default async function SovereignAIDefensePage({
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-5">
           {zh ? (
             <>
-              這個轉換器是 ATR 開放參考實作的一部分(MIT)。攻擊面變了——SQL injection 跑進了 reasoning chain、command injection 跑進了 tool call、SSRF 跑進了 MCP 連線——但既有的偵測基礎建設不必跟著歸零。
+              這個轉換器是 ATR 開放參考實作的一部分（MIT）。攻擊面變了，SQL injection 跑進了 reasoning chain、command injection 跑進了 tool call、SSRF 跑進了 MCP 連線，但既有的偵測基礎建設不必跟著歸零。
             </>
           ) : (
             <>
@@ -461,7 +461,7 @@ atr convert splunk --output ./atr-rules.spl`}</code>
           )}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
-          {zh ? "參與這個標準有三個層次:" : "There are three levels of participation in the standard:"}
+          {zh ? "參與這個標準有三個層次：" : "There are three levels of participation in the standard:"}
         </p>
         <ul className="mt-3 space-y-2">
           <ContribItem
@@ -480,8 +480,8 @@ atr convert splunk --output ./atr-rules.spl`}</code>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-5">
           {zh ? (
             <>
-              對主權 AI 來說,開放治理本身就是必要的制度基礎——
-              <strong className="text-ink">攻擊不是由單一實驗室定義,防禦也不該由單一廠商決定</strong>。
+              對主權 AI 來說，開放治理本身就是必要的制度基礎，
+              <strong className="text-ink">攻擊不是由單一實驗室定義，防禦也不該由單一廠商決定</strong>。
             </>
           ) : (
             <>
@@ -500,9 +500,9 @@ atr convert splunk --output ./atr-rules.spl`}</code>
         <p className="text-[17px] md:text-lg text-graphite leading-[1.55] mb-7">
           {zh ? (
             <>
-              <strong className="text-ink">沒有任何國家會「擁有」這個標準,任何國家都能採用它</strong>——
-              就像採用 Linux、OpenSSL、Sigma 一樣:下載、稽核、在自己的環境裡跑、把缺的規則貢獻回上游。
-              因為是 MIT 公共財,採用不需要任何人的許可,也不附帶地緣政治條件。
+              <strong className="text-ink">沒有任何國家會「擁有」這個標準，任何國家都能採用它</strong>——
+              就像採用 Linux、OpenSSL、Sigma 一樣：下載、稽核、在自己的環境裡跑、把缺的規則貢獻回上游。
+              因為是 MIT 公共財，採用不需要任何人的許可，也不附帶地緣政治條件。
             </>
           ) : (
             <>
@@ -516,10 +516,10 @@ atr convert splunk --output ./atr-rules.spl`}</code>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-5">
           {zh ? (
             <>
-              這也是國際局勢重要的原因。AI Safety Institutes 國際網絡——2024 年於舊金山啟動、創始十國,
-              如今跨司法管轄區協調——正朝「各國之間可比的安全評估」推進。可比的前提,是一套共享的、
-              機器可讀的偵測格式。一個中立標準,正是讓一國的發現對另一國仍然可讀的東西——
-              就像東京登記的一筆 CVE,在柏林意義相同。
+              這也是國際局勢重要的原因。AI Safety Institutes 國際網絡，2024 年於舊金山啟動、創始十國，
+              如今跨司法管轄區協調，正朝「各國之間可比的安全評估」推進。可比的前提，是一套共享的、
+              機器可讀的偵測格式。一個中立標準，正是讓一國的發現對另一國仍然可讀的東西，
+              就像東京登記的一筆 CVE，在柏林意義相同。
             </>
           ) : (
             <>
@@ -536,34 +536,34 @@ atr convert splunk --output ./atr-rules.spl`}</code>
             num="PROPERTY 01"
             head={zh ? "可稽核" : "Auditable"}
             body={zh
-              ? "每條規則都是公開的 YAML,帶 provenance metadata。採用者可以逐條檢視偵測邏輯,不用信任任何黑盒。"
+              ? "每條規則都是公開的 YAML，帶 provenance metadata。採用者可以逐條檢視偵測邏輯，不用信任任何黑盒。"
               : "Every rule is public YAML with provenance metadata. Adopters can inspect the detection logic rule by rule, with no black box to trust."}
           />
           <ConditionCard
             num="PROPERTY 02"
             head={zh ? "可在地化" : "Localizable"}
             body={zh
-              ? "規則可 fork、可擴充。任何國家都能加入自己環境裡見到的攻擊樣本,而不必依賴外部廠商的更新節奏。"
+              ? "規則可 fork、可擴充。任何國家都能加入自己環境裡見到的攻擊樣本，而不必依賴外部廠商的更新節奏。"
               : "Rules are forkable and extensible. Any country can add attack samples it observes in its own environment, without depending on an external vendor's release cadence."}
           />
           <ConditionCard
             num="PROPERTY 03"
             head={zh ? "可貢獻回上游" : "Upstream-contributable"}
             body={zh
-              ? "改進透過公開 PR 回流,經自動化 safety gate 與社群審核。一個國家修好的盲點,所有採用者都受益。"
+              ? "改進透過公開 PR 回流，經自動化 safety gate 與社群審核。一個國家修好的盲點，所有採用者都受益。"
               : "Improvements flow back via public pull requests through an automated safety gate and community review. A gap one country fixes benefits every adopter."}
           />
           <ConditionCard
             num="PROPERTY 04"
             head={zh ? "ID 永久穩定" : "Stable identifiers"}
             body={zh
-              ? "規則用 CVE 風格 ID(ATR-YYYY-NNNNN),發布後永不變更——政府文件、稽核報告、CI 腳本都能安全長期引用。"
+              ? "規則用 CVE 風格 ID(ATR-YYYY-NNNNN），發布後永不變更，政府文件、稽核報告、CI 腳本都能安全長期引用。"
               : "Rules use CVE-style IDs (ATR-YYYY-NNNNN) that never change after publication — safe for government documents, audit reports, and CI scripts to cite long-term."}
           />
         </div>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-7">
           {zh
-            ? "採用不是一份提案,是三行指令。沒有授權窗口、沒有採購流程、沒有人需要先點頭:"
+            ? "採用不是一份提案，是三行指令。沒有授權窗口、沒有採購流程、沒有人需要先點頭："
             : "Adoption is not a proposal — it is three commands. No license desk, no procurement cycle, no one's permission required:"}
         </p>
         <pre className="mt-4 bg-ink text-paper  p-5 text-[12.5px] md:text-[13px] leading-[1.7] overflow-x-auto font-data whitespace-pre">
@@ -586,20 +586,20 @@ atr convert splunk               # or export into the SOC you already run`}</cod
             </h2>
             <p className="text-sm md:text-base text-[#D8D8D3] leading-[1.6] mb-5">
               {zh
-                ? "ATR 是 MIT 授權的開放標準,沒有排他性,也不屬於任何單一廠商。如果你相信主權 AI 語境需要一個廠商中立、可稽核的偵測標準,以下任何一類都能直接參與:"
+                ? "ATR 是 MIT 授權的開放標準，沒有排他性，也不屬於任何單一廠商。如果你相信主權 AI 語境需要一個廠商中立、可稽核的偵測標準，以下任何一類都能直接參與："
                 : "ATR is an MIT-licensed open standard — non-exclusive, owned by no single vendor. If you believe the sovereign-AI context needs a vendor-neutral, auditable detection standard, any of the following can take part directly:"}
             </p>
             <ul className="mt-5">
               <CallItem
                 strong={zh ? "政府 / 公部門 / 國家資安機構" : "Governments · public sector · national cybersecurity agencies"}
                 desc={zh
-                  ? "可把 ATR 當作 AI agent 安全的中立參考標準來評估、稽核、在地化,或貢獻去識別化的攻擊樣本回上游。"
+                  ? "可把 ATR 當作 AI agent 安全的中立參考標準來評估、稽核、在地化，或貢獻去識別化的攻擊樣本回上游。"
                   : "Can evaluate, audit, or localize ATR as a neutral reference standard for AI agent security, or contribute anonymized attack samples upstream."}
               />
               <CallItem
                 strong={zh ? "企業資安團隊 / CISO" : "Enterprise security teams · CISOs"}
                 desc={zh
-                  ? "金融、電信、醫療、關鍵基礎設施——把開放規則整合進自己的 agent runtime,並把實戰見到的偵測盲點貢獻回標準。"
+                  ? "金融、電信、醫療、關鍵基礎設施，把開放規則整合進自己的 agent runtime，並把實戰見到的偵測盲點貢獻回標準。"
                   : "Finance, telecom, healthcare, critical infrastructure — integrate the open rules into their agent runtime and contribute detection gaps they hit back to the standard."}
               />
               <CallItem
@@ -611,7 +611,7 @@ atr convert splunk               # or export into the SOC you already run`}</cod
               <CallItem
                 strong={zh ? "開源社群 / 標準組織" : "Open-source communities · standards bodies"}
                 desc={zh
-                  ? "OpenSSF、OWASP、MITRE、CSA、Linux Foundation、ROOST——任何想把 ATR 納入現有資安標準生態的夥伴。"
+                  ? "OpenSSF、OWASP、MITRE、CSA、Linux Foundation、ROOST，任何想把 ATR 納入現有資安標準生態的夥伴。"
                   : "OpenSSF, OWASP, MITRE, CSA, Linux Foundation, ROOST — any partner willing to help integrate ATR into the existing security standards ecosystem."}
               />
               <CallItem
@@ -623,7 +623,7 @@ atr convert splunk               # or export into the SOC you already run`}</cod
               <CallItem
                 strong={zh ? "記者 / 分析師 / 政策研究者" : "Journalists · analysts · policy researchers"}
                 desc={zh
-                  ? "如果你在報導或研究主權 AI、agent 安全、或全球 AI 治理,這個標準的規則、數據、方法都公開可引用、可質疑、可挑戰。"
+                  ? "如果你在報導或研究主權 AI、agent 安全、或全球 AI 治理，這個標準的規則、數據、方法都公開可引用、可質疑、可挑戰。"
                   : "If you're reporting on or researching sovereign AI, agent security, or global AI governance, the standard's rules, data, and methodology are open to citation, scrutiny, and challenge."}
               />
             </ul>
@@ -638,7 +638,7 @@ atr convert splunk               # or export into the SOC you already run`}</cod
         </h2>
         <p className="text-sm text-stone mb-5">
           {zh
-            ? "標準靠被更多人知道、檢視、採用而成立。如果這個觀點對你的同行有用,歡迎轉給他們。"
+            ? "標準靠被更多人知道、檢視、採用而成立。如果這個觀點對你的同行有用，歡迎轉給他們。"
             : "A standard works by being seen, scrutinized, and adopted widely. If this framing is useful to your peers, pass it along."}
         </p>
         <div className="flex flex-wrap gap-3">

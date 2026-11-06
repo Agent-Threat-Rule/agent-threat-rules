@@ -77,7 +77,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-4 max-w-[600px]">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.12] tracking-[-0.01em] font-medium mb-4 max-w-[600px]">
           {zh
             ? <>一個標準的強度，<br />等於貢獻它的人。</>
             : <>A standard is only as strong<br className="hidden sm:block" /> as the people who maintain it.</>}

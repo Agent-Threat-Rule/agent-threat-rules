@@ -99,7 +99,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-2">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.12] tracking-[-0.01em] font-medium mb-2">
           {zh ? "攻擊先發生在野外。" : "The attack happens in the wild first."}
         </h1>
       </Reveal>
@@ -256,7 +256,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
           <div className="text-[13px] text-stone mb-3">
             {zh ? "完整黑名單" : "Full Blacklist"}
           </div>
-          <div className="bg-paper border border-fog p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="border-t border-ink pt-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="font-data text-2xl md:text-3xl font-bold text-ink leading-none">
                 {bl.total_flagged.toLocaleString()}

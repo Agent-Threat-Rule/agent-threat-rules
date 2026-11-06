@@ -76,7 +76,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
         <div className="text-[13px] text-stone mb-3">{t(locale, "coverage.label")}</div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-2">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.12] tracking-[-0.01em] font-medium mb-2">
           {t(locale, "coverage.heading")}
         </h1>
       </Reveal>
@@ -88,13 +88,13 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
 
       {/* How to read this */}
       <Reveal delay={0.25}>
-        <div className="bg-ash border border-fog p-5 md:p-6 mb-8">
+        <div className="border-t border-ink pt-5 mb-8">
           <div className="text-[13px] text-stone mb-3">
             {locale === "zh" ? "這些數字怎麼讀" : "How to read this"}
           </div>
           <p className="text-sm text-graphite leading-[1.7] mb-4">
             {locale === "zh"
-              ? `下面每個召回率都標了 lane。先列 hunt，量測有記錄 enforce 的，再接著列 enforce。${toFullWidth(LANES_EXPLAINED.zh)}誤報數字只在 hunt lane 量過。`
+              ? `下面每個召回率都標了車道。先列 hunt，量測有記錄 enforce 的，再接著列 enforce。${toFullWidth(LANES_EXPLAINED.zh)}誤報數字只在 hunt 車道量過。`
               : `Every recall below names its lane. Hunt comes first, then enforce wherever the measurement recorded it. ${LANES_EXPLAINED.en} False-positive figures were measured in the hunt lane only.`}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-graphite leading-[1.7]">
@@ -230,7 +230,7 @@ function pintNote(stats: SiteStats, zh: boolean): Note | null {
   return {
     name: zh ? `PINT 格式（${count(pint.samples)} 個樣本）` : `PINT-format (${count(pint.samples)} samples)`,
     verdict: zh
-      ? `ATR 在 PINT 格式語料上的召回率是 ${recallLanes(pint)}。語料共 ${count(pint.samples)} 個樣本，其中 ${count(pint.attacks)} 個是攻擊。hunt lane 在 ${count(pint.benign)} 個良性樣本裡誤報 ${count(pint.falsePositives)} 次（${measuredStamp(pint, true, true)}）。${toFullWidth(PINT_CLOSED_BOOK.zh)}這份語料是 ATR 自己用 deepset 和 Lakera Gandalf 的資料組的，不是 Lakera 官方那份不公開的 PINT benchmark。只有一小部分規則會在上面觸發，請把它看成 prompt injection 這一家的分數，不是整體覆蓋率。`
+      ? `ATR 在 PINT 格式語料上的召回率是 ${recallLanes(pint)}。語料共 ${count(pint.samples)} 個樣本，其中 ${count(pint.attacks)} 個是攻擊。hunt 車道 在 ${count(pint.benign)} 個良性樣本裡誤報 ${count(pint.falsePositives)} 次（${measuredStamp(pint, true, true)}）。${toFullWidth(PINT_CLOSED_BOOK.zh)}這份語料是 ATR 自己用 deepset 和 Lakera Gandalf 的資料組的，不是 Lakera 官方那份不公開的 PINT benchmark。只有一小部分規則會在上面觸發，請把它看成 prompt injection 這一家的分數，不是整體覆蓋率。`
       : `Recall on the PINT-format corpus is ${recallLanes(pint)}. The corpus has ${count(pint.samples)} samples, ${count(pint.attacks)} of them attacks. The hunt lane flagged ${fp} benign samples (${measuredStamp(pint, false)}). ${PINT_CLOSED_BOOK.en} ATR built this corpus itself from deepset and Lakera Gandalf data. It is not Lakera's official private PINT benchmark. Only a small subset of rules fire on it, so read it as a score for the prompt-injection family, not overall coverage.`,
   };
 }
@@ -263,7 +263,7 @@ function selfTestNote(stats: SiteStats, zh: boolean): Note | null {
   return {
     name: zh ? `自測（${count(self.samples)} 個樣本）` : `Self-test (${count(self.samples)} samples)`,
     verdict: zh
-      ? `ATR 在 ${count(self.samples)} 個內部自測樣本上的召回率是 ${recallLanes(self)}。hunt lane 在 ${count(self.benign)} 個良性樣本上誤報 ${count(self.falsePositives)} 次（${measuredStamp(self, true, true)}）。這份語料跟 SKILL.md benchmark 是分開的，而且是 ATR 自己做的，不能當成樣本外的證據。`
+      ? `ATR 在 ${count(self.samples)} 個內部自測樣本上的召回率是 ${recallLanes(self)}。hunt 車道 在 ${count(self.benign)} 個良性樣本上誤報 ${count(self.falsePositives)} 次（${measuredStamp(self, true, true)}）。這份語料跟 SKILL.md benchmark 是分開的，而且是 ATR 自己做的，不能當成樣本外的證據。`
       : `Recall on the ${count(self.samples)} internal self-test samples is ${recallLanes(self)}. The hunt lane flagged ${count(self.falsePositives)} of ${count(self.benign)} benign samples (${measuredStamp(self, false)}). This corpus is separate from the SKILL.md benchmark. It is also in-house, so it is not out-of-sample evidence.`,
   };
 }

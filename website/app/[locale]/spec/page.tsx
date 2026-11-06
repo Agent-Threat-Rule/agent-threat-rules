@@ -463,7 +463,7 @@ export default async function SpecPage({
             : "Canonical Specification — Working Draft"}
         </p>
         <h1
-          className="text-3xl md:text-5xl text-ink mb-4 leading-[1.1]"
+          className="text-[32px] md:text-[48px] text-ink mb-4 leading-[1.1]"
         >
           {t(locale, "spec.title")}
         </h1>

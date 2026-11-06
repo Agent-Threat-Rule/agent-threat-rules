@@ -136,7 +136,7 @@ export default async function ImplementersPage({
           {zh ? "實作者報告" : "Implementer Report"}
         </p>
         <h1
-          className="text-3xl md:text-5xl font-bold text-navy-ink mb-4 leading-[1.1]"
+          className="text-[32px] md:text-[48px] font-bold text-navy-ink mb-4 leading-[1.1]"
           style={{
             fontFamily: "var(--font-display)",
             letterSpacing: "-0.02em",

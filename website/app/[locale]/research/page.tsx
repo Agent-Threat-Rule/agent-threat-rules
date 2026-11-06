@@ -44,7 +44,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
         <div className="text-[13px] text-stone mb-3">{t(locale, "research.label")}</div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-2">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.12] tracking-[-0.01em] font-medium mb-2">
           {t(locale, "research.heading")}
         </h1>
       </Reveal>
@@ -69,7 +69,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-stone mb-3">
               {locale === "zh"
-                ? `ATR 為什麼要存在，這篇從頭講。agent 一旦能自己動手，信任就不能再預設，偵測得變成一層標準，任何人都能查核，由社群維護、發版。內容包括 RFC-001 品質規範、野外生態系掃描，以及讓標準持續更新、不停在一次快照的做法。論文裡的掃描數字已經過時。現在能引用的是：掃描 ${stats.megaScanTotal.toLocaleString()} 個項目，標記 ${stats.megaScanFlagged.toLocaleString()} 個（engine v2.0.0，${stats.megaScanDate}）。`
+                ? `ATR 為什麼要存在，這篇從頭講。agent 一旦能自己動手，信任就不能再預設，偵測得成為一層人人都能查核的標準，由社群維護、發版。內容包括 RFC-001 品質規範、野外生態系掃描，以及讓標準持續更新、不停在一次快照的做法。論文裡的掃描數字已經過時。現在能引用的是：掃描 ${stats.megaScanTotal.toLocaleString()} 個項目，標記 ${stats.megaScanFlagged.toLocaleString()} 個（engine v2.0.0，${stats.megaScanDate}）。`
                 : `Why ATR exists, argued from the start. Once agents act on their own, trust can't be assumed, and detection has to become a standard layer that anyone can audit and the community versions and maintains. It covers the RFC-001 quality specification, the in-the-wild ecosystem scan, and how the standard keeps updating instead of stopping at one snapshot. The scan figures in the paper are out of date. The ones to cite are ${stats.megaScanTotal.toLocaleString()} items scanned and ${stats.megaScanFlagged.toLocaleString()} flagged (engine v2.0.0, ${stats.megaScanDate}).`}
             </p>
             <div className="flex flex-wrap gap-3">
@@ -309,8 +309,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {locale === "zh"
-                ? `precision 和 recall 跑在一份照 PINT 格式自建的語料上。recall 兩個 lane 都列，precision 只量 hunt lane。樣本來自外部公開資料集（deepset/prompt-injections、Lakera/gandalf_ignore_instructions），但後來有幾條 hunt lane 規則，是從這份語料自己漏抓的樣本挖出來的，所以 hunt 的數字有一部分屬於 closed-book。這份語料是 ATR 自己組的，不是 Lakera 官方的 PINT benchmark。另外還有一組內部的 SKILL.md benchmark，用的是標註過的檔案，其中一部分惡意樣本是專門為它手寫的。`
-                : `Precision and recall run on a self-built corpus in PINT's format. Recall is reported for both lanes, precision for the hunt lane only. The samples come from public datasets (deepset/prompt-injections, Lakera/gandalf_ignore_instructions). Some hunt-lane rules were later mined from this corpus's own misses, though, so the hunt figure is partly closed-book. The corpus is ATR's own, not Lakera's official PINT benchmark. A separate internal SKILL.md benchmark uses labelled files, and some of its malicious files were written for that benchmark.`}
+                ? `precision 和 recall 跑在一份照 PINT 格式自建的語料上。recall 兩條車道 都列，precision 只量 hunt 車道。樣本來自外部公開資料集（deepset/prompt-injections、Lakera/gandalf_ignore_instructions），但後來有幾條 hunt 車道 規則，是從這份語料自己漏抓的樣本挖出來的，所以 hunt 的數字有一部分屬於 closed-book。這份語料是 ATR 自己組的，不是 Lakera 官方的 PINT benchmark。另外還有一組內部的 SKILL.md benchmark，用的是標註過的檔案，其中一部分惡意樣本是專門為它手寫的。`
+                : `Precision and recall run on a self-built corpus in PINT's format. Recall is reported for both lanes, precision for the hunt lane only. The samples come from public datasets (deepset/prompt-injections, Lakera/gandalf_ignore_instructions). Some hunt-lane rules were later mined from this corpus's own misses, though, so the hunt figure is partly closed-book. The corpus is ATR's own, not Lakera's official PINT benchmark. A separate internal SKILL.md benchmark uses labeled files, and some of its malicious files were written for that benchmark.`}
             </p>
           </div>
           <div className="border-l-2 border-fog pl-4">
@@ -319,7 +319,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {locale === "zh"
-                ? "誤報率拿真實的良性樣本來量，也就是經過人工或社群審查的正常 skill：被誤判的良性樣本數，除以掃過的良性樣本總數。數字按 lane 分開列，不合成一個好看的數字。enforce lane 只跑最成熟的規則，預設的 hunt lane 則把全部規則當成提醒訊號來跑。之前在這裡公布的各 lane 誤報率已經撤回，等重新量測。原因是當時用的良性語料裡，後來發現混進了真的越獄樣本，基準站不住。重測完成之前，這裡不放數字。每一個已記錄的誤報情境，還是會寫進規則 YAML 的 false_positives 欄位，並顯示在規則頁上。"
+                ? "誤報率拿真實的良性樣本來量，也就是經過人工或社群審查的正常 skill：被誤判的良性樣本數，除以掃過的良性樣本總數。數字按車道分開列，不合成一個好看的數字。enforce 車道只跑最成熟的規則，預設的 hunt 車道則把全部規則當成提醒訊號來跑。之前在這裡公布的各車道誤報率已經撤回，等重新量測。原因是當時用的良性語料裡，後來發現混進了真的越獄樣本，基準站不住。重測完成之前，這裡不放數字。每一個已記錄的誤報情境，還是會寫進規則 YAML 的 false_positives 欄位，並顯示在規則頁上。"
                 : "False positive rate is measured on real benign samples, meaning skills that passed manual or community review: the benign samples flagged, divided by all benign samples scanned. It is reported per lane, not as one flattering number. The enforce lane runs only the most mature rules. The default hunt lane runs every rule as an advisory signal. The per-lane figures once published here are withdrawn until they are re-measured: the benign corpus behind them turned out to contain real jailbreak samples, so the baseline didn't hold. No figure appears here until the re-measurement is done. Every documented FP context still goes into the rule YAML's false_positives field and shows on the rule page."}
             </p>
           </div>
@@ -350,7 +350,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
         </p>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="bg-paper border border-fog p-5 md:p-6 mb-8">
+        <div className="border-t border-ink pt-5 mb-8">
           <p className="text-sm text-graphite leading-[1.7]">
             {locale === "zh" ? (
               <>目前還沒有公開的引用紀錄。如果你的論文、技術報告或產品文件引用了 ATR，請開一個 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new" target="_blank" rel="noopener noreferrer" className="text-blue hover:underline">GitHub issue</a> 告訴維護者。</>
@@ -568,7 +568,7 @@ function SkillLayers({ run, zh }: { run: BenchmarkMeasurement; zh: boolean }) {
   return (
     <div className="bg-paper p-6">
       <div className="text-[13px] text-stone mb-4">
-        {zh ? "依攻擊層 · hunt lane" : "By attack layer · hunt lane"}
+        {zh ? "依攻擊層 · hunt 車道" : "By attack layer · hunt lane"}
       </div>
       <div className="space-y-4">
         {layers.map(([key, l]) => (
@@ -607,14 +607,14 @@ function skillCorpusLine(run: BenchmarkMeasurement, zh: boolean): string {
   const noB = (run.layers?.b?.total ?? 0) === 0;
   return zh
     ? `一份內部、標註過的 SKILL.md 語料，共 ${count(run.samples)} 個檔案（${split}${measuredStamp(run, true, true)}）。其中一部分惡意樣本是專門為這個 benchmark 手寫的。Layer A 是明顯的惡意 payload，像 curl | bash、base64 執行、reverse shell。Layer C 是語意型攻擊，像用自然語言下指令、社交工程。${noB ? "這份語料沒有 Layer B（混淆）的樣本。" : ""}`
-    : `An internal, labelled SKILL.md corpus of ${count(run.samples)} files (${split}${measuredStamp(run, false)}). Some of the malicious files were written for this benchmark. Layer A is obvious payloads: curl | bash, base64 exec, reverse shell. Layer C is semantic attacks: natural-language instructions, social engineering.${noB ? " The corpus has no Layer B (obfuscated) samples." : ""}`;
+    : `An internal, labeled SKILL.md corpus of ${count(run.samples)} files (${split}${measuredStamp(run, false)}). Some of the malicious files were written for this benchmark. Layer A is obvious payloads: curl | bash, base64 exec, reverse shell. Layer C is semantic attacks: natural-language instructions, social engineering.${noB ? " The corpus has no Layer B (obfuscated) samples." : ""}`;
 }
 
 function skillEnforceNote(run: BenchmarkMeasurement, zh: boolean): string {
   const e = run.enforce;
-  if (e === null) return zh ? "這次量測沒有記錄 enforce lane 的數字。" : "This measurement records no enforce-lane figure.";
+  if (e === null) return zh ? "這次量測沒有記錄 enforce 車道 的數字。" : "This measurement records no enforce-lane figure.";
   return zh
-    ? `enforce lane 只載入 stable 規則，要開封鎖就用這一條。它在 ${count(e.attacks)} 個惡意樣本中偵測到 ${count(e.detected)} 個（${pct(e.recall)}）。這次量測沒有逐層的 enforce 數字。`
+    ? `enforce 車道 只載入 stable 規則，要開封鎖就用這一條。它在 ${count(e.attacks)} 個惡意樣本中偵測到 ${count(e.detected)} 個（${pct(e.recall)}）。這次量測沒有逐層的 enforce 數字。`
     : `The enforce lane loads stable rules only, and it's the one to run with blocking on. It detects ${count(e.detected)} of the ${count(e.attacks)} malicious samples (${pct(e.recall)}). The measurement has no per-layer enforce split.`;
 }
 

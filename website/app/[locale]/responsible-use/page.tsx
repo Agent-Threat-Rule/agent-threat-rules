@@ -42,8 +42,8 @@ export default async function ResponsibleUsePage({
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium text-ink mb-4">
-          {zh ? "公開的攻擊偵測標準，就必須面對雙重用途。" : "A public attack-detection standard must answer for dual use."}
+        <h1 className="text-[32px] md:text-[48px] leading-[1.12] tracking-[-0.01em] font-medium text-ink mb-4">
+          {zh ? "公開的攻擊偵測標準，必須回答雙重用途的問題。" : "A public attack-detection standard must answer for dual use."}
         </h1>
       </Reveal>
       <Reveal delay={0.1}>
@@ -109,7 +109,7 @@ export default async function ResponsibleUsePage({
         </h2>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="bg-paper border border-fog p-6 md:p-8 mb-6">
+        <div className="border-t border-ink pt-6 mb-6">
           <p className="text-sm text-graphite leading-[1.7] mb-4">
             {zh
               ? "每條 ATR 規則都有一段描述攻擊模式的 regex，以及涵蓋 true_positives 和 true_negatives 的 test case。這些 test_cases 是用來證明規則真的抓得到，也不會誤判良性輸入。它們讓這個標準可以被驗證，不是現成的攻擊 payload。"
@@ -197,8 +197,8 @@ export default async function ResponsibleUsePage({
           </p>
           <p className="mt-4">
             {zh
-              ? "最後，誠實揭露也代表要講清楚 ATR 抓不到什麼。規則以 pattern 為基礎，天生看不見換句話說的改寫、語意相同的重述、非英語的注入、跨多輪的逐步升級，還有傳輸層的協定攻擊。任何讀過公開規則的攻擊者，都能避開特定的動詞、名詞和句構。ATR 把已知的繞過手法公開寫在規則的 evasion_tests 欄位裡（目前不到一半的規則有），也維護一份完整的 LIMITATIONS.md，把這些邊界寫成可以引用的文件，不留成行銷話術裡的空白。一個偵測標準的可信度，取決於它肯不肯公開自己最差的數字。"
-              : "Finally, honest disclosure means stating what ATR cannot catch. The rules are pattern-based. By construction they are blind to paraphrase, semantic equivalence, non-English injection, gradual multi-turn escalation and transport-layer protocol attacks. Any attacker who reads the published rules can route around the specific verbs, nouns and syntax. ATR publishes known evasions in its rules' evasion_tests fields (fewer than half of the rules have them) and keeps a full LIMITATIONS.md, so these boundaries are a document you can cite instead of a blank in the marketing. A detection standard earns trust by publishing its worst figure, not hiding it."}
+              ? "最後，誠實揭露也代表要講清楚 ATR 抓不到什麼。規則以 pattern 為基礎，天生看不見換句話說的改寫、語意相同的重述、非英語的注入、跨多輪的逐步升級，還有傳輸層的協定攻擊。任何讀過公開規則的攻擊者，都能避開特定的動詞、名詞和句構。ATR 把已知的繞過手法公開寫在規則的 evasion_tests 欄位裡（目前不到一半的規則有），也維護一份完整的 LIMITATIONS.md，把這些邊界寫成可以引用的文件，不留成行銷話術裡的空白。"
+              : "Finally, honest disclosure means stating what ATR cannot catch. The rules are pattern-based. By construction they are blind to paraphrase, semantic equivalence, non-English injection, gradual multi-turn escalation and transport-layer protocol attacks. Any attacker who reads the published rules can route around the specific verbs, nouns and syntax. ATR publishes known evasions in its rules' evasion_tests fields (fewer than half of the rules have them) and keeps a full LIMITATIONS.md, so these boundaries are a document you can cite instead of a blank in the marketing. "}
           </p>
         </div>
       </Reveal>
@@ -213,11 +213,11 @@ export default async function ResponsibleUsePage({
         </h2>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="border border-fog p-6 md:p-8 mb-12">
+        <div className="border-t border-ink pt-6 mb-12">
           <p className="text-sm text-graphite leading-[1.7] mb-6">
             {zh
-              ? "標準本身擋不住濫用，也不該假裝擋得住。MIT 授權不允許這麼做，這也不是好的工程設計。但濫用的案例值得知道。它們會回饋到文件和規則設計，讓下一版寫得更清楚，也更難被反過來利用。看到 ATR 被濫用，請告訴維護者。"
-              : "A standard cannot prevent misuse, and should not pretend to. The MIT license does not permit it, and it would not be good engineering. Misuse cases are still worth knowing about. They feed back into the documentation and the rule design, so the next revision is clearer and harder to turn around. If you see ATR being misused, tell the maintainer."}
+              ? "標準本身擋不住濫用，也不該假裝擋得住。MIT 授權沒有限制用途的空間，硬要擋也不是好的工程設計。但濫用的案例值得知道。它們會回饋到文件和規則設計，讓下一版寫得更清楚，也更難被反過來利用。看到 ATR 被濫用，請告訴維護者。"
+              : "A standard cannot prevent misuse, and should not pretend to. The MIT license leaves no room to restrict use, and trying would not be good engineering. Misuse cases are still worth knowing about. They feed back into the documentation and the rule design, so the next revision is clearer and harder to turn around. If you see ATR being misused, tell the maintainer."}
           </p>
           <div className="flex flex-col gap-3">
             <div>

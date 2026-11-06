@@ -39,7 +39,7 @@ export default async function StartPage({ params }: { params: Promise<{ locale: 
           <div className="text-[13px] text-stone mb-3">
             {zh ? "從這裡開始" : "Start here"}
           </div>
-          <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-2 text-balance">
+          <h1 className="text-[32px] md:text-[48px] leading-[1.12] tracking-[-0.01em] font-medium mb-2 text-balance">
             {zh ? "你是為了什麼來的？" : "What brings you to ATR?"}
           </h1>
           <p className="text-base text-stone font-light max-w-[640px]">

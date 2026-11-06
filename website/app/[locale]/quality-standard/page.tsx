@@ -45,7 +45,7 @@ const FORMULA_COMPONENTS = [
     name: "Coverage",
     weight: "20%",
     formula: "min(conditions / 5, 1) × 100",
-    meaning: "Detection depth — distinct attack layers covered.",
+    meaning: "Detection depth: the distinct attack layers covered.",
   },
   {
     name: "Evasion docs",
@@ -235,7 +235,7 @@ export default async function QualityStandardPage({
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-3 leading-[1.05]">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.12] tracking-[-0.01em] font-medium mb-3 leading-[1.05]">
           {locale === "zh" ? (
             <>
               具備
@@ -256,8 +256,8 @@ export default async function QualityStandardPage({
       <Reveal delay={0.2}>
         <p className="text-base text-stone font-light mb-8 max-w-2xl">
           {locale === "zh"
-            ? "一個偵測標準的可信度,取決於它願不願意公開自己最差的數字。每條規則都有可自行計算的信心分數,每個對應都有可審計的來源,每條偵測車道的誤報率都逐車道揭露——不是用單一個好看的數字概括。沒有黑箱、沒有廠商鎖定:只有公開的公式、開源的程式碼、以及在真實世界存活過的資料。"
-            : "A detection standard earns trust by publishing its worst figure, not hiding it. Every rule has a confidence score you can compute yourself, every mapping a provenance you can audit, and every detection lane reports its false-positive rate lane by lane — never as a single flattering number. No black boxes, no vendor lock-in: just a public formula, open-source code, and data that has survived the wild."}
+            ? "一個偵測標準可不可信，要看它敢不敢公開自己最差的數字。每條規則都有可以自己算的信心分數，每個對應都有能查核的來源，誤報率也按偵測車道分開公布，不用單一個好看的數字帶過。公式公開，程式碼開源，資料來自真實環境的掃描。"
+            : "A detection standard earns trust by publishing its worst figure. Every rule has a confidence score you can compute yourself, and every mapping has a source you can audit. Each detection lane reports its own false-positive rate, not one flattering number. The formula is public, the code is open source, and the data comes from real-world scans."}
         </p>
       </Reveal>
       {/* DocumentStatus banner — keeps this RFC-001 page visually aligned
@@ -357,7 +357,7 @@ export default async function QualityStandardPage({
         </div>
       </Reveal>
       <Reveal delay={0.2}>
-        <div className="bg-paper border border-fog p-5 md:p-6 mb-16">
+        <div className="border-t border-ink pt-5 mb-16">
           <p className="text-sm text-ink leading-relaxed mb-3">
             {locale === "zh"
               ? "LLM 生成的規則為什麼可以信任？因為雙重閘門設計讓來源和信任度是分開追蹤的。LLM 生成的規則可以通過 experimental gate 快速迭代；升級到 stable（企業在生產環境封鎖的層級）需要人工 review。採用者可以自己決定：只部署 human-reviewed 規則、只部署 stable、或者兩者都用。"
@@ -365,7 +365,7 @@ export default async function QualityStandardPage({
           </p>
           <p className="text-sm text-stone leading-relaxed">
             {locale === "zh"
-              ? "規則集透過 CVE 與安全公告掃描、benchmark 漏報挖掘與貢獻者擴張,每一條都經由維護者合併的 pull request 進入 main。human-reviewed 的比例隨著人工 review 持續積累而上升——而這個比例本身,是公開的。"
+              ? "規則集透過 CVE 與安全公告掃描、benchmark 漏報挖掘與貢獻者擴張，每一條都經由維護者合併的 pull request 進入 main。human-reviewed 的比例隨著人工 review 持續積累而上升，而這個比例本身，是公開的。"
               : "The ruleset grows through CVE and advisory sweeps, benchmark-miss mining and contributors, and each rule reaches main through a pull request a maintainer merges. The human-reviewed share rises as human review accumulates — and that share is itself published."}
           </p>
         </div>
@@ -378,18 +378,18 @@ export default async function QualityStandardPage({
         </div>
         <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-2">
           {locale === "zh"
-            ? "信心分數是數字,不是意見"
+            ? "信心分數是數字，不是意見"
             : "Confidence is a number, not an opinion"}
         </h2>
         <p className="text-sm text-stone mb-6 max-w-2xl">
           {locale === "zh"
-            ? "每個組成都由可測量的事實計算而來。公式是公開的 — 你可以自己跑。"
+            ? "每個組成都由可測量的事實計算而來。公式是公開的，你可以自己跑。"
             : "Every component is computed from measurable facts. Run it yourself — the formula is public."}
         </p>
       </Reveal>
 
       <Reveal delay={0.1}>
-        <div className="bg-paper border border-fog p-5 md:p-6 mb-6">
+        <div className="border-t border-ink pt-5 mb-6">
           <div className="font-data text-[13px] md:text-sm text-ink bg-fog/40 border border-fog p-4  overflow-x-auto">
             confidence = 0.4 × precision + 0.3 × wild + 0.2 × coverage + 0.1 × evasion
           </div>
@@ -454,7 +454,7 @@ export default async function QualityStandardPage({
         </h2>
         <p className="text-sm text-stone mb-6 max-w-2xl">
           {locale === "zh"
-            ? "將「規則有沒有必要 metadata」與「誰驗證的」分開處理。LLM 只在撰寫階段參與;偵測核心本身是 deterministic regex / AST 比對,執行時不呼叫 LLM。"
+            ? "將「規則有沒有必要 metadata」與「誰驗證的」分開處理。LLM 只在撰寫階段參與；偵測核心本身是 deterministic regex / AST 比對，執行時不呼叫 LLM。"
             : "Separating 'does the rule have the metadata' from 'who verified it'. The LLM participates only at authoring time; the detection core itself is deterministic regex / AST matching and calls no LLM at evaluation time."}
         </p>
       </Reveal>
@@ -482,7 +482,7 @@ export default async function QualityStandardPage({
             </div>
             <p className="text-sm text-ink mb-4 leading-relaxed">
               {locale === "zh"
-                ? "誰驗證了 metadata?human-reviewed、community-contributed、auto-generated 或 llm-generated。升級 stable 要求「已驗證來源」,不只是「有」。"
+                ? "誰驗證了 metadata?human-reviewed、community-contributed、auto-generated 或 llm-generated。升級 stable 要求「已驗證來源」，不只是「有」。"
                 : "Who verified the metadata? human-reviewed, community-contributed, auto-generated, or llm-generated. Stable promotion requires verified provenance — not just presence."}
             </p>
             <code className="font-data text-xs text-stone">
@@ -493,18 +493,18 @@ export default async function QualityStandardPage({
       </div>
 
       <Reveal>
-        <div className="bg-paper border border-fog p-5 md:p-6 mb-16">
+        <div className="border-t border-ink pt-5 mb-16">
           <div className="font-data text-xs text-stone tracking-wider uppercase mb-3">
             {locale === "zh" ? "為什麼這件事重要" : "Why this matters"}
           </div>
           <p className="text-sm text-ink leading-relaxed mb-3">
             {locale === "zh"
-              ? "傳統的規則標準(Sigma、YARA、OWASP CRS)把合規視為二元 — 有就過、沒有就不過。這造成逆向誘因:廠商為了通過檢查而填入 metadata,但並未真正審核。"
+              ? "傳統的規則標準（Sigma、YARA、OWASP CRS）把合規看成二選一：有 metadata 就過，沒有就不過。結果廠商為了過關而補填 metadata，並沒有真的審核。"
               : "Traditional rule standards (Sigma, YARA, OWASP CRS) treat compliance as binary — either the metadata is there or it is not. This creates a perverse incentive: vendors pad metadata to pass the check without doing the underlying review work."}
           </p>
           <p className="text-sm text-stone leading-relaxed">
             {locale === "zh"
-              ? "ATR 將這兩個維度分開。自動生成的對應可以通過 experimental gate 以便快速迭代。升級到 stable — 企業在生產環境會封鎖的層級 — 要求人工 review。快速迭代和誠實信任,同時存在。"
+              ? "ATR 將這兩個維度分開。自動生成的對應可以通過 experimental gate 以便快速迭代。升級到 stable — 企業在生產環境會封鎖的層級，要求人工 review。"
               : "ATR separates the two dimensions. Auto-generated mappings can pass the experimental gate for fast iteration. Stable promotion — the level enterprises block in production — requires human review. Fast iteration and honest trust, at the same time."}
           </p>
         </div>
@@ -522,7 +522,7 @@ export default async function QualityStandardPage({
         </h2>
         <p className="text-sm text-stone mb-6 max-w-2xl">
           {locale === "zh"
-            ? "draft → experimental → test → stable → deprecated。每一階的晉升條件都是明確、機械化的——不是靠規則放著夠久,而是靠它累積的證據。品質退化時降級自動觸發,不需人工決策。"
+            ? "draft → experimental → test → stable → deprecated。每一階的晉升條件都明確，由機器檢查。規則靠累積的證據往上走，放得再久也不會自己升級。品質退化時自動降級，不需要人工決策。"
             : "draft → experimental → test → stable → deprecated. Each gate is explicit and mechanical — a rule moves up on the evidence it has accumulated, never on how long it has sat in the repository. When quality regresses, demotion fires automatically, with no human in the loop."}
         </p>
       </Reveal>
@@ -564,7 +564,7 @@ export default async function QualityStandardPage({
           </div>
           <p className="text-sm text-ink leading-relaxed">
             {locale === "zh"
-              ? "Stable 規則若野外 false positive rate 超過 2%,或 30 天內累積 3 次未解決的 FP 回報,會自動降級為 experimental。不需人工決策。系統自我修正。"
+              ? "Stable 規則若野外 false positive rate 超過 2%，或 30 天內累積 3 次未解決的 FP 回報，會自動降級為 experimental。不需人工決策。系統自我修正。"
               : "Stable rules with a wild false positive rate above 2%, or three unresolved false positive reports within 30 days, are automatically demoted to experimental. No human decision required. The system self-corrects."}
           </p>
         </div>
@@ -585,7 +585,7 @@ export default async function QualityStandardPage({
         </h2>
         <p className="text-sm text-stone mb-6 max-w-2xl">
           {locale === "zh"
-            ? "階梯不只是個標籤,它驅動三條偵測車道。每條車道是「放行哪些成熟度」與「對誤報的容忍度」之間,一個明擺著的取捨。誤報率逐車道公開——但目前的數字已被撤回、等待重新量測。"
+            ? "階梯不只是標籤，它決定了三條偵測車道。每條車道都是一個取捨：放行哪些成熟度，能容忍多少誤報。誤報率原本逐車道公開，現在的數字已經撤回，等重新量測。"
             : "The ladder is not just a label — it drives three detection lanes. Each lane is an explicit tradeoff between which maturities it admits and how much false positive it tolerates. Each lane publishes its own false-positive rate — and those figures are currently withdrawn, pending re-measurement."}
         </p>
       </Reveal>
@@ -604,7 +604,7 @@ export default async function QualityStandardPage({
             </div>
             <p className="text-sm text-stone leading-relaxed">
               {locale === "zh"
-                ? "只放行最成熟、經人工確認的規則。精確度買來的代價是召回率下降——這是刻意的取捨,擺在明處,讓在生產環境封鎖的人自己選。這條車道原先公布的誤報率已撤回:它所依據的良性語料被發現混入真實越獄樣本,重測完成前不再引用數字。"
+                ? "只放行最成熟、經人工確認的規則。要換到精確度，就得犧牲召回率。這是刻意的取捨，擺在明處，讓要在生產環境封鎖的人自己選。這條車道原先公布的誤報率已經撤回：量測用的良性語料後來被發現混入真實的越獄樣本，重測完成前不引用任何數字。"
                 : "Admits only the most mature, human-confirmed rules. The precision is bought by giving up recall — a deliberate tradeoff, stated openly, for anyone who blocks in production. The false-positive rate previously published for this lane is withdrawn: the benign corpus it was measured on was found to contain real jailbreak samples, so no figure is quoted until the re-measurement lands."}
             </p>
           </div>
@@ -622,7 +622,7 @@ export default async function QualityStandardPage({
             </div>
             <p className="text-sm text-stone leading-relaxed">
               {locale === "zh"
-                ? "納入晉升候選的 test 規則,只告警、不封鎖。在誤報傷不到使用者的前提下,擴大被看見的攻擊面。"
+                ? "納入晉升候選的 test 規則，只告警、不封鎖。在誤報傷不到使用者的前提下，擴大被看見的攻擊面。"
                 : "Adds promotion-candidate test rules, surfacing more of the attack surface — but only as alerts, where a false positive costs a notification, not a blocked user."}
             </p>
           </div>
@@ -636,11 +636,11 @@ export default async function QualityStandardPage({
               {locale === "zh" ? "最寬" : "Widest"}
             </div>
             <div className="font-data text-xs text-stone mb-3">
-              {locale === "zh" ? "全部規則,純建議性 · 誤報率待重測" : "everything, advisory only · FP rate pending re-measurement"}
+              {locale === "zh" ? "全部規則，純建議性 · 誤報率待重測" : "everything, advisory only · FP rate pending re-measurement"}
             </div>
             <p className="text-sm text-stone leading-relaxed">
               {locale === "zh"
-                ? "把所有規則當作建議性訊號全開,給做威脅獵捕的人最大的可見度。這條車道的誤報率明顯高於 enforce 車道——那不是瑕疵,是這條車道的設計,因為它從不自動封鎖任何東西。原先公布的百分比同樣已撤回、等待重新量測。"
+                ? "把所有規則都當成建議性訊號打開，讓做威脅獵捕的人看得最多。這條車道的誤報率明顯比 enforce 車道高，這是設計如此，因為它從不自動封鎖任何東西。原先公布的百分比同樣已撤回，等重新量測。"
                 : "Runs every rule as an advisory signal, giving threat hunters maximum visibility. Its false-positive rate is materially higher than the enforce lane's — that is the design, not a flaw, because this lane never blocks anything on its own. The percentage previously published here is likewise withdrawn, pending re-measurement."}
             </p>
           </div>
@@ -648,13 +648,13 @@ export default async function QualityStandardPage({
       </div>
 
       <Reveal>
-        <div className="bg-paper border border-fog p-5 md:p-6 mb-16">
+        <div className="border-t border-ink pt-5 mb-16">
           <div className="font-data text-xs text-stone tracking-wider uppercase mb-3">
             {locale === "zh" ? "品質即誠實" : "Quality is honesty"}
           </div>
           <p className="text-sm text-ink leading-relaxed">
             {locale === "zh"
-              ? "這個標準對「品質」的定義有兩半:公開自己最差的數字,以及在發現一個數字站不住時把它撤掉。兩條車道的誤報率原本並排印在這裡;後來發現量測所用的良性語料混入了真實越獄樣本,於是數字被撤回、等待重新量測,而不是留在原地繼續好看。採用者拿到的不是一個被擦亮的承諾,而是一張可以自己驗證的取捨表——包含目前哪一格是空的。"
+              ? "這個標準對品質的要求有兩條：公開最差的數字，數字站不住時就撤掉。兩條車道的誤報率原本並排印在這裡，後來發現量測用的良性語料混入了真實的越獄樣本，就把數字撤了，等重新量測。採用者拿到的是一張可以自己驗證的取捨表，其中有一格現在是空的。"
               : "This standard defines quality in two halves: publish your worst figure, and withdraw any figure you can no longer stand behind. Both lanes' false-positive rates used to be printed side by side here. The benign corpus they were measured on was then found to contain real jailbreak samples, so the numbers were withdrawn pending re-measurement rather than left standing because they looked good. Adopters get a tradeoff table they can verify themselves — including which cell is currently empty."}
           </p>
         </div>
@@ -784,7 +784,7 @@ export default async function QualityStandardPage({
               </div>
               <p className="text-xs text-stone italic text-right max-w-xs">
                 {locale === "zh"
-                  ? "誠實標記為 LLM 生成。信心分數封頂 70,直到人工 review 升級為 human-reviewed。"
+                  ? "誠實標記為 LLM 生成。信心分數封頂 70，直到人工 review 升級為 human-reviewed。"
                   : "Tagged honestly as LLM-generated. Confidence capped at 70 until human review upgrades it."}
               </p>
             </div>
@@ -804,8 +804,8 @@ export default async function QualityStandardPage({
         </h2>
         <p className="text-sm text-stone mb-6 max-w-2xl">
           {locale === "zh"
-            ? "Sigma、YARA、OWASP CRS、Suricata 解決了惡意軟體、SIEM、WAF、IDS 的這個問題。還沒有人替 AI agent 解決 — 直到現在。"
-            : "Sigma, YARA, OWASP CRS, and Suricata solved this for malware, SIEM, WAF, and IDS. Nobody had solved it for AI agents — until now."}
+            ? "Sigma、YARA、OWASP CRS、Suricata 分別為惡意軟體、SIEM、WAF、IDS 做過規則品質這件事。AI agent 還沒有同類的標準。"
+            : "Sigma, YARA, OWASP CRS, and Suricata solved this for malware, SIEM, WAF, and IDS. AI agents do not have an equivalent standard yet."}
         </p>
       </Reveal>
 
@@ -875,12 +875,12 @@ export default async function QualityStandardPage({
         </div>
         <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-2">
           {locale === "zh"
-            ? "別相信我們,執行驗證器"
-            : "Don't trust us — run the validator"}
+            ? "不用信任誰，自己跑驗證器"
+            : "Run the validator yourself"}
         </h2>
         <p className="text-sm text-stone mb-6 max-w-2xl">
           {locale === "zh"
-            ? "每個 function 都是純函式、開源、有文件。你可以在一分鐘內對自己的規則(或我們的)計算分數。"
+            ? "每個函式都是純函式，開源，有文件。你可以在一分鐘內為自己的規則（或 ATR 的規則）算出分數。"
             : "Every function is pure, open-source, and documented. Score your own rules — or ours — in under a minute."}
         </p>
       </Reveal>
@@ -931,7 +931,7 @@ console.log('Issues:', gate.issues);`}
           </h2>
           <p className="text-sm text-stone mb-6 max-w-xl mx-auto">
             {locale === "zh"
-              ? "公式是公開的,車道的誤報率是公開的,連最差的那個數字也是公開的。任何符合規範的掃描器 — ATR、Cisco、Microsoft AGT 或你自己寫的 — 都能用同一個 library、在同一個維度上計分,並各自驗證。這就是一個開放標準該有的可信度。"
+              ? "公式公開，各車道的誤報率公開，最差的數字也公開。任何符規的掃描器（ATR、Cisco、Microsoft AGT，或你自己寫的）都能用同一個函式庫、同樣的維度計分，各自驗證結果。"
               : "The formula is public, the per-lane false-positive rates are public, and so is the worst of them. Any conformant scanner — ATR, Cisco, Microsoft AGT, or one you write yourself — can score rules on the same axes, with the same library, and verify the result independently. That is what trust in an open standard looks like."}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">

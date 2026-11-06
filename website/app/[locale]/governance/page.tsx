@@ -40,7 +40,7 @@ export default async function GovernancePage({
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium text-ink mb-4">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.12] tracking-[-0.01em] font-medium text-ink mb-4">
           {zh ? "ATR 怎麼治理，都寫在公開紀錄裡。" : "Governance is on the public record."}
         </h1>
       </Reveal>
@@ -62,8 +62,8 @@ export default async function GovernancePage({
         </h2>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="border border-fog mb-12">
-          <div className="p-6 md:p-8 border-b border-fog">
+        <div className="border-t border-ink mb-12">
+          <div className="py-6 border-b border-fog">
             <div className="flex flex-col md:flex-row md:items-start md:gap-8">
               <div className="md:w-48 flex-shrink-0 mb-4 md:mb-0">
                 <div className="font-display text-base font-bold text-ink">Adam Lin</div>
@@ -85,7 +85,7 @@ export default async function GovernancePage({
               </div>
             </div>
           </div>
-          <div className="p-6 md:p-8 bg-ash/30">
+          <div className="py-6 border-b border-fog">
             <p className="text-sm text-stone leading-[1.7]">
               {zh
                 ? "除了首席維護者，GitHub 上另有兩位維護者有寫入權限，還有一位協作者負責整理 issue。不過到目前為止，PR 的合併仍集中在首席維護者手上，這是接下來要分散的部分。招募更多維護者的條件寫在下面。路線圖上有一項是評估把標準託管給中立基金會，例如 Linux Foundation、OpenSSF 或同等級的組織；最終目標是成立技術指導委員會（TSC）。"
@@ -112,7 +112,7 @@ export default async function GovernancePage({
         </p>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="space-y-px bg-fog mb-12">
+        <div className="border-t border-ink mb-12">
           {[
             {
               gate: zh ? "1 · 語法驗證" : "1 · Schema validation",
@@ -151,7 +151,7 @@ export default async function GovernancePage({
                 : "At most 10 new rules per PR. test_cases must include both true_positives and true_negatives.",
             },
           ].map((item) => (
-            <div key={item.gate} className="bg-paper p-5 md:p-6">
+            <div key={item.gate} className="py-4 border-b border-fog">
               <div className="font-data text-xs text-ink tracking-wide uppercase mb-2">{item.gate}</div>
               <p className="text-sm text-graphite leading-[1.7]">{item.desc}</p>
             </div>
@@ -176,7 +176,7 @@ export default async function GovernancePage({
         </p>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="border border-fog mb-12">
+        <div className="border-t border-ink mb-12">
           {[
             {
               kind: zh ? "新增規則" : "Add a rule",
@@ -224,7 +224,7 @@ export default async function GovernancePage({
                 : "A deprecated rule stays in the corpus, but engines MUST NOT enable it by default. After 30 days it may be removed from the corpus. Downstream adopters who depended on it can pin to a deprecated version.",
             },
           ].map((row) => (
-            <div key={row.kind} className="p-5 md:p-6 border-b border-fog last:border-b-0">
+            <div key={row.kind} className="py-5 border-b border-fog">
               <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-6">
                 <div>
                   <div className="font-display text-sm font-semibold text-ink">{row.kind}</div>
@@ -251,7 +251,7 @@ export default async function GovernancePage({
         </h2>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="bg-paper border border-fog p-6 md:p-8 mb-12 text-sm text-graphite leading-[1.7]">
+        <div className="border-t border-ink pt-6 mb-12 text-sm text-graphite leading-[1.7]">
           <p className="mb-3">
             {zh
               ? "OASIS CTI、OpenTelemetry SIG、OWASP 工作小組都有固定會議。ATR 還沒到需要固定開會的規模。現在所有討論都在 GitHub Issues 和 PR 上非同步進行，公開，也都留下紀錄。實作者才幾個，沒人提出需求就先設委員會，沒有必要。"
@@ -275,7 +275,7 @@ export default async function GovernancePage({
         </h2>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="bg-paper border border-fog p-6 md:p-8 mb-12 text-sm text-graphite leading-[1.7]">
+        <div className="border-t border-ink pt-6 mb-12 text-sm text-graphite leading-[1.7]">
           <p className="mb-3">
             {zh
               ? "合併權集中在一個人手上，是 ATR 目前已知最大的結構風險。要分散出去，得等貢獻者合併過足夠多的 PR，夠資格拿到 commit 權限。更多維護者正在招募。"
@@ -332,7 +332,7 @@ export default async function GovernancePage({
         </h2>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="bg-paper border border-fog p-6 md:p-8 mb-12">
+        <div className="border-t border-ink pt-6 mb-12">
           <div className="space-y-4 text-sm text-graphite leading-[1.7]">
             <p>
               {zh
@@ -363,7 +363,7 @@ export default async function GovernancePage({
         </h2>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="bg-paper border border-fog p-6 md:p-8 mb-12">
+        <div className="border-t border-ink pt-6 mb-12">
           <div className="space-y-4 text-sm text-graphite leading-[1.7]">
             <p className="text-ink">
               {zh
@@ -396,7 +396,7 @@ export default async function GovernancePage({
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="bg-ash p-6 md:p-8 mb-12 text-sm text-graphite leading-[1.7]">
+        <div className="border-t border-ink pt-6 mb-12 text-sm text-graphite leading-[1.7]">
           <p className="mb-3">
             {zh
               ? "所有貢獻都以 MIT 授權發布。你的攻擊研究，你保留以任何形式使用的全部權利。ATR 只取用其中的偵測規則，研究本身仍歸你。"
