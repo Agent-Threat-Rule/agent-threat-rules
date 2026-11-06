@@ -5,6 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { getActor, listActors } from "@/lib/actors";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   const params: { locale: string; actor: string }[] = [];
@@ -52,6 +53,7 @@ export default async function ActorPage({
   };
 
   return (
+    <Phrased>
     <div className="pt-20 pb-20 px-6 md:px-14">
       {/* Breadcrumb */}
       <div className="font-data text-xs text-stone mb-6">
@@ -350,6 +352,7 @@ export default async function ActorPage({
         </Link>
       </div>
     </div>
+    </Phrased>
   );
 }
 

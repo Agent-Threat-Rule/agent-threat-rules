@@ -3,6 +3,7 @@ import { locales, type Locale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
 import { loadVersionLabels } from "@/lib/versions";
 import { DocsShell, Callout } from "@/components/DocsShell";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -101,6 +102,7 @@ export default async function EvidencePage({ params }: { params: Promise<{ local
   const versions = await loadVersionLabels();
 
   return (
+    <Phrased>
     <DocsShell
       locale={locale}
       path="/docs/evidence"
@@ -148,5 +150,6 @@ export default async function EvidencePage({ params }: { params: Promise<{ local
         </table>
       </div>
     </DocsShell>
+    </Phrased>
   );
 }

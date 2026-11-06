@@ -5,6 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 import { loadVersionLabels } from "@/lib/versions";
 import { loadCrosswalks } from "@/lib/crosswalks";
 import { DocsShell, Callout } from "@/components/DocsShell";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -34,6 +35,7 @@ export default async function CrosswalksIndexPage({ params }: { params: Promise<
   const drafts = docs.filter((d) => !d.published);
 
   return (
+    <Phrased>
     <DocsShell
       locale={locale}
       path="/docs/crosswalks"
@@ -96,5 +98,6 @@ export default async function CrosswalksIndexPage({ params }: { params: Promise<
         </section>
       )}
     </DocsShell>
+    </Phrased>
   );
 }

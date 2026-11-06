@@ -10,6 +10,7 @@ import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
 import { RFC2119 } from "@/components/spec/RFC2119";
 import { NormativeBadge, InformativeBadge } from "@/components/spec/Badges";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -448,6 +449,7 @@ export default async function SpecPage({
   const meta = getSpecMeta();
 
   return (
+    <Phrased>
     <main
       id="main-content"
       className="spec-document w-full px-6 md:px-14 pt-24 md:pt-28 pb-24"
@@ -580,5 +582,6 @@ export default async function SpecPage({
         </div>
       </div>
     </main>
+    </Phrased>
   );
 }

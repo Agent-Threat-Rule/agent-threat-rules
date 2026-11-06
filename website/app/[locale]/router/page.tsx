@@ -8,6 +8,7 @@ import { pageMetadata } from "@/lib/seo";
 import { SheetRow } from "@/components/Sheet";
 import { RouterFlow } from "@/components/RouterFlow";
 import { ToolHero, ToolFigure, ToolPoints, ToolLimits, ToolNext } from "@/components/ToolPage";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -56,6 +57,7 @@ export default async function RouterPage({ params }: { params: Promise<{ locale:
   const zh = locale === "zh";
 
   return (
+    <Phrased>
     <>
       <SheetRow>
         <ToolHero
@@ -96,5 +98,6 @@ export default async function RouterPage({ params }: { params: Promise<{ locale:
 
       <ToolNext href={`/${locale}/eval`} label={zh ? "挑好之後，交給 ATR Eval 去跑" : "Once the tests are picked, ATR Eval runs them"} />
     </>
+    </Phrased>
   );
 }

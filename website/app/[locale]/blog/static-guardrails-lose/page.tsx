@@ -6,6 +6,7 @@ import { loadSiteStats } from "@/lib/stats";
 import { count, findBenchmark, measuredStamp, recallLanes } from "@/lib/recall";
 import type { Metadata } from "next";
 import { pageMetadata, toLocale } from "@/lib/seo";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -43,6 +44,7 @@ export default async function StaticGuardrailsPostPage({
     : null;
 
   return (
+    <Phrased>
     <div className="pt-20 pb-20 px-6 md:px-14 max-w-[872px]">
       <Reveal>
         <Link
@@ -275,5 +277,6 @@ export default async function StaticGuardrailsPostPage({
         </article>
       )}
     </div>
+    </Phrased>
   );
 }

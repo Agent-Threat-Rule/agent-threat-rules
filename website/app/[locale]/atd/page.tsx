@@ -12,6 +12,7 @@ import { NormativeBadge, InformativeBadge } from "@/components/spec/Badges";
 import { ATD_TECHNIQUES, ATD_TACTICS, ATD_STATS } from "@/lib/atd-data";
 import { loadSiteStats, type BenchmarkMeasurement } from "@/lib/stats";
 import { count, findBenchmark, measuredStamp, pct, pctHunt } from "@/lib/recall";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -255,6 +256,7 @@ export default async function ATDPage({
       .replace(/\{RULES\}/g, String(ATD_STATS.withLiveRule));
 
   return (
+    <Phrased>
     <main
       id="main-content"
       className="spec-document atd-doc w-full px-6 md:px-14 pt-24 md:pt-28 pb-24"
@@ -517,5 +519,6 @@ export default async function ATDPage({
         </div>
       </div>
     </main>
+    </Phrased>
   );
 }

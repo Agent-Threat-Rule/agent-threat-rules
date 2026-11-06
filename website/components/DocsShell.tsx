@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { DOCS_SECTIONS, pick } from "@/lib/docs-nav";
 import { SheetRow } from "./Sheet";
+import Phrased from "@/components/Phrased";
 
 const REPO = "https://github.com/Agent-Threat-Rule/agent-threat-rules";
 
@@ -33,6 +34,7 @@ export function DocsShell({
   const feedback = `${REPO}/issues/new?title=${encodeURIComponent(`Docs feedback: ${path}`)}&labels=documentation`;
 
   return (
+    <Phrased>
     <>
       <SheetRow>
         <div className="grid lg:grid-cols-[250px_1fr]">
@@ -81,22 +83,26 @@ export function DocsShell({
         </div>
       </SheetRow>
     </>
+    </Phrased>
   );
 }
 
 /** Status callout, for saying plainly what is not built yet. */
 export function Callout({ label, children }: { label: string; children: ReactNode }) {
   return (
+    <Phrased>
     <div className="border border-fog bg-white/60 px-5 py-4 text-[14px] leading-[1.6] text-graphite">
       <span className="font-data text-[10px] uppercase tracking-[0.1em] text-navy mr-2">{label}</span>
       {children}
     </div>
+    </Phrased>
   );
 }
 
 /** "At a glance" table that opens process pages: two columns, label and value. */
 export function GlanceTable({ rows }: { rows: ReadonlyArray<{ label: string; value: ReactNode }> }) {
   return (
+    <Phrased>
     <dl className="border-t border-fog">
       {rows.map((r) => (
         <div key={r.label} className="grid grid-cols-[160px_1fr] gap-4 py-3 border-b border-fog">
@@ -105,5 +111,6 @@ export function GlanceTable({ rows }: { rows: ReadonlyArray<{ label: string; val
         </div>
       ))}
     </dl>
+    </Phrased>
   );
 }

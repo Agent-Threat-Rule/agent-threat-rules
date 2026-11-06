@@ -4,6 +4,7 @@ import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -200,6 +201,7 @@ export default async function AboutPage({
   const ruleCount = loadSiteStats().ruleCount;
 
   return (
+    <Phrased>
     <div className="pt-20 pb-20 px-6 md:px-14 max-w-[972px]">
       {/* Header */}
       <Reveal>
@@ -336,6 +338,7 @@ export default async function AboutPage({
         </p>
       </Section>
     </div>
+    </Phrased>
   );
 }
 

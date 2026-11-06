@@ -4,6 +4,7 @@ import { loadSiteStats } from "@/lib/stats";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { loadVersionLabels, NPM_PACKAGE_URL } from "@/lib/versions";
 import { FOOTER_EXTRA, NAV_GROUPS, pick } from "@/lib/site-nav";
+import Phrased from "@/components/Phrased";
 
 const REPO = "https://github.com/Agent-Threat-Rule/agent-threat-rules";
 
@@ -21,6 +22,7 @@ export async function Footer({ locale }: { locale: Locale }) {
   const linkClass = "text-[13px] text-stone hover:text-ink transition-colors";
 
   return (
+    <Phrased>
     <footer>
       <div className="sheet sheet-row px-6 md:px-14 pt-12 pb-8">
         <span className="corner-mark corner-mark-l" aria-hidden="true" />
@@ -77,5 +79,6 @@ export async function Footer({ locale }: { locale: Locale }) {
         </div>
       </div>
     </footer>
+    </Phrased>
   );
 }

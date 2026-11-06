@@ -4,6 +4,7 @@ import { locales, type Locale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
 import { SectionHead } from "@/components/SectionHead";
 import { SheetRow } from "@/components/Sheet";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -77,6 +78,7 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
   const noGithubHref = NO_GITHUB_FORM_URL ?? `mailto:${CONTACT}?subject=${encodeURIComponent("Joining the ATR community")}`;
 
   return (
+    <Phrased>
     <>
       <SheetRow grid>
       <div className="max-w-[972px] px-6 md:px-14 pt-24 pb-24">
@@ -151,5 +153,6 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
       </div>
       </SheetRow>
     </>
+    </Phrased>
   );
 }

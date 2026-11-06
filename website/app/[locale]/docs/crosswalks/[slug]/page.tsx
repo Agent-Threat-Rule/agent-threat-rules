@@ -6,6 +6,7 @@ import { loadVersionLabels } from "@/lib/versions";
 import { loadCrosswalks, findCrosswalk } from "@/lib/crosswalks";
 import { renderMarkdown } from "@/lib/markdown";
 import { DocsShell, Callout } from "@/components/DocsShell";
+import Phrased from "@/components/Phrased";
 
 const REPO_BLOB = "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main";
 
@@ -36,6 +37,7 @@ export default async function CrosswalkPage({ params }: { params: Promise<{ loca
   const baseDir = doc.file.split("/").slice(0, -1).join("/");
 
   return (
+    <Phrased>
     <DocsShell
       locale={locale}
       path={`/docs/crosswalks/${slug}`}
@@ -58,5 +60,6 @@ export default async function CrosswalkPage({ params }: { params: Promise<{ loca
       </div>
       <div className="mt-6 max-w-[780px]">{renderMarkdown(doc.body, { locale, baseDir })}</div>
     </DocsShell>
+    </Phrased>
   );
 }

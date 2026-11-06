@@ -7,6 +7,7 @@ import { getSpecMeta } from "@/lib/spec-meta";
 import { loadSiteStats } from "@/lib/stats";
 import { DOCS_SECTIONS, pick } from "@/lib/docs-nav";
 import { DocsShell, Callout, GlanceTable } from "@/components/DocsShell";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -46,6 +47,7 @@ export default async function DocsOverviewPage({ params }: { params: Promise<{ l
   const stats = loadSiteStats();
 
   return (
+    <Phrased>
     <DocsShell
       locale={locale}
       path="/docs"
@@ -112,5 +114,6 @@ export default async function DocsOverviewPage({ params }: { params: Promise<{ l
         </ul>
       </section>
     </DocsShell>
+    </Phrased>
   );
 }

@@ -6,6 +6,7 @@ import { loadGithubContributors, loadMembers } from "@/lib/community";
 import { SectionHead } from "@/components/SectionHead";
 import { SheetRow } from "@/components/Sheet";
 import { MemberDirectory } from "./MemberDirectory";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -58,6 +59,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
   const contributors = loadGithubContributors();
 
   return (
+    <Phrased>
     <>
       <SheetRow grid>
       <section className="grid lg:grid-cols-[1.3fr_1fr] gap-12 px-6 md:px-14 pt-24 pb-20">
@@ -174,5 +176,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
       </section>
       </SheetRow>
     </>
+    </Phrased>
   );
 }

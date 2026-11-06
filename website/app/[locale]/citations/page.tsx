@@ -11,6 +11,7 @@ import { getSpecMeta } from "@/lib/spec-meta";
 import { loadVersionLabels } from "@/lib/versions";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
 import { CitationBlock } from "@/components/spec/CitationBlock";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -53,6 +54,7 @@ export default async function CitationsPage({
   const pypiUrl = `https://pypi.org/project/${pypiPackage}/`;
 
   return (
+    <Phrased>
     <main
       id="main-content"
       className="spec-document w-full px-6 md:px-14 pt-24 md:pt-28 pb-24"
@@ -420,5 +422,6 @@ export default async function CitationsPage({
         </div>
       </div>
     </main>
+    </Phrased>
   );
 }

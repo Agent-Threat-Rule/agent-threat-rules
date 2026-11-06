@@ -5,6 +5,7 @@ import { loadNistSubcategoryCounts } from "@/lib/nist-counts";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -84,6 +85,7 @@ export default async function NistAiRmfPage({
   const stats = loadSiteStats();
 
   return (
+    <Phrased>
     <div className="pt-20 pb-20 px-6 md:px-14 max-w-[992px]">
       {/* Header eyebrow */}
       <Reveal>
@@ -466,6 +468,7 @@ export default async function NistAiRmfPage({
         </div>
       </Section>
     </div>
+    </Phrased>
   );
 }
 

@@ -5,6 +5,7 @@ import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -69,6 +70,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
   const stats = loadSiteStats();
 
   return (
+    <Phrased>
     <div className="pt-20 pb-16 px-6 md:px-14 max-w-[972px]">
       {/* Hero */}
       <Reveal>
@@ -317,5 +319,6 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
         </Reveal>
       )}
     </div>
+    </Phrased>
   );
 }

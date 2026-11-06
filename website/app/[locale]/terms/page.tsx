@@ -4,6 +4,7 @@ import { pageMetadata } from "@/lib/seo";
 import { loadVersionLabels } from "@/lib/versions";
 import { CONTACTS, LEGAL_DRAFT, REPO_URL } from "@/lib/legal";
 import { DocsShell, Callout } from "@/components/DocsShell";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -69,6 +70,7 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
   const versions = await loadVersionLabels();
 
   return (
+    <Phrased>
     <DocsShell locale={locale} path="/terms" eyebrow={zh ? "VIII. 說明與法律" : "VIII. Help and legal"} title={zh ? "使用條款" : "Terms of use"} generatedAt={versions.generatedAt}>
       {LEGAL_DRAFT && (
         <Callout label={zh ? "草稿" : "Draft"}>
@@ -85,5 +87,6 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
         ))}
       </div>
     </DocsShell>
+    </Phrased>
   );
 }

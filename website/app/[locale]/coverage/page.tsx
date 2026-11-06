@@ -21,6 +21,7 @@ import { locales, t, type Locale } from "@/lib/i18n";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -70,6 +71,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
   const gaps = ast10Gaps(coverage.owaspAst10);
 
   return (
+    <Phrased>
     <div className="pt-20 pb-16 px-6 md:px-14">
       <StatsHydrator />
       <Reveal>
@@ -218,6 +220,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
         </Link>
       </Reveal>
     </div>
+    </Phrased>
   );
 }
 

@@ -4,6 +4,7 @@ import { loadVersionLabels, npmInstallSpec } from "@/lib/versions";
 import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -264,6 +265,7 @@ export default async function QualityStandardPage({
   const installSpec = npmInstallSpec(await loadVersionLabels());
 
   return (
+    <Phrased>
     <div className="pt-20 pb-16 px-6 md:px-14">
       {/* ── HERO ───────────────────────────────────────────── */}
       <Reveal>
@@ -990,5 +992,6 @@ console.log('Issues:', gate.issues);`}
         </div>
       </Reveal>
     </div>
+    </Phrased>
   );
 }

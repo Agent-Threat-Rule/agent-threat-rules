@@ -10,6 +10,7 @@ import { GARAK_BOTH_CLOSED_BOOK, LANES_EXPLAINED, commonStamp, count, findBenchm
 import { locales, type Locale } from "@/lib/i18n";
 import { SheetRow } from "@/components/Sheet";
 import { ToolHero, ToolLimits } from "@/components/ToolPage";
+import Phrased from "@/components/Phrased";
 
 const SCRIPT_URL = "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/scripts/garak-miss-to-proposals.ts";
 const GARAK_URL = "https://github.com/NVIDIA/garak";
@@ -45,6 +46,7 @@ export default async function GarakIntegratePage({ params }: { params: Promise<{
   const full = findBenchmark(stats, "garak-full");
 
   return (
+    <Phrased>
     <>
       <SheetRow>
         <ToolHero
@@ -135,5 +137,6 @@ export default async function GarakIntegratePage({ params }: { params: Promise<{
         </div>
       </SheetRow>
     </>
+    </Phrased>
   );
 }

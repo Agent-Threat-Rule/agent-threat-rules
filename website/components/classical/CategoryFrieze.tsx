@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Phrased from "@/components/Phrased";
 
 export interface FriezeItem {
   key: string;
@@ -21,6 +22,7 @@ export function CategoryFrieze({ items, inscription, countLabel }: { items: Read
   // and each course closed by one. Phones: a plain two-column grid.
   const firstCourse = (i: number) => (i < 5 ? "lg:border-b lg:border-ink" : "");
   return (
+    <Phrased>
     <div className="border border-ink bg-white">
       <svg width="100%" height="14" className="block border-b border-ink text-ink" aria-hidden="true">
         <defs>
@@ -56,5 +58,6 @@ export function CategoryFrieze({ items, inscription, countLabel }: { items: Read
         ))}
       </ul>
     </div>
+    </Phrased>
   );
 }

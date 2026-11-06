@@ -6,6 +6,9 @@ import { SheetRow } from "@/components/Sheet";
 import { normalizeMaturity, rulesLanes } from "@/lib/lanes";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
+import { categoryLetter } from "@/lib/docs-nav";
 
 const SEVERITY_COLORS: Record<string, string> = {
   critical: "bg-critical/10 text-critical",
@@ -119,6 +122,7 @@ export default async function RuleDetailPage({
   const categoryDisplay = categoryDisplayName(rule.category, locale);
   const severityClass = SEVERITY_COLORS[rule.severity] ?? "bg-ash text-stone";
   const lanes = rulesLanes(rule);
+  const maturity = normalizeMaturity(rule.maturity);
   const keywords = [rule.subcategory, rule.detectionTier, rule.confidence && `confidence: ${rule.confidence}`]
     .filter((k): k is string => typeof k === "string" && k.trim() !== "")
     .map((k) => k.replace(/[-_]/g, " "));
@@ -141,6 +145,7 @@ export default async function RuleDetailPage({
   };
 
   return (
+    <Phrased>
     <>
       <script
         type="application/ld+json"
@@ -164,7 +169,7 @@ export default async function RuleDetailPage({
         {/* Header — one template for every rule: identity, one-sentence
             statement, keywords, attribute row, crosswalk grid. */}
         <div className="mb-10 border-y border-ink py-7 md:py-9 text-center">
-          <div className="text-[12px] tracking-[0.18em] text-stone">{categoryDisplay}</div>
+          <div className="text-[12px] tracking-[0.18em] text-stone"><span className="font-spec text-[15px] tracking-normal text-ink mr-2">{categoryLetter(rule.category)}</span>{categoryDisplay}</div>
           <div className="font-title mt-3 text-[30px] sm:text-[40px] md:text-[48px] leading-none tracking-[0.1em] text-ink">{rule.id}</div>
           <div className="mt-4 text-[12px] text-stone">
             {[
@@ -184,47 +189,59 @@ export default async function RuleDetailPage({
           <p className="mt-5 font-data text-[11.5px] text-stone">{keywords.join("  ·  ")}</p>
         )}
 
-        <dl className="mt-8 grid grid-cols-2 md:grid-cols-5 border-t border-b border-fog">
+        {/* Attributes as a record, one per line. Signs from components/Sign.tsx:
+            obelos = the rule marks and reports, enforce = it may block,
+            stigme = not yet stable, asteriskos = the same thing in another framework. */}
+        <dl className="mt-8 border-t border-fog">
           {[
-            { label: zh ? "嚴重度" : "Severity", value: rule.severity, tone: "text-ink" },
-            { label: zh ? "成熟度" : "Maturity", value: normalizeMaturity(rule.maturity), tone: "text-ink" },
-            { label: zh ? "載入的車道" : "Lanes", value: lanes.length > 0 ? lanes.join(" · ") : zh ? "無（inert）" : "none (inert)", tone: lanes.length > 0 ? "text-ink" : "text-high" },
-            { label: zh ? "掃描目標" : "Scan target", value: rule.scanTarget ?? "—", tone: "text-ink" },
-            { label: zh ? "狀態" : "Status", value: rule.status ?? "—", tone: "text-ink" },
-          ].map((cell) => (
-            <div key={cell.label} className="py-4 pr-4 md:border-r border-fog last:border-r-0 [&:not(:first-child)]:md:pl-4">
-              <dt className="font-data text-[10px] uppercase tracking-[0.08em] text-mist">{cell.label}</dt>
-              <dd className={`mt-1.5 text-[14px] ${cell.tone}`}>{cell.value}</dd>
+            { sign: null, label: zh ? "嚴重度" : "Severity", value: rule.severity, note: null },
+            {
+              sign: lanes.includes("enforce") ? ("enforce" as const) : lanes.length > 0 ? ("obelos" as const) : null,
+              label: zh ? "車道" : "Lanes",
+              value: lanes.length > 0 ? lanes.join(" · ") : zh ? "無（inert）" : "none (inert)",
+              note: lanes.includes("enforce") ? (zh ? "可以用來攔截" : "can be used to block") : lanes.length > 0 ? (zh ? "比對到就標出、回報" : "marks and reports a match") : null,
+            },
+            { sign: maturity !== "stable" ? ("stigme" as const) : null, label: zh ? "成熟度" : "Maturity", value: maturity, note: maturity !== "stable" ? (zh ? "還沒定論" : "not yet settled") : null },
+            { sign: null, label: zh ? "掃描目標" : "Scan target", value: rule.scanTarget ?? "—", note: null },
+            { sign: null, label: zh ? "狀態" : "Status", value: rule.status ?? "—", note: null },
+          ].map((row) => (
+            <div key={row.label} className="grid grid-cols-[20px_96px_1fr] sm:grid-cols-[24px_140px_1fr] gap-x-2 items-baseline py-3 border-b border-fog">
+              <span className="self-center text-ink">{row.sign && <Sign name={row.sign} size={14} />}</span>
+              <dt className="text-[13px] text-stone">{row.label}</dt>
+              <dd className={`text-[14px] ${lanes.length === 0 && row.label === (zh ? "車道" : "Lanes") ? "text-high" : "text-ink"}`}>
+                {row.value}
+                {row.note && <span className="ml-3 text-[13px] text-stone">{row.note}</span>}
+              </dd>
             </div>
           ))}
         </dl>
 
         {crosswalks.length > 0 && (
           <section className="mt-10" aria-labelledby="crosswalks-heading">
-            <h2 id="crosswalks-heading" className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-4">
+            <h2 id="crosswalks-heading" className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-2">
               {zh ? "框架對照" : "Framework mappings"}
             </h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+            <dl className="border-t border-fog">
               {crosswalks.map((cw) => (
-                <div key={cw.name}>
-                  <div className="text-[13px] text-ink mb-2 flex items-center gap-1.5">
-                    {cw.name}
-                    <span title={cw.help} className="font-data text-[10px] text-mist border border-fog rounded-full w-4 h-4 inline-flex items-center justify-center cursor-help" aria-label={cw.help}>?</span>
-                  </div>
-                  <ul className="flex flex-col gap-1">
-                    {cw.items.map((item) => (
-                      <li key={item.text} className="text-[13px] leading-snug">
-                        {item.href ? (
-                          <a href={item.href} target="_blank" rel="noopener noreferrer" className="text-blue hover:underline underline-offset-4">{item.text}</a>
-                        ) : (
-                          <span className="text-graphite">{item.text}</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                <div key={cw.name} className="grid grid-cols-[20px_1fr] sm:grid-cols-[24px_200px_1fr] gap-x-2 gap-y-1 items-baseline py-3 border-b border-fog">
+                  <span className="self-center text-ink"><Sign name="asteriskos" size={16} /></span>
+                  <dt className="text-[13px] text-ink" title={cw.help}>{cw.name}</dt>
+                  <dd className="col-start-2 sm:col-start-3">
+                    <ul className="flex flex-col gap-1">
+                      {cw.items.map((item) => (
+                        <li key={item.text} className="text-[13px] leading-snug">
+                          {item.href ? (
+                            <a href={item.href} target="_blank" rel="noopener noreferrer" className="text-blue hover:underline underline-offset-4">{item.text}</a>
+                          ) : (
+                            <span className="text-graphite">{item.text}</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </dd>
                 </div>
               ))}
-            </div>
+            </dl>
           </section>
         )}
 
@@ -503,5 +520,6 @@ export default async function RuleDetailPage({
       </SheetRow>
       </>
     </>
+    </Phrased>
   );
 }

@@ -3,6 +3,8 @@
 import { useState, useMemo } from "react";
 import type { RuleSummary } from "@/lib/rules";
 import { categoryDisplayName } from "@/lib/categories";
+import { categoryLetter } from "@/lib/docs-nav";
+import { Sign } from "@/components/Sign";
 import { t, type Locale } from "@/lib/i18n";
 import { LANES, normalizeMaturity, rulesLanes, type Lane } from "@/lib/lanes";
 
@@ -175,7 +177,7 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
       ) : (
         <div className="border-t border-ink">
           {/* Header */}
-          <div className="hidden lg:grid grid-cols-[150px_1fr_130px_90px_100px_110px_120px] border-b border-ink">
+          <div className="hidden lg:grid grid-cols-[150px_1fr_130px_90px_100px_90px_160px] border-b border-ink">
             <div className="px-4 py-3 font-data text-xs text-stone uppercase tracking-wider font-semibold">{t(locale, "rules.col.id")}</div>
             <div className="px-4 py-3 font-data text-xs text-stone uppercase tracking-wider font-semibold">{t(locale, "rules.col.name")}</div>
             <div className="px-4 py-3 font-data text-xs text-stone uppercase tracking-wider font-semibold">{t(locale, "rules.col.category")}</div>
@@ -190,11 +192,11 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
             <div key={rule.id}>
               <button
                 onClick={() => setExpandedRule(expandedRule === rule.id ? null : rule.id)}
-                className="w-full text-left grid grid-cols-1 lg:grid-cols-[150px_1fr_130px_90px_100px_110px_120px] border-b border-fog hover:bg-ash/60 transition-colors"
+                className="w-full text-left grid grid-cols-1 lg:grid-cols-[150px_1fr_130px_90px_100px_90px_160px] border-b border-fog hover:bg-ash/60 transition-colors"
               >
                 <div className="px-4 py-3 font-data text-sm text-blue">{rule.id}</div>
                 <div className="px-4 py-3 text-sm text-ink">{rule.title}</div>
-                <div className="px-4 py-3 font-data text-xs text-stone">{categoryDisplayName(rule.category, locale)}</div>
+                <div className="px-4 py-3 text-[13px] text-stone"><span className="font-spec text-[15px] text-ink mr-2">{categoryLetter(rule.category)}</span>{categoryDisplayName(rule.category, locale)}</div>
                 <div className="px-4 py-3">
                   <span className={`font-data text-xs uppercase tracking-wide ${SEVERITY_COLORS[rule.severity] ?? "text-stone"}`}>
                     {rule.severity}
@@ -202,6 +204,7 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
                 </div>
                 <div className="px-4 py-3 font-data text-xs text-stone">
                   <span className="lg:hidden text-mist">maturity: </span>
+                  {normalizeMaturity(rule.maturity) !== "stable" && <Sign name="stigme" size={10} className="mr-1.5 align-middle text-ink" />}
                   {normalizeMaturity(rule.maturity)}
                   {(lanesById.get(rule.id) ?? []).length === 0 && <span className="ml-1 text-high">(inert)</span>}
                 </div>
@@ -233,13 +236,13 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
                       </div>
                       {rule.owaspAgentic.length > 0 && (
                         <div>
-                          <div className="font-data text-xs text-stone uppercase tracking-wider mb-1">OWASP Agentic</div>
+                          <div className="flex items-center gap-1.5 font-data text-xs text-stone uppercase tracking-wider mb-1"><Sign name="asteriskos" size={11} className="text-ink" />OWASP Agentic</div>
                           <div className="font-data text-xs text-ink">{rule.owaspAgentic.join(", ")}</div>
                         </div>
                       )}
                       {rule.mitreAtlas.length > 0 && (
                         <div>
-                          <div className="font-data text-xs text-stone uppercase tracking-wider mb-1">MITRE ATLAS</div>
+                          <div className="flex items-center gap-1.5 font-data text-xs text-stone uppercase tracking-wider mb-1"><Sign name="asteriskos" size={11} className="text-ink" />MITRE ATLAS</div>
                           <div className="font-data text-xs text-ink">{rule.mitreAtlas.join(", ")}</div>
                         </div>
                       )}

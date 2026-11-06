@@ -4,6 +4,7 @@ import { locales, type Locale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
 import { SectionHead } from "@/components/SectionHead";
 import { SheetRow } from "@/components/Sheet";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -69,6 +70,7 @@ export default async function MembershipPage({ params }: { params: Promise<{ loc
   const pick = (t: B) => (zh ? t.zh : t.en);
 
   return (
+    <Phrased>
     <>
       <SheetRow grid>
       <div className="max-w-[1072px] px-6 md:px-14 pt-24 pb-24">
@@ -151,5 +153,6 @@ export default async function MembershipPage({ params }: { params: Promise<{ loc
       </div>
       </SheetRow>
     </>
+    </Phrased>
   );
 }

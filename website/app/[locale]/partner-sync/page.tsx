@@ -8,6 +8,7 @@ import { locales, type Locale } from "@/lib/i18n";
 import { loadVersionLabels } from "@/lib/versions";
 import { SheetRow } from "@/components/Sheet";
 import { ToolHero, ToolLimits } from "@/components/ToolPage";
+import Phrased from "@/components/Phrased";
 
 const RULES_URL = "https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/rules";
 
@@ -40,6 +41,7 @@ export default async function PartnerSyncPage({ params }: { params: Promise<{ lo
   const versions = await loadVersionLabels();
 
   return (
+    <Phrased>
     <>
       <SheetRow>
         <ToolHero
@@ -105,5 +107,6 @@ export default async function PartnerSyncPage({ params }: { params: Promise<{ lo
         </div>
       </SheetRow>
     </>
+    </Phrased>
   );
 }

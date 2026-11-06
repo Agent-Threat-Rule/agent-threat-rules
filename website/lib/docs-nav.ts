@@ -23,10 +23,12 @@ export interface DocsSection {
 
 export const CATEGORY_ORDER: ReadonlyArray<string> = Object.keys(CATEGORY_DESC);
 
-/** Letter used for a category on the docs pages and the home figure: A, B, C... in CATEGORY_ORDER. */
+const GREEK = ["Α", "Β", "Γ", "Δ", "Ε", "Ζ", "Η", "Θ", "Ι", "Κ", "Λ", "Μ"];
+
+/** Greek letter for a category, in CATEGORY_ORDER: the home frieze, the rule list and the docs pages all use it. */
 export function categoryLetter(category: string): string {
   const i = CATEGORY_ORDER.indexOf(category);
-  return i >= 0 ? String.fromCharCode(65 + i) : "?";
+  return GREEK[i] ?? "?";
 }
 
 export const DOCS_SECTIONS: ReadonlyArray<DocsSection> = [

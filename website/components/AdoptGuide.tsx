@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AUDIENCES } from "@/lib/adopt-guide";
+import Phrased from "@/components/Phrased";
 
 /**
  * Who adopts ATR, set out as a register: one row per reader, with what they
@@ -12,6 +13,7 @@ export function AdoptGuide({ locale }: { locale: string }) {
   const prefix = `/${locale}`;
 
   return (
+    <Phrased>
     <ol className="border-t border-ink">
       {AUDIENCES.map((a) => (
         <li key={a.key} className="grid lg:grid-cols-[240px_1fr] gap-x-8 gap-y-2 py-6 border-b border-fog">
@@ -28,5 +30,6 @@ export function AdoptGuide({ locale }: { locale: string }) {
         </li>
       ))}
     </ol>
+    </Phrased>
   );
 }

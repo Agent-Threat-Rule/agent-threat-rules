@@ -6,6 +6,7 @@ import { RED_TEAM_TOOLS } from "@/lib/red-team-tools";
 import { ablationLanes } from "@/lib/ablation";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -160,6 +161,7 @@ export default async function RedTeamPage({
   const inReview = RED_TEAM_TOOLS.filter((t) => t.status === "in-review");
 
   return (
+    <Phrased>
     <div className="pt-20 pb-24">
       {/* ============================================================
           HERO — bolder claim, concrete cadence number up front
@@ -783,5 +785,6 @@ export default async function RedTeamPage({
         </Reveal>
       </section>
     </div>
+    </Phrased>
   );
 }

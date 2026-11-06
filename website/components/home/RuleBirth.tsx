@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Phrased from "@/components/Phrased";
 
 export interface BirthRule {
   id: string;
@@ -74,6 +75,7 @@ export function RuleBirth({ locale, rule }: { locale: string; rule: BirthRule })
   };
 
   return (
+    <Phrased>
     <div>
       <ol className="border-t border-ink">
         {STEPS.map((s, i) => (
@@ -99,5 +101,6 @@ export function RuleBirth({ locale, rule }: { locale: string; rule: BirthRule })
         {zh ? `看 ${rule.id} 全文` : `Read ${rule.id}`}
       </Link>
     </div>
+    </Phrased>
   );
 }

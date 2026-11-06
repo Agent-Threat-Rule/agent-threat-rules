@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef } from "react";
 import data from "@/data/scenarios.json";
 import { useSteps } from "@/lib/use-steps";
+import { Sign } from "@/components/Sign";
 
 type Match = { id: string; title: string; severity: string; category: string | null };
 type Step = { type: string; role: string; name: string | null; content: string; attack: string | null; matches: { hunt: Match[]; alert: Match[]; enforce: Match[] } };
@@ -65,7 +66,10 @@ export function AgentConsole({ locale, ruleCount }: { locale: string; ruleCount:
             <div className="relative mt-1 border-l-2 border-fog pl-3 text-graphite whitespace-pre-wrap break-words">
               {parts[0]}
               {result.attack && (
-                <mark className={`transition-colors duration-500 ${attackOn ? "bg-alert/15 text-alert-ink" : "bg-transparent text-graphite"}`}>{result.attack}</mark>
+                <>
+                  <Sign name="obelos" size={12} className={`mr-1.5 align-[-1px] text-ink transition-opacity duration-500 ${attackOn ? "opacity-100" : "opacity-0"}`} label={zh ? "劍號：這一段不屬於原文" : "Obelos: this text does not belong"} />
+                  <mark className={`transition-colors duration-500 ${attackOn ? "bg-alert/15 text-alert-ink" : "bg-transparent text-graphite"}`}>{result.attack}</mark>
+                </>
               )}
               {parts[1]}
               {beat === 4 && <span className="absolute inset-x-0 h-6 -top-1 bg-gradient-to-b from-transparent via-ink/10 to-transparent animate-[scan_1.1s_ease-in-out]" aria-hidden="true" />}
@@ -79,12 +83,14 @@ export function AgentConsole({ locale, ruleCount }: { locale: string; ruleCount:
           )}
           {beat >= 5 && lead && (
             <div className="animate-[fadein_350ms_ease-out]">
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="font-data text-[10.5px] px-1.5 py-0.5 border border-ink text-ink uppercase">{lead.severity}</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Sign name="obelos" size={12} className="text-ink" />
                 <Link href={`/${locale}/rules/${lead.id}`} className="font-data text-[12.5px] text-ink hover:underline underline-offset-2">{lead.id}</Link>
+                <span className="font-data text-[10.5px] text-stone uppercase">{lead.severity}</span>
               </div>
-              <div className="mt-1 text-[13px] text-ink truncate">{lead.title}</div>
-              <div className="mt-0.5 text-[11.5px] text-stone">
+              <div className="mt-1 pl-5 text-[13px] text-ink truncate">{lead.title}</div>
+              <div className="mt-0.5 flex items-center gap-2 text-[11.5px] text-stone">
+                {verdict.length > 1 && <Sign name="asteriskos" size={12} />}
                 {verdict.length > 1
                   ? zh ? `另外 ${verdict.length - 1} 條規則也認出這一段` : `${verdict.length - 1} more rules flagged the same text`
                   : zh ? "其他 agent 動作：沒有命中" : "Other steps: no match"}

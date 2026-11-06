@@ -14,7 +14,7 @@ import { loadCrosswalks } from "@/lib/crosswalks";
 import { loadChangelog } from "@/lib/changelog";
 import { posts } from "@/lib/posts";
 import { CATEGORY_DESC } from "@/lib/category-desc";
-import { CATEGORY_ORDER } from "@/lib/docs-nav";
+import { CATEGORY_ORDER, categoryLetter } from "@/lib/docs-nav";
 import { pageMetadata, SITE_NAME } from "@/lib/seo";
 import { SheetRow } from "@/components/Sheet";
 import { CategoryFrieze } from "@/components/classical/CategoryFrieze";
@@ -23,6 +23,8 @@ import { RuleBirth, type BirthRule } from "@/components/home/RuleBirth";
 import { AdoptGuide } from "@/components/AdoptGuide";
 import { TOOLS } from "@/lib/adopt-guide";
 import { clauses } from "@/lib/clauses";
+import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -79,7 +81,8 @@ const REFERENCES = ["MITRE ATLAS", "OWASP Agentic", "OWASP LLM", "NIST AI RMF", 
 
 const H2 = "text-[30px] md:text-[40px] leading-[1.18] tracking-[-0.01em] text-ink";
 const KICKER = "text-[13px] text-stone";
-const BUTTON = "inline-flex items-center h-11 px-5 text-[14px] transition-colors";
+/** A text link that leads on, marked with the diple (components/Sign.tsx). */
+const READ_ON = "inline-flex items-center gap-2 text-[16px] text-blue border-b border-current pb-0.5 hover:text-blue-hover";
 const TEXT_LINK = "text-[14px] text-ink underline underline-offset-[6px] decoration-2 hover:decoration-ink";
 
 function shortOrg(org: string) {
@@ -139,6 +142,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   ];
 
   return (
+    <Phrased>
     <>
       {/* Hero */}
       <SheetRow>
@@ -155,9 +159,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 ? "agent 會讀網頁、收信、裝工具，也會照著藏在裡面的指令做事。ATR 把記錄過的攻擊寫成規則，每條都有編號和測試。規則在你自己的環境裡跑，比對到就回報。誰都可以用。"
                 : "Agents read web pages, open mail and install tools, and they follow instructions hidden inside them. ATR writes documented attacks down as rules, each with an ID and tests. The rules run in your own environment and report what they match. Anyone can use them."}
             </p>
-            <div className="mt-8 flex flex-wrap gap-2">
-              <Link href={`${prefix}/start`} className={`${BUTTON} bg-ink text-white hover:bg-black`}>{zh ? "從這裡開始" : "Start here"}</Link>
-              <Link href={`${prefix}/rules`} className={`${BUTTON} border border-fog bg-white text-ink hover:border-ink`}>{zh ? "看全部規則" : "Browse the rules"}</Link>
+            <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3">
+              <Link href={`${prefix}/start`} className={READ_ON}>{zh ? "從這裡開始" : "Start here"}<Sign name="diple" size={12} /></Link>
+              <Link href={`${prefix}/rules`} className={READ_ON}>{zh ? "看全部規則" : "Browse the rules"}<Sign name="diple" size={12} /></Link>
             </div>
           </div>
           <AgentConsole locale={locale} ruleCount={stats.ruleCount} />
@@ -174,7 +178,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* Who has merged it */}
       <SheetRow>
-        <div className="px-6 md:px-14 py-10">
+        <div className="px-6 md:px-14 py-10" data-nophrase="">
           <div className="flex flex-wrap items-baseline justify-between gap-4">
             <div className={KICKER}>{zh ? "這些組織的維護者審過之後，合併了 ATR" : "Maintainers at these organisations reviewed ATR and merged it"}</div>
             <Link href={`${prefix}/ecosystem`} className="text-[13px] text-ink hover:underline underline-offset-4">{zh ? "每一筆的合併紀錄 →" : "Every merge, with evidence →"}</Link>
@@ -201,7 +205,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               inscription={REFERENCES}
               items={categories.map((c, i) => ({
                 key: c,
-                letter: GREEK[i] ?? String(i + 1),
+                letter: categoryLetter(c),
                 name: categoryDisplayName(c, locale),
                 desc: pick(CATEGORY_DESC[c]),
                 count: effectiveByCategory.get(c) ?? 0,
@@ -367,11 +371,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </div>
       </SheetRow>
     </>
+    </Phrased>
   );
 }
 
 /** Greek capitals used to letter the categories, in alphabet order. */
-const GREEK = ["Α", "Β", "Γ", "Δ", "Ε", "Ζ", "Η", "Θ", "Ι", "Κ", "Λ", "Μ"];
 const ROMAN = ["I", "II", "III"];
 
 /** One entry in the record of recent work: date, kind, title. */

@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { loadVersionLabels, npmInstallSpec } from "@/lib/versions";
 import Link from "next/link";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -168,6 +169,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
   const paths = buildPaths(stats, labels, locale === "zh");
 
   return (
+    <Phrased>
     <div className="pt-20 pb-16 px-6 md:px-14">
       <Reveal>
         <div className="text-[13px] text-stone mb-3">{t(locale, "integrate.label")}</div>
@@ -600,5 +602,6 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
         </div>
       </Reveal>
     </div>
+    </Phrased>
   );
 }

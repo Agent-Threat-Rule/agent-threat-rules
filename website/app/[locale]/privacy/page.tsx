@@ -4,6 +4,7 @@ import { pageMetadata } from "@/lib/seo";
 import { loadVersionLabels } from "@/lib/versions";
 import { CONTACTS, LEGAL_DRAFT } from "@/lib/legal";
 import { DocsShell, Callout } from "@/components/DocsShell";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -67,6 +68,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
   const versions = await loadVersionLabels();
 
   return (
+    <Phrased>
     <DocsShell locale={locale} path="/privacy" eyebrow={zh ? "VIII. 說明與法律" : "VIII. Help and legal"} title={zh ? "隱私說明" : "Privacy notice"} generatedAt={versions.generatedAt}>
       {LEGAL_DRAFT && (
         <Callout label={zh ? "草稿" : "Draft"}>
@@ -82,5 +84,6 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
         ))}
       </div>
     </DocsShell>
+    </Phrased>
   );
 }

@@ -9,6 +9,7 @@ import { normalizeMaturity, rulesLanes } from "@/lib/lanes";
 import { CATEGORY_DESC } from "@/lib/category-desc";
 import { CATEGORY_ORDER, categoryLetter } from "@/lib/docs-nav";
 import { DocsShell, GlanceTable } from "@/components/DocsShell";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.flatMap((locale) => CATEGORY_ORDER.map((category) => ({ locale, category })));
@@ -52,6 +53,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ local
   const letter = categoryLetter(category);
 
   return (
+    <Phrased>
     <DocsShell
       locale={locale}
       path={`/docs/categories/${category}`}
@@ -126,5 +128,6 @@ export default async function CategoryPage({ params }: { params: Promise<{ local
         </div>
       </section>
     </DocsShell>
+    </Phrased>
   );
 }

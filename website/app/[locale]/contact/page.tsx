@@ -6,6 +6,7 @@ import { pageMetadata } from "@/lib/seo";
 import { loadVersionLabels } from "@/lib/versions";
 import { CONTACTS, REPO_URL } from "@/lib/legal";
 import { DocsShell } from "@/components/DocsShell";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -44,6 +45,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
   ];
 
   return (
+    <Phrased>
     <DocsShell
       locale={locale}
       path="/contact"
@@ -62,5 +64,6 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
         ))}
       </dl>
     </DocsShell>
+    </Phrased>
   );
 }

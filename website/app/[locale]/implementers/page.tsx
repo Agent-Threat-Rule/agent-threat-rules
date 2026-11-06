@@ -13,6 +13,7 @@ import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
 import { InformativeBadge } from "@/components/spec/Badges";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -122,6 +123,7 @@ export default async function ImplementersPage({
   const zh = locale === "zh";
 
   return (
+    <Phrased>
     <main
       id="main-content"
       className="spec-document w-full px-6 md:px-14 pt-24 md:pt-28 pb-24"
@@ -437,5 +439,6 @@ export default async function ImplementersPage({
         — MIT License — ISO 8601 {meta.lastModified}
       </p>
     </main>
+    </Phrased>
   );
 }

@@ -7,6 +7,7 @@ import { loadVersionLabels } from "@/lib/versions";
 import { loadSiteStats } from "@/lib/stats";
 import { CONTACTS, REPO_URL } from "@/lib/legal";
 import { DocsShell } from "@/components/DocsShell";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -111,6 +112,7 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
   ];
 
   return (
+    <Phrased>
     <DocsShell
       locale={locale}
       path="/faq"
@@ -130,5 +132,6 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
         ))}
       </dl>
     </DocsShell>
+    </Phrased>
   );
 }

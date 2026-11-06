@@ -4,6 +4,7 @@ import { RuleExplorer } from "./RuleExplorer";
 import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -33,6 +34,7 @@ export default async function RulesPage({ params }: { params: Promise<{ locale: 
   const lanes = stats.laneCounts;
 
   return (
+    <Phrased>
     <div className="pt-20 pb-16 px-6 md:px-14">
       <div className="mb-8">
         <div className="text-[13px] text-stone mb-3">
@@ -63,5 +65,6 @@ export default async function RulesPage({ params }: { params: Promise<{ locale: 
 
       <RuleExplorer rules={rules} categories={categories} locale={locale} />
     </div>
+    </Phrased>
   );
 }

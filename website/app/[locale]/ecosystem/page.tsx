@@ -17,6 +17,7 @@ import {
 } from "@/components/IntegrationTypeIcon";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -70,6 +71,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
     sections.reduce((n, s) => n + s.entries.length, 0) + commercial.length;
 
   return (
+    <Phrased>
     <div className="pt-20 pb-16 px-6 md:px-14">
       {/* Header */}
       <Reveal>
@@ -407,6 +409,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
         </div>
       </Reveal>
     </div>
+    </Phrased>
   );
 }
 

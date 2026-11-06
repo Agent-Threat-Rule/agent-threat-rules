@@ -10,6 +10,7 @@ import { join } from "node:path";
 import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -82,6 +83,7 @@ export default async function ErrataPage({
   const hasEntries = errata.entries.length > 0;
 
   return (
+    <Phrased>
     <main
       id="main-content"
       className="spec-document w-full px-6 md:px-14 pt-24 md:pt-28 pb-24"
@@ -340,5 +342,6 @@ export default async function ErrataPage({
         </div>
       </div>
     </main>
+    </Phrased>
   );
 }

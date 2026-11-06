@@ -4,6 +4,7 @@ import { pageMetadata } from "@/lib/seo";
 import { loadVersionLabels } from "@/lib/versions";
 import { COMPONENTS, LAYERS, loadMatrix } from "@/lib/integration-matrix";
 import { DocsShell, Callout } from "@/components/DocsShell";
+import Phrased from "@/components/Phrased";
 
 const REPO = "https://github.com/Agent-Threat-Rule/agent-threat-rules";
 
@@ -34,6 +35,7 @@ export default async function IntegrationsMatrixPage({ params }: { params: Promi
   const byComponent = COMPONENTS.map((c) => ({ c, rows: rows.filter((r) => r.component === c.key) })).filter((g) => g.rows.length > 0);
 
   return (
+    <Phrased>
     <DocsShell
       locale={locale}
       path="/docs/integrations"
@@ -110,5 +112,6 @@ export default async function IntegrationsMatrixPage({ params }: { params: Promi
         </section>
       ))}
     </DocsShell>
+    </Phrased>
   );
 }

@@ -13,6 +13,7 @@ import { NormativeBadge } from "@/components/spec/Badges";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { loadSiteStats } from "@/lib/stats";
+import Phrased from "@/components/Phrased";
 
 const REPO = "https://github.com/Agent-Threat-Rule/agent-threat-rules";
 const REPO_ROOT = join(process.cwd(), "..");
@@ -75,6 +76,7 @@ export default async function ConformancePage({
   const ruleCount = loadSiteStats().ruleCount;
 
   return (
+    <Phrased>
     <main
       id="main-content"
       className="spec-document w-full px-6 md:px-14 pt-24 md:pt-28 pb-24"
@@ -337,5 +339,6 @@ spec/conformance/        (${zh ? "未批准" : "not ratified"})
         </div>
       </div>
     </main>
+    </Phrased>
   );
 }

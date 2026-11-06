@@ -4,6 +4,7 @@ import { locales, type Locale } from "@/lib/i18n";
 import { posts } from "@/lib/posts";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -34,6 +35,7 @@ export default async function BlogIndexPage({
   const zh = locale === "zh";
 
   return (
+    <Phrased>
     <div className="pt-20 pb-20 px-6 md:px-14 max-w-[972px]">
       <Reveal>
         <div className="text-[13px] text-stone mb-3">
@@ -82,5 +84,6 @@ export default async function BlogIndexPage({
         ))}
       </div>
     </div>
+    </Phrased>
   );
 }

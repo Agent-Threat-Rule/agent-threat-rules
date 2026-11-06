@@ -4,6 +4,7 @@ import { locales, type Locale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
 import { loadVersionLabels } from "@/lib/versions";
 import { DocsShell, Callout, GlanceTable } from "@/components/DocsShell";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -78,6 +79,7 @@ export default async function AuditorKitPage({ params }: { params: Promise<{ loc
   const versions = await loadVersionLabels();
 
   return (
+    <Phrased>
     <DocsShell
       locale={locale}
       path="/docs/auditor-kit"
@@ -126,5 +128,6 @@ export default async function AuditorKitPage({ params }: { params: Promise<{ loc
         ))}
       </ol>
     </DocsShell>
+    </Phrased>
   );
 }

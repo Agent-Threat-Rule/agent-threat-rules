@@ -4,6 +4,7 @@ import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
 import { START_ROUTES } from "@/lib/start-routes";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -33,6 +34,7 @@ export default async function StartPage({ params }: { params: Promise<{ locale: 
   const prefix = `/${locale}`;
 
   return (
+    <Phrased>
     <div className="pt-20 pb-16 px-6 md:px-14">
       <Reveal>
         <div className="mb-10">
@@ -70,5 +72,6 @@ export default async function StartPage({ params }: { params: Promise<{ locale: 
         ))}
       </ol>
     </div>
+    </Phrased>
   );
 }
