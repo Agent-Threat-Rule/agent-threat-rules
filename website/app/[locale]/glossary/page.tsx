@@ -201,7 +201,7 @@ export default async function GlossaryPage({
       {/* Header */}
       <header className="mb-8 md:mb-10 max-w-3xl">
         <p
-          className="text-xs uppercase tracking-[0.18em] text-stone mb-3"
+          className="text-[13px] text-stone mb-3"
           style={{ fontFamily: "var(--font-data)" }}
         >
           {zh ? "詞彙 — Glossary" : "Glossary"}
@@ -230,7 +230,7 @@ export default async function GlossaryPage({
         <aside aria-label="Alphabetical index" className="lg:order-first">
           <nav className="spec-toc" aria-label={t(locale, "spec.toc_aria")}>
             <p
-              className="text-xs font-semibold uppercase tracking-wider text-stone mb-3"
+              className="text-[13px] text-stone mb-3"
               style={{ fontFamily: "var(--font-body)" }}
             >
               {zh ? "字母索引" : "Alphabetical Index"}

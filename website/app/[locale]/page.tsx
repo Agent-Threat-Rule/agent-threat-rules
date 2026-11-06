@@ -268,7 +268,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <div className="mt-14 grid lg:grid-cols-[380px_1fr] gap-10 lg:gap-0 items-center">
             {birth && (
               <div className="relative bg-white border border-ink p-5 lg:mr-12">
-                <div className="font-data text-[12px] text-brand-ink">{birth.id}</div>
+                <div className="font-data text-[12px] text-ink">{birth.id}</div>
                 <div className="mt-1 text-[14px] leading-snug text-ink">{birth.title}</div>
                 <ul className="mt-4 flex flex-wrap gap-1.5">
                   {birth.mappings.map((m) => (
@@ -305,15 +305,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <div className={KICKER}><span className="font-title text-ink mr-2">§ 5</span>{zh ? "三件工具" : "Three tools"}</div>
           <h2 className={`mt-4 ${H2}`}>{title(zh ? "認出攻擊，挑對測試，再拿出證據。" : "Spot the attack, pick the tests, prove it.")}</h2>
         </div>
-        <ul className="grid md:grid-cols-3 border-t border-fog">
+        <ul className="mx-6 md:mx-14 mb-10 grid md:grid-cols-3 border-t border-fog">
           {(["rules", "router", "eval"] as const).map((key, i) => {
             const tool = TOOLS[key];
             return (
               <li key={key} className={`border-fog ${i > 0 ? "border-t md:border-t-0 md:border-l" : ""}`}>
-                <Link href={`${prefix}${tool.href}`} className="group flex flex-col h-full p-6 md:p-8 hover:bg-ash/50 transition-colors">
+                <Link href={`${prefix}${tool.href}`} className={`group flex flex-col h-full py-6 md:py-8 md:pr-8 ${i > 0 ? "md:pl-8" : ""}`}>
                   <span className="font-title text-[30px] md:text-[44px] leading-none text-ink mb-5 md:mb-8" aria-hidden="true">{ROMAN[i]}</span>
                   <div className="flex items-baseline justify-between gap-3">
-                    <span className="text-[17px] text-ink">{tool.name}</span>
+                    <span className="text-[17px] text-ink group-hover:underline underline-offset-4">{tool.name}</span>
                     <span className="text-[11.5px] text-stone">{tool.released ? (zh ? "已發布" : "Released") : zh ? "尚未公開" : "Not yet public"}</span>
                   </div>
                   <p className="mt-2 text-[15px] text-ink">{pick(tool.line)}</p>

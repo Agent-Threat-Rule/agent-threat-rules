@@ -15,7 +15,7 @@ export function ToolHero({ zh, name, status, title, lead }: { zh: boolean; name:
     <div className="relative px-6 md:px-14 pt-16 md:pt-24 pb-14">
       <div className="text-[15px] text-stone">
         {name}
-        <span className="ml-3 text-[12px] text-stone border border-fog px-1.5 py-0.5">{pick(status)}</span>
+        <span className="ml-3 text-[13px] text-mist">{pick(status)}</span>
       </div>
       <h1 className="mt-6 text-[40px] sm:text-[56px] lg:text-[64px] leading-[1.06] tracking-[-0.01em] font-medium text-ink max-w-[960px] text-balance">{zh ? clauses(title.zh) : title.en}</h1>
       <p className="mt-8 text-[17px] md:text-[19px] leading-[1.7] text-graphite max-w-[680px] text-pretty">{pick(lead)}</p>
@@ -70,7 +70,7 @@ export function ToolNext({ href, label }: { href: string; label: string }) {
     <Phrased>
     <SheetRow>
       <Link href={href} className="group flex items-center justify-between px-6 md:px-14 py-12 hover:bg-ash/60 transition-colors">
-        <span className="text-[24px] md:text-[32px] tracking-[-0.02em] text-ink">{label}</span>
+        <span className="font-title text-[24px] md:text-[32px] text-ink">{label}</span>
         <Sign name="diple" size={18} className="text-mist group-hover:text-ink group-hover:translate-x-1 transition-all" />
       </Link>
     </SheetRow>

@@ -97,14 +97,14 @@ export function RouterFlow({ locale }: { locale: string }) {
           {running &&
             ATOMICS.map((a, j) =>
               fits[j] ? (
-                <circle key={`run-${a.id}`} r={2.5} className="fill-brand">
+                <circle key={`run-${a.id}`} r={2.5} className="fill-ink">
                   <animateMotion dur="1.4s" repeatCount="indefinite" begin={`${runOrder(j) * 0.25}s`} path={curve(anchors.agent, anchors.tiles[j])} />
                 </circle>
               ) : null,
             )}
           {OUTPUTS.map((o, k) =>
             delivered(k) ? (
-              <circle key={`out-${o.name}`} r={3} className="fill-brand">
+              <circle key={`out-${o.name}`} r={3} className="fill-ink">
                 <animateMotion dur="1.6s" repeatCount="indefinite" path={curve(anchors.hub, anchors.outs[k])} />
               </circle>
             ) : null,
@@ -114,7 +114,7 @@ export function RouterFlow({ locale }: { locale: string }) {
               key={o.name}
               d={curve(anchors.hub, anchors.outs[k])}
               pathLength={1}
-              className="fill-none stroke-brand transition-[stroke-dashoffset] duration-700 ease-out"
+              className="fill-none stroke-ink transition-[stroke-dashoffset] duration-700 ease-out"
               strokeWidth={1.5}
               strokeDasharray="1"
               strokeDashoffset={delivered(k) ? 0 : 1}
@@ -134,7 +134,7 @@ export function RouterFlow({ locale }: { locale: string }) {
             </div>
             <ul>
               {tools.map((tool, i) => (
-                <li key={tool.name} className={`flex items-center justify-between gap-3 px-4 py-2.5 border-b border-fog last:border-b-0 transition-colors duration-300 ${scanning(i) ? "bg-brand-tint" : ""}`}>
+                <li key={tool.name} className={`flex items-center justify-between gap-3 px-4 py-2.5 border-b border-fog last:border-b-0 transition-colors duration-300 ${scanning(i) ? "bg-ash" : ""}`}>
                   <span className="font-data text-[12px] text-ink truncate">{tool.name}</span>
                   <span className={`text-[11.5px] whitespace-nowrap transition-opacity duration-500 ${scanned(i) ? "opacity-100" : "opacity-0"}`}>
                     {tool.channel && <span className="text-stone">{pick(CHANNEL_LABEL[tool.channel])}</span>}
@@ -178,7 +178,7 @@ export function RouterFlow({ locale }: { locale: string }) {
                   </div>
                   {fits[j] && (
                     <span
-                      className="absolute left-0 bottom-0 h-[2px] bg-brand transition-[width] ease-linear"
+                      className="absolute left-0 bottom-0 h-[2px] bg-ink transition-[width] ease-linear"
                       style={{ width: running ? "100%" : "0%", transitionDuration: running ? "1800ms" : "0ms", transitionDelay: running ? `${runOrder(j) * 260}ms` : "0ms" }}
                     />
                   )}
@@ -211,7 +211,7 @@ export function RouterFlow({ locale }: { locale: string }) {
                 <span className="absolute right-0 top-0 w-3 h-3 border-l border-b border-inherit bg-paper" aria-hidden="true" />
                 <div className={`font-data text-[12.5px] ${delivered(k) ? "text-ink" : "text-mist"}`}>{o.name}</div>
                 <div className="mt-0.5 text-[12px] text-stone">{pick(o.to)}</div>
-                <span className={`absolute right-4 bottom-3.5 w-2 h-2 bg-brand transition-opacity duration-300 ${delivered(k) ? "opacity-100" : "opacity-0"}`} aria-hidden="true" />
+                <span className={`absolute right-4 bottom-3.5 w-2 h-2 bg-ink transition-opacity duration-300 ${delivered(k) ? "opacity-100" : "opacity-0"}`} aria-hidden="true" />
               </div>
             ))}
           </div>

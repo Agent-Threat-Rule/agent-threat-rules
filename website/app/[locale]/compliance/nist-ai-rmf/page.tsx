@@ -90,7 +90,7 @@ export default async function NistAiRmfPage({
     <div className="pt-20 pb-20 px-6 md:px-14 max-w-[992px]">
       {/* Header eyebrow */}
       <Reveal>
-        <div className="font-data text-[11px] md:text-xs font-medium text-blue tracking-[1.5px] md:tracking-[3px] uppercase mb-5">
+        <div className="text-[13px] text-stone mb-5">
           {zh ? "合規 · NIST AI RMF · v0.2 · 2026 年 5 月" : "Compliance · NIST AI RMF · v0.2 · May 2026"}
         </div>
       </Reveal>
@@ -100,7 +100,7 @@ export default async function NistAiRmfPage({
         <h1 className="text-[32px] md:text-[48px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
           {zh ? "NIST AI RMF 定義流程。" : "NIST AI RMF defines the process."}
           <br />
-          <span className="text-blue">{zh ? "ATR 讓它偵測得到。" : "ATR makes it detectable."}</span>
+          <span className="text-ink">{zh ? "ATR 讓它偵測得到。" : "ATR makes it detectable."}</span>
         </h1>
       <p className="mt-4 mb-6 max-w-[640px] border-l-2 border-high pl-3 text-[13px] leading-[1.7] text-graphite">
         {zh
@@ -159,7 +159,7 @@ export default async function NistAiRmfPage({
               : "Separately, two example AI RMF profiles were offered to NIST's usnistgov/oscal-content repository as PR #338. In June NIST asked that it wait for NIST's own AI RMF catalog. NIST added that catalog to its develop branch in July, and the PR was reworked against it in August. It is still open, waiting for NIST review. Whether to use any of it is NIST's call."}
           </p>
           <div className="bg-ash/40 border border-fog p-4 text-sm text-stone leading-[1.7]">
-            <span className="font-data text-xs text-stone tracking-[2px] uppercase block mb-2">
+            <span className="text-[13px] text-stone block mb-2">
               {zh ? "這不是什麼" : "What this is NOT"}
             </span>
             {zh
@@ -305,7 +305,7 @@ export default async function NistAiRmfPage({
         </p>
         <ul className="mt-6 space-y-4 text-sm md:text-base text-graphite leading-[1.7]">
           <li className="grid grid-cols-[130px_1fr] gap-5 max-md:grid-cols-1 max-md:gap-1.5">
-            <span className="font-data text-[11px] text-blue tracking-[1.3px] uppercase pt-[3px]">
+            <span className="text-[13px] text-stone pt-[3px]">
               {zh ? "輸入" : "Input"}
             </span>
             <span>
@@ -315,7 +315,7 @@ export default async function NistAiRmfPage({
             </span>
           </li>
           <li className="grid grid-cols-[130px_1fr] gap-5 max-md:grid-cols-1 max-md:gap-1.5">
-            <span className="font-data text-[11px] text-blue tracking-[1.3px] uppercase pt-[3px]">
+            <span className="text-[13px] text-stone pt-[3px]">
               {zh ? "批次產生" : "Batch generator"}
             </span>
             <span>
@@ -327,7 +327,7 @@ export default async function NistAiRmfPage({
             </span>
           </li>
           <li className="grid grid-cols-[130px_1fr] gap-5 max-md:grid-cols-1 max-md:gap-1.5">
-            <span className="font-data text-[11px] text-blue tracking-[1.3px] uppercase pt-[3px]">
+            <span className="text-[13px] text-stone pt-[3px]">
               {zh ? "原子寫入" : "Atomic patcher"}
             </span>
             <span>
@@ -339,7 +339,7 @@ export default async function NistAiRmfPage({
             </span>
           </li>
           <li className="grid grid-cols-[130px_1fr] gap-5 max-md:grid-cols-1 max-md:gap-1.5">
-            <span className="font-data text-[11px] text-blue tracking-[1.3px] uppercase pt-[3px]">
+            <span className="text-[13px] text-stone pt-[3px]">
               {zh ? "成本與時間" : "Cost & time"}
             </span>
             <span>
@@ -349,7 +349,7 @@ export default async function NistAiRmfPage({
             </span>
           </li>
           <li className="grid grid-cols-[130px_1fr] gap-5 max-md:grid-cols-1 max-md:gap-1.5">
-            <span className="font-data text-[11px] text-blue tracking-[1.3px] uppercase pt-[3px]">
+            <span className="text-[13px] text-stone pt-[3px]">
               {zh ? "來源紀錄" : "Provenance"}
             </span>
             <span>
@@ -493,7 +493,7 @@ function StatCell({
   };
   return (
     <div className="bg-paper p-5">
-      <div className="font-data text-[10px] text-blue tracking-[1.2px] uppercase mb-2">
+      <div className="text-[13px] text-stone mb-2">
         {label}
       </div>
       <div className={`font-display text-2xl md:text-[26px] font-bold leading-[1.1] tracking-[-0.02em] ${colorMap[valueColor]}`}>
@@ -562,7 +562,7 @@ function CTACard({
       rel="noopener noreferrer"
       className="block bg-paper p-5 hover:bg-ash transition-colors group"
     >
-      <div className="font-data text-[10px] text-blue tracking-[1.2px] uppercase mb-2">
+      <div className="text-[13px] text-stone mb-2">
         {num}
       </div>
       <div className="font-display text-base font-bold text-ink mb-1.5 leading-[1.2]">

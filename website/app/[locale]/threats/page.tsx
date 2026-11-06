@@ -146,7 +146,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
         <div className="mb-10 md:mb-12">
           <div className="mb-4 md:mb-5">
             <div className="flex items-baseline justify-between flex-wrap gap-2">
-              <div className="font-data text-xs text-stone tracking-[2px] uppercase">
+              <div className="text-[13px] text-stone">
                 {zh ? "已知威脅行為者" : "Known Threat Actors"}
               </div>
               <span className="font-data text-[11px] text-mist">
@@ -199,15 +199,10 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
         <div className="max-w-[1120px] mx-auto">
           <Reveal>
             <div className="flex items-center gap-2 mb-4">
-              <div className="font-data text-xs font-medium text-green tracking-[2px] uppercase">
+              <div className="text-[13px] text-stone">
                 {zh ? "掃描沒有高風險發現的 skill" : "Skills with no high-risk findings"}
               </div>
-              <span className="inline-flex items-center gap-1 bg-green/15 text-green text-[10px] font-bold px-2 py-0.5  tracking-wide uppercase">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="shrink-0">
-                  <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="currentColor"/>
-                </svg>
-                {zh ? `${wl.generated} 掃描` : `Scanned ${wl.generated}`}
-              </span>
+              <span className="font-data text-[12px] text-stone">{zh ? `${wl.generated} 掃描` : `Scanned ${wl.generated}`}</span>
             </div>
           </Reveal>
           <Reveal delay={0.1}>
@@ -227,7 +222,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
                   </div>
                   {/* A plain scan note, not the "No Issues" badge: a scan with no
                       high-severity match is not a statement that a skill is safe. */}
-                  <div className="font-data text-[10px] text-green">
+                  <div className="font-data text-[10px] text-stone">
                     {zh ? `${wl.generated} 掃描：沒有高風險命中` : `Scan ${wl.generated}: no high/critical findings`}
                   </div>
                 </div>

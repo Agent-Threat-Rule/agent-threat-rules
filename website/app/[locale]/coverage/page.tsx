@@ -42,14 +42,15 @@ export async function generateMetadata({
   });
 }
 
+// Status is plain text: ink where a mapping holds, stone where it is thin.
 const STATUS_COLORS: Record<string, string> = {
-  STRONG: "bg-green/10 text-green",
-  MODERATE: "bg-ink/10 text-blue",
-  PARTIAL: "bg-medium/10 text-medium",
-  GAP: "bg-stone/10 text-stone",
+  STRONG: "text-ink",
+  MODERATE: "text-ink",
+  PARTIAL: "text-stone",
+  GAP: "text-stone",
 };
 
-/** The mapping writes some statuses with a note, as "GAP (meta-concern)"; the colour keys on the first word. */
+/** The mapping writes some statuses with a note, as "GAP (meta-concern)"; the text colour keys on the first word. */
 function statusColor(status: string): string {
   return STATUS_COLORS[status.split(" ")[0]] ?? "";
 }
@@ -103,7 +104,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-graphite leading-[1.7]">
             {readingNotes(stats, locale === "zh").map((item) => (
               <div key={item.name}>
-                <div className="font-data text-xs text-blue font-semibold mb-1">{item.name}</div>
+                <div className="font-data text-xs text-ink font-semibold mb-1">{item.name}</div>
                 <p>{item.verdict}</p>
               </div>
             ))}
@@ -154,7 +155,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
               <div className="px-4 py-3 text-sm text-ink">{m.category}</div>
               <div className="px-4 py-3 font-data text-sm text-ink">{m.ruleCount}</div>
               <div className="px-4 py-3">
-                <span className={`font-data text-xs font-semibold uppercase tracking-wide px-2.5 py-1  ${statusColor(m.status)}`}>
+                <span className={`font-data text-xs ${statusColor(m.status) || "text-stone"}`}>
                   {m.status}
                 </span>
               </div>
@@ -186,7 +187,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
               <div className="px-4 py-3 text-sm text-ink">{m.category}</div>
               <div className="px-4 py-3 font-data text-sm text-ink">{m.ruleCount}</div>
               <div className="px-4 py-3">
-                <span className={`font-data text-xs font-semibold uppercase tracking-wide px-2.5 py-1  ${statusColor(m.status)}`}>
+                <span className={`font-data text-xs ${statusColor(m.status) || "text-stone"}`}>
                   {m.status}
                 </span>
               </div>

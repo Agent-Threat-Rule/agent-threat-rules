@@ -38,49 +38,64 @@ export function DocsShell({
     <Phrased>
     <>
       <SheetRow>
-        <div className="grid lg:grid-cols-[250px_1fr]">
-          <aside className="hidden lg:block border-r border-fog">
-            <nav aria-label={zh ? "文件目錄" : "Documentation"} className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto py-8 px-5">
-              {DOCS_SECTIONS.map((section) => (
-                <div key={section.key} className="mb-6">
-                  <div className="font-data text-[10px] uppercase tracking-[0.1em] text-mist mb-2">
-                    {section.numeral}. {pick(section.label, locale)}
-                  </div>
-                  <ul className="flex flex-col">
-                    {section.links.map((link) => {
-                      const active = link.path === path;
-                      return (
-                        <li key={link.path}>
-                          <Link
-                            href={`${prefix}${link.path}`}
-                            aria-current={active ? "page" : undefined}
-                            className={`block text-[13px] leading-snug py-1.5 pl-3 border-l ${
-                              active ? "border-navy text-ink bg-[#E7ECF6]/60" : "border-fog text-stone hover:text-ink hover:border-stone"
-                            }`}
-                          >
-                            {pick(link.label, locale)}
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))}
-            </nav>
-          </aside>
-
-          <article className="min-w-0 px-6 md:px-14 pt-12 pb-16">
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_260px]">
+          <article className="min-w-0 px-6 md:px-14 pt-20 pb-16">
             <div className="text-[13px] text-stone">{eyebrow}</div>
-            <h1 className="mt-2 text-[32px] md:text-[36px] leading-[1.15] tracking-[-0.01em] text-ink text-balance">{title}</h1>
+            <h1 className="mt-3 text-[32px] md:text-[48px] leading-[1.12] tracking-[-0.01em] text-ink text-balance">{title}</h1>
             {lead && <p className="mt-4 text-[16px] leading-[1.6] text-ink/75 max-w-[680px] text-pretty">{lead}</p>}
             <div className="mt-10">{children}</div>
-            <div className="mt-16 pt-6 border-t border-fog flex flex-wrap items-center justify-between gap-3 font-data text-[11px] text-stone">
-              <span>{zh ? `本頁產生於 ${generatedAt}` : `Page generated ${generatedAt}`}</span>
+            <div className="mt-16 pt-6 border-t border-fog flex flex-wrap items-center justify-between gap-3 text-[13px] text-stone">
+              <span>{zh ? <>本頁產生於 <span className="font-data">{generatedAt}</span></> : <>Page generated <span className="font-data">{generatedAt}</span></>}</span>
               <a href={feedback} target="_blank" rel="noopener noreferrer" className="hover:text-ink">
                 {zh ? "哪裡寫錯或漏了？開 issue 回報" : "Something wrong or missing? Open an issue"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
             </div>
           </article>
+
+          {/* The section list sits to the right so the document keeps the
+              site's one left edge. Only the section holding this page is
+              opened, so the current page is always in view. */}
+          <aside className="hidden lg:block border-l border-fog">
+            <nav aria-label={zh ? "文件目錄" : "Documentation"} className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto pt-20 pb-8 px-6">
+              {DOCS_SECTIONS.map((section) => {
+                const open = section.links.some((link) => link.path === path);
+                const first = section.links[0];
+                return (
+                  <div key={section.key} className={open ? "mb-5" : "mb-2"}>
+                    {open ? (
+                      <div className="text-[13px] text-stone mb-2">
+                        {section.numeral}. {pick(section.label, locale)}
+                      </div>
+                    ) : (
+                      <Link href={`${prefix}${first.path}`} className="block text-[13px] text-stone hover:text-ink">
+                        {section.numeral}. {pick(section.label, locale)}
+                      </Link>
+                    )}
+                    {open && (
+                      <ul className="flex flex-col">
+                        {section.links.map((link) => {
+                          const active = link.path === path;
+                          return (
+                            <li key={link.path}>
+                              <Link
+                                href={`${prefix}${link.path}`}
+                                aria-current={active ? "page" : undefined}
+                                className={`block text-[13px] leading-snug py-1.5 pl-3 border-l ${
+                                  active ? "border-blue text-blue" : "border-fog text-stone hover:text-ink hover:border-stone"
+                                }`}
+                              >
+                                {pick(link.label, locale)}
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+          </aside>
         </div>
       </SheetRow>
     </>
@@ -92,8 +107,8 @@ export function DocsShell({
 export function Callout({ label, children }: { label: string; children: ReactNode }) {
   return (
     <Phrased>
-    <div className="border border-fog bg-white/60 px-5 py-4 text-[14px] leading-[1.6] text-graphite">
-      <span className="font-data text-[10px] uppercase tracking-[0.1em] text-navy mr-2">{label}</span>
+    <div className="border-t border-fog pt-4 text-[14px] leading-[1.6] text-graphite max-w-[720px]">
+      <span className="text-[13px] text-ink mr-2">{label}</span>
       {children}
     </div>
     </Phrased>

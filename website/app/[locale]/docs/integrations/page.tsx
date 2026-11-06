@@ -3,6 +3,7 @@ import { locales, type Locale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
 import { loadVersionLabels } from "@/lib/versions";
 import { COMPONENTS, LAYERS, loadMatrix } from "@/lib/integration-matrix";
+import { adopterIntegrationText } from "@/lib/adopters-zh";
 import { DocsShell, Callout } from "@/components/DocsShell";
 import Phrased from "@/components/Phrased";
 import { Sign } from "@/components/Sign";
@@ -87,7 +88,7 @@ export default async function IntegrationsMatrixPage({ params }: { params: Promi
                 <tr className="border-b border-fog font-data text-[10px] uppercase tracking-[0.08em] text-mist">
                   <th className="py-2.5 pr-4 font-normal">{zh ? "專案" : "Project"}</th>
                   <th className="py-2.5 pr-4 font-normal">{zh ? "層級" : "Layer"}</th>
-                  <th className="py-2.5 pr-4 font-normal">{zh ? "整合內容（ADOPTERS.md 原文）" : "Integration (from ADOPTERS.md)"}</th>
+                  <th className="py-2.5 pr-4 font-normal">{zh ? "整合內容（譯自 ADOPTERS.md）" : "Integration (from ADOPTERS.md)"}</th>
                   <th className="py-2.5 font-normal text-right">{zh ? "證據" : "Evidence"}</th>
                 </tr>
               </thead>
@@ -101,7 +102,7 @@ export default async function IntegrationsMatrixPage({ params }: { params: Promi
                       </div>
                     </td>
                     <td className="py-3 pr-4 text-[12.5px] text-graphite whitespace-nowrap">{pick(LAYERS[r.layer] ?? LAYERS.other)}</td>
-                    <td className="py-3 pr-4 text-[12.5px] leading-[1.55] text-graphite">{r.integration}</td>
+                    <td className="py-3 pr-4 text-[12.5px] leading-[1.55] text-graphite">{adopterIntegrationText(r, locale)}</td>
                     <td className="py-3 text-right">
                       <a href={r.evidence} target="_blank" rel="noopener noreferrer" className="font-data text-[11px] text-blue hover:underline underline-offset-4"><Sign name="diple" size={10} className="ml-1.5 align-[-1px]" /></a>
                     </td>

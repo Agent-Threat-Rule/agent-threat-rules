@@ -206,7 +206,7 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
                   <span className="lg:hidden text-mist">maturity: </span>
                   {normalizeMaturity(rule.maturity) !== "stable" && <Sign name="stigme" size={10} className="mr-1.5 align-middle text-ink" />}
                   {normalizeMaturity(rule.maturity)}
-                  {(lanesById.get(rule.id) ?? []).length === 0 && <span className="ml-1 text-high">(inert)</span>}
+                  {(lanesById.get(rule.id) ?? []).length === 0 && <span className="ml-1 text-stone">(inert)</span>}
                 </div>
                 <div className="px-4 py-3 font-data text-xs text-stone">
                   <span className="lg:hidden text-mist">{zh ? "掃描目標：" : "scan target: "}</span>
@@ -222,12 +222,12 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
                 <div className="bg-ash border-b border-fog px-6 py-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <div className="font-data text-xs text-stone uppercase tracking-wider mb-1">{t(locale, "rules.col.desc")}</div>
+                      <div className="text-[13px] text-stone mb-1">{t(locale, "rules.col.desc")}</div>
                       <p className="text-sm text-graphite leading-relaxed">{rule.description}</p>
                     </div>
                     <div className="space-y-4">
                       <div>
-                        <div className="font-data text-xs text-stone uppercase tracking-wider mb-1">{zh ? "載入此規則的車道" : "Lanes that load this rule"}</div>
+                        <div className="text-[13px] text-stone mb-1">{zh ? "載入此規則的車道" : "Lanes that load this rule"}</div>
                         <div className="font-data text-xs text-ink">
                           {(lanesById.get(rule.id) ?? []).length > 0
                             ? (lanesById.get(rule.id) ?? []).join(", ")
@@ -236,19 +236,19 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
                       </div>
                       {rule.owaspAgentic.length > 0 && (
                         <div>
-                          <div className="flex items-center gap-1.5 font-data text-xs text-stone uppercase tracking-wider mb-1"><Sign name="asteriskos" size={11} className="text-ink" />OWASP Agentic</div>
+                          <div className="text-[13px] text-stone flex items-center gap-1.5 mb-1"><Sign name="asteriskos" size={11} className="text-ink" />OWASP Agentic</div>
                           <div className="font-data text-xs text-ink">{rule.owaspAgentic.join(", ")}</div>
                         </div>
                       )}
                       {rule.mitreAtlas.length > 0 && (
                         <div>
-                          <div className="flex items-center gap-1.5 font-data text-xs text-stone uppercase tracking-wider mb-1"><Sign name="asteriskos" size={11} className="text-ink" />MITRE ATLAS</div>
+                          <div className="text-[13px] text-stone flex items-center gap-1.5 mb-1"><Sign name="asteriskos" size={11} className="text-ink" />MITRE ATLAS</div>
                           <div className="font-data text-xs text-ink">{rule.mitreAtlas.join(", ")}</div>
                         </div>
                       )}
                       {rule.cves.length > 0 && (
                         <div>
-                          <div className="font-data text-xs text-stone uppercase tracking-wider mb-1">CVEs</div>
+                          <div className="text-[13px] text-stone mb-1">CVEs</div>
                           <div className="font-data text-xs text-ink">{rule.cves.join(", ")}</div>
                         </div>
                       )}

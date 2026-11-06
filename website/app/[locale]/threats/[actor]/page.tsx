@@ -8,6 +8,12 @@ import { getActor, listActors } from "@/lib/actors";
 import Phrased from "@/components/Phrased";
 import { Sign } from "@/components/Sign";
 
+// Naming patterns that are prose descriptions rather than glob patterns get a
+// Chinese line on /zh; glob patterns such as "agent-browser-*" stay as written.
+const NAMING_PATTERN_ZH: Readonly<Record<string, string>> = {
+  "Chinese characters in skill names and descriptions": "skill 名稱與描述使用中文字",
+};
+
 export function generateStaticParams() {
   const params: { locale: string; actor: string }[] = [];
   for (const locale of locales) {
@@ -71,7 +77,7 @@ export default async function ActorPage({
 
       {/* Header */}
       <Reveal>
-        <div className="font-data text-[11px] md:text-xs font-medium text-critical tracking-[1.5px] md:tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "威脅行為者檔案" : "Threat Actor Profile"}
         </div>
       </Reveal>
@@ -179,7 +185,7 @@ export default async function ActorPage({
           {actor.iocs.namingPatterns && actor.iocs.namingPatterns.length > 0 && (
             <IocBlock
               title={zh ? "命名規律" : "Naming patterns"}
-              items={actor.iocs.namingPatterns}
+              items={zh ? actor.iocs.namingPatterns.map((n) => NAMING_PATTERN_ZH[n] ?? n) : actor.iocs.namingPatterns}
             />
           )}
           {actor.iocs.passwords && actor.iocs.passwords.length > 0 && (
@@ -390,7 +396,7 @@ function SubSection({ title, children }: { title: string; children: React.ReactN
 function DataRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-paper p-4 md:p-5">
-      <dt className="font-data text-[11px] text-stone tracking-[1.5px] uppercase mb-1.5">
+      <dt className="text-[13px] text-stone mb-1.5">
         {label}
       </dt>
       <dd className="text-sm text-ink leading-[1.6]">{value}</dd>

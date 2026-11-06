@@ -115,10 +115,10 @@ export default async function CategoryPage({ params }: { params: Promise<{ local
                       <Link href={`${prefix}/rules/${r.id}`} className="text-blue hover:underline underline-offset-4">{r.id}</Link>
                     </td>
                     <td className="py-2.5 pr-4 text-[13px] text-ink">{r.title}</td>
-                    <td className={`py-2.5 pr-4 text-[12.5px] ${r.severity === "critical" ? "text-critical" : r.severity === "high" ? "text-high" : "text-graphite"}`}>{r.severity}</td>
+                    <td className="py-2.5 pr-4 text-[12.5px] text-graphite">{r.severity}</td>
                     <td className="py-2.5 pr-4 text-[12.5px] text-graphite">{normalizeMaturity(r.maturity)}</td>
                     <td className="py-2.5 text-[12.5px] text-graphite whitespace-nowrap">
-                      {lanes.length > 0 ? lanes.join(" · ") : <span className="text-high">{zh ? "無，不生效" : "none, inert"}</span>}
+                      {lanes.length > 0 ? lanes.join(" · ") : <span className="text-stone">{zh ? "無，不生效" : "none, inert"}</span>}
                     </td>
                   </tr>
                 );

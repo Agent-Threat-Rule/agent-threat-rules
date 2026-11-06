@@ -122,7 +122,7 @@ export function Nav({ locale, meta }: { locale: Locale; meta: HeaderMeta }) {
             </div>
             {NAV_GROUPS.map((group) => (
               <div key={group.key} className="mb-6">
-                <div className="font-data text-[10px] uppercase tracking-[0.08em] text-mist mb-2">{pick(group.label, locale)}</div>
+                <div className="text-[13px] text-stone mb-2">{pick(group.label, locale)}</div>
                 {group.links.map((link) => (
                   <Link key={link.path} href={`${prefix}${link.path}`} onClick={() => setMenuOpen(false)} className="block py-2 text-[15px] text-ink border-b border-fog">
                     {pick(link.label, locale)}

@@ -59,8 +59,8 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
       </Reveal>
       <Reveal delay={0.1}>
         <div className="border-y border-fog mb-12 grid grid-cols-1 md:grid-cols-2">
-          <div className="p-6 md:p-7 border-b md:border-b-0 md:border-r border-fog">
-            <div className="font-data text-[11px] text-stone tracking-wide uppercase mb-2">
+          <div className="py-6 md:py-7 md:pr-8 border-b md:border-b-0 md:border-r border-fog">
+            <div className="text-[13px] text-stone mb-2">
               {zh ? "規劃中 / 實作中" : "Planning or implementing"}
             </div>
             <h3 className="font-display text-base font-semibold text-ink mb-2">
@@ -80,8 +80,8 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
               {zh ? "開 issue" : "Open the issue"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
           </div>
-          <div className="p-6 md:p-7">
-            <div className="font-data text-[11px] text-stone tracking-wide uppercase mb-2">
+          <div className="py-6 md:py-7 md:pl-8">
+            <div className="text-[13px] text-stone mb-2">
               {zh ? "已經上線" : "Already shipped"}
             </div>
             <h3 className="font-display text-base font-semibold text-ink mb-2">
@@ -246,7 +246,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
               ? "完整流程寫在治理頁的「決策流程」段落。"
               : "The full process is under Decision-making on the governance page."}
           </p>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
             <a
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?title=%5BRFC%5D+"
               target="_blank"
@@ -255,14 +255,12 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
             >
               {zh ? "開 RFC issue" : "Open an RFC issue"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
-            <span className="text-fog">|</span>
             <a
               href={`/${locale}/governance`}
               className="font-data text-xs text-blue hover:underline"
             >
               {zh ? "決策流程細節" : "Decision-making process"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
-            <span className="text-fog">|</span>
             <a
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md"
               target="_blank"
@@ -332,17 +330,17 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
 
       {/* ── Resources ── */}
       <Reveal>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-fog">
-          <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/GOVERNANCE.md" target="_blank" rel="noopener noreferrer" className="bg-paper p-6 hover:bg-ash transition-colors">
-            <div className="font-display text-sm font-semibold mb-1">{t(locale, "contribute.governance")}</div>
+        <div className="grid grid-cols-1 md:grid-cols-3 border-t border-fog">
+          <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/GOVERNANCE.md" target="_blank" rel="noopener noreferrer" className="group py-6 md:pr-6 border-b border-fog md:border-b-0">
+            <div className="font-display text-sm font-semibold mb-1 group-hover:underline underline-offset-4">{t(locale, "contribute.governance")}</div>
             <p className="text-sm text-stone">{t(locale, "contribute.governance.desc")}</p>
           </a>
-          <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/CONTRIBUTORS.md" target="_blank" rel="noopener noreferrer" className="bg-paper p-6 hover:bg-ash transition-colors">
-            <div className="font-display text-sm font-semibold mb-1">{t(locale, "contribute.contributors")}</div>
+          <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/CONTRIBUTORS.md" target="_blank" rel="noopener noreferrer" className="group py-6 md:px-6 border-b border-fog md:border-b-0 md:border-l">
+            <div className="font-display text-sm font-semibold mb-1 group-hover:underline underline-offset-4">{t(locale, "contribute.contributors")}</div>
             <p className="text-sm text-stone">{t(locale, "contribute.contributors.desc")}</p>
           </a>
-          <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/examples/how-to-write-a-rule.md" target="_blank" rel="noopener noreferrer" className="bg-paper p-6 hover:bg-ash transition-colors">
-            <div className="font-display text-sm font-semibold mb-1">{t(locale, "contribute.guide")}</div>
+          <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/examples/how-to-write-a-rule.md" target="_blank" rel="noopener noreferrer" className="group py-6 md:px-6 border-b border-fog md:border-b-0 md:border-l">
+            <div className="font-display text-sm font-semibold mb-1 group-hover:underline underline-offset-4">{t(locale, "contribute.guide")}</div>
             <p className="text-sm text-stone">{t(locale, "contribute.guide.desc")}</p>
           </a>
         </div>

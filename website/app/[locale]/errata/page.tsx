@@ -93,7 +93,7 @@ export default async function ErrataPage({
       {/* Header */}
       <header className="mb-8 md:mb-10 max-w-3xl">
         <p
-          className="text-xs uppercase tracking-[0.18em] text-stone mb-3"
+          className="text-[13px] text-stone mb-3"
           style={{ fontFamily: "var(--font-data)" }}
         >
           {zh ? "勘誤 — Errata" : "Errata"}
@@ -122,7 +122,7 @@ export default async function ErrataPage({
         <aside aria-label="Table of contents" className="lg:order-first">
           <nav className="spec-toc" aria-label={t(locale, "spec.toc_aria")}>
             <p
-              className="text-xs font-semibold uppercase tracking-wider text-stone mb-3"
+              className="text-[13px] text-stone mb-3"
               style={{ fontFamily: "var(--font-body)" }}
             >
               {t(locale, "spec.toc")}

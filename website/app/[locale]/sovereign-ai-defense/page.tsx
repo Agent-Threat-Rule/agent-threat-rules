@@ -64,7 +64,7 @@ export default async function SovereignAIDefensePage({
     <div className="pt-20 pb-20 px-6 md:px-14 max-w-[992px]">
       {/* Header eyebrow */}
       <Reveal>
-        <div className="font-data text-[11px] md:text-xs font-medium text-blue tracking-[1.5px] md:tracking-[3px] uppercase mb-5">
+        <div className="text-[13px] text-stone mb-5">
 {zh ? "主權 AI · 中立標準" : "Sovereign AI · A Neutral Standard"}
         </div>
       </Reveal>
@@ -85,7 +85,7 @@ export default async function SovereignAIDefensePage({
           <br />
           {zh ? "保護它的偵測知識，不該屬於任何單一廠商。" : "The detection knowledge that defends it should belong to no single vendor."}
           <br />
-          <span className="text-blue">{zh ? "標準層必須是中立的。" : "That layer has to be neutral."}</span>
+          <span className="text-ink">{zh ? "標準層必須是中立的。" : "That layer has to be neutral."}</span>
         </h1>
       </Reveal>
 
@@ -159,7 +159,7 @@ export default async function SovereignAIDefensePage({
       </Reveal>
 
       {/* 01 · The moment */}
-      <Section label="01 · THE MOMENT" delay={0.05}>
+      <Section label={zh ? "01 · 時機" : "01 · THE MOMENT"} delay={0.05}>
         <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh
             ? "Sovereign AI 為什麼是這個時代的國家命題"
@@ -229,14 +229,14 @@ export default async function SovereignAIDefensePage({
               codify the language, the data of your culture into your own large language model.&rdquo;
             </>
           )}
-          <span className="block font-data text-[10px] tracking-[0.1em] text-stone mt-3 uppercase">
+          <span className="text-[13px] text-stone block mt-3">
             Jensen Huang · World Governments Summit · {zh ? "杜拜 2024" : "Dubai 2024"}
           </span>
         </Callout>
       </Section>
 
       {/* 02 · The gap */}
-      <Section label="02 · THE NEUTRALITY PROBLEM" delay={0.05}>
+      <Section label={zh ? "02 · 中立性的難題" : "02 · THE NEUTRALITY PROBLEM"} delay={0.05}>
         <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh
             ? "自主掌握模型容易，自主掌握防禦它的偵測知識難"
@@ -293,7 +293,7 @@ export default async function SovereignAIDefensePage({
             href="https://www.nist.gov/news-events/news/2026/01/caisi-issues-request-information-about-securing-ai-agent-systems"
             target="_blank"
             rel="noopener noreferrer"
-            className="block font-data text-[10px] tracking-[0.1em] text-stone mt-3 uppercase hover:underline"
+            className="text-[13px] text-stone block mt-3 hover:underline"
           >
             NIST · {zh ? "2026-01-12 新聞稿：CAISI 發布 AI agent 系統安全 RFI" : "News release, 2026-01-12: CAISI's RFI on securing AI agent systems"}
           </a>
@@ -317,7 +317,7 @@ export default async function SovereignAIDefensePage({
       </Section>
 
       {/* 03 · Why a neutral standard fits */}
-      <Section label="03 · WHY A NEUTRAL STANDARD" delay={0.05}>
+      <Section label={zh ? "03 · 為什麼需要中立標準" : "03 · WHY A NEUTRAL STANDARD"} delay={0.05}>
         <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh
             ? "為什麼這個語境需要的是開放標準，而不是另一個產品"
@@ -355,7 +355,7 @@ export default async function SovereignAIDefensePage({
       </Section>
 
       {/* 03b · Interoperable with existing SOC tooling */}
-      <Section label="03B · INTEROPERABLE WITH EXISTING TOOLING" delay={0.05}>
+      <Section label={zh ? "03B · 與既有工具互通" : "03B · INTEROPERABLE WITH EXISTING TOOLING"} delay={0.05}>
         <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh ? "不必丟掉現有的 SOC 工具鏈" : "No need to replace your existing SOC tooling"}
         </h2>
@@ -406,7 +406,7 @@ atr convert splunk --output ./atr-rules.spl`}</code>
       </Section>
 
       {/* 04 · Ecosystem */}
-      <Section label="04 · ECOSYSTEM" delay={0.05}>
+      <Section label={zh ? "04 · 生態系" : "04 · ECOSYSTEM"} delay={0.05}>
         <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh ? "已被多個主要資安堆疊採用" : "Already adopted across major security stacks"}
         </h2>
@@ -414,19 +414,19 @@ atr convert splunk --output ./atr-rules.spl`}</code>
           <TractionRow
             org="Cisco AI Defense"
             status={zh ? "已合併" : "Merged"}
-            statusClass="bg-green/10 text-green"
+            statusClass="text-ink"
             desc={zh ? "PR #99 已合併（2026-04-22）· ATR 規則集進入開源 repo cisco-ai-defense/skill-scanner" : "PR #99 merged (2026-04-22) · ATR rule pack in the open-source repo cisco-ai-defense/skill-scanner"}
           />
           <TractionRow
             org="Microsoft"
             status={zh ? "PR 已合併" : "PR Merged"}
-            statusClass="bg-ink/10 text-blue"
+            statusClass="text-stone"
             desc={zh ? "agent-governance-toolkit · PR #2308 + #3025 · ATR 匯入範例與 ACS annotator 範例（早期規則包 YAML 已不在 repo）" : "agent-governance-toolkit · PR #2308 + #3025 · ATR import and ACS annotator examples (earlier rule-pack YAML no longer in the repo)"}
           />
           <TractionRow
             org="Gen Digital Sage"
             status={zh ? "已合併" : "Merged"}
-            statusClass="bg-green/10 text-green"
+            statusClass="text-ink"
             desc={zh ? "PR #33 已合併（2026-05-11）· 完整 ATR 規則集於 Norton/Avast/LifeLock 母集團的 Sage 風險評分層" : "PR #33 merged (2026-05-11) · Full ATR rule pack in the Sage risk-scoring layer under the Norton/Avast/LifeLock parent"}
           />
         </div>
@@ -441,7 +441,7 @@ atr convert splunk --output ./atr-rules.spl`}</code>
       </Section>
 
       {/* 05 · Community-governed */}
-      <Section label="05 · COMMUNITY-GOVERNED" delay={0.05}>
+      <Section label={zh ? "05 · 社群治理" : "05 · COMMUNITY-GOVERNED"} delay={0.05}>
         <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh ? "一個由社群治理的開放標準" : "An open standard, governed by its contributors"}
         </h2>
@@ -496,7 +496,7 @@ atr convert splunk --output ./atr-rules.spl`}</code>
       </Section>
 
       {/* 06 · How any country adopts it */}
-      <Section label="06 · HOW ANY COUNTRY ADOPTS IT" delay={0.05}>
+      <Section label={zh ? "06 · 各國如何採用" : "06 · HOW ANY COUNTRY ADOPTS IT"} delay={0.05}>
         <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh ? "任何國家如何採用一個公共財標準" : "How any country adopts a public-good standard"}
         </h2>
@@ -581,7 +581,7 @@ atr convert splunk               # or export into the SOC you already run`}</cod
       <Reveal delay={0.05}>
         <section className="mt-12 md:mt-16">
           <div className="bg-ink text-paper  p-10 md:p-12">
-            <div className="font-data text-[11px] md:text-xs font-medium text-mist tracking-[1.5px] md:tracking-[3px] uppercase mb-3">
+            <div className="text-[13px] text-stone mb-3">
               07 · OPEN CALL
             </div>
             <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-paper mb-4">
@@ -635,7 +635,7 @@ atr convert splunk               # or export into the SOC you already run`}</cod
       </Reveal>
 
       {/* Share */}
-      <Section label="SHARE" delay={0.05}>
+      <Section label={zh ? "分享" : "SHARE"} delay={0.05}>
         <h2 className="font-display text-xl md:text-2xl font-bold tracking-[-0.01em] text-ink mb-3">
           {zh ? "把這個討論帶給更多人" : "Pass this on"}
         </h2>
@@ -681,7 +681,7 @@ atr convert splunk               # or export into the SOC you already run`}</cod
                 adam@agentthreatrule.org
               </a>
             </div>
-            <div className="font-data text-[11px] text-mist tracking-[1px] uppercase mt-3">
+            <div className="text-[13px] text-stone mt-3">
               MIT License · Open Standard
             </div>
             <p className="mt-3 max-w-[420px]">
@@ -694,8 +694,10 @@ atr convert splunk               # or export into the SOC you already run`}</cod
             <a href="https://agentthreatrule.org" className="font-display font-semibold text-sm text-blue hover:underline">
               agentthreatrule.org
             </a>
-            <div className="font-data text-[11px] text-mist tracking-[1px] uppercase mt-3">
-              {ruleCount} Effective Rules · NIST AI RMF mappings · Spec {specVersion} (Working Draft)
+            <div className="text-[13px] text-stone mt-3">
+              {zh
+                ? `${ruleCount} 條生效規則 · NIST AI RMF 對應 · Spec ${specVersion}（Working Draft）`
+                : `${ruleCount} Effective Rules · NIST AI RMF mappings · Spec ${specVersion} (Working Draft)`}
             </div>
           </div>
         </div>
@@ -748,7 +750,7 @@ function StatCell({
   };
   return (
     <div className="bg-paper p-5">
-      <div className="font-data text-[10px] text-blue tracking-[1.2px] uppercase mb-2">
+      <div className="text-[13px] text-stone mb-2">
         {label}
       </div>
       <div className={`font-display text-2xl md:text-[26px] font-bold leading-[1.1] tracking-[-0.02em] ${colorMap[valueColor]}`}>
@@ -802,7 +804,7 @@ function TractionRow({
   return (
     <div className="grid grid-cols-[160px_140px_1fr] gap-4 py-4 border-b border-fog items-center max-md:grid-cols-1 max-md:gap-1.5">
       <div className="font-display font-semibold text-ink">{org}</div>
-      <div className={`font-data text-[10px] tracking-[1.2px] uppercase px-2.5 py-1 rounded-[3px] text-center font-semibold ${statusClass}`}>
+      <div className={`text-[13px] ${statusClass}`}>
         {status}
       </div>
       <div className="text-graphite text-sm leading-[1.5]">{desc}</div>
@@ -813,7 +815,7 @@ function TractionRow({
 function ConditionCard({ num, head, body }: { num: string; head: string; body: string }) {
   return (
     <div className="p-6 border border-fog  bg-paper">
-      <div className="font-data text-[11px] text-blue tracking-[1.2px] uppercase mb-2">{num}</div>
+      <div className="font-data text-[12px] text-stone mb-2">{num}</div>
       <div className="font-display text-[17px] font-bold text-ink mb-2">{head}</div>
       <div className="text-[13.5px] text-graphite leading-[1.55]">{body}</div>
     </div>

@@ -80,7 +80,7 @@ export default async function CharterPage({
       {/* Header */}
       <header className="mb-8 md:mb-10 max-w-3xl">
         <p
-          className="text-xs uppercase tracking-[0.18em] text-stone mb-3"
+          className="text-[13px] text-stone mb-3"
           style={{ fontFamily: "var(--font-data)" }}
         >
           {zh ? "章程 — Project Charter" : "Project Charter"}
@@ -109,7 +109,7 @@ export default async function CharterPage({
         <aside aria-label="Table of contents" className="lg:order-first">
           <nav className="spec-toc" aria-label={t(locale, "spec.toc_aria")}>
             <p
-              className="text-xs font-semibold uppercase tracking-wider text-stone mb-3"
+              className="text-[13px] text-stone mb-3"
               style={{ fontFamily: "var(--font-body)" }}
             >
               {t(locale, "spec.toc")}
@@ -154,7 +154,7 @@ export default async function CharterPage({
             </ol>
             <hr className="my-5 border-fog" />
             <p
-              className="text-xs uppercase tracking-wider text-stone mb-2"
+              className="text-[13px] text-stone mb-2"
               style={{ fontFamily: "var(--font-body)" }}
             >
               {zh ? "完整規格" : "Full Specification"}
@@ -197,7 +197,7 @@ export default async function CharterPage({
                 style={{ borderColor: "#0b1d3a" }}
               >
                 <p
-                  className="text-xs uppercase tracking-wider text-navy-ink font-semibold mb-3"
+                  className="text-[13px] text-stone mb-3"
                   style={{ fontFamily: "var(--font-data)" }}
                 >
                   <span
@@ -219,7 +219,7 @@ export default async function CharterPage({
               {/* Out of scope */}
               <div className="border-l-4 border-stone bg-paper  p-5">
                 <p
-                  className="text-xs uppercase tracking-wider text-stone font-semibold mb-3"
+                  className="text-[13px] text-stone mb-3"
                   style={{ fontFamily: "var(--font-data)" }}
                 >
                   <span aria-hidden="true" className="inline-block mr-2">

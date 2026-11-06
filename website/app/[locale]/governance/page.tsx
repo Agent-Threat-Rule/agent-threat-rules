@@ -155,7 +155,7 @@ export default async function GovernancePage({
             },
           ].map((item) => (
             <div key={item.gate} className="py-4 border-b border-fog">
-              <div className="font-data text-xs text-ink tracking-wide uppercase mb-2">{item.gate}</div>
+              <div className="text-[13px] text-stone mb-2">{item.gate}</div>
               <p className="text-sm text-graphite leading-[1.7]">{item.desc}</p>
             </div>
           ))}
@@ -233,7 +233,7 @@ export default async function GovernancePage({
                   <div className="font-display text-sm font-semibold text-ink">{row.kind}</div>
                 </div>
                 <div>
-                  <div className="font-data text-xs text-ink tracking-wide uppercase mb-2">
+                  <div className="text-[13px] text-stone mb-2">
                     {row.quorum}
                   </div>
                   <p className="text-sm text-graphite leading-[1.7]">{row.detail}</p>
@@ -415,7 +415,7 @@ export default async function GovernancePage({
 
       {/* Links */}
       <Reveal>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
           <a
             href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/GOVERNANCE.md"
             target="_blank"
@@ -424,7 +424,6 @@ export default async function GovernancePage({
           >
             {zh ? "在 GitHub 查看 GOVERNANCE.md" : "View GOVERNANCE.md on GitHub"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
-          <span className="text-fog">|</span>
           <a
             href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/CODE_OF_CONDUCT.md"
             target="_blank"
@@ -433,7 +432,6 @@ export default async function GovernancePage({
           >
             {zh ? "行為準則" : "Code of Conduct"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
-          <span className="text-fog">|</span>
           <a
             href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SECURITY.md"
             target="_blank"
@@ -442,7 +440,6 @@ export default async function GovernancePage({
           >
             {zh ? "安全揭露政策" : "Security policy"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
-          <span className="text-fog">|</span>
           <a
             href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/CONTRIBUTORS.md"
             target="_blank"
@@ -451,7 +448,6 @@ export default async function GovernancePage({
           >
             {zh ? "貢獻者名單" : "Contributors list"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
-          <span className="text-fog">|</span>
           <Link href={`/${locale}/about`} className="font-data text-xs text-blue hover:underline">
             {zh ? "關於 ATR" : "About ATR"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>

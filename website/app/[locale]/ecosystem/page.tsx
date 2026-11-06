@@ -10,6 +10,7 @@ import {
   type AdopterTier,
   type IntegrationType,
 } from "@/lib/adopters";
+import { adopterIntegrationText } from "@/lib/adopters-zh";
 import {
   IntegrationTypeIcon,
   integrationTypeLabel,
@@ -251,7 +252,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
                       )}
                     </p>
                     <p className="text-sm text-stone leading-relaxed mb-3">
-                      {a.integration}
+                      {adopterIntegrationText(a, locale)}
                     </p>
                     {a.categories && a.categories.length > 0 && (
                       <p className="font-data text-[11px] text-stone mb-2">
@@ -316,7 +317,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
                   <p className="font-data text-[11px] text-stone tracking-wide mb-2 uppercase">
                     {a.org}
                   </p>
-                  <p className="text-sm text-stone leading-relaxed mb-3">{a.integration}</p>
+                  <p className="text-sm text-stone leading-relaxed mb-3">{adopterIntegrationText(a, locale)}</p>
                   <a
                     href={a.evidence}
                     target="_blank"

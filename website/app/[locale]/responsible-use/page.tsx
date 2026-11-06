@@ -177,7 +177,7 @@ export default async function ResponsibleUsePage({
           </p>
           <ul className="space-y-2">
             <li className="flex items-start gap-3">
-              <span className="text-blue shrink-0 mt-0.5">1.</span>
+              <span className="text-stone shrink-0 mt-0.5">1.</span>
               <span>
                 {zh
                   ? "規則裡的 true_positive test case 是最小化的模式範例，不是完整的攻擊鏈。拿來驗證偵測已經足夠，但要變成能用的 exploit，還得再做額外的攻擊工程。偵測標準需要的特徵，遠小於武器化需要的工作量。"
@@ -185,7 +185,7 @@ export default async function ResponsibleUsePage({
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-blue shrink-0 mt-0.5">2.</span>
+              <span className="text-stone shrink-0 mt-0.5">2.</span>
               <span>
                 {zh
                   ? "特別危險的規則（高 CVSS、已在野外被主動利用），送 PR 之前會照負責任揭露的時程走，先確認受影響的廠商已經有時間修補。ATR-2026-00440 與 ATR-2026-00441 對應 Microsoft Semantic Kernel 的兩個 critical CVE（CVE-2026-26030、CVE-2026-25592），就是這樣做的：規則在 MSRC 公開揭露之後才發布。"
@@ -264,15 +264,13 @@ export default async function ResponsibleUsePage({
 
       {/* Links */}
       <Reveal>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
           <Link href={`/${locale}/governance`} className="font-data text-xs text-blue hover:underline">
             {zh ? "治理結構" : "Governance"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
-          <span className="text-fog">|</span>
           <Link href={`/${locale}/quality-standard`} className="font-data text-xs text-blue hover:underline">
             {zh ? "品質標準" : "Quality standard"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
-          <span className="text-fog">|</span>
           <Link href={`/${locale}/red-team`} className="font-data text-xs text-blue hover:underline">
             {zh ? "紅隊整合" : "Red Team"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>

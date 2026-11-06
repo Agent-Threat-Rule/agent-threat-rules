@@ -27,16 +27,6 @@ export async function generateMetadata({
   });
 }
 
-const SECTION_ACCENT: Record<string, string> = {
-  BREAKING: "text-critical border-critical",
-  Added: "text-ink border-ink",
-  Changed: "text-high border-high",
-  Fixed: "text-blue border-blue",
-  Metrics: "text-stone border-stone",
-  Ecosystem: "text-blue border-blue",
-  Stats: "text-stone border-stone",
-};
-
 export default async function ChangelogPage({
   params,
 }: {
@@ -109,13 +99,9 @@ export default async function ChangelogPage({
                   )}
                 </div>
                 {entry.sections.map((section) => {
-                  const accent = SECTION_ACCENT[section.heading] ?? "text-stone border-stone";
-                  const [textClass, borderClass] = accent.split(" ");
                   return (
                     <div key={section.heading} className="mb-6 last:mb-0">
-                      <div
-                        className={`font-data text-[10px] md:text-[11px] font-medium tracking-[2px] uppercase inline-block border ${borderClass}/40 ${textClass} bg-ash/50 px-2 py-0.5 rounded-[2px] mb-3`}
-                      >
+                      <div className="text-[13px] text-stone mb-3">
                         {section.heading}
                       </div>
                       <ul className="space-y-2">

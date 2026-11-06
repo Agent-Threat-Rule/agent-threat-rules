@@ -27,7 +27,7 @@ export async function Footer({ locale }: { locale: Locale }) {
       <div className="sheet sheet-row px-6 md:px-14 pt-12 pb-8">
         <span className="corner-mark corner-mark-l" aria-hidden="true" />
         <span className="corner-mark corner-mark-r" aria-hidden="true" />
-        <div className="font-data text-[10.5px] uppercase tracking-[0.12em] text-stone mb-10 leading-tight">
+        <div className="text-[13px] text-stone mb-10">
           <div className="text-ink">{zh ? "網站索引" : "Site index"}</div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-x-6 gap-y-10">

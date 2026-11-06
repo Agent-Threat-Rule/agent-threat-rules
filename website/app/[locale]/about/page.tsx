@@ -253,17 +253,18 @@ export default async function AboutPage({
       <Section label={zh ? "歷程" : "History"} delay={0.2}>
         <ol className="space-y-0">
           {MILESTONES.map((m, i) => (
-            <li key={i} className="flex gap-4 md:gap-6 relative pl-1">
-              <div className="font-data text-xs text-stone w-[92px] shrink-0 pt-1.5 whitespace-nowrap">
+            <li key={i} className="relative border-t border-fog pt-4 md:border-t-0 md:pt-0 md:flex md:gap-6 md:pl-1">
+              {/* Phones: the date sits above the entry so the text gets the full width. */}
+              <div className="font-data text-xs text-stone md:w-[92px] md:shrink-0 md:pt-1.5 whitespace-nowrap">
                 {m.date}
               </div>
-              <div className="flex flex-col items-center shrink-0 pt-2.5">
-                <div className="w-2 h-2 rounded-full bg-ink" />
+              <div className="hidden md:flex flex-col items-center shrink-0 pt-2.5" aria-hidden="true">
+                <div className="w-2 h-2 bg-ink" />
                 {i < MILESTONES.length - 1 && (
                   <div className="w-px flex-1 bg-fog mt-1 min-h-[48px]" />
                 )}
               </div>
-              <div className="pb-7 flex-1 min-w-0">
+              <div className="mt-1.5 md:mt-0 pb-5 md:pb-7 flex-1 min-w-0">
                 <div className="font-display text-sm md:text-base font-semibold text-ink leading-[1.4]">
                   {zh ? m.title.zh : m.title.en}
                 </div>

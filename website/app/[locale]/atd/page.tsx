@@ -10,9 +10,11 @@ import { locales, type Locale } from "@/lib/i18n";
 import { RFC2119 } from "@/components/spec/RFC2119";
 import { NormativeBadge, InformativeBadge } from "@/components/spec/Badges";
 import { ATD_TECHNIQUES, ATD_TACTICS, ATD_STATS } from "@/lib/atd-data";
+import { atdDescription } from "@/lib/atd-zh";
 import { loadSiteStats, type BenchmarkMeasurement } from "@/lib/stats";
 import { count, findBenchmark, measuredStamp, pct, pctHunt } from "@/lib/recall";
 import Phrased from "@/components/Phrased";
+import { phraseHtml } from "@/lib/phrase";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -344,7 +346,7 @@ export default async function ATDPage({
         <aside aria-label="ATD table of contents" className="lg:order-first">
           <nav className="spec-toc">
             <p
-              className="text-xs font-semibold uppercase tracking-wider text-stone mb-3"
+              className="text-[13px] text-stone mb-3"
               style={{ fontFamily: "var(--font-body)" }}
             >
               {locale === "zh" ? "目錄" : "Contents"}
@@ -381,7 +383,7 @@ export default async function ATDPage({
             </ol>
             <hr className="my-5 border-fog" />
             <p
-              className="text-xs uppercase tracking-wider text-stone mb-2"
+              className="text-[13px] text-stone mb-2"
               style={{ fontFamily: "var(--font-body)" }}
             >
               {locale === "zh" ? "相關文件" : "Related documents"}
@@ -419,7 +421,7 @@ export default async function ATDPage({
                 {s[locale].title}
                 {s.status === "normative" ? <NormativeBadge className="ml-2 align-middle" /> : <InformativeBadge className="ml-2 align-middle" />}
               </h2>
-              <div className="spec-body min-w-0 overflow-x-auto -mx-2 px-2" dangerouslySetInnerHTML={{ __html: renderBody(s[locale].body) }} />
+              <div className="spec-body min-w-0 overflow-x-auto -mx-2 px-2" dangerouslySetInnerHTML={{ __html: phraseHtml(renderBody(s[locale].body)) }} />
             </section>
           ))}
 
@@ -458,7 +460,7 @@ export default async function ATDPage({
                             </Link>
                           )}
                         </div>
-                        <p className="text-graphite" style={{ fontSize: "0.86rem", lineHeight: 1.55, margin: "0 0 0.5rem" }}>{t.mechanism}</p>
+                        <p className="text-graphite" style={{ fontSize: "0.86rem", lineHeight: 1.55, margin: "0 0 0.5rem" }}>{atdDescription(t.id, t.mechanism, locale)}</p>
                         <div className="flex flex-wrap gap-1.5 items-center" style={{ fontFamily: "var(--font-data)", fontSize: "0.68rem" }}>
                           {t.evidence.kind === "cve" && t.evidence.url ? (
                             <a href={t.evidence.url} target="_blank" rel="noopener noreferrer" style={{ background: "#FBECEC", color: "#A32D2D", borderRadius: "3px", padding: "2px 7px", textDecoration: "none" }}>{t.evidence.label} ↗</a>
@@ -486,7 +488,7 @@ export default async function ATDPage({
                 {s[locale].title}
                 {s.status === "normative" ? <NormativeBadge className="ml-2 align-middle" /> : <InformativeBadge className="ml-2 align-middle" />}
               </h2>
-              <div className="spec-body min-w-0 overflow-x-auto -mx-2 px-2" dangerouslySetInnerHTML={{ __html: renderBody(s[locale].body) }} />
+              <div className="spec-body min-w-0 overflow-x-auto -mx-2 px-2" dangerouslySetInnerHTML={{ __html: phraseHtml(renderBody(s[locale].body)) }} />
             </section>
           ))}
 

@@ -17,6 +17,8 @@ export interface Member {
   github: string | null;
   tier: Tier;
   title: string;
+  /** Traditional Chinese role line for /zh; null when none was given (the English title is shown). */
+  titleZh: string | null;
   organization: string | null;
   country: string;
   expertise: string[];
@@ -58,7 +60,8 @@ function toMember(raw: unknown, index: number): Member | null {
     console.warn(`community/members.yaml entry ${index}: missing name, title, country, joined or tier, not rendered`);
     return null;
   }
-  const text = [name, title, str(r.organization) ?? ""].join(" ");
+  const titleZh = str(r.title_zh);
+  const text = [name, title, titleZh ?? "", str(r.organization) ?? ""].join(" ");
   if (CONTACT.test(text)) {
     console.warn(`community/members.yaml entry ${index}: looks like it carries contact details, not rendered`);
     return null;
@@ -70,6 +73,7 @@ function toMember(raw: unknown, index: number): Member | null {
     github,
     tier,
     title,
+    titleZh,
     organization: str(r.organization),
     country: country.toUpperCase(),
     expertise: Array.isArray(r.expertise) ? r.expertise.filter((e): e is string => typeof e === "string") : [],

@@ -15,7 +15,7 @@ export function SectionHead({
 }) {
   return (
     <div className="mb-8">
-      <div className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-3">
+      <div className="text-[13px] text-stone mb-3">
         <span className="text-mist mr-2">{mark}</span>
         {label}
       </div>

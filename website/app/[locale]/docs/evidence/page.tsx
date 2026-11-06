@@ -136,7 +136,7 @@ export default async function EvidencePage({ params }: { params: Promise<{ local
               <tr key={e.id} className="border-b border-fog align-top">
                 <td className="py-4 pr-4 whitespace-nowrap">
                   <div className="font-data text-[11.5px] text-ink">{e.id}</div>
-                  <div className="mt-1 font-data text-[10px] uppercase tracking-[0.06em] text-mist">{e.type}</div>
+                  <div className="text-[13px] text-stone mt-1">{e.type}</div>
                 </td>
                 <td className="py-4 pr-4">
                   <div className="text-[14px] text-ink">{pick(e.title)}</div>

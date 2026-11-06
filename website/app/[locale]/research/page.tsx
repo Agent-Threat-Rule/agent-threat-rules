@@ -85,7 +85,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
           {/* Malware campaign research report */}
           <div className="bg-paper p-5 md:p-6">
             <div className="flex items-center gap-2 mb-2">
-              <span className="font-data text-xs bg-critical/10 text-critical px-2 py-0.5 ">{locale === "zh" ? "新" : "NEW"}</span>
+              <span className="text-[13px] text-stone">{locale === "zh" ? "新" : "New"}</span>
               <span className="font-data text-xs text-mist">{zh ? "2026 年 4 月" : "April 2026"}</span>
             </div>
             <div className="font-display text-base font-semibold text-ink mb-1">
@@ -126,7 +126,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
           {/* MCP attack surface paper */}
           <div className="bg-paper p-5 md:p-6">
             <div className="flex items-center gap-2 mb-2">
-              <span className="font-data text-xs bg-critical/10 text-critical px-2 py-0.5 ">{locale === "zh" ? "新" : "NEW"}</span>
+              <span className="text-[13px] text-stone">{locale === "zh" ? "新" : "New"}</span>
               <span className="font-data text-xs text-mist">{zh ? "2026 年 4 月 · 18 頁 · 30 篇參考文獻" : "April 2026 · 18 pages · 30 references"}</span>
             </div>
             <div className="font-display text-base font-semibold text-ink mb-1">
@@ -368,7 +368,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
               </div>
               <p className="text-xs text-mist leading-[1.7]">
                 {locale === "zh"
-                  ? "Cite as: Agent Threat Rules (ATR) Project (2026). Agent Threat Rules: An open detection standard for AI agent threats. DOI: 10.5281/zenodo.19178002"
+                  ? "引用格式：Agent Threat Rules (ATR) Project (2026). Agent Threat Rules: An open detection standard for AI agent threats. DOI: 10.5281/zenodo.19178002"
                   : "Cite as: Agent Threat Rules (ATR) Project (2026). Agent Threat Rules: An open detection standard for AI agent threats. DOI: 10.5281/zenodo.19178002"}
               </p>
             </div>
@@ -378,7 +378,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
               </div>
               <p className="text-xs text-mist leading-[1.7]">
                 {locale === "zh"
-                  ? "Cite as: Lin, Kuan-Hsin (2026). The Collapse of Trust. DOI: 10.5281/zenodo.19178002"
+                  ? "引用格式：Lin, Kuan-Hsin (2026). The Collapse of Trust. DOI: 10.5281/zenodo.19178002"
                   : "Cite as: Lin, Kuan-Hsin (2026). The Collapse of Trust. DOI: 10.5281/zenodo.19178002"}
               </p>
             </div>
@@ -559,7 +559,7 @@ function SkillOverall({ run, zh }: { run: BenchmarkMeasurement; zh: boolean }) {
       </div>
       <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-fog">
         <div>
-          <div className="font-data text-lg font-bold text-green">{pct(run.fp_rate, 2)}</div>
+          <div className="font-data text-lg font-bold text-ink">{pct(run.fp_rate, 2)}</div>
           <div className="text-xs text-stone">{zh ? "誤報率 · hunt" : "False positive rate · hunt"}</div>
         </div>
         <div>
@@ -632,10 +632,10 @@ function LayerBar({ name, value, desc, width, benign = false }: { name: string; 
     <div>
       <div className="flex items-baseline justify-between mb-1">
         <span className="font-data text-sm font-semibold">{name}</span>
-        <span className={`font-data text-sm font-bold ${benign ? "text-green" : "text-ink"}`}>{value}</span>
+        <span className={`font-data text-sm font-bold text-ink`}>{value}</span>
       </div>
       <div className="text-xs text-stone">{desc}</div>
-      <div className="mt-1.5 h-1.5 bg-fog"><div className={`h-full ${benign ? "bg-green" : "bg-ink"}`} style={{ width: `${width}%` }} /></div>
+      <div className="mt-1.5 h-1.5 bg-fog"><div className={`h-full ${benign ? "bg-stone" : "bg-ink"}`} style={{ width: `${width}%` }} /></div>
     </div>
   );
 }

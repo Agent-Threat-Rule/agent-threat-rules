@@ -186,9 +186,9 @@ export default async function CompliancePage({
 
       {/* Framework matrix */}
       <Reveal delay={0.2}>
-        <div className="space-y-px bg-fog mb-12">
+        <div className="border-t border-ink mb-12">
           {frameworks.map((fw) => (
-            <div key={fw.id} className="bg-paper p-6 md:p-8">
+            <div key={fw.id} className="py-6 md:py-8 border-b border-fog">
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
                 <div className="md:col-span-3">
                   <div className="font-display text-base font-bold text-ink mb-1">{fw.id}</div>
@@ -252,15 +252,13 @@ export default async function CompliancePage({
 
       {/* Links */}
       <Reveal>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
           <Link href={`/${locale}/compliance/nist-ai-rmf`} className="font-data text-xs text-blue hover:underline">
             {zh ? "NIST AI RMF 細節" : "NIST AI RMF detail"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
-          <span className="text-fog">|</span>
           <Link href={`/${locale}/coverage`} className="font-data text-xs text-blue hover:underline">
             {zh ? "Benchmark 覆蓋率" : "Benchmark coverage"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
-          <span className="text-fog">|</span>
           <Link href={`/${locale}/quality-standard`} className="font-data text-xs text-blue hover:underline">
             {zh ? "品質標準" : "Quality standard"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>

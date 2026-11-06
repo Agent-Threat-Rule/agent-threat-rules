@@ -94,7 +94,7 @@ export function MemberDirectory({ members, locale }: { members: Member[]; locale
                 <div className="w-full aspect-square bg-ash" aria-hidden="true" />
               )}
               <div className="mt-3 text-[15px] text-ink">{m.name}</div>
-              <div className="mt-0.5 text-[12.5px] leading-snug text-stone">{m.title}</div>
+              <div className="mt-0.5 text-[12.5px] leading-snug text-stone">{zh ? m.titleZh ?? m.title : m.title}</div>
               {m.organization && <div className="mt-0.5 text-[12.5px] text-graphite">{m.organization}</div>}
               <div className="mt-3 flex flex-wrap gap-1.5 font-data text-[10.5px] text-stone">
                 <span className="border border-fog px-1.5 rounded-[2px]">{pick(TIER_NOTE[m.tier])}</span>

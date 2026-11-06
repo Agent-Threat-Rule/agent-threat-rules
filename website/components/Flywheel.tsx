@@ -150,7 +150,7 @@ export function Flywheel({ locale = "en" }: { locale?: string }) {
           className="border border-fog p-6 md:p-8"
         >
           <div className="flex items-baseline gap-3 mb-2">
-            <span className="font-data text-xs text-blue tracking-[2px] uppercase font-bold">
+            <span className="text-[13px] text-stone">
               {zh ? STEPS[active].labelZh : STEPS[active].label}
             </span>
             <span className="text-xs text-mist">
@@ -169,7 +169,7 @@ export function Flywheel({ locale = "en" }: { locale?: string }) {
       {/* Loop annotation */}
       <div className="mt-4 md:flex md:items-center md:gap-2">
         <div className="h-px flex-1 bg-fog hidden md:block" />
-        <span className="font-data text-[10px] md:text-xs text-mist tracking-[1px] uppercase block text-center">
+        <span className="text-[13px] text-stone block text-center">
           {zh ? "回報的端點越多，規則就越好" : "The more endpoints report in, the better the rules get"}
         </span>
         <div className="h-px flex-1 bg-fog hidden md:block" />

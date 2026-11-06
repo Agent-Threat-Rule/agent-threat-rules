@@ -64,7 +64,7 @@ export default async function CitationsPage({
       {/* Header */}
       <header className="mb-8 md:mb-10 max-w-3xl">
         <p
-          className="text-xs uppercase tracking-[0.18em] text-stone mb-3"
+          className="text-[13px] text-stone mb-3"
           style={{ fontFamily: "var(--font-data)" }}
         >
           {zh ? "引用" : "Citation"}
@@ -93,7 +93,7 @@ export default async function CitationsPage({
         <aside aria-label="Table of contents" className="lg:order-first">
           <nav className="spec-toc" aria-label={t(locale, "spec.toc_aria")}>
             <p
-              className="text-xs font-semibold uppercase tracking-wider text-stone mb-3"
+              className="text-[13px] text-stone mb-3"
               style={{ fontFamily: "var(--font-body)" }}
             >
               {t(locale, "spec.toc")}
@@ -120,7 +120,7 @@ export default async function CitationsPage({
             </ol>
             <hr className="my-5 border-fog" />
             <p
-              className="text-xs uppercase tracking-wider text-stone mb-2"
+              className="text-[13px] text-stone mb-2"
               style={{ fontFamily: "var(--font-body)" }}
             >
               {zh ? "完整規格" : "Full Specification"}
@@ -368,7 +368,7 @@ export default async function CitationsPage({
                   className="border border-fog  p-4 bg-paper"
                 >
                   <p
-                    className="text-xs uppercase tracking-wider text-stone mb-1"
+                    className="text-[13px] text-stone mb-1"
                     style={{ fontFamily: "var(--font-data)" }}
                   >
                     {row.label}

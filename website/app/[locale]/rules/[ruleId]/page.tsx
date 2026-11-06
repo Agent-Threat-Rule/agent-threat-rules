@@ -8,15 +8,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Phrased from "@/components/Phrased";
 import { Sign } from "@/components/Sign";
+import { ScrollX } from "@/components/ScrollX";
 import { categoryLetter } from "@/lib/docs-nav";
 
-const SEVERITY_COLORS: Record<string, string> = {
-  critical: "bg-critical/10 text-critical",
-  high: "bg-high/10 text-high",
-  medium: "bg-medium/10 text-medium",
-  low: "bg-green/10 text-green",
-  informational: "bg-ink/10 text-blue",
-};
+/** YAML longer than this shows its head, with the rest behind "show all". */
+const YAML_HEAD_LINES = 40;
 
 /** First sentence of a rule description, for the lead line under the title. */
 function leadSentence(text: string): string {
@@ -120,7 +116,6 @@ export default async function RuleDetailPage({
   const detail = loadRuleDetail(ruleId);
   const related = getRelatedRules(rules, rule);
   const categoryDisplay = categoryDisplayName(rule.category, locale);
-  const severityClass = SEVERITY_COLORS[rule.severity] ?? "bg-ash text-stone";
   const lanes = rulesLanes(rule);
   const maturity = normalizeMaturity(rule.maturity);
   const keywords = [rule.subcategory, rule.detectionTier, rule.confidence && `confidence: ${rule.confidence}`]
@@ -208,7 +203,7 @@ export default async function RuleDetailPage({
             <div key={row.label} className="grid grid-cols-[20px_96px_1fr] sm:grid-cols-[24px_140px_1fr] gap-x-2 items-baseline py-3 border-b border-fog">
               <span className="self-center text-ink">{row.sign && <Sign name={row.sign} size={14} />}</span>
               <dt className="text-[13px] text-stone">{row.label}</dt>
-              <dd className={`text-[14px] ${lanes.length === 0 && row.label === (zh ? "車道" : "Lanes") ? "text-high" : "text-ink"}`}>
+              <dd className={`text-[14px] ${lanes.length === 0 && row.label === (zh ? "車道" : "Lanes") ? "text-stone" : "text-ink"}`}>
                 {row.value}
                 {row.note && <span className="ml-3 text-[13px] text-stone">{row.note}</span>}
               </dd>
@@ -218,7 +213,7 @@ export default async function RuleDetailPage({
 
         {crosswalks.length > 0 && (
           <section className="mt-10" aria-labelledby="crosswalks-heading">
-            <h2 id="crosswalks-heading" className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-2">
+            <h2 id="crosswalks-heading" className="font-body text-[13px] text-stone mb-2">
               {zh ? "框架對照" : "Framework mappings"}
             </h2>
             <dl className="border-t border-fog">
@@ -249,13 +244,13 @@ export default async function RuleDetailPage({
         )}
 
         <section className="mt-10 pt-8 border-t border-fog">
-          <h2 className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-3">{zh ? "說明" : "Description"}</h2>
+          <h2 className="font-body text-[13px] text-stone mb-3">{zh ? "說明" : "Description"}</h2>
           <p className="text-[15px] text-graphite leading-[1.8]">{rule.description}</p>
           {rule.responseActions && rule.responseActions.length > 0 && (
-            <div className="mt-6 flex flex-wrap items-center gap-2">
-              <span className="font-data text-[10px] uppercase tracking-[0.08em] text-mist mr-1">{zh ? "建議回應" : "Suggested response"}</span>
+            <div className="mt-6 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+              <span className="text-[13px] text-stone">{zh ? "建議回應" : "Suggested response"}</span>
               {rule.responseActions.map((action) => (
-                <span key={action} className="font-data text-[11px] text-ink border border-fog px-2 py-0.5 rounded-[2px]">
+                <span key={action} className="font-data text-[12px] text-ink">
                   {action.replace(/_/g, " ")}
                 </span>
               ))}
@@ -314,7 +309,7 @@ export default async function RuleDetailPage({
                 {zh ? "偵測條件" : "Detection conditions"}
               </h2>
               {detail.detectionCombinator && (
-                <span className="font-data text-[10px] text-mist uppercase tracking-wide">
+                <span className="text-[13px] text-stone">
                   {zh ? "組合方式：" : "Combinator: "}{detail.detectionCombinator}
                 </span>
               )}
@@ -352,11 +347,11 @@ export default async function RuleDetailPage({
               {detail.truePositives.map((tc, i) => (
                 <li key={i} className="border-l-2 border-alert pl-4 py-2">
                   {tc.matched_condition && (
-                    <div className="font-data text-[10px] text-critical uppercase tracking-wide mb-2">
+                    <div className="text-[13px] text-stone mb-2">
                       {zh ? "觸發條件：" : "Matches: "}{tc.matched_condition}
                     </div>
                   )}
-                  <pre className="font-data text-xs text-graphite whitespace-pre-wrap [overflow-wrap:anywhere] leading-[1.7]">
+                  <pre className="font-data text-xs text-alert-ink whitespace-pre-wrap [overflow-wrap:anywhere] leading-[1.7]">
                     {tc.input}
                   </pre>
                 </li>
@@ -380,7 +375,7 @@ export default async function RuleDetailPage({
               {detail.trueNegatives.map((tc, i) => (
                 <li key={i} className="border-l-2 border-fog pl-4 py-2">
                   {tc.description && (
-                    <div className="font-data text-[10px] text-stone uppercase tracking-wide mb-2">
+                    <div className="text-[13px] text-stone mb-2">
                       {tc.description}
                     </div>
                   )}
@@ -418,13 +413,13 @@ export default async function RuleDetailPage({
             </h2>
             <ol className="space-y-3">
               {detail.evasionTests.map((ev, i) => (
-                <li key={i} className="border-l-2 border-ink/30 pl-4 py-2">
+                <li key={i} className="border-l-2 border-alert pl-4 py-2">
                   {ev.bypass_technique && (
-                    <div className="font-data text-[10px] text-stone uppercase tracking-wide mb-2">
+                    <div className="text-[13px] text-stone mb-2">
                       {zh ? "手法：" : "Technique: "}{ev.bypass_technique.replace(/_/g, " ")}
                     </div>
                   )}
-                  <pre className="font-data text-xs text-graphite whitespace-pre-wrap [overflow-wrap:anywhere] leading-[1.7] mb-2">
+                  <pre className="font-data text-xs text-alert-ink whitespace-pre-wrap [overflow-wrap:anywhere] leading-[1.7] mb-2">
                     {ev.input}
                   </pre>
                   {ev.notes && (
@@ -457,9 +452,7 @@ export default async function RuleDetailPage({
                 {zh ? "在 GitHub 編輯" : "Edit on GitHub"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
             </div>
-            <pre className="border-t border-ink pt-4 font-data text-[11px] md:text-xs text-graphite leading-[1.7] overflow-x-auto max-h-[480px] overflow-y-auto">
-              {detail.rawYaml}
-            </pre>
+            <YamlBlock yaml={detail.rawYaml} zh={zh} />
           </div>
         )}
 
@@ -468,9 +461,9 @@ export default async function RuleDetailPage({
           <h2 className="font-display text-sm font-semibold text-ink mb-3">
             {zh ? "修訂紀錄" : "Revision history"}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-fog">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 border-t border-fog">
             {rule.date && (
-              <div className="bg-paper p-4">
+              <div className="py-3 border-b border-fog">
                 <div className="font-data text-xs text-stone mb-1">
                   {zh ? "建立於" : "Created"}
                 </div>
@@ -478,7 +471,7 @@ export default async function RuleDetailPage({
               </div>
             )}
             {detail?.lastModified && (
-              <div className="bg-paper p-4">
+              <div className="py-3 border-b border-fog">
                 <div className="font-data text-xs text-stone mb-1">
                   {zh ? "最後修改" : "Last modified"}
                 </div>
@@ -502,18 +495,16 @@ export default async function RuleDetailPage({
             <h2 className="font-display text-sm font-semibold text-ink mb-4">
               {zh ? `更多${categoryDisplay}規則` : `More ${categoryDisplay} rules`}
             </h2>
-            <div className="grid grid-cols-1 gap-px bg-fog">
+            <div className="border-t border-fog">
               {related.map((r) => (
                 <Link
                   key={r.id}
                   href={`${prefix}/rules/${r.id}`}
-                  className="bg-paper p-4 hover:bg-ash/50 transition-colors flex items-center gap-4"
+                  className="group py-3 border-b border-fog flex items-baseline gap-4"
                 >
                   <span className="font-data text-xs text-mist shrink-0 w-28">{r.id}</span>
-                  <span className={`font-data text-xs px-1.5 py-0.5  uppercase shrink-0 ${SEVERITY_COLORS[r.severity] ?? "bg-ash text-stone"}`}>
-                    {r.severity}
-                  </span>
-                  <span className="text-sm text-ink truncate">{r.title}</span>
+                  <span className="font-data text-xs text-stone shrink-0 w-20">{r.severity}</span>
+                  <span className="text-sm text-ink truncate group-hover:underline underline-offset-4">{r.title}</span>
                 </Link>
               ))}
             </div>
@@ -524,5 +515,38 @@ export default async function RuleDetailPage({
       </>
     </>
     </Phrased>
+  );
+}
+
+/** The rule file as published. Long files show their head first, and the rest
+ *  opens in place under a "show all" control, so nothing is cut off silently. */
+function YamlBlock({ yaml, zh }: { yaml: string; zh: boolean }) {
+  const lines = yaml.replace(/\n+$/, "").split("\n");
+  const PRE = "font-data text-[11px] md:text-xs text-graphite leading-[1.7] w-max min-w-full";
+  if (lines.length <= YAML_HEAD_LINES + 10) {
+    return (
+      <div className="border-t border-ink pt-4">
+        <ScrollX zh={zh}>
+          <pre className={PRE}>{lines.join("\n")}</pre>
+        </ScrollX>
+      </div>
+    );
+  }
+  const rest = lines.length - YAML_HEAD_LINES;
+  return (
+    <div className="border-t border-ink pt-4">
+      <ScrollX zh={zh}>
+        <pre className={PRE}>{lines.slice(0, YAML_HEAD_LINES).join("\n")}</pre>
+      </ScrollX>
+      <details className="group mt-2">
+        <summary className="cursor-pointer list-none text-[13px] text-blue hover:underline underline-offset-4 [&::-webkit-details-marker]:hidden">
+          <span className="group-open:hidden">{zh ? `顯示全部（還有 ${rest} 行）` : `Show all (${rest} more lines)`}</span>
+          <span className="hidden group-open:inline">{zh ? "收起" : "Show less"}</span>
+        </summary>
+        <ScrollX zh={zh}>
+          <pre className={PRE}>{lines.slice(YAML_HEAD_LINES).join("\n")}</pre>
+        </ScrollX>
+      </details>
+    </div>
   );
 }

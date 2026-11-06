@@ -43,7 +43,7 @@ export function FigureLabel({ fig, title }: { fig: string; title: string }) {
 export function Eyebrow({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-center gap-2 text-[13px] text-stone">
-      <span className="inline-block w-2 h-2 bg-brand" aria-hidden="true" />
+      <span className="inline-block w-2 h-2 bg-ink" aria-hidden="true" />
       {children}
     </div>
   );

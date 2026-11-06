@@ -133,7 +133,7 @@ export default async function ImplementersPage({
       {/* Header */}
       <header className="mb-8 md:mb-10 max-w-3xl">
         <p
-          className="text-xs uppercase tracking-[0.18em] text-stone mb-3"
+          className="text-[13px] text-stone mb-3"
           style={{ fontFamily: "var(--font-data)" }}
         >
           {zh ? "實作者報告" : "Implementer Report"}
@@ -285,7 +285,7 @@ export default async function ImplementersPage({
 
         {/* Separate aside: standards-body submissions in review — NOT adoptions */}
         <div className="border border-fog  p-4 mt-6 bg-paper" style={{ maxWidth: "42em" }}>
-          <p className="text-xs uppercase tracking-[0.18em] text-stone mb-2" style={{ fontFamily: "var(--font-data)" }}>
+          <p className="text-[13px] text-stone mb-2" style={{ fontFamily: "var(--font-data)" }}>
             {zh ? "送交標準機構的提案（仍開著，不算採用）" : "Standards-body submissions (open, not adoptions)"}
           </p>
           <p className="text-sm text-graphite" style={{ fontFamily: "var(--font-body)" }}>
