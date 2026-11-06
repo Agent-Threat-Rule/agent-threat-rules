@@ -18,6 +18,18 @@ All notable changes to ATR will be documented in this file.
   more conditions, each listed in the pack README. `--keep-slow` restores the
   old behaviour.
 
+- **ATR-2026-01614 and -02372 no longer backtrack on long whitespace.** Each
+  pattern had optional tokens between `\s*` runs, so a long run of spaces
+  could be split between them in many ways and a backtracking engine took
+  seconds on a few thousand characters; Cisco reported it from Skill Scanner,
+  which runs the patterns with Python's `re`. Each optional token now carries
+  the whitespace after it, so one run is matched one way, and the patterns
+  match the same text as before: on 209,426 inputs (random token strings,
+  every rule's test cases and the benign skill corpus) plus 5,760 built to hit
+  the 01614 condition, the old and new patterns agree on every input.
+  `rule_version` goes to 2 and the three conditions leave
+  `data/redos-baseline.json`.
+
 ## [4.3.0] - 2026-11-06
 
 A minor release that adds two rule exporters, `atr convert numbat` and
