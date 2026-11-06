@@ -66,7 +66,7 @@ export function DocsShell({
             </nav>
           </aside>
 
-          <article className="min-w-0 px-8 md:px-12 pt-12 pb-16">
+          <article className="min-w-0 px-6 md:px-14 pt-12 pb-16">
             <div className="text-[13px] text-stone">{eyebrow}</div>
             <h1 className="mt-2 text-[32px] md:text-[36px] leading-[1.15] tracking-[-0.01em] text-ink text-balance">{title}</h1>
             {lead && <p className="mt-4 text-[16px] leading-[1.6] text-ink/75 max-w-[680px] text-pretty">{lead}</p>}

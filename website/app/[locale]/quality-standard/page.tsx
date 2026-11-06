@@ -227,7 +227,7 @@ export default async function QualityStandardPage({
   const installSpec = npmInstallSpec(await loadVersionLabels());
 
   return (
-    <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
+    <div className="pt-20 pb-16 px-6 md:px-14">
       {/* ── HERO ───────────────────────────────────────────── */}
       <Reveal>
         <div className="text-[13px] text-stone mb-3">

@@ -34,7 +34,7 @@ export default async function BlogIndexPage({
   const zh = locale === "zh";
 
   return (
-    <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
+    <div className="pt-20 pb-20 px-6 md:px-14 max-w-[972px]">
       <Reveal>
         <div className="text-[13px] text-stone mb-3">
           Blog

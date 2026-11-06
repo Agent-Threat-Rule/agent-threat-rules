@@ -70,7 +70,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
     sections.reduce((n, s) => n + s.entries.length, 0) + commercial.length;
 
   return (
-    <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
+    <div className="pt-20 pb-16 px-6 md:px-14">
       {/* Header */}
       <Reveal>
         <div className="text-[13px] text-stone mb-3">

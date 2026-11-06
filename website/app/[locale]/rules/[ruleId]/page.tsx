@@ -149,7 +149,7 @@ export default async function RuleDetailPage({
 
       <>
       <SheetRow>
-      <div className="pt-16 pb-24 px-8 md:px-12 max-w-[900px] mx-auto">
+      <div className="pt-16 pb-24 px-6 md:px-14 max-w-[1012px]">
         {/* Breadcrumb */}
         <nav className="font-data text-xs text-stone mb-6 flex items-center gap-2">
           <Link href={prefix} className="hover:text-ink transition-colors">ATR</Link>

@@ -103,7 +103,7 @@ export default async function CompliancePage({
   const frameworks = buildFrameworks(stats.ruleCount);
 
   return (
-    <div className="pt-20 pb-20 px-5 md:px-6 max-w-[1120px] mx-auto">
+    <div className="pt-20 pb-20 px-6 md:px-14">
       <Reveal>
         <div className="text-[13px] text-stone mb-3">
           {zh ? "合規對應" : "Compliance coverage"}

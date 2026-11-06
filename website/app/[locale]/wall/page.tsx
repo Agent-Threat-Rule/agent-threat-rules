@@ -69,7 +69,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
   const stats = loadSiteStats();
 
   return (
-    <div className="pt-20 pb-16 px-5 md:px-6 max-w-[860px] mx-auto">
+    <div className="pt-20 pb-16 px-6 md:px-14 max-w-[972px]">
       {/* Hero */}
       <Reveal>
         <div className="text-[13px] text-stone mb-3">

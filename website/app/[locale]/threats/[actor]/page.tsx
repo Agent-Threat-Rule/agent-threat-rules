@@ -52,7 +52,7 @@ export default async function ActorPage({
   };
 
   return (
-    <div className="pt-20 pb-20 px-5 md:px-6 max-w-[1120px] mx-auto">
+    <div className="pt-20 pb-20 px-6 md:px-14">
       {/* Breadcrumb */}
       <div className="font-data text-xs text-stone mb-6">
         <Link href={`${prefix}`} className="hover:text-ink transition-colors">

@@ -70,7 +70,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
   const gaps = ast10Gaps(coverage.owaspAst10);
 
   return (
-    <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
+    <div className="pt-20 pb-16 px-6 md:px-14">
       <StatsHydrator />
       <Reveal>
         <div className="text-[13px] text-stone mb-3">{t(locale, "coverage.label")}</div>

@@ -22,7 +22,7 @@ export async function Footer({ locale }: { locale: Locale }) {
 
   return (
     <footer>
-      <div className="sheet sheet-row px-8 md:px-12 pt-12 pb-8">
+      <div className="sheet sheet-row px-6 md:px-14 pt-12 pb-8">
         <span className="corner-mark corner-mark-l" aria-hidden="true" />
         <span className="corner-mark corner-mark-r" aria-hidden="true" />
         <div className="font-data text-[10.5px] uppercase tracking-[0.12em] text-stone mb-10 leading-tight">

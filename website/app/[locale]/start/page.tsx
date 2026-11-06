@@ -33,7 +33,7 @@ export default async function StartPage({ params }: { params: Promise<{ locale: 
   const prefix = `/${locale}`;
 
   return (
-    <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
+    <div className="pt-20 pb-16 px-6 md:px-14">
       <Reveal>
         <div className="mb-10">
           <div className="text-[13px] text-stone mb-3">

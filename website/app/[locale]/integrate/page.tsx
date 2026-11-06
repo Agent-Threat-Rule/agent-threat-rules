@@ -169,7 +169,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
   const ref = actionRef(labels);
 
   return (
-    <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
+    <div className="pt-20 pb-16 px-6 md:px-14">
       <Reveal>
         <div className="text-[13px] text-stone mb-3">{t(locale, "integrate.label")}</div>
       </Reveal>

@@ -47,7 +47,7 @@ export default async function Unit42SkillSupplyChainPage({
     "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/crosswalks/atr-unit42-biv-crosswalk.md";
 
   return (
-    <div className="pt-20 pb-20 px-5 md:px-6 max-w-[760px] mx-auto">
+    <div className="pt-20 pb-20 px-6 md:px-14 max-w-[872px]">
       <Reveal>
         <Link
           href={`/${locale}/blog`}

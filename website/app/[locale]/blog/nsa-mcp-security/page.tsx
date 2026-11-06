@@ -47,7 +47,7 @@ export default async function NsaMcpPostPage({
     "https://media.defense.gov/2026/Jun/02/2003943289/-1/-1/0/CSI_MCP_SECURITY.PDF";
 
   return (
-    <div className="pt-20 pb-20 px-5 md:px-6 max-w-[760px] mx-auto">
+    <div className="pt-20 pb-20 px-6 md:px-14 max-w-[872px]">
       <Reveal>
         <Link
           href={`/${locale}/blog`}

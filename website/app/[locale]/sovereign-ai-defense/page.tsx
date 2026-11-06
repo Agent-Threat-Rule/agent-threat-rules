@@ -58,7 +58,7 @@ export default async function SovereignAIDefensePage({
   const garak = findBenchmark(stats, "garak");
 
   return (
-    <div className="pt-20 pb-20 px-5 md:px-6 max-w-[880px] mx-auto">
+    <div className="pt-20 pb-20 px-6 md:px-14 max-w-[992px]">
       {/* Header eyebrow */}
       <Reveal>
         <div className="font-data text-[11px] md:text-xs font-medium text-blue tracking-[1.5px] md:tracking-[3px] uppercase mb-5">

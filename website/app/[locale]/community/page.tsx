@@ -60,7 +60,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
   return (
     <>
       <SheetRow grid>
-      <section className="grid lg:grid-cols-[1.3fr_1fr] gap-12 px-8 md:px-12 pt-24 pb-20">
+      <section className="grid lg:grid-cols-[1.3fr_1fr] gap-12 px-6 md:px-14 pt-24 pb-20">
         <div>
           <div className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-6">{zh ? "社群" : "Community"}</div>
           <h1 className="text-[40px] md:text-[48px] leading-[1.1] tracking-[-0.01em] font-medium text-ink max-w-[620px] text-balance">
@@ -90,13 +90,13 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
       </SheetRow>
 
       <SheetRow>
-        <div className="px-8 md:px-12 py-10">
+        <div className="px-6 md:px-14 py-10">
           <MemberDirectory members={members} locale={locale} />
         </div>
       </SheetRow>
 
       <SheetRow>
-      <section className="px-8 md:px-12 py-20">
+      <section className="px-6 md:px-14 py-20">
         <SectionHead
           mark="§1"
           label={zh ? "GitHub 貢獻紀錄" : "On GitHub"}
@@ -131,7 +131,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
       </SheetRow>
 
       <SheetRow>
-      <section className="px-8 md:px-12 py-20 grid lg:grid-cols-[1fr_1.4fr] gap-12">
+      <section className="px-6 md:px-14 py-20 grid lg:grid-cols-[1fr_1.4fr] gap-12">
         <SectionHead
           mark="§2"
           label={zh ? "工作組" : "Working groups"}
@@ -154,7 +154,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
       </SheetRow>
 
       <SheetRow>
-      <section className="px-8 md:px-12 py-20 grid lg:grid-cols-[1fr_1.4fr] gap-12">
+      <section className="px-6 md:px-14 py-20 grid lg:grid-cols-[1fr_1.4fr] gap-12">
         <SectionHead
           mark="§3"
           label={zh ? "成員會收到什麼" : "What members get"}

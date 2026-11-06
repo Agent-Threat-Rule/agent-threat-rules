@@ -33,7 +33,7 @@ export default async function RulesPage({ params }: { params: Promise<{ locale: 
   const lanes = stats.laneCounts;
 
   return (
-    <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
+    <div className="pt-20 pb-16 px-6 md:px-14">
       <div className="mb-8">
         <div className="text-[13px] text-stone mb-3">
           {t(locale, "rules.label")}

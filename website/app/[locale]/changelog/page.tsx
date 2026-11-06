@@ -49,7 +49,7 @@ export default async function ChangelogPage({
   const releaseLabel = versions.npmVerified ? `npm v${versions.npm}` : `package.json v${versions.npm}`;
 
   return (
-    <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
+    <div className="pt-20 pb-20 px-6 md:px-14 max-w-[972px]">
       <Reveal>
         <div className="text-[13px] text-stone mb-3">
           {zh ? "版本歷程" : "Changelog"}

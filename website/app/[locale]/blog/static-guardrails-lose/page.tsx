@@ -43,7 +43,7 @@ export default async function StaticGuardrailsPostPage({
     : null;
 
   return (
-    <div className="pt-20 pb-20 px-5 md:px-6 max-w-[760px] mx-auto">
+    <div className="pt-20 pb-20 px-6 md:px-14 max-w-[872px]">
       <Reveal>
         <Link
           href={`/${locale}/blog`}

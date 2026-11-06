@@ -257,7 +257,7 @@ export default async function ATDPage({
   return (
     <main
       id="main-content"
-      className="spec-document atd-doc w-full max-w-7xl mx-auto px-5 md:px-8 pt-24 md:pt-28 pb-24"
+      className="spec-document atd-doc w-full px-6 md:px-14 pt-24 md:pt-28 pb-24"
       lang={locale === "zh" ? "zh-Hant" : "en"}
     >
       <header

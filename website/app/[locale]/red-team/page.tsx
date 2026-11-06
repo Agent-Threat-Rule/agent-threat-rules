@@ -133,7 +133,7 @@ export default async function RedTeamPage({
       {/* ============================================================
           HERO — bolder claim, concrete cadence number up front
       ============================================================ */}
-      <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
+      <section className="px-6 md:px-14 mb-24 md:mb-32">
         <Reveal>
           <div className="text-[13px] text-stone mb-6">
             {zh ? "給紅隊" : "For red teams"}
@@ -200,7 +200,7 @@ export default async function RedTeamPage({
       {/* ============================================================
           THE BIG NUMBERS — 4 confident hits, expanded
       ============================================================ */}
-      <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
+      <section className="px-6 md:px-14 mb-24 md:mb-32">
         <Reveal>
           <div className="text-[13px] text-stone mb-10">
             {zh ? "攻擊為什麼該寫進標準" : "Why an attack belongs in the standard"}
@@ -226,7 +226,7 @@ export default async function RedTeamPage({
       {/* ============================================================
           WHAT YOU GET — the value prop, segmented by who you are
       ============================================================ */}
-      <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
+      <section className="px-6 md:px-14 mb-24 md:mb-32">
         <Reveal>
           <div className="text-[13px] text-stone mb-4">
             {zh ? "你能拿到什麼" : "What you get"}
@@ -384,7 +384,7 @@ export default async function RedTeamPage({
       {/* ============================================================
           RED TEAM TOOLS IN MOTION — only actual red team tooling
       ============================================================ */}
-      <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
+      <section className="px-6 md:px-14 mb-24 md:mb-32">
         <Reveal>
           <div className="text-[13px] text-stone mb-4">
             {zh ? "攻擊方的工具和語料" : "Offensive tools and corpora"}
@@ -511,7 +511,7 @@ export default async function RedTeamPage({
       {/* ============================================================
           CONTINUOUS CORPUS INTEGRATION — renamed from sprint framing
       ============================================================ */}
-      <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
+      <section className="px-6 md:px-14 mb-24 md:mb-32">
         <Reveal>
           <div className="text-[13px] text-stone mb-4">
             {zh ? "持續匯入語料" : "Continuous corpus integration"}
@@ -610,7 +610,7 @@ export default async function RedTeamPage({
       {/* ============================================================
           WHAT WE DON'T IMPORT
       ============================================================ */}
-      <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
+      <section className="px-6 md:px-14 mb-24 md:mb-32">
         <Reveal>
           <div className="text-[13px] text-stone mb-4">
             {zh ? "刻意不收的語料" : "Left out on purpose"}
@@ -698,7 +698,7 @@ export default async function RedTeamPage({
       {/* ============================================================
           FINAL CTA — terse, confident
       ============================================================ */}
-      <section className="px-6 max-w-[1120px] mx-auto">
+      <section className="px-6 md:px-14">
         <Reveal>
           <div className="border border-ink p-8 md:p-12">
             <div className="text-[13px] text-stone mb-4">

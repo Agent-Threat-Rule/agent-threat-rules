@@ -71,7 +71,7 @@ export default async function MembershipPage({ params }: { params: Promise<{ loc
   return (
     <>
       <SheetRow grid>
-      <div className="max-w-[960px] mx-auto px-8 md:px-12 pt-24 pb-24">
+      <div className="max-w-[1072px] px-6 md:px-14 pt-24 pb-24">
       <div className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-6">
         <Link href={`${prefix}/community`} className="hover:text-ink">{zh ? "社群" : "Community"}</Link> <span className="text-mist">/ {zh ? "機構會員" : "Membership"}</span>
       </div>
