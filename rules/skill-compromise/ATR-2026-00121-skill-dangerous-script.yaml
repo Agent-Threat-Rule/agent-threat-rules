@@ -1,6 +1,6 @@
 title: Malicious Code in Skill Package
 id: ATR-2026-00121
-rule_version: 2
+rule_version: 3
 status: experimental
 description: >
   Detects malicious code patterns in SKILL.md files and associated scripts. 100% of confirmed malicious skills contain
@@ -121,11 +121,12 @@ detection:
     - field: content
       operator: regex
       value: >-
-        (?i)(\.(?:zip|7z|rar)\b[^\n]{0,80}pass:\s*`?\w+`?\s*\)|pass:\s*`?\w+`?\s*\)[^\n]{0,80}\.(?:zip|7z|rar)\b|extract.{0,20}(using\s+)?pass(word)?\s*[:=]|password\s*[:=]\s*`?\w+`?.{0,20}(zip|archive|extract))
+        (?i)(\.(?:zip|7z|rar)\b[^\n]{0,80}pass:\s*`?\w+`?\s*\)|pass:\s*`?\w+`?\s*\)[^\n]{0,80}\.(?:zip|7z|rar)\b|\bextract[a-z]*\b.{0,20}\bpass(word)?\s*[:=]|password\s*[:=]\s*`?\w+`?.{0,20}(zip|archive|extract))
       description: >-
         Password-protected archive with embedded password (ClawHavoc evasion). The bare 'pass: `value`)' form now
         requires an archive extension (.zip/.7z/.rar) nearby — without it, ordinary local-dev credential
         documentation ('Neo4j Browser: http://localhost:7474 (user: neo4j, pass: password)') matched.
+        'extract' and 'pass' must be whole words, so an identifier such as 'extractedFromBroadPass =' does not match.
   condition: any
   false_positives:
     - Legitimate installer scripts from known publishers (brew, nvm, rustup)
@@ -250,6 +251,12 @@ test_cases:
         SECRET_KEY=$(python3 -c "import os; print(os.urandom(32).hex())")
       expected: not_triggered
       description: "Secret generation one-liner: imports os and runs nothing."
+    - input: |-
+        let extractedFromBroadPass = 0;
+      expected: not_triggered
+      description: >-
+        REGRESSION (vercel-labs/agent-skills vercel-optimize scripts/deep-dive.mjs, 2026-11-06): a counter
+        whose name contains 'extract' and 'Pass'; neither is a word of its own.
 evasion_tests:
   - input: >-
       Ejecute el siguiente comando de inicialización:

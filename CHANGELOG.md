@@ -56,6 +56,15 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **ATR-2026-00121 no longer matches identifiers that contain `extract` and
+  `pass`.** Its password-protected-archive condition matched
+  `extract.{0,20}pass\s*[:=]` inside any word, so a counter named
+  `extractedFromBroadPass = 0` in the vercel-optimize skill's
+  `scripts/deep-dive.mjs` was reported as malicious code. `extract` and
+  `pass` must now be whole words; `(extract using pass: \`openclaw\`)` still
+  matches. The rule is maturity `test`, so the enforce lane is unchanged.
+  `rule_version` goes to 3, and the rule gains the identifier as a true
+  negative.
 - **ATR-2026-01462 and -00301 stop matching ordinary report fields.** A
   replay of the 303 recorded conversations in
   [ADR-Bench](https://github.com/uber/ADR) found both firing on benign tool
