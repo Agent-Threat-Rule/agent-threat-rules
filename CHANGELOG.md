@@ -33,6 +33,20 @@ All notable changes to ATR will be documented in this file.
   2,273 patterns to 573 and 2,025: 23 rules are left out and 126 lose one or
   more conditions, each listed in the pack README. `--keep-slow` restores the
   old behaviour.
+- **ATR-2026-00523 now catches SessionStart hooks that are not matched on
+  `startup`.** Its conditions required `"matcher": "startup"`, so the hook
+  JFrog found planted in 42 GitHub repositories in the testmetest campaign
+  (2026-10-26), `"matcher": "*"` with `node .github/init.js || bun
+  .github/init.js`, matched nothing in any lane, and neither did the same
+  hook with no matcher. Two conditions are added, for any matcher or none:
+  a command that runs a script under one JavaScript or Python runtime and
+  falls back to another with `||`, and a command that runs a script kept
+  under `.github/`. Both also match the escaped JSON of a Write tool call.
+  Over 113 public `.claude/settings.json` and plugin `hooks.json` files with
+  a SessionStart hook, they add no match; the three of those files the rule
+  already matched are matched by its existing `startup` conditions. The rule
+  is maturity `test`, so the enforce lane is unchanged. `rule_version` goes
+  to 2, with three true positives and three true negatives added.
 
 - **ATR-2026-01614 and -02372 no longer backtrack on long whitespace.** Each
   pattern had optional tokens between `\s*` runs, so a long run of spaces
