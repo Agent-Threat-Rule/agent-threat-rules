@@ -60,7 +60,7 @@ ${BOLD}Usage:${RESET}
   atr validate <rule.yaml|dir>             Validate rule file(s)
   atr test <rule.yaml|dir>                 Run embedded test cases
   atr stats [--rules <dir>]                Show rule collection statistics
-  atr convert <splunk|elastic> [--rules <dir>] [--output <file>]
+  atr convert <splunk|elastic|numbat|quarry> [--rules <dir>] [--output <file|dir>]
                                            Convert rules to SIEM query format
   atr guard [--rules <dir>] [--dry-run] [--lane <l>] [--blocking]
                                            Start as Claude Code hook (stdio)
@@ -147,6 +147,12 @@ ${BOLD}Examples:${RESET}
 
   ${DIM}# Convert all rules to Elasticsearch Query DSL${RESET}
   atr convert elastic --json --output elastic-queries.json
+
+  ${DIM}# Export stable rules as a numbat rule directory, with companion tests${RESET}
+  atr convert numbat --output ./numbat-rules [--lane enforce|alert|hunt]
+
+  ${DIM}# Export stable rules as a Project Quarry rule directory, with test conversations${RESET}
+  atr convert quarry --output ./quarry-rules [--lane enforce|alert|hunt]
 
   ${DIM}# Interactively scaffold a new rule${RESET}
   atr scaffold
@@ -1090,15 +1096,27 @@ function cmdInit(options: Record<string, string>): void {
 // --- CONVERT command ---
 
 async function cmdConvert(target: string, options: Record<string, string>): Promise<void> {
-  const validFormats = ['splunk', 'elastic', 'generic-regex'];
+  const validFormats = ['splunk', 'elastic', 'generic-regex', 'numbat', 'quarry'];
   if (!target || !validFormats.includes(target)) {
-    console.error(`${RED}Error: Specify format: atr convert <splunk|elastic|generic-regex>${RESET}`);
+    console.error(`${RED}Error: Specify format: atr convert <splunk|elastic|generic-regex|numbat|quarry>${RESET}`);
     process.exit(1);
   }
 
   const rulesDir = options['rules'] ? resolve(options['rules']) : RULES_DIR;
   const outputFile = options['output'];
   const jsonOutput = options['json'] === 'true';
+
+  // numbat rule directory: one rule file and one companion test file per rule
+  if (target === 'numbat') {
+    await convertToNumbat(rulesDir, outputFile, options['lane']);
+    return;
+  }
+
+  // Project Quarry rule directory: rules/, tests/, quarry.yaml and a test runner
+  if (target === 'quarry') {
+    await convertToQuarry(rulesDir, outputFile, options['lane']);
+    return;
+  }
 
   // Generic regex export (JSON array of regex patterns with metadata)
   if (target === 'generic-regex') {
@@ -1153,6 +1171,109 @@ async function cmdConvert(target: string, options: Record<string, string>): Prom
   } else {
     console.log(output);
   }
+}
+
+async function convertToNumbat(rulesDir: string, outputDir: string | undefined, laneOption: string | undefined): Promise<void> {
+  if (!outputDir) {
+    console.error(`${RED}Error: atr convert numbat needs --output <dir>${RESET}`);
+    process.exit(1);
+  }
+  const lane = (laneOption ?? 'enforce') as 'enforce' | 'alert' | 'hunt';
+  if (!['enforce', 'alert', 'hunt'].includes(lane)) {
+    console.error(`${RED}Error: --lane must be enforce, alert or hunt${RESET}`);
+    process.exit(1);
+  }
+  const { loadRulesFromDirectory } = await import('./loader.js');
+  const { rulesToNumbat } = await import('./converters/numbat.js');
+  const { files, skipped } = rulesToNumbat(loadRulesFromDirectory(rulesDir), { lane });
+  if (files.length === 0) {
+    console.error(`${RED}Error: No rules in lane ${lane} convert to numbat${RESET}`);
+    process.exit(1);
+  }
+  const dir = resolve(outputDir);
+  if (existsSync(dir) && readdirSync(dir).length > 0) {
+    // numbat loads every YAML file in the directory, so leftovers from an
+    // earlier export would run alongside this one.
+    console.error(`${RED}Error: ${dir} is not empty; export numbat rules into a new or empty directory${RESET}`);
+    process.exit(1);
+  }
+  mkdirSync(dir, { recursive: true });
+  for (const f of files) {
+    writeFileSync(join(dir, `${f.stem}.yaml`), f.rule, 'utf-8');
+    if (f.tests) writeFileSync(join(dir, `${f.stem}_tests.yaml`), f.tests, 'utf-8');
+  }
+  console.log(`${GREEN}Exported ${files.length} rules (lane ${lane}) to numbat format.${RESET}`);
+  console.log(`  Output: ${dir}`);
+  console.log(`  Skipped: ${skipped.length}`);
+  for (const s of skipped) console.log(`    ${s.ruleId}: ${s.reason}`);
+  const lossy = files.filter((f) => f.droppedConditions.length + f.uncoveredTruePositives.length + f.unmappedCases.length > 0);
+  if (lossy.length > 0) {
+    console.log(`  Partly converted: ${lossy.length} rule(s)`);
+    for (const f of lossy) {
+      const parts = [
+        f.droppedConditions.length ? `condition(s) ${f.droppedConditions.join(', ')} dropped` : '',
+        f.uncoveredTruePositives.length ? `true positive(s) ${f.uncoveredTruePositives.join(', ')} no longer match` : '',
+        f.unmappedCases.length ? `test case(s) ${f.unmappedCases.join(', ')} have no numbat field` : '',
+      ].filter(Boolean);
+      console.log(`    ${f.ruleId}: ${parts.join('; ')}`);
+    }
+  }
+  console.log(`  Check with: numbat rules check --rules-dir ${dir}`);
+}
+
+async function convertToQuarry(rulesDir: string, outputDir: string | undefined, laneOption: string | undefined): Promise<void> {
+  if (!outputDir) {
+    console.error(`${RED}Error: atr convert quarry needs --output <dir>${RESET}`);
+    process.exit(1);
+  }
+  const lane = (laneOption ?? 'enforce') as 'enforce' | 'alert' | 'hunt';
+  if (!['enforce', 'alert', 'hunt'].includes(lane)) {
+    console.error(`${RED}Error: --lane must be enforce, alert or hunt${RESET}`);
+    process.exit(1);
+  }
+  const { loadRulesFromDirectory } = await import('./loader.js');
+  const { rulesToQuarry, QUARRY_CONFIG, QUARRY_CHECK_SCRIPT } = await import('./converters/quarry.js');
+  const { files, skipped } = rulesToQuarry(loadRulesFromDirectory(rulesDir), { lane });
+  if (files.length === 0) {
+    console.error(`${RED}Error: No rules in lane ${lane} convert to Quarry${RESET}`);
+    process.exit(1);
+  }
+  const dir = resolve(outputDir);
+  if (existsSync(dir) && readdirSync(dir).length > 0) {
+    // Quarry loads every .rule file in rules/, so leftovers from an earlier
+    // export would run alongside this one.
+    console.error(`${RED}Error: ${dir} is not empty; export Quarry rules into a new or empty directory${RESET}`);
+    process.exit(1);
+  }
+  mkdirSync(join(dir, 'rules'), { recursive: true });
+  mkdirSync(join(dir, 'tests'), { recursive: true });
+  for (const f of files) {
+    writeFileSync(join(dir, 'rules', `${f.stem}.rule`), f.rule, 'utf-8');
+    if (f.tests.length > 0) {
+      writeFileSync(join(dir, 'tests', `${f.stem}.json`), `${JSON.stringify({ rule: f.ruleId, cases: f.tests }, null, 2)}\n`, 'utf-8');
+    }
+  }
+  writeFileSync(join(dir, 'quarry.yaml'), QUARRY_CONFIG, 'utf-8');
+  writeFileSync(join(dir, 'check_atr_tests.py'), QUARRY_CHECK_SCRIPT, 'utf-8');
+  console.log(`${GREEN}Exported ${files.length} rules (lane ${lane}) to Quarry format.${RESET}`);
+  console.log(`  Output: ${dir}`);
+  console.log(`  Skipped: ${skipped.length}`);
+  for (const s of skipped) console.log(`    ${s.ruleId}: ${s.reason}`);
+  const lossy = files.filter((f) => f.droppedConditions.length + f.uncoveredTruePositives.length + f.unmappedCases.length > 0);
+  if (lossy.length > 0) {
+    console.log(`  Partly converted: ${lossy.length} rule(s)`);
+    for (const f of lossy) {
+      const parts = [
+        f.droppedConditions.length ? `condition(s) ${f.droppedConditions.join(', ')} dropped` : '',
+        f.uncoveredTruePositives.length ? `true positive(s) ${f.uncoveredTruePositives.join(', ')} no longer match` : '',
+        f.unmappedCases.length ? `test case(s) ${f.unmappedCases.join(', ')} have no conversation field` : '',
+      ].filter(Boolean);
+      console.log(`    ${f.ruleId}: ${parts.join('; ')}`);
+    }
+  }
+  // Quarry resolves the rules path in quarry.yaml against the working directory.
+  console.log(`  Scan with: cd ${dir} && quarry scan -c quarry.yaml -t <conversations>`);
+  console.log(`  Check with: python ${join(dir, 'check_atr_tests.py')}`);
 }
 
 // --- Badge command ---

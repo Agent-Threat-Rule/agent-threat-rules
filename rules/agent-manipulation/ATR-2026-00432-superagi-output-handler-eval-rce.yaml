@@ -1,6 +1,6 @@
 title: "SuperAGI Output Handler eval() RCE (CVE-2024-21552)"
 id: ATR-2026-00432
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects exploitation of CVE-2024-21552 (CVSS 9.8), arbitrary code execution
@@ -96,8 +96,8 @@ detection:
 
     - field: content
       operator: regex
-      value: '(?i)(?:^|[^a-zA-Z_])exec\s*\(\s*["\x27]?[^)]{0,200}(?:__import__\s*\(\s*\\?["\x27]?(?:os|subprocess|socket)|import\s+(?:os|subprocess|socket)|os\.system|subprocess\.\w)'
-      description: "exec() with import of process or socket modules — code-injection payload pattern"
+      value: '(?i)(?:^|[^a-zA-Z_])exec\s*\(\s*[rbu]{0,2}["\x27][^"\x27\n]{0,200}(?:__import__\s*\(\s*\\?["\x27]?(?:os|subprocess|socket)|import\s+(?:os|subprocess|socket)|os\.system|subprocess\.\w)'
+      description: "exec() called on a string literal that imports process or socket modules; the argument must open with a quote, so lists of dangerous patterns do not match"
 
     - field: content
       operator: regex
@@ -168,6 +168,12 @@ test_cases:
     - input: "The result was: eval=4.7, accuracy=92%."
       expected: not_triggered
       description: "Word 'eval' in benchmark context, not a function call"
+    - input: "Uploaded files are rejected when they contain code-execution markers such as `eval(`, `exec(`, `__import__(`, `import os` or `import subprocess`."
+      expected: not_triggered
+      description: "Defensive skill text listing the patterns it blocks"
+    - input: 'Search the repository for dynamic execution: grep -rn "eval(|exec(|subprocess|os.system" --include=*.py'
+      expected: not_triggered
+      description: "Audit instruction that greps for dangerous calls"
 
 evasion_tests:
   - input: '__import__("o"+"s").system("id")'

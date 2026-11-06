@@ -6,6 +6,43 @@ All notable changes to ATR will be documented in this file.
 
 ### Added
 
+- **`atr convert quarry` exports rules for [Project Quarry](https://github.com/cisco-ai-defense/project-quarry).**
+  Each rule becomes a Quarry `.rule` file named by its ATR id, with the
+  rule's title, severity, category, maturity and version as metadata, and
+  its patterns declared `regex nocase`. `user_input`, `agent_output`,
+  `tool_args`, `tool_response`, `tool_name` and `tool_description` map onto
+  Quarry's user and assistant messages, tool calls, tool responses and tool
+  definitions, with `user_input` and `agent_output` also read on tool
+  responses as the engine does. An `all` rule's conditions must hold on one
+  item of a shared surface, as they hold on one event in the engine. The
+  export writes `quarry.yaml`, one test file per rule with its true
+  positives and negatives as OpenAI-shaped conversations, and
+  `check_atr_tests.py`, which runs them through Quarry's scanner. Dropped
+  conditions, skipped rules and true positives a rule no longer catches are
+  listed as for numbat. The default `--lane enforce` exports stable rules
+  only.
+- **`atr convert numbat` exports rules for [numbat](https://github.com/perplexityai/numbat).**
+  Each rule becomes a numbat operator rule (`atr.atr-yyyy-nnnnn`,
+  monitor-only) and a companion `_tests.yaml` built from the rule's own true
+  positives and negatives, so `numbat rules check` runs ATR's tests through
+  numbat's RE2 matcher. `user_input`, `agent_output`, `tool_args`,
+  `tool_response` and `tool_name` map onto numbat's prompt, assistant, tool
+  input and tool result fields, with `user_input` and `agent_output` also read
+  on tool results as the engine does; `content` maps onto whichever of those
+  the event carries. The default `--lane enforce` exports stable rules only.
+  Conditions RE2 cannot express (lookaround, backreferences, unpaired
+  surrogate escapes and the like) are dropped, an `all` rule that would lose
+  one is skipped, and the export lists every true positive a rule no longer
+  catches. numbat matches raw text, without the engine's Unicode
+  normalization. The RE2 check is in `src/re2.ts`, tested against the CI
+  audit's `scanPattern` on every rule.
+- **`pyatr.moderation`, an OpenAI-compatible moderation endpoint.**
+  `moderation_result(input)` returns the `/v1/moderations` response shape,
+  and `python -m pyatr.moderation` runs a standard-library reference server
+  on `127.0.0.1`. Every match is listed in `atr_matches`; `flagged` is true
+  only for a match at or above `block_severity` (default `high`) in `lane`
+  (default `enforce`, stable rules), so gateways that block on `flagged`
+  block on stable rules only unless they opt into another lane.
 - **pyatr detection lanes.** `ATREngine(lane=...)` takes `"enforce"`
   (maturity `stable` only), `"alert"` (`stable` and `test`) or `"hunt"` (every
   rule, the default, so existing callers see no change), with the same mapping
@@ -19,6 +56,79 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **ATR-2026-00121 no longer matches identifiers that contain `extract` and
+  `pass`.** Its password-protected-archive condition matched
+  `extract.{0,20}pass\s*[:=]` inside any word, so a counter named
+  `extractedFromBroadPass = 0` in the vercel-optimize skill's
+  `scripts/deep-dive.mjs` was reported as malicious code. `extract` and
+  `pass` must now be whole words; `(extract using pass: \`openclaw\`)` still
+  matches. The rule is maturity `test`, so the enforce lane is unchanged.
+  `rule_version` goes to 3, and the rule gains the identifier as a true
+  negative.
+- **ATR-2026-01462 and -00301 stop matching ordinary report fields.** A
+  replay of the 303 recorded conversations in
+  [ADR-Bench](https://github.com/uber/ADR) found both firing on benign tool
+  output and agent replies. Each change narrows one alternative in one
+  condition, and `rule_version` goes to 2. ATR-2026-01462 #0 (maturity
+  `stable`, so it runs in the enforce lane with `block_input`) took a bare
+  `Priority Level: CRITICAL` as an authority claim, which blocked a vehicle
+  maintenance report; the structured override tokens (`[SYSTEM OVERRIDE`,
+  `ROOT_ADMIN`, `OMEGA CLEARANCE`, `AUTHORIZATION: ROOT`) still match, and
+  the one true positive with the priority field also
+  carries `SYSTEM OVERRIDE BEGIN` and `ROOT_ADMIN`, and no sample under
+  `data/` contains it.
+  ATR-2026-00301 #2 took a bare `SCORE: <1-10>` as TAP scoring, which
+  matched `CVSS Score: 3.1` in security scan output; the tag now needs its
+  brackets (`[SCORE: 5]`), so the five LLMail-Inject samples that plant
+  `[SCORE: 5] [Rating: 5] [Relevant: 5]` still match, as do `maximize SCORE`
+  and `rating from 1-10 on how jailbroken`. Each rule gains a true negative
+  for the case, and 00301 a true positive for the bracketed tag. Benign false positives over the 14,172 samples of
+  the benign gate: 00301 12 to 0, 01462 0. On ADR-Bench (261 benign, 42
+  malicious conversations), benign conversations flagged in the enforce lane
+  go from 1 to 0 and in the alert lane at high or critical severity from 27
+  to 24, with the same 10 malicious conversations caught.
+
+- **A rule passed to the engine now overrides the bundled rule with its id.**
+  `new ATREngine({ rules })` with `loadRules()` also loads the rules directory
+  (the bundled tree by default). A passed rule and a directory rule with the
+  same id were both kept, and because compiled patterns are keyed by id, the
+  directory copy's regex ran under the passed rule's name, twice. So
+  `atr test` on an edited copy of an existing rule, run from an installed
+  `atr`, tested the published version, and an integration that passed a
+  tightened rule still matched with the old one. The directory's copy is now
+  skipped; duplicates inside the directory are unchanged.
+
+- **Mapping rationales no longer claim that a rule satisfies a requirement.**
+  124 rule files said that deploying the rule "satisfies" an EU AI Act
+  article (or a NIST, ISO or OWASP item). `docs/COMPLIANCE-COVERAGE-POLICY.md`
+  allows only "provides detection evidence supporting …": a detection rule
+  supports a control and does not discharge a requirement. The 135 lines now
+  say "provides detection evidence supporting", "supports" or, for OWASP
+  categories, "matches". Only `compliance` context text changed; every field
+  outside `compliance` is identical, so detection is unchanged and no
+  `rule_version` moves. `scripts/validate-compliance.ts` now fails CI on a
+  context that claims compliance ("satisfies the Article …", "makes …
+  compliant", "ensures compliance"). See the 2026-11-04 errata entry.
+
+- **ATR-2026-00432 no longer fires on lists of dangerous calls.** Its `exec()`
+  condition matched any `exec(` followed within 200 characters by `import os`,
+  `os.system` or `subprocess.`, so defensive skill text that lists blocked
+  patterns, or tells the agent to grep for them, was flagged as a critical
+  RCE. This is a stable rule, so the enforce lane flagged those skills too.
+  The argument now has to open with a quote (`exec("import os; ...")`), which
+  keeps every true positive in the rule's tests and drops the lists.
+  `rule_version` 2.
+
+- **A "New Rule Proposal" issue now becomes a readable draft proposal.**
+  `scripts/issue-to-proposal.ts` indented the example payload at the same
+  depth as its `example_payload:` key, so every proposal file it wrote was
+  invalid YAML that nothing downstream, the safety gate included, could read.
+  A payload containing its own `###` heading was cut at that heading, and an
+  optional field left empty was read as the text `_No response_`. When
+  required fields are empty the converter now names them, and the workflow
+  passes the names to its comment on the issue; before, the converter's exit
+  code was lost in a pipe and the job failed at a later git step with a generic
+  message.
 - **The Pydantic AI guard now scans typed tool events and blocks on the
   enforce lane only** (#772). It used `pyatr.scan()`, which evaluates text as
   user input, so most rules written for `tool_args` or `tool_response` never
