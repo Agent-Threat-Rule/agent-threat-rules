@@ -217,8 +217,8 @@ export default async function AboutPage({
       <Reveal delay={0.1}>
         <p className="text-sm md:text-base text-graphite max-w-[640px] mt-5 md:mt-6 leading-[1.8]">
           {zh
-            ? "ATR 是 AI agent 安全威脅的開放偵測標準。這一頁講它為什麼會有、怎麼運作，還有現在是誰在維護。"
-            : "ATR is the open detection standard for AI agent security threats. This page covers why it exists and how it works. It also names who maintains it."}
+            ? "ATR 是一套開放標準，用來偵測 AI agent 面對的資安威脅。這一頁說明它為什麼出現、怎麼運作，以及目前由誰維護。"
+            : "ATR is the open detection standard for AI agent security threats. This page covers why it exists, how it works and who maintains it."}
         </p>
       </Reveal>
 
@@ -227,7 +227,7 @@ export default async function AboutPage({
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh
             ? "ATR 寫的是能直接執行的偵測規則。MITRE ATLAS、OWASP Agentic、NIST AI RMF 這些框架，負責把威脅分類、定義風險管理的流程。ATR 的規則則直接跑在 agent 真正用到的檔案上：SKILL.md、MCP 工具描述、agent 設定檔。ATR 之於 MITRE ATLAS，就像 Sigma 規則之於 ATT&CK。"
-            : "ATR is detection rules you can run. Frameworks such as MITRE ATLAS, OWASP Agentic and NIST AI RMF sort threats into categories and define how to manage risk. ATR's rules run on the files an agent actually uses: SKILL.md files, MCP tool descriptions, agent configs. ATR is to MITRE ATLAS what Sigma rules are to ATT&CK."}
+            : "ATR is a set of detection rules you can run. Frameworks such as MITRE ATLAS, OWASP Agentic and NIST AI RMF sort threats into categories and define how to manage risk. ATR's rules run on the files an agent actually uses: SKILL.md files, MCP tool descriptions, agent configs. ATR is to MITRE ATLAS what Sigma rules are to ATT&CK."}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
@@ -241,8 +241,8 @@ export default async function AboutPage({
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "但規則變多從來不是重點，精確度講不講實話才是。v3.5.0 加入了偵測車道：每條規則都標明成熟度，用的人自己決定要信到什麼程度。enforce 車道只讓最成熟的規則觸發。預設的 hunt 車道會跑全部規則，結果只當建議。ATR 的誤報率一條車道一條車道公布，從不拿一個好看的數字概括。目前各車道的誤報率已經撤回，等重新量測。原因是量測用的良性語料，被發現混進了真實的越獄樣本。一個標準值不值得信任，要看它敢不敢公開自己最差的數字，也要看數字站不住的時候，它肯不肯撤掉。"
-            : "Growth was never the point. Being honest about precision is. The v3.5.0 release introduced detection lanes: every rule declares a maturity, and whoever runs the rules decides how far to trust them. The enforce lane fires only the most mature rules. The default hunt lane runs everything, as advisory. ATR reports false-positive rates lane by lane, never as one flattering number. The current per-lane figures are withdrawn pending re-measurement, because the benign corpus they were measured on turned out to contain real jailbreak samples. A standard earns trust by publishing its worst figure, and by withdrawing any figure it can no longer stand behind."}
+            ? "比規則數量更要緊的，是把精確度老實交代清楚。v3.5.0 加入了偵測車道：每條規則都標明成熟度，用的人自己決定要信到什麼程度。enforce 車道只讓最成熟的規則觸發。預設的 hunt 車道會跑全部規則，結果只當建議。ATR 的誤報率一條車道一條車道公布，從不拿一個好看的數字概括。目前各車道的誤報率已經撤回，等重新量測。原因是後來發現，量測用的良性語料裡混進了真實的越獄樣本。"
+            : "The rule count matters less than being honest about precision. The v3.5.0 release introduced detection lanes: every rule declares a maturity, and whoever runs the rules decides how far to trust them. The enforce lane fires only the most mature rules. The default hunt lane runs everything, as advisory. ATR reports false-positive rates lane by lane, never as one flattering number. The current per-lane figures are withdrawn pending re-measurement, because the benign corpus they were measured on turned out to contain real jailbreak samples."}
         </p>
       </Section>
 

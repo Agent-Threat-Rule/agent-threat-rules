@@ -153,7 +153,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </h1>
             <p className="mt-6 text-[17px] leading-[1.7] text-graphite max-w-[500px] text-pretty">
               {zh
-                ? "agent 會讀網頁、收信、裝工具，也會照著裡面藏的指令做事。ATR 把有紀錄的攻擊寫成規則，每條都有編號、有測試。規則在你自己的環境裡跑，比對到就回報。誰都能用。"
+                ? "agent 會讀網頁、收信、裝工具，也會照著藏在裡面的指令做事。ATR 把記錄過的攻擊寫成規則，每條都有編號和測試。規則在你自己的環境裡跑，比對到就回報。誰都可以用。"
                 : "Agents read web pages, open mail and install tools, and they follow instructions hidden inside them. ATR writes documented attacks down as rules, each with an ID and tests. The rules run in your own environment and report what they match. Anyone can use them."}
             </p>
             <div className="mt-8 flex flex-wrap gap-2">
@@ -192,9 +192,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <SheetRow>
         <div className="px-6 md:px-14 py-20 md:py-24">
           <div className={KICKER}><span className="font-title text-ink mr-2">§ 1</span>{zh ? "涵蓋範圍" : "Coverage"}</div>
-          <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "有紀錄的攻擊，就有名字。" : "A documented attack gets a name.")}</h2>
+          <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "攻擊一旦記錄下來，就有了名字。" : "A documented attack gets a name.")}</h2>
           <p className="mt-5 text-[16px] leading-[1.75] text-graphite max-w-[620px]">
-            {zh ? "十個類別，從被下毒的工具說明，到被悄悄換掉的目標。每一格都連到該類別的規則。" : "Ten categories, from a poisoned tool description to a goal quietly swapped for another. Each panel opens the rules in its category."}
+            {zh ? "十個類別，從下了毒的工具說明，到暗中被調包的目標。點任一格，就能看到這一類的規則。" : "Ten categories, from a poisoned tool description to a goal quietly swapped for another. Each panel opens the rules in its category."}
           </p>
           <div className="mt-12">
             <CategoryFrieze
@@ -218,7 +218,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <div className="px-6 md:px-14 py-20 md:py-24 grid lg:grid-cols-[1fr_1.15fr] gap-10 lg:gap-20">
           <div>
             <div className={KICKER}><span className="font-title text-ink mr-2">§ 2</span>{zh ? "為什麼是現在" : "Why now"}</div>
-            <h2 className={`mt-4 ${H2}`}>{title(zh ? "以前，我們有幾十年，可以慢慢來。" : "We used to have decades.")}</h2>
+            <h2 className={`mt-4 ${H2}`}>{title(zh ? "以前，我們有幾十年可以慢慢來。" : "We used to have decades.")}</h2>
           </div>
           <div className="space-y-5 text-[17px] md:text-[18px] leading-[1.8] text-graphite max-w-[600px]">
             <p>
@@ -228,13 +228,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </p>
             <p>
               {zh
-                ? "agent 不一樣。模型幾個禮拜就換一代，agent 已經在醫院、銀行、公家機關裡做事。攻擊傳得很快，防守的人之間，還在寄信、開會、等報告。"
+                ? "agent 不一樣。模型幾個禮拜就換一代，agent 已經在醫院、銀行、公家機關裡做事。攻擊傳得很快，防守的人卻還在互相寄信、開會、等報告。"
                 : "Agents are different. Models turn over in weeks, and agents already work in hospitals, banks and government offices. Attacks spread fast. Defenders are still trading emails and waiting on reports."}
             </p>
             <p className="text-ink">
               {zh
-                ? "ATR 做的事情很小：把有紀錄的攻擊寫下來，讓下一個人認得出同一招。"
-                : "What ATR does is small. It writes down attacks that have been documented, so the next person can spot the same trick."}
+                ? "ATR 做的事情很小：把記錄過的攻擊寫成規則，讓下一個人認得出同一招。"
+                : "ATR does one small thing: it writes down documented attacks so the next person can spot the same trick."}
             </p>
           </div>
         </div>
@@ -247,7 +247,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <div className={KICKER}><span className="font-title text-ink mr-2">§ 3</span>{zh ? "一條規則怎麼來" : "How a rule is made"}</div>
             <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "一個人碰到的攻擊，變成所有人的規則。" : "One team's incident becomes everyone's rule.")}</h2>
             <p className="mt-5 text-[16px] leading-[1.75] text-graphite max-w-[620px]">
-              {zh ? `以 ${birth.id} 為例，從回報到使用者裝得到，花了 ${daysBetween(birth.reported, birth.firstNpmDate)} 天。` : `Take ${birth.id}: ${daysBetween(birth.reported, birth.firstNpmDate)} days from report to users.`}{" "}
+              {zh ? `以 ${birth.id} 為例，從回報到使用者裝得到，花了 ${daysBetween(birth.reported, birth.firstNpmDate)} 天。` : `Take ${birth.id}: it reached users ${daysBetween(birth.reported, birth.firstNpmDate)} days after it was reported.`}{" "}
               {laneSentence(birthLanes, birth.maturity, zh)}
             </p>
             <div className="mt-12">
@@ -261,7 +261,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <SheetRow>
         <div className="px-6 md:px-14 py-20 md:py-24">
           <div className={KICKER}><span className="font-title text-ink mr-2">§ 4</span>{zh ? "框架對照" : "Crosswalks"}</div>
-          <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "一條規則，對到你要交代的每一份框架。" : "One rule, mapped to the frameworks you answer to.")}</h2>
+          <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "一條規則，對應到你必須遵循的框架。" : "One rule, mapped to the frameworks you answer to.")}</h2>
           <div className="mt-14 grid lg:grid-cols-[380px_1fr] gap-10 lg:gap-0 items-center">
             {birth && (
               <div className="relative bg-white border border-ink p-5 lg:mr-12">
@@ -290,7 +290,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </ul>
           </div>
           <p className="mt-6 text-[12.5px] text-stone">
-            {zh ? "左邊的對照取自規則檔本身；右邊每一份對照文件都公開在 repository 裡。部分對應已知有誤、正在重做，修正前只能當作參考，不能當稽核證據。" : "The mappings on the left come from the rule file itself. Each crosswalk on the right is a public document in the repository. Some mappings are known to be wrong and are being redone; until then treat them as a reference, not audit evidence."}{" "}
+            {zh ? "左邊的對應取自規則檔本身，右邊每一份對照文件都公開在 repo 裡。有些對應已知有誤，正在重做；修正之前只能當參考，不能當稽核證據。" : "The mappings on the left come from the rule file itself. Each crosswalk on the right is a public document in the repository. Some mappings are known to be wrong and are being redone. Until they are fixed, use them as a reference only, not as audit evidence."}{" "}
             <Link href={`${prefix}/errata`} className="underline underline-offset-4 hover:text-ink">{zh ? "看勘誤" : "See the errata"}</Link>
           </p>
         </div>
@@ -300,7 +300,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <SheetRow>
         <div className="px-6 md:px-14 pt-20 md:pt-24 pb-10">
           <div className={KICKER}><span className="font-title text-ink mr-2">§ 5</span>{zh ? "三件工具" : "Three tools"}</div>
-          <h2 className={`mt-4 ${H2}`}>{title(zh ? "認出攻擊，挑對測試，再把它證明出來。" : "Spot the attack, pick the tests, prove it.")}</h2>
+          <h2 className={`mt-4 ${H2}`}>{title(zh ? "認出攻擊，挑對測試，再拿出證據。" : "Spot the attack, pick the tests, prove it.")}</h2>
         </div>
         <ul className="grid md:grid-cols-3 border-t border-fog">
           {(["rules", "router", "eval"] as const).map((key, i) => {
@@ -355,7 +355,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <div className="px-6 md:px-14 py-20 md:py-24">
           <div>
             <p className="font-title text-[28px] md:text-[40px] leading-[1.3] text-ink max-w-[820px] text-balance">
-              {title(zh ? "ATR 永遠免費、開放。沒有一條規則能用錢買進來。" : "ATR is free and open, for good. No rule can be bought into it.")}
+              {title(zh ? "ATR 永遠免費、開放。沒有哪一條規則是花錢就能放進來的。" : "ATR is free and open, and will stay that way. No one can pay to get a rule in.")}
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-2">
               <Link href={`${prefix}/spec`} className={`${TEXT_LINK} decoration-ink/30`}>{zh ? "讀規格全文" : "Read the specification"}</Link>

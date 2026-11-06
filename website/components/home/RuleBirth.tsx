@@ -35,13 +35,13 @@ const STEPS: ReadonlyArray<{ key: string; label: B; head: B; body: B }> = [
     head: { en: "It is written down once", zh: "寫下來，一次就好" },
     body: {
       en: "The attack becomes a rule with a permanent ID. It describes the shape of the attack, not the vendor, so the same trick is caught wherever it shows up.",
-      zh: "這一招被寫成一條規則，拿到永久編號。規則描述的是攻擊的樣子，不是某一家廠商，所以同一招換個地方出現，一樣認得出來。",
+      zh: "這一招寫成一條規則，拿到一個永久編號。規則寫的是攻擊長什麼樣子，不綁定哪一家廠商，所以同一招換個地方出現，一樣認得出來。",
     },
   },
   {
     key: "tests",
     label: { en: "Tests", zh: "測試" },
-    head: { en: "It has to prove both ways", zh: "該抓的抓，不該抓的放" },
+    head: { en: "It is tested both ways", zh: "該抓的抓，不該抓的放" },
     body: {
       en: "Every rule carries examples it must catch and examples it must leave alone. CI reruns them on every pull request and every push to main.",
       zh: "每條規則都附上必須抓到的例子，也附上必須放過的例子。每個 PR、每次推上 main，CI 都會把這些例子重跑一遍。",
@@ -52,8 +52,8 @@ const STEPS: ReadonlyArray<{ key: string; label: B; head: B; body: B }> = [
     label: { en: "Release", zh: "發布" },
     head: { en: "Everyone gets it", zh: "所有人一起拿到" },
     body: {
-      en: "It ships in the next numbered release on npm. An agent that updates ATR gets the rule in the lanes its maturity allows. Nobody had to sign anything or pay for it.",
-      zh: "它跟著下一個 npm 版號發布。更新了 ATR 的 agent 就拿得到這條規則，在它成熟度允許的車道裡跑。沒有人需要簽約，也不用付錢。",
+      en: "It ships in the next numbered npm release. Any agent that updates ATR gets the rule, and it runs in the lanes the rule's maturity allows. No one has to sign anything or pay for it.",
+      zh: "規則跟著下一個 npm 版本發布。agent 更新 ATR 之後就拿得到，並在規則成熟度允許的車道裡跑。不用簽約，也不用付錢。",
     },
   },
 ];

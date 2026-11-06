@@ -41,13 +41,13 @@ export default async function GovernancePage({
       </Reveal>
       <Reveal delay={0.05}>
         <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium text-ink mb-4">
-          {zh ? "治理是寫在公開記錄裡的。" : "Governance is on the public record."}
+          {zh ? "ATR 怎麼治理，都寫在公開紀錄裡。" : "Governance is on the public record."}
         </h1>
       </Reveal>
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-12">
           {zh
-            ? "誰在維護、規則怎麼進來、spec 怎麼改、首席維護者有什麼利益衝突，全部寫在這一頁，也都能在 GitHub 上查。ATR 是 MIT 授權的開放標準，不隸屬任何公司。標準值不值得信任，看的是流程能不能被任何人檢查，不是有沒有哪個權威替它掛保證。"
+            ? "誰在維護、規則怎麼進來、spec 怎麼改、首席維護者有什麼利益衝突，全部寫在這一頁，也都能在 GitHub 上查。ATR 是 MIT 授權的開放標準，不隸屬任何公司。標準可不可信，要看任何人能不能檢查它的流程，而不是靠哪個權威背書。"
             : "Who maintains ATR, how a rule gets in, how the spec changes, what conflicts the lead maintainer has: all of it is on this page, and all of it can be audited on GitHub. ATR is an MIT-licensed open standard, and no company owns it. A standard earns trust when anyone can audit its process, not when one authority vouches for it."}
         </p>
       </Reveal>
@@ -88,8 +88,8 @@ export default async function GovernancePage({
           <div className="p-6 md:p-8 bg-ash/30">
             <p className="text-sm text-stone leading-[1.7]">
               {zh
-                ? "除了首席維護者，GitHub 上另有兩位維護者有寫入權限，還有一位協作者負責整理 issue。不過到現在為止，PR 的合併還是集中在首席維護者手上，這是接下來要分散出去的地方。更多維護者的招募條件寫在下面。把標準託管給中立基金會（Linux Foundation、OpenSSF 或同等級的組織）的評估在路線圖上，終點是技術指導委員會（TSC）。"
-                : "Besides the lead maintainer, two more maintainers have write access on GitHub, and one collaborator triages issues. Merging pull requests is still concentrated with the lead maintainer, and that is the next thing to spread out. The criteria for more maintainers are below. Evaluating a transfer to a neutral foundation, such as the Linux Foundation, OpenSSF or an equivalent, is on the roadmap. The goal is a Technical Steering Committee."}
+                ? "除了首席維護者，GitHub 上另有兩位維護者有寫入權限，還有一位協作者負責整理 issue。不過到目前為止，PR 的合併仍集中在首席維護者手上，這是接下來要分散的部分。招募更多維護者的條件寫在下面。路線圖上有一項是評估把標準託管給中立基金會，例如 Linux Foundation、OpenSSF 或同等級的組織；最終目標是成立技術指導委員會（TSC）。"
+                : "Besides the lead maintainer, two more maintainers have write access on GitHub, and one collaborator triages issues. Merging pull requests still rests with the lead maintainer, and spreading that out comes next. The criteria for more maintainers are below. Evaluating a transfer to a neutral foundation, such as the Linux Foundation, OpenSSF or an equivalent, is on the roadmap. The goal is a Technical Steering Committee."}
             </p>
           </div>
         </div>
@@ -107,8 +107,8 @@ export default async function GovernancePage({
       <Reveal delay={0.05}>
         <p className="text-sm text-graphite leading-[1.7] max-w-[640px] mb-5">
           {zh
-            ? "這些關卡由機器執行，每一道都會在公開的 CI log 留下紀錄。一條規則為什麼通過、為什麼被擋，誰都看得到。品質不靠維護者的眼光擔保，靠的是任何人都能重跑的測試。"
-            : "Machines enforce these gates, and each one leaves a trace in a public CI log. Anyone can see why a rule passed or why it was blocked. Quality does not rest on a maintainer's judgment. It rests on tests anyone can re-run."}
+            ? "第 5 道是人工審查，其餘五道由機器執行，每一道都在公開的 CI log 留下紀錄。一條規則為什麼通過、為什麼被擋，誰都看得到。品質不只靠維護者的眼光，還有任何人都能重跑的測試。"
+            : "Gate 5 is a human review. Machines enforce the other five, and each leaves a trace in a public CI log. Anyone can see why a rule passed or why it was blocked. Quality does not rest on a maintainer's judgment alone. It also rests on tests anyone can re-run."}
         </p>
       </Reveal>
       <Reveal delay={0.1}>

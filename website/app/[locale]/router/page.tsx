@@ -31,7 +31,7 @@ const POINTS = [
     head: { en: "What it can reach", zh: "它碰得到什麼" },
     body: {
       en: "Router starts each of your MCP servers once and reads the tool list. From each tool's name it works out what the tool does: reading mail, sending it out, changing records, spending money. Anything it can't work out is treated as possibly consequential. If it guessed wrong, correct it in agent.yaml.",
-      zh: "Router 會把你的每一台 MCP 伺服器各啟動一次，讀出工具清單，再從工具名稱推它會做什麼：讀信、往外寄、改資料、花錢。推不出來的，一律當成可能有後果。推錯了，在 agent.yaml 裡改掉就好。",
+      zh: "Router 會把你的每一台 MCP 伺服器各啟動一次，讀出工具清單，再從工具名稱推它會做什麼：讀信、往外寄、改資料、花錢。推斷不出來的，一律當成可能造成實際影響。推錯了，在 agent.yaml 裡改掉就好。",
     },
   },
   {
@@ -64,8 +64,8 @@ export default async function RouterPage({ params }: { params: Promise<{ locale:
           status={{ en: "Not yet public", zh: "尚未公開" }}
           title={{ en: "First, work out what to test.", zh: "先想清楚，要測什麼。" }}
           lead={{
-            en: "Every agent reaches different things. One reads mail, another can pay, another runs code. Test them all with the same list and you either miss what matters or waste the run. Router reads what your agent can reach first, keeps the tests that apply, and hands the result back in the format your reader already uses.",
-            zh: "每個 agent 碰得到的東西都不一樣。有的會讀信，有的能付錢，有的會執行程式。拿同一份清單去測，不是漏掉重要的，就是白跑一場。Router 先讀出你的 agent 碰得到什麼，只留下適用的測試，結果再用對方習慣的格式交回去。",
+            en: "Every agent reaches different things. One reads mail, another can pay, another runs code. Test them all with the same list and you either miss what matters or waste the run. Router reads what your agent can reach first, keeps the tests that apply, and returns the result in a format the people reading it already use.",
+            zh: "每個 agent 碰得到的東西都不一樣。有的會讀信，有的能付錢，有的會執行程式。拿同一份清單去測，不是漏掉重要的，就是白跑一場。Router 會先讀出你的 agent 碰得到什麼，只留下適用的測試，再用看結果的人習慣的格式交出去。",
           }}
         />
       </SheetRow>
@@ -84,7 +84,7 @@ export default async function RouterPage({ params }: { params: Promise<{ locale:
         </p>
         <p>
           {zh
-            ? "還沒做的，還有 Inspect 格式，讓政府評測單位能用同一批測試自己重跑；夾在真實 agent 和工具之間的代理模式；以及把結果對到 EU AI Act 附件 IV 的頁面。"
+            ? "另外還沒做的有三項：支援 Inspect 格式，讓政府評測單位能用同一批測試自己重跑；代理模式，夾在真實的 agent 和它的工具之間；還有一個頁面，把結果對應到 EU AI Act 附件 IV。"
             : "Also not built: Inspect support, so government evaluators can rerun the same tests themselves; a proxy mode that sits between a real agent and its tools; and a page that maps results to Annex IV of the EU AI Act."}
         </p>
         <p>

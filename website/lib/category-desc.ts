@@ -3,7 +3,7 @@
 export const CATEGORY_DESC: Record<string, { en: string; zh: string }> = {
   "prompt-injection": {
     en: "Crafted inputs that hijack what an agent does",
-    zh: "用特製的輸入，劫持 agent 的行為",
+    zh: "用特製的輸入挾持 agent，讓它照攻擊者的意思做事",
   },
   "skill-compromise": {
     en: "Malicious or vulnerable MCP skills and SKILL.md files",
@@ -15,7 +15,7 @@ export const CATEGORY_DESC: Record<string, { en: string; zh: string }> = {
   },
   "agent-manipulation": {
     en: "Social engineering that talks an agent into behaving differently",
-    zh: "對 agent 下手的社交工程，騙它改變行為",
+    zh: "用社交工程的話術，騙 agent 改變做法",
   },
   "tool-poisoning": {
     en: "Poisoned tool descriptions and malicious tool responses",

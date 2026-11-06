@@ -43,7 +43,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
       <Reveal delay={0.2}>
         <p className="text-base text-stone font-light mb-10 max-w-[560px]">
           {zh
-            ? "ATR 是公共財。任何人都能提規則，通過公開的 PR 和安全閘，它就成為全世界防守者共用標準的一部分。MIT 授權，不需要專屬工具，也不用簽 CLA。從回報一個繞過手法開始，15 分鐘。"
+            ? "ATR 是公共財，任何人都能提規則。規則通過公開的 PR 審查和安全閘，就會收進這套防守方共用的標準。MIT 授權，不需要專屬工具，也不用簽 CLA。可以先從回報一個繞過手法開始，只要 15 分鐘。"
             : "ATR is a public good. Anyone can propose a rule. Once it clears a public PR and the safety gate, it is part of a standard every defender shares. MIT licensed, with no proprietary tooling and no CLA. Start by reporting an evasion. It takes fifteen minutes."}
         </p>
       </Reveal>

@@ -27,10 +27,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 const POINTS = [
   {
-    head: { en: "The checks get checked first", zh: "先檢查檢查本身" },
+    head: { en: "The checks get checked first", zh: "先確認檢查本身可靠" },
     body: {
       en: "Before every run, two scripted agents go first. One obeys every attack and must succeed on every test. The other does nothing and must succeed on none. If either result is off, the run doesn't start.",
-      zh: "每次開跑前，兩個寫死的 agent 先上場。一個什麼攻擊都照做，每一題都必須中；另一個什麼都不做，一題都不能中。只要有一個不對，整輪就不跑。",
+      zh: "每次開跑前，先讓兩個寫死的 agent 上場。一個對所有攻擊都照做，每一題攻擊都必須得手；另一個什麼都不做，任何一題攻擊都不能得手。只要其中一個結果不對，這一輪就不開跑。",
     },
   },
   {
@@ -70,7 +70,7 @@ export default async function EvalPage({ params }: { params: Promise<{ locale: s
           status={{ en: "Not yet public", zh: "尚未公開" }}
           title={{ en: "Once is luck. Ten times is evidence.", zh: "跑一次是運氣，跑十次才算數。" }}
           lead={{
-            en: "ATR Eval tests whether what your agent reads can steer it into leaking data, running code, changing records or spending money. Each test runs at least ten times in a fresh world, a fixed check decides the outcome, and the result is signed.",
+            en: "ATR Eval tests whether what your agent reads can steer it into leaking data, running code, changing records or spending money. Each test runs at least ten times, each time in a fresh environment. A fixed check decides the outcome, and the result is signed.",
             zh: "ATR Eval 測的是：你的 agent 讀到的內容，能不能把它拐去洩漏資料、執行程式、改紀錄、花錢。每一題在全新的環境裡至少跑十次，由固定的檢查判定結果，最後簽名。",
           }}
         />
@@ -87,7 +87,7 @@ export default async function EvalPage({ params }: { params: Promise<{ locale: s
       <ToolLimits zh={zh} title={{ en: "Where it falls short", zh: "現在的限制" }}>
         <p>
           {zh
-            ? "重做，也就是照著收據從頭再跑一次，目前只在同一台機器上驗證過。測試庫有 10 題自己寫的，加上從公開基準匯入的題目。規格是 0.9 草案，由一個專案維護，還不是標準。"
+            ? "照著收據把整輪從頭重跑，目前只在同一台機器上驗證過。測試庫有 10 題自己寫的，加上從公開基準匯入的題目。規格是 0.9 草案，由一個專案維護，還不是標準。"
             : "Reperformance, running everything again from the receipt, has only been shown on the same machine. The library has 10 tests of its own plus tests imported from public benchmarks. The specification is a 0.9 draft maintained by one project. It is not a standard."}
         </p>
         <p>

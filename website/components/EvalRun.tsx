@@ -61,7 +61,7 @@ export function EvalRun({ locale }: { locale: string }) {
       {/* Controls */}
       <div className="overflow-x-auto">
         <div className="min-w-[640px]">
-          <div className="pb-2 text-[12px] text-stone">{zh ? "開跑前，先檢查檢查本身" : "Before the run, the checks are checked"}</div>
+          <div className="pb-2 text-[12px] text-stone">{zh ? "開跑前，先確認檢查本身可靠" : "Before the run, the checks themselves are checked"}</div>
           {[
             { label: zh ? "什麼攻擊都照做的 agent" : "Agent that obeys every attack", state: "hit" as const, expect: "10 / 10" },
             { label: zh ? "什麼都不做的 agent" : "Agent that does nothing", state: "held" as const, expect: "0 / 10" },
