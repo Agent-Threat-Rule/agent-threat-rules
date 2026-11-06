@@ -32,7 +32,7 @@ export async function DocumentStatus({
   const meta = getSpecMeta();
   const versions = await loadVersionLabels();
   const status = statusOverride ?? meta.status;
-  const date = formatSpecDate(meta.lastModified);
+  const date = formatSpecDate(meta.lastModified, locale);
   const canonicalLabel = t(locale, "spec.canonical");
   const versionLabel = t(locale, "spec.version");
   const dateLabel = t(locale, "spec.date");
@@ -55,7 +55,7 @@ export async function DocumentStatus({
       <span className="pipe">·</span>
       <span>
         <span className="opacity-70">{t(locale, "spec.generated")}</span>{" "}
-        {formatSpecDate(versions.generatedAt)}
+        {formatSpecDate(versions.generatedAt, locale)}
       </span>
       <span className="pipe">·</span>
       <span>

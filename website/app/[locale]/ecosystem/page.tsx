@@ -85,8 +85,8 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
       <Reveal delay={0.2}>
         <p className="text-base text-stone font-light mb-3 max-w-[640px]">
           {zh
-            ? "標準好不好，看有沒有人採用，不看它自己怎麼說。這一頁列出把 ATR 規則放進公開、可驗證成品裡的專案，有標準機構、資安廠商，也有開源工具。每一筆都有公開 repo 裡已合併的 pull request 為證，不是廠商的產品宣稱。採用的方式本身也是重點：企業用 pull request 整合，不是私下 fork。開放標準要的就是這種治理方式。"
-            : "A standard is measured by adoption, not by what it says about itself. This page lists projects that ship ATR rules in public, verifiable work: standards bodies, security vendors and open-source tools. Each entry is backed by a merged pull request in a public repository, not by a vendor's product claim. How they adopted it matters too. Enterprises integrate through pull requests, not private forks, and that is how an open standard is meant to be governed."}
+            ? "標準好不好，看有沒有人採用，不看它自己怎麼說。這一頁列出把 ATR 規則放進公開、可驗證成品裡的專案，有標準機構、資安廠商，也有開源工具。每一筆都有公開 repo 裡已合併的 pull request 為證，不是廠商的產品宣稱。採用的方式也值得看：企業走 pull request 整合，沒有私下 fork。"
+            : "A standard is measured by adoption, not by what it says about itself. This page lists projects that ship ATR rules in public, verifiable work: standards bodies, security vendors and open-source tools. Each entry is backed by a merged pull request in a public repository, not by a vendor's product claim. How they adopted it matters too. Enterprises integrate through pull requests, not private forks."}
         </p>
       </Reveal>
       <Reveal delay={0.22}>
@@ -342,8 +342,8 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
             </h3>
             <p className="text-sm text-stone mb-3 leading-relaxed">
               {zh
-                ? "想要 spec 導讀、設計審查、你那個語言的範例程式碼，或想先討論整合要怎麼做，就走這條。維護者七天內回覆。讓整合的人不必自己摸索格式，本來就是標準該做的事。"
-                : "Take this path if you want a spec walkthrough, a design review, sample code for your language, or a conversation about the shape of your integration. Maintainers respond within seven days. Part of a standard's job is to keep integrators from working out the format alone."}
+                ? "想要 spec 導讀、設計審查、你那個語言的範例程式碼，或想先討論整合要怎麼做，就走這條。維護者七天內回覆。"
+                : "Take this path if you want a spec walkthrough, a design review, sample code for your language, or a conversation about the shape of your integration. Maintainers respond within seven days. "}
             </p>
             <a
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=integration-request.yml"
@@ -386,7 +386,7 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
           </div>
           <p className="text-sm text-stone mb-3 max-w-[480px]">
             {zh
-              ? "你的專案已經內建 ATR？在 README 加上這個徽章，讓下游知道你的偵測跟著的是一個有版本、可以公開審查的標準。"
+              ? "你的專案已經內建 ATR 嗎？在 README 加上這個徽章，讓下游知道你的偵測依據的是一個有版本、可公開審查的標準。"
               : "Does your project ship ATR? Add this badge to your README. It tells downstream users that your detections track a versioned standard that peers can review."}
           </p>
         </div>

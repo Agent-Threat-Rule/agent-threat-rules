@@ -41,8 +41,8 @@ export function CategoryFrieze({ items, inscription, countLabel }: { items: Read
               <span className="font-spec text-[44px] lg:text-[64px] leading-none text-ink" aria-hidden="true">{item.letter}</span>
               <span className="mt-2 w-6 h-px bg-ink/30" aria-hidden="true" />
               <span className="mt-3 text-[14px] leading-snug text-ink group-hover:underline underline-offset-4">{item.name}</span>
-              <span className="hidden sm:block mt-1.5 text-[12.5px] leading-[1.55] text-stone max-w-[200px]">{item.desc}</span>
-              <span className="mt-2 lg:mt-3 font-data text-[11px] text-graphite tabular-nums">
+              <span className="hidden sm:block mt-1.5 text-[12.5px] leading-[1.55] text-stone max-w-[200px] min-h-[3.1em]">{item.desc}</span>
+              <span className="mt-auto pt-2 lg:pt-3 font-data text-[11px] text-graphite tabular-nums">
                 {item.count} {countLabel}
               </span>
             </Link>

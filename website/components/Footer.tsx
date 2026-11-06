@@ -60,16 +60,16 @@ export async function Footer({ locale }: { locale: Locale }) {
         </div>
 
         <div className="mt-12 pt-6 border-t border-fog flex flex-col md:flex-row md:items-center md:justify-between gap-3 font-data text-[11px] text-stone">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <img src="/atr-logo-ink.png" alt="ATR" className="h-6 w-auto opacity-80" />
-            <span>{zh ? "MIT 授權 · 開放標準" : "MIT licensed · Open standard"}</span>
+            <span className="whitespace-nowrap">{zh ? "MIT 授權 · 開放標準" : "MIT licensed · Open standard"}</span>
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1">
             <Link href={`${prefix}/spec`} className="hover:text-ink">{zh ? "規格" : "Spec"} {specVersion}</Link>
             <a href={NPM_PACKAGE_URL} className="hover:text-ink">{versions.npmVerified ? "npm" : "package.json"} {versions.npm}</a>
             <Link href={`${prefix}/rules`} className="hover:text-ink">
               {zh
-                ? `${stats.ruleCount} 條生效規則，main 上共 ${stats.ruleFileCount} 個檔，${stats.ruleInertCount} 條 inert`
+                ? `${stats.ruleCount} 條生效規則，main 上共 ${stats.ruleFileCount} 個檔，${stats.ruleInertCount} 條不載入（inert）`
                 : `${stats.ruleCount} effective rules, ${stats.ruleFileCount} files on main, ${stats.ruleInertCount} inert`}
             </Link>
             <Link href={`${prefix}/citations`} className="hover:text-ink">DOI 10.5281/zenodo.19178002</Link>

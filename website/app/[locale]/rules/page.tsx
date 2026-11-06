@@ -45,9 +45,9 @@ export default async function RulesPage({ params }: { params: Promise<{ locale: 
           {t(locale, "rules.sub")}
         </p>
         {/* What each count counts. Same calibers as stats.json ruleCount. */}
-        <p className="mt-4 font-data text-xs text-stone leading-[1.8] max-w-[860px]">
+        <p className="mt-4 text-[13px] text-stone leading-[1.8] max-w-[860px] tabular-nums">
           {zh
-            ? `main 上有 ${stats.ruleFileCount} 個規則檔。${stats.ruleCount} 條生效，至少有一個 lane 會載入；另外 ${stats.ruleInertCount} 條是 draft 或 deprecated，哪個 lane 都不載入。enforce 載入 ${lanes.enforce} 條，只收 stable；alert 載入 ${lanes.alert} 條，收 stable 和 test；hunt 是預設，載入全部 ${lanes.hunt} 條生效規則。`
+            ? `main 上有 ${stats.ruleFileCount} 個規則檔。${stats.ruleCount} 條生效，至少有一條車道會載入；另外 ${stats.ruleInertCount} 條是 draft 或 deprecated，哪條車道都不載入。enforce 載入 ${lanes.enforce} 條，只收 stable；alert 載入 ${lanes.alert} 條，收 stable 和 test；hunt 是預設，載入全部 ${lanes.hunt} 條生效規則。`
             : `${stats.ruleFileCount} rule files on main. ${stats.ruleCount} are effective, which means at least one lane loads them. The other ${stats.ruleInertCount} are draft or deprecated, and no lane loads them. Enforce loads ${lanes.enforce} rules, stable only. Alert loads ${lanes.alert}, stable and test. Hunt is the default and loads all ${lanes.hunt} effective rules.`}
         </p>
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-data text-xs">

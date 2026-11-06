@@ -64,7 +64,7 @@ export default async function DocsOverviewPage({ params }: { params: Promise<{ l
           { label: zh ? "規則" : "Rules", value: zh ? `${stats.ruleCount} 條生效 · main 上共 ${stats.ruleFileCount} 個檔 · ${stats.ruleInertCount} 條不生效` : `${stats.ruleCount} effective · ${stats.ruleFileCount} files on main · ${stats.ruleInertCount} inert` },
           { label: zh ? "發布" : "Release", value: `${versions.npmVerified ? "npm" : "package.json"} ${versions.npm}` },
           { label: zh ? "識別碼" : "Identifiers", value: zh ? "ATR-YYYY-NNNNN，發布後不會改號" : "ATR-YYYY-NNNNN, never reassigned once published" },
-          { label: zh ? "授權" : "Licence", value: "MIT" },
+          { label: zh ? "授權" : "License", value: "MIT" },
           { label: zh ? "治理" : "Governance", value: zh ? "維護者過渡期，TSC 籌組中" : "Maintainer transition. The TSC is being seated." },
         ]}
       />

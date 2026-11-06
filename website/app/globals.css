@@ -97,6 +97,7 @@ body {
     font-weight: 400;
     letter-spacing: -0.01em;
     font-feature-settings: "kern", "liga";
+    text-wrap: balance;
   }
   /* In Chinese pages the Latin words inside a title take the Chinese serif's
      own Latin, so "AI agent" and the characters around it carry one weight. */
@@ -638,7 +639,10 @@ html:not(.js-ready) .speed-line {
   position: relative;
   border-top: 1px solid var(--fog);
 }
+/* Registration marks at row corners are kept in the markup but not drawn:
+   the rows read as one document, and the hairlines are enough. */
 .corner-mark {
+  display: none;
   position: absolute;
   top: -4px;
   width: 7px;

@@ -146,12 +146,6 @@ export function EvalRun({ locale }: { locale: string }) {
             <span>signature</span>
             <span className={`transition-opacity duration-300 ${t >= SIGN ? "opacity-100 text-brand-ink" : "opacity-0"}`}>Ed25519 · in-toto / DSSE</span>
           </div>
-          <span
-            className={`absolute -right-4 -top-4 w-16 h-16 rounded-full border-2 border-brand text-brand-ink flex items-center justify-center text-[11px] font-data rotate-[-12deg] bg-white transition-all duration-300 ${t >= SIGN ? "opacity-100 scale-100" : "opacity-0 scale-150"}`}
-            aria-hidden="true"
-          >
-            {zh ? "已簽" : "signed"}
-          </span>
         </div>
         <div className={`font-data text-[12px] leading-[1.8] transition-opacity duration-500 ${t >= VERIFY ? "opacity-100" : "opacity-0"}`}>
           <div className="text-stone">$ atr-eval verify run --rescore</div>

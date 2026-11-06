@@ -55,7 +55,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="border border-fog mb-12 grid grid-cols-1 md:grid-cols-2">
+        <div className="border-y border-fog mb-12 grid grid-cols-1 md:grid-cols-2">
           <div className="p-6 md:p-7 border-b md:border-b-0 md:border-r border-fog">
             <div className="font-data text-[11px] text-stone tracking-wide uppercase mb-2">
               {zh ? "規劃中 / 實作中" : "Planning or implementing"}
@@ -108,14 +108,13 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
         </div>
       </Reveal>
       <Reveal delay={0.3}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+        <ol className="border-t border-ink mb-12">
           {[
             {
-              title: zh ? "提交新規則（5 分鐘，不用 fork）" : "Submit a new rule (5 min, no fork)",
+              title: zh ? "提交新規則（不用 fork）" : "Submit a new rule (no fork needed)",
               desc: zh
                 ? "發現新的攻擊手法？填一個 issue，bot 會自動把它轉成 draft proposal PR。不用 clone repo，也不用寫 YAML。"
                 : "Found a new attack pattern? File one issue and a bot turns it into a draft proposal PR. No clone, no YAML.",
-              time: "~5 min",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=new-rule.yml",
               cta: zh ? "開一個 issue" : "Open an issue",
             },
@@ -124,7 +123,6 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
               desc: zh
                 ? "手上有攻擊 payload，也有長得像但無害的對照樣本？維護者審過後會轉成提案。合併之後，你的 probe 會自動納入下一輪 benchmark。recall 數字裡看得到你的貢獻。"
                 : "Have an attack payload and benign look-alikes? A maintainer reviews it and turns it into a proposal. Once merged, your probe joins the next benchmark run, and your work shows up in the recall numbers.",
-              time: "~10 min",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=red-team-probe.yml",
               cta: zh ? "送一個 probe" : "Submit a probe",
             },
@@ -133,16 +131,14 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
               desc: zh
                 ? "找到繞過規則的方法？每一個確認過的繞過，都會讓規則被改進。這是影響最大的一種貢獻。"
                 : "Found a way past a rule? Every confirmed evasion leads to a rule fix. This is the most impactful kind of contribution.",
-              time: "~15 min",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=evasion-report.yml",
               cta: zh ? "開一個 issue" : "Open an issue",
             },
             {
               title: zh ? "回報誤判" : "Report a false positive",
               desc: zh
-                ? "規則把正常內容當成攻擊？每一筆誤判回報，都讓 ATR 公布的逐車道精確度更接近真實。一個標準的可信度，來自它肯公開自己最差的數字。"
-                : "A rule fired on legitimate content? Every false-positive report sharpens the per-lane precision ATR publishes. A standard earns trust by publishing its worst figure, not hiding it.",
-              time: "~20 min",
+                ? "規則把正常內容當成攻擊？每一筆誤判回報，都讓 ATR 公布的逐車道精確度更接近真實。"
+                : "A rule fired on legitimate content? Every false-positive report sharpens the per-lane precision ATR publishes.",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=false-positive.yml",
               cta: zh ? "開一個 issue" : "Open an issue",
             },
@@ -151,7 +147,6 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
               desc: zh
                 ? "想直接寫 YAML？fork repo，照著 spec 寫，跑 atr validate 和 atr test，再提 PR。教學會一步一步帶你。"
                 : "Want to write the YAML yourself? Fork the repo, follow the spec, run atr validate and atr test, then open a PR. The guide walks through every step.",
-              time: "1-2 hr",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/examples/how-to-write-a-rule.md",
               cta: zh ? "看教學" : "See the guide",
             },
@@ -160,30 +155,26 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
               desc: zh
                 ? "用 Claude Code 或 Cursor 接上 ATR 的 MCP server。AI 寫 YAML，你來審。"
                 : "Use Claude Code or Cursor with ATR's MCP server. The AI writes the YAML, and you review it.",
-              time: zh ? "不一定" : "Varies",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules#mcp-server",
               cta: zh ? "看 MCP 設定" : "See the MCP setup",
             },
-          ].map((item, i) => (
-            <Reveal key={item.title} delay={0.1 * i}>
-              <div className="border border-fog p-6 h-full flex flex-col">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <h2 className="font-display text-base font-semibold text-ink">{item.title}</h2>
-                  <span className="font-data text-xs text-stone whitespace-nowrap mt-0.5">{item.time}</span>
+          ].map((item) => (
+              <li key={item.title} className="grid md:grid-cols-[260px_1fr] gap-x-8 gap-y-2 py-6 border-b border-fog">
+                <h2 className="font-title text-[19px] leading-snug text-ink">{item.title}</h2>
+                <div>
+                  <p className="text-[15px] text-graphite leading-[1.7]">{item.desc}</p>
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-block text-[14px] text-ink underline underline-offset-[6px] decoration-ink/30 hover:decoration-ink"
+                  >
+                    {item.cta}
+                  </a>
                 </div>
-                <p className="text-sm text-stone leading-[1.6] mb-4 flex-1">{item.desc}</p>
-                <a
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-data text-sm text-blue hover:underline"
-                >
-                  {item.cta} &rarr;
-                </a>
-              </div>
-            </Reveal>
+              </li>
           ))}
-        </div>
+        </ol>
       </Reveal>
 
       {/* ── What happens after you contribute (sets motivation) ── */}
@@ -193,7 +184,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="border border-fog p-6 mb-12">
+        <div className="border-t border-ink pt-6 mb-12">
           <ol className="text-sm text-stone leading-[1.7] space-y-2 list-decimal list-inside marker:font-data marker:text-ink">
             <li>
               {zh
@@ -241,7 +232,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="border border-fog p-6 mb-12">
+        <div className="border-t border-ink pt-6 mb-12">
           <p className="text-sm text-stone leading-relaxed mb-3">
             {zh
               ? "spec（SPEC.md）是所有相容引擎之間的契約，改它沒有加規則那麼直接。先開一個標題以 [RFC] 開頭的 issue，寫清楚要改什麼、為什麼改。接著公開徵求意見 14 天（複雜提案延長到 30 天），讓所有實作者看到並回應。之後才收 PR。破壞性變更（SemVer 主版號）還要另外提前 30 天公告。"
@@ -288,7 +279,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="border border-fog p-6 mb-12 text-sm text-graphite leading-relaxed space-y-3">
+        <div className="border-t border-ink pt-6 mb-12 text-sm text-graphite leading-relaxed space-y-3">
           <p>
             {zh
               ? "想幫忙，但不知道從哪裡下手？有兩個門檻低的入口："
@@ -324,7 +315,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="border border-fog p-6 mb-12 text-sm text-graphite leading-relaxed">
+        <div className="border-t border-ink pt-6 mb-12 text-sm text-graphite leading-relaxed">
           <p className="mb-3">
             {zh
               ? "ATR 有多位維護者，但合併目前集中在首席維護者手上，所以還在招募更多人。候選條件、決策結構和申請方式，都寫在治理頁。"

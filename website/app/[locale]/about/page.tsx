@@ -301,12 +301,12 @@ export default async function AboutPage({
       <Section label={zh ? "維護者" : "Maintainers"} delay={0.3}>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
           {zh
-            ? "ATR 由林冠辛發起，現在也主要由他維護。專案是一個人開始的。1991 年的 Linux 是 Linus Torvalds 一個人開始的，Sigma 是 Florian Roth。重要的是社群能不能真的貢獻進來，不是創辦人名單有多長。"
-            : "Kuan-Hsin Lin started ATR and is still its main maintainer. One person started it, the way Linus Torvalds started Linux in 1991 and Florian Roth started Sigma. What matters is whether the community can make real contributions, not how long the founders list is."}
+            ? "ATR 由林冠辛發起，現在也主要由他維護。專案是一個人開始的。1991 年的 Linux 是 Linus Torvalds 一個人起頭，Sigma 是 Florian Roth 起頭。要看的是社群能不能真的貢獻進來。"
+            : "Kuan-Hsin Lin started ATR and is still its main maintainer. One person started it, the way Linus Torvalds started Linux in 1991 and Florian Roth started Sigma. What matters is whether the community can make real contributions."}
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "到目前為止的外部採用：三個已合併的上游整合，每一個都有公開 repo 裡已合併的 PR 為憑。分別是 Cisco AI Defense 開源 skill-scanner 裡的 ATR 規則集、Microsoft AGT 的 ATR 範例目錄，以及 Gen Digital 已合併的 Sage 規則包。MISP 收下了 ATR 的 taxonomy（#323）和 galaxy（#1207），由 CIRCL 的維護者合併。OWASP Agent Security Regression Harness 合併了四個從 ATR 改寫的回歸情境（#74），檔案裡沒有標註 ATR。另有兩個提案還開著，尚未合併。一個是送到 NIST OSCAL 內容庫的 usnistgov/oscal-content#338，提供 AI RMF profile 範例，正在等 NIST 審查，不是 NIST 背書。另一個是 OpenTelemetry GenAI SIG 的 PR #165，定義 agent.threat.detection.* 語意慣例。這些企業是用 pull request 整合進來的，不是私下 fork。ATR 想要的就是這種採用方式。"
+            ? "到目前為止的外部採用：三個已合併的上游整合，每一個都有公開 repo 裡已合併的 PR 為憑。分別是 Cisco AI Defense 開源 skill-scanner 裡的 ATR 規則集、Microsoft AGT 的 ATR 範例目錄，以及 Gen Digital 已合併的 Sage 規則包。MISP 收下了 ATR 的 taxonomy（#323）和 galaxy（#1207），由 CIRCL 的維護者合併。OWASP Agent Security Regression Harness 合併了四個從 ATR 改寫的回歸情境（#74），檔案裡沒有標註 ATR。另有兩個提案還開著，尚未合併。一個是送到 NIST OSCAL 內容庫的 usnistgov/oscal-content#338，提供 AI RMF profile 範例，正在等 NIST 審查，不是 NIST 背書。另一個是 OpenTelemetry GenAI SIG 的 PR #165，定義 agent.threat.detection.* 語意慣例。這些整合都是用 pull request 進來的，沒有私下 fork。"
             : "External adoption so far: three merged upstream integrations, each backed by a merged pull request in a public repository. They are the ATR rule pack in Cisco AI Defense's open-source skill-scanner, ATR example directories in Microsoft AGT, and Gen Digital's merged Sage pack. MISP took in an ATR taxonomy (#323) and galaxy (#1207), merged by a CIRCL maintainer. The OWASP Agent Security Regression Harness merged four regression scenarios derived from ATR (#74); the files do not credit ATR. Two proposals are still open and unmerged. One is usnistgov/oscal-content#338, which offers AI RMF profile examples to NIST's OSCAL content repository and is awaiting NIST review; it is not a NIST endorsement. The other is PR #165 in OpenTelemetry's GenAI SIG, for the agent.threat.detection.* semantic conventions. These enterprises integrated through pull requests, not private forks. That is the kind of adoption ATR is built for."}
         </p>
         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2">

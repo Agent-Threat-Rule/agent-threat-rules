@@ -212,7 +212,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "coverage.label": "Standards coverage",
     "coverage.heading": "The frameworks name the threats. ATR checks for them.",
     "coverage.sub":
-      "Six frameworks, among them MITRE ATLAS, OWASP, NIST AI RMF and ISO 42001, describe what can go wrong. ATR is the layer underneath that you can run: a rule fires on a real agent artifact. Every rule carries mappings into all six frameworks, and CI enforces it.",
+      "Six frameworks, among them MITRE ATLAS, OWASP, NIST AI RMF and ISO 42001, describe what can go wrong. ATR is the part you can run: a rule fires on a real agent artifact. Every rule carries mappings into all six frameworks, and CI enforces it.",
     "integrate.label": "Integrate",
     "integrate.heading": "Pick a way in. The rules are the same.",
     "research.label": "Research",
@@ -552,9 +552,9 @@ export const messages: Record<Locale, Record<string, string>> = {
     "research.recall": "Recall",
     "research.samples": "樣本數",
     "research.gap_note":
-      "在 hunt lane，precision 是 {precision}，recall 是 {recall}。差這麼多是預料中的事。regex 抓得到它認得的寫法，換個說法、換種語言就漏掉。enforce lane 只載入 stable 規則，要開封鎖就用這條，它的 recall 是 {enforce}。",
+      "在 hunt 車道，precision 是 {precision}，recall 是 {recall}。差這麼多是預料中的事。regex 抓得到它認得的寫法，換個說法、換種語言就漏掉。enforce 車道只載入 stable 規則，要開封鎖就用這條，它的 recall 是 {enforce}。",
     "research.gap_note_hunt_only":
-      "在 hunt lane，precision 是 {precision}，recall 是 {recall}。差這麼多是預料中的事。regex 抓得到它認得的寫法，換個說法、換種語言就漏掉。這次量測沒有 enforce lane 的數字。",
+      "在 hunt 車道，precision 是 {precision}，recall 是 {recall}。差這麼多是預料中的事。regex 抓得到它認得的寫法，換個說法、換種語言就漏掉。這次量測沒有 enforce 車道的數字。",
     "research.scan": "生態系掃描",
     "research.scan.sub":
       "把規則拿去掃真實的 MCP skill 註冊表。",
@@ -594,7 +594,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "coverage.heading":
       "框架替威脅取名字，ATR 負責把它抓出來。",
     "coverage.sub":
-      "MITRE ATLAS、OWASP、NIST AI RMF、ISO 42001 等六份框架，寫的是什麼會出錯。ATR 是底下那一層，可以實際跑：規則會在真實的 agent 產物上觸發。每一條規則都帶著對這六份框架的對照，由 CI 強制檢查。",
+      "MITRE ATLAS、OWASP、NIST AI RMF、ISO 42001 等六份框架，說明的是什麼可能出錯。ATR 是能實際執行的那一層：規則會在真實的 agent 成品上觸發。每條規則都附有對這六份框架的對照，由 CI 強制檢查。",
     "integrate.label": "整合",
     "integrate.heading":
       "接法不只一種，規則都是同一套。",

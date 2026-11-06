@@ -13,9 +13,8 @@ export function AdoptGuide({ locale }: { locale: string }) {
 
   return (
     <ol className="border-t border-ink">
-      {AUDIENCES.map((a, i) => (
-        <li key={a.key} className="grid lg:grid-cols-[48px_220px_1fr] gap-x-8 gap-y-2 py-6 border-b border-fog">
-          <span className="hidden lg:block font-title text-[18px] text-stone" aria-hidden="true">{ROMAN[i]}</span>
+      {AUDIENCES.map((a) => (
+        <li key={a.key} className="grid lg:grid-cols-[240px_1fr] gap-x-8 gap-y-2 py-6 border-b border-fog">
           <h3 className="font-title text-[21px] leading-snug text-ink">{pick(a.who)}</h3>
           <div className="max-w-[680px]">
             <p className="text-[16px] leading-[1.6] text-ink text-pretty">{pick(a.need)}</p>
@@ -31,5 +30,3 @@ export function AdoptGuide({ locale }: { locale: string }) {
     </ol>
   );
 }
-
-const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII"];

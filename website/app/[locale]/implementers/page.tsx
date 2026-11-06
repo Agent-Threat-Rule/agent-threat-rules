@@ -1,5 +1,5 @@
 /* ATR Implementer Report — formal table of pull requests that other
- * organisations merged into their own public repositories. Every one was
+ * organizations merged into their own public repositories. Every one was
  * opened by the ATR maintainer; none is a self-certification or a
  * conformance claim. A merged PR is not a statement about any vendor's
  * commercial product.
@@ -31,11 +31,11 @@ export async function generateMetadata({
     description:
       locale === "zh"
         ? "別的組織合併進自家公開 repo 的 ATR pull request。每一筆都由 ATR 維護者開出，都不是符規宣告。"
-        : "ATR pull requests that other organisations merged into their own public repositories. The ATR maintainer opened each one, and none is a conformance claim.",
+        : "ATR pull requests that other organizations merged into their own public repositories. The ATR maintainer opened each one, and none is a conformance claim.",
   });
 }
 
-// Merged pull requests in other organisations' public repositories.
+// Merged pull requests in other organizations' public repositories.
 // Checked with `gh pr view` on 2026-11-04: every PR here was opened by the ATR
 // maintainer (eeee2345) and merged by that project's maintainer on the date
 // shown (UTC). OWASP #74: the four scenario files do not mention ATR.
@@ -181,7 +181,7 @@ export default async function ImplementersPage({
         <p>
           {zh
             ? "每一列都是合併進別的組織公開 repo 的一個 pull request。這些 PR 全都是 ATR 維護者開的，再由對方專案的維護者審過後合併。表裡沒有任何實作跑過符規測試套件，所以這些都不是符規宣告。PR 合併過，表示當時整合過，不代表今天還在用。每一列都能在 GitHub 上自己查。"
-            : "Each row is a pull request merged into another organisation's public repository. The ATR maintainer opened every one of them, and that project's maintainers reviewed and merged it. No implementation here has run the conformance suite, so none of these is a conformance claim. A merged pull request shows the integration happened. It does not show it is still in use. Every row can be checked on GitHub."}
+            : "Each row is a pull request merged into another organization's public repository. The ATR maintainer opened every one of them, and that project's maintainers reviewed and merged it. No implementation here has run the conformance suite, so none of these is a conformance claim. A merged pull request shows the integration happened. It does not show it is still in use. Every row can be checked on GitHub."}
         </p>
 
         {/* Desktop / tablet table */}

@@ -47,8 +47,8 @@ export default async function GovernancePage({
       <Reveal delay={0.1}>
         <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-12">
           {zh
-            ? "誰在維護、規則怎麼進來、spec 怎麼改、首席維護者有什麼利益衝突，全部寫在這一頁，也都能在 GitHub 上查。ATR 是 MIT 授權的開放標準，不隸屬任何公司。標準可不可信，要看任何人能不能檢查它的流程，而不是靠哪個權威背書。"
-            : "Who maintains ATR, how a rule gets in, how the spec changes, what conflicts the lead maintainer has: all of it is on this page, and all of it can be audited on GitHub. ATR is an MIT-licensed open standard, and no company owns it. A standard earns trust when anyone can audit its process, not when one authority vouches for it."}
+            ? "誰在維護、規則怎麼進來、spec 怎麼改、首席維護者有什麼利益衝突，全部寫在這一頁，也都能在 GitHub 上查。ATR 是 MIT 授權的開放標準，不隸屬任何公司。任何人都能檢查流程，標準才站得住腳，不用靠哪個權威背書。"
+            : "Who maintains ATR, how a rule gets in, how the spec changes, what conflicts the lead maintainer has: all of it is on this page, and all of it can be audited on GitHub. ATR is an MIT-licensed open standard, and no company owns it. A standard earns trust when anyone can audit its process. No authority has to vouch for it."}
         </p>
       </Reveal>
 
@@ -68,7 +68,7 @@ export default async function GovernancePage({
               <div className="md:w-48 flex-shrink-0 mb-4 md:mb-0">
                 <div className="font-display text-base font-bold text-ink">Adam Lin</div>
                 <div className="font-data text-xs text-stone mt-1">林冠辛</div>
-                <div className="font-data text-xs text-blue mt-2">Lead Maintainer</div>
+                <div className="font-data text-xs text-stone mt-2">Lead Maintainer</div>
               </div>
               <div>
                 <p className="text-sm text-graphite leading-[1.7] mb-3">
@@ -123,8 +123,8 @@ export default async function GovernancePage({
             {
               gate: zh ? "2 · RFC-001 品質門檻" : "2 · RFC-001 quality gate",
               desc: zh
-                ? "信心分數決定規則進哪一條偵測車道。分數看的是精確度、野外驗證、覆蓋深度，以及已知的繞過手法有沒有寫下來。分數不夠的規則永遠不會升到 enforce，但仍可以用 advisory 的形式存在。門檻是公開的公式，不是維護者的喜好。"
-                : "A confidence score decides which detection lane a rule enters. It weighs precision, in-the-wild validation, coverage depth and documented evasions. A rule below the bar is never promoted to enforce, though it may still exist as advisory. The threshold is a published formula, not a maintainer's preference.",
+                ? "信心分數決定規則進哪一條偵測車道。分數看的是精確度、野外驗證、覆蓋深度，以及已知的繞過手法有沒有寫下來。分數不夠的規則永遠不會升到 enforce，但仍可以用 advisory 的形式存在。門檻是一條公開的公式，誰都能拿來重算。"
+                : "A confidence score decides which detection lane a rule enters. It weighs precision, in-the-wild validation, coverage depth and documented evasions. A rule below the bar is never promoted to enforce, though it may still exist as advisory. The threshold is a published formula that anyone can recompute.",
             },
             {
               gate: zh ? "3 · 良性語料 0 FP" : "3 · Benign corpus 0 FP",
@@ -152,7 +152,7 @@ export default async function GovernancePage({
             },
           ].map((item) => (
             <div key={item.gate} className="bg-paper p-5 md:p-6">
-              <div className="font-data text-xs text-blue tracking-wide uppercase mb-2">{item.gate}</div>
+              <div className="font-data text-xs text-ink tracking-wide uppercase mb-2">{item.gate}</div>
               <p className="text-sm text-graphite leading-[1.7]">{item.desc}</p>
             </div>
           ))}
@@ -171,7 +171,7 @@ export default async function GovernancePage({
       <Reveal delay={0.05}>
         <p className="text-sm text-graphite leading-[1.7] max-w-[640px] mb-5">
           {zh
-            ? "改一條規則跟改 spec 是兩回事。規則錯了，可以撤下，也可以修正。spec 是每一個相容引擎都依賴的契約，要改，就得讓所有實作者都看得到，也來得及反應。門檻多高，看這個改動會牽動多少人。"
+            ? "改一條規則跟改 spec 是兩回事。規則錯了，可以撤下，也可以修正。spec 是每一個符規引擎都依賴的契約，要改，就得讓所有實作者都看得到，也來得及反應。門檻多高，看這個改動會牽動多少人。"
             : "Changing a rule and changing the spec are different acts. A wrong rule can be deprecated or revised. The spec is the contract every conforming engine relies on, so a change to it has to reach every implementer with time to react. The bar rises with the number of people a change affects."}
         </p>
       </Reveal>
@@ -230,7 +230,7 @@ export default async function GovernancePage({
                   <div className="font-display text-sm font-semibold text-ink">{row.kind}</div>
                 </div>
                 <div>
-                  <div className="font-data text-xs text-blue tracking-wide uppercase mb-2">
+                  <div className="font-data text-xs text-ink tracking-wide uppercase mb-2">
                     {row.quorum}
                   </div>
                   <p className="text-sm text-graphite leading-[1.7]">{row.detail}</p>
@@ -247,19 +247,19 @@ export default async function GovernancePage({
           {zh ? "工作小組" : "Working group"}
         </div>
         <h2 className="font-display text-xl font-medium tracking-[-0.5px] mb-4">
-          {zh ? "目前還沒有。要成立，路是開的。" : "There isn't one yet. The way to start one is open."}
+          {zh ? "目前還沒有。成立的條件寫在下面。" : "There isn't one yet. The conditions for starting one are written below."}
         </h2>
       </Reveal>
       <Reveal delay={0.1}>
         <div className="bg-paper border border-fog p-6 md:p-8 mb-12 text-sm text-graphite leading-[1.7]">
           <p className="mb-3">
             {zh
-              ? "OASIS CTI、OpenTelemetry SIG、OWASP 工作小組都有固定會議。ATR 還沒到需要固定開會的規模。現在所有討論都在 GitHub Issues 和 PR 上非同步進行，公開，也都留下紀錄。實作者只有少數幾個的標準，不該在有需求之前，先成立委員會。"
+              ? "OASIS CTI、OpenTelemetry SIG、OWASP 工作小組都有固定會議。ATR 還沒到需要固定開會的規模。現在所有討論都在 GitHub Issues 和 PR 上非同步進行，公開，也都留下紀錄。實作者才幾個，沒人提出需求就先設委員會，沒有必要。"
               : "OASIS CTI, the OpenTelemetry SIGs and OWASP working groups all hold scheduled meetings. ATR is not yet big enough for standing meetings to be worth their cost. For now every discussion happens asynchronously and in the open, on the record in GitHub Issues and PRs. A standard with a handful of implementers should not set up a committee before anyone asks for one."}
           </p>
           <p className="mb-3">
             {zh
-              ? "要不要成立，看需求。你如果手上有實際在做的整合、想把 spec 往某個方向推，或代表一個實作者，想在標準化過程裡有固定的發言管道，就開一個標題以 [WG-proposal] 開頭的 issue。只要有 3 個以上彼此獨立的實作者提出同樣的需求，維護者就會開始每兩週一次的工作小組會議。觸發條件寫在這裡，誰都可以援引。"
+              ? "要不要成立，看需求。你如果手上有實際在做的整合、想把 spec 往某個方向推，或代表一個實作者，想在標準化過程裡有固定的發言管道，就開一個標題以 [WG-proposal] 開頭的 issue。只要有 3 個以上彼此獨立的實作者提出同樣的需求，維護者就會開始每兩週一次的工作小組會議。條件就寫在這裡，誰都可以拿來用。"
               : "Whether one forms depends on demand. If you have integration work under way, want to push the spec in a particular direction, or represent an implementer that wants a structured voice in the process, open an issue whose title starts with [WG-proposal]. When three or more independent implementers ask for the same thing, the maintainers will schedule a recurring working-group meeting every two weeks. The trigger is written here, and anyone may invoke it."}
           </p>
         </div>
@@ -278,8 +278,8 @@ export default async function GovernancePage({
         <div className="bg-paper border border-fog p-6 md:p-8 mb-12 text-sm text-graphite leading-[1.7]">
           <p className="mb-3">
             {zh
-              ? "合併集中在一個人手上，是 ATR 目前已知最大的結構風險，這點直接講明。治理要分散出去，前提是有貢獻者真的合併過夠多東西，值得拿到 commit 權限，不會提早。更多維護者正在招募。"
-              : "Merges resting with one person is the largest known structural risk to ATR, and this page says so plainly. Governance spreads once contributors have merged enough to earn commit rights, not before. More maintainers are being recruited."}
+              ? "合併權集中在一個人手上，是 ATR 目前已知最大的結構風險。要分散出去，得等貢獻者合併過足夠多的 PR，夠資格拿到 commit 權限。更多維護者正在招募。"
+              : "Merge rights resting with one person is the largest known structural risk to ATR. They spread out once contributors have merged enough pull requests to earn commit rights. More maintainers are being recruited."}
           </p>
           <p className="mb-3 font-semibold text-ink">
             {zh ? "候選條件：" : "Candidate criteria:"}
@@ -372,13 +372,13 @@ export default async function GovernancePage({
             </p>
             <p>
               {zh
-                ? "ATR（Agent Threat Rules）是 MIT 授權的開放標準，在 Agent-Threat-Rule 這個 GitHub 組織底下維護。上面這件事不藏，直接寫下來，揭露本身就是治理的一部分。標準是否中立，不是靠維護者沒有利益來證明。靠的是決策過程公開到任何人都能檢查，這些利益有沒有讓決定走樣。"
-                : "ATR (Agent Threat Rules) is an MIT-licensed open standard maintained under the Agent-Threat-Rule GitHub organization. The interest above is not hidden. Writing it down is part of the governance. A standard's neutrality is not proven by a maintainer having no interests. It is proven by a decision process open enough that anyone can check whether those interests bent it."}
+                ? "ATR（Agent Threat Rules）是 MIT 授權的開放標準，在 Agent-Threat-Rule 這個 GitHub 組織底下維護。上面這件事不藏，直接寫下來，揭露本身就是治理的一部分。維護者確實有利益，所以 ATR 把決策過程公開，讓任何人都能檢查這些利益有沒有影響決定。"
+                : "ATR (Agent Threat Rules) is an MIT-licensed open standard maintained under the Agent-Threat-Rule GitHub organization. The interest above is not hidden. Writing it down is part of the governance. The lead maintainer does have interests. So the decision process is open, and anyone can check whether those interests bent a decision."}
             </p>
             <p>
               {zh
-                ? "界線是：ATR 的規則、CHANGELOG、benchmark 資料和文件，都不得被任何商業利益左右。ATR 的 issue tracker 和 PR 審查對所有人開放，包括這個商業利益的競爭對手。他們可以提規則、審 PR，也可以把整套標準 fork 走。GOVERNANCE.md 在 GitHub 上公開，誰都能查。中立不是嘴上說的，是這些開著的門一扇一扇證明出來的。"
-                : "The boundary: ATR's rules, CHANGELOG, benchmark data and documentation must not be distorted by any commercial interest. ATR's issue tracker and PR review are open to everyone, including competitors of that commercial interest. They may propose rules, review pull requests and fork the entire standard. GOVERNANCE.md is public on GitHub for anyone to audit. Neutrality is not something ATR asserts. These open doors, one by one, are what demonstrate it."}
+                ? "界線是：ATR 的規則、CHANGELOG、benchmark 資料和文件，都不得被任何商業利益左右。ATR 的 issue tracker 和 PR 審查對所有人開放，包括這個商業利益的競爭對手。他們可以提規則、審 PR，也可以把整套標準 fork 走。GOVERNANCE.md 在 GitHub 上公開，誰都能查。"
+                : "The boundary: ATR's rules, CHANGELOG, benchmark data and documentation must not be distorted by any commercial interest. ATR's issue tracker and PR review are open to everyone, including competitors of that commercial interest. They may propose rules, review pull requests and fork the entire standard. GOVERNANCE.md is public on GitHub for anyone to audit."}
             </p>
             <p>
               {zh
@@ -399,7 +399,7 @@ export default async function GovernancePage({
         <div className="bg-ash p-6 md:p-8 mb-12 text-sm text-graphite leading-[1.7]">
           <p className="mb-3">
             {zh
-              ? "所有貢獻都以 MIT 授權發布。你的攻擊研究，你保留以任何形式使用的全部權利。ATR 帶走的只是偵測，研究本身仍然是你的。"
+              ? "所有貢獻都以 MIT 授權發布。你的攻擊研究，你保留以任何形式使用的全部權利。ATR 只取用其中的偵測規則，研究本身仍歸你。"
               : "All contributions are published under the MIT license. Contributors keep every right to use their attack research in any form. ATR carries the detection, not ownership of the research."}
           </p>
           <p>

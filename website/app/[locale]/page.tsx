@@ -6,7 +6,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { locales, type Locale } from "@/lib/i18n";
 import { loadSiteStats } from "@/lib/stats";
-import { getSpecMeta } from "@/lib/spec-meta";
 import { loadAdopters } from "@/lib/adopters";
 import { loadAllRules, loadRuleDetail, categoryDisplayName } from "@/lib/rules";
 import { rulesLanes, type Lane } from "@/lib/lanes";
@@ -95,7 +94,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const title = (text: string) => (zh ? clauses(text) : text);
 
   const stats = loadSiteStats();
-  const specVersion = getSpecMeta().specVersion;
   const rules = loadAllRules();
   const adopters = loadAdopters();
   const crosswalks = loadCrosswalks().filter((c) => c.published);
@@ -132,11 +130,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const birthLanes = detail ? rulesLanes({ status: detail.status, maturity: detail.maturity }) : [];
 
   const figures: Array<[string, string]> = [
-    [specVersion, zh ? "規格" : "Specification"],
     [String(stats.ruleCount), zh ? "生效規則" : "Effective rules"],
     [String(stats.categoryCount), zh ? "威脅類別" : "Threat categories"],
-    [String(orgs.length), zh ? "合併過的組織" : "Organisations that merged it"],
-    ["MIT", zh ? "授權" : "Licence"],
+    [String(orgs.length), zh ? "合併過的組織" : "Organizations that merged it"],
+    ["MIT", zh ? "授權" : "License"],
   ];
 
   return (
@@ -228,7 +225,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </p>
             <p>
               {zh
-                ? "agent 不一樣。模型幾個禮拜就換一代，agent 已經在醫院、銀行、公家機關裡做事。攻擊傳得很快，防守的人卻還在互相寄信、開會、等報告。"
+                ? "agent 不一樣。模型幾個禮拜就換一代，agent 已經在醫院、銀行、公家機關裡做事。攻擊傳得很快，防守的人卻還在互相寄信、等報告。"
                 : "Agents are different. Models turn over in weeks, and agents already work in hospitals, banks and government offices. Attacks spread fast. Defenders are still trading emails and waiting on reports."}
             </p>
             <p className="text-ink">
@@ -245,7 +242,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <SheetRow>
           <div className="px-6 md:px-14 pt-20 md:pt-24 pb-20">
             <div className={KICKER}><span className="font-title text-ink mr-2">§ 3</span>{zh ? "一條規則怎麼來" : "How a rule is made"}</div>
-            <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "一個人碰到的攻擊，變成所有人的規則。" : "One team's incident becomes everyone's rule.")}</h2>
+            <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "一個人碰到的攻擊，變成所有人的規則。" : "An attack one person hit becomes everyone's rule.")}</h2>
             <p className="mt-5 text-[16px] leading-[1.75] text-graphite max-w-[620px]">
               {zh ? `以 ${birth.id} 為例，從回報到使用者裝得到，花了 ${daysBetween(birth.reported, birth.firstNpmDate)} 天。` : `Take ${birth.id}: it reached users ${daysBetween(birth.reported, birth.firstNpmDate)} days after it was reported.`}{" "}
               {laneSentence(birthLanes, birth.maturity, zh)}
@@ -308,7 +305,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             return (
               <li key={key} className={`border-fog ${i > 0 ? "border-t md:border-t-0 md:border-l" : ""}`}>
                 <Link href={`${prefix}${tool.href}`} className="group flex flex-col h-full p-6 md:p-8 hover:bg-ash/50 transition-colors">
-                  <span className="font-title text-[44px] leading-none text-ink mb-8" aria-hidden="true">{ROMAN[i]}</span>
+                  <span className="font-title text-[30px] md:text-[44px] leading-none text-ink mb-5 md:mb-8" aria-hidden="true">{ROMAN[i]}</span>
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="text-[17px] text-ink">{tool.name}</span>
                     <span className="text-[11.5px] text-stone">{tool.released ? (zh ? "已發布" : "Released") : zh ? "尚未公開" : "Not yet public"}</span>
@@ -355,7 +352,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <div className="px-6 md:px-14 py-20 md:py-24">
           <div>
             <p className="font-title text-[28px] md:text-[40px] leading-[1.3] text-ink max-w-[820px] text-balance">
-              {title(zh ? "ATR 永遠免費、開放。沒有哪一條規則是花錢就能放進來的。" : "ATR is free and open, and will stay that way. No one can pay to get a rule in.")}
+              {title(zh ? "規則公開，免費使用，不接受付費收錄。" : "The rules are public and free to use. No rule is accepted for payment.")}
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-2">
               <Link href={`${prefix}/spec`} className={`${TEXT_LINK} decoration-ink/30`}>{zh ? "讀規格全文" : "Read the specification"}</Link>

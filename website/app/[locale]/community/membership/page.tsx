@@ -40,7 +40,7 @@ const TIERS: ReadonlyArray<{ name: string; who: B; fee: string }> = [
 ];
 
 const FREE: ReadonlyArray<B> = [
-  { en: "Using and implementing the rules and the specification (MIT licence).", zh: "使用與實作規則和規格（MIT 授權）。" },
+  { en: "Using and implementing the rules and the specification (MIT license).", zh: "使用與實作規則和規格（MIT 授權）。" },
   { en: "Joining the community as a person, writing and reviewing rules.", zh: "以個人身分加入社群、撰寫與審查規則。" },
   { en: "Being listed as an adopter, with public evidence of the integration.", zh: "附上整合的公開證據，列名為採用者。" },
 ];

@@ -17,11 +17,11 @@ export const START_ROUTES: ReadonlyArray<StartRoute> = [
     title: { en: "I want to integrate ATR", zh: "我要整合 ATR" },
     body: {
       en: "Load the rules into your scanner, gateway or SIEM. Then pick a lane by how much you want blocked.",
-      zh: "把規則放進你的掃描器、閘道或 SIEM。想擋多少，就選哪一條 lane。",
+      zh: "把規則放進你的掃描器、閘道或 SIEM。想擋多少，就選哪一條車道。",
     },
     links: [
       { href: "/integrate", label: { en: "Integration paths", zh: "整合方式" } },
-      { href: "/rules", label: { en: "Rules by lane", zh: "依 lane 看規則" } },
+      { href: "/rules", label: { en: "Rules by lane", zh: "依車道看規則" } },
     ],
   },
   {
@@ -41,7 +41,7 @@ export const START_ROUTES: ReadonlyArray<StartRoute> = [
     title: { en: "I am doing procurement or an audit", zh: "我在做採購或稽核" },
     body: {
       en: "See what a conforming engine has to do, and how the rules map to the frameworks you report against. ATR wrote those mappings itself. They are not endorsements.",
-      zh: "看一個符規引擎要做到哪些事，規則又怎麼對到你要交代的框架。這些對應是 ATR 自己寫的，不是框架方的背書。",
+      zh: "看一個符規引擎要做到哪些事，規則又怎麼對應到你必須遵循的框架。這些對應是 ATR 自己寫的，不是框架方的背書。",
     },
     links: [
       { href: "/conformance", label: { en: "Conformance", zh: "符規" } },
@@ -76,8 +76,8 @@ export const START_ROUTES: ReadonlyArray<StartRoute> = [
     key: "public-sector",
     title: { en: "I represent a government or standards body", zh: "我代表政府或標準組織" },
     body: {
-      en: "ATR is a rule format under the MIT licence, tied to no vendor. Any country or organization can adopt it, audit it or fork it.",
-      zh: "ATR 是 MIT 授權的規則格式，不綁任何廠商。任何國家或組織都能拿去用、拿去稽核，也能自己分支。",
+      en: "ATR is a rule format under the MIT license, tied to no vendor. Any country or organization can adopt it, audit it or fork it.",
+      zh: "ATR 是 MIT 授權的規則格式，不綁任何廠商。任何國家或組織都能拿去用、拿去稽核，也能自己 fork。",
     },
     links: [
       { href: "/sovereign-ai-defense", label: { en: "Sovereign AI", zh: "主權 AI" } },

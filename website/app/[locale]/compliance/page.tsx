@@ -114,7 +114,14 @@ export default async function CompliancePage({
           {zh ? "每條規則都標了 6 個框架的對應條目。" : "Every rule is tagged against 6 frameworks."}
         </h1>
       </Reveal>
-      <div className="mt-4 mb-8 max-w-[640px] border-y border-fog py-4 space-y-3 text-[13px] leading-[1.7] text-graphite">
+      <Reveal delay={0.1}>
+        <p className="text-[17px] text-ink max-w-[720px] leading-[1.7] mb-6">
+          {zh
+            ? `法規要求你管好 AI agent 的風險，卻沒說怎麼在真實的成品上證明做到了。ATR 的 ${stats.ruleCount} 條規則，每一條都帶著六個框架的對應：OWASP LLM、OWASP Agentic、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001。CI 會檢查每個對應都合法，每條規則也都有對應。這樣一來，框架裡的每項要求都對得到一個偵測，這個偵測可以直接跑在 SKILL.md、MCP 工具說明和 agent 設定檔上。SAF-MCP 是技術層級的候選對照（${stats.safeMcp}，SAF 尚未驗證）。所有 metadata 都採 MIT 授權，可以下載，也可以稽核。`
+            : `Regulations ask you to manage AI agent risk. They do not say how to prove it on a real artifact. Each of ATR's ${stats.ruleCount} rules carries six framework mappings: OWASP LLM, OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act and ISO 42001. CI checks that every mapping is valid and that every rule has one. So each obligation connects to a detection that runs on a SKILL.md file, an MCP tool description or an agent config. SAF-MCP is mapped per technique, as candidate mappings (${stats.safeMcp}, not validated by SAF). All of the metadata is MIT-licensed. You can download it and audit it.`}
+        </p>
+      </Reveal>
+      <div className="mb-8 max-w-[720px] border-y border-fog py-4 space-y-3 text-[13px] leading-[1.7] text-graphite">
       <p>
         {zh
           ? "部分框架對應已知有誤，正在重做；偵測不受影響。修正發布前，請把對應當成可能相關的參考，不要當成稽核證據。"
@@ -130,13 +137,6 @@ export default async function CompliancePage({
           : "Articles 9 to 15 of the EU AI Act apply to high-risk AI systems, as classified under Article 6 and Annex III. The obligations sit mainly with the provider. A deployer has its own duties under Article 26. An ATR mapping to one of these articles is detection evidence an operator may cite in its own risk management. It is not compliance. Some rules also cite CEN-CENELEC JTC 21 standards. Citing a standard here does not create a presumption of conformity under Article 40."}
       </p>
       </div>
-      <Reveal delay={0.1}>
-        <p className="text-base text-stone font-light max-w-[640px] leading-[1.8] mb-4">
-          {zh
-            ? `每一部法規都在講同一件事：你得管好 AI agent 的風險。沒有一部告訴你，怎麼在真實的成品上證明你做到了。ATR 的 ${stats.ruleCount} 條規則，每一條都帶著六個框架的對應：OWASP LLM、OWASP Agentic、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001。CI 會檢查每個對應都合法，每條規則也都有對應。一條義務就這樣接上一個偵測，能在 SKILL.md、MCP 工具說明、agent 設定檔上跑。SAF-MCP 是技術層級的候選對照（${stats.safeMcp}，SAF 尚未驗證）。所有 metadata 都採 MIT 授權，可以下載，也可以稽核。`
-            : `Every regulation says the same thing: you must manage AI agent risk. None of them says how to prove it on a real artifact. Each of ATR's ${stats.ruleCount} rules carries six framework mappings: OWASP LLM, OWASP Agentic, MITRE ATLAS, NIST AI RMF, EU AI Act and ISO 42001. CI checks that every mapping is valid and that every rule has one. So each obligation connects to a detection that runs on a SKILL.md file, an MCP tool description or an agent config. SAF-MCP is mapped per technique, as candidate mappings (${stats.safeMcp}, not validated by SAF). All of the metadata is MIT-licensed. You can download it and audit it.`}
-        </p>
-      </Reveal>
 
       {/* Procurement: no packaged download exists (no release carries an asset), so link the policy and allowlists */}
       <Reveal delay={0.15}>
@@ -189,7 +189,7 @@ export default async function CompliancePage({
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
                 <div className="md:col-span-3">
                   <div className="font-display text-base font-bold text-ink mb-1">{fw.id}</div>
-                  <div className="font-data text-xl font-bold text-blue">{zh ? fw.coverage_zh : fw.coverage}</div>
+                  <div className="font-data text-[14px] text-ink">{zh ? fw.coverage_zh : fw.coverage}</div>
                 </div>
                 <div className="md:col-span-7">
                   <p className="text-sm text-graphite leading-[1.7]">
@@ -220,7 +220,7 @@ export default async function CompliancePage({
           </div>
           <p className="text-sm text-graphite leading-[1.7] mb-3">
             {zh
-              ? "說「符合某個框架」，是一種宣稱。把偵測攻擊的那段 regex 指出來，才是證據。ATR 的合規對應寫在每條規則的 YAML 裡，引用的是偵測這個攻擊的那段 regex 或 token，不是一句籠統的「與框架對齊」。誰都能把對應和它說要偵測的東西擺在一起比。"
+              ? "說「符合某個框架」，是一種宣稱。把偵測攻擊的那段 regex 指出來，才是證據。ATR 的合規對應寫在每條規則的 YAML 裡，引用的是偵測這個攻擊的那段 regex 或 token，不會只寫一句籠統的「與框架對齊」。誰都能把對應和它說要偵測的東西擺在一起比。"
               : "'Aligned with a framework' is an assertion. The regex that detects the attack is evidence. ATR's compliance mappings live in each rule's YAML. They cite the exact regex or token that detects the attack, never a generic 'aligned with the framework'. Anyone can put a mapping next to the thing it claims to detect and check it."}
           </p>
           <a

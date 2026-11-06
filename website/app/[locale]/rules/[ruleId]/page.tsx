@@ -34,7 +34,7 @@ function buildCrosswalks(rule: RuleSummary, zh: boolean): Crosswalk[] {
   const all: Crosswalk[] = [
     {
       name: "MITRE ATLAS",
-      help: zh ? "MITRE 整理的 AI 攻擊知識庫，這裡列到 technique 層級" : "MITRE's catalogue of attacks on AI systems, listed at technique level",
+      help: zh ? "MITRE 整理的 AI 攻擊知識庫，這裡列到 technique 層級" : "MITRE's catalog of attacks on AI systems, listed at technique level",
       items: rule.mitreAtlas.map((ref) => {
         const id = atlasId(ref);
         return { text: ref, href: id ? `https://atlas.mitre.org/techniques/${id}` : undefined };
@@ -169,7 +169,6 @@ export default async function RuleDetailPage({
           <div className="mt-4 text-[12px] text-stone">
             {[
               rule.date && `${zh ? "收錄於" : "Recorded"} ${rule.date.replace(/\//g, "-")}`,
-              rule.status && `${zh ? "狀態" : "Status"} ${rule.status}`,
               rule.author && `${zh ? "作者" : "Author"} ${rule.author}`,
             ]
               .filter(Boolean)
@@ -189,7 +188,7 @@ export default async function RuleDetailPage({
           {[
             { label: zh ? "嚴重度" : "Severity", value: rule.severity, tone: "text-ink" },
             { label: zh ? "成熟度" : "Maturity", value: normalizeMaturity(rule.maturity), tone: "text-ink" },
-            { label: zh ? "載入的 lane" : "Lanes", value: lanes.length > 0 ? lanes.join(" · ") : zh ? "無（inert）" : "none (inert)", tone: lanes.length > 0 ? "text-ink" : "text-high" },
+            { label: zh ? "載入的車道" : "Lanes", value: lanes.length > 0 ? lanes.join(" · ") : zh ? "無（inert）" : "none (inert)", tone: lanes.length > 0 ? "text-ink" : "text-high" },
             { label: zh ? "掃描目標" : "Scan target", value: rule.scanTarget ?? "—", tone: "text-ink" },
             { label: zh ? "狀態" : "Status", value: rule.status ?? "—", tone: "text-ink" },
           ].map((cell) => (
@@ -243,7 +242,7 @@ export default async function RuleDetailPage({
             </div>
           )}
           <div className="mt-6 font-data text-[11px] text-stone">
-            {zh ? "作者" : "Author"}: {rule.author}
+            {zh ? "作者：" : "Author: "}{rule.author}
             {rule.date && <> · {zh ? "建立" : "Created"} {rule.date.replace(/\//g, "-")}</>}
             {detail?.lastModified && <> · {zh ? "最後修改" : "Last modified"} {detail.lastModified}</>}
           </div>
@@ -296,13 +295,13 @@ export default async function RuleDetailPage({
               </h2>
               {detail.detectionCombinator && (
                 <span className="font-data text-[10px] text-mist uppercase tracking-wide">
-                  {zh ? "組合方式" : "Combinator"}: {detail.detectionCombinator}
+                  {zh ? "組合方式：" : "Combinator: "}{detail.detectionCombinator}
                 </span>
               )}
             </div>
-            <ol className="space-y-2">
+            <ol className="border-b border-fog">
               {detail.detectionConditions.map((c, i) => (
-                <li key={i} className="bg-paper border border-fog p-3 md:p-4">
+                <li key={i} className="border-t border-fog py-3 md:py-4">
                   <div className="flex items-start gap-3">
                     <span className="font-data text-[11px] text-mist shrink-0 mt-0.5">
                       {String(i + 1).padStart(2, "0")}
@@ -312,8 +311,8 @@ export default async function RuleDetailPage({
                         <div className="text-sm text-ink leading-[1.6] mb-1.5">{c.description}</div>
                       )}
                       <div className="font-data text-[10px] md:text-[11px] text-stone flex flex-wrap gap-x-3 gap-y-1">
-                        {c.field && <span>{zh ? "欄位" : "field"}: {c.field}</span>}
-                        {c.operator && <span>{zh ? "運算子" : "op"}: {c.operator}</span>}
+                        {c.field && <span>{zh ? "欄位：" : "field: "}{c.field}</span>}
+                        {c.operator && <span>{zh ? "運算子：" : "op: "}{c.operator}</span>}
                       </div>
                     </div>
                   </div>
@@ -331,13 +330,13 @@ export default async function RuleDetailPage({
             </h2>
             <ol className="space-y-3">
               {detail.truePositives.map((tc, i) => (
-                <li key={i} className="bg-critical/[0.03] border-l-2 border-critical p-3 md:p-4">
+                <li key={i} className="border-l-2 border-alert pl-4 py-2">
                   {tc.matched_condition && (
                     <div className="font-data text-[10px] text-critical uppercase tracking-wide mb-2">
-                      {zh ? "觸發條件" : "Matches"}: {tc.matched_condition}
+                      {zh ? "觸發條件：" : "Matches: "}{tc.matched_condition}
                     </div>
                   )}
-                  <pre className="font-data text-xs text-graphite whitespace-pre-wrap break-all leading-[1.7]">
+                  <pre className="font-data text-xs text-graphite whitespace-pre-wrap [overflow-wrap:anywhere] leading-[1.7]">
                     {tc.input}
                   </pre>
                 </li>
@@ -345,8 +344,8 @@ export default async function RuleDetailPage({
             </ol>
             <p className="text-xs text-mist mt-3 leading-[1.7]">
               {zh
-                ? "這些是真實攻擊 payload 的脫敏版本，跟規則一起版本化，當作回歸測試。之後改規則時要是漏掉其中一個，不會沒人發現。"
-                : "Real-world attack payloads, sanitized and versioned with the rule as regression tests. A later revision can't quietly stop catching them."}
+                ? "這些是真實攻擊 payload 的脫敏版本，跟規則一起版本化，當作回歸測試。之後改規則時，如果其中一個範例不再命中，一定看得出來。"
+                : "Real-world attack payloads, sanitized and versioned with the rule as regression tests. If a later revision stops catching one, it shows."}
             </p>
           </div>
         )}
@@ -359,13 +358,13 @@ export default async function RuleDetailPage({
             </h2>
             <ol className="space-y-3">
               {detail.trueNegatives.map((tc, i) => (
-                <li key={i} className="bg-green/[0.05] border-l-2 border-green p-3 md:p-4">
+                <li key={i} className="border-l-2 border-fog pl-4 py-2">
                   {tc.description && (
-                    <div className="font-data text-[10px] text-green uppercase tracking-wide mb-2">
+                    <div className="font-data text-[10px] text-stone uppercase tracking-wide mb-2">
                       {tc.description}
                     </div>
                   )}
-                  <pre className="font-data text-xs text-graphite whitespace-pre-wrap break-all leading-[1.7]">
+                  <pre className="font-data text-xs text-graphite whitespace-pre-wrap [overflow-wrap:anywhere] leading-[1.7]">
                     {tc.input}
                   </pre>
                 </li>
@@ -399,13 +398,13 @@ export default async function RuleDetailPage({
             </h2>
             <ol className="space-y-3">
               {detail.evasionTests.map((ev, i) => (
-                <li key={i} className="bg-high/[0.05] border-l-2 border-high p-3 md:p-4">
+                <li key={i} className="border-l-2 border-ink/30 pl-4 py-2">
                   {ev.bypass_technique && (
-                    <div className="font-data text-[10px] text-high uppercase tracking-wide mb-2">
-                      {zh ? "手法" : "Technique"}: {ev.bypass_technique.replace(/_/g, " ")}
+                    <div className="font-data text-[10px] text-stone uppercase tracking-wide mb-2">
+                      {zh ? "手法：" : "Technique: "}{ev.bypass_technique.replace(/_/g, " ")}
                     </div>
                   )}
-                  <pre className="font-data text-xs text-graphite whitespace-pre-wrap break-all leading-[1.7] mb-2">
+                  <pre className="font-data text-xs text-graphite whitespace-pre-wrap [overflow-wrap:anywhere] leading-[1.7] mb-2">
                     {ev.input}
                   </pre>
                   {ev.notes && (
@@ -416,8 +415,8 @@ export default async function RuleDetailPage({
             </ol>
             <p className="text-xs text-mist mt-3 leading-[1.7]">
               {zh
-                ? "這些繞過手法是公開記錄的。已知的限制直接寫在規則裡，不藏起來。"
-                : "These bypasses are documented in public. Known limits ship inside the rule, not in a footnote."}
+                ? "這些繞過手法都有公開紀錄。已知的限制就寫在規則本身。"
+                : "These bypasses are documented in public. The rule itself lists its known limits."}
             </p>
           </div>
         )}

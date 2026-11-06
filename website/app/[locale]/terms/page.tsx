@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       locale,
       path: "/terms",
       title: locale === "zh" ? "使用條款" : "Terms of use",
-      description: locale === "zh" ? "網站內容與 ATR 規則的授權、商標，以及沒有擔保的範圍。" : "The licence for the site and the ATR rules, the trademarks, and what is not warranted.",
+      description: locale === "zh" ? "網站內容與 ATR 規則的授權、商標，以及沒有擔保的範圍。" : "The license for the site and the ATR rules, the trademarks, and what is not warranted.",
     }),
     ...(LEGAL_DRAFT ? { robots: { index: false, follow: true } } : {}),
   };
@@ -26,9 +26,9 @@ type B = { en: string; zh: string };
 
 const SECTIONS: ReadonlyArray<{ h: B; body: B; link?: { href: string; label: string } }> = [
   {
-    h: { en: "Licence", zh: "授權" },
+    h: { en: "License", zh: "授權" },
     body: {
-      en: "The rules, the specification, the reference engine and this site's source are in the ATR repository under the MIT licence. You may use, copy, modify and redistribute them under its terms.",
+      en: "The rules, the specification, the reference engine and this site's source are in the ATR repository under the MIT license. You may use, copy, modify and redistribute them under its terms.",
       zh: "規則、規格、參考引擎與本網站的原始碼都在 ATR repository，以 MIT 授權釋出。你可以依授權條款使用、複製、修改與再散布。",
     },
     link: { href: `${REPO_URL}/blob/main/LICENSE`, label: "LICENSE" },
@@ -44,7 +44,7 @@ const SECTIONS: ReadonlyArray<{ h: B; body: B; link?: { href: string; label: str
   {
     h: { en: "No warranty", zh: "不提供擔保" },
     body: {
-      en: "Rules and software are provided as is, without warranty of any kind, as the MIT licence states. Detection rules miss attacks and raise false positives; the published limitations and errata say where. Nothing on this site is legal advice or a statement that any system complies with a law or a standard.",
+      en: "Rules and software are provided as is, without warranty of any kind, as the MIT license states. Detection rules miss attacks and raise false positives; the published limitations and errata say where. Nothing on this site is legal advice or a statement that any system complies with a law or a standard.",
       zh: "規則與軟體依 MIT 授權「按現狀」提供，不附任何擔保。偵測規則會漏報、也會誤報，已知限制與勘誤寫明在哪裡。本網站任何內容都不是法律意見，也不代表任何系統符合任何法規或標準。",
     },
   },

@@ -82,10 +82,14 @@ export function getSpecMeta(): SpecMeta {
   };
 }
 
-/** Format an ISO date as e.g. "26 May 2026" (W3C style). */
-export function formatSpecDate(iso: string): string {
+/**
+ * Format an ISO date as e.g. "26 May 2026" (W3C style). Chinese pages get the
+ * plain calendar date, 2026-05-26, which is how dates are written there.
+ */
+export function formatSpecDate(iso: string, locale?: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
+  if (locale === "zh") return d.toISOString().slice(0, 10);
   // The ISO date is a calendar date (parsed as UTC midnight); format it in UTC
   // or every timezone west of Greenwich shows the day before.
   return d.toLocaleDateString("en-GB", {

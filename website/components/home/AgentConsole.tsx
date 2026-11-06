@@ -9,9 +9,9 @@ type Match = { id: string; title: string; severity: string; category: string | n
 type Step = { type: string; role: string; name: string | null; content: string; attack: string | null; matches: { hunt: Match[]; alert: Match[]; enforce: Match[] } };
 
 const LABELS: Record<string, { en: string; zh: string }> = {
-  coding: { en: "Coding agent", zh: "程式助手" },
-  support: { en: "Support agent", zh: "客服" },
-  automation: { en: "Ops agent", zh: "自動化" },
+  coding: { en: "Coding agent", zh: "寫程式的 agent" },
+  support: { en: "Support agent", zh: "客服 agent" },
+  automation: { en: "Ops agent", zh: "維運 agent" },
 };
 
 // Per scenario: blank, task, tool call, tool result, scan, verdict.
@@ -91,13 +91,13 @@ export function AgentConsole({ locale, ruleCount }: { locale: string; ruleCount:
               </div>
             </div>
           )}
-          {beat < 4 && <div className="font-data text-[11.5px] text-mist">{zh ? "ATR 在每一則輸入上執行" : "ATR runs on every message"}</div>}
+          {beat < 4 && <div className="font-data text-[11.5px] text-mist">{zh ? "每一則輸入，ATR 都會跑一遍" : "ATR runs on every message"}</div>}
         </div>
       </div>
 
       <p className="relative mt-3 text-[11.5px] text-stone">
         {zh
-          ? `判定為 agent-threat-rules ${data.engine} 實際跑出的結果；攻擊內容取自規則的測試案例。`
+          ? `以上判定，是 agent-threat-rules ${data.engine} 實際跑出來的結果。攻擊內容取自規則的測試案例。`
           : `Verdicts are what agent-threat-rules ${data.engine} actually returned. Each attack is taken from a rule's test cases.`}
       </p>
     </div>

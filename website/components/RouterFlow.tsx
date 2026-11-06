@@ -18,7 +18,7 @@ const STILL = 13000;
 const OUTPUTS = [
   { name: "SARIF", to: { en: "for CI", zh: "給 CI" } },
   { name: "OSCAL", to: { en: "for GRC tools", zh: "給 GRC 工具" } },
-  { name: "receipt.dsse.json", to: { en: "for auditors and insurers", zh: "給稽核與保險" } },
+  { name: "receipt.dsse.json", to: { en: "for auditors and insurers", zh: "給稽核與保險業者" } },
 ];
 const ADAPTERS = ["agent.yaml", "Claude Code", "Grok Build"];
 
@@ -78,6 +78,7 @@ export function RouterFlow({ locale }: { locale: string }) {
 
   return (
     <div ref={rootRef} className="relative">
+      <div className="absolute right-0 -top-8 text-[11.5px] text-mist">{zh ? "示意，不是實測結果" : "Illustration, not a measured result"}</div>
       {anchors && anchors.w >= 900 && (
         <svg className="absolute inset-0 w-full h-full pointer-events-none hidden lg:block" viewBox={`0 0 ${anchors.w} ${anchors.h}`} aria-hidden="true">
           {ATOMICS.map((a, j) =>
@@ -168,7 +169,7 @@ export function RouterFlow({ locale }: { locale: string }) {
                   ref={(el) => {
                     tileRefs.current[j] = el;
                   }}
-                  className={`relative overflow-hidden border px-3 py-2 transition-all duration-500 ${on ? "border-ink bg-white" : "border-fog"} ${off ? "opacity-35" : ""}`}
+                  className={`relative overflow-hidden border px-3 py-2 transition-all duration-500 ${on ? "border-ink bg-white" : "border-fog"} ${off ? "opacity-60" : ""}`}
                 >
                   <div className="flex items-baseline gap-3">
                     <span className={`font-data text-[10.5px] shrink-0 ${on ? "text-ink" : "text-mist"}`}>{a.id}</span>

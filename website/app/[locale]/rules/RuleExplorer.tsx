@@ -75,10 +75,10 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
 
   const laneLabel = (value: LaneFilter): string => {
     const labels: Record<LaneFilter, { en: string; zh: string }> = {
-      enforce: { en: "enforce lane (maturity stable)", zh: "enforce lane(maturity stable)" },
-      alert: { en: "alert lane (stable + test)", zh: "alert lane(stable + test)" },
-      hunt: { en: "hunt lane (default)", zh: "hunt lane(預設)" },
-      inert: { en: "inert (no lane loads it)", zh: "inert(任何 lane 都不載入)" },
+      enforce: { en: "enforce lane (maturity stable)", zh: "enforce 車道（成熟度 stable）" },
+      alert: { en: "alert lane (stable + test)", zh: "alert 車道（stable + test）" },
+      hunt: { en: "hunt lane (default)", zh: "hunt 車道（預設）" },
+      inert: { en: "inert (no lane loads it)", zh: "inert（任何車道都不載入）" },
     };
     return zh ? labels[value].zh : labels[value].en;
   };
@@ -132,10 +132,10 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
         <select
           value={selectedLane ?? ""}
           onChange={(e) => setSelectedLane((e.target.value || null) as LaneFilter | null)}
-          aria-label={zh ? "依 lane 篩選" : "Filter by lane"}
+          aria-label={zh ? "依車道篩選" : "Filter by lane"}
           className="bg-white border border-fog px-4 py-2.5 text-sm text-stone font-data appearance-none cursor-pointer focus:outline-none"
         >
-          <option value="">{zh ? "所有 lane 與 inert" : "All lanes and inert"}</option>
+          <option value="">{zh ? "所有車道與 inert" : "All lanes and inert"}</option>
           {laneOptions.map((o) => (
             <option key={o.value} value={o.value}>
               {laneLabel(o.value)} ({o.count})
@@ -206,11 +206,11 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
                   {(lanesById.get(rule.id) ?? []).length === 0 && <span className="ml-1 text-high">(inert)</span>}
                 </div>
                 <div className="px-4 py-3 font-data text-xs text-stone">
-                  <span className="lg:hidden text-mist">{zh ? "掃描目標: " : "scan target: "}</span>
+                  <span className="lg:hidden text-mist">{zh ? "掃描目標：" : "scan target: "}</span>
                   {rule.scanTarget ?? "--"}
                 </div>
                 <div className="px-4 py-3 font-data text-xs text-stone">
-                  {rule.cves.length > 0 ? rule.cves.join(", ") : "--"}
+                  {rule.cves.length > 0 ? `${rule.cves[0]}${rule.cves.length > 1 ? ` +${rule.cves.length - 1}` : ""}` : "--"}
                 </div>
               </button>
 
@@ -224,11 +224,11 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
                     </div>
                     <div className="space-y-4">
                       <div>
-                        <div className="font-data text-xs text-stone uppercase tracking-wider mb-1">{zh ? "載入此規則的 lane" : "Lanes that load this rule"}</div>
+                        <div className="font-data text-xs text-stone uppercase tracking-wider mb-1">{zh ? "載入此規則的車道" : "Lanes that load this rule"}</div>
                         <div className="font-data text-xs text-ink">
                           {(lanesById.get(rule.id) ?? []).length > 0
                             ? (lanesById.get(rule.id) ?? []).join(", ")
-                            : zh ? `無(status ${rule.status ?? "?"},inert)` : `none (status ${rule.status ?? "?"}, inert)`}
+                            : zh ? `無（status ${rule.status ?? "?"}，inert）` : `none (status ${rule.status ?? "?"}, inert)`}
                         </div>
                       </div>
                       {rule.owaspAgentic.length > 0 && (
