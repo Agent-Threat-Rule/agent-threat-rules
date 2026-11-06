@@ -1,9 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import type { Member, Tier } from "@/lib/community";
-import { Sign } from "@/components/Sign";
 
 type Tab = Tier | "all";
 
@@ -82,9 +80,7 @@ export function MemberDirectory({ members, locale }: { members: Member[]; locale
               ? zh ? "沒有符合的成員。" : "No member matches that search."
               : zh ? "這一組還沒有人列名。" : "No one is listed in this group yet."}
           </p>
-          <Link href={`/${locale}/community/join`} className="inline-block mt-3 text-[13px] text-blue hover:underline underline-offset-4">
-            {zh ? "成為這一組的創始成員" : "Be a founding member of this group"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
-          </Link>
+          <p className="mt-3 text-[13px] text-stone">{zh ? "入會暫停受理，隱私說明定稿後開放。" : "Joining is paused until the privacy notice is final."}</p>
         </div>
       ) : (
         <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 border-l border-fog bg-white/40">

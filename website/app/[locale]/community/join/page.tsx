@@ -5,7 +5,6 @@ import { pageMetadata } from "@/lib/seo";
 import { SectionHead } from "@/components/SectionHead";
 import { SheetRow } from "@/components/Sheet";
 import Phrased from "@/components/Phrased";
-import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -13,21 +12,22 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  return pageMetadata({
-    locale,
-    path: "/community/join",
-    title: locale === "zh" ? "加入社群" : "Join the community",
-    description:
-      locale === "zh"
-        ? "以專家或貢獻者的身分加入 ATR 社群：誰適合、要做什麼、怎麼申請，以及你的資料怎麼處理。"
-        : "Join the ATR community as an expert or a contributor: who it is for, what you do, how to apply, and how your data is handled.",
-  });
+  // Joining is paused until the privacy notice is final: the page is not
+  // linked, not indexed, and takes no applications.
+  return {
+    ...pageMetadata({
+      locale,
+      path: "/community/join",
+      title: locale === "zh" ? "加入社群" : "Join the community",
+      description:
+        locale === "zh"
+          ? "以專家或貢獻者的身分加入 ATR 社群：誰適合、要做什麼、怎麼申請，以及你的資料怎麼處理。"
+          : "Join the ATR community as an expert or a contributor: who it is for, what you do, how to apply, and how your data is handled.",
+    }),
+    robots: { index: false, follow: false },
+  };
 }
 
-const ISSUE_FORM = "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=join-community.yml";
-// Form for applicants without a GitHub account. Set once the form exists;
-// until then the page offers email instead of a dead link.
-const NO_GITHUB_FORM_URL: string | null = null;
 const CONTACT = "contact@agentthreatrule.org";
 
 type B = { en: string; zh: string };
@@ -76,7 +76,6 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
   const zh = locale === "zh";
   const prefix = `/${locale}`;
   const pick = (t: B) => (zh ? t.zh : t.en);
-  const noGithubHref = NO_GITHUB_FORM_URL ?? `mailto:${CONTACT}?subject=${encodeURIComponent("Joining the ATR community")}`;
 
   return (
     <Phrased>
@@ -116,19 +115,8 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
         </p>
       </section>
 
-      <section className="mt-14 grid sm:grid-cols-2 gap-px bg-fog border border-fog">
-        <a href={ISSUE_FORM} className="bg-paper p-6 hover:bg-ash transition-colors">
-          <div className="font-data text-[10px] uppercase tracking-[0.08em] text-mist">{zh ? "有 GitHub 帳號" : "With a GitHub account"}</div>
-          <div className="mt-2 text-[16px] text-ink">{zh ? "用 GitHub 表單申請" : "Apply with the GitHub form"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" /></div>
-          <p className="mt-2 text-[13px] leading-[1.6] text-stone">{zh ? "會建立一則公開的 issue。" : "Creates a public issue."}</p>
-        </a>
-        <a href={noGithubHref} className="bg-paper p-6 hover:bg-ash transition-colors">
-          <div className="font-data text-[10px] uppercase tracking-[0.08em] text-mist">{zh ? "沒有 GitHub 帳號" : "Without a GitHub account"}</div>
-          <div className="mt-2 text-[16px] text-ink">{NO_GITHUB_FORM_URL ? (zh ? "填申請表" : "Fill in the form") : (zh ? "用 email 申請" : "Apply by email")}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" /></div>
-          <p className="mt-2 text-[13px] leading-[1.6] text-stone">
-            {zh ? "請附：姓名、職稱、所屬單位、想擔任的身分、專長。" : "Include your name, title, organization, the role you want and your expertise."}
-          </p>
-        </a>
+      <section className="mt-14 border-t border-ink pt-6">
+        <p className="text-[16px] text-ink">{zh ? "入會暫停受理，隱私說明定稿後開放。" : "Joining is paused until the privacy notice is final."}</p>
       </section>
 
       <section className="mt-14">

@@ -106,8 +106,8 @@ export function Nav({ locale, meta }: { locale: Locale; meta: HeaderMeta }) {
             <Link href={`${prefix}/spec`} className="flex items-center px-4 border-l border-fog w-[200px] text-[14px] text-ink hover:bg-white transition-colors">
               {zh ? "讀規格" : "Read the spec"}
             </Link>
-            <Link href={`${prefix}/community/join`} className="flex items-center px-4 border-l border-fog w-[200px] text-[14px] text-ink hover:bg-white transition-colors">
-              {zh ? "加入社群" : "Join the community"}
+            <Link href={`${prefix}/community`} className="flex items-center px-4 border-l border-fog w-[200px] text-[14px] text-ink hover:bg-white transition-colors">
+              {zh ? "社群" : "Community"}
             </Link>
           </nav>
         </div>

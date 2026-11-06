@@ -39,7 +39,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
       note: zh ? "請勿開公開 issue；見 SECURITY.md" : "Do not open a public issue; see SECURITY.md",
     },
     { reason: zh ? "商標" : "Trademark", channel: <a href={`mailto:${CONTACTS.trademark}`} className={a}>{CONTACTS.trademark}</a>, note: zh ? "標示使用；見 TRADEMARK.md" : "Use of the marks; see TRADEMARK.md" },
-    { reason: zh ? "加入社群" : "Joining", channel: <Link href={`${p}/community/join`} className={a}>{zh ? "加入頁" : "Join page"}</Link>, note: zh ? "GitHub 表單或 email" : "GitHub form or email" },
+    { reason: zh ? "加入社群" : "Joining", channel: <span>{zh ? "暫停受理" : "Paused"}</span>, note: zh ? "隱私說明定稿後開放" : "Opens once the privacy notice is final" },
     { reason: zh ? "錯誤、誤判、繞過" : "Bugs, false positives, bypasses", channel: <a href={`${REPO_URL}/issues/new/choose`} className={a}>GitHub issues</a>, note: zh ? "有對應表單" : "There is a form for each" },
     { reason: zh ? "問題與討論" : "Questions and discussion", channel: <a href={`${REPO_URL}/discussions`} className={a}>GitHub Discussions</a>, note: zh ? "公開，任何人可回答" : "Public; anyone can answer" },
   ];

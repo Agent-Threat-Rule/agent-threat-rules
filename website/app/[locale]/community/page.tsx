@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { locales, type Locale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
@@ -44,8 +43,8 @@ const WORKING_GROUPS: ReadonlyArray<{ name: { en: string; zh: string }; scope: {
 ];
 
 const CADENCE: ReadonlyArray<{ when: { en: string; zh: string }; what: { en: string; zh: string } }> = [
-  { when: { en: "Monthly", zh: "每月" }, what: { en: "A written community update in GitHub Discussions, also sent by email to members.", zh: "一則書面社群更新，發在 GitHub Discussions，並寄給成員。" } },
-  { when: { en: "Quarterly", zh: "每季" }, what: { en: "A survey on what to cover next. The results are published and cited in the release notes.", zh: "一份問卷，問接下來該優先覆蓋什麼。結果公開，也會寫進版本說明。" } },
+  { when: { en: "Monthly", zh: "每月" }, what: { en: "A written community update in GitHub Discussions (planned).", zh: "一則書面社群更新，發在 GitHub Discussions（規劃中）。" } },
+  { when: { en: "Quarterly", zh: "每季" }, what: { en: "A survey on what to cover next, with the results published (planned).", zh: "一份問卷，問接下來該優先覆蓋什麼，結果公開（規劃中）。" } },
   { when: { en: "Every release", zh: "每次發版" }, what: { en: "Contributors are named in the release notes and on the rules they wrote.", zh: "版本說明和貢獻者寫的規則上，都會列出他們的名字。" } },
   { when: { en: "Optional", zh: "選擇性" }, what: { en: "An open call when there is something to decide live. Decisions are written back to GitHub.", zh: "有需要即時討論的事才開線上會議；決定一律寫回 GitHub。" } },
 ];
@@ -54,7 +53,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
   const { locale: raw } = await params;
   const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
   const zh = locale === "zh";
-  const prefix = `/${locale}`;
   const pick = (t: { en: string; zh: string }) => (zh ? t.zh : t.en);
   const members = loadMembers();
   const contributors = loadGithubContributors();
@@ -75,9 +73,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
               : "Experts advise on what to cover first and how the frameworks map. Contributors write and review rules. Anyone may open issues and pull requests. Only maintainers with repository permission can merge."}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href={`${prefix}/community/join`} className="bg-ink text-white text-[14px] px-5 py-2.5 hover:bg-black transition-colors">
-              {zh ? "加入社群" : "Join the community"}
-            </Link>
+            <p className="text-[14px] text-stone">{zh ? "入會暫停受理，隱私說明定稿後開放。" : "Joining is paused until the privacy notice is final."}</p>
           </div>
         </div>
         <div className="self-end border-t border-fog pt-4 font-data text-[11.5px] leading-[1.7] text-stone">

@@ -106,8 +106,8 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
     {
       q: zh ? "怎麼加入？" : "How do I join?",
       a: zh
-        ? <>見<Link href={`${p}/community/join`} className={a}>加入社群</Link>。加入免費，名錄只列本人同意公開的人。</>
-        : <>See <Link href={`${p}/community/join`} className={a}>join the community</Link>. Joining is free, and the directory lists only people who agreed to be listed.</>,
+        ? <>入會暫停受理，隱私說明定稿後開放。開放後加入免費，名錄只列本人同意公開的人。</>
+        : <>Joining is paused until the privacy notice is final. Once it opens, joining is free, and the directory lists only people who agreed to be listed.</>,
     },
   ];
 

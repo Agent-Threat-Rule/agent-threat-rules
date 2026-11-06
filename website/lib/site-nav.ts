@@ -76,7 +76,6 @@ export const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     path: "/community",
     links: [
       { path: "/community", label: { en: "People", zh: "成員" } },
-      { path: "/community/join", label: { en: "Join", zh: "加入" } },
       { path: "/contribute", label: { en: "Contribute", zh: "參與貢獻" } },
       { path: "/governance", label: { en: "Governance", zh: "治理" } },
       { path: "/charter", label: { en: "Charter", zh: "章程" } },
