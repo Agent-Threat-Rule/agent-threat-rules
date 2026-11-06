@@ -24,7 +24,7 @@ export async function generateMetadata({
     path: "/quality-standard",
     title: "Quality Standard (RFC-001 v1.1)",
     description:
-      "An open detection-rule quality standard for the AI agent era. A maturity ladder with explicit gates, detection lanes that report false-positive rates per lane instead of a single figure, a vendor-neutral validator anyone can run, wild-validated on 101,280 real agent skills and MCP definitions (engine v2.0.0, as of 2026-04-13). MIT licensed. Effective 2026-04-14.",
+      "An open detection-rule quality standard for the AI agent era. A maturity ladder with explicit gates, detection lanes measured separately instead of with a single figure, and a vendor-neutral validator anyone can run. MIT licensed. Effective 2026-04-14.",
   });
 }
 
