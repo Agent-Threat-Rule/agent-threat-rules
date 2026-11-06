@@ -5,7 +5,6 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { loadVersionLabels } from "@/lib/versions";
-import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -52,13 +51,12 @@ export default async function ChangelogPage({
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
       <Reveal>
-        <Seal name="laurel" size={72} className="text-ink mb-7" />
         <div className="text-[13px] text-stone mb-3">
           {zh ? "版本歷程" : "Changelog"}
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.035em] font-medium text-ink">
+        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
           {zh ? "每一次發布。" : "Every release."}
           <br />
           {zh ? "都查得到。" : "On the record."}
@@ -100,7 +98,7 @@ export default async function ChangelogPage({
             <Reveal key={entry.version} delay={0.2 + i * 0.03}>
               <article className="border-t border-fog pt-8">
                 <div className="flex items-baseline justify-between gap-3 flex-wrap mb-6">
-                  <h2 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.025em] font-medium text-ink">
+                  <h2 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.01em] font-medium text-ink">
                     v{entry.version}
                   </h2>
                   {entry.date && (

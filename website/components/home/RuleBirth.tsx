@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { useSteps } from "@/lib/use-steps";
-import { Emblem } from "@/components/classical/Emblem";
-import type { EmblemName } from "@/lib/emblems";
 
 export interface BirthRule {
   id: string;
@@ -25,10 +23,9 @@ export interface BirthRule {
 
 type B = { en: string; zh: string };
 
-const STEPS: ReadonlyArray<{ key: string; emblem: EmblemName; label: B; head: B; body: B }> = [
+const STEPS: ReadonlyArray<{ key: string; label: B; head: B; body: B }> = [
   {
     key: "incident",
-    emblem: "torch",
     label: { en: "Incident", zh: "事件" },
     head: { en: "Someone finds a new way in", zh: "有人找到新的入口" },
     body: {
@@ -38,7 +35,6 @@ const STEPS: ReadonlyArray<{ key: string; emblem: EmblemName; label: B; head: B;
   },
   {
     key: "rule",
-    emblem: "stele",
     label: { en: "Rule", zh: "規則" },
     head: { en: "It is written down once", zh: "寫下來，一次就好" },
     body: {
@@ -48,7 +44,6 @@ const STEPS: ReadonlyArray<{ key: string; emblem: EmblemName; label: B; head: B;
   },
   {
     key: "tests",
-    emblem: "scales",
     label: { en: "Tests", zh: "測試" },
     head: { en: "It has to prove both ways", zh: "該抓的抓，不該抓的放" },
     body: {
@@ -58,7 +53,6 @@ const STEPS: ReadonlyArray<{ key: string; emblem: EmblemName; label: B; head: B;
   },
   {
     key: "release",
-    emblem: "laurel",
     label: { en: "Release", zh: "發布" },
     head: { en: "Everyone gets it", zh: "所有人一起拿到" },
     body: {
@@ -83,14 +77,14 @@ export function RuleBirth({ locale, rule }: { locale: string; rule: BirthRule })
       <div className="grid grid-cols-4 border-b border-fog" role="tablist">
         {STEPS.map((s, i) => (
           <button key={s.key} role="tab" aria-selected={i === step} onClick={() => setStep(i)} className="relative text-left pb-3 pt-1 text-[13px] transition-colors">
-            <span className={`inline-flex items-center gap-2 ${i === step ? "text-ink" : "text-mist hover:text-ink"}`}>
-              <Emblem name={s.emblem} size={20} stroke={1.2} className="hidden sm:block" />
+            <span className={i === step ? "text-ink" : "text-mist hover:text-ink"}>
+              <span className="font-data text-[11px] mr-2">{String(i + 1).padStart(2, "0")}</span>
               {pick(s.label)}
             </span>
             <span className="absolute left-0 right-3 -bottom-px h-[2px] bg-fog overflow-hidden">
               <span
                 key={`${step}-${i}`}
-                className={`block h-full bg-brand ${i < step ? "w-full" : i === step ? "w-0 animate-[grow_5200ms_linear_forwards]" : "w-0"}`}
+                className={`block h-full bg-ink ${i < step ? "w-full" : i === step ? "w-0 animate-[grow_5200ms_linear_forwards]" : "w-0"}`}
                 style={i === step && hover ? { animationPlayState: "paused" } : undefined}
               />
             </span>
@@ -100,7 +94,6 @@ export function RuleBirth({ locale, rule }: { locale: string; rule: BirthRule })
 
       <div className="mt-10 grid lg:grid-cols-[1.15fr_1fr] gap-10 lg:gap-16 items-center">
         <div className="relative min-h-[320px] flex items-center justify-center py-8">
-          <div className="absolute inset-0 grid-paper grid-paper-fade pointer-events-none" aria-hidden="true" />
           <div key={current.key} className="relative w-full max-w-[460px] animate-[fadein_450ms_ease-out]">
             {current.key === "incident" && <IncidentCard zh={zh} reported={rule.reported} />}
             {current.key === "rule" && <RuleCard rule={rule} />}
@@ -120,7 +113,7 @@ export function RuleBirth({ locale, rule }: { locale: string; rule: BirthRule })
   );
 }
 
-const CARD = "bg-white border border-fog shadow-[0_20px_50px_-30px_rgba(0,0,0,0.3)]";
+const CARD = "bg-white border border-ink";
 
 function IncidentCard({ zh, reported }: { zh: boolean; reported: string }) {
   return (

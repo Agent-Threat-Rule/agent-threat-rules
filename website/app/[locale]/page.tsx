@@ -18,8 +18,6 @@ import { CATEGORY_ORDER } from "@/lib/docs-nav";
 import { pageMetadata, SITE_NAME } from "@/lib/seo";
 import { SheetRow } from "@/components/Sheet";
 import { CategoryFrieze } from "@/components/classical/CategoryFrieze";
-import { Emblem, Meander, Seal } from "@/components/classical/Emblem";
-import { CATEGORY_EMBLEM, type EmblemName } from "@/lib/emblems";
 import { AgentConsole } from "@/components/home/AgentConsole";
 import { RuleBirth, type BirthRule } from "@/components/home/RuleBirth";
 import { AdoptGuide } from "@/components/AdoptGuide";
@@ -79,7 +77,7 @@ const INDIVIDUALS = new Set(["Independent", "Ajay Nyayapathi"]);
 
 const REFERENCES = ["MITRE ATLAS", "OWASP Agentic", "OWASP LLM", "NIST AI RMF", "EU AI Act", "ISO/IEC 42001"];
 
-const H2 = "text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium text-ink";
+const H2 = "text-[30px] md:text-[40px] leading-[1.18] tracking-[-0.01em] text-ink";
 const KICKER = "text-[13px] text-stone";
 const BUTTON = "inline-flex items-center h-11 px-5 text-[14px] transition-colors";
 const TEXT_LINK = "text-[14px] text-ink underline underline-offset-[6px] decoration-2 hover:decoration-ink";
@@ -134,11 +132,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const birthLanes = detail ? rulesLanes({ status: detail.status, maturity: detail.maturity }) : [];
 
   const figures: Array<[string, string]> = [
-    [String(stats.ruleCount), zh ? "條生效規則" : "effective rules"],
-    [String(stats.categoryCount), zh ? "個威脅類別" : "threat categories"],
-    [String(orgs.length), zh ? "個組織合併過" : "organisations have merged it"],
-    [specVersion, zh ? "規格版本" : "specification"],
-    ["MIT", zh ? "授權，免費" : "licence, free"],
+    [specVersion, zh ? "規格" : "Specification"],
+    [String(stats.ruleCount), zh ? "生效規則" : "Effective rules"],
+    [String(stats.categoryCount), zh ? "威脅類別" : "Threat categories"],
+    [String(orgs.length), zh ? "合併過的組織" : "Organisations that merged it"],
+    ["MIT", zh ? "授權" : "Licence"],
   ];
 
   return (
@@ -147,11 +145,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <SheetRow>
         <div className="grid lg:grid-cols-[1fr_1.08fr] gap-12 lg:gap-14 items-center px-6 md:px-14 pt-14 md:pt-20 pb-16">
           <div className="min-w-0">
-            <div className={`${KICKER} flex items-center gap-2`}>
-              <span className="w-2 h-2 bg-brand" aria-hidden="true" />
+            <div className={KICKER}>
               {zh ? "開放標準 · Agent Threat Rules" : "Open standard · Agent Threat Rules"}
             </div>
-            <h1 className="mt-6 text-[42px] sm:text-[54px] lg:text-[62px] leading-[1.05] tracking-[-0.035em] font-medium text-ink">
+            <h1 className="mt-6 text-[42px] sm:text-[56px] lg:text-[66px] leading-[1.06] tracking-[-0.01em] text-ink">
               {zh ? <>AI agent 的<br />資安規則。</> : <>Security rules<br />for AI agents.</>}
             </h1>
             <p className="mt-6 text-[17px] leading-[1.7] text-graphite max-w-[500px] text-pretty">
@@ -166,12 +163,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
           <AgentConsole locale={locale} ruleCount={stats.ruleCount} />
         </div>
-        <dl className="grid grid-cols-2 sm:grid-cols-5 border-t border-fog">
-          {figures.map(([value, label], i) => (
-            <div key={label} className={`px-6 md:px-8 py-5 border-fog ${i > 0 ? "sm:border-l" : ""} ${i % 2 === 1 ? "border-l sm:border-l" : ""} ${i >= 2 ? "border-t sm:border-t-0" : ""}`}>
-              <dt className="sr-only">{label}</dt>
-              <dd className="text-[24px] tracking-[-0.02em] text-ink tabular-nums">{value}</dd>
-              <dd className="mt-0.5 text-[12.5px] text-stone">{label}</dd>
+        <dl className="flex flex-wrap gap-x-6 gap-y-2 border-t border-fog px-6 md:px-14 py-4 text-[13px]">
+          {figures.map(([value, label]) => (
+            <div key={label} className="flex items-baseline gap-1.5">
+              <dt className="text-stone">{label}</dt>
+              <dd className="font-data text-ink tabular-nums">{value}</dd>
             </div>
           ))}
         </dl>
@@ -189,6 +185,31 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <li key={o} className="text-[19px] md:text-[21px] tracking-[-0.01em] text-ink/70 whitespace-nowrap">{o}</li>
             ))}
           </ul>
+        </div>
+      </SheetRow>
+
+      {/* Coverage */}
+      <SheetRow>
+        <div className="px-6 md:px-14 py-24 md:py-28">
+          <div className={KICKER}>{zh ? "涵蓋範圍" : "Coverage"}</div>
+          <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "有紀錄的攻擊，就有名字。" : "A documented attack gets a name.")}</h2>
+          <p className="mt-5 text-[16px] leading-[1.75] text-graphite max-w-[620px]">
+            {zh ? "十個類別，從被下毒的工具說明，到被悄悄換掉的目標。每一格都連到該類別的規則。" : "Ten categories, from a poisoned tool description to a goal quietly swapped for another. Each panel opens the rules in its category."}
+          </p>
+          <div className="mt-12">
+            <CategoryFrieze
+              countLabel={zh ? "條規則" : "rules"}
+              inscription={REFERENCES}
+              items={categories.map((c, i) => ({
+                key: c,
+                letter: GREEK[i] ?? String(i + 1),
+                name: categoryDisplayName(c, locale),
+                desc: pick(CATEGORY_DESC[c]),
+                count: effectiveByCategory.get(c) ?? 0,
+                href: `${prefix}/docs/categories/${c}`,
+              }))}
+            />
+          </div>
         </div>
       </SheetRow>
 
@@ -237,32 +258,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </SheetRow>
       )}
-
-      {/* Coverage */}
-      <SheetRow>
-        <div className="px-6 md:px-14 py-24 md:py-28">
-          <div className={KICKER}>{zh ? "涵蓋範圍" : "Coverage"}</div>
-          <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "有紀錄的攻擊，就有名字。" : "A documented attack gets a name.")}</h2>
-          <p className="mt-5 text-[16px] leading-[1.75] text-graphite max-w-[620px]">
-            {zh ? "十個類別，從被下毒的工具說明，到被悄悄換掉的目標。每一格都連到該類別的規則。" : "Ten categories, from a poisoned tool description to a goal quietly swapped for another. Each panel opens the rules in its category."}
-          </p>
-          <div className="mt-12">
-            <CategoryFrieze
-              countLabel={zh ? "條規則" : "rules"}
-              inscription={REFERENCES}
-              items={categories.map((c, i) => ({
-                key: c,
-                letter: String.fromCharCode(65 + i),
-                name: categoryDisplayName(c, locale),
-                desc: pick(CATEGORY_DESC[c]),
-                count: effectiveByCategory.get(c) ?? 0,
-                href: `${prefix}/docs/categories/${c}`,
-                emblem: CATEGORY_EMBLEM[c] ?? "aspis",
-              }))}
-            />
-          </div>
-        </div>
-      </SheetRow>
 
       {/* Crosswalks */}
       <SheetRow>
@@ -315,13 +310,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             return (
               <li key={key} className={`border-fog ${i > 0 ? "border-t md:border-t-0 md:border-l" : ""}`}>
                 <Link href={`${prefix}${tool.href}`} className="group flex flex-col h-full p-6 md:p-8 hover:bg-ash/50 transition-colors">
-                  <div className="relative h-[170px] mb-6 flex items-center justify-center">
-                    <div className="absolute inset-0 grid-paper grid-paper-fade" aria-hidden="true" />
-                    <ToolGlyph kind={key} />
-                  </div>
+                  <span className="font-title text-[44px] leading-none text-ink mb-8" aria-hidden="true">{ROMAN[i]}</span>
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="text-[17px] text-ink">{tool.name}</span>
-                    <span className={`text-[11.5px] ${tool.released ? "text-brand-ink" : "text-alert-ink"}`}>{tool.released ? (zh ? "已發布" : "Released") : zh ? "尚未公開" : "Not yet public"}</span>
+                    <span className="text-[11.5px] text-stone">{tool.released ? (zh ? "已發布" : "Released") : zh ? "尚未公開" : "Not yet public"}</span>
                   </div>
                   <p className="mt-2 text-[15px] text-ink">{pick(tool.line)}</p>
                   <p className="mt-1.5 text-[14px] leading-[1.65] text-graphite flex-1">{pick(tool.body)}</p>
@@ -351,37 +343,26 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
           <Link href={`${prefix}/blog`} className="text-[13px] text-ink hover:underline underline-offset-4 whitespace-nowrap">{zh ? "全部文章 →" : "All posts →"}</Link>
         </div>
-        <div className="grid md:grid-cols-3 gap-6 px-6 md:px-14 pb-24">
+        <ul className="mx-6 md:mx-14 mb-24 border-t border-ink">
           {latestRelease && (
-            <Link href={`${prefix}/changelog`} className="group">
-              <Thumb emblem="laurel" wreath label={`v${latestRelease.version}`} />
-              <div className="mt-4 text-[15px] leading-snug text-ink group-hover:underline underline-offset-4">{zh ? `版本 ${latestRelease.version} 發布` : `Release ${latestRelease.version}`}</div>
-              <div className="mt-1 font-data text-[11px] text-stone">{zh ? "發版" : "Release"} · {latestRelease.date}</div>
-            </Link>
+            <LatestRow href={`${prefix}/changelog`} date={latestRelease.date} kind={zh ? "發版" : "Release"} title={zh ? `版本 ${latestRelease.version} 發布` : `Release ${latestRelease.version}`} />
           )}
           {latestPosts.map((post) => (
-            <Link key={post.slug} href={`${prefix}/blog/${post.slug}`} className="group">
-              <Thumb emblem={post.atrRules[0] ? "stele" : "scroll"} label={post.atrRules[0] ?? (zh ? "文章" : "Note")} />
-              <div className="mt-4 text-[15px] leading-snug text-ink line-clamp-2 group-hover:underline underline-offset-4">{pick(post.title)}</div>
-              <div className="mt-1 font-data text-[11px] text-stone">{zh ? "文章" : "Note"} · {post.date}</div>
-            </Link>
+            <LatestRow key={post.slug} href={`${prefix}/blog/${post.slug}`} date={post.date} kind={zh ? "文章" : "Note"} title={pick(post.title)} />
           ))}
-        </div>
+        </ul>
       </SheetRow>
 
       {/* Close */}
       <SheetRow>
-        <div className="relative overflow-hidden px-6 md:px-14 py-24 md:py-32">
-          <div className="absolute inset-0 grid-paper opacity-60 pointer-events-none" aria-hidden="true" />
-          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-brand-tint to-transparent pointer-events-none" aria-hidden="true" />
-          <div className="relative">
-            <p className="text-[28px] md:text-[40px] leading-[1.25] tracking-[-0.025em] text-ink max-w-[820px] text-balance">
+        <div className="px-6 md:px-14 py-24 md:py-32">
+          <div>
+            <p className="font-title text-[28px] md:text-[40px] leading-[1.3] text-ink max-w-[820px] text-balance">
               {title(zh ? "ATR 永遠免費、開放。沒有一條規則能用錢買進來。" : "ATR is free and open, for good. No rule can be bought into it.")}
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-2">
-              <Link href={`${prefix}/start`} className={`${BUTTON} bg-ink text-white hover:bg-black`}>{zh ? "從這裡開始" : "Start here"}</Link>
-              <Link href={`${prefix}/community/join`} className={`${BUTTON} border border-fog bg-white text-ink hover:border-ink`}>{zh ? "加入社群" : "Join the community"}</Link>
-              <Link href={`${prefix}/contribute`} className={`ml-2 ${TEXT_LINK} decoration-brand`}>{zh ? "寫一條規則" : "Write a rule"}</Link>
+              <Link href={`${prefix}/spec`} className={`${TEXT_LINK} decoration-ink/30`}>{zh ? "讀規格全文" : "Read the specification"}</Link>
+              <Link href={`${prefix}/contribute`} className={`ml-6 ${TEXT_LINK} decoration-ink/30`}>{zh ? "寫一條規則" : "Write a rule"}</Link>
             </div>
           </div>
         </div>
@@ -390,35 +371,19 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   );
 }
 
-/** Card image for the latest items: an engraved emblem framed by two Greek-key bands. */
-function Thumb({ emblem, label, wreath = false }: { emblem: EmblemName; label: string; wreath?: boolean }) {
+/** Greek capitals used to letter the categories, in alphabet order. */
+const GREEK = ["Α", "Β", "Γ", "Δ", "Ε", "Ζ", "Η", "Θ", "Ι", "Κ", "Λ", "Μ"];
+const ROMAN = ["I", "II", "III"];
+
+/** One entry in the record of recent work: date, kind, title. */
+function LatestRow({ href, date, kind, title }: { href: string; date: string; kind: string; title: string }) {
   return (
-    <div className="relative aspect-[16/10] bg-white border border-fog overflow-hidden flex flex-col">
-      <Meander className="text-fog" height={10} />
-      <div className="relative flex-1 flex flex-col items-center justify-center gap-3">
-        <div className="absolute inset-0 grid-paper grid-paper-fade opacity-60" aria-hidden="true" />
-        {wreath ? (
-          <div className="relative flex items-center justify-center">
-            <Emblem name="laurel" size={124} stroke={1.05} className="text-graphite" />
-            <span className="absolute pb-2 text-[19px] tracking-[-0.02em] text-ink">{label}</span>
-          </div>
-        ) : (
-          <>
-            <Emblem name={emblem} size={64} stroke={1.15} className="relative text-ink" />
-            <span className="relative font-data text-[12.5px] text-ink">{label}</span>
-          </>
-        )}
-      </div>
-      <div className="rotate-180">
-        <Meander className="text-fog" height={10} />
-      </div>
-    </div>
+    <li className="border-b border-fog">
+      <Link href={href} className="group grid grid-cols-[96px_1fr] sm:grid-cols-[120px_80px_1fr] gap-x-4 gap-y-1 py-5 items-baseline">
+        <span className="font-data text-[12px] text-stone tabular-nums">{date}</span>
+        <span className="hidden sm:block text-[12.5px] text-stone">{kind}</span>
+        <span className="text-[16px] leading-snug text-ink group-hover:underline underline-offset-4">{title}</span>
+      </Link>
+    </li>
   );
-}
-
-const TOOL_EMBLEM: Record<"rules" | "router" | "eval", EmblemName> = { rules: "stele", router: "labyrinth", eval: "scales" };
-
-/** An engraved emblem for each tool card: the rule tablet, the labyrinth, the scales. */
-function ToolGlyph({ kind }: { kind: "rules" | "router" | "eval" }) {
-  return <Seal name={TOOL_EMBLEM[kind]} size={136} className="relative text-ink" />;
 }

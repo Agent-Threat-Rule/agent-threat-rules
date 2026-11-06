@@ -94,7 +94,7 @@ export default async function NistAiRmfPage({
 
       {/* H1 */}
       <Reveal delay={0.05}>
-        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.035em] font-medium text-ink">
+        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
           {zh ? "NIST AI RMF 定義流程。" : "NIST AI RMF defines the process."}
           <br />
           <span className="text-blue">{zh ? "ATR 讓它偵測得到。" : "ATR makes it detectable."}</span>

@@ -1,6 +1,4 @@
 import Link from "next/link";
-import type { EmblemName } from "@/lib/emblems";
-import { Medallion } from "./Emblem";
 
 export interface FriezeItem {
   key: string;
@@ -9,14 +7,14 @@ export interface FriezeItem {
   desc: string;
   count: number;
   href: string;
-  emblem: EmblemName;
 }
 
 /**
- * The rule categories as the frieze of a temple: a row of metopes, each with
- * the category's emblem, split by triglyphs, over an architrave inscribed with
- * the frameworks the rules are mapped to. On phones the triglyphs drop out
- * and the metopes stack two to a row.
+ * The rule categories as an inscribed frieze: a row of metopes, each carrying
+ * a Greek letter and the category's name, split by triglyphs, over an
+ * architrave inscribed with the frameworks the rules are mapped to. Letters,
+ * not pictures: the names are what is carved. On phones the triglyphs drop
+ * out and the metopes stack two to a row.
  */
 export function CategoryFrieze({ items, inscription, countLabel }: { items: ReadonlyArray<FriezeItem>; inscription: ReadonlyArray<string>; countLabel: string }) {
   // Desktop: two courses of five metopes, each metope preceded by a triglyph
@@ -40,11 +38,9 @@ export function CategoryFrieze({ items, inscription, countLabel }: { items: Read
               href={item.href}
               className={`group flex flex-col items-center text-center px-3 pt-6 pb-5 lg:pt-7 lg:pb-6 border-fog ${i % 2 === 0 ? "border-r" : ""} ${i < items.length - 2 ? "border-b" : ""} lg:border-r-0 ${i < 5 ? "lg:border-b lg:border-ink" : "lg:border-b-0"} hover:bg-ash/40 transition-colors`}
             >
-              <Medallion name={item.emblem} size={84} className="w-[64px] h-[64px] lg:w-[84px] lg:h-[84px] text-ink transition-transform duration-500 group-hover:-translate-y-0.5" />
-              <span className="mt-4 text-[14px] leading-snug text-ink group-hover:underline underline-offset-4">
-                <span className="font-data text-[11px] text-stone mr-1.5">{item.letter}</span>
-                {item.name}
-              </span>
+              <span className="font-spec text-[44px] lg:text-[64px] leading-none text-ink" aria-hidden="true">{item.letter}</span>
+              <span className="mt-2 w-6 h-px bg-ink/30" aria-hidden="true" />
+              <span className="mt-3 text-[14px] leading-snug text-ink group-hover:underline underline-offset-4">{item.name}</span>
               <span className="hidden sm:block mt-1.5 text-[12.5px] leading-[1.55] text-stone max-w-[200px]">{item.desc}</span>
               <span className="mt-2 lg:mt-3 font-data text-[11px] text-graphite tabular-nums">
                 {item.count} {countLabel}
@@ -54,7 +50,11 @@ export function CategoryFrieze({ items, inscription, countLabel }: { items: Read
           </li>
         ))}
       </ul>
-      <p className="px-4 py-3 font-data text-[10.5px] tracking-[0.18em] uppercase text-stone text-center text-balance">{inscription.join("  ·  ")}</p>
+      <ul className="px-4 py-3 flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-x-5 gap-y-1 font-data text-[10.5px] tracking-[0.18em] uppercase text-stone text-center">
+        {inscription.map((name) => (
+          <li key={name}>{name}</li>
+        ))}
+      </ul>
     </div>
   );
 }

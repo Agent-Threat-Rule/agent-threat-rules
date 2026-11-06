@@ -17,7 +17,6 @@ import {
 } from "@/components/IntegrationTypeIcon";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
-import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -74,13 +73,12 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
       {/* Header */}
       <Reveal>
-        <Seal name="laurel" size={72} className="text-ink mb-7" />
         <div className="text-[13px] text-stone mb-3">
           {zh ? "生態系" : "Ecosystem"}
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-2">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-2">
           {zh ? "誰在採用這個標準。" : "Who ships the standard."}
         </h1>
       </Reveal>

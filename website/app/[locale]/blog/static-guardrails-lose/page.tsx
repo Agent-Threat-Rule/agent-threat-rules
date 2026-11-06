@@ -56,7 +56,7 @@ export default async function StaticGuardrailsPostPage({
         <div className="font-data text-xs text-mist mt-6 mb-3">{post.date}</div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.025em] font-medium text-ink mb-10">
+        <h1 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.01em] font-medium text-ink mb-10">
           {zh ? post.title.zh : post.title.en}
         </h1>
       </Reveal>

@@ -85,6 +85,28 @@ body {
   overflow-x: hidden;
 }
 
+/* Page and section titles are set in the serif the specification itself uses,
+   so the site reads as one publication of a standard. Interface text stays in
+   the sans; identifiers stay in the mono. Utilities such as font-data still
+   win, because this sits in the base layer. */
+@layer base {
+  h1,
+  h2,
+  .font-title {
+    font-family: var(--font-spec), var(--font-spec-tc), Georgia, "Songti TC", "Noto Serif TC", serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    font-feature-settings: "kern", "liga";
+  }
+  /* In Chinese pages the Latin words inside a title take the Chinese serif's
+     own Latin, so "AI agent" and the characters around it carry one weight. */
+  :lang(zh) h1,
+  :lang(zh) h2,
+  :lang(zh) .font-title {
+    font-family: var(--font-spec-tc), "Songti TC", "Noto Serif TC", var(--font-spec), Georgia, serif;
+  }
+}
+
 /* ══════════════════════════════════════════
    CTA
    ══════════════════════════════════════════ */

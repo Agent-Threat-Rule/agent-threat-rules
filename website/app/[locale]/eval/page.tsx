@@ -67,7 +67,6 @@ export default async function EvalPage({ params }: { params: Promise<{ locale: s
         <ToolHero
           zh={zh}
           name="ATR Eval"
-          emblem="scales"
           status={{ en: "Not yet public", zh: "尚未公開" }}
           title={{ en: "Once is luck. Ten times is evidence.", zh: "跑一次是運氣，跑十次才算數。" }}
           lead={{

@@ -7,7 +7,6 @@ import { join } from "node:path";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
-import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -95,13 +94,12 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
   return (
     <div className="pt-20 pb-16 px-5 md:px-6 max-w-[1120px] mx-auto">
       <Reveal>
-        <Seal name="xiphos" size={72} className="text-ink mb-7" />
         <div className="text-[13px] text-stone mb-3">
           {zh ? "公開威脅情報" : "Public Threat Feed"}
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-2">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-2">
           {zh ? "攻擊先發生在野外。" : "The attack happens in the wild first."}
         </h1>
       </Reveal>

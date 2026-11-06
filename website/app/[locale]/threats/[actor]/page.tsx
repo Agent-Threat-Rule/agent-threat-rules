@@ -73,7 +73,7 @@ export default async function ActorPage({
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.035em] font-medium text-ink break-all">
+        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.01em] font-medium text-ink break-all">
           {actor.name}
         </h1>
       </Reveal>

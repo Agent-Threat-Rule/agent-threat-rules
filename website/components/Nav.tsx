@@ -21,7 +21,6 @@ export interface HeaderMeta {
  */
 export function Nav({ locale, meta }: { locale: Locale; meta: HeaderMeta }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [barOpen, setBarOpen] = useState(true);
   const pathname = usePathname();
   const prefix = `/${locale}`;
   const zh = locale === "zh";
@@ -37,17 +36,6 @@ export function Nav({ locale, meta }: { locale: Locale; meta: HeaderMeta }) {
 
   return (
     <>
-      {barOpen && (
-        <div className="bg-brand-tint text-[13px] text-ink">
-          <div className="max-w-[1120px] mx-auto px-6 h-9 flex items-center justify-center gap-3 relative">
-            <span>{zh ? "ATR 社群開放加入，專家和貢獻者都歡迎" : "The ATR community is open to experts and contributors"}</span>
-            <span className="w-px h-3.5 bg-ink/20" aria-hidden="true" />
-            <Link href={`${prefix}/community/join`} className="hover:underline underline-offset-4">{zh ? "加入 →" : "Join →"}</Link>
-            <button onClick={() => setBarOpen(false)} className="absolute right-6 text-stone hover:text-ink px-1" aria-label={zh ? "關閉公告" : "Dismiss announcement"}>×</button>
-          </div>
-        </div>
-      )}
-
       <header className="sticky top-0 z-50 bg-paper/95 backdrop-blur-sm">
         <div className="max-w-[1120px] mx-auto border-x border-fog">
           <div className="flex items-stretch h-16 border-b border-fog">

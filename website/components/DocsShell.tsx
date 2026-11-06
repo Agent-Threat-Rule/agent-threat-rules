@@ -68,7 +68,7 @@ export function DocsShell({
 
           <article className="min-w-0 px-8 md:px-12 pt-12 pb-16">
             <div className="text-[13px] text-stone">{eyebrow}</div>
-            <h1 className="mt-2 text-[32px] md:text-[36px] leading-[1.15] tracking-[-0.02em] text-ink text-balance">{title}</h1>
+            <h1 className="mt-2 text-[32px] md:text-[36px] leading-[1.15] tracking-[-0.01em] text-ink text-balance">{title}</h1>
             {lead && <p className="mt-4 text-[16px] leading-[1.6] text-ink/75 max-w-[680px] text-pretty">{lead}</p>}
             <div className="mt-10">{children}</div>
             <div className="mt-16 pt-6 border-t border-fog flex flex-wrap items-center justify-between gap-3 font-data text-[11px] text-stone">

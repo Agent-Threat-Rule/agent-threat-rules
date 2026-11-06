@@ -2,7 +2,6 @@ import { Reveal } from "@/components/Reveal";
 import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
-import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -30,13 +29,12 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
   return (
     <div className="pt-20 pb-16 px-6 max-w-[1120px] mx-auto">
       <Reveal>
-        <Seal name="amphora" size={72} className="text-ink mb-7" />
         <div className="text-[13px] text-stone mb-3">
           {t(locale, "contribute.label")}
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-2 max-w-[600px]">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-2 max-w-[600px]">
           {zh
             ? "你找到的攻擊，可以變成所有人的規則。"
             : "The attack you found can become everyone's rule."}

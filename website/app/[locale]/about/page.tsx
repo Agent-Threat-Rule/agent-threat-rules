@@ -4,7 +4,6 @@ import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
-import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -204,13 +203,12 @@ export default async function AboutPage({
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
       {/* Header */}
       <Reveal>
-        <Seal name="column" size={72} className="text-ink mb-7" />
         <div className="text-[13px] text-stone mb-3">
           {zh ? "關於 ATR" : "About ATR"}
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.035em] font-medium text-ink">
+        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
           {zh ? "一個開放標準。" : "An open standard."}
           <br />
           {zh ? "從一位維護者開始。" : "Started by one maintainer."}

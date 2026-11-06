@@ -61,7 +61,6 @@ export default async function RouterPage({ params }: { params: Promise<{ locale:
         <ToolHero
           zh={zh}
           name="ATR Router"
-          emblem="labyrinth"
           status={{ en: "Not yet public", zh: "尚未公開" }}
           title={{ en: "First, work out what to test.", zh: "先想清楚，要測什麼。" }}
           lead={{

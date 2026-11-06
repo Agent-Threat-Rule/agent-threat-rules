@@ -83,7 +83,7 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
       <div className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-6">
         <Link href={`${prefix}/community`} className="hover:text-ink">{zh ? "社群" : "Community"}</Link> <span className="text-mist">/ {zh ? "加入" : "Join"}</span>
       </div>
-      <h1 className="text-[36px] md:text-[44px] leading-[1.1] tracking-[-0.02em] font-medium text-ink text-balance">
+      <h1 className="text-[36px] md:text-[44px] leading-[1.1] tracking-[-0.01em] font-medium text-ink text-balance">
         {zh ? "加入 ATR 社群" : "Join the ATR community"}
       </h1>
       <p className="mt-5 text-[17px] leading-[1.6] text-graphite max-w-[620px] text-pretty">

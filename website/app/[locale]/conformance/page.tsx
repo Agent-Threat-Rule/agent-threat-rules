@@ -13,7 +13,6 @@ import { NormativeBadge } from "@/components/spec/Badges";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { loadSiteStats } from "@/lib/stats";
-import { Seal } from "@/components/classical/Emblem";
 
 const REPO = "https://github.com/Agent-Threat-Rule/agent-threat-rules";
 const REPO_ROOT = join(process.cwd(), "..");
@@ -83,7 +82,6 @@ export default async function ConformancePage({
     >
       {/* Header */}
       <header className="mb-8 md:mb-10 max-w-3xl">
-        <Seal name="stele" size={72} className="text-ink mb-7" />
         <p
           className="text-xs uppercase tracking-[0.18em] text-stone mb-3"
           style={{ fontFamily: "var(--font-data)" }}

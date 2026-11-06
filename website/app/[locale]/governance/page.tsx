@@ -3,7 +3,6 @@ import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
-import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -36,13 +35,12 @@ export default async function GovernancePage({
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
       <Reveal>
-        <Seal name="column" size={72} className="text-ink mb-7" />
         <div className="text-[13px] text-stone mb-3">
           {zh ? "治理" : "Governance"}
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium text-ink mb-4">
+        <h1 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium text-ink mb-4">
           {zh ? "治理是寫在公開記錄裡的。" : "Governance is on the public record."}
         </h1>
       </Reveal>

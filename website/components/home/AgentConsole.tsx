@@ -41,7 +41,6 @@ export function AgentConsole({ locale, ruleCount }: { locale: string; ruleCount:
 
   return (
     <div ref={rootRef} className="relative w-full min-w-0">
-      <div className="absolute -inset-x-10 -inset-y-12 grid-paper grid-paper-fade pointer-events-none" aria-hidden="true" />
 
       <div className="relative flex gap-1 mb-3" role="tablist" aria-label={zh ? "情境" : "Scenario"}>
         {data.scenarios.map((s, i) => (
@@ -50,20 +49,15 @@ export function AgentConsole({ locale, ruleCount }: { locale: string; ruleCount:
             role="tab"
             aria-selected={i === sIndex}
             onClick={() => setTick(i * BEATS.length + 1)}
-            className={`text-[12.5px] px-3 py-1.5 border transition-colors ${i === sIndex ? "border-ink bg-white text-ink" : "border-transparent text-stone hover:text-ink"}`}
+            className={`text-[12.5px] mr-4 pb-1 border-b transition-colors ${i === sIndex ? "border-ink text-ink" : "border-transparent text-stone hover:text-ink"}`}
           >
             {zh ? LABELS[s.key].zh : LABELS[s.key].en}
           </button>
         ))}
       </div>
 
-      <div className="relative bg-white border border-fog shadow-[0_24px_60px_-28px_rgba(0,0,0,0.28)]">
+      <div className="relative bg-white border border-ink">
         <div className="flex items-center gap-3 px-4 h-10 border-b border-fog">
-          <span className="flex gap-1.5" aria-hidden="true">
-            <span className="w-2 h-2 rounded-full bg-fog" />
-            <span className="w-2 h-2 rounded-full bg-fog" />
-            <span className="w-2 h-2 rounded-full bg-fog" />
-          </span>
           <span className="font-data text-[11.5px] text-ink">{scenario.agent}</span>
           <span className="ml-auto font-data text-[10.5px] text-stone">ATR · alert lane</span>
         </div>
@@ -84,19 +78,19 @@ export function AgentConsole({ locale, ruleCount }: { locale: string; ruleCount:
                 <mark className={`transition-colors duration-500 ${attackOn ? "bg-alert/15 text-alert-ink" : "bg-transparent text-graphite"}`}>{result.attack}</mark>
               )}
               {parts[1]}
-              {beat === 4 && <span className="absolute inset-x-0 h-6 -top-1 bg-gradient-to-b from-transparent via-brand/15 to-transparent animate-[scan_1.1s_ease-in-out]" aria-hidden="true" />}
+              {beat === 4 && <span className="absolute inset-x-0 h-6 -top-1 bg-gradient-to-b from-transparent via-ink/10 to-transparent animate-[scan_1.1s_ease-in-out]" aria-hidden="true" />}
             </div>
           </div>
         </div>
 
         <div className="border-t border-fog px-4 h-[92px] flex flex-col justify-center">
           {beat === 4 && (
-            <div className="font-data text-[11.5px] text-brand-ink">{zh ? `對照 ${ruleCount} 條規則…` : `Checking ${ruleCount} rules…`}</div>
+            <div className="font-data text-[11.5px] text-stone">{zh ? `對照 ${ruleCount} 條規則…` : `Checking ${ruleCount} rules…`}</div>
           )}
           {beat >= 5 && lead && (
             <div className="animate-[fadein_350ms_ease-out]">
               <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="font-data text-[10.5px] px-1.5 py-0.5 bg-alert text-white uppercase">{lead.severity}</span>
+                <span className="font-data text-[10.5px] px-1.5 py-0.5 border border-ink text-ink uppercase">{lead.severity}</span>
                 <Link href={`/${locale}/rules/${lead.id}`} className="font-data text-[12.5px] text-ink hover:underline underline-offset-2">{lead.id}</Link>
               </div>
               <div className="mt-1 text-[13px] text-ink truncate">{lead.title}</div>

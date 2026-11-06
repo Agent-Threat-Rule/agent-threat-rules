@@ -5,7 +5,6 @@ import { count, findBenchmark, measuredStamp, pct, pctHunt } from "@/lib/recall"
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { getSpecMeta } from "@/lib/spec-meta";
-import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -60,7 +59,6 @@ export default async function SovereignAIDefensePage({
 
   return (
     <div className="pt-20 pb-20 px-5 md:px-6 max-w-[880px] mx-auto">
-      <Seal name="aspis" size={72} className="text-ink mb-7" />
       {/* Header eyebrow */}
       <Reveal>
         <div className="font-data text-[11px] md:text-xs font-medium text-blue tracking-[1.5px] md:tracking-[3px] uppercase mb-5">
@@ -79,7 +77,7 @@ export default async function SovereignAIDefensePage({
 
       {/* H1 */}
       <Reveal delay={0.08}>
-        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.035em] font-medium text-ink">
+        <h1 className="text-[38px] md:text-[56px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
           {zh ? "每個國家都在建主權 AI。" : "Every country is building sovereign AI."}
           <br />
           {zh ? "保護它的偵測知識,不該屬於任何單一廠商。" : "The detection knowledge that defends it should belong to no single vendor."}
@@ -159,7 +157,7 @@ export default async function SovereignAIDefensePage({
 
       {/* 01 · The moment */}
       <Section label="01 · THE MOMENT" delay={0.05}>
-        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-ink mb-5">
+        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh
             ? "Sovereign AI 為什麼是這個時代的國家命題"
             : "Why Sovereign AI became a national imperative"}
@@ -236,7 +234,7 @@ export default async function SovereignAIDefensePage({
 
       {/* 02 · The gap */}
       <Section label="02 · THE NEUTRALITY PROBLEM" delay={0.05}>
-        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-ink mb-5">
+        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh
             ? "自主掌握模型容易,自主掌握防禦它的偵測知識難"
             : "Owning the model is one thing. Owning the detection knowledge that defends it is another."}
@@ -317,7 +315,7 @@ export default async function SovereignAIDefensePage({
 
       {/* 03 · Why a neutral standard fits */}
       <Section label="03 · WHY A NEUTRAL STANDARD" delay={0.05}>
-        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-ink mb-5">
+        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh
             ? "為什麼這個語境需要的是開放標準,而不是另一個產品"
             : "Why this context calls for an open standard, not another product"}
@@ -355,7 +353,7 @@ export default async function SovereignAIDefensePage({
 
       {/* 03b · Interoperable with existing SOC tooling */}
       <Section label="03B · INTEROPERABLE WITH EXISTING TOOLING" delay={0.05}>
-        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-ink mb-5">
+        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh ? "不必丟掉現有的 SOC 工具鏈" : "No need to replace your existing SOC tooling"}
         </h2>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
@@ -406,7 +404,7 @@ atr convert splunk --output ./atr-rules.spl`}</code>
 
       {/* 04 · Ecosystem */}
       <Section label="04 · ECOSYSTEM" delay={0.05}>
-        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-ink mb-5">
+        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh ? "已被多個主要資安堆疊採用" : "Already adopted across major security stacks"}
         </h2>
         <div className="border-t border-fog">
@@ -441,7 +439,7 @@ atr convert splunk --output ./atr-rules.spl`}</code>
 
       {/* 05 · Community-governed */}
       <Section label="05 · COMMUNITY-GOVERNED" delay={0.05}>
-        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-ink mb-5">
+        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh ? "一個由社群治理的開放標準" : "An open standard, governed by its contributors"}
         </h2>
         <p className="text-sm md:text-base text-graphite leading-[1.8]">
@@ -496,7 +494,7 @@ atr convert splunk --output ./atr-rules.spl`}</code>
 
       {/* 06 · How any country adopts it */}
       <Section label="06 · HOW ANY COUNTRY ADOPTS IT" delay={0.05}>
-        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-ink mb-5">
+        <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
           {zh ? "任何國家如何採用一個公共財標準" : "How any country adopts a public-good standard"}
         </h2>
         <p className="text-[17px] md:text-lg text-graphite leading-[1.55] mb-7">
@@ -583,7 +581,7 @@ atr convert splunk               # or export into the SOC you already run`}</cod
             <div className="font-data text-[11px] md:text-xs font-medium text-mist tracking-[1.5px] md:tracking-[3px] uppercase mb-3">
               07 · OPEN CALL
             </div>
-            <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.02em] text-paper mb-4">
+            <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-paper mb-4">
               {zh ? "誰能參與這個標準" : "Who can take part"}
             </h2>
             <p className="text-sm md:text-base text-[#D8D8D3] leading-[1.6] mb-5">
@@ -635,7 +633,7 @@ atr convert splunk               # or export into the SOC you already run`}</cod
 
       {/* Share */}
       <Section label="SHARE" delay={0.05}>
-        <h2 className="font-display text-xl md:text-2xl font-bold tracking-[-0.02em] text-ink mb-3">
+        <h2 className="font-display text-xl md:text-2xl font-bold tracking-[-0.01em] text-ink mb-3">
           {zh ? "把這個討論帶給更多人" : "Pass this on"}
         </h2>
         <p className="text-sm text-stone mb-5">

@@ -6,7 +6,6 @@ import { RED_TEAM_TOOLS } from "@/lib/red-team-tools";
 import { ablationLanes } from "@/lib/ablation";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
-import { Seal } from "@/components/classical/Emblem";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -136,13 +135,12 @@ export default async function RedTeamPage({
       ============================================================ */}
       <section className="px-6 max-w-[1120px] mx-auto mb-24 md:mb-32">
         <Reveal>
-          <Seal name="xiphos" size={72} className="text-ink mb-7" />
           <div className="text-[13px] text-stone mb-6">
             {zh ? "給紅隊" : "For red teams"}
           </div>
         </Reveal>
         <Reveal delay={0.1}>
-          <h1 className="text-[42px] md:text-[72px] leading-[1.04] tracking-[-0.035em] font-medium mb-8 max-w-[920px]">
+          <h1 className="text-[42px] md:text-[72px] leading-[1.04] tracking-[-0.01em] font-medium mb-8 max-w-[920px]">
             {zh ? (
               <>
                 你找到攻擊。
@@ -233,7 +231,7 @@ export default async function RedTeamPage({
           <div className="text-[13px] text-stone mb-4">
             {zh ? "你能拿到什麼" : "What you get"}
           </div>
-          <h2 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-12 max-w-[720px]">
+          <h2 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-12 max-w-[720px]">
             {zh
               ? "攻擊進了標準之後，你手上會留下什麼，要看你是誰。"
               : "What your attack leaves you once it's in the standard depends on who you are."}
@@ -279,7 +277,7 @@ export default async function RedTeamPage({
                 ? "送出 probe 之後"
                 : "What happens after you submit"}
             </div>
-            <h2 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-12 max-w-[720px]">
+            <h2 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-12 max-w-[720px]">
               {zh
                 ? "你送樣本。維護者寫 regex。閘門全過，才合併。"
                 : "You send samples. A maintainer writes the regex. It merges only if the gate passes."}
@@ -391,7 +389,7 @@ export default async function RedTeamPage({
           <div className="text-[13px] text-stone mb-4">
             {zh ? "攻擊方的工具和語料" : "Offensive tools and corpora"}
           </div>
-          <h2 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.025em] font-medium mb-4 max-w-[720px]">
+          <h2 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.01em] font-medium mb-4 max-w-[720px]">
             {zh
               ? "這些攻擊工具和語料，已經在替標準添規則。下一個可以是你的工具。"
               : "These offensive tools and corpora already feed the standard. Yours could be next."}
@@ -518,7 +516,7 @@ export default async function RedTeamPage({
           <div className="text-[13px] text-stone mb-4">
             {zh ? "持續匯入語料" : "Continuous corpus integration"}
           </div>
-          <h2 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.025em] font-medium mb-4 max-w-[720px]">
+          <h2 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.01em] font-medium mb-4 max-w-[720px]">
             {zh
               ? "5 個語料庫 · 71 條新規則 · HackAPrompt 召回率 28.6% → 66.0%。這是樣本內的數字：2026-05-12 那次 sprint，載入全部規則，量測用的就是挖出這些規則的同一份 4,780 筆子集。"
               : "5 corpora · 71 new rules · HackAPrompt recall 28.6% → 66.0%. That is in-sample: from the 2026-05-12 sprint, with every rule loaded, measured on the same 4,780-prompt subset the rules were mined from."}
@@ -569,7 +567,7 @@ export default async function RedTeamPage({
           <div className="font-data text-xs uppercase tracking-[2px] text-stone mb-3 mt-16">
             {zh ? "2026-06 巨量掃描" : "2026-06 mega-scan"}
           </div>
-          <h2 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.025em] font-medium mb-4 max-w-[720px]">
+          <h2 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.01em] font-medium mb-4 max-w-[720px]">
             {zh
               ? "8 個語料庫 · 29 條偵測規則 · 2 個沒有新的漏抓"
               : "8 corpora · 29 detection rules · 2 with no new misses"}
@@ -617,7 +615,7 @@ export default async function RedTeamPage({
           <div className="text-[13px] text-stone mb-4">
             {zh ? "刻意不收的語料" : "Left out on purpose"}
           </div>
-          <h2 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.025em] font-medium mb-4 max-w-[720px]">
+          <h2 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.01em] font-medium mb-4 max-w-[720px]">
             {zh
               ? "哪些沒收進來，為什麼。"
               : "What ATR doesn't import, and why."}
@@ -706,7 +704,7 @@ export default async function RedTeamPage({
             <div className="text-[13px] text-stone mb-4">
               {zh ? "送出一個 probe" : "Submit a probe"}
             </div>
-            <h2 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.03em] font-medium mb-6 max-w-[720px]">
+            <h2 className="text-[32px] md:text-[44px] leading-[1.12] tracking-[-0.01em] font-medium mb-6 max-w-[720px]">
               {zh
                 ? "填 10 分鐘的表。規則上一直掛著你的名字，每個用 ATR 的防守者都共用這一條。"
                 : "Spend 10 minutes on a form. Your name stays on the rule, and every defender who adopts ATR shares it."}

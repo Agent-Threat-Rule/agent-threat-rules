@@ -163,25 +163,31 @@ export default async function RuleDetailPage({
 
         {/* Header — one template for every rule: identity, one-sentence
             statement, keywords, attribute row, crosswalk grid. */}
-        <div className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-4">
-          {categoryDisplay} <span className="text-mist">· {rule.id}</span>
+        <div className="mb-10 border-y border-ink py-7 md:py-9 text-center">
+          <div className="text-[12px] tracking-[0.18em] text-stone">{categoryDisplay}</div>
+          <div className="font-title mt-3 text-[30px] sm:text-[40px] md:text-[48px] leading-none tracking-[0.1em] text-ink">{rule.id}</div>
+          <div className="mt-4 text-[12px] text-stone">
+            {[
+              rule.date && `${zh ? "收錄於" : "Recorded"} ${rule.date.replace(/\//g, "-")}`,
+              rule.status && `${zh ? "狀態" : "Status"} ${rule.status}`,
+              rule.author && `${zh ? "作者" : "Author"} ${rule.author}`,
+            ]
+              .filter(Boolean)
+              .join("  ·  ")}
+          </div>
         </div>
-        <h1 className="text-[30px] md:text-[36px] leading-[1.15] tracking-[-0.02em] font-medium text-ink text-balance">
+        <h1 className="text-[28px] md:text-[34px] leading-[1.2] text-ink text-balance">
           {rule.title}
         </h1>
         <p className="mt-4 text-[17px] leading-[1.6] text-graphite text-pretty">{leadSentence(rule.description)}</p>
 
         {keywords.length > 0 && (
-          <div className="mt-6 flex flex-wrap gap-2">
-            {keywords.map((k) => (
-              <span key={k} className="font-data text-[11px] text-graphite bg-ash border border-fog px-2 py-0.5 rounded-[2px]">{k}</span>
-            ))}
-          </div>
+          <p className="mt-5 font-data text-[11.5px] text-stone">{keywords.join("  ·  ")}</p>
         )}
 
         <dl className="mt-8 grid grid-cols-2 md:grid-cols-5 border-t border-b border-fog">
           {[
-            { label: zh ? "嚴重度" : "Severity", value: rule.severity, tone: rule.severity === "critical" ? "text-critical" : rule.severity === "high" ? "text-high" : "text-ink" },
+            { label: zh ? "嚴重度" : "Severity", value: rule.severity, tone: "text-ink" },
             { label: zh ? "成熟度" : "Maturity", value: normalizeMaturity(rule.maturity), tone: "text-ink" },
             { label: zh ? "載入的 lane" : "Lanes", value: lanes.length > 0 ? lanes.join(" · ") : zh ? "無（inert）" : "none (inert)", tone: lanes.length > 0 ? "text-ink" : "text-high" },
             { label: zh ? "掃描目標" : "Scan target", value: rule.scanTarget ?? "—", tone: "text-ink" },

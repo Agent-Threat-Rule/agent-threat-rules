@@ -4,7 +4,6 @@ import { loadSiteStats } from "@/lib/stats";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { loadVersionLabels, NPM_PACKAGE_URL } from "@/lib/versions";
 import { FOOTER_EXTRA, NAV_GROUPS, pick } from "@/lib/site-nav";
-import { Meander } from "@/components/classical/Emblem";
 
 const REPO = "https://github.com/Agent-Threat-Rule/agent-threat-rules";
 
@@ -24,11 +23,9 @@ export async function Footer({ locale }: { locale: Locale }) {
   return (
     <footer>
       <div className="sheet sheet-row px-8 md:px-12 pt-12 pb-8">
-        <Meander className="text-fog mb-10" height={12} />
         <span className="corner-mark corner-mark-l" aria-hidden="true" />
         <span className="corner-mark corner-mark-r" aria-hidden="true" />
         <div className="font-data text-[10.5px] uppercase tracking-[0.12em] text-stone mb-10 leading-tight">
-          <div>FIG. A</div>
           <div className="text-ink">{zh ? "網站索引" : "Site index"}</div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-10">
