@@ -4,6 +4,20 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The Cisco Skill Scanner pack no longer ships conditions that backtrack
+  badly.** Skill Scanner compiles patterns with Python's `re`, and the pack
+  carried conditions that `data/redos-baseline.json` already lists as slow on
+  a backtracking engine; Cisco measured one of them taking 13.9 s on a long
+  input. `scripts/export-cisco-pack.ts` now leaves those conditions out:
+  a rule that matches on any condition keeps its other conditions, and a rule
+  that needs all of them is left out whole, so no signature becomes broader
+  than its rule. On the current rules the pack goes from 596 signatures and
+  2,273 patterns to 573 and 2,025: 23 rules are left out and 126 lose one or
+  more conditions, each listed in the pack README. `--keep-slow` restores the
+  old behaviour.
+
 ## [4.3.0] - 2026-11-06
 
 A minor release that adds two rule exporters, `atr convert numbat` and

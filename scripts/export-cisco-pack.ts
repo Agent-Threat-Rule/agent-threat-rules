@@ -61,6 +61,12 @@
  *                          the rules verbatim instead of writing them as
  *                          (?i) plus the pattern the engine compiles
  *                          (SPEC.md §6.4). Only for byte-for-byte verification.
+ *   --keep-slow            Keep the conditions data/redos-baseline.json lists as
+ *                          slow on a backtracking engine. By default they are
+ *                          left out (a rule that needs all its conditions is
+ *                          left out whole), because Skill Scanner compiles
+ *                          patterns with Python's re. See
+ *                          scripts/cisco-pack/slow-conditions.ts.
  *   --json                 Emit the run summary as JSON on stdout
  *
  * Exit codes: 0 on success, 1 on any failure (missing measurement file,
@@ -80,6 +86,7 @@ import {
 } from './cisco-pack/diff.js';
 import { readBenignGate } from './cisco-pack/benign-gate.js';
 import { loadRules } from './cisco-pack/load-rules.js';
+import { readSlowConditions } from './cisco-pack/slow-conditions.js';
 import { renderPackManifest, renderReadme, renderSignatureFile, type RenderContext } from './cisco-pack/render.js';
 import { buildSignatureFiles, DEFAULT_REPO_URL } from './cisco-pack/transform.js';
 import {
@@ -103,6 +110,7 @@ interface Args {
   readonly reproduceVendored: boolean;
   readonly benignGate?: string;
   readonly maxSeverity?: string;
+  readonly keepSlow: boolean;
   readonly json: boolean;
 }
 
@@ -140,6 +148,7 @@ function parseArgs(argv: readonly string[]): Args {
     reproduceVendored: argv.includes('--reproduce-vendored'),
     benignGate: readFlag(argv, '--benign-gate'),
     maxSeverity: readFlag(argv, '--max-severity')?.toUpperCase(),
+    keepSlow: argv.includes('--keep-slow'),
     json: argv.includes('--json'),
   };
 }
@@ -166,6 +175,10 @@ function writePack(args: Args): { total: number; summary: Record<string, unknown
     includeDeprecated: args.reproduceVendored,
     includeRuntimeFields: args.reproduceVendored,
     exclude: args.benignGate ? readBenignGate(resolve(args.benignGate)) : undefined,
+    slow:
+      args.keepSlow || args.reproduceVendored
+        ? undefined
+        : readSlowConditions(join(REPO_ROOT, 'data', 'redos-baseline.json')),
   });
   if (loaded.rules.length === 0) throw new Error(`no rules found under ${args.rules}`);
 
@@ -201,7 +214,7 @@ function writePack(args: Args): { total: number; summary: Record<string, unknown
       ? renderPackManifestV2(files, v2Rules, downstream, args.version)
       : renderPackManifest(files, context);
   writeFileSync(join(args.out, 'pack.yaml'), manifest, 'utf8');
-  writeFileSync(join(args.out, 'README.md'), renderReadme(files, context, loaded.excluded), 'utf8');
+  writeFileSync(join(args.out, 'README.md'), renderReadme(files, context, loaded.excluded, loaded.trimmed), 'utf8');
 
   const all = files.flatMap((file) => [...file.signatures]);
   const summary: Record<string, unknown> = {
@@ -209,6 +222,7 @@ function writePack(args: Args): { total: number; summary: Record<string, unknown
     ruleFilesOnDisk: Object.values(loaded.filesPerCategory).reduce((a, b) => a + b, 0),
     emitted: all.length,
     excluded: loaded.excluded,
+    trimmed: loaded.trimmed,
     patterns: all.reduce((sum, s) => sum + s.patterns.length, 0),
     byCategory: Object.fromEntries(summariseByCategory(all)),
     bySeverity: Object.fromEntries(summariseBySeverity(all)),
