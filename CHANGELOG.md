@@ -98,6 +98,17 @@ All notable changes to ATR will be documented in this file.
   tightened rule still matched with the old one. The directory's copy is now
   skipped; duplicates inside the directory are unchanged.
 
+- **Mapping rationales no longer claim that a rule satisfies a requirement.**
+  124 rule files said that deploying the rule "satisfies" an EU AI Act
+  article (or a NIST, ISO or OWASP item). `docs/COMPLIANCE-COVERAGE-POLICY.md`
+  allows only "provides detection evidence supporting …": a detection rule
+  supports a control and does not discharge a requirement. The 135 lines now
+  say "provides detection evidence supporting", "supports" or, for OWASP
+  categories, "matches". Only `compliance` context text changed; every field
+  outside `compliance` is identical, so detection is unchanged and no
+  `rule_version` moves. `scripts/validate-compliance.ts` now fails CI on a
+  context that claims compliance ("satisfies the Article …", "makes …
+  compliant", "ensures compliance"). See the 2026-11-04 errata entry.
 - **A "New Rule Proposal" issue now becomes a readable draft proposal.**
   `scripts/issue-to-proposal.ts` indented the example payload at the same
   depth as its `example_payload:` key, so every proposal file it wrote was
