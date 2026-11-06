@@ -31,27 +31,35 @@ export async function generateMetadata({
 const FORMULA_COMPONENTS = [
   {
     name: "Precision",
+    nameZh: "精確度",
     weight: "40%",
     formula: "(1 − wild_fp_rate) × 100",
     meaning: "Measured false-positive rate on real-world corpora.",
+    meaningZh: "在真實語料上量到的誤報率。",
   },
   {
     name: "Wild validation",
+    nameZh: "野外驗證",
     weight: "30%",
     formula: "min(wild_samples / 10,000, 1) × 100",
     meaning: "How much real data the rule has survived.",
+    meaningZh: "規則跑過多少真實資料仍然站得住。",
   },
   {
     name: "Coverage",
+    nameZh: "涵蓋深度",
     weight: "20%",
     formula: "min(conditions / 5, 1) × 100",
     meaning: "Detection depth: the distinct attack layers covered.",
+    meaningZh: "偵測深度，也就是涵蓋了幾個不同的攻擊層。",
   },
   {
     name: "Evasion docs",
+    nameZh: "繞過紀錄",
     weight: "10%",
     formula: "min(documented_evasions / 5, 1) × 100",
     meaning: "Honest acknowledgment of known bypass techniques.",
+    meaningZh: "老實記下已知的繞過手法。",
   },
 ];
 
@@ -62,27 +70,37 @@ const MATURITY_LEVELS = [
   {
     label: "Draft",
     gate: "Valid schema · ≥1 TP + 1 TN · no ReDoS",
+    gateZh: "schema 合法 · 至少 1 個 TP 和 1 個 TN · 沒有 ReDoS",
     deploy: "Not deployed",
+    deployZh: "不部署",
   },
   {
     label: "Experimental",
     gate: "3+ TP + 3+ TN · CI pass · OWASP + MITRE mapping encouraged (not required) · evasion tests encouraged (not required)",
+    gateZh: "3 個以上 TP 和 3 個以上 TN · 通過 CI · 建議（不強制）對應 OWASP 與 MITRE · 建議（不強制）附繞過測試",
     deploy: "Alert-only",
+    deployZh: "只告警",
   },
   {
     label: "Test",
     gate: "Canary observation passed · wild FP measured · no unresolved false-positive reports in the canary window",
+    gateZh: "通過 canary 觀察期 · 已量測野外誤報 · 觀察期內沒有未解決的誤報回報",
     deploy: "Alert-only, promotion candidate",
+    deployZh: "只告警，可列為升級候選",
   },
   {
     label: "Stable",
     gate: "Wild-validated (1,000+ samples) · FP rate ≤ 0.5% · human-verified provenance · ≥3 evasion tests",
+    gateZh: "通過野外驗證（1,000 筆以上樣本）· 誤報率 ≤ 0.5% · 來源經人工確認 · 至少 3 個繞過測試",
     deploy: "Block in production",
+    deployZh: "可在正式環境封鎖",
   },
   {
     label: "Deprecated",
     gate: "Superseded or demoted · retained for provenance · engines MUST NOT enable by default",
+    gateZh: "已被取代或降級 · 為保留來源紀錄而留著 · 引擎預設 MUST NOT 啟用",
     deploy: "Off by default",
+    deployZh: "預設關閉",
   },
 ];
 
@@ -90,36 +108,48 @@ const GAUNTLET_STAGES = [
   {
     stage: "1",
     title: "LLM Drafter",
+    titleZh: "LLM 起草",
+    detailZh: "Claude Sonnet 依照嚴格的提示產生 YAML 規則，要求至少 3 個條件、5 個以上 TP/TN、3 個以上繞過測試，以及 OWASP 與 MITRE 對應。",
     detail:
       "Claude Sonnet generates a YAML rule against a strict prompt requiring 3+ conditions, 5+ TP/TN, 3+ evasion tests, and OWASP + MITRE mapping.",
   },
   {
     stage: "2",
     title: "Syntax Gate",
+    titleZh: "語法閘",
+    detailZh: "抽出 regex，剔除無效的 pattern，把 PCRE 轉成 JS 的寫法。壞掉的規則直接丟掉，並記下原因。",
     detail:
-      "Regex extraction, invalid pattern rejection, PCRE-to-JS normalization. Broken rules are dropped with logged reasons.",
+      "Regex extraction, invalid pattern rejection, PCRE-to-JS normalization. Broken rules are dropped, and the reason is logged.",
   },
   {
     stage: "3",
     title: "Quality Gate",
+    titleZh: "品質閘",
+    detailZh: "跑 RFC-001 公式：偵測深度、測試覆蓋、參考對應、文件完整度。低於門檻就退回。",
     detail:
-      "The RFC-001 formula runs: detection depth, test coverage, reference mapping, documentation completeness. Below the bar — rejected.",
+      "The RFC-001 formula runs: detection depth, test coverage, reference mapping, documentation completeness. A rule below the bar is rejected.",
   },
   {
     stage: "4",
     title: "Canary Observation",
+    titleZh: "Canary 觀察",
+    detailZh: "通過的規則進入 canary 觀察期。要再往上升級，得看獨立確認的次數和野外誤報的量測結果。",
     detail:
       "Accepted rules enter a canary window. Independent confirmations and wild FP measurements gate further promotion.",
   },
   {
     stage: "5",
     title: "Human Review",
+    titleZh: "人工審查",
+    detailZh: "來源一開始標成 llm-generated，經人工審查後改成 human-reviewed，規則才可能升到 stable。",
     detail:
       "Provenance starts as llm-generated. Human review upgrades to human-reviewed before the rule can reach stable.",
   },
   {
     stage: "6",
     title: "Upstream PR",
+    titleZh: "上游 PR",
+    detailZh: "升級的規則會對公開的 ATR repository 開 pull request，公開審查後合併。",
     detail:
       "Promoted rules open pull requests against the public ATR repository for open review and merge.",
   },
@@ -127,6 +157,7 @@ const GAUNTLET_STAGES = [
 
 type ComparisonRow = {
   feature: string;
+  featureZh: string;
   atr: "yes" | "no" | "partial";
   sigma: "yes" | "no" | "partial";
   yara: "yes" | "no" | "partial";
@@ -137,6 +168,7 @@ type ComparisonRow = {
 const COMPARISON: ComparisonRow[] = [
   {
     feature: "Maturity ladder with explicit gates",
+    featureZh: "成熟度階梯，每一階都有明確門檻",
     atr: "yes",
     sigma: "yes",
     yara: "no",
@@ -145,6 +177,7 @@ const COMPARISON: ComparisonRow[] = [
   },
   {
     feature: "Formula-based confidence score (0–100)",
+    featureZh: "以公式計算的信心分數（0–100）",
     atr: "yes",
     sigma: "no",
     yara: "no",
@@ -153,6 +186,7 @@ const COMPARISON: ComparisonRow[] = [
   },
   {
     feature: "Wild validation required for production",
+    featureZh: "上正式環境前必須通過野外驗證",
     atr: "yes",
     sigma: "no",
     yara: "no",
@@ -161,6 +195,7 @@ const COMPARISON: ComparisonRow[] = [
   },
   {
     feature: "Per-field provenance tracking",
+    featureZh: "逐欄位記錄來源",
     atr: "yes",
     sigma: "no",
     yara: "no",
@@ -169,6 +204,7 @@ const COMPARISON: ComparisonRow[] = [
   },
   {
     feature: "Automatic demotion on quality regression",
+    featureZh: "品質退化時自動降級",
     atr: "yes",
     sigma: "no",
     yara: "no",
@@ -177,6 +213,7 @@ const COMPARISON: ComparisonRow[] = [
   },
   {
     feature: "Open-source reference implementation",
+    featureZh: "開源的參考實作",
     atr: "yes",
     sigma: "yes",
     yara: "yes",
@@ -186,8 +223,8 @@ const COMPARISON: ComparisonRow[] = [
 ];
 
 function Cell({ v }: { v: "yes" | "no" | "partial" }) {
-  if (v === "yes") return <span className="text-blue font-semibold">✓</span>;
-  if (v === "partial") return <span className="text-critical">~</span>;
+  if (v === "yes") return <span className="text-ink">✓</span>;
+  if (v === "partial") return <span className="text-stone">~</span>;
   return <span className="text-mist">—</span>;
 }
 
@@ -195,10 +232,10 @@ function Cell({ v }: { v: "yes" | "no" | "partial" }) {
 // figure carries an explicit "as of" date. Re-verify against data/stats.json
 // before citing externally — rule/scan counts move.
 const EVIDENCE = [
-  { stat: "Merged", label: "ATR rule pack merged into cisco-ai-defense/skill-scanner (PR #99, 2026-04-22)" },
-  { stat: "101,280", label: "Real agent skills and MCP definitions scanned across 5 registries (engine v2.0.0, as of 2026-04-13)" },
-  { stat: "1,434", label: "Items flagged by that scan (as of 2026-04-13)" },
-  { stat: "Withdrawn", label: "Per-lane false-positive rates \u2014 withdrawn pending re-measurement" },
+  { stat: "Merged", statZh: "已合併", label: "ATR rule pack merged into cisco-ai-defense/skill-scanner (PR #99, 2026-04-22)", labelZh: "ATR 規則包已合併進 cisco-ai-defense/skill-scanner（PR #99，2026-04-22）" },
+  { stat: "101,280", statZh: "101,280", label: "Real agent skills and MCP definitions scanned across 5 registries (engine v2.0.0, as of 2026-04-13)", labelZh: "在 5 個 registry 掃描過的真實 agent skill 與 MCP 定義（engine v2.0.0，截至 2026-04-13）" },
+  { stat: "1,434", statZh: "1,434", label: "Items flagged by that scan (as of 2026-04-13)", labelZh: "那次掃描標記出的項目（截至 2026-04-13）" },
+  { stat: "Withdrawn", statZh: "已撤回", label: "Per-lane false-positive rates, withdrawn pending re-measurement", labelZh: "各車道的誤報率，已撤回，等重新量測" },
 ];
 
 const EXAMPLE_RULE = {
@@ -240,7 +277,7 @@ export default async function QualityStandardPage({
             <>
               具備
               <br />
-              <span className="text-blue">來源追溯</span>的
+              <span>來源追溯</span>的
               <br />
               AI Agent 規則品質標準
             </>
@@ -248,7 +285,7 @@ export default async function QualityStandardPage({
             <>
               An AI agent rule standard
               <br />
-              with <span className="text-blue">provenance tracking</span>
+              with provenance tracking
             </>
           )}
         </h1>
@@ -274,7 +311,7 @@ export default async function QualityStandardPage({
             href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/proposals/001-atr-quality-standard-rfc.md"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-ink text-white px-5 py-2.5  text-sm font-semibold hover:bg-black transition-colors"
+            className="text-[15px] text-ink underline underline-offset-[6px] decoration-ink/30 hover:decoration-ink"
           >
             {locale === "zh" ? "閱讀 RFC-001" : "Read RFC-001"} →
           </a>
@@ -291,16 +328,16 @@ export default async function QualityStandardPage({
 
       {/* ── EVIDENCE STRIP ─────────────────────────────────── */}
       <Reveal>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog border border-fog mb-16">
+        <dl className="border-t border-ink mb-16">
           {EVIDENCE.map((e) => (
-            <div key={e.label} className="bg-paper p-5 md:p-6">
-              <div className="font-display text-2xl md:text-3xl font-medium text-ink mb-1">
-                {e.stat}
-              </div>
-              <div className="text-xs text-stone leading-snug">{e.label}</div>
+            <div key={e.label} className="grid grid-cols-[120px_1fr] md:grid-cols-[200px_1fr] gap-x-6 py-4 border-b border-fog items-baseline">
+              <dt className="font-title text-[22px] text-ink tabular-nums">
+                {locale === "zh" ? e.statZh : e.stat}
+              </dt>
+              <dd className="text-[14px] text-graphite leading-snug">{locale === "zh" ? e.labelZh : e.label}</dd>
             </div>
           ))}
-        </div>
+        </dl>
       </Reveal>
 
       {/* ── PROVENANCE RATIO ───────────────────────────────── */}
@@ -401,13 +438,13 @@ export default async function QualityStandardPage({
           <Reveal key={c.name}>
             <div className="bg-paper p-5 md:p-6 h-full">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-display font-semibold text-ink">{c.name}</span>
+                <span className="font-display font-semibold text-ink">{locale === "zh" ? c.nameZh : c.name}</span>
                 <span className="font-data text-xs text-blue bg-ink/10 px-2 py-0.5 ">
                   {c.weight}
                 </span>
               </div>
               <div className="font-data text-xs text-stone mb-2">{c.formula}</div>
-              <p className="text-sm text-stone">{c.meaning}</p>
+              <p className="text-sm text-stone">{locale === "zh" ? c.meaningZh : c.meaning}</p>
             </div>
           </Reveal>
         ))}
@@ -542,13 +579,13 @@ export default async function QualityStandardPage({
                     <div className="font-data text-xs text-stone tracking-wider uppercase mb-2">
                       {locale === "zh" ? "晉升門檻" : "Promotion gate"}
                     </div>
-                    <p className="text-sm text-ink leading-relaxed">{m.gate}</p>
+                    <p className="text-sm text-ink leading-relaxed">{locale === "zh" ? m.gateZh : m.gate}</p>
                   </div>
                   <div>
                     <div className="font-data text-xs text-stone tracking-wider uppercase mb-2">
                       {locale === "zh" ? "部署建議" : "Deployment guidance"}
                     </div>
-                    <p className="text-sm text-ink leading-relaxed">{m.deploy}</p>
+                    <p className="text-sm text-ink leading-relaxed">{locale === "zh" ? m.deployZh : m.deploy}</p>
                   </div>
                 </div>
               </div>
@@ -685,9 +722,9 @@ export default async function QualityStandardPage({
                 <span className="font-data text-xs text-stone tracking-wider uppercase">
                   {locale === "zh" ? `階段 ${s.stage}` : `Stage ${s.stage}`}
                 </span>
-                <h3 className="font-display font-bold text-ink">{s.title}</h3>
+                <h3 className="font-display font-bold text-ink">{locale === "zh" ? s.titleZh : s.title}</h3>
               </div>
-              <p className="text-sm text-stone leading-relaxed">{s.detail}</p>
+              <p className="text-sm text-stone leading-relaxed">{locale === "zh" ? s.detailZh : s.detail}</p>
             </div>
           </Reveal>
         ))}
@@ -840,7 +877,7 @@ export default async function QualityStandardPage({
                   key={row.feature}
                   className={i < COMPARISON.length - 1 ? "border-b border-fog" : ""}
                 >
-                  <td className="py-3 px-4 text-ink">{row.feature}</td>
+                  <td className="py-3 px-4 text-ink">{locale === "zh" ? row.featureZh : row.feature}</td>
                   <td className="py-3 px-3 text-center text-lg">
                     <Cell v={row.atr} />
                   </td>
@@ -927,7 +964,7 @@ console.log('Issues:', gate.issues);`}
       <Reveal>
         <div className="border-t border-fog pt-10 text-center">
           <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-3">
-            {locale === "zh" ? "可測量。可審計。公開。" : "Measurable. Auditable. Open."}
+            {locale === "zh" ? "公式、誤報率、最差的數字，全部公開。" : "The formula, the error rates and the worst figure are all public."}
           </h2>
           <p className="text-sm text-stone mb-6 max-w-xl mx-auto">
             {locale === "zh"
@@ -939,7 +976,7 @@ console.log('Issues:', gate.issues);`}
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/proposals/001-atr-quality-standard-rfc.md"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-ink text-white px-5 py-2.5  text-sm font-semibold hover:bg-black transition-colors"
+              className="text-[15px] text-ink underline underline-offset-[6px] decoration-ink/30 hover:decoration-ink"
             >
               {locale === "zh" ? "閱讀 RFC" : "Read the RFC"} →
             </a>
