@@ -221,6 +221,7 @@ export function renderReadme(
   files: readonly SignatureFile[],
   context: RenderContext,
   excluded: readonly { readonly id: string; readonly reason: string }[],
+  trimmed: readonly { readonly id: string; readonly conditions: readonly number[] }[] = [],
 ): string {
   const total = files.reduce((sum, file) => sum + file.signatures.length, 0);
   const ordered = [...files].sort((a, b) => b.signatures.length - a.signatures.length);
@@ -232,6 +233,12 @@ export function renderReadme(
         'A signature pack matches regular expressions against file content; it cannot ' +
         'evaluate a per-session time window or a tool-call count, and it has no field to ' +
         'tell a tool call or tool response apart from the text of a skill.';
+  const trimmedNote =
+    trimmed.length === 0
+      ? ''
+      : ` ${trimmed.length} rule(s) are exported without some conditions that backtrack ` +
+        'badly in a backtracking regex engine such as Python\'s `re`: ' +
+        `${trimmed.map((t) => `\`${t.id}\` (${t.conditions.map((i) => `#${i}`).join(', ')})`).join(', ')}.`;
   return `# ATR Rule Pack for Cisco Skill Scanner
 
 **Source:** [Agent Threat Rules (ATR)](${context.repoUrl})
@@ -245,7 +252,7 @@ export function renderReadme(
 This pack adds AI-agent security detection rules from the open-source ATR
 project, covering attack surfaces specific to modern AI-agent deployments
 (MCP tool layer, multi-agent trust, skill manifests, agent autonomy). It is
-the current ATR \`${context.version}\` static ruleset. ${exclusionNote}
+the current ATR \`${context.version}\` static ruleset. ${exclusionNote}${trimmedNote}
 
 ## Attack Categories
 

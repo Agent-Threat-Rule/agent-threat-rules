@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import yaml from 'js-yaml';
+import { withoutSlowConditions } from './slow-conditions.js';
 
 export interface AtrCondition {
   readonly field?: string;
@@ -48,12 +49,19 @@ export interface LoadOptions {
    * blocking a benign skill (scripts/cisco-pack/benign-gate.py).
    */
   readonly exclude?: ReadonlyMap<string, string>;
+  /**
+   * Conditions to leave out as `<rule id>#<index>`, the slow ones listed in
+   * data/redos-baseline.json (see scripts/cisco-pack/slow-conditions.ts).
+   */
+  readonly slow?: ReadonlySet<string>;
 }
 
 export interface LoadResult {
   readonly rules: readonly LoadedRule[];
   /** Rules found on disk but excluded from the pack, with the reason. */
   readonly excluded: readonly { readonly id: string; readonly reason: string }[];
+  /** Rules exported without some of their conditions, with the indices left out. */
+  readonly trimmed: readonly { readonly id: string; readonly conditions: readonly number[] }[];
   /** Number of rule files seen per category directory, before exclusions. */
   readonly filesPerCategory: Readonly<Record<string, number>>;
 }
@@ -115,6 +123,7 @@ function listCategories(rulesDir: string): string[] {
 export function loadRules(rulesDir: string, options: LoadOptions = {}): LoadResult {
   const rules: LoadedRule[] = [];
   const excluded: { id: string; reason: string }[] = [];
+  const trimmed: { id: string; conditions: readonly number[] }[] = [];
   const filesPerCategory: Record<string, number> = {};
 
   for (const category of listCategories(rulesDir)) {
@@ -146,10 +155,16 @@ export function loadRules(rulesDir: string, options: LoadOptions = {}): LoadResu
         excluded.push({ id: rule.id, reason: excludedBy });
         continue;
       }
-      rules.push({ category, fileName, rule });
+      const checked = options.slow ? withoutSlowConditions(rule, options.slow) : { kind: 'unchanged' as const, rule };
+      if (checked.kind === 'excluded') {
+        excluded.push({ id: rule.id, reason: checked.reason });
+        continue;
+      }
+      if (checked.kind === 'trimmed') trimmed.push({ id: rule.id, conditions: checked.dropped });
+      rules.push({ category, fileName, rule: checked.rule });
     }
   }
-  return { rules, excluded, filesPerCategory };
+  return { rules, excluded, trimmed, filesPerCategory };
 }
 
 /**

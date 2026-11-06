@@ -620,3 +620,50 @@ describe('export-cisco-pack.ts', () => {
     expect(exportedPatterns(['--reproduce-vendored'])).toEqual(['abc', '(?im)^abc']);
   }, 60_000);
 });
+
+describe('withoutSlowConditions', () => {
+  const conditions = [
+    { field: 'content', operator: 'regex', value: 'fast one' },
+    { field: 'content', operator: 'contains', value: 'not a regex' },
+    { field: 'content', operator: 'regex', value: 'slow one' },
+  ];
+
+  it('leaves a rule with no slow condition as it is', async () => {
+    const { withoutSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const r = rule({ id: 'ATR-2026-09001', detection: { conditions } });
+    expect(withoutSlowConditions(r, new Set(['ATR-2026-09999#0']))).toEqual({ kind: 'unchanged', rule: r });
+  });
+
+  it('drops only the slow condition of an any-rule, counting non-regex conditions in the index', async () => {
+    const { withoutSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const r = rule({ id: 'ATR-2026-09001', detection: { conditions } });
+    const result = withoutSlowConditions(r, new Set(['ATR-2026-09001#2']));
+    expect(result.kind).toBe('trimmed');
+    if (result.kind !== 'trimmed') return;
+    expect(result.dropped).toEqual([2]);
+    expect(extractPatterns(result.rule)).toEqual(['fast one']);
+    expect(r.detection?.conditions).toHaveLength(3);
+  });
+
+  it('leaves out an all-rule whole rather than broaden it', async () => {
+    const { withoutSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const r = rule({ id: 'ATR-2026-09001', detection: { condition: 'all', conditions } });
+    const result = withoutSlowConditions(r, new Set(['ATR-2026-09001#2']));
+    expect(result).toEqual({ kind: 'excluded', reason: 'slow on a backtracking regex engine: condition #2' });
+  });
+
+  it('leaves out an any-rule whose every regex condition is slow', async () => {
+    const { withoutSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const r = rule({ id: 'ATR-2026-09001', detection: { conditions } });
+    const result = withoutSlowConditions(r, new Set(['ATR-2026-09001#0', 'ATR-2026-09001#2']));
+    expect(result.kind).toBe('excluded');
+  });
+
+  it('reads the slow conditions from the repository baseline', async () => {
+    const { readSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const here = dirname(fileURLToPath(import.meta.url));
+    const slow = readSlowConditions(join(here, '..', 'data', 'redos-baseline.json'));
+    expect(slow.size).toBeGreaterThan(0);
+    for (const key of slow) expect(key).toMatch(/^ATR-\d{4}-\d{5}#\d+$/);
+  });
+});
