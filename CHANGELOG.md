@@ -4,6 +4,35 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+## [4.3.0] - 2026-11-06
+
+A minor release that adds two rule exporters, `atr convert numbat` and
+`atr convert quarry`, and narrows seven rules that matched ordinary code,
+documentation or report fields. A rule passed to the engine now replaces a
+rule with the same id from the rules directory that `loadRules()` reads (the
+bundled rules by default). The rule format, identifier scheme and the
+Match output format (SPEC §7) are unchanged. The pyatr and pydantic-ai-atr
+entries below ship in their own Python packages, not in this npm release.
+
+Default behaviour that changes:
+
+- Three `stable` rules, which run in the enforce lane, match less. These
+  are the only rule changes an integration that blocks on the enforce lane
+  will see. ATR-2026-01462 no longer blocks a bare `Priority Level:
+  CRITICAL`; ATR-2026-00440 no longer matches `getattr` on names that only
+  start with `type` or `object`, such as `types.Scale` or `objects_by_id`;
+  and ATR-2026-00432's `exec()` condition needs a quoted argument, so a list
+  of blocked calls in a skill's own text no longer matches.
+- Four `test` rules, which run in the alert and hunt lanes, stop matching
+  the benign shapes described under Fixed: ATR-2026-00121, -00225, -00277
+  and -00301.
+- `new ATREngine({ rules })` followed by `loadRules()` keeps the passed rule
+  when the rules directory has one with the same id. Before, both were kept
+  and the directory copy's patterns ran under the passed rule's name, so a
+  tightened rule you passed still matched like the bundled one.
+- SARIF skip warnings name the relative artifact URI instead of the
+  scanner's absolute path.
+
 ### Added
 
 - **`atr convert quarry` exports rules for [Project Quarry](https://github.com/cisco-ai-defense/project-quarry).**
