@@ -75,7 +75,7 @@ export const toFullWidth = (zh: string): string => zh.replace(/[,:;()]/g, (c) =>
 /** What the two lanes are. */
 export const LANES_EXPLAINED = {
   en: "The hunt lane is the engine default and loads every rule maturity; the enforce lane, the one to run with blocking on, loads only stable rules, so its figure is the one to read before turning blocking on.",
-  zh: "hunt lane 是引擎預設,載入所有成熟度的規則;enforce lane 只載入 stable 規則,是開啟封鎖時要用的 lane,所以要開封鎖之前,該看的是它的數字。",
+  zh: "hunt 車道是引擎預設，載入所有成熟度的規則。enforce 車道只載入 stable 規則，要開封鎖就用這一條，所以該看的是它的數字。",
 } as const;
 
 /** Both garak corpora (README section 8, footnote garakcorpus). */
@@ -93,7 +93,7 @@ export const GARAK_BOTH_CLOSED_BOOK = {
 /** PINT-format (verified from rule YAML: ATR-2026-02002, 02005, 02230-02232 cite its false negatives; none is stable). */
 export const PINT_CLOSED_BOOK = {
   en: "Partly closed-book: some hunt-lane rules were mined from this corpus's own misses, so the hunt figure is not fully out-of-sample.",
-  zh: "部分屬於 closed-book:有幾條 hunt lane 規則正是從這份語料漏抓的樣本挖出來的,所以 hunt 數字不完全是樣本外成績。",
+  zh: "部分屬於 closed-book:有幾條 hunt 車道 規則正是從這份語料漏抓的樣本挖出來的,所以 hunt 數字不完全是樣本外成績。",
 } as const;
 
 /** HackAPrompt (ATR-2026-00452..00456 and others were written from its clusters, some of them stable). */
@@ -105,7 +105,7 @@ export const HACKAPROMPT_CLOSED_BOOK = {
 /** A measurement taken before the enforce lane was recorded (autoresearch). */
 export const NO_ENFORCE_RECORD = {
   en: "this measurement predates the enforce-lane record, so there is no enforce figure for it",
-  zh: "這次量測早於 enforce lane 開始記錄的時間,所以沒有 enforce 數字",
+  zh: "這次量測早於 enforce 車道 開始記錄的時間,所以沒有 enforce 數字",
 } as const;
 
 /** Where the repository's files are read on GitHub: a measurement file is linked as `${REPO_BLOB_URL}${measurement_file}`. */

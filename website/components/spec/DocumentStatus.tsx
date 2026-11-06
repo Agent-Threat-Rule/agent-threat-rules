@@ -1,6 +1,7 @@
 import type { Locale } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 import { getSpecMeta, formatSpecDate } from "@/lib/spec-meta";
+import { loadVersionLabels, NPM_PACKAGE_URL, SPEC_SOURCE_URL } from "@/lib/versions";
 
 interface DocumentStatusProps {
   locale: Locale;
@@ -18,16 +19,20 @@ interface DocumentStatusProps {
  * Standards-document banner. Appears at the top of every spec-bearing page.
  * Pattern after W3C "Status of This Document" header strip.
  *
- *   [Working Draft · 3.5.0 · 26 May 2026 · /spec · Editor: Adam Lin]
+ *   [Working Draft · spec 1.0.1 (19 October 2026) · npm 4.2.2 · page generated 2 November 2026 · /spec · Editor: Adam Lin]
+ *
+ * Three version labels, never one: the written spec (SPEC.md), the npm
+ * release, and the date this page was built (lib/versions.ts).
  */
-export function DocumentStatus({
+export async function DocumentStatus({
   locale,
   sectionHref,
   statusOverride,
 }: DocumentStatusProps) {
   const meta = getSpecMeta();
+  const versions = await loadVersionLabels();
   const status = statusOverride ?? meta.status;
-  const date = formatSpecDate(meta.lastModified);
+  const date = formatSpecDate(meta.lastModified, locale);
   const canonicalLabel = t(locale, "spec.canonical");
   const versionLabel = t(locale, "spec.version");
   const dateLabel = t(locale, "spec.date");
@@ -39,11 +44,18 @@ export function DocumentStatus({
       <span className="pipe">·</span>
       <span>
         <span className="opacity-70">{versionLabel}</span>{" "}
-        <span className="tnum">{meta.version}</span>
+        <a href={SPEC_SOURCE_URL} className="tnum">{meta.specVersion}</a>{" "}
+        <span className="opacity-70">({dateLabel} {date})</span>
       </span>
       <span className="pipe">·</span>
       <span>
-        <span className="opacity-70">{dateLabel}</span> {date}
+        <span className="opacity-70">{versions.npmVerified ? "npm" : "package.json"}</span>{" "}
+        <a href={NPM_PACKAGE_URL} className="tnum">{versions.npm}</a>
+      </span>
+      <span className="pipe">·</span>
+      <span>
+        <span className="opacity-70">{t(locale, "spec.generated")}</span>{" "}
+        {formatSpecDate(versions.generatedAt, locale)}
       </span>
       <span className="pipe">·</span>
       <span>

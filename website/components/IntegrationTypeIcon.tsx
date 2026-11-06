@@ -96,32 +96,32 @@ export function integrationTypeHint(
 ): string {
   const hints: Record<IntegrationType, { en: string; zh: string }> = {
     engine: {
-      en: "Implements a conforming ATR evaluation engine",
-      zh: "實作一個符合規範的 ATR 評估引擎",
+      en: "Builds its own ATR engine that conforms to the spec",
+      zh: "自己實作一個符合規格的 ATR 引擎",
     },
     "rule-import": {
-      en: "Consumes the ATR rule corpus inside its own scanner",
-      zh: "把 ATR 規則集吃進自己的掃描器",
+      en: "Runs the ATR rules inside its own scanner",
+      zh: "把 ATR 規則放進自己的掃描器裡跑",
     },
     "category-subset": {
-      en: "Imports a subset of ATR categories",
-      zh: "匯入部分 ATR 類別",
+      en: "Takes in some ATR categories, not all",
+      zh: "只匯入部分 ATR 類別",
     },
     adapter: {
-      en: "Converts ATR to/from another rule format",
-      zh: "在 ATR 與其他規則格式之間轉換",
+      en: "Converts between ATR and another rule format",
+      zh: "在 ATR 和其他規則格式之間互轉",
     },
     reference: {
-      en: "References ATR in a catalogue, taxonomy, or docs",
-      zh: "在目錄、分類法或文件中引用 ATR",
+      en: "Cites ATR in a catalogue, a taxonomy or its docs",
+      zh: "在目錄、分類法或文件裡引用 ATR",
     },
     "sidecar-proxy": {
-      en: "Runs ATR as a proxy/callback layer beside the agent",
-      zh: "以代理/回呼層在 agent 旁運行 ATR",
+      en: "Runs ATR beside the agent, as a proxy or callback layer",
+      zh: "在 agent 旁邊跑 ATR，當代理或回呼層",
     },
     other: {
-      en: "Integration shape not covered by the enum",
-      zh: "枚舉未涵蓋的整合形狀",
+      en: "An integration that fits none of the types above",
+      zh: "不屬於以上任何一種的整合",
     },
   };
   return hints[type][locale];

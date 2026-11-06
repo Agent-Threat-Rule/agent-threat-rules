@@ -2,6 +2,7 @@
 
 import { motion, useInView } from "motion/react";
 import { useRef } from "react";
+import { Sign } from "@/components/Sign";
 
 interface Contributor {
   github: string;
@@ -95,9 +96,9 @@ export function CommunityWall({
                 </div>
 
                 {/* Contribution bar */}
-                <div className="h-2 bg-ash rounded-sm overflow-hidden mb-2">
+                <div className="h-2 bg-ash  overflow-hidden mb-2">
                   <motion.div
-                    className="h-full bg-blue rounded-sm"
+                    className="h-full bg-ink "
                     initial={{ width: 0 }}
                     animate={isInView ? { width: `${barWidth}%` } : { width: 0 }}
                     transition={{ duration: 0.8, delay: 0.2 + i * 0.1, ease: EASE }}
@@ -119,7 +120,7 @@ export function CommunityWall({
                         alt={c.github}
                         width={20}
                         height={20}
-                        className="rounded-sm ring-1 ring-fog group-hover:ring-blue transition-all"
+                        className="ring-1 ring-fog group-hover:ring-blue transition-all"
                       />
                       <span className="font-data text-xs text-stone group-hover:text-ink transition-colors">
                         @{c.github}
@@ -132,7 +133,7 @@ export function CommunityWall({
               {/* Contribution count */}
               <div className="text-right shrink-0">
                 <div className="font-data text-xl md:text-2xl font-bold text-ink">{country.contributions}</div>
-                <div className="font-data text-xs text-mist">{zh ? "貢獻" : "contribs"}</div>
+                <div className="font-data text-xs text-mist">{zh ? "次貢獻" : "contributions"}</div>
               </div>
             </motion.div>
           );
@@ -153,7 +154,7 @@ export function CommunityWall({
             className="bg-paper px-5 py-4 flex items-center gap-3 hover:bg-ash/50 transition-colors"
           >
             {item.logo && (
-              <img src={item.logo} alt="" width={28} height={28} className="rounded-sm ring-1 ring-fog" />
+              <img src={item.logo} alt="" width={28} height={28} className="ring-1 ring-fog" />
             )}
             <div className="min-w-0">
               <div className="font-display text-sm font-semibold text-ink truncate">{item.name}</div>
@@ -167,7 +168,7 @@ export function CommunityWall({
       {open.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           <span className="font-data text-xs text-mist tracking-[1px] uppercase mr-1">
-            {zh ? "審查中" : "Pending"}
+            {zh ? "審查中" : "In review"}
           </span>
           {open.map((item) => (
             <a
@@ -191,10 +192,10 @@ export function CommunityWall({
           rel="noopener noreferrer"
           className="font-data text-xs text-blue hover:underline"
         >
-          {zh ? "加入社群 →" : "Add yourself to the wall →"}
+          {zh ? "把自己加上來" : "Add yourself to the wall"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
         </a>
         <span className="font-data text-xs text-mist">
-          {contributors.length} {zh ? "位貢獻者" : "contributors"} · {countries.length} {zh ? "個國家" : "countries"} · {merged.length} {zh ? "個整合" : "integrations"}
+          {contributors.length} {zh ? "位貢獻者" : "contributors"} · {countries.length} {zh ? "個國家" : "countries"} · {merged.length} {zh ? "個已合併的整合" : "merged integrations"}
         </span>
       </div>
     </div>

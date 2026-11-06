@@ -92,6 +92,15 @@ Adopters whose adoption is itself a public-good interoperability artefact
 - **Still-present**: examples/ai-agent/atr-categories-to-capabilities-mapping.yaml contains "ATR"
 - **Status**: shipped
 
+### IBM AI Atlas Nexus
+- **Org**: IBM
+- **Type**: reference
+- **Integration**: IBM's AI risk knowledge graph lists Agent Threat Rules as an external reference and as a recommended action ("Use Agent Threat Rules as a supplementary shareable detection layer") in its OWASP Agentic Skills Top 10 linkages. Written and merged by IBM maintainer ingelise — ATR did not open this PR
+- **Evidence**: <https://github.com/IBM/ai-atlas-nexus/pull/318>
+- **Since**: 2026-11-06
+- **Still-present**: src/ai_atlas_nexus/data/knowledge_graph/owasp_ast10_references_data.yaml contains "owasp-ast10-ref-agent-threat-rules"
+- **Status**: shipped
+
 ## Tier 1 — Production deployments
 
 Adopters who ship ATR in a publicly-available customer-facing product or

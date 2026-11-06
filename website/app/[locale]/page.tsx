@@ -1,715 +1,394 @@
-/* ATR Homepage — 7-scene narrative (redesigned: deduped credibility, restrained name-drops) */
-import { HeroEntrance } from "@/components/HeroEntrance";
-import { CountUp } from "@/components/CountUp";
-import { SpeedLines } from "@/components/SpeedLines";
-import { Reveal } from "@/components/Reveal";
-import { StatsHydrator } from "@/components/StatsHydrator";
-import { NumberScramble } from "@/components/NumberScramble";
-import { Flywheel } from "@/components/Flywheel";
-import { HeroGrid } from "@/components/DotGrid";
-import { EcosystemWall } from "@/components/EcosystemWall";
-import { loadSiteStats } from "@/lib/stats";
-import {
-  EVALUATION_URL,
-  GARAK_CLOSED_BOOK,
-  LANES_EXPLAINED,
-  count,
-  findBenchmark,
-  measuredStamp,
-  pct,
-  pctHunt,
-} from "@/lib/recall";
-import { getSpecMeta } from "@/lib/spec-meta";
-import { loadAllRules, getCategories, categoryDisplayName } from "@/lib/rules";
-import { locales, type Locale } from "@/lib/i18n";
+/* ATR home page. Hero: three agent sessions with ATR's real verdicts. Then
+ * who has merged ATR, why it matters now, how one real incident became a
+ * rule, what the rules cover, the frameworks they map to, the three tools,
+ * where to start, and the latest. Every number is read at build time. */
 import Link from "next/link";
+import type { Metadata } from "next";
+import { locales, type Locale } from "@/lib/i18n";
+import { loadSiteStats } from "@/lib/stats";
+import { getSpecMeta } from "@/lib/spec-meta";
+import { loadAdopters } from "@/lib/adopters";
+import { loadAllRules, loadRuleDetail, categoryDisplayName } from "@/lib/rules";
+import { rulesLanes, type Lane } from "@/lib/lanes";
+import { loadCrosswalks } from "@/lib/crosswalks";
+import { loadChangelog } from "@/lib/changelog";
+import { posts } from "@/lib/posts";
+import { CATEGORY_DESC } from "@/lib/category-desc";
+import { CATEGORY_ORDER, categoryLetter } from "@/lib/docs-nav";
+import { pageMetadata, SITE_NAME } from "@/lib/seo";
+import { SheetRow } from "@/components/Sheet";
+import { CategoryFrieze } from "@/components/classical/CategoryFrieze";
+import { AgentConsole } from "@/components/home/AgentConsole";
+import { RuleBirth, type BirthRule } from "@/components/home/RuleBirth";
+import { AdoptGuide } from "@/components/AdoptGuide";
+import { TOOLS } from "@/lib/adopt-guide";
+import { clauses } from "@/lib/clauses";
+import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-const CATEGORY_DESC: Record<string, { en: string; zh: string }> = {
-  "prompt-injection": {
-    en: "Hijacking agent behavior through crafted inputs",
-    zh: "透過精心構造的輸入劫持 agent 行為",
-  },
-  "skill-compromise": {
-    en: "Malicious or vulnerable MCP skills and SKILL.md",
-    zh: "惡意或有漏洞的 MCP skill 和 SKILL.md",
-  },
-  "context-exfiltration": {
-    en: "Stealing conversation context and sensitive data",
-    zh: "竊取對話上下文和敏感資料",
-  },
-  "agent-manipulation": {
-    en: "Social engineering and behavioral manipulation of agents",
-    zh: "對 agent 的社交工程和行為操控",
-  },
-  "tool-poisoning": {
-    en: "Poisoned tool descriptions and malicious tool responses",
-    zh: "被下毒的工具描述和惡意工具回應",
-  },
-  "privilege-escalation": {
-    en: "Unauthorized elevation of agent capabilities",
-    zh: "未授權提升 agent 權限",
-  },
-  "excessive-autonomy": {
-    en: "Agents exceeding intended operational boundaries",
-    zh: "Agent 超越預期的操作邊界",
-  },
-  "data-poisoning": {
-    en: "Corrupting training data, memory, or retrieval sources to bias agent behavior",
-    zh: "污染訓練資料、記憶體或檢索來源以扭曲 agent 行為",
-  },
-  "model-abuse": {
-    en: "Misusing model capabilities — jailbreaks, harmful generation, resource abuse",
-    zh: "濫用模型能力——越獄、有害內容生成、資源濫用",
-  },
-  "model-security": {
-    en: "Attacks on the model itself — extraction, inversion, adversarial inputs",
-    zh: "針對模型本身的攻擊——模型提取、逆向還原、對抗式輸入",
-  },
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const stats = loadSiteStats();
+  // No title: the home page keeps the root layout's default title.
+  return pageMetadata({
+    locale,
+    path: "",
+    openGraph: {
+      title: SITE_NAME,
+      description: `Open security rules for AI agents. ${stats.ruleCount} effective rules, MIT licensed.`,
+    },
+  });
+}
+
+type B = { en: string; zh: string };
+
+// The rule the "how a rule is born" section follows, from incident to release.
+const BIRTH_RULE = "ATR-2026-02403";
+// Fixed historical dates for that rule, all UTC:
+// - reported: the Manifold Security report date cited in the rule file itself.
+// - mergedToMain: GitHub mergedAt of Agent-Threat-Rule/agent-threat-rules#390, the
+//   PR that added the rule file (git log --diff-filter=A: commit 0d12b20).
+// - firstNpm: the first npm release whose tarball contains the file (3.5.11 does
+//   not, 3.5.12 does), dated by `npm view agent-threat-rules time`.
+const BIRTH_REPORTED = "2026-07-22";
+const BIRTH_MERGED_TO_MAIN = "2026-08-03";
+const BIRTH_FIRST_NPM = { version: "3.5.12", date: "2026-08-11" };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+function daysBetween(from: string, to: string): number {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS);
+}
+
+function laneSentence(lanes: ReadonlyArray<Lane>, maturity: string, zh: boolean): string {
+  if (lanes.length === 0) return zh ? "它目前不在任何偵測車道裡。" : "No detection lane loads it today.";
+  const list = lanes.join(zh ? "、" : " and ");
+  if (lanes.includes("enforce")) {
+    return zh ? `它的成熟度是 ${maturity}，${list} 車道都會載入。` : `Its maturity is ${maturity}, so the ${list} lanes load it.`;
+  }
+  return zh
+    ? `它的成熟度是 ${maturity}，所以只在 ${list} 車道裡跑，enforce 車道不會載入。`
+    : `Its maturity is ${maturity}, so it runs in the ${list} lanes and the enforce lane does not load it.`;
+}
+
+// Individual maintainers listed in ADOPTERS.md; the strip names organisations.
+const INDIVIDUALS = new Set(["Independent", "Ajay Nyayapathi"]);
+
+const REFERENCES = ["MITRE ATLAS", "OWASP Agentic", "OWASP LLM", "NIST AI RMF", "EU AI Act", "ISO/IEC 42001"];
+
+const H2 = "text-[30px] md:text-[40px] leading-[1.18] tracking-[-0.01em] text-ink";
+const KICKER = "text-[13px] text-stone";
+/** A text link that leads on, marked with the diple (components/Sign.tsx). */
+const READ_ON = "inline-flex items-center gap-2 text-[16px] text-blue border-b border-current pb-0.5 hover:text-blue-hover";
+const TEXT_LINK = "text-[14px] text-ink underline underline-offset-[6px] decoration-2 hover:decoration-ink";
+
+function shortOrg(org: string) {
+  return org.replace(/\s*\(.*\)\s*$/, "").replace(/^CNCF \/ /, "");
+}
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale: rawLocale } = await params;
-  const locale = (locales.includes(rawLocale as Locale) ? rawLocale : "en") as Locale;
-  const prefix = `/${locale}`;
-  const stats = loadSiteStats();
+  const { locale: raw } = await params;
+  const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
   const zh = locale === "zh";
+  const prefix = `/${locale}`;
+  const pick = (t: B) => (zh ? t.zh : t.en);
+  const title = (text: string) => (zh ? clauses(text) : text);
+
+  const stats = loadSiteStats();
+  const specVersion = getSpecMeta().specVersion;
   const rules = loadAllRules();
-  // Display the full defined taxonomy (10 categories) — consistent with the
-  // spec, stats.json, and every other ATR material. The live rule set currently
-  // populates 8; sort populated categories first so the grid still leads with
-  // substance.
-  const categoryCounts = new Map(getCategories(rules).map((c) => [c.name, c.count]));
-  const taxonomy = Object.keys(CATEGORY_DESC).sort(
-    (a, b) => (categoryCounts.get(b) ?? 0) - (categoryCounts.get(a) ?? 0)
-  );
-  const categoryCount = taxonomy.length;
-  const mergedCount = stats.ecosystemIntegrations.filter(e => e.type === "merged").length;
-  const specVersion = getSpecMeta().version;
-  // Tier 1 in ADOPTERS.md = rule pack merged into a named organization's own
-  // repository, evidenced by a merged PR. It is not a claim that any vendor
-  // ships ATR in a commercial product.
-  const tier1MergedCount = stats.ecosystemIntegrations.filter(
-    (e) => e.tier === "1" && e.type === "merged",
-  ).length;
-  // The home logo wall shows standards bodies, production deployments, and
-  // tooling/SDK integrations (tiers S/1/2). Catalogue and documentation
-  // references (tier 3) are summarised as a count with a pointer to /ecosystem.
-  const wallIntegrations = stats.ecosystemIntegrations.filter(
-    (e) => e.tier === "S" || e.tier === "1" || e.tier === "2",
-  );
-  const tier3Merged = stats.ecosystemIntegrations.filter(
-    (e) => e.tier === "3" && e.type === "merged",
-  ).length;
-  // The hero's garak figure, from the measurement file data/measurements/garak/latest.json
-  // points at, in both lanes. No measurement, no figure: never a typed fallback.
-  const garak = findBenchmark(stats, "garak");
-  const pint = findBenchmark(stats, "pint");
+  const adopters = loadAdopters();
+  const crosswalks = loadCrosswalks().filter((c) => c.published);
+  const latestRelease = loadChangelog().find((e) => /^\d+\.\d+\.\d+/.test(e.version) && e.date);
+  const latestPosts = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 2);
+
+  const shipped = [...adopters.tierS, ...adopters.tier1, ...adopters.tier2].filter((a) => a.status === "shipped");
+  const orgs = [...new Set(shipped.map((a) => shortOrg(a.org)).filter((o) => !INDIVIDUALS.has(o)))];
+
+  const effectiveByCategory = new Map<string, number>();
+  for (const r of rules) {
+    if (rulesLanes(r).length > 0) effectiveByCategory.set(r.category, (effectiveByCategory.get(r.category) ?? 0) + 1);
+  }
+  const categories = [...CATEGORY_ORDER];
+
+  const detail = loadRuleDetail(BIRTH_RULE);
+  const birth: BirthRule | null = detail
+    ? {
+        id: detail.id,
+        title: detail.title,
+        severity: detail.severity,
+        maturity: detail.maturity ?? "",
+        category: detail.category,
+        date: detail.date.replace(/\//g, "-"),
+        truePositives: detail.truePositives.length,
+        trueNegatives: detail.trueNegatives.length,
+        mappings: [...detail.owaspAgentic, ...detail.owaspLlm, ...detail.mitreAtlas.map((m) => m.split(" - ")[0])],
+        reported: BIRTH_REPORTED,
+        mergedToMain: BIRTH_MERGED_TO_MAIN,
+        firstNpmVersion: BIRTH_FIRST_NPM.version,
+        firstNpmDate: BIRTH_FIRST_NPM.date,
+      }
+    : null;
+  const birthLanes = detail ? rulesLanes({ status: detail.status, maturity: detail.maturity }) : [];
+
+  const figures: Array<[string, string]> = [
+    [String(stats.ruleCount), zh ? "生效規則" : "Effective rules"],
+    [String(stats.categoryCount), zh ? "威脅類別" : "Threat categories"],
+    [String(orgs.length), zh ? "合併過的組織" : "Organizations that merged it"],
+    ["MIT", zh ? "授權" : "License"],
+  ];
 
   return (
+    <Phrased>
     <>
-      <StatsHydrator />
-
-      {/* ── Scene 1: The Shift (Hero) ── */}
-      <section className="bg-paper min-h-screen flex flex-col items-center justify-center text-center px-5 md:px-6 pt-32 pb-24 md:pt-40 md:pb-32 relative overflow-hidden">
-        <HeroGrid />
-
-        <div className="relative z-10 max-w-[820px]">
-          {/* Standards-lineage eyebrow — peer-format framing.
-              (Hero logo removed: the nav already carries the ATR lockup, and a
-              second oversized logo here collided with the sticky nav on load.) */}
-          <HeroEntrance delay={0.6}>
-            <p className="font-display text-[18px] md:text-[clamp(22px,2.6vw,32px)] font-semibold leading-[1.35] tracking-[-0.3px] text-mist text-balance">
-              {zh ? "Sigma 寫給 SIEM。YARA 寫給 malware。" : "Sigma is for SIEM. YARA is for malware."}
-            </p>
-          </HeroEntrance>
-
-          {/* H1 — ATR's position in the lineage */}
-          <HeroEntrance delay={0.9}>
-            <h1 className="font-display text-[40px] md:text-[clamp(48px,5.6vw,72px)] font-black leading-[1.04] tracking-[-1.5px] md:tracking-[-2.5px] text-ink mt-3 md:mt-4 text-balance">
-              {zh ? "ATR 寫給 AI agent。" : "ATR is for AI agents."}
+      {/* Hero */}
+      <SheetRow>
+        <div className="grid lg:grid-cols-[1fr_1.08fr] gap-12 lg:gap-14 items-center px-6 md:px-14 pt-14 md:pt-20 pb-16">
+          <div className="min-w-0">
+            <div className={KICKER}>
+              {zh ? "開放標準 · Agent Threat Rules" : "Open standard · Agent Threat Rules"}
+            </div>
+            <h1 className="mt-6 text-[42px] sm:text-[56px] lg:text-[64px] leading-[1.06] tracking-[-0.01em] text-ink">
+              {zh ? <>AI agent 的<br />資安規則。</> : <>Security rules<br />for AI agents.</>}
             </h1>
-          </HeroEntrance>
-
-          {/* Mission tagline — short, italic, between H1 and subtitle. */}
-          <HeroEntrance delay={1.0}>
-            <p className="mt-7 md:mt-9 text-sm md:text-base italic text-stone font-light max-w-[580px] mx-auto leading-[1.7] text-pretty">
+            <p className="mt-6 text-[17px] leading-[1.7] text-graphite max-w-[500px] text-pretty">
               {zh
-                ? "一條在台北寫的規則,能擋下西雅圖首次通報的攻擊——規則格式不必有人重新發明。"
-                : "Built so a rule written in Taipei catches an attack first reported in Seattle — without anyone reinventing the rule format."}
+                ? "agent 會讀網頁、收信、裝工具，也會照著藏在裡面的指令做事。ATR 把記錄過的攻擊寫成規則，每條都有編號和測試。規則在你自己的環境裡跑，比對到就回報。誰都可以用。"
+                : "Agents read web pages, open mail and install tools, and they follow instructions hidden inside them. ATR writes documented attacks down as rules, each with an ID and tests. The rules run in your own environment and report what they match. Anyone can use them."}
             </p>
-          </HeroEntrance>
-
-          {/* Subtitle — definitional, not outcome */}
-          <HeroEntrance delay={1.1}>
-            <p className="text-base md:text-lg text-stone font-light mt-5 md:mt-7 max-w-[600px] mx-auto leading-[1.75] text-pretty">
-              {zh
-                ? "AI agent 安全威脅的公共偵測規則格式。版本化、可機器讀取、廠商中立,任何符合規範的引擎都能評估。社群維護,MIT 永久授權。"
-                : "An open, versioned, machine-readable detection rule format for AI agent security threats. Any conforming engine can evaluate it. Community-maintained, MIT licensed."}
-            </p>
-          </HeroEntrance>
-
-          {/* Three monospace stats */}
-          <HeroEntrance delay={1.3}>
-            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 mt-11 md:mt-14 font-data text-sm md:text-base tracking-wide">
-              <span><span className="font-data font-bold text-ink">{stats.ruleCount}</span> <span className="text-stone">{zh ? "條規則" : "rules"}</span></span>
-              <span className="text-fog">·</span>
-              <span><span className="font-data font-bold text-ink">{categoryCount}</span> <span className="text-stone">{zh ? "個類別" : "categories"}</span></span>
-              {garak && (
-                <>
-                  <span className="text-fog">·</span>
-                  <span>
-                    <span className="font-data font-bold text-ink">{pctHunt(garak.recall)}</span>{" "}
-                    <span className="text-stone">hunt</span>
-                    {garak.enforce && (
-                      <>
-                        <span className="text-fog"> / </span>
-                        <span className="font-data font-bold text-ink">{pct(garak.enforce.recall)}</span>{" "}
-                        <span className="text-stone">enforce</span>
-                      </>
-                    )}{" "}
-                    <span className="text-stone">{zh ? "garak 召回率" : "garak recall"}</span>
-                  </span>
-                </>
-              )}
+            <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3">
+              <Link href={`${prefix}/start`} className={READ_ON}>{zh ? "從這裡開始" : "Start here"}<Sign name="diple" size={12} /></Link>
+              <Link href={`${prefix}/rules`} className={READ_ON}>{zh ? "看全部規則" : "Browse the rules"}<Sign name="diple" size={12} /></Link>
             </div>
-            {garak && (
-              <p className="mt-3 mx-auto max-w-[620px] text-[11px] leading-[1.6] text-stone text-pretty">
-                {zh
-                  ? `garak in-the-wild 越獄語料,${count(garak.samples)} 個 prompt,${measuredStamp(garak, true)}。${LANES_EXPLAINED.zh}${GARAK_CLOSED_BOOK.zh} `
-                  : `garak in-the-wild jailbreak corpus, ${count(garak.samples)} prompts, ${measuredStamp(garak, false)}. ${LANES_EXPLAINED.en} ${GARAK_CLOSED_BOOK.en} `}
-                <a href={EVALUATION_URL} className="underline hover:text-ink" target="_blank" rel="noopener noreferrer">
-                  {zh ? "量測方式 →" : "How it is measured →"}
-                </a>
-              </p>
+          </div>
+          <AgentConsole locale={locale} ruleCount={stats.ruleCount} />
+        </div>
+        <dl className="flex flex-wrap gap-x-6 gap-y-2 border-t border-fog px-6 md:px-14 py-4 text-[13px]">
+          {figures.map(([value, label]) => (
+            <div key={label} className="flex items-baseline gap-1.5">
+              <dt className="text-stone">{label}</dt>
+              <dd className="font-data text-ink tabular-nums">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </SheetRow>
+
+      {/* Who has merged it */}
+      <SheetRow>
+        <div className="px-6 md:px-14 py-10" data-nophrase="">
+          <div className="flex flex-wrap items-baseline justify-between gap-4">
+            <div className={KICKER}>{zh ? "這些組織的維護者審過之後，合併了 ATR" : "Maintainers at these organisations reviewed ATR and merged it"}</div>
+            <Link href={`${prefix}/ecosystem`} className="text-[13px] text-ink hover:underline underline-offset-4">{zh ? "每一筆的合併紀錄 →" : "Every merge, with evidence →"}</Link>
+          </div>
+          <ul className="mt-6 flex flex-wrap items-center gap-x-10 gap-y-4">
+            {orgs.map((o) => (
+              <li key={o} className="text-[19px] md:text-[21px] tracking-[-0.01em] text-ink/70 whitespace-nowrap">{o}</li>
+            ))}
+          </ul>
+        </div>
+      </SheetRow>
+
+      {/* Coverage */}
+      <SheetRow>
+        <div className="px-6 md:px-14 py-20 md:py-24">
+          <div className={KICKER}><span className="font-title text-ink mr-2">§ 1</span>{zh ? "涵蓋範圍" : "Coverage"}</div>
+          <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "攻擊一旦記錄下來，就有了名字。" : "A documented attack gets a name.")}</h2>
+          <p className="mt-5 text-[16px] leading-[1.75] text-graphite max-w-[620px]">
+            {zh ? "十個類別，從下了毒的工具說明，到暗中被調包的目標。點任一格，就能看到這一類的規則。" : "Ten categories, from a poisoned tool description to a goal quietly swapped for another. Each panel opens the rules in its category."}
+          </p>
+          <div className="mt-12">
+            <CategoryFrieze
+              countLabel={zh ? "條規則" : "rules"}
+              inscription={REFERENCES}
+              items={categories.map((c, i) => ({
+                key: c,
+                letter: categoryLetter(c),
+                name: categoryDisplayName(c, locale),
+                desc: pick(CATEGORY_DESC[c]),
+                count: effectiveByCategory.get(c) ?? 0,
+                href: `${prefix}/docs/categories/${c}`,
+              }))}
+            />
+          </div>
+        </div>
+      </SheetRow>
+
+      {/* Why now */}
+      <SheetRow>
+        <div className="px-6 md:px-14 py-20 md:py-24 grid lg:grid-cols-[1fr_1.15fr] gap-10 lg:gap-20">
+          <div>
+            <div className={KICKER}><span className="font-title text-ink mr-2">§ 2</span>{zh ? "為什麼是現在" : "Why now"}</div>
+            <h2 className={`mt-4 ${H2}`}>{title(zh ? "以前，我們有幾十年可以慢慢來。" : "We used to have decades.")}</h2>
+          </div>
+          <div className="space-y-5 text-[17px] md:text-[18px] leading-[1.8] text-graphite max-w-[600px]">
+            <p>
+              {zh
+                ? "飛機發明四十年後，各國才坐下來訂出共同的航空規則。軟體漏洞有了全世界通用的編號，是網路普及之後的事。每一次，我們都等得起。"
+                : "Forty years passed between the first powered flight and the treaty that gave the world common rules for flying. Software flaws got shared numbers only after the internet was everywhere. Each time, we could afford to wait."}
+            </p>
+            <p>
+              {zh
+                ? "agent 不一樣。模型幾個禮拜就換一代，agent 已經在醫院、銀行、公家機關裡做事。攻擊傳得很快，防守的人卻還在互相寄信、等報告。"
+                : "Agents are different. Models turn over in weeks, and agents already work in hospitals, banks and government offices. Attacks spread fast. Defenders are still trading emails and waiting on reports."}
+            </p>
+            <p className="text-ink">
+              {zh
+                ? "ATR 做的事情很小：把記錄過的攻擊寫成規則，讓下一個人認得出同一招。"
+                : "ATR does one small thing: it writes down documented attacks so the next person can spot the same trick."}
+            </p>
+          </div>
+        </div>
+      </SheetRow>
+
+      {/* How a rule is born */}
+      {birth && (
+        <SheetRow>
+          <div className="px-6 md:px-14 pt-20 md:pt-24 pb-20">
+            <div className={KICKER}><span className="font-title text-ink mr-2">§ 3</span>{zh ? "一條規則怎麼來" : "How a rule is made"}</div>
+            <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "一個人碰到的攻擊，變成所有人的規則。" : "An attack one person hit becomes everyone's rule.")}</h2>
+            <p className="mt-5 text-[16px] leading-[1.75] text-graphite max-w-[620px]">
+              {zh ? `以 ${birth.id} 為例，從回報到使用者裝得到，花了 ${daysBetween(birth.reported, birth.firstNpmDate)} 天。` : `Take ${birth.id}: it reached users ${daysBetween(birth.reported, birth.firstNpmDate)} days after it was reported.`}{" "}
+              {laneSentence(birthLanes, birth.maturity, zh)}
+            </p>
+            <div className="mt-12">
+              <RuleBirth locale={locale} rule={birth} />
+            </div>
+          </div>
+        </SheetRow>
+      )}
+
+      {/* Crosswalks */}
+      <SheetRow>
+        <div className="px-6 md:px-14 py-20 md:py-24">
+          <div className={KICKER}><span className="font-title text-ink mr-2">§ 4</span>{zh ? "框架對照" : "Crosswalks"}</div>
+          <h2 className={`mt-4 ${H2} max-w-[820px]`}>{title(zh ? "一條規則，對應到你必須遵循的框架。" : "One rule, mapped to the frameworks you answer to.")}</h2>
+          <div className="mt-14 grid lg:grid-cols-[380px_1fr] gap-10 lg:gap-0 items-center">
+            {birth && (
+              <div className="relative bg-white border border-ink p-5 lg:mr-12">
+                <div className="font-data text-[12px] text-ink">{birth.id}</div>
+                <div className="mt-1 text-[14px] leading-snug text-ink">{birth.title}</div>
+                <ul className="mt-4 flex flex-wrap gap-1.5">
+                  {birth.mappings.map((m) => (
+                    <li key={m} className="font-data text-[10.5px] px-1.5 py-0.5 border border-fog text-graphite">{m}</li>
+                  ))}
+                  <li className="font-data text-[10.5px] px-1.5 py-0.5 border border-fog text-graphite">EU AI Act Art. 14, 15</li>
+                  <li className="font-data text-[10.5px] px-1.5 py-0.5 border border-fog text-graphite">NIST AI RMF Map · Measure · Manage</li>
+                </ul>
+                <span className="hidden lg:block absolute top-1/2 -right-12 w-12 h-px bg-ink" aria-hidden="true" />
+              </div>
             )}
-          </HeroEntrance>
-
-          {/* Document Status strip — W3C-style version + status + canonical URL. */}
-          <HeroEntrance delay={1.4}>
-            <Link
-              href={`${prefix}/spec`}
-              className="mt-5 inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-data text-[10px] md:text-[11px] tracking-[0.08em] uppercase text-stone hover:text-ink transition-colors px-3 py-1.5 border border-fog rounded-[2px] group"
-              aria-label={zh ? `規格 Working Draft v${specVersion}` : `Specification Working Draft v${specVersion}`}
-            >
-              <span className="text-ink font-semibold">Working Draft</span>
-              <span className="text-fog">·</span>
-              <span>v{specVersion}</span>
-              {stats.lastRegenerated && (
-                <>
-                  <span className="text-fog">·</span>
-                  <span>{zh ? `最新發布 ${stats.lastRegenerated}` : `latest release ${stats.lastRegenerated}`}</span>
-                </>
-              )}
-              <span className="text-fog">·</span>
-              <span>{zh ? "正式網址" : "canonical"} <span className="text-ink group-hover:underline">/spec</span></span>
-            </Link>
-          </HeroEntrance>
-
-          {/* CTAs — procedural, standards-form */}
-          <HeroEntrance delay={1.5}>
-            <div className="flex gap-3 justify-center flex-wrap mt-9 md:mt-11">
-              <Link
-                href={`${prefix}/spec`}
-                className="bg-blue text-white px-8 md:px-10 py-3.5 md:py-4 rounded-[2px] text-sm font-semibold hover:bg-blue-hover transition-colors"
-              >
-                {zh ? "讀規範" : "Read the spec"}
-              </Link>
-              <Link
-                href={`${prefix}/rules`}
-                className="text-ink px-8 md:px-10 py-3.5 md:py-4 text-sm font-medium border border-fog hover:border-stone transition-colors rounded-[2px]"
-              >
-                {zh ? "瀏覽規則" : "Browse rules"}
-              </Link>
-              <Link
-                href={`${prefix}/contribute`}
-                className="text-ink px-8 md:px-10 py-3.5 md:py-4 text-sm font-medium border border-fog hover:border-stone transition-colors rounded-[2px]"
-              >
-                {zh ? "投規則" : "Submit a rule"}
-              </Link>
-            </div>
-          </HeroEntrance>
-
-          {/* Secondary text link — keeps RFC-001 discoverable */}
-          <HeroEntrance delay={1.6}>
-            <div className="mt-3 text-xs text-stone">
-              <Link
-                href={`${prefix}/quality-standard`}
-                className="hover:text-ink underline-offset-4 hover:underline transition-colors"
-              >
-                {zh ? "規則晉升標準 (RFC-001) →" : "Quality standard (RFC-001) →"}
-              </Link>
-            </div>
-          </HeroEntrance>
-
-          {/* Trust bar — two restrained rows. Detailed adoption lives in the
-              consolidated section below; here it is a single touch each. */}
-          <HeroEntrance delay={1.7}>
-            <div className="mt-16 md:mt-24 pt-8 md:pt-10 border-t border-fog/60 font-data text-[11px] md:text-xs text-mist tracking-wide space-y-2">
-              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-                <span>{zh ? "標準與框架:" : "Standards & frameworks:"}</span>
-                <span className="text-ink">MISP / CIRCL</span>
-                <span className="text-fog">·</span>
-                <span className="text-ink">OWASP</span>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-                <span>{zh ? "已合併至上游:" : "Merged upstream:"}</span>
-                <span className="font-semibold text-ink">Microsoft AGT</span>
-                <span className="text-fog">·</span>
-                <span className="font-semibold text-ink">Cisco AI Defense</span>
-                <span className="text-fog">·</span>
-                <span className="font-semibold text-ink">Gen Digital Sage</span>
-              </div>
-            </div>
-          </HeroEntrance>
-        </div>
-      </section>
-
-      <SpeedLines />
-
-      {/* ── Scene 2: The Gap (why ATR exists) ── */}
-      <section className="py-14 md:py-[100px] px-5 md:px-6 bg-ash">
-        <div className="max-w-[980px] mx-auto">
-          <Reveal>
-            <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-5 md:mb-6">
-              {zh ? "為什麼要做新的" : "Why a new standard"}
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <h2 className="font-display text-[26px] md:text-[clamp(34px,4.5vw,52px)] font-extrabold tracking-[-1px] md:tracking-[-2px] leading-[1.15] text-ink max-w-[820px] text-balance">
-              {zh
-                ? <>舊的偵測標準,<br className="hidden md:block"/>看不到 AI agent 的行為。</>
-                : <>Endpoint detection standards<br className="hidden md:block"/> cannot see AI agent behavior.</>}
-            </h2>
-          </Reveal>
-          <Reveal delay={0.2}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-fog mt-8 md:mt-12">
-              <div className="bg-paper p-6 md:p-8">
-                <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-3">{zh ? "舊時代" : "Old era"}</div>
-                <div className="font-display text-xl md:text-2xl font-bold text-ink mb-3">Sigma · YARA · CVE</div>
-                <p className="text-sm text-graphite leading-[1.7] text-pretty">
-                  {zh
-                    ? "看 log、看檔案、編漏洞編號——盯著程式碼,看不到意圖。"
-                    : "Built for endpoint event logs, file binaries, and software vulnerability IDs. They watch code, not intent."}
-                </p>
-              </div>
-              <div className="bg-paper p-6 md:p-8">
-                <div className="font-data text-xs text-stone tracking-[2px] uppercase mb-3">{zh ? "新攻擊面" : "New surface"}</div>
-                <div className="font-display text-xl md:text-2xl font-bold text-ink mb-3">{zh ? "AI Agent 的行為" : "AI Agent behavior"}</div>
-                <p className="text-sm text-graphite leading-[1.7] text-pretty">
-                  {zh
-                    ? "Prompt 注入、工具下毒、skill 被汙染、context 外洩——攻擊發生在 prompt 跟 tool call 層,不在程式檔案層。"
-                    : "Prompt injection, tool poisoning, skill compromise, context exfiltration — attacks live at the prompt / tool call / skill layer, not at process / file / network."}
-                </p>
-              </div>
-              <div className="bg-paper p-6 md:p-8 border-l-2 border-blue">
-                <div className="font-data text-xs text-blue tracking-[2px] uppercase mb-3">{zh ? "新標準" : "New standard"}</div>
-                <div className="font-display text-xl md:text-2xl font-bold text-ink mb-3">ATR</div>
-                <p className="text-sm text-graphite leading-[1.7] text-pretty">
-                  {zh
-                    ? "廠商中立、機器可讀的行為偵測規則。看 agent 在做什麼,不是看它在跑什麼。任何符合規範的引擎都能評估。MIT 永久,社群治理。"
-                    : "Vendor-neutral, machine-readable behavioral detection rules. Watches what an agent does, not just what it runs. Any conforming engine can evaluate it. MIT forever. Community governed."}
-                </p>
-              </div>
-            </div>
-          </Reveal>
-          <Reveal delay={0.3}>
-            <p className="text-sm md:text-base text-graphite mt-8 max-w-[820px] leading-[1.8] text-pretty">
-              {zh
-                ? <>2017 年 Sigma 成為 SIEM 偵測的開放標準之前,每家 SOC 各寫各的規則。1999 年 CVE 出現之前,每家廠商各編各的漏洞編號。<strong>AI Agent 的偵測層,現在就站在那個位置——還沒被任何人標準化。</strong>ATR 把這格填上。</>
-                : <>Before Sigma became the open standard for SIEM detection in 2017, every SOC wrote its own rules. Before CVE in 1999, every vendor numbered its own vulnerabilities. <strong>The detection layer for the AI agent era sits in the same position right now — not yet standardized.</strong> ATR fills the gap.</>}
-            </p>
-          </Reveal>
-        </div>
-      </section>
-
-      <SpeedLines />
-
-      {/* ── Scene 3: The Threat (mega-scan) ── */}
-      <section className="py-14 md:py-[120px] px-5 md:px-6">
-        <div className="max-w-[1120px] mx-auto">
-          <Reveal>
-            <div className="font-data text-[clamp(64px,14vw,180px)] font-bold text-critical/[0.12] leading-[0.85] mb-2 md:mb-3">
-              <NumberScramble target={stats.megaScanTotal.toLocaleString()} duration={2000} liveKey="megaScanTotal" />
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-4 md:mb-5 leading-[1.8]">
-              {zh
-                ? "個 skill 與 MCP server 定義已掃描 — 跨五個公開 registry"
-                : "agent skills and MCP definitions scanned — across five public registries"}
-            </div>
-          </Reveal>
-          <Reveal delay={0.15}>
-            <div className="font-data text-[clamp(48px,10vw,120px)] font-bold text-critical/[0.18] leading-[0.9] mb-3 md:mb-4">
-              <NumberScramble target={stats.megaScanFlagged.toLocaleString()} duration={2000} liveKey="megaScanFlagged" />
-            </div>
-          </Reveal>
-          <Reveal delay={0.2}>
-            <h2 className="font-display text-[20px] md:text-[clamp(22px,3vw,32px)] font-extrabold tracking-[-1px] leading-[1.35] mb-3 md:mb-4 max-w-[620px] text-balance">
-              {zh
-                ? <>個 skill 被標記。標記量高度集中在少數幾個發布帳號,指向協同的惡意軟體行動。</>
-                : <>skills flagged. The flags concentrate heavily in a handful of publisher accounts, pointing at coordinated malware campaigns.</>}
-            </h2>
-          </Reveal>
-          <Reveal delay={0.25}>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-fog max-w-[700px]">
-              {[
-                { actor: "hightower6eu", count: 354, desc: zh ? "Solana / Google Workspace 偽裝" : "Solana / Google Workspace disguise" },
-                { actor: "sakaen736jih", count: 212, desc: zh ? "C2 伺服器 91.92.242.30" : "C2 server at 91.92.242.30" },
-                { actor: "52yuanchangxing", count: 137, desc: zh ? "偽冒開發工具 + npm typosquat" : "Fake dev tools + npm typosquatting" },
-              ].map((a) => (
-                <div key={a.actor} className="bg-paper p-4 md:p-5">
-                  <div className="font-data text-xs text-stone mb-1">{a.actor}</div>
-                  <div className="font-data text-2xl font-bold text-critical">{a.count}</div>
-                  <div className="font-data text-[10px] text-stone mt-0.5">{zh ? "該帳號發布的 skill 數" : "skills published by this account"}</div>
-                  <div className="text-xs text-mist mt-1">{a.desc}</div>
-                </div>
+            <ul className="relative lg:border-l lg:border-ink grid sm:grid-cols-2 gap-x-8">
+              {crosswalks.map((c) => (
+                <li key={c.slug} className="relative lg:pl-8">
+                  <span className="hidden lg:block absolute left-0 top-1/2 w-5 h-px bg-fog" aria-hidden="true" />
+                  <Link href={`${prefix}/docs/crosswalks/${c.slug}`} className="block py-3 border-b border-fog group">
+                    <span className="block text-[11.5px] text-stone">{c.owner}</span>
+                    <span className="block text-[14px] text-ink group-hover:underline underline-offset-4">{c.framework}</span>
+                  </Link>
+                </li>
               ))}
-            </div>
-          </Reveal>
-          <Reveal delay={0.3}>
-            <p className="text-sm md:text-base text-graphite max-w-[520px] mt-5 leading-[1.8] text-pretty">
-              {zh
-                ? `ATR 在 ClawHub、OpenClaw、Skills.sh、Hermes 與 MCP registry 五個來源掃描 ${stats.megaScanTotal.toLocaleString()} 個 skill 與 MCP server 定義時發現了這些帳號(engine v2.0.0,${stats.megaScanDate})。${stats.megaScanFlagged.toLocaleString()} 個項目被標記。這些帳號是以「整個帳號是已知惡意行動」為單位裁定的——屬於發布者層級的歸因,不是逐檔判讀;標記項目已加入公開黑名單並通報 NousResearch。`
-                : `ATR found these accounts while scanning ${stats.megaScanTotal.toLocaleString()} agent skills and MCP server definitions across five sources — ClawHub, OpenClaw, Skills.sh, Hermes, and an MCP registry index (engine v2.0.0, ${stats.megaScanDate}). ${stats.megaScanFlagged.toLocaleString()} items were flagged. These accounts were adjudicated account-wide as known malware campaigns — publisher-level attribution rather than per-file analysis; flagged items were blacklisted and reported to NousResearch.`}
-            </p>
-          </Reveal>
-          <Reveal delay={0.35}>
-            <Link href={`${prefix}/research`} className="font-data text-xs md:text-sm text-blue hover:underline inline-block mt-4">
-              {zh ? "閱讀完整研究報告 →" : "Read the full research report →"}
-            </Link>
-          </Reveal>
+            </ul>
+          </div>
+          <p className="mt-6 text-[12.5px] text-stone">
+            {zh ? "左邊的對應取自規則檔本身，右邊每一份對照文件都公開在 repo 裡。這些對照是 ATR 自己寫的，列出的機構沒有審查或背書。有些對應已知有誤，正在重做；修正之前只能當參考，不能當稽核證據。" : "The mappings on the left come from the rule file itself. Each crosswalk on the right is a public document in the repository. ATR wrote these crosswalks; the bodies named have not reviewed or endorsed them. Some mappings are known to be wrong and are being redone. Until they are fixed, use them as a reference only, not as audit evidence."}{" "}
+            <Link href={`${prefix}/errata`} className="underline underline-offset-4 hover:text-ink">{zh ? "看勘誤" : "See the errata"}</Link>
+          </p>
         </div>
-      </section>
+      </SheetRow>
 
-      <SpeedLines />
-
-      {/* ── Scene 4: What ATR Detects (categories) ── */}
-      <section className="py-14 md:py-[120px] px-5 md:px-6">
-        <div className="max-w-[1120px] mx-auto">
-          <Reveal>
-            <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-3 md:mb-4">
-              {zh ? "ATR 偵測什麼" : "What ATR Detects"}
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <h2 className="font-display text-[20px] md:text-[clamp(24px,3.5vw,40px)] font-extrabold tracking-[-1px] md:tracking-[-2px] leading-[1.3] mb-6 md:mb-8 max-w-[700px] text-balance">
-              {zh
-                ? <>{categoryCount} 個威脅類別。{stats.ruleCount} 條規則。真實 CVE。</>
-                : <>{categoryCount} threat categories. {stats.ruleCount} rules. Real CVEs.</>}
-            </h2>
-          </Reveal>
-          <Reveal delay={0.2}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-px bg-fog">
-              {taxonomy.map((name) => {
-                const desc = CATEGORY_DESC[name];
-                const count = categoryCounts.get(name) ?? 0;
-                const displayName = categoryDisplayName(name, locale);
-                return (
-                  <div key={name} className="bg-paper p-5 md:p-6 hover:bg-ash/50 transition-colors">
-                    <div className="font-display text-sm font-semibold text-ink">{displayName}</div>
-                    <div className="font-data text-xs text-blue mt-1.5">{count} {zh ? "條規則" : "rules"}</div>
-                    <p className="text-sm text-stone mt-2 text-pretty">
-                      {desc ? (zh ? desc.zh : desc.en) : name}
-                    </p>
+      {/* Three tools */}
+      <SheetRow>
+        <div className="px-6 md:px-14 pt-20 md:pt-24 pb-10">
+          <div className={KICKER}><span className="font-title text-ink mr-2">§ 5</span>{zh ? "三件工具" : "Three tools"}</div>
+          <h2 className={`mt-4 ${H2}`}>{title(zh ? "認出攻擊，挑對測試，再拿出證據。" : "Spot the attack, pick the tests, prove it.")}</h2>
+        </div>
+        <ul className="mx-6 md:mx-14 mb-10 grid md:grid-cols-3 border-t border-fog">
+          {(["rules", "router", "eval"] as const).map((key, i) => {
+            const tool = TOOLS[key];
+            return (
+              <li key={key} className={`border-fog ${i > 0 ? "border-t md:border-t-0 md:border-l" : ""}`}>
+                <Link href={`${prefix}${tool.href}`} className={`group flex flex-col h-full py-6 md:py-8 md:pr-8 ${i > 0 ? "md:pl-8" : ""}`}>
+                  <span className="font-title text-[30px] md:text-[44px] leading-none text-ink mb-5 md:mb-8" aria-hidden="true">{ROMAN[i]}</span>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="text-[17px] text-ink group-hover:underline underline-offset-4">{tool.name}</span>
+                    <span className="text-[11.5px] text-stone">{tool.released ? (zh ? "已發布" : "Released") : zh ? "尚未公開" : "Not yet public"}</span>
                   </div>
-                );
-              })}
-            </div>
-          </Reveal>
-          <Reveal delay={0.3}>
-            <div className="mt-5 md:mt-6">
-              <Link href={`${prefix}/rules`} className="font-data text-xs md:text-sm text-blue hover:underline">
-                {zh ? "瀏覽所有規則 + YAML 詳情 →" : "Browse all rules + YAML details →"}
-              </Link>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      <SpeedLines />
-
-      {/* ── Scene 5: Adoption + Integration (consolidated) ──
-          One section replaces the former Adopted-By / Numbers / Copilot-Loop /
-          Proof scenes. Restrained name-drops: each adopter appears once in the
-          row; the Microsoft Copilot loop is the single highlighted proof. */}
-      <section className="py-14 md:py-[120px] px-5 md:px-6 bg-ash">
-        <div className="max-w-[1120px] mx-auto">
-          <Reveal>
-            <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-3 md:mb-4">
-              {zh ? "已被採用" : "Adopted by"}
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <h2 className="font-display text-[24px] md:text-[clamp(28px,4vw,48px)] font-extrabold tracking-[-1.5px] md:tracking-[-2px] leading-[1.15] text-ink max-w-[820px] text-balance">
-              {zh
-                ? "ATR 規則包與整合範例,已合併進這些組織的公開 repo。"
-                : "ATR rule packs and integration examples, merged into these organizations' public repos."}
-            </h2>
-          </Reveal>
-
-          {/* Production adopters — one row, one mention each, PR-linked */}
-          <Reveal delay={0.2}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-fog mt-8 md:mt-10">
-              {[
-                {
-                  name: "Microsoft AGT",
-                  detail: zh ? "PR #2308 + #3025 已合併 · ATR 匯入與 ACS annotator 範例目錄,repo 內沒有規則包" : "PR #2308 + #3025 merged · ATR import and ACS annotator example directories; no rule pack in the repo",
-                  href: "https://github.com/microsoft/agent-governance-toolkit/pull/3025",
-                },
-                {
-                  name: "Cisco AI Defense",
-                  detail: zh ? "PR #79 + #99 已合併 · 規則集進入開源 skill-scanner repo" : "PR #79 + #99 merged · rule pack in the open-source skill-scanner repo",
-                  href: "https://github.com/cisco-ai-defense/skill-scanner/pull/99",
-                },
-                {
-                  name: "Gen Digital Sage",
-                  detail: zh ? "PR #33 已合併 · Norton / Avast / LifeLock 母集團的 agentic-AI 風險評分層" : "PR #33 merged · agentic-AI risk-scoring layer at the Norton / Avast / LifeLock parent",
-                  href: "https://github.com/gendigitalinc/sage/pull/33",
-                },
-              ].map((a) => (
-                <div key={a.name} className="bg-paper p-6 md:p-8">
-                  <h3 className="font-display text-lg md:text-xl font-bold text-ink tracking-[-0.5px]">{a.name}</h3>
-                  <p className="text-sm text-graphite mt-3 leading-[1.7] text-pretty">{a.detail}</p>
-                  <a href={a.href} target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline inline-block mt-3">
-                    {zh ? "查看 PR →" : "View PR →"}
-                  </a>
-                </div>
-              ))}
-            </div>
-          </Reveal>
-
-          {/* Single highlighted proof: the autonomous-integration loop */}
-          <Reveal delay={0.25}>
-            <div className="mt-6 md:mt-8 bg-paper border-l-2 border-blue p-5 md:p-7 max-w-[860px]">
-              <div className="font-data text-[10px] md:text-xs text-stone tracking-[2px] uppercase mb-3">
-                {zh ? "PR 到合併規則 · 2 小時 16 分" : "PR to merged rule · 2h 16m"}
-              </div>
-              <p className="font-display text-base md:text-lg font-semibold text-ink leading-[1.5] text-balance">
-                {zh
-                  ? "AGT 維護者把 ATR 維護者提的 issue 指派給 Microsoft 的 Copilot 程式代理;它開的 PR 測試預設 ATR 能偵測兩個 CVE,ATR 當天就發布了對應規則。"
-                  : "Assigned by an AGT maintainer to an issue filed by ATR's maintainer, Microsoft's Copilot coding agent opened a PR whose test fixtures presumed ATR could detect two CVEs. ATR shipped matching rules the same day."}
-              </p>
-              <p className="text-sm md:text-base text-graphite mt-3 leading-[1.8] text-pretty">
-                {zh
-                  ? "2026-05-11,AGT 維護者把 AGT#1937(ATR 維護者前一天提出、為兩個 Semantic Kernel CVE 對映 ATR 規則的 issue)指派給 Copilot SWE Agent,它開了 AGT#1981,regression fixtures 預設 ATR 偵測存在。對應規則在 2 小時 16 分鐘內合併進 ATR,兩分鐘後發布到 npm,四個 fixture 中有兩個對上。這是 Copilot 在 AGT 裡的動作,不是 MSRC 背書。"
-                  : "On 2026-05-11, an AGT maintainer assigned the Copilot SWE Agent to AGT#1937, an issue the ATR maintainer had filed the day before mapping ATR rules to two Semantic Kernel CVEs; it opened AGT#1981 with regression fixtures presuming ATR detection. The matching rules were merged into ATR within 2h 16m and published to npm two minutes later; two of the four fixtures matched. This was Copilot operating inside AGT, not an MSRC endorsement."}
-              </p>
-              <a href="https://github.com/microsoft/agent-governance-toolkit/issues/1981" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline inline-block mt-3">
-                {zh ? "查看 AGT#1981 →" : "View AGT#1981 →"}
-              </a>
-            </div>
-          </Reveal>
-
-          {/* Ecosystem wall — standards bodies, production deployments, and
-              tooling integrations, derived from ADOPTERS.md (single source of
-              truth) with the merging org's logo on every shipped entry. */}
-          <Reveal delay={0.3}>
-            <div className="mt-8 md:mt-10">
-              <div className="font-data text-[11px] md:text-xs text-stone tracking-[1.5px] md:tracking-[2px] uppercase mb-4">
-                {zh ? "誰在出貨這個標準" : "Who ships the standard"}
-              </div>
-              <EcosystemWall integrations={wallIntegrations} locale={locale} />
-              <p className="font-data text-xs text-stone mt-5">
-                {zh
-                  ? `另有 ${tier3Merged} 個公開目錄與文件索引收錄 ATR — `
-                  : `Plus ${tier3Merged} public catalogues and documentation indices listing ATR — `}
-                <Link href={`${prefix}/ecosystem`} className="text-blue hover:underline">
-                  {zh ? "完整採用清單" : "full adopter list"}
+                  <p className="mt-2 text-[15px] text-ink">{pick(tool.line)}</p>
+                  <p className="mt-1.5 text-[14px] leading-[1.65] text-graphite flex-1">{pick(tool.body)}</p>
                 </Link>
-              </p>
-            </div>
-          </Reveal>
+              </li>
+            );
+          })}
+        </ul>
+      </SheetRow>
 
-          {/* Compact stats row */}
-          <Reveal delay={0.35}>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog mt-8 md:mt-10">
-              {[
-                { num: String(tier1MergedCount), label: zh ? "已合併的上游整合" : "merged upstream", sub: "ADOPTERS.md Tier 1" },
-                { num: String(stats.ruleCount), label: zh ? "條偵測規則" : "detection rules", sub: zh ? `跨 ${categoryCount} 個類別` : `across ${categoryCount} categories` },
-                { num: stats.megaScanTotal.toLocaleString(), label: zh ? "skills 已掃描" : "skills scanned", sub: zh ? "跨多個 registry" : "across registries" },
-                { num: `${mergedCount}/${stats.ecosystemIntegrations.length}`, label: zh ? "生態系 PR" : "ecosystem PRs", sub: zh ? "已合併" : "merged" },
-              ].map((item) => (
-                <div key={item.label} className="bg-paper p-5 md:p-6">
-                  <div className="font-data text-2xl sm:text-[clamp(24px,4vw,36px)] font-bold text-ink leading-none">{item.num}</div>
-                  <div className="font-data text-xs text-stone mt-2">{item.label}</div>
-                  <div className="text-xs text-mist mt-1">{item.sub}</div>
-                </div>
-              ))}
-            </div>
-          </Reveal>
-
-          {/* Pointers out: full ecosystem + sovereign invitation */}
-          <Reveal delay={0.4}>
-            <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 font-data text-xs md:text-sm">
-              <Link href={`${prefix}/ecosystem`} className="text-blue hover:underline">
-                {zh ? "完整生態系與整合清單 →" : "Full ecosystem + integrations →"}
-              </Link>
-              <Link href={`${prefix}/sovereign-ai-defense`} className="text-blue hover:underline">
-                {zh ? "致民主國家:主權 AI 防禦層 →" : "For democracies: sovereign AI defense →"}
-              </Link>
-            </div>
-          </Reveal>
+      {/* Where to start */}
+      <SheetRow>
+        <div className="px-6 md:px-14 py-20 md:py-24">
+          <div className={KICKER}><span className="font-title text-ink mr-2">§ 6</span>{zh ? "怎麼採用" : "Adopting ATR"}</div>
+          <h2 className={`mt-4 mb-12 ${H2}`}>{title(zh ? "從哪裡開始，看你是誰。" : "Where you start depends on who you are.")}</h2>
+          <AdoptGuide locale={locale} />
         </div>
-      </section>
+      </SheetRow>
 
-      <SpeedLines />
-
-      {/* ── Scene 6: Living standard (coverage + flywheel merged) ── */}
-      <section className="py-14 md:py-[120px] px-5 md:px-6">
-        <div className="max-w-[1120px] mx-auto">
-          <Reveal>
-            <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-3 md:mb-4">
-              {zh ? "一個活的標準" : "A living standard"}
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <h2 className="font-display text-[20px] md:text-[clamp(24px,3.5vw,48px)] font-extrabold tracking-[-1px] md:tracking-[-2px] leading-[1.35] max-w-[700px] mb-3 text-balance">
-              {zh ? "每一次攻擊,都讓所有人更安全。" : "Every attack makes everyone safer."}
-            </h2>
-          </Reveal>
-          <Reveal delay={0.15}>
-            <p className="text-sm md:text-base text-graphite font-light max-w-[640px] mb-6 md:mb-8 leading-[1.8] text-pretty">
-              {zh
-                ? <>新規則來自 CVE 與安全公告掃描、benchmark 漏報挖掘與貢獻者，每一條都經由維護者合併的 pull request 進入 main。從六月起，標準從 462 條成長到 {stats.ruleCount} 條，全部隨 npm <span className="font-data text-graphite">agent-threat-rules@{specVersion}</span> 發布。</>
-                : <>New rules come from CVE and advisory sweeps, benchmark-miss mining and contributors, and each one reaches main through a pull request a maintainer merges. Since June the standard has grown from 462 to {stats.ruleCount} rules, all shipped in npm <span className="font-data text-graphite">agent-threat-rules@{specVersion}</span>.</>}
-            </p>
-          </Reveal>
-          <Reveal delay={0.18}>
-            <p className="text-sm md:text-base text-graphite font-light max-w-[640px] mb-6 md:mb-8 leading-[1.8] text-pretty">
-              {zh
-                ? <>但成長從不是目的——對精確度誠實才是。v3.5.0 引入偵測車道:每條規則標明成熟度,使用者自己決定要信任到哪。enforce 車道只放最成熟的規則開火,預設的 hunt 車道把全部規則當建議性訊號跑。誤報率逐車道揭露,而不是用一個好看的數字一概而論——<strong>而目前各車道的誤報率數字已被撤回、等待重新量測,因為原本的量測基準站不住腳。</strong>撤掉一個自己不再站得住的數字,跟公開最差的數字一樣,都是這個標準對誠實的定義。</>
-                : <>But growth was never the point — honesty about precision is. v3.5.0 introduced detection lanes: every rule declares a maturity, and the consumer decides how far to trust it. The enforce lane fires only the most mature rules; the default hunt lane runs everything as advisory. False-positive rates are reported lane by lane, never as a single flattering number — and <strong>the per-lane figures previously published here are withdrawn pending re-measurement</strong>, because the basis they were measured on did not hold up. Withdrawing a number you can no longer stand behind is the same discipline as publishing your worst one.</>}
-            </p>
-          </Reveal>
-
-          {/* Standard heartbeat — version-pinned, dated cadence so the flywheel
-              reads as a live, moving standard rather than a frozen catalog. Every
-              token here is verifiable (npm tag, rule count, daily CI, stats.json regen date). */}
-          <Reveal delay={0.19}>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 font-data text-[11px] md:text-xs text-stone mb-8 md:mb-10">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-green inline-block" aria-hidden="true" />
-                <span className="text-ink font-semibold">agent-threat-rules@{specVersion}</span>
-              </span>
-              <span className="text-fog">·</span>
-              <span><span className="text-ink font-semibold">{stats.ruleCount}</span> {zh ? "條規則" : "rules"}</span>
-              <span className="text-fog">·</span>
-              <span>{zh ? "每天收集 CVE 提案" : "CVE proposals collected daily"}</span>
-              {stats.lastRegenerated && (
-                <>
-                  <span className="text-fog">·</span>
-                  <span>{zh ? `標準最後重生 ${stats.lastRegenerated}` : `standard regenerated ${stats.lastRegenerated}`}</span>
-                </>
-              )}
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.2}>
-            <Flywheel locale={locale} />
-          </Reveal>
-
-          {/* Coverage scores — framework mapping */}
-          <Reveal delay={0.25}>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-fog mt-10 md:mt-12">
-              {[
-                { name: "OWASP Agentic", score: "10/10", desc: zh ? "完整覆蓋" : "Full coverage" },
-                { name: "SAF-MCP", score: stats.safeMcp, desc: zh ? "有效技術(候選對照,未經 SAF 驗證)" : "active techniques (candidate mappings, not SAF-validated)" },
-                { name: "OWASP AST10", score: "7/10", desc: zh ? "3 個是流程層級" : "3 are process-level" },
-                ...(pint
-                  ? [{
-                      name: "PINT-format F1 · hunt",
-                      score: (pint.f1 * 100).toFixed(1),
-                      desc: zh
-                        ? `自建 ${count(pint.samples)} 樣本語料(非 Lakera 官方 PINT);hunt lane,${measuredStamp(pint, true)}`
-                        : `self-built ${count(pint.samples)}-sample corpus (not Lakera's official PINT); hunt lane, ${measuredStamp(pint, false)}`,
-                    }]
-                  : []),
-              ].map((s) => (
-                <div key={s.name} className="bg-paper p-6 md:p-8 text-center">
-                  <div className="font-data text-[10px] md:text-xs font-medium text-stone tracking-[2px] uppercase mb-2 md:mb-3">{s.name}</div>
-                  <div className="font-data text-[clamp(28px,4vw,48px)] font-bold text-ink leading-none">{s.score}</div>
-                  <div className="text-xs text-mist mt-2">{s.desc}</div>
-                </div>
-              ))}
-            </div>
-          </Reveal>
-          <Reveal delay={0.3}>
-            <p className="text-sm text-graphite max-w-[560px] mt-5 leading-[1.8] text-pretty">
-              {zh
-                ? "框架告訴你威脅存在,ATR 告訴你怎麼偵測。ATR 對 MITRE ATLAS 的關係,就像 Sigma 規則對 ATT&CK 的關係——目前對映官方 ATLAS v5.6.0 的 34/101 個技法。覆蓋集中在 agent 原生的攻擊面,不是硬充版面。"
-                : "Frameworks tell you threats exist. ATR tells you how to detect them. ATR is to MITRE ATLAS what Sigma rules are to ATT&CK — today mapping 34 of 101 official ATLAS techniques (v5.6.0), concentrated on the agent-native surface rather than padded for breadth."}
-            </p>
-          </Reveal>
-          <Reveal delay={0.35}>
-            <Link href={`${prefix}/coverage`} className="font-data text-xs md:text-sm text-blue hover:underline inline-block mt-3">
-              {zh ? "查看完整覆蓋對照表 →" : "View full coverage mapping →"}
-            </Link>
-            <Link href={`${prefix}/atd`} className="font-data text-xs md:text-sm text-blue hover:underline inline-block mt-3 md:ml-6">
-              {zh ? "ATD:可執行的 agent 威脅技法目錄 →" : "ATD: the executable agent-threat technique catalog →"}
-            </Link>
-          </Reveal>
+      {/* Latest */}
+      <SheetRow>
+        <div className="px-6 md:px-14 pt-20 pb-8 flex items-end justify-between gap-6">
+          <div>
+            <div className={KICKER}><span className="font-title text-ink mr-2">§ 7</span>{zh ? "最新" : "Latest"}</div>
+            <h2 className={`mt-4 ${H2}`}>{zh ? "最近發生的事" : "Recent work"}</h2>
+          </div>
+          <Link href={`${prefix}/blog`} className="text-[13px] text-ink hover:underline underline-offset-4 whitespace-nowrap">{zh ? "全部文章" : "All posts"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" /></Link>
         </div>
-      </section>
+        <ul className="mx-6 md:mx-14 mb-20 border-t border-ink">
+          {latestRelease && (
+            <LatestRow href={`${prefix}/changelog`} date={latestRelease.date} kind={zh ? "發版" : "Release"} title={zh ? `版本 ${latestRelease.version} 發布` : `Release ${latestRelease.version}`} />
+          )}
+          {latestPosts.map((post) => (
+            <LatestRow key={post.slug} href={`${prefix}/blog/${post.slug}`} date={post.date} kind={zh ? "文章" : "Note"} title={pick(post.title)} />
+          ))}
+        </ul>
+      </SheetRow>
 
-      <SpeedLines />
-
-      {/* ── Scene 7: Integrate (CTA) ── */}
-      <section className="py-14 md:py-[120px] px-5 md:px-6 bg-ash">
-        <div className="max-w-[1120px] mx-auto text-center">
-          <Reveal>
-            <h2 className="font-display text-[24px] md:text-[clamp(28px,4vw,56px)] font-black tracking-[-1.5px] md:tracking-[-2px] mb-6 md:mb-8 text-ink">
-              {zh ? "開始整合 ATR。" : "Integrate ATR."}
-            </h2>
-          </Reveal>
-
-          {/* Terminal demo */}
-          <Reveal delay={0.1}>
-            <div className="bg-paper border border-fog rounded-[2px] overflow-hidden max-w-[520px] mx-auto text-left">
-              <div className="flex items-center gap-2 px-3 py-2 border-b border-fog">
-                <span className="font-data text-xs text-mist">{zh ? "一行指令。" : "One command."}</span>
-              </div>
-              <div className="p-3 md:p-4 font-data text-[11px] md:text-sm leading-[1.8]">
-                <div className="text-stone">$ <span className="text-ink">npx agent-threat-rules scan .</span></div>
-                <div className="text-mist mt-2"># {zh ? "結果" : "results"}</div>
-                <div className="text-green">{zh ? "  3 個 SKILL.md 已掃描" : "  3 SKILL.md scanned"}</div>
-                <div className="text-green">{zh ? "  12 個工具描述已檢查" : "  12 tool descriptions checked"}</div>
-                <div className="text-critical mt-1">{zh ? "  1 CRITICAL: skill 套件中的惡意程式碼" : "  1 CRITICAL: malicious code in skill package"}</div>
-                <div className="text-critical">{zh ? "    ATR-2026-00121" : "    rule ATR-2026-00121"}</div>
-                <div className="text-stone mt-2">{zh ? "完成。" : "Done."}</div>
-              </div>
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.2}>
-            <p className="text-sm md:text-base text-stone font-light max-w-[480px] mx-auto mb-7 md:mb-8 mt-6 md:mt-8 leading-[1.8] text-pretty">
-              {zh
-                ? "TypeScript、Python、Raw YAML、SIEM 轉換器——四種整合路徑,同一份規則。MIT 永久,沒有授權鎖,任何符合規範的引擎都能評估。"
-                : "TypeScript, Python, Raw YAML, SIEM converters — four integration paths, one ruleset. MIT forever, no license to negotiate, evaluated by any conforming engine."}
+      {/* Close */}
+      <SheetRow>
+        <div className="px-6 md:px-14 py-20 md:py-24">
+          <div>
+            <p className="font-title text-[28px] md:text-[40px] leading-[1.3] text-ink max-w-[820px] text-balance">
+              {title(zh ? "規則公開，免費使用，不接受付費收錄。" : "The rules are public and free to use. No rule is accepted for payment.")}
             </p>
-          </Reveal>
-          <Reveal delay={0.3}>
-            <div className="flex gap-3 justify-center flex-wrap">
-              <Link
-                href={`${prefix}/integrate`}
-                className="bg-blue text-white px-8 md:px-10 py-3.5 md:py-4 rounded-[2px] text-sm font-semibold hover:bg-blue-hover transition-colors"
-              >
-                {zh ? "整合指南" : "Integration Guide"}
-              </Link>
-              <Link
-                href={`${prefix}/threats`}
-                className="text-ink px-8 md:px-10 py-3.5 md:py-4 text-sm font-medium border border-fog hover:border-stone transition-colors rounded-[2px]"
-              >
-                {zh ? "查看威脅清單" : "View Threat Feed"}
-              </Link>
+            <p className="mt-5 font-data text-[12px] text-stone">
+              {zh ? "規格" : "Specification"} {specVersion} · DOI 10.5281/zenodo.19178002 · MIT
+            </p>
+            <div className="mt-10 flex flex-wrap items-center gap-2">
+              <Link href={`${prefix}/spec`} className={`${TEXT_LINK} decoration-ink/30`}>{zh ? "讀規格全文" : "Read the specification"}</Link>
+              <Link href={`${prefix}/contribute`} className={`ml-6 ${TEXT_LINK} decoration-ink/30`}>{zh ? "寫一條規則" : "Write a rule"}</Link>
             </div>
-          </Reveal>
+          </div>
         </div>
-      </section>
+      </SheetRow>
     </>
+    </Phrased>
+  );
+}
+
+/** Greek capitals used to letter the categories, in alphabet order. */
+const ROMAN = ["I", "II", "III"];
+
+/** One entry in the record of recent work: date, kind, title. */
+function LatestRow({ href, date, kind, title }: { href: string; date: string; kind: string; title: string }) {
+  return (
+    <Phrased>
+    <li className="border-b border-fog">
+      <Link href={href} className="group grid grid-cols-[96px_1fr] sm:grid-cols-[120px_80px_1fr] gap-x-4 gap-y-1 py-5 items-baseline">
+        <span className="font-data text-[12px] text-stone tabular-nums">{date}</span>
+        <span className="hidden sm:block text-[12.5px] text-stone">{kind}</span>
+        <span className="text-[16px] leading-snug text-ink group-hover:underline underline-offset-4">{title}</span>
+      </Link>
+    </li>
+    </Phrased>
   );
 }

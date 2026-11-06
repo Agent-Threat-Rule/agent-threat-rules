@@ -4,11 +4,14 @@
  */
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
+import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -20,13 +23,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "Errata — ATR",
+  return pageMetadata({
+    locale,
+    path: "/errata",
+    title: "Errata",
     description:
       locale === "zh"
         ? "ATR 規格已發布版本中發現之錯誤的公開常設紀錄。錯誤公開更正、留下紀錄,而非靜默修補。"
         : "A public, standing record of errors found in published versions of the ATR specification — corrected in the open, never silently patched.",
-  };
+  });
 }
 
 interface ErrataEntry {
@@ -79,21 +84,22 @@ export default async function ErrataPage({
   const hasEntries = errata.entries.length > 0;
 
   return (
+    <Phrased>
     <main
       id="main-content"
-      className="spec-document w-full max-w-7xl mx-auto px-5 md:px-8 pt-24 md:pt-28 pb-24"
+      className="spec-document w-full px-6 md:px-14 pt-24 md:pt-28 pb-24"
       lang={zh ? "zh-Hant" : "en"}
     >
       {/* Header */}
       <header className="mb-8 md:mb-10 max-w-3xl">
         <p
-          className="text-xs uppercase tracking-[0.18em] text-stone mb-3"
+          className="text-[13px] text-stone mb-3"
           style={{ fontFamily: "var(--font-data)" }}
         >
           {zh ? "勘誤 — Errata" : "Errata"}
         </p>
         <h1
-          className="text-3xl md:text-5xl font-bold text-navy-ink mb-4 leading-[1.1]"
+          className="text-[32px] md:text-[48px] font-bold text-navy-ink mb-4 leading-[1.1]"
           style={{
             fontFamily: "var(--font-display)",
             letterSpacing: "-0.02em",
@@ -116,7 +122,7 @@ export default async function ErrataPage({
         <aside aria-label="Table of contents" className="lg:order-first">
           <nav className="spec-toc" aria-label={t(locale, "spec.toc_aria")}>
             <p
-              className="text-xs font-semibold uppercase tracking-wider text-stone mb-3"
+              className="text-[13px] text-stone mb-3"
               style={{ fontFamily: "var(--font-body)" }}
             >
               {t(locale, "spec.toc")}
@@ -182,7 +188,7 @@ export default async function ErrataPage({
                                   rel="noopener noreferrer"
                                   className="text-navy underline"
                                 >
-                                  {summary} ↗
+                                  {summary}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                                 </a>
                               ) : (
                                 summary
@@ -206,7 +212,7 @@ export default async function ErrataPage({
                       <div
                         key={key}
                         id={`erratum-mobile-${key}`}
-                        className="border border-fog rounded-sm p-4 bg-paper"
+                        className="border border-fog  p-4 bg-paper"
                       >
                         <p
                           className="font-semibold text-navy-ink mb-2"
@@ -238,7 +244,7 @@ export default async function ErrataPage({
                             rel="noopener noreferrer"
                             className="text-navy underline text-sm inline-flex items-center min-h-[44px] mt-2"
                           >
-                            {zh ? "查看勘誤" : "View erratum"} ↗
+                            {zh ? "查看勘誤" : "View erratum"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                           </a>
                         ) : null}
                       </div>
@@ -248,7 +254,7 @@ export default async function ErrataPage({
               </>
             ) : (
               <div
-                className="border border-fog rounded-sm p-6 bg-paper not-prose"
+                className="border border-fog  p-6 bg-paper not-prose"
                 role="status"
               >
                 <p
@@ -291,7 +297,7 @@ export default async function ErrataPage({
                   rel="noopener noreferrer"
                   className="text-navy underline"
                 >
-                  {zh ? "開立 issue" : "Open an issue"} ↗
+                  {zh ? "開立 issue" : "Open an issue"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                 </a>{" "}
                 — {ISSUE_URL.replace(/^https?:\/\//, "")}
               </li>
@@ -337,5 +343,6 @@ export default async function ErrataPage({
         </div>
       </div>
     </main>
+    </Phrased>
   );
 }

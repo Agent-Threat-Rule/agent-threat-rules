@@ -3,17 +3,29 @@ import { loadContributors, getCountryStats } from "@/lib/contributors";
 import { loadSiteStats } from "@/lib/stats";
 import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
+import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Wall — ATR Community",
-  description:
-    "The people maintaining ATR — contributors, adopters, and researchers carrying an open detection standard toward universal. A standard is only as strong as the people who maintain it.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/wall",
+    title: "Community Wall",
+    description:
+      "The people maintaining ATR — contributors, adopters, and researchers carrying an open detection standard toward universal. A standard is only as strong as the people who maintain it.",
+  });
+}
 
 const COUNTRY_NAMES: Record<string, { en: string; zh: string }> = {
   TW: { en: "Taiwan", zh: "台灣" },
@@ -59,15 +71,16 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
   const stats = loadSiteStats();
 
   return (
-    <div className="pt-20 pb-16 px-5 md:px-6 max-w-[860px] mx-auto">
+    <Phrased>
+    <div className="pt-20 pb-16 px-6 md:px-14 max-w-[972px]">
       {/* Hero */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           {zh ? "社群" : "Community"}
         </div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="font-display text-[clamp(26px,4vw,44px)] font-extrabold tracking-[-2px] leading-[1.2] mb-4 max-w-[600px]">
+        <h1 className="text-[32px] md:text-[48px] leading-[1.12] tracking-[-0.01em] font-medium mb-4 max-w-[600px]">
           {zh
             ? <>一個標準的強度，<br />等於貢獻它的人。</>
             : <>A standard is only as strong<br className="hidden sm:block" /> as the people who maintain it.</>}
@@ -103,7 +116,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
                     alt={c.github}
                     width={48}
                     height={48}
-                    className="rounded-sm ring-1 ring-fog shrink-0"
+                    className="ring-1 ring-fog shrink-0"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -112,9 +125,9 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
                       <span className="font-data text-xs text-stone">{name}</span>
                     </div>
                     <div className="flex items-center gap-2 mb-2">
-                      <span className={`font-data text-xs px-2 py-0.5 rounded-sm ${
+                      <span className={`font-data text-xs px-2 py-0.5  ${
                         c.role === "maintainer"
-                          ? "bg-blue/10 text-blue"
+                          ? "bg-ink/10 text-blue"
                           : "bg-ash text-stone"
                       }`}>
                         {role}
@@ -124,7 +137,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
                       {c.contributions.map((contrib: string) => (
                         <span
                           key={contrib}
-                          className="font-data text-xs text-mist bg-ash px-2 py-0.5 rounded-sm"
+                          className="font-data text-xs text-mist bg-ash px-2 py-0.5 "
                         >
                           {CONTRIBUTION_LABELS[contrib]?.[zh ? "zh" : "en"] ?? contrib}
                         </span>
@@ -141,7 +154,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
       {/* What this project has shipped — context for why joining matters */}
       <Reveal>
         <div className="bg-ash border border-fog p-6 md:p-8 mb-10">
-          <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-4">
+          <div className="text-[13px] text-stone mb-4">
             {zh ? "這個社群做了什麼" : "What this community has shipped"}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
@@ -167,7 +180,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
 
       {/* How to contribute — the real CTA */}
       <Reveal>
-        <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-4">
+        <div className="text-[13px] text-stone mb-4">
           {zh ? "加入方式" : "How to Contribute"}
         </div>
       </Reveal>
@@ -199,8 +212,8 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               en: "Submit a Rule",
               zh: "提交新規則",
               desc: zh
-                ? "用 YAML 寫一條偵測規則。必須附真實攻擊 payload 與真／假陽性 test case，不是文字描述——這樣它才能被 peer-review、被 conformance 測試、被任何引擎重現。"
-                : "Write a detection rule in YAML. It must carry real attack payloads and true/false-positive test cases, not a prose description — so it can be peer-reviewed, conformance-tested, and reproduced by any engine.",
+                ? "用 YAML 寫一條偵測規則。要附上攻擊範例，以及真陽性和真陰性的 test case，不能只有文字描述。這樣別人才能審查、跑符規測試，任何引擎也都能重現。"
+                : "Write a detection rule in YAML. It must carry attack examples with true-positive and true-negative test cases, not just a prose description, so it can be peer-reviewed, conformance-tested and reproduced by any engine.",
               href: `${prefix}/contribute`,
               time: "1-2 hr",
               impact: zh ? "高" : "High",
@@ -245,7 +258,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
       {/* Add yourself */}
       <Reveal>
         <div className="border border-ink bg-ink text-white px-6 py-6 md:py-8 mb-10">
-          <div className="font-display text-lg md:text-xl font-extrabold mb-2">
+          <div className="font-display text-lg md:text-xl font-medium mb-2">
             {zh ? "把你的名字加上來。" : "Put your name on the wall."}
           </div>
           <p className="text-sm text-white/60 mb-5 max-w-[480px] leading-relaxed">
@@ -258,15 +271,15 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=add-contributor.md&title=Add+contributor:+MY_GITHUB_USERNAME"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-blue text-white px-6 py-3 rounded-sm text-sm font-semibold hover:bg-blue-hover transition-colors text-center"
+              className="bg-ink text-white px-6 py-3  text-sm font-semibold hover:bg-black transition-colors text-center"
             >
-              {zh ? "加入社群 →" : "Add Yourself →"}
+              {zh ? "加入社群" : "Add Yourself"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
             <a
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules"
               target="_blank"
               rel="noopener noreferrer"
-              className="border border-white/20 text-white px-6 py-3 rounded-sm text-sm font-medium hover:border-white/40 transition-colors text-center"
+              className="border border-white/20 text-white px-6 py-3  text-sm font-medium hover:border-white/40 transition-colors text-center"
             >
               {zh ? "GitHub Star ★" : "Star on GitHub ★"}
             </a>
@@ -277,7 +290,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
       {/* Country presence */}
       {countries.length > 0 && (
         <Reveal>
-          <div className="font-data text-xs font-medium text-stone tracking-[2px] uppercase mb-3">
+          <div className="text-[13px] text-stone mb-3">
             {zh ? "目前覆蓋" : "Current Reach"}
           </div>
           <div className="flex flex-wrap gap-3 mb-4">
@@ -286,7 +299,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               return (
                 <div
                   key={country.code}
-                  className="flex items-center gap-2 bg-ash px-3 py-2 rounded-sm"
+                  className="flex items-center gap-2 bg-ash px-3 py-2 "
                 >
                   <span className="text-2xl leading-none">{country.flag}</span>
                   <div>
@@ -307,5 +320,6 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
         </Reveal>
       )}
     </div>
+    </Phrased>
   );
 }
