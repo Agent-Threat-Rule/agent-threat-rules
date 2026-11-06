@@ -65,7 +65,9 @@ All notable changes to ATR will be documented in this file.
   `Priority Level: CRITICAL` as an authority claim, which blocked a vehicle
   maintenance report; the structured override tokens (`[SYSTEM OVERRIDE`,
   `ROOT_ADMIN`, `OMEGA CLEARANCE`, `AUTHORIZATION: ROOT`) still match, and
-  every corpus payload with the priority field carries one of them.
+  the one true positive with the priority field also
+  carries `SYSTEM OVERRIDE BEGIN` and `ROOT_ADMIN`, and no sample under
+  `data/` contains it.
   ATR-2026-00301 #2 took a bare `SCORE: <1-10>` as TAP scoring, which
   matched `CVSS Score: 3.1` in security scan output; the tag now needs its
   brackets (`[SCORE: 5]`), so the five LLMail-Inject samples that plant
