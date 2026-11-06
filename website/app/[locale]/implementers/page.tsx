@@ -58,8 +58,8 @@ const IMPLEMENTERS = [
   {
     org: "Cisco AI Defense (skill-scanner)",
     what: {
-      en: "ATR rule pack. On 2026-11-02 a maintainer wrote that they will likely remove ATR because the false-positive rate is too high. A report-only pack (#289) is open.",
-      zh: "ATR 規則包。2026-11-02 對方維護者留言，說誤報率太高，大概會把 ATR 移除。改成只回報的規則包（#289）還在審。",
+      en: "ATR rule pack. On 2026-11-02 a maintainer wrote that they will likely remove ATR because the false-positive rate is too high. A report-only pack (#289) was closed unmerged on 2026-11-05.",
+      zh: "ATR 規則包。2026-11-02 對方維護者留言，說誤報率太高，大概會把 ATR 移除。改成只回報的規則包（#289）在 2026-11-05 被關閉，沒有合併。",
     },
     date: "2026-04-22",
     mergedBy: "vineethsai7",

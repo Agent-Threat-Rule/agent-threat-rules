@@ -189,7 +189,7 @@ const COMPARISON: ComparisonRow[] = [
   {
     feature: "Wild validation required for production",
     featureZh: "上正式環境前必須通過野外驗證",
-    atr: "yes",
+    atr: "partial",
     sigma: "no",
     yara: "no",
     owasp: "no",
@@ -198,7 +198,7 @@ const COMPARISON: ComparisonRow[] = [
   {
     feature: "Per-field provenance tracking",
     featureZh: "逐欄位記錄來源",
-    atr: "yes",
+    atr: "partial",
     sigma: "no",
     yara: "no",
     owasp: "no",
@@ -207,7 +207,7 @@ const COMPARISON: ComparisonRow[] = [
   {
     feature: "Automatic demotion on quality regression",
     featureZh: "品質退化時自動降級",
-    atr: "yes",
+    atr: "partial",
     sigma: "no",
     yara: "no",
     owasp: "no",
@@ -305,7 +305,7 @@ export default async function QualityStandardPage({
           readers know this document covers §RFC-001 of the spec family. */}
       <Reveal delay={0.25}>
         <div className="mb-6">
-          <DocumentStatus locale={locale} sectionHref="/spec" />
+          <DocumentStatus locale={locale} />
         </div>
       </Reveal>
       <Reveal delay={0.3}>
@@ -903,8 +903,8 @@ export default async function QualityStandardPage({
         </div>
         <p className="text-xs text-mist italic mb-16">
           {locale === "zh"
-            ? "ATR 是唯一要求野外掃描驗證、測量 FP rate 並在品質退化時自動降級的標準。"
-            : "ATR is the only standard requiring wild-scan validation with measured FP rates and automatic demotion on quality regression."}
+            ? "標成「部分」的三項，是 RFC-001 寫了要求、規則還沒全部做到的地方。2026-10-15 的稽核記錄 103 條 stable 規則都還缺野外證據（data/enforce-lane-evidence-baseline.json），CI 用棘輪擋住缺口擴大；降級要開 PR 由人審，不是自動執行。"
+            : "The three marked partial are what RFC-001 requires but the rules do not yet all meet. The 2026-10-15 audit records all 103 stable rules as still lacking wild evidence (data/enforce-lane-evidence-baseline.json), and CI holds the gap from growing; demotion goes through a pull request a person reviews, not an automatic step."}
         </p>
       </Reveal>
 
@@ -967,12 +967,12 @@ console.log('Issues:', gate.issues);`}
       <Reveal>
         <div className="border-t border-fog pt-10 text-center">
           <h2 className="font-display text-2xl md:text-3xl font-medium tracking-[-1px] mb-3">
-            {locale === "zh" ? "公式、誤報率、最差的數字，全部公開。" : "The formula, the error rates and the worst figure are all public."}
+            {locale === "zh" ? "公式公開，撤回的數字也公開。" : "The formula is public, and so are the figures we withdrew."}
           </h2>
           <p className="text-sm text-stone mb-6 max-w-xl mx-auto">
             {locale === "zh"
-              ? "公式公開，各車道的誤報率公開，最差的數字也公開。任何符規的掃描器（ATR、Cisco、Microsoft AGT，或你自己寫的）都能用同一個函式庫、同樣的維度計分，各自驗證結果。"
-              : "The formula is public, the per-lane false-positive rates are public, and so is the worst of them. Any conformant scanner — ATR, Cisco, Microsoft AGT, or one you write yourself — can score rules on the same axes, with the same library, and verify the result independently. That is what trust in an open standard looks like."}
+              ? "公式和計分函式庫都公開。各車道的誤報率之前發布過，後來發現量測方法有問題，已經撤回，重新量測後會再公開。任何掃描器都能用同一個函式庫、同樣的維度替規則計分，自己驗證結果。"
+              : "The formula and the scoring library are public. Per-lane false-positive rates were published, then withdrawn when the way they were measured turned out to be flawed; they will be published again once re-measured. Any scanner can score rules on the same axes with the same library and check the result itself."}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a

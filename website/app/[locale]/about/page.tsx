@@ -152,8 +152,8 @@ const MILESTONES: Milestone[] = [
       zh: "OWASP Agent Security Regression Harness（#74）與 Gen Digital Sage（#33）同一天合併",
     },
     detail: {
-      en: "The OWASP Agent Security Regression Harness project merged four regression scenarios derived from ATR rules (PR #74, merged by Mert Satilmaz). The scenario files do not mention ATR. The same day, Gen Digital, the parent of Norton, Avast and LifeLock, merged the full ATR rule pack into the Sage agentic-AI risk-scoring layer (PR #33).",
-      zh: "OWASP 的 Agent Security Regression Harness 專案合併了四個從 ATR 規則改寫的回歸情境（PR #74，由 Mert Satilmaz 合併），情境檔裡沒有提到 ATR。同一天，Norton、Avast、LifeLock 的母集團 Gen Digital，把完整的 ATR 規則集合進 Sage 的 agentic AI 風險評分層（PR #33）。",
+      en: "The OWASP Agent Security Regression Harness project merged four regression scenarios derived from ATR rules (PR #74, merged by Mert Satilmaz). The scenario files do not mention ATR. The same day, Gen Digital, the parent of Norton, Avast and LifeLock, merged 27 ATR patterns into the Sage agentic-AI risk-scoring layer (PR #33, opened by the ATR maintainer).",
+      zh: "OWASP 的 Agent Security Regression Harness 專案合併了四個從 ATR 規則改寫的回歸情境（PR #74，由 Mert Satilmaz 合併），情境檔裡沒有提到 ATR。同一天，Norton、Avast、LifeLock 的母集團 Gen Digital，把 27 個 ATR pattern 合進 Sage 的 agentic AI 風險評分層（PR #33，由 ATR 維護者開出）。",
     },
   },
   {
@@ -254,7 +254,7 @@ export default async function AboutPage({
         <ol className="space-y-0">
           {MILESTONES.map((m, i) => (
             <li key={i} className="flex gap-4 md:gap-6 relative pl-1">
-              <div className="font-data text-xs text-stone w-[92px] shrink-0 pt-1.5">
+              <div className="font-data text-xs text-stone w-[92px] shrink-0 pt-1.5 whitespace-nowrap">
                 {m.date}
               </div>
               <div className="flex flex-col items-center shrink-0 pt-2.5">

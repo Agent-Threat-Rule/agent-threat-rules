@@ -110,7 +110,7 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
         <select
           value={selectedCategory ?? ""}
           onChange={(e) => setSelectedCategory(e.target.value || null)}
-          className="bg-white border border-fog px-4 py-2.5 text-sm text-stone font-data appearance-none cursor-pointer focus:outline-none"
+          className="bg-white border border-fog px-4 py-2.5 text-sm text-stone font-data appearance-none cursor-pointer focus:outline-none focus-visible:border-ink"
         >
           <option value="">{t(locale, "rules.all_categories")}</option>
           {categories.map((c) => (
@@ -122,7 +122,7 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
         <select
           value={selectedSeverity ?? ""}
           onChange={(e) => setSelectedSeverity(e.target.value || null)}
-          className="bg-white border border-fog px-4 py-2.5 text-sm text-stone font-data appearance-none cursor-pointer focus:outline-none"
+          className="bg-white border border-fog px-4 py-2.5 text-sm text-stone font-data appearance-none cursor-pointer focus:outline-none focus-visible:border-ink"
         >
           <option value="">{t(locale, "rules.all_severities")}</option>
           {severities.map((s) => (
@@ -135,7 +135,7 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
           value={selectedLane ?? ""}
           onChange={(e) => setSelectedLane((e.target.value || null) as LaneFilter | null)}
           aria-label={zh ? "依車道篩選" : "Filter by lane"}
-          className="bg-white border border-fog px-4 py-2.5 text-sm text-stone font-data appearance-none cursor-pointer focus:outline-none"
+          className="bg-white border border-fog px-4 py-2.5 text-sm text-stone font-data appearance-none cursor-pointer focus:outline-none focus-visible:border-ink"
         >
           <option value="">{zh ? "所有車道與 inert" : "All lanes and inert"}</option>
           {laneOptions.map((o) => (

@@ -178,6 +178,28 @@ export interface EvasionTest {
   notes?: string;
 }
 
+/**
+ * Event fields a test case may carry instead of `input` (a tool call, a tool
+ * result, an agent reply...), in the order a reader meets them in a session.
+ */
+const EVENT_FIELDS = ["user_input", "content", "agent_output", "tool_name", "tool_description", "tool_args", "tool_call", "tool_response"] as const;
+
+function asText(value: unknown): string {
+  if (typeof value === "string") return value;
+  try {
+    return yaml.dump(value, { lineWidth: 100 }).trimEnd();
+  } catch {
+    return String(value);
+  }
+}
+
+/** A test case with no `input`: show its event fields, each under its name. */
+function eventText(tc: Record<string, unknown>): string {
+  return EVENT_FIELDS.filter((k) => tc[k] !== undefined && tc[k] !== null)
+    .map((k) => `${k}:\n${asText(tc[k])}`)
+    .join("\n\n");
+}
+
 function normalizeTestCase<T extends { input?: unknown }>(
   tc: T,
 ): Omit<T, "input"> & { input: string } {
@@ -186,7 +208,7 @@ function normalizeTestCase<T extends { input?: unknown }>(
     return { ...(rest as Omit<T, "input">), input };
   }
   if (input === undefined || input === null) {
-    return { ...(rest as Omit<T, "input">), input: "" };
+    return { ...(rest as Omit<T, "input">), input: eventText(tc as Record<string, unknown>) };
   }
   try {
     return {
