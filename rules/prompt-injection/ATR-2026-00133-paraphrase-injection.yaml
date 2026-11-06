@@ -1,6 +1,6 @@
 title: Paraphrased Prompt Injection
 id: ATR-2026-00133
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects paraphrased prompt injection that avoids the explicit keywords caught by ATR-2026-001
@@ -68,7 +68,7 @@ detection:
     - field: user_input
       operator: regex
       value: >-
-        (?i)(set\s+aside|put\s+aside|shelve|table|suspend|drop|abandon|release|let\s+go\s+of|move\s+past|move\s+beyond)\s+(the\s+|your\s+|any\s+)?(guidance|instructions?|directives?|rules?|guidelines?|constraints?|restrictions?|configuration|parameters?|programming|training|protocols?)
+        (?i)\b(set\s+aside|put\s+aside|shelve|table|suspend|drop|abandon|release|let\s+go\s+of|move\s+past|move\s+beyond)\s+(the\s+|your\s+|any\s+)?(guidance|instructions?|directives?|rules?|guidelines?|constraints?|restrictions?|configuration|parameters?|programming|training|protocols?)
       description: Soft instruction override using set-aside language
     - field: user_input
       operator: regex

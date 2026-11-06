@@ -1,6 +1,6 @@
 title: "CrewAI RAG URL Validation Bypass SSRF (CVE-2026-2286)"
 id: ATR-2026-00547
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects CVE-2026-2286 (CVSS HIGH, CWE-918): CrewAI's RAG (retrieval-augmented
@@ -109,7 +109,7 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: '(?i)(?:rag|retrieval[_-]?augmented|source[_-]?url|document[_-]?url)[^\n]{0,200}(?:169\.254\.169\.254|fd00:|2130706433|0x7f000001|0177\.0\.0\.1|[a-z0-9-]+\.internal\.|(?:127\.0\.[01]\.[01]|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(?::\d+)?/)'
+      value: '(?i)\b(?:rag|retrieval[_-]?augmented|source[_-]?url|document[_-]?url)[^\n]{0,200}(?:169\.254\.169\.254|fd00:|2130706433|0x7f000001|0177\.0\.0\.1|[a-z0-9-]+\.internal\.|(?:127\.0\.[01]\.[01]|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(?::\d+)?/)'
       description: >
         RAG source URL containing a cloud metadata endpoint (169.254.169.254),
         decimal/hex/octal loopback representations, or an RFC-1918 private
@@ -119,7 +119,7 @@ detection:
 
     - field: content
       operator: regex
-      value: '(?i)(?:rag|retrieval[_-]?augmented|source[_-]?url|document[_-]?url)[^\n]{0,200}(?:%31%36%39|%31%32%37|\\u0031|%2e%2e|\\x31\\x36\\x39|0x[aAbBcC][0-9a-fA-F]{6})'
+      value: '(?i)\b(?:rag|retrieval[_-]?augmented|source[_-]?url|document[_-]?url)[^\n]{0,200}(?:%31%36%39|%31%32%37|\\u0031|%2e%2e|\\x31\\x36\\x39|0x[aAbBcC][0-9a-fA-F]{6})'
       description: >
         RAG URL with URL-encoded, Unicode-escaped, or hex representations
         of SSRF-relevant IP octets — URL encoding bypass pattern

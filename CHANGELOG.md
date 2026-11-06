@@ -6,6 +6,22 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **ATR-2026-00133, -00547 and -00554 stop matching inside ordinary words
+  and code.** A replay of ADR-Bench's recorded agent conversations showed
+  each firing on benign tool output. ATR-2026-00133 #0 matched `table
+  parameters` inside "acceptable parameters" and -00547 #0 and #1 matched
+  `rag` inside "paragraph" and "storage"; both now start at a word
+  boundary. ATR-2026-00554 #0 matched any brace-enclosed text naming
+  `__init__`, `__class__` or `__dict__`, such as a code review that quotes
+  `def __init__`; those names now need the attribute access the injection
+  uses (`.__class__`), while `__import__`, `__builtins__`, `__globals__` and
+  `__subclasses__` still match on their own, so `${__import__('os')...}`
+  is still caught. Benign false positives over the 14,172 samples of the
+  benign gate: 00133 14 to 5, 00547 1 to 0, 00554 46 to 22. On ADR-Bench
+  (261 benign, 42 malicious conversations), benign conversations flagged at
+  high or critical severity in the alert lane go from 24 to 21, with the
+  same malicious conversations caught. Each rule's `rule_version` is bumped.
+
 - **The Cisco Skill Scanner pack no longer ships conditions that backtrack
   badly.** Skill Scanner compiles patterns with Python's `re`, and the pack
   carried conditions that `data/redos-baseline.json` already lists as slow on
