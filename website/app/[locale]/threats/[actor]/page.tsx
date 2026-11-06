@@ -6,6 +6,7 @@ import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { getActor, listActors } from "@/lib/actors";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   const params: { locale: string; actor: string }[] = [];
@@ -321,7 +322,7 @@ export default async function ActorPage({
                   rel="noopener noreferrer"
                   className="font-data text-xs md:text-sm text-blue hover:underline"
                 >
-                  {r.id || (zh ? "連結" : "Link")} →
+                  {r.id || (zh ? "連結" : "Link")}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                 </a>
               ) : r.id ? (
                 <span className="font-data text-xs md:text-sm text-ink">{r.id}</span>
@@ -348,7 +349,7 @@ export default async function ActorPage({
           href={`${prefix}/threats`}
           className="font-data text-xs md:text-sm text-blue hover:underline"
         >
-          {zh ? "← 回到威脅情報" : "← Back to threat feed"}
+          <Sign name="diple" size={10} className="mr-1.5 align-[-1px] -scale-x-100" />{zh ? "回到威脅情報" : "Back to threat feed"}
         </Link>
       </div>
     </div>

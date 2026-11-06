@@ -22,6 +22,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -204,7 +205,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
           rel="noopener noreferrer"
           className="font-data text-sm text-blue hover:underline"
         >
-          {locale === "zh" ? "到 GitHub 看完整的 SAFE-MCP 對應表" : "Full SAFE-MCP mapping on GitHub"} &rarr;
+          {locale === "zh" ? "到 GitHub 看完整的 SAFE-MCP 對應表" : "Full SAFE-MCP mapping on GitHub"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
         </a>
       </Reveal>
 
@@ -216,7 +217,7 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
           href={`/${locale}/rules`}
           className="font-data text-sm text-blue hover:underline"
         >
-          {locale === "zh" ? "看有 MITRE 對應的規則" : "Browse rules with MITRE mappings"} &rarr;
+          {locale === "zh" ? "看有 MITRE 對應的規則" : "Browse rules with MITRE mappings"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
         </Link>
       </Reveal>
     </div>

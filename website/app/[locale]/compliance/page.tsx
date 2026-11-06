@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -160,7 +161,7 @@ export default async function CompliancePage({
               rel="noopener noreferrer"
               className="text-[14px] text-ink underline underline-offset-[6px] decoration-ink/30 hover:decoration-ink"
             >
-              {zh ? "讀合規對應政策 →" : "Read the coverage policy →"}
+              {zh ? "讀合規對應政策" : "Read the coverage policy"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
             <a
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/data/compliance-frameworks"
@@ -168,7 +169,7 @@ export default async function CompliancePage({
               rel="noopener noreferrer"
               className="text-[13px] text-stone hover:text-ink"
             >
-              {zh ? "在 GitHub 看各框架的編號清單 →" : "Framework identifier lists on GitHub →"}
+              {zh ? "在 GitHub 看各框架的編號清單" : "Framework identifier lists on GitHub"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
           </div>
         </div>
@@ -204,7 +205,7 @@ export default async function CompliancePage({
                       href={`/${locale}/compliance/${fw.link}`}
                       className="font-data text-xs text-blue hover:underline"
                     >
-                      {zh ? "看細節 →" : "Details →"}
+                      {zh ? "看細節" : "Details"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                     </Link>
                   ) : null}
                 </div>
@@ -231,7 +232,7 @@ export default async function CompliancePage({
             rel="noopener noreferrer"
             className="font-data text-xs text-blue hover:underline"
           >
-            {zh ? "在 GitHub 看規則的原始 YAML →" : "Browse raw rule YAML on GitHub →"}
+            {zh ? "在 GitHub 看規則的原始 YAML" : "Browse raw rule YAML on GitHub"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
           <p className="text-sm text-graphite leading-[1.7] mt-4 mb-3">
             {zh
@@ -244,7 +245,7 @@ export default async function CompliancePage({
             rel="noopener noreferrer"
             className="font-data text-xs text-blue hover:underline"
           >
-            {zh ? "開 issue 挑戰一條對應 →" : "Open an issue to challenge a mapping →"}
+            {zh ? "開 issue 挑戰一條對應" : "Open an issue to challenge a mapping"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
         </div>
       </Reveal>
@@ -253,15 +254,15 @@ export default async function CompliancePage({
       <Reveal>
         <div className="flex flex-wrap gap-4">
           <Link href={`/${locale}/compliance/nist-ai-rmf`} className="font-data text-xs text-blue hover:underline">
-            {zh ? "NIST AI RMF 細節" : "NIST AI RMF detail"} &rarr;
+            {zh ? "NIST AI RMF 細節" : "NIST AI RMF detail"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
           <span className="text-fog">|</span>
           <Link href={`/${locale}/coverage`} className="font-data text-xs text-blue hover:underline">
-            {zh ? "Benchmark 覆蓋率" : "Benchmark coverage"} &rarr;
+            {zh ? "Benchmark 覆蓋率" : "Benchmark coverage"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
           <span className="text-fog">|</span>
           <Link href={`/${locale}/quality-standard`} className="font-data text-xs text-blue hover:underline">
-            {zh ? "品質標準" : "Quality standard"} &rarr;
+            {zh ? "品質標準" : "Quality standard"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
         </div>
       </Reveal>

@@ -9,6 +9,7 @@ import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -163,7 +164,7 @@ export default async function CharterPage({
               className="text-sm text-navy underline decoration-navy/30 hover:decoration-navy"
               style={{ fontFamily: "var(--font-body)" }}
             >
-              {t(locale, "spec.read_full")} →
+              {t(locale, "spec.read_full")}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </Link>
           </nav>
         </aside>
@@ -259,7 +260,7 @@ export default async function CharterPage({
                 rel="noopener noreferrer"
                 className="text-navy underline"
               >
-                GOVERNANCE.md ↗
+                GOVERNANCE.md<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
               {zh ? "。" : "."}
             </p>
@@ -311,7 +312,7 @@ export default async function CharterPage({
                 rel="noopener noreferrer"
                 className="text-navy underline"
               >
-                GOVERNANCE.md ↗
+                GOVERNANCE.md<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
               .
             </p>

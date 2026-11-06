@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Locale } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
+import { Sign } from "@/components/Sign";
 
 const FORMATS = ["BibTeX", "APA", "IEEE", "Chicago"] as const;
 type Format = (typeof FORMATS)[number];
@@ -82,7 +83,7 @@ export function CitationBlock({ locale, meta }: CitationBlockProps) {
           rel="noopener noreferrer"
           className="text-navy underline"
         >
-          {meta.doi} ↗
+          {meta.doi}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
         </a>
       </p>
     </div>

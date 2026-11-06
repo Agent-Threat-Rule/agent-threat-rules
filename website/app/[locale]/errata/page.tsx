@@ -11,6 +11,7 @@ import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -187,7 +188,7 @@ export default async function ErrataPage({
                                   rel="noopener noreferrer"
                                   className="text-navy underline"
                                 >
-                                  {summary} ↗
+                                  {summary}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                                 </a>
                               ) : (
                                 summary
@@ -243,7 +244,7 @@ export default async function ErrataPage({
                             rel="noopener noreferrer"
                             className="text-navy underline text-sm inline-flex items-center min-h-[44px] mt-2"
                           >
-                            {zh ? "查看勘誤" : "View erratum"} ↗
+                            {zh ? "查看勘誤" : "View erratum"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                           </a>
                         ) : null}
                       </div>
@@ -296,7 +297,7 @@ export default async function ErrataPage({
                   rel="noopener noreferrer"
                   className="text-navy underline"
                 >
-                  {zh ? "開立 issue" : "Open an issue"} ↗
+                  {zh ? "開立 issue" : "Open an issue"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                 </a>{" "}
                 — {ISSUE_URL.replace(/^https?:\/\//, "")}
               </li>

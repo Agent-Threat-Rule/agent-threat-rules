@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -421,7 +422,7 @@ export default async function GovernancePage({
             rel="noopener noreferrer"
             className="font-data text-xs text-blue hover:underline"
           >
-            {zh ? "在 GitHub 查看 GOVERNANCE.md" : "View GOVERNANCE.md on GitHub"} &rarr;
+            {zh ? "在 GitHub 查看 GOVERNANCE.md" : "View GOVERNANCE.md on GitHub"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
           <span className="text-fog">|</span>
           <a
@@ -430,7 +431,7 @@ export default async function GovernancePage({
             rel="noopener noreferrer"
             className="font-data text-xs text-blue hover:underline"
           >
-            {zh ? "行為準則" : "Code of Conduct"} &rarr;
+            {zh ? "行為準則" : "Code of Conduct"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
           <span className="text-fog">|</span>
           <a
@@ -439,7 +440,7 @@ export default async function GovernancePage({
             rel="noopener noreferrer"
             className="font-data text-xs text-blue hover:underline"
           >
-            {zh ? "安全揭露政策" : "Security policy"} &rarr;
+            {zh ? "安全揭露政策" : "Security policy"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
           <span className="text-fog">|</span>
           <a
@@ -448,11 +449,11 @@ export default async function GovernancePage({
             rel="noopener noreferrer"
             className="font-data text-xs text-blue hover:underline"
           >
-            {zh ? "貢獻者名單" : "Contributors list"} &rarr;
+            {zh ? "貢獻者名單" : "Contributors list"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
           <span className="text-fog">|</span>
           <Link href={`/${locale}/about`} className="font-data text-xs text-blue hover:underline">
-            {zh ? "關於 ATR" : "About ATR"} &rarr;
+            {zh ? "關於 ATR" : "About ATR"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
         </div>
       </Reveal>

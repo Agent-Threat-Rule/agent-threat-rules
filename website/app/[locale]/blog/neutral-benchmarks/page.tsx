@@ -5,6 +5,7 @@ import { getPost } from "@/lib/posts";
 import type { Metadata } from "next";
 import { pageMetadata, toLocale } from "@/lib/seo";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -44,7 +45,7 @@ export default async function NeutralBenchmarksPostPage({
           href={`/${locale}/blog`}
           className="font-data text-xs text-stone hover:text-ink transition-colors"
         >
-          ← Blog
+          <Sign name="diple" size={10} className="mr-1.5 align-[-1px] -scale-x-100" />Blog
         </Link>
       </Reveal>
       <Reveal delay={0.05}>

@@ -5,6 +5,7 @@ import { loadVersionLabels } from "@/lib/versions";
 import { CONTACTS, LEGAL_DRAFT, REPO_URL } from "@/lib/legal";
 import { DocsShell, Callout } from "@/components/DocsShell";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -82,7 +83,7 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
           <section key={s.h.en} className="py-5 border-t border-fog">
             <h2 className="text-[17px] text-ink">{pick(s.h)}</h2>
             <p className="mt-2 text-[14.5px] leading-[1.75] text-graphite">{pick(s.body)}</p>
-            {s.link && <a href={s.link.href} className="mt-2 inline-block font-data text-[11.5px] text-blue hover:underline underline-offset-4">{s.link.label} ↗</a>}
+            {s.link && <a href={s.link.href} className="mt-2 inline-block font-data text-[11.5px] text-blue hover:underline underline-offset-4">{s.link.label}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" /></a>}
           </section>
         ))}
       </div>

@@ -6,6 +6,7 @@ import { pageMetadata } from "@/lib/seo";
 import { loadVersionLabels, npmInstallSpec } from "@/lib/versions";
 import Link from "next/link";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -280,7 +281,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
               <div className="flex items-center justify-between py-4">
                 <h2 className="font-display text-lg font-semibold">{path.title}</h2>
                 <a href={path.doc} target="_blank" rel="noopener noreferrer" className="font-data text-xs text-ink underline underline-offset-4 decoration-ink/30 hover:decoration-ink">
-                  {locale === "zh" ? "文件" : "Docs"} &rarr;
+                  {locale === "zh" ? "文件" : "Docs"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                 </a>
               </div>
               <div className="pb-6">
@@ -522,13 +523,13 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
             </p>
             <div className="flex flex-wrap gap-4">
               <a href="https://github.com/cisco-ai-defense/skill-scanner/pull/79" target="_blank" rel="noopener noreferrer" className="font-data text-sm text-blue hover:underline">
-                PR #79: PoC (34 rules) &rarr;
+                PR #79: PoC (34 rules)<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
               <a href="https://github.com/cisco-ai-defense/skill-scanner/pull/80" target="_blank" rel="noopener noreferrer" className="font-data text-sm text-blue hover:underline">
-                PR #80: rule-packs CLI &rarr;
+                PR #80: rule-packs CLI<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
               <a href="https://github.com/cisco-ai-defense/skill-scanner/pull/99" target="_blank" rel="noopener noreferrer" className="font-data text-sm text-blue hover:underline">
-                PR #99: rule pack &rarr;
+                PR #99: rule pack<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
             </div>
           </div>
@@ -559,7 +560,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
                 rel="noopener noreferrer"
                 className="font-data text-xs text-ink underline underline-offset-4 decoration-ink/30 hover:decoration-ink"
               >
-                {locale === "zh" ? "開 issue →" : "Open issue →"}
+                {locale === "zh" ? "開 issue" : "Open issue"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
             </li>
             <li>
@@ -578,7 +579,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
                 rel="noopener noreferrer"
                 className="font-data text-xs text-ink underline underline-offset-4 decoration-ink/30 hover:decoration-ink"
               >
-                {locale === "zh" ? "登記用的 PR 範本 →" : "Adopter PR template →"}
+                {locale === "zh" ? "登記用的 PR 範本" : "Adopter PR template"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
             </li>
             <li>
@@ -595,7 +596,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
                 href={`/${locale}/ecosystem`}
                 className="font-data text-xs text-ink underline underline-offset-4 decoration-ink/30 hover:decoration-ink"
               >
-                {locale === "zh" ? "看採用者牆 →" : "See the wall →"}
+                {locale === "zh" ? "看採用者牆" : "See the wall"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </Link>
             </li>
           </ol>

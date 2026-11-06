@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { getSpecMeta } from "@/lib/spec-meta";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -817,7 +818,7 @@ function ConditionCard({ num, head, body }: { num: string; head: string; body: s
 function ContribItem({ strong, text }: { strong: string; text: string }) {
   return (
     <li className="relative pl-5 text-sm text-graphite leading-[1.55]">
-      <span className="absolute left-0 font-data text-blue">→</span>
+      <Sign name="diple" size={10} className="absolute left-0 top-[6px] text-ink" />
       <strong className="text-ink">{strong}</strong> {text}
     </li>
   );

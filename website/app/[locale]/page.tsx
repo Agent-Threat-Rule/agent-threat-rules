@@ -341,7 +341,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <div className={KICKER}><span className="font-title text-ink mr-2">§ 7</span>{zh ? "最新" : "Latest"}</div>
             <h2 className={`mt-4 ${H2}`}>{zh ? "最近發生的事" : "Recent work"}</h2>
           </div>
-          <Link href={`${prefix}/blog`} className="text-[13px] text-ink hover:underline underline-offset-4 whitespace-nowrap">{zh ? "全部文章 →" : "All posts →"}</Link>
+          <Link href={`${prefix}/blog`} className="text-[13px] text-ink hover:underline underline-offset-4 whitespace-nowrap">{zh ? "全部文章" : "All posts"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" /></Link>
         </div>
         <ul className="mx-6 md:mx-14 mb-20 border-t border-ink">
           {latestRelease && (
@@ -381,6 +381,7 @@ const ROMAN = ["I", "II", "III"];
 /** One entry in the record of recent work: date, kind, title. */
 function LatestRow({ href, date, kind, title }: { href: string; date: string; kind: string; title: string }) {
   return (
+    <Phrased>
     <li className="border-b border-fog">
       <Link href={href} className="group grid grid-cols-[96px_1fr] sm:grid-cols-[120px_80px_1fr] gap-x-4 gap-y-1 py-5 items-baseline">
         <span className="font-data text-[12px] text-stone tabular-nums">{date}</span>
@@ -388,5 +389,6 @@ function LatestRow({ href, date, kind, title }: { href: string; date: string; ki
         <span className="text-[16px] leading-snug text-ink group-hover:underline underline-offset-4">{title}</span>
       </Link>
     </li>
+    </Phrased>
   );
 }

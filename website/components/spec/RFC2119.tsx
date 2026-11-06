@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n";
+import { Sign } from "@/components/Sign";
 
 const COPY: Record<Locale, string> = {
   en: 'The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.',
@@ -19,7 +20,7 @@ export function RFC2119({ locale }: { locale: Locale }) {
         rel="noopener noreferrer"
         className="text-navy underline"
       >
-        IETF RFC 2119 ↗
+        IETF RFC 2119<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
       </a>
     </aside>
   );

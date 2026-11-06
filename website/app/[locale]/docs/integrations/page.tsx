@@ -5,6 +5,7 @@ import { loadVersionLabels } from "@/lib/versions";
 import { COMPONENTS, LAYERS, loadMatrix } from "@/lib/integration-matrix";
 import { DocsShell, Callout } from "@/components/DocsShell";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 const REPO = "https://github.com/Agent-Threat-Rule/agent-threat-rules";
 
@@ -76,7 +77,7 @@ export default async function IntegrationsMatrixPage({ params }: { params: Promi
             <h2 className="text-[20px] text-ink">{pick(c.label)}</h2>
             {c.repoPath && (
               <a href={`${REPO}/tree/main/${c.repoPath}`} className="font-data text-[11px] text-blue hover:underline underline-offset-4" target="_blank" rel="noopener noreferrer">
-                {c.repoPath}/ ↗
+                {c.repoPath}/<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
             )}
           </div>
@@ -102,7 +103,7 @@ export default async function IntegrationsMatrixPage({ params }: { params: Promi
                     <td className="py-3 pr-4 text-[12.5px] text-graphite whitespace-nowrap">{pick(LAYERS[r.layer] ?? LAYERS.other)}</td>
                     <td className="py-3 pr-4 text-[12.5px] leading-[1.55] text-graphite">{r.integration}</td>
                     <td className="py-3 text-right">
-                      <a href={r.evidence} target="_blank" rel="noopener noreferrer" className="font-data text-[11px] text-blue hover:underline underline-offset-4">↗</a>
+                      <a href={r.evidence} target="_blank" rel="noopener noreferrer" className="font-data text-[11px] text-blue hover:underline underline-offset-4"><Sign name="diple" size={10} className="ml-1.5 align-[-1px]" /></a>
                     </td>
                   </tr>
                 ))}

@@ -3,6 +3,7 @@ import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -76,7 +77,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
               rel="noopener noreferrer"
               className="font-data text-xs text-blue hover:underline"
             >
-              {zh ? "開 issue" : "Open the issue"} &rarr;
+              {zh ? "開 issue" : "Open the issue"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
           </div>
           <div className="p-6 md:p-7">
@@ -97,7 +98,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
               rel="noopener noreferrer"
               className="font-data text-xs text-blue hover:underline"
             >
-              ADOPTERS.md &rarr;
+              ADOPTERS.md<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
           </div>
         </div>
@@ -252,14 +253,14 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
               rel="noopener noreferrer"
               className="font-data text-xs text-blue hover:underline"
             >
-              {zh ? "開 RFC issue" : "Open an RFC issue"} &rarr;
+              {zh ? "開 RFC issue" : "Open an RFC issue"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
             <span className="text-fog">|</span>
             <a
               href={`/${locale}/governance`}
               className="font-data text-xs text-blue hover:underline"
             >
-              {zh ? "決策流程細節" : "Decision-making process"} &rarr;
+              {zh ? "決策流程細節" : "Decision-making process"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
             <span className="text-fog">|</span>
             <a
@@ -268,7 +269,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
               rel="noopener noreferrer"
               className="font-data text-xs text-blue hover:underline"
             >
-              SPEC.md &rarr;
+              SPEC.md<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
           </div>
         </div>
@@ -324,7 +325,7 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
               : "ATR has several maintainers, but merging is still concentrated with the lead maintainer, so more are being recruited. The candidate criteria, how decisions are made and how to apply are all on the governance page."}
           </p>
           <a href={`/${locale}/governance`} className="font-data text-xs text-blue hover:underline">
-            {zh ? "看治理頁的「想成為維護者」" : "See 'Become a maintainer' on the governance page"} &rarr;
+            {zh ? "看治理頁的「想成為維護者」" : "See 'Become a maintainer' on the governance page"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
         </div>
       </Reveal>

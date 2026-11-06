@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Sign } from "@/components/Sign";
 
 /**
  * Drawing-sheet primitives. Every redone page is one "sheet" between two
@@ -54,7 +55,7 @@ export function ArrowButton({ href, children, external = false }: { href: string
   const inner = (
     <>
       <span className="px-3 py-2">{children}</span>
-      <span className="px-2 py-2 border-l border-white/20" aria-hidden="true">↗</span>
+      <span className="px-2 py-2 border-l border-white/20 inline-flex items-center"><Sign name="diple" size={10} /></span>
     </>
   );
   return external ? (

@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -254,7 +255,7 @@ export default async function ResponsibleUsePage({
                 rel="noopener noreferrer"
                 className="font-data text-sm text-blue hover:underline"
               >
-                {zh ? "依照 SECURITY.md 的流程" : "Follow the SECURITY.md process"} &rarr;
+                {zh ? "依照 SECURITY.md 的流程" : "Follow the SECURITY.md process"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
             </div>
           </div>
@@ -265,15 +266,15 @@ export default async function ResponsibleUsePage({
       <Reveal>
         <div className="flex flex-wrap gap-4">
           <Link href={`/${locale}/governance`} className="font-data text-xs text-blue hover:underline">
-            {zh ? "治理結構" : "Governance"} &rarr;
+            {zh ? "治理結構" : "Governance"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
           <span className="text-fog">|</span>
           <Link href={`/${locale}/quality-standard`} className="font-data text-xs text-blue hover:underline">
-            {zh ? "品質標準" : "Quality standard"} &rarr;
+            {zh ? "品質標準" : "Quality standard"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
           <span className="text-fog">|</span>
           <Link href={`/${locale}/red-team`} className="font-data text-xs text-blue hover:underline">
-            {zh ? "紅隊整合" : "Red Team"} &rarr;
+            {zh ? "紅隊整合" : "Red Team"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
         </div>
       </Reveal>

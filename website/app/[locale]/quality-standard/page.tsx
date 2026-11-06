@@ -5,6 +5,7 @@ import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -315,7 +316,7 @@ export default async function QualityStandardPage({
             rel="noopener noreferrer"
             className="text-[15px] text-ink underline underline-offset-[6px] decoration-ink/30 hover:decoration-ink"
           >
-            {locale === "zh" ? "閱讀 RFC-001" : "Read RFC-001"} →
+            {locale === "zh" ? "閱讀 RFC-001" : "Read RFC-001"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
           <a
             href="https://www.npmjs.com/package/agent-threat-rules"
@@ -980,7 +981,7 @@ console.log('Issues:', gate.issues);`}
               rel="noopener noreferrer"
               className="text-[15px] text-ink underline underline-offset-[6px] decoration-ink/30 hover:decoration-ink"
             >
-              {locale === "zh" ? "閱讀 RFC" : "Read the RFC"} →
+              {locale === "zh" ? "閱讀 RFC" : "Read the RFC"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
             <a
               href={`/${locale}/rules`}

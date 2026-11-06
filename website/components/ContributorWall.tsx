@@ -2,6 +2,7 @@
 
 import { motion, useInView } from "motion/react";
 import { useRef } from "react";
+import { Sign } from "@/components/Sign";
 
 interface Contributor {
   github: string;
@@ -133,7 +134,7 @@ export function ContributorWall({
           rel="noopener noreferrer"
           className="font-data text-xs text-blue hover:underline tracking-wide"
         >
-          {zh ? "把自己加進來 →" : "Add yourself →"}
+          {zh ? "把自己加進來" : "Add yourself"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
         </a>
       </div>
     </div>

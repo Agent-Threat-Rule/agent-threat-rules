@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Member, Tier } from "@/lib/community";
+import { Sign } from "@/components/Sign";
 
 type Tab = Tier | "all";
 
@@ -82,7 +83,7 @@ export function MemberDirectory({ members, locale }: { members: Member[]; locale
               : zh ? "這一組還沒有人列名。" : "No one is listed in this group yet."}
           </p>
           <Link href={`/${locale}/community/join`} className="inline-block mt-3 text-[13px] text-blue hover:underline underline-offset-4">
-            {zh ? "成為這一組的創始成員 →" : "Be a founding member of this group →"}
+            {zh ? "成為這一組的創始成員" : "Be a founding member of this group"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
         </div>
       ) : (

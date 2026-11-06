@@ -451,7 +451,7 @@ export default async function RuleDetailPage({
                 rel="noopener noreferrer"
                 className="font-data text-xs text-blue hover:underline"
               >
-                {zh ? "在 GitHub 編輯 →" : "Edit on GitHub →"}
+                {zh ? "在 GitHub 編輯" : "Edit on GitHub"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
             </div>
             <pre className="border-t border-ink pt-4 font-data text-[11px] md:text-xs text-graphite leading-[1.7] overflow-x-auto max-h-[480px] overflow-y-auto">
@@ -489,7 +489,7 @@ export default async function RuleDetailPage({
             rel="noopener noreferrer"
             className="font-data text-xs text-blue hover:underline inline-block mt-3"
           >
-            {zh ? "到 GitHub 看完整的 commit 紀錄 →" : "Full commit history on GitHub →"}
+            {zh ? "到 GitHub 看完整的 commit 紀錄" : "Full commit history on GitHub"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
         </div>
 

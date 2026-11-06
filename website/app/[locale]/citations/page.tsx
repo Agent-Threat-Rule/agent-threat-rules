@@ -12,6 +12,7 @@ import { loadVersionLabels } from "@/lib/versions";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
 import { CitationBlock } from "@/components/spec/CitationBlock";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -129,7 +130,7 @@ export default async function CitationsPage({
               className="text-sm text-navy underline decoration-navy/30 hover:decoration-navy"
               style={{ fontFamily: "var(--font-body)" }}
             >
-              {t(locale, "spec.read_full")} →
+              {t(locale, "spec.read_full")}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </Link>
           </nav>
         </aside>
@@ -246,7 +247,7 @@ export default async function CitationsPage({
                         rel="noopener noreferrer"
                         className="text-navy underline"
                       >
-                        {doiUrl} ↗
+                        {doiUrl}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                       </a>
                     </td>
                   </tr>
@@ -260,7 +261,7 @@ export default async function CitationsPage({
                         rel="noopener noreferrer"
                         className="text-navy underline"
                       >
-                        {zenodoUrl} ↗
+                        {zenodoUrl}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                       </a>
                     </td>
                   </tr>
@@ -276,7 +277,7 @@ export default async function CitationsPage({
                         rel="noopener noreferrer"
                         className="text-navy underline"
                       >
-                        {meta.repository} ↗
+                        {meta.repository}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                       </a>
                     </td>
                   </tr>
@@ -290,7 +291,7 @@ export default async function CitationsPage({
                         rel="noopener noreferrer"
                         className="text-navy underline"
                       >
-                        {npmUrl} ↗
+                        {npmUrl}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                       </a>
                     </td>
                   </tr>
@@ -304,7 +305,7 @@ export default async function CitationsPage({
                         rel="noopener noreferrer"
                         className="text-navy underline"
                       >
-                        {pypiUrl} ↗
+                        {pypiUrl}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                       </a>
                     </td>
                   </tr>
@@ -320,7 +321,7 @@ export default async function CitationsPage({
                         rel="noopener noreferrer"
                         className="text-navy underline"
                       >
-                        {meta.canonicalUrl} ↗
+                        {meta.canonicalUrl}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                       </a>
                     </td>
                   </tr>
@@ -384,7 +385,7 @@ export default async function CitationsPage({
                     rel="noopener noreferrer"
                     className="text-navy underline text-sm inline-flex items-center min-h-[44px] break-all"
                   >
-                    {row.url} ↗
+                    {row.url}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                   </a>
                 </div>
               ))}

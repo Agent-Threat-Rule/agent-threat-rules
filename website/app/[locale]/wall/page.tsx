@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -272,7 +273,7 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               rel="noopener noreferrer"
               className="bg-ink text-white px-6 py-3  text-sm font-semibold hover:bg-black transition-colors text-center"
             >
-              {zh ? "加入社群 →" : "Add Yourself →"}
+              {zh ? "加入社群" : "Add Yourself"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
             <a
               href="https://github.com/Agent-Threat-Rule/agent-threat-rules"

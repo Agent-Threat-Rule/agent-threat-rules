@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { SheetRow } from "@/components/Sheet";
 import { clauses } from "@/lib/clauses";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 type B = { en: string; zh: string };
 
@@ -70,7 +71,7 @@ export function ToolNext({ href, label }: { href: string; label: string }) {
     <SheetRow>
       <Link href={href} className="group flex items-center justify-between px-6 md:px-14 py-12 hover:bg-ash/60 transition-colors">
         <span className="text-[24px] md:text-[32px] tracking-[-0.02em] text-ink">{label}</span>
-        <span className="text-[24px] text-mist group-hover:text-ink group-hover:translate-x-1 transition-all" aria-hidden="true">→</span>
+        <Sign name="diple" size={18} className="text-mist group-hover:text-ink group-hover:translate-x-1 transition-all" />
       </Link>
     </SheetRow>
     </Phrased>

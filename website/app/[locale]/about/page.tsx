@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -294,7 +295,7 @@ export default async function AboutPage({
             rel="noopener noreferrer"
             className="font-data text-xs md:text-sm text-blue hover:underline"
           >
-            {zh ? "完整治理文件（GOVERNANCE.md）→" : "Read the full governance document (GOVERNANCE.md) →"}
+            {zh ? "完整治理文件（GOVERNANCE.md）" : "Read the full governance document (GOVERNANCE.md)"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
         </div>
       </Section>
@@ -318,13 +319,13 @@ export default async function AboutPage({
             rel="noopener noreferrer"
             className="font-data text-xs md:text-sm text-blue hover:underline"
           >
-            {zh ? "貢獻者名單 →" : "Contributors list →"}
+            {zh ? "貢獻者名單" : "Contributors list"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
           <Link
             href={`/${locale}/contribute`}
             className="font-data text-xs md:text-sm text-blue hover:underline"
           >
-            {zh ? "如何貢獻 →" : "How to contribute →"}
+            {zh ? "如何貢獻" : "How to contribute"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
         </div>
       </Section>

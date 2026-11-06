@@ -2,6 +2,7 @@
 
 import { motion, useInView } from "motion/react";
 import { useRef } from "react";
+import { Sign } from "@/components/Sign";
 
 interface Contributor {
   github: string;
@@ -191,7 +192,7 @@ export function CommunityWall({
           rel="noopener noreferrer"
           className="font-data text-xs text-blue hover:underline"
         >
-          {zh ? "把自己加上來 →" : "Add yourself to the wall →"}
+          {zh ? "把自己加上來" : "Add yourself to the wall"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
         </a>
         <span className="font-data text-xs text-mist">
           {contributors.length} {zh ? "位貢獻者" : "contributors"} · {countries.length} {zh ? "個國家" : "countries"} · {merged.length} {zh ? "個已合併的整合" : "merged integrations"}

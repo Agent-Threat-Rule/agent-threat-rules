@@ -17,8 +17,10 @@ const CJK = /[\u3400-\u9fff\uf900-\ufaff]/;
 const CLOSE = /^[，。、：；！？」』）》〉…—]+$/;
 const OPEN = /^[「『（《〈]+$/;
 const PREFIX = /^[這那每各逐第該本此都也就才還又再被把讓給]$/;
-const CLAUSE_END = /[，。、：；！？]$/;
+const CLAUSE_END = /[，。、：；！？·]$/;
 const MAX_TAIL = 10;
+const MIN_TAIL = 4;
+const PUNCT_OR_SPACE = /[\s，。、：；！？「」『』（）《》〈〉…—·]/g;
 
 let segmenter: Intl.Segmenter | null = null;
 
@@ -49,14 +51,21 @@ export function hasChinese(text: string): boolean {
  */
 export function phrases(text: string): string[] {
   const ws = words(text);
-  if (ws.length <= 3) return [ws.join("")];
-  let cut = ws.length - 2;
-  for (let i = ws.length - 2; i > 0; i--) {
-    if (CLAUSE_END.test(ws[i])) {
-      cut = i + 1;
+  // Word indices that are not plain spaces: the tail counts these only.
+  const real = ws.flatMap((w, i) => (w.trim() ? [i] : []));
+  if (real.length <= 3) return [ws.join("")];
+  const lastTwo = real[real.length - 2];
+  let cut = lastTwo;
+  for (let k = real.length - 2; k > 0; k--) {
+    if (CLAUSE_END.test(ws[real[k]].trim())) {
+      cut = real[k] + 1;
       break;
     }
   }
-  if (ws.slice(cut).join("").length > MAX_TAIL) cut = ws.length - 2;
+  if (ws.slice(cut).join("").trim().length > MAX_TAIL) cut = lastTwo;
+  // The segmenter sometimes splits a word into single characters (載 / 入),
+  // so also make sure the tail carries at least MIN_TAIL characters.
+  const letters = (from: number) => ws.slice(from).join("").replace(PUNCT_OR_SPACE, "").length;
+  for (let k = real.indexOf(cut); k > 1 && letters(cut) < MIN_TAIL; k--) cut = real[k - 1];
   return [...ws.slice(0, cut), ws.slice(cut).join("")];
 }

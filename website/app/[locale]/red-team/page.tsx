@@ -7,6 +7,7 @@ import { ablationLanes } from "@/lib/ablation";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -218,13 +219,13 @@ export default async function RedTeamPage({
               rel="noopener noreferrer"
               className="text-[15px] text-ink underline underline-offset-[6px] decoration-ink/30 hover:decoration-ink"
             >
-              {zh ? "送一個 probe →" : "Submit a probe →"}
+              {zh ? "送一個 probe" : "Submit a probe"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
             <a
               href="#how-it-works"
               className="text-[15px] text-ink underline underline-offset-[6px] decoration-ink/30 hover:decoration-ink"
             >
-              {zh ? "流程怎麼走 →" : "How it works →"}
+              {zh ? "流程怎麼走" : "How it works"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
           </div>
         </Reveal>
@@ -474,7 +475,7 @@ export default async function RedTeamPage({
                         rel="noopener noreferrer"
                         className="font-data text-xs text-ink hover:underline"
                       >
-                        {zh ? "工具 →" : "Tool →"}
+                        {zh ? "工具" : "Tool"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                       </a>
                       {t.prUrl && (
                         <a
@@ -483,7 +484,7 @@ export default async function RedTeamPage({
                           rel="noopener noreferrer"
                           className="font-data text-xs text-ink hover:underline"
                         >
-                          {t.prUrl.includes("/commit/") ? "Commit →" : "PR →"}
+                          {t.prUrl.includes("/commit/") ? "Commit" : "PR"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                         </a>
                       )}
                       {figureMeasurements(stats, t.figures ?? []).map(({ m, label }) => (
@@ -494,7 +495,7 @@ export default async function RedTeamPage({
                           rel="noopener noreferrer"
                           className="font-data text-xs text-ink hover:underline"
                         >
-                          {zh ? `${label} 量測檔 →` : `${label} measurement →`}
+                          {zh ? `${label} 量測檔` : `${label} measurement`}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                         </a>
                       ))}
                     </div>
@@ -755,7 +756,7 @@ export default async function RedTeamPage({
                 rel="noopener noreferrer"
                 className="text-[15px] text-ink underline underline-offset-[6px] decoration-ink/30 hover:decoration-ink"
               >
-                {zh ? "開 probe issue →" : "Open a probe issue →"}
+                {zh ? "開 probe issue" : "Open a probe issue"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
               <a
                 href="https://github.com/Agent-Threat-Rule/agent-threat-rules"
@@ -763,15 +764,16 @@ export default async function RedTeamPage({
                 rel="noopener noreferrer"
                 className="text-[15px] text-ink underline underline-offset-[6px] decoration-ink/30 hover:decoration-ink"
               >
-                {zh ? "看 repo →" : "Read the repo →"}
+                {zh ? "看 repo" : "Read the repo"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
               <a
                 href={`/${locale}/ecosystem`}
                 className="text-[15px] text-ink underline underline-offset-[6px] decoration-ink/30 hover:decoration-ink"
               >
                 {zh
-                  ? "防守端看 /ecosystem →"
-                  : "The defensive side: /ecosystem →"}
+                  ? "防守端看 /ecosystem"
+                  : "The defensive side: /ecosystem"}
+                <Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
             </div>
           </div>

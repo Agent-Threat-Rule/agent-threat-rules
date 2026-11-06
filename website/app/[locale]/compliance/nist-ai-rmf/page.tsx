@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -172,7 +173,7 @@ export default async function NistAiRmfPage({
               rel="noopener noreferrer"
               className="font-data text-xs text-blue hover:underline"
             >
-              {zh ? "看社群 catalog（CC0）" : "Community catalog (CC0)"} &rarr;
+              {zh ? "看社群 catalog（CC0）" : "Community catalog (CC0)"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
             <a
               href="https://github.com/usnistgov/oscal-content/pull/338"
@@ -180,7 +181,7 @@ export default async function NistAiRmfPage({
               rel="noopener noreferrer"
               className="font-data text-xs text-blue hover:underline"
             >
-              {zh ? "看 usnistgov/oscal-content #338（等 NIST 審查）" : "usnistgov/oscal-content #338 (awaiting NIST review)"} &rarr;
+              {zh ? "看 usnistgov/oscal-content #338（等 NIST 審查）" : "usnistgov/oscal-content #338 (awaiting NIST review)"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
           </div>
         </div>
@@ -386,7 +387,7 @@ export default async function NistAiRmfPage({
         </p>
         <ul className="mt-6 space-y-3 text-sm md:text-base text-graphite leading-[1.7]">
           <li className="flex gap-3">
-            <span className="text-blue font-data text-xs pt-[5px]">→</span>
+            <Sign name="diple" size={10} className="mt-[6px] text-ink" />
             <span>
               {zh ? "RFI 文件編號：" : "RFI docket: "}
               <a href="https://www.regulations.gov/docket/NIST-2025-0035" target="_blank" rel="noopener noreferrer" className="text-blue underline-offset-4 hover:underline">
@@ -398,7 +399,7 @@ export default async function NistAiRmfPage({
             </span>
           </li>
           <li className="flex gap-3">
-            <span className="text-blue font-data text-xs pt-[5px]">→</span>
+            <Sign name="diple" size={10} className="mt-[6px] text-ink" />
             <span>
               {zh ? "相關計畫：" : "Related project: "}
               <a href="https://www.nccoe.nist.gov/projects/software-and-si-agent-identity-and-authorization" target="_blank" rel="noopener noreferrer" className="text-blue underline-offset-4 hover:underline">
@@ -410,7 +411,7 @@ export default async function NistAiRmfPage({
             </span>
           </li>
           <li className="flex gap-3">
-            <span className="text-blue font-data text-xs pt-[5px]">→</span>
+            <Sign name="diple" size={10} className="mt-[6px] text-ink" />
             <span>
               {zh
                 ? "基準測試的數字按 lane 分開報告，也說明了哪些是 closed-book、哪些在樣本內："

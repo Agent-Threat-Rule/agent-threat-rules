@@ -7,6 +7,7 @@ import { SectionHead } from "@/components/SectionHead";
 import { SheetRow } from "@/components/Sheet";
 import { MemberDirectory } from "./MemberDirectory";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -170,7 +171,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
             </div>
           ))}
           <div className="py-4">
-            <a href={DISCUSSIONS} className="text-[13px] text-blue hover:underline underline-offset-4">GitHub Discussions →</a>
+            <a href={DISCUSSIONS} className="text-[13px] text-blue hover:underline underline-offset-4">GitHub Discussions<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" /></a>
           </div>
         </dl>
       </section>

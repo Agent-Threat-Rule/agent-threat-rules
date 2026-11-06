@@ -6,6 +6,7 @@ import { pageMetadata } from "@/lib/seo";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { loadVersionLabels } from "@/lib/versions";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -84,7 +85,7 @@ export default async function ChangelogPage({
           rel="noopener noreferrer"
           className="font-data text-xs md:text-sm text-blue hover:underline inline-block mt-4"
         >
-          {zh ? "到 GitHub 看完整的 release 歷史 →" : "Full release history on GitHub →"}
+          {zh ? "到 GitHub 看完整的 release 歷史" : "Full release history on GitHub"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
         </a>
       </Reveal>
 

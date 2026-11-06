@@ -14,6 +14,7 @@ import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { loadSiteStats } from "@/lib/stats";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 const REPO = "https://github.com/Agent-Threat-Rule/agent-threat-rules";
 const REPO_ROOT = join(process.cwd(), "..");
@@ -165,7 +166,7 @@ export default async function ConformancePage({
               className="text-sm text-navy underline decoration-navy/30 hover:decoration-navy"
               style={{ fontFamily: "var(--font-body)" }}
             >
-              {t(locale, "spec.read_full")} →
+              {t(locale, "spec.read_full")}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </Link>
           </nav>
         </aside>
@@ -230,7 +231,7 @@ export default async function ConformancePage({
                 <>
                   符規的測試材料放在兩個地方，兩邊還沒有統一。今天能跑的是{" "}
                   <a href={`${REPO}/tree/main/conformance/v1.0`} target="_blank" rel="noopener noreferrer" className="text-navy underline">
-                    conformance/v1.0/ ↗
+                    conformance/v1.0/<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                   </a>
                   。裡面有 {suite.suiteRules} 條規則的 true positive 和 true negative fixture，另有 {suite.edgeCases} 個邊界案例。目前有 {ruleCount} 條規則，其餘的還沒有 fixture。這套測試在參考引擎上還沒有全部跑過，沒過的 fixture 逐一列在它的 README。
                 </>
@@ -238,7 +239,7 @@ export default async function ConformancePage({
                 <>
                   Conformance material lives in two places, and they are not reconciled yet. The suite you can run today is{" "}
                   <a href={`${REPO}/tree/main/conformance/v1.0`} target="_blank" rel="noopener noreferrer" className="text-navy underline">
-                    conformance/v1.0/ ↗
+                    conformance/v1.0/<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                   </a>
                   . It has true-positive and true-negative fixtures for {suite.suiteRules} rules, plus {suite.edgeCases} edge cases. There are {ruleCount} rules, so the rest have no fixture yet. The suite does not yet pass end to end on the reference engine. Its README lists each fixture that fails.
                 </>
@@ -263,14 +264,14 @@ spec/conformance/        (${zh ? "未批准" : "not ratified"})
               {zh ? (
                 <>
                   <a href={`${REPO}/tree/main/spec/conformance`} target="_blank" rel="noopener noreferrer" className="text-navy underline">
-                    spec/conformance/ ↗
+                    spec/conformance/<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                   </a>{" "}
                   是提案中的語料庫，它的 README 標明尚未批准，也寫明目前沒有引擎宣稱符合 ATR。裡面目前只有 {suite.proposedFixtures} 個 fixture。conformance/v1.0 的 README 用測試結果來定義 L1 到 L3，跟本頁的三個等級不是同一套。
                 </>
               ) : (
                 <>
                   <a href={`${REPO}/tree/main/spec/conformance`} target="_blank" rel="noopener noreferrer" className="text-navy underline">
-                    spec/conformance/ ↗
+                    spec/conformance/<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                   </a>{" "}
                   is a proposed corpus. Its README marks it as not ratified and says no engine claims ATR conformance. It holds {suite.proposedFixtures} {suite.proposedFixtures === 1 ? "fixture" : "fixtures"} so far. The conformance/v1.0 README defines L1 to L3 by test results, which is not the same as the three levels on this page.
                 </>
@@ -302,7 +303,7 @@ spec/conformance/        (${zh ? "未批准" : "not ratified"})
                 rel="noopener noreferrer"
                 className="text-navy underline"
               >
-                ADOPTERS.md ↗
+                ADOPTERS.md<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
               {zh
                 ? " 開一個 pull request，寫上組織名稱、規格版本、整合日期（ISO 8601）、一個查得到的公開證據連結，以及自己宣告的符規等級。維護者的目標是七天內做完 schema 驗證並合併。完整流程和已合併的實作者，見 "

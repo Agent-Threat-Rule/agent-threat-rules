@@ -14,6 +14,7 @@ import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
 import { InformativeBadge } from "@/components/spec/Badges";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -167,7 +168,7 @@ export default async function ImplementersPage({
             : "No row in this report claims a conformance level."}
           {" "}
           <Link href={`${prefix}/spec`} className="text-navy underline">
-            {zh ? "看等級怎麼定義" : "See how the levels are defined"} →
+            {zh ? "看等級怎麼定義" : "See how the levels are defined"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
         </p>
       </header>
@@ -216,7 +217,7 @@ export default async function ImplementersPage({
                       rel="noopener noreferrer"
                       className="text-navy underline"
                     >
-                      {imp.refLabel} ↗
+                      {imp.refLabel}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                     </a>
                   </td>
                 </tr>
@@ -261,7 +262,7 @@ export default async function ImplementersPage({
                 rel="noopener noreferrer"
                 className="text-navy underline text-sm inline-flex items-center min-h-[44px]"
               >
-                {imp.refLabel} ↗
+                {imp.refLabel}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
             </div>
           ))}
@@ -278,7 +279,7 @@ export default async function ImplementersPage({
             rel="noopener noreferrer"
             className="text-navy underline"
           >
-            ADOPTERS.md ↗
+            ADOPTERS.md<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
         </p>
 
@@ -298,7 +299,7 @@ export default async function ImplementersPage({
               rel="noopener noreferrer"
               className="text-navy underline"
             >
-              #338 ↗
+              #338<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
           </p>
         </div>
@@ -334,7 +335,7 @@ export default async function ImplementersPage({
               rel="noopener noreferrer"
               className="text-navy underline"
             >
-              <code>conformance/v1.0/</code> ↗
+              <code>conformance/v1.0/</code><Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
             {zh
               ? "。每個 fixture 是一個以規則編號命名的資料夾，input.yaml 是輸入，expect.json 是預期結果。每個 fixture 都照預期跑出來，實作就算通過。參考引擎目前還沒全部通過，沒過的列在套件的 README。"
@@ -353,7 +354,7 @@ export default async function ImplementersPage({
               rel="noopener noreferrer"
               className="text-navy underline"
             >
-              ADOPTERS.md ↗
+              ADOPTERS.md<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </a>
             {zh
               ? "。維護者通常七天內做完 schema 驗證並合併。"
@@ -407,7 +408,7 @@ export default async function ImplementersPage({
 
         <p className="text-sm text-stone mt-4" style={{ maxWidth: "42em" }}>
           <Link href={`${prefix}/conformance`} className="text-navy underline">
-            {zh ? "看完整的規範文字" : "Read the full normative text"} →
+            {zh ? "看完整的規範文字" : "Read the full normative text"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </Link>
           {zh ? "：" : ": "}
           {zh

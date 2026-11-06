@@ -9,6 +9,7 @@ import { locales, t, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -264,10 +265,10 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
       <Reveal delay={0.2}>
         <div className="flex gap-4 mb-8">
           <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/data/clawhub-scan/ecosystem-report.csv" target="_blank" rel="noopener noreferrer" className="font-data text-sm text-blue hover:underline">
-            {t(locale, "research.download.csv")} &rarr;
+            {t(locale, "research.download.csv")}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
           <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/data/clawhub-scan/ecosystem-stats.json" target="_blank" rel="noopener noreferrer" className="font-data text-sm text-blue hover:underline">
-            {t(locale, "research.download.json")} &rarr;
+            {t(locale, "research.download.json")}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
         </div>
       </Reveal>
@@ -383,7 +384,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <div className="flex flex-wrap gap-3 pt-1">
               <a href={`/${locale}/citations`} className="font-data text-xs text-blue hover:underline">
-                {locale === "zh" ? "BibTeX / 引用格式" : "BibTeX / citation formats"} &rarr;
+                {locale === "zh" ? "BibTeX / 引用格式" : "BibTeX / citation formats"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
               <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/CITATION.cff" target="_blank" rel="noopener noreferrer" className="font-data text-xs text-blue hover:underline">
                 {locale === "zh" ? "機器可讀的引用檔（CITATION.cff）" : "Machine-readable citation (CITATION.cff)"}
@@ -498,7 +499,7 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
       <Reveal>
         <div className="mt-6">
           <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" target="_blank" rel="noopener noreferrer" className="font-data text-sm text-blue hover:underline">
-            {t(locale, "research.limits.full")} &rarr;
+            {t(locale, "research.limits.full")}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
           </a>
         </div>
       </Reveal>

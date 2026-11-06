@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -185,7 +186,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
                   {zh ? a.summary.zh : a.summary.en}
                 </p>
                 <div className="font-data text-xs text-blue mt-4 group-hover:underline">
-                  {zh ? "看完整檔案 →" : "View full profile →"}
+                  {zh ? "看完整檔案" : "View full profile"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                 </div>
               </Link>
             ))}
@@ -245,7 +246,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
                 rel="noopener noreferrer"
                 className="font-data text-xs text-green hover:underline inline-block mt-4"
               >
-                {zh ? `看全部 ${wl.total_verified} 個已認證的 skill →` : `View all ${wl.total_verified} verified skills →`}
+                {zh ? `看全部 ${wl.total_verified} 個已認證的 skill` : `View all ${wl.total_verified} verified skills`}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
             </Reveal>
           )}
@@ -276,7 +277,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
                 rel="noopener noreferrer"
                 className="bg-ink text-paper font-data text-xs px-5 py-2.5 rounded-[2px] hover:bg-graphite transition-colors text-center whitespace-nowrap"
               >
-                {zh ? "看完整的 blacklist.json →" : "View full blacklist.json →"}
+                {zh ? "看完整的 blacklist.json" : "View full blacklist.json"}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
               <a
                 href="https://raw.githubusercontent.com/Agent-Threat-Rule/agent-threat-rules/main/data/public-blacklist.json"

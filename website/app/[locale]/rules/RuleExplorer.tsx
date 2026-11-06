@@ -259,7 +259,7 @@ export function RuleExplorer({ rules, categories, locale }: Props) {
                           rel="noopener noreferrer"
                           className="font-data text-xs text-blue hover:underline"
                         >
-                          {t(locale, "rules.view_yaml")} &rarr;
+                          {t(locale, "rules.view_yaml")}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                         </a>
                       </div>
                     </div>
