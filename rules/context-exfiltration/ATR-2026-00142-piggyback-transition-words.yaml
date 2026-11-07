@@ -1,6 +1,6 @@
 title: Data Piggybacking via Casual Transition Words
 id: ATR-2026-00142
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects tool response piggybacking using casual transition words (oh and, P.S., BTW, interestingly, as it happens) to
@@ -63,15 +63,11 @@ detection:
   conditions:
     - field: content
       operator: regex
-      value: >-
-        (?i)(?:oh,?\s+and|p\.?\s*s\.?|btw|interestingly|as it happens|incidentally|on another note|speaking of
-        which|while I.m at it|worth noting)[\s,.:]+.*(?:\.ssh|id_rsa|private.?key|BEGIN.*(?:RSA|OPENSSH|EC).*KEY)
+      value: '(?i)(?:oh,?\s+and|p\.?\s*s\.?|btw|interestingly|as it happens|incidentally|on another note|speaking of which|while I.m at it|worth noting)[\s,.:]+[^\n\\]{0,150}(?:\.ssh|id_rsa|private.?key|BEGIN[^\n\\]{0,40}(?:RSA|OPENSSH|EC)[^\n\\]{0,40}KEY)'
       description: Casual transition + SSH key/private key reference
     - field: content
       operator: regex
-      value: >-
-        (?i)(?:oh,?\s+and|p\.?\s*s\.?|btw|interestingly|as it
-        happens)[\s,.:]+.*(?:api[_\s-]?key|access[_\s-]?token|secret[_\s-]?key|password|credentials?)\s*(?:is|are|was|contains?|shows?|reads?|=|:)
+      value: '(?i)(?:oh,?\s+and|p\.?\s*s\.?|btw|interestingly|as it happens)[\s,.:]+[^\n\\]{0,150}(?:api[_\s-]?key|access[_\s-]?token|secret[_\s-]?key|password|credentials?)\s*(?:is|are|was|contains?|shows?|reads?|=|:)'
       description: Casual transition + credential disclosure
   false_positives:
     - >-

@@ -6,6 +6,24 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **Four rules stop pairing words from opposite ends of a JSON-encoded
+  document.** ATR-2026-00217 #3, -00142 #0 and #1, -00113 #1 and -00020 #8
+  look for two words on the same line, written as `[^\n]*` or `.*`
+  between them. Tool arguments and results arrive JSON-encoded, where every
+  line break is the two characters `\n`, so a whole document is one line
+  and any `backup` pairs with any `key`, any `btw` with any `password`. The
+  gap is now `[^\n\\]{0,150}` (`{0,80}` for 00020 #8): at most 150
+  characters and no backslash, so an encoded line break ends it as a real
+  one does. Each new condition matches a subset of what the old one did.
+  Benign false positives over the 14,172 samples of the benign gate: 00217
+  596 to 47, 00142 435 to 18, 00113 353 to 92, 00020 763 to 237 (2,147 to
+  394). Across the attack-side corpora under `data/test-corpora`, 5 strings
+  no longer match any rule: a benign MCP tool list, a garak grader template,
+  two garak DAN prompts and one BrowseSafe-Bench page, each previously
+  matched only through such a long gap. The bounded conditions are also
+  fast, so all five leave `data/redos-baseline.json`. `rule_version` is
+  bumped on all four rules.
+
 - **Five critical rules stop firing on ordinary code and documentation.**
   On the 14,172 samples of the benign gate, ATR-2026-00062, -00063,
   -00040, -00161 and -00066 went from 2,710 false positives to 1,232. Each
