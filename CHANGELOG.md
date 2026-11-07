@@ -66,6 +66,18 @@ All notable changes to ATR will be documented in this file.
   e-2026-11-07-cisco-merge-time records it. Two strings in
   `website/lib/i18n.ts` that no page renders still told the reversed account;
   they now say what happened.
+- **ATR-2026-02400 catches the VS Code and Codex config keys that turn
+  approvals off.** Its settings-write condition (#4) matched a bare
+  `"autoApprove": true` but not VS Code's `"chat.tools.autoApprove": true`
+  or `"chat.tools.global.autoApprove": true`, which is what an agent writes
+  to `.vscode/settings.json` in the Copilot auto-approve attacks (including
+  the trailing-dot file name variant). It also had no Codex `config.toml`
+  keys. It now matches those two VS Code keys, `approval_policy = "never"`
+  and `sandbox_mode = "danger-full-access"`, the persisted forms of the
+  Codex flags the rule already matches on the command line. Benign false
+  positives over the 14,172 samples of the benign gate stay at 0. The rule
+  stays at maturity test (hunt lane). `rule_version` is bumped to 2.
+
 - **Four rules stop pairing words from opposite ends of a JSON-encoded
   document.** ATR-2026-00217 #3, -00142 #0 and #1, -00113 #1 and -00020 #8
   look for two words on the same line, written as `[^\n]*` or `.*`
