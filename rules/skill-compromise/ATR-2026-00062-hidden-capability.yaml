@@ -1,6 +1,6 @@
 title: "Hidden Capability in MCP Skill"
 id: ATR-2026-00062
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects MCP skills that expose hidden or undocumented capabilities beyond their
@@ -79,7 +79,7 @@ detection:
       value: "(?i)(debug[_-]?mode|admin[_-]?override|raw[_-]?exec|unsafe[_-]?mode|bypass[_-]?check|no[_-]?sandbox)"
     - field: tool_args
       operator: regex
-      value: "(?i)(__[a-z]+__|\\$\\$[a-z]+|_internal_|_hidden_|_backdoor_|_secret_)"
+      value: '(?i)(__(?:backdoor|hidden|secret|internal|debug|admin|exec|eval|shell|cmd|import|builtins|globals)__|_internal_|_hidden_|_backdoor_|_secret_)'
     - field: tool_args
       operator: regex
       value: "(?i)(eval_code|exec_raw|shell_cmd|run_arbitrary|system_call|inject_prompt)"

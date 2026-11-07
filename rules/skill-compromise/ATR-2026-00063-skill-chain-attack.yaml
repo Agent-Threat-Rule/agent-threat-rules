@@ -1,6 +1,6 @@
 title: "Multi-Skill Chain Attack"
 id: ATR-2026-00063
-rule_version: 1
+rule_version: 2
 status: experimental
 description: >
   Detects attack sequences where multiple MCP skills are chained together to achieve
@@ -83,10 +83,10 @@ detection:
       description: "Sensitive file/credential access patterns (path-specific, not bare word 'credentials')"
     - field: tool_args
       operator: regex
-      value: "(?i)(base64|btoa|encodeURI|hex\\.encode|rot13|xor|compress|gzip|deflate|encrypt)"
+      value: '(?i)(?:base64|btoa|encodeURI|hex\.encode|rot13|xor|compress|gzip|deflate|encrypt)[^\n]{0,80}(?:\.env\b|\bsecrets?\b|\btokens?\b|\bpasswords?\b|api[_-]?keys?|credentials?|id_rsa|private[_-]?key)'
     - field: tool_args
       operator: regex
-      value: "(?i)(webhook|ngrok|requestbin|pipedream|hookbin|burpcollaborator|interact\\.sh|\\boast\\b)"
+      value: '(?i)(webhook\.site|ngrok|requestbin|pipedream|hookbin|burpcollaborator|interact\.sh|\boast\b)'
       description: >-
         Known out-of-band exfiltration endpoints. `oast` carried no word boundary, so
         it matched inside ordinary English — roast, toast, coast, boast, roasts — on a
