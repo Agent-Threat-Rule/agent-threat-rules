@@ -6,6 +6,41 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **Five critical rules stop firing on ordinary code and documentation.**
+  On the 14,172 samples of the benign gate, ATR-2026-00062, -00063,
+  -00040, -00161 and -00066 went from 2,710 false positives to 1,232. Each
+  change narrows one alternative that matched routine text on its own:
+  - 00062 #1 matched any `__name__` dunder and any `$$word`; it now takes
+    only suspicious names (`__backdoor__`, `__hidden__`, `__exec__`,
+    `__import__` and similar). 312 to 60.
+  - 00063 #1 matched `base64`, `gzip` or `encrypt` alone; it now needs a
+    secret (`.env`, token, password, API key, private key) within 80
+    characters. #2 matched any mention of `webhook`; it now names the
+    collection services (`webhook.site`, ngrok, requestbin and the rest).
+    736 to 259.
+  - 00040 #0 drops `--no-sandbox`, `admin=` and a bare quoted `"admin"`,
+    and keeps `--privileged`, `--cap-add`, `--security-opt`,
+    `allowPrivilegeEscalation` and `"role": "admin"`. 270 to 176.
+  - 00161 #2 took `.env` followed by a dot, so `process.env.MATON_API_KEY`
+    read as a reference to a secrets file. A `.env` followed by a dot,
+    letter or underscore no longer matches; `.env.local`, `.env.production`
+    and `.env.secret` still do. 270 to 82.
+  - 00066 #1 drops `/* ... */`, a CSS and JavaScript comment as often as a
+    SQL one; #2 needs three `../` hops unless a system directory follows;
+    #3 needs an SSTI marker inside `{{ }}` (`__x__`, `config`, `request`,
+    `|attr` and the like, or an arithmetic probe such as `{{7*7}}`, now a
+    true positive of the rule) and an execution word inside ERB, Ruby or Jinja
+    tags, and every unbounded span in it is capped at 200 characters, which
+    takes it off `data/redos-baseline.json`. 1,122 to 655.
+  Across the attack-side corpora under `data/test-corpora`, 381 strings no
+  longer match any rule. 366 of them are template placeholders, test
+  labels or benign MCP tool lists; 12 are BrowseSafe-Bench pages whose
+  injection sits in a CSS comment and was caught only by the `/* */`
+  alternative; 2 are garak prompts (a DAN role-play and a HarmBench
+  ransomware request) that matched only on the word `encrypt`; and 1 is an
+  OWASP scenario description. `rule_version` is
+  bumped on all five.
+
 - **ATR-2026-00133, -00547 and -00554 stop matching inside ordinary words
   and code.** A replay of ADR-Bench's recorded agent conversations showed
   each firing on benign tool output. ATR-2026-00133 #0 matched `table

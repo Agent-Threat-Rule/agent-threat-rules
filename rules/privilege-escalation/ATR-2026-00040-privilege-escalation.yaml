@@ -1,6 +1,6 @@
 title: Privilege Escalation and Admin Function Access
 id: ATR-2026-00040
-rule_version: 1
+rule_version: 2
 status: experimental
 description: |
   Consolidated detection for privilege escalation attempts, covering both
@@ -88,8 +88,7 @@ detection:
   conditions:
     - field: tool_args
       operator: regex
-      value: >-
-        (?i)(?:--(?:privileged|no-sandbox|cap-add|security-opt)|allowPrivilegeEscalation|\b(?:admin|root|superuser|sudo)\s*=|["'](?:admin|root|superuser|sudo)["']|"role"\s*:\s*"(?:admin|root|superuser|sudo)")
+      value: '(?i)(?:--(?:privileged|cap-add|security-opt)|allowPrivilegeEscalation|"role"\s*:\s*"(?:admin|root|superuser|sudo)")'
       description: Privileged flags or admin/root values in structured tool arguments (not natural language)
     - field: tool_args
       operator: regex

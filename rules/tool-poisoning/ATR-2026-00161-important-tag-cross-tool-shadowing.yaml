@@ -1,6 +1,6 @@
 title: "MCP Tool Description — IMPORTANT Tag Cross-Tool Shadowing Attack"
 id: ATR-2026-00161
-rule_version: 2
+rule_version: 3
 status: experimental
 description: >
   Detects MCP tool poisoning attacks that embed hidden instructions inside an
@@ -125,7 +125,7 @@ detection:
     # variants like $HOME/.ssh/id_rsa, ~/.ssh/id_rsa, /root/.ssh/id_rsa.
     - field: content
       operator: regex
-      value: '\b(?:id_rsa|id_dsa|id_ed25519|id_ecdsa)\b(?!\.pub)|\b(?:\.aws/credentials|\.kube/config|\.docker/config\.json|\.netrc|known_hosts)\b|/etc/(?:passwd|shadow|ssl/private)|/proc/self/environ|\b\.env(?:\.local|\.production|\.secret)?\b(?![/a-zA-Z])'
+      value: '\b(?:id_rsa|id_dsa|id_ed25519|id_ecdsa)\b(?!\.pub)|\b(?:\.aws/credentials|\.kube/config|\.docker/config\.json|\.netrc|known_hosts)\b|/etc/(?:passwd|shadow|ssl/private)|/proc/self/environ|\b\.env(?:\.local|\.production|\.secret)?\b(?![./a-zA-Z_])'
       description: "Sensitive credential file referenced in tool description — private keys or cloud credentials (v2: dropped mcp.json + .aws/config — common non-secret config files that appear in ordinary git/edit operations; the exfil case is still caught by the <IMPORTANT>-tag and read/send-directive layers. id_rsa excludes the .pub public key.)"
 
     # Layer 4 — Concealment directive combined with "implementation detail"
