@@ -24,6 +24,16 @@ All notable changes to ATR will be documented in this file.
   fast, so all five leave `data/redos-baseline.json`. `rule_version` is
   bumped on all four rules.
 
+- **ATR-2026-00161 no longer treats `process.env` as a secrets file.**
+  Its credential-file condition carried a `.env` alternative written as
+  `\b\.env`, which matches only when a letter comes right before the
+  dot: `process.env`, `.backup.env`. It never matched a `.env` file path
+  such as `~/.env` or `cat .env`, and matched no string in the attack
+  corpora. The alternative is removed; the rule's benign false positives
+  go from 82 to 26, the rest being literal key and credential paths
+  such as `~/.ssh/id_rsa`. A plain `.env` mention is not used instead:
+  it appears in 240 benign setup guides.
+
 - **Five critical rules stop firing on ordinary code and documentation.**
   On the 14,172 samples of the benign gate, ATR-2026-00062, -00063,
   -00040, -00161 and -00066 went from 2,710 false positives to 1,232. Each
