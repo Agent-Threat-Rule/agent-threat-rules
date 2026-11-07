@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentthreatrule.org/schemas/community-ledger-event.json",
+  "title": "ATR community ledger event",
+  "description": "One line of community/ledger.jsonl. An event is a public, verifiable piece of work. Tiers are computed from events by scripts/community/ledger.ts; nothing else grants a tier. There is deliberately no event type for payments, sponsorship or membership fees: money never grants a tier.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "code", "actor", "date", "evidence", "verified_by", "area"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{2,120}$",
+      "description": "Unique within the ledger, for example E1-agent-threat-rules-pr-812."
+    },
+    "code": {
+      "enum": ["E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9"],
+      "description": "E1 accepted contribution; E2 review comment that led to a change; E3 confirmed defect in a rule, test or mapping; E4 receipt signed by someone other than the maintainers and verified by CI; E5 calibration run under a plan fixed before the runs; E6 mapping reviewed by someone from the framework concerned; E7 adoption by an organization, re-checked monthly; E8 a contribution adopted by another unit or cited by a receipt; E9 test question (atomic) accepted out of draft."
+    },
+    "actor": {
+      "type": "string",
+      "pattern": "^(gh:[a-z0-9](?:[a-z0-9-]{0,38})|orcid:\\d{4}-\\d{4}-\\d{4}-\\d{3}[\\dX]|org:[a-z0-9][a-z0-9-]{1,60})$",
+      "description": "Who did the work: gh:<github login, lowercase>, orcid:<id>, or org:<slug> for E7."
+    },
+    "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "evidence": {
+      "type": "string",
+      "pattern": "^https://",
+      "description": "Public link that proves the event: a merged pull request, an issue comment, a verified receipt."
+    },
+    "verified_by": {
+      "type": "string",
+      "pattern": "^(ci|maintainer:gh:[a-z0-9](?:[a-z0-9-]{0,38}))$",
+      "description": "ci when a deterministic check decided it; otherwise the maintainer who confirmed it. Nobody verifies their own event."
+    },
+    "area": {
+      "enum": ["rules", "eval", "atomics", "mappings", "nodes", "community", "governance"],
+      "description": "Working group the event belongs to. Drives the 'working on' line on member cards."
+    },
+    "subject": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "What the event is about: a PR, rule id, atomic id or profile id."
+    },
+    "note": { "type": "string", "maxLength": 300 }
+  }
+}
