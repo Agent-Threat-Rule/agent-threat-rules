@@ -83,6 +83,24 @@ All notable changes to ATR will be documented in this file.
   is maturity `test`, so the enforce lane is unchanged. `rule_version` goes
   to 2, with three true positives and three true negatives added.
 
+- **ATR-2026-02261 now catches a script that sends the whole environment,
+  and runs on skill content.** Its one condition needs a single named secret
+  read into a variable, and its `scan_target` was `mcp`, so a skill's bundled
+  script that serialized all of `process.env` (or `os.environ`) and sent it
+  out matched nothing on the skill path. That is the shape the npm advisories
+  OSV MAL-2026-4665 (security-env-loader) and MAL-2026-10518 (chai-as-auth)
+  and the emails-helper report describe. A second condition matches the
+  serialized environment inside a request, serialized and then encoded and
+  sent, or wrapped in a base64/hex encoder next to a request. Passing
+  `process.env` to a child process, logging it, writing it to a local file,
+  or a server returning it to its own client does not match. `scan_target`
+  goes to `both`. Over 200 public files from GitHub code search that call
+  `JSON.stringify(process.env)` or `json.dumps(dict(os.environ))`, the new
+  condition matches none; on the benign gate the rule stays at 0 false
+  positives, now with the skill path measured. Not covered: a payload that
+  wraps the environment in an object through a helper function before
+  serializing it, as in @nsub/nitxe (MAL-2026-10429). The rule is maturity
+  `test`, so the enforce lane is unchanged. `rule_version` goes to 2.
 - **ATR-2026-01614 and -02372 no longer backtrack on long whitespace.** Each
   pattern had optional tokens between `\s*` runs, so a long run of spaces
   could be split between them in many ways and a backtracking engine took
