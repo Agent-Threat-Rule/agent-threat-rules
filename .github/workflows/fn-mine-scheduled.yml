@@ -86,8 +86,11 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Install Python dependencies (HackAPrompt corpus fetch)
-        run: pip install datasets
+      - name: Install Python dependencies (HackAPrompt corpus fetch, ReDoS precheck)
+        # PyYAML is named, not left to come in with datasets: the miner runs
+        # scripts/gate-redos.py on every survivor (dropBacktracking), and a
+        # precheck that cannot import yaml fails the run.
+        run: pip install datasets PyYAML
 
       - name: Build
         run: npm run build
@@ -231,12 +234,28 @@ jobs:
           echo "${LINE:-No rules survived this run.} Quiet exit, no PR."
           echo "${LINE:-No rules survived this run.}" >> "$GITHUB_STEP_SUMMARY"
 
+      # The authored rules ride with the report, so a batch a later gate refuses
+      # can be read and replayed instead of being lost with the runner.
+      - name: Copy the authored rules beside the report
+        if: steps.mine.outputs.files != ''
+        env:
+          FILES: ${{ steps.mine.outputs.files }}
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra AUTHORED <<< "$FILES"
+          for f in "${AUTHORED[@]}"; do
+            mkdir -p "output/authored/$(dirname "$f")"
+            cp "$f" "output/authored/$f"
+          done
+
       - name: Keep the per-rule report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: fn-mine-report
-          path: output/fn-mine-report.json
+          path: |
+            output/fn-mine-report.json
+            output/authored/
           if-no-files-found: ignore
 
       # stats.json and data/stats.json cache the rule count, and the PR's own CI

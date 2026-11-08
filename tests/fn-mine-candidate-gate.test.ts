@@ -4,7 +4,14 @@
  * requirement: recoveries on the texts the model was shown no longer suffice.
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { computeResidual, gateCandidates, pickDistinct, type GateContext, type GatedCandidate } from '../scripts/lib/fn-mine-candidate-gate.js';
+import {
+  computeResidual,
+  dropBacktracking,
+  gateCandidates,
+  pickDistinct,
+  type GateContext,
+  type GatedCandidate,
+} from '../scripts/lib/fn-mine-candidate-gate.js';
 import { MIN_HELD_OUT_RECOVERS, seenLines, splitHeldOut } from '../scripts/lib/fn-mine-heldout.js';
 import { prepareGateCorpus } from '../scripts/lib/semantic-gate.js';
 import { VISIBILITY_FLOOR } from '../scripts/lib/visibility-scan.js';
@@ -138,5 +145,27 @@ describe('pickDistinct', () => {
     );
     expect(kept.map((k) => k.cluster)).toEqual(['a', 'b', 'd']);
     expect(dropped.map((d) => d.candidate.cluster)).toEqual(['c']);
+  });
+});
+
+describe('dropBacktracking', () => {
+  const s = (cluster: string, regex: string): GatedCandidate => ({
+    cluster, regex, category: 'prompt-injection', rationale: 'test', recovers: 10, heldOutRecovers: 2, benignFP: 0, exampleFNs: ['x'],
+  });
+
+  // Actions run 42447405455: one slow regex failed the workflow's ReDoS gate for all ten rules.
+  it('drops a regex the ReDoS gate flags and keeps the rest, saying why', () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const kept = dropBacktracking([s('fast', 'f'), s('slow', 'z'), s('fast2', 'g')], (regex) =>
+      regex === 'z' ? { kind: 'backtracks', detail: 'NEW ATR-2099-00001#0 0.85s' } : { kind: 'ok' },
+    );
+    expect(kept.map((k) => k.cluster)).toEqual(['fast', 'fast2']);
+    expect(log.mock.calls.flat().join('\n')).toMatch(/drop slow: backtracks catastrophically/);
+  });
+
+  it('throws when the precheck cannot run, rather than author regexes nobody timed', () => {
+    expect(() => dropBacktracking([s('a', 'a')], () => ({ kind: 'unavailable', detail: 'No module named yaml' }))).toThrow(
+      /ReDoS precheck could not run on a: No module named yaml/,
+    );
   });
 });

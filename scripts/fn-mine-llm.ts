@@ -73,8 +73,10 @@ import {
 } from './lib/fn-mine-corpora.js';
 import { gateAuthoredBatch } from './lib/fn-mine-gate.js';
 import { schemaProblem } from './lib/fn-mine-schema.js';
+import { redosPrecheck } from './lib/semantic-redos-precheck.js';
 import {
   computeResidual,
+  dropBacktracking,
   gateCandidates,
   pickDistinct,
   type GateContext,
@@ -680,8 +682,10 @@ async function main(): Promise<void> {
     console.log(`::warning::[fn-mine] ${replies.unread} of ${replies.asked} chunk(s) skipped: their replies could not be read as JSON.`);
   }
 
-  // Rank by recovers, keep each only for attacks no survivor above it recovers, cap.
-  const distinct = pickDistinct(allSurvivors, minRecovers);
+  // The workflow's ReDoS gate, on each regex alone; then rank by recovers, keep
+  // each only for attacks no survivor above it recovers, cap.
+  const fast = dropBacktracking(allSurvivors, (regex) => redosPrecheck(regex, REPO_ROOT));
+  const distinct = pickDistinct(fast, minRecovers);
   for (const d of distinct.dropped) console.log(`[fn-mine]   overlap: drop ${d.candidate.cluster}: ${d.why}`);
   allSurvivors = [...distinct.kept];
   const picked = allSurvivors.slice(0, room);

@@ -9,6 +9,7 @@
  * The tool-output benign check, which needs the engine, runs after this one
  * (scripts/lib/fn-mine-tool-benign.ts).
  */
+import type { RedosVerdict } from './semantic-redos-precheck.js';
 import { needsUnicodeFlag } from '../../src/engine.js';
 import { heldOutRecoveries, MIN_HELD_OUT_RECOVERS, type SeenText } from './fn-mine-heldout.js';
 import { countRecoveries } from './fn-mine-recoveries.js';
@@ -129,6 +130,31 @@ export function gateCandidates(
     });
   }
   return survivors;
+}
+
+/**
+ * `survivors` whose regex passes scripts/gate-redos.py on its own
+ * (`precheck`, semantic-redos-precheck.ts in the lane). The authored rule's
+ * one condition is the candidate's regex (gatedDetection), so this is the
+ * verdict the workflow's ReDoS gate will give. Before 2026-11-08 the lane did
+ * not run it: one slow regex (actions run 42447405455, ATR-2026-02880) failed
+ * that gate for the whole batch of ten. Checked before pickDistinct, so a
+ * dropped regex frees its place and does not displace an overlapping one. A
+ * precheck that cannot run throws: authoring blind would sink the batch again.
+ */
+export function dropBacktracking<T extends GatedCandidate>(
+  survivors: readonly T[],
+  precheck: (regex: string) => RedosVerdict,
+): T[] {
+  return survivors.filter((s) => {
+    const v = precheck(s.regex);
+    if (v.kind === 'unavailable') throw new Error(`ReDoS precheck could not run on ${s.cluster}: ${v.detail}`);
+    if (v.kind === 'backtracks') {
+      console.log(`[fn-mine]   drop ${s.cluster}: backtracks catastrophically under scripts/gate-redos.py`);
+      return false;
+    }
+    return true;
+  });
 }
 
 /**
