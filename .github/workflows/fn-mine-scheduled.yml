@@ -14,9 +14,9 @@ name: Scheduled FN Mining (red-team false-negative sweep)
 #   - Never auto-merges. Always opens a draft PR; a human decides.
 #   - A "null result" (nothing survived the gate) is a valid, quiet outcome —
 #     no PR is opened, no noise. See scripts/fn-mine-llm.ts's design notes:
-#     both corpora will naturally converge toward null results as their
-#     (finite, fixed-seed) reservoirs get mined out — that is expected, not
-#     a bug to chase.
+#     every corpus converges toward null results as its finite, fixed
+#     reservoir gets mined out — that is expected, not a bug to chase. The
+#     answer is a new corpus (scripts/sync-agent-attack-corpora.ts).
 #   - One rolling branch, fn-mine/rolling, and one open PR. Each run resumes the
 #     branch, so the rules already waiting in that PR are on disk and count as
 #     covering their clusters; a cluster is not mined twice while its rule waits.
@@ -29,7 +29,8 @@ on:
   schedule:
     # Every day at 09:00 UTC. Thursdays mine every corpus (the red-team cadence
     # slot the interactive /fn-mine command uses); the other days mine only
-    # FRESH_CORPORA below, the ones still yielding survivors, so a day's model
+    # the corpora listed in the mining step's CORPUS_INPUT expression, the ones
+    # still yielding survivors, so a day's model
     # calls are not spent re-proposing for corpora that are mined out. A day
     # whose rolling PR already holds the per-PR limit of rules returns before
     # any model call (authoringRoom), so daily runs never stack a second PR:
@@ -202,7 +203,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           # Through env, never interpolated into the script: dispatch inputs are caller text.
-          # FRESH_CORPORA: the daily (non-Thursday) cron mines these only.
+          # The daily (non-Thursday) cron mines only the corpora named here.
           # Edit the list when a corpus is added or mined out.
           CORPUS_INPUT: ${{ github.event_name == 'schedule' && github.event.schedule == '0 9 * * 0-3,5,6' && 'nemotron-agentic-ipi' || inputs.corpus }}
           CAP_INPUT: ${{ inputs.cap || '5' }}
