@@ -1,0 +1,101 @@
+name: Attack Sources Weekly
+
+# Keeps the FN-mine attack corpora current and the search for new ones running.
+# The corpora under data/fn-mine-oos and data/fn-mine-benign/hard-negatives are
+# written by scripts/sync-attack-sources.py from pinned upstream revisions;
+# every one is mined on the weekly rotation (fn-mine-scheduled.yml) and counts
+# as out-of-sample evidence for rules mined from the others.
+#
+# Each week this job:
+#   1. re-syncs every source at its pinned revision and fails if the output
+#      differs from what is committed (an upstream rewrote a pinned revision,
+#      or the script changed without a re-sync) — the corpus hashes are the
+#      record;
+#   2. lists the sources whose upstream moved past the pin;
+#   3. searches Hugging Face and GitHub for attack datasets under a license
+#      on the allowlist that are neither vendored nor recorded as skipped.
+# Steps 2 and 3 go into one review issue, updated in place. Nothing is
+# vendored automatically: a moved pin or a new source enters the lane only
+# through a reviewed PR that edits SOURCES in sync-attack-sources.py, because
+# an attack corpus decides what rules the lane writes and a benign one which
+# rules it drops.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 5 * * 1" # Monday 05:00 UTC, before the 09:00 FN-mine run
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: attack-sources-weekly
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyarrow==23.0.1 pyyaml==6.0.2
+
+      - name: Re-sync every source at its pinned revision
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eo pipefail
+          python3 scripts/sync-attack-sources.py --write | grep -v '^skipped ' | tee "$RUNNER_TEMP/sync.txt"
+          sha256sum data/fn-mine-oos/*/corpus.json data/fn-mine-benign/hard-negatives/*/corpus.json > "$RUNNER_TEMP/hashes.txt"
+          if ! git diff --quiet -- data/fn-mine-oos data/fn-mine-benign/hard-negatives; then
+            git diff --stat -- data/fn-mine-oos data/fn-mine-benign/hard-negatives
+            echo "::error::a pinned source no longer reproduces the committed corpus; re-pin it in a reviewed PR"
+            exit 1
+          fi
+          if [ -n "$(git status --porcelain -- data/fn-mine-oos data/fn-mine-benign/hard-negatives)" ]; then
+            git status --porcelain -- data/fn-mine-oos data/fn-mine-benign/hard-negatives
+            echo "::error::the sync wrote a corpus that is not committed; vendor it in a reviewed PR"
+            exit 1
+          fi
+
+      - name: List moved pins and new candidate sources
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eo pipefail
+          python3 scripts/sync-attack-sources.py --check-pins > "$RUNNER_TEMP/pins.json"
+          python3 scripts/discover-attack-sources.py > "$RUNNER_TEMP/candidates.md"
+
+      - name: Open or update the review issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TITLE: "Attack sources: weekly review"
+        run: |
+          set -eo pipefail
+          BODY="$RUNNER_TEMP/issue.md"
+          {
+            echo "Updated by .github/workflows/attack-sources-weekly.yml on $(date -u +%Y-%m-%d). Nothing here is vendored until a reviewed PR adds it to SOURCES in scripts/sync-attack-sources.py."
+            echo
+            echo "Pinned sources whose upstream moved:"
+            echo
+            jq -r 'if (.moved | length) == 0 then "- none" else .moved[] | "- \(.id) (\(.repo)): pinned \(.pinned[0:12]), latest \(.latest[0:12])" end' "$RUNNER_TEMP/pins.json"
+            echo
+            cat "$RUNNER_TEMP/candidates.md"
+            echo
+            echo "Corpora at the pinned revisions (sha256):"
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/hashes.txt"
+            echo '```'
+          } > "$BODY"
+          NUM=$(gh issue list --state open --search "in:title \"$TITLE\"" --json number,title \
+                --jq "map(select(.title == \"$TITLE\")) | .[0].number // empty")
+          if [ -n "$NUM" ]; then
+            gh issue edit "$NUM" --body-file "$BODY"
+          else
+            gh issue create --title "$TITLE" --body-file "$BODY"
+          fi

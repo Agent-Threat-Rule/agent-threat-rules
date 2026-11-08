@@ -22,6 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { corpusById, type DeliveryShape } from './fn-corpora.js';
 import { liveMisses, successfulHackapromptMisses } from './fn-mine-input.js';
+import { oosSource, OOS_SOURCES, readOosTexts } from './fn-mine-oos.js';
 
 /**
  * How much of a corpus one run shows the model. Every chunk is one model call,
@@ -65,7 +66,12 @@ export interface VendoredCorpusSpec extends SpecBase {
   readonly registryId: string;
 }
 
-export type MinedCorpusSpec = ReportCorpusSpec | VendoredCorpusSpec;
+/** A corpus under data/fn-mine-oos (scripts/lib/fn-mine-oos.ts): its name is its OOS id. */
+export interface OosCorpusSpec extends SpecBase {
+  readonly kind: 'oos';
+}
+
+export type MinedCorpusSpec = ReportCorpusSpec | VendoredCorpusSpec | OosCorpusSpec;
 
 /** Short prompt texts: 300 of them, 300 characters each — the lane's original slice. */
 const PROMPT_BUDGET: MineBudget = Object.freeze({ chunkSize: 300, promptChars: 300, maxChunksPerRound: 3 });
@@ -139,6 +145,17 @@ export const MINED_CORPORA: readonly MinedCorpusSpec[] = Object.freeze([
       'the agent in terms an attacker reuses beyond this generator. ' +
       'The record ids, names and addresses are per-record fixtures: never anchor on them either.',
   },
+  // Every corpus under data/fn-mine-oos. Each stays out-of-sample evidence for
+  // the rules mined from any other corpus.
+  ...OOS_SOURCES.map(
+    (s): OosCorpusSpec => ({
+      kind: 'oos',
+      name: s.id,
+      shape: s.shape,
+      budget: s.shape === 'tool_response' ? EMAIL_BUDGET : PROMPT_BUDGET,
+      ...(s.goalNote ? { goalNote: s.goalNote } : {}),
+    }),
+  ),
 ]);
 
 /**
@@ -200,6 +217,21 @@ export function vendoredProblem(spec: VendoredCorpusSpec, root: string): string 
   return null;
 }
 
+/** Why an OOS corpus cannot be mined this run, or null (it must exist and hold what it declares). */
+export function oosProblem(spec: OosCorpusSpec, root: string): string | null {
+  const source = oosSource(spec.name);
+  if (!source) return `${spec.name} is not in scripts/lib/fn-mine-oos.ts OOS_SOURCES`;
+  const read = readOosTexts(root, source);
+  return 'problem' in read ? read.problem : null;
+}
+
+/** Why a spec's input cannot be mined, or null; report corpora regenerate instead and return null here. */
+export function minedCorpusProblem(spec: MinedCorpusSpec, root: string): string | null {
+  if (spec.kind === 'vendored') return vendoredProblem(spec, root);
+  if (spec.kind === 'oos') return oosProblem(spec, root);
+  return null;
+}
+
 const readJson = (root: string, rel: string): unknown => JSON.parse(fs.readFileSync(path.join(root, rel), 'utf8'));
 
 function hackapromptMisses(spec: ReportCorpusSpec, root: string, log: (line: string) => void): readonly string[] {
@@ -235,9 +267,19 @@ async function vendoredMisses(spec: VendoredCorpusSpec, root: string, log: (line
   return missed;
 }
 
+async function oosMisses(spec: OosCorpusSpec, root: string, log: (line: string) => void): Promise<readonly string[]> {
+  const source = oosSource(spec.name);
+  const read = source ? readOosTexts(root, source) : { problem: 'not listed' };
+  const attacks = 'texts' in read ? read.texts : [];
+  const missed = await liveMisses(attacks, path.join(root, 'rules'), spec.shape);
+  log(`${spec.name}: ${attacks.length} attacks presented as ${spec.shape}, ${missed.length} missed by the live rules`);
+  return missed;
+}
+
 /** The corpus's false negatives against the current rules, before draft coverage. */
 export async function falseNegatives(spec: MinedCorpusSpec, root: string, log: (line: string) => void): Promise<readonly string[]> {
   if (spec.kind === 'vendored') return vendoredMisses(spec, root, log);
+  if (spec.kind === 'oos') return oosMisses(spec, root, log);
   return spec.name === 'hackaprompt' ? hackapromptMisses(spec, root, log) : pintMisses(spec, root);
 }
 

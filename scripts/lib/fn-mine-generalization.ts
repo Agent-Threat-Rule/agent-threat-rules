@@ -17,9 +17,9 @@
  * 1. Held-out was the same generator. A regex that memorised Nemotron's
  *    templates recovered its held-out rows as easily as its shown ones.
  *    outOfSampleProblem: a candidate must also recover at least one attack in
- *    a corpus it was not mined from (data/fn-mine-oos: AgentDojo, InjecAgent,
- *    Spikee, ASB, BIPIA, GenTel, Gandalf, Mosscap, deepset and jailbreak
- *    prompts; plus every other usable attack corpus in fn-corpora.ts).
+ *    a corpus it was not mined from (every corpus under data/fn-mine-oos,
+ *    listed in fn-mine-oos.ts, plus every other usable attack corpus in
+ *    fn-corpora.ts).
  *
  * 2. Nothing required an injection signal. The goal note even told the miner
  *    to "key on what the injected instruction asks the agent to do", because
@@ -44,10 +44,11 @@
  * corpora are finite and named in the report (gateReportNote in the miner);
  * "fires on none" means none of those texts, as the stated event shape.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { CORPORA } from './fn-corpora.js';
 import { compileEngineAccurate } from './fn-mine-candidate-gate.js';
+import { OOS_SOURCES, readOosTexts } from './fn-mine-oos.js';
 import { withoutBenchmarkArtifacts } from './fn-mine-quality.js';
 
 // ---------------------------------------------------------------------------
@@ -197,24 +198,15 @@ export function twinProblem(regex: string, recovered: readonly string[], corpus 
 // ---------------------------------------------------------------------------
 
 /**
- * Attack corpora vendored for this gate only: AgentDojo and InjecAgent
- * (scripts/sync-generalization-corpora.py), and the rest from
- * scripts/sync-oos-corpora.py, added because a rule keyed on a real technique
- * (a forged chat-template boundary, a pseudo-XML role tag) found no second
- * corpus carrying it. Each SOURCE.md names the pinned upstream and license.
+ * The vendored attack corpora under data/fn-mine-oos (scripts/lib/fn-mine-oos.ts
+ * lists them and which sync script writes each). They began as this gate's
+ * evidence only; since every one is also mined, a corpus counts here for every
+ * rule except those mined from itself (outOfSampleRecoveries skips minedFrom).
+ * Each SOURCE.md names the pinned upstream and license.
  */
-export const OOS_CORPORA: readonly { readonly id: string; readonly path: string }[] = Object.freeze([
-  { id: 'agentdojo', path: 'data/fn-mine-oos/agentdojo/corpus.json' },
-  { id: 'injecagent', path: 'data/fn-mine-oos/injecagent/corpus.json' },
-  { id: 'spikee', path: 'data/fn-mine-oos/spikee/corpus.json' },
-  { id: 'asb', path: 'data/fn-mine-oos/asb/corpus.json' },
-  { id: 'bipia', path: 'data/fn-mine-oos/bipia/corpus.json' },
-  { id: 'gentel', path: 'data/fn-mine-oos/gentel/corpus.json' },
-  { id: 'gandalf', path: 'data/fn-mine-oos/gandalf/corpus.json' },
-  { id: 'mosscap', path: 'data/fn-mine-oos/mosscap/corpus.json' },
-  { id: 'deepset', path: 'data/fn-mine-oos/deepset/corpus.json' },
-  { id: 'jailbreak-cls', path: 'data/fn-mine-oos/jailbreak-cls/corpus.json' },
-]);
+export const OOS_CORPORA: readonly { readonly id: string; readonly path: string }[] = Object.freeze(
+  OOS_SOURCES.map((s) => Object.freeze({ id: s.id, path: s.path })),
+);
 
 /**
  * Registry corpora never counted as out of sample: rules the repo's own
@@ -230,16 +222,10 @@ export interface OutOfSampleCorpus {
 /** The vendored OOS corpora, or the first problem reading one. */
 function readVendoredOos(root: string): { corpora: readonly OutOfSampleCorpus[] } | { problem: string } {
   const corpora: OutOfSampleCorpus[] = [];
-  for (const c of OOS_CORPORA) {
-    const file = join(root, c.path);
-    if (!existsSync(file)) {
-      const sync = c.id === 'agentdojo' || c.id === 'injecagent' ? 'sync-generalization-corpora.py' : 'sync-oos-corpora.py';
-      return { problem: `${c.path} is missing (run scripts/${sync} --write)` };
-    }
-    const doc = JSON.parse(readFileSync(file, 'utf8')) as { count?: unknown; samples?: { text?: unknown }[] };
-    const texts = (doc.samples ?? []).map((s) => s.text).filter((t): t is string => typeof t === 'string' && t.length > 0);
-    if (texts.length === 0 || doc.count !== texts.length) return { problem: `${c.path} declares ${String(doc.count)} samples but holds ${texts.length}` };
-    corpora.push({ id: c.id, texts });
+  for (const source of OOS_SOURCES) {
+    const read = readOosTexts(root, source);
+    if ('problem' in read) return { problem: read.problem };
+    corpora.push({ id: source.id, texts: read.texts });
   }
   return { corpora };
 }
@@ -256,15 +242,32 @@ export function readOutOfSample(root: string): readonly OutOfSampleCorpus[] {
     throw new Error(`the out-of-sample corpora cannot be read: ${vendored.problem}. Every candidate is gated on them; nothing was mined.`);
   }
   const registry: OutOfSampleCorpus[] = [];
+  const vendoredIds = new Set(vendored.corpora.map((c) => c.id));
   for (const def of CORPORA) {
-    if (!def.usable || NOT_OUT_OF_SAMPLE.has(def.id) || !existsSync(join(root, def.path))) continue;
+    if (!def.usable || NOT_OUT_OF_SAMPLE.has(def.id) || vendoredIds.has(def.id) || !existsSync(join(root, def.path))) continue;
     const texts = def.load(root).filter((s) => s.label === 'attack').map((s) => s.text);
     if (texts.length > 0) registry.push({ id: def.id, texts });
   }
   return [...vendored.corpora, ...registry];
 }
 
-/** Out-of-sample attacks `regex` recovers, by corpus, skipping `minedFrom`. */
+/**
+ * Characters of a sample, case- and whitespace-folded, that identify it across
+ * corpora. Public jailbreak and injection sets republish each other (93% of
+ * jailbreak-cls is in in-the-wild-jailbreak; half of deepset is in
+ * multilingual-pi), and a republished template often differs only in the
+ * question at its end. A sample whose opening matches one in the mined corpus
+ * is the mined sample again, not out-of-sample evidence.
+ */
+const SAMPLE_KEY_CHARS = 200;
+function sampleKey(text: string): string {
+  return text.toLowerCase().replace(/\s+/g, ' ').trim().slice(0, SAMPLE_KEY_CHARS);
+}
+
+/**
+ * Out-of-sample attacks `regex` recovers, by corpus, skipping `minedFrom` and
+ * any sample elsewhere that `minedFrom` also holds (sampleKey).
+ */
 export function outOfSampleRecoveries(
   regex: string,
   corpora: readonly OutOfSampleCorpus[],
@@ -272,10 +275,11 @@ export function outOfSampleRecoveries(
 ): Readonly<Record<string, number>> {
   const re = compileEngineAccurate(regex);
   if (!re) return {};
+  const mined = new Set(corpora.find((c) => c.id === minedFrom)?.texts.map(sampleKey) ?? []);
   const out: Record<string, number> = {};
   for (const c of corpora) {
     if (c.id === minedFrom) continue;
-    const n = c.texts.filter((t) => re.test(t)).length;
+    const n = c.texts.filter((t) => !mined.has(sampleKey(t)) && re.test(t)).length;
     if (n > 0) out[c.id] = n;
   }
   return out;

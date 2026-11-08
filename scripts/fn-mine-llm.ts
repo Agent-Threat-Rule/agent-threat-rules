@@ -68,7 +68,7 @@ import {
   falseNegatives,
   planChunks,
   unseenFirst,
-  vendoredProblem,
+  minedCorpusProblem,
   type Chunk,
   type MinedCorpusSpec,
 } from './lib/fn-mine-corpora.js';
@@ -149,6 +149,27 @@ function loadBenignTexts(): readonly string[] {
         // skip malformed line
       }
     }
+  }
+  out.push(...loadHardNegatives());
+  return out;
+}
+
+/**
+ * The benign hard negatives the attack datasets ship (a security question, the
+ * same request without the injection, a clean tool description), vendored by
+ * scripts/sync-attack-sources.py. Read here only: this gate is the one place a
+ * regex keyed on a request rather than an injection should be stopped by them,
+ * and no rule-wide measurement counts them.
+ */
+function loadHardNegatives(): readonly string[] {
+  const dir = path.join(REPO_ROOT, 'data/fn-mine-benign/hard-negatives');
+  if (!fs.existsSync(dir)) return [];
+  const out: string[] = [];
+  for (const id of fs.readdirSync(dir).sort()) {
+    const file = path.join(dir, id, 'corpus.json');
+    if (!fs.existsSync(file)) continue;
+    const doc = JSON.parse(fs.readFileSync(file, 'utf8')) as { samples?: { text?: unknown }[] };
+    for (const s of doc.samples ?? []) if (typeof s.text === 'string') out.push(s.text);
   }
   return out;
 }
@@ -414,8 +435,8 @@ function prepareCorpora(selected: readonly MinedCorpusSpec[]): {
   const skipped: string[] = [];
   for (const spec of selected) {
     try {
-      if (spec.kind === 'vendored') {
-        const problem = vendoredProblem(spec, REPO_ROOT);
+      if (spec.kind === 'vendored' || spec.kind === 'oos') {
+        const problem = minedCorpusProblem(spec, REPO_ROOT);
         if (problem) throw new Error(problem);
       } else {
         for (const cmd of spec.regenerate) {

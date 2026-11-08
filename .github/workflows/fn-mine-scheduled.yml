@@ -17,9 +17,14 @@ name: Scheduled FN Mining (red-team false-negative sweep)
 #     every corpus converges toward null results as its finite, fixed
 #     reservoir gets mined out — that is expected, not a bug to chase. The
 #     answer is a new corpus (scripts/sync-agent-attack-corpora.ts).
-#   - One rolling branch, fn-mine/rolling, and one open PR. Each run resumes the
-#     branch, so the rules already waiting in that PR are on disk and count as
-#     covering their clusters; a cluster is not mined twice while its rule waits.
+#   - Rolling branches fn-mine/rolling, fn-mine/rolling-2, ... each with one open
+#     PR. A run resumes the first open one with room under the per-PR limit, so
+#     the rules already waiting in it are on disk and count as covering their
+#     clusters. When every open one is full, the run starts the next branch from
+#     main and copies the full PRs' rules beside the rules copy the coverage
+#     check reads (FN_MINE_PENDING_RULES_DIR), so a cluster is not mined twice
+#     while its rule waits, and a full PR waiting for review never stops the
+#     lane (until 2026-11-09 it did: a full PR made every run a null result).
 #   - Capped at 5 rules per run by default (the `cap` workflow_dispatch input,
 #     or --cap 5 on the cron trigger), well under the repo's 10-rules/PR
 #     safety-gate limit, since an unattended batch has no interactive
@@ -27,16 +32,13 @@ name: Scheduled FN Mining (red-team false-negative sweep)
 
 on:
   schedule:
-    # Every day at 09:00 UTC. Thursdays mine every corpus (the red-team cadence
-    # slot the interactive /fn-mine command uses); the other days mine only
-    # the corpora listed in the mining step's CORPUS_INPUT expression, the ones
-    # still yielding survivors, so a day's model
-    # calls are not spent re-proposing for corpora that are mined out. A day
-    # whose rolling PR already holds the per-PR limit of rules returns before
-    # any model call (authoringRoom), so daily runs never stack a second PR:
-    # merged or closed rolling PRs are what let the next run author.
-    - cron: '0 9 * * 4'
-    - cron: '0 9 * * 0-3,5,6'
+    # Every day at 09:00 UTC. Each day mines its seventh of MINED_CORPORA
+    # (scripts/lib/fn-mine-rotation.ts deals them round-robin by weekday), so
+    # every attack corpus the repo vendors is mined once a week and a day's job
+    # stays well inside the six-hour limit. A corpus added to MINED_CORPORA joins
+    # the rotation with no edit here. A manual dispatch with an empty corpus
+    # list mines every corpus.
+    - cron: '0 9 * * *'
   workflow_dispatch:
     inputs:
       cap:
@@ -127,17 +129,52 @@ jobs:
             echo "FORCE_DRY_RUN=true" >> "$GITHUB_ENV"
             exit 0
           fi
-          BRANCH="fn-mine/rolling"
+          # Pick the branch: the first open rolling PR with room under the per-PR
+          # limit, else the next unused name. The rules every full open rolling PR
+          # adds over main are exported for the coverage check, not checked out.
+          LIMIT="${MAX_NEW_PER_PR:-10}"
+          PENDING="$RUNNER_TEMP/pending-rules"
+          mkdir -p "$PENDING"
+          BRANCH=""
+          HEADS=$(gh pr list --state open --limit 100 --json headRefName --jq '.[].headRefName' \
+            | grep -E '^fn-mine/rolling(-[0-9]+)?$' | sort -V || true)
+          for H in $HEADS; do
+            git fetch --quiet origin "$H"
+            ADDED=$(git diff --name-only --diff-filter=A origin/main...FETCH_HEAD -- 'rules/*.yaml' 'rules/**/*.yaml' || true)
+            N=$(printf '%s\n' "$ADDED" | grep -c . || true)
+            if [ -z "$BRANCH" ] && [ "$N" -lt "$LIMIT" ]; then
+              BRANCH="$H"
+              continue
+            fi
+            echo "Open rolling PR on $H holds $N new rules (limit $LIMIT): its rules count as coverage, not resumed."
+            for F in $ADDED; do
+              mkdir -p "$PENDING/$(dirname "${F#rules/}")"
+              git show "FETCH_HEAD:$F" > "$PENDING/${F#rules/}"
+            done
+          done
+          if [ -z "$BRANCH" ]; then
+            BRANCH="fn-mine/rolling"
+            I=1
+            while printf '%s\n' "$HEADS" | grep -qx "$BRANCH"; do
+              I=$((I + 1))
+              BRANCH="fn-mine/rolling-$I"
+            done
+          fi
+          echo "ROLLING_BRANCH=$BRANCH" >> "$GITHUB_ENV"
+          echo "FN_MINE_PENDING_RULES_DIR=$PENDING" >> "$GITHUB_ENV"
+          echo "Rolling branch for this run: $BRANCH ($(find "$PENDING" -name '*.yaml' | wc -l | tr -d ' ') rule(s) from full rolling PRs count as coverage)."
+
           OLD_SHA=""
           if git fetch --quiet origin "$BRANCH" 2>/dev/null; then
-            OLD_SHA=$(git rev-parse "origin/$BRANCH")
+            OLD_SHA=$(git rev-parse FETCH_HEAD)
+            git update-ref "refs/remotes/origin/$BRANCH" "$OLD_SHA"
           fi
           echo "ROLLING_OLD_SHA=$OLD_SHA" >> "$GITHUB_ENV"
           OPEN=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
 
           if [ -z "$OPEN" ] || [ -z "$OLD_SHA" ] || git diff --quiet origin/main "origin/$BRANCH" -- rules/; then
             if [ -n "$OLD_SHA" ] && [ -z "$OPEN" ]; then
-              echo "fn-mine/rolling exists without an open PR (merged or closed); starting fresh from main."
+              echo "$BRANCH exists without an open PR (merged or closed); starting fresh from main."
             else
               echo "No rolling PR with rules main lacks; starting fresh from main."
             fi
@@ -145,7 +182,7 @@ jobs:
             exit 0
           fi
 
-          echo "Resuming fn-mine/rolling for open PR #$OPEN."
+          echo "Resuming $BRANCH for open PR #$OPEN."
           git checkout -B "$BRANCH" "origin/$BRANCH"
           if ! git merge --no-edit origin/main; then
             # The two count caches and the two crosswalk documents are all generated
@@ -156,7 +193,7 @@ jobs:
             CONFLICTED=$(git diff --name-only --diff-filter=U)
             OTHER=$(printf '%s\n' "$CONFLICTED" | grep -vxE "$DERIVED" || true)
             if [ -n "$OTHER" ]; then
-              echo "::error::fn-mine/rolling conflicts with main in: $OTHER. Resolve it by hand; this run mined nothing."
+              echo "::error::$BRANCH conflicts with main in: $OTHER. Resolve it by hand; this run mined nothing."
               exit 1
             fi
             printf '%s\n' "$CONFLICTED" | xargs git checkout --theirs --
@@ -198,6 +235,19 @@ jobs:
           npm install -g @anthropic-ai/claude-code
 
 
+      - name: Pick today's corpora (seven-day rotation)
+        id: rotation
+        if: github.event_name == 'schedule'
+        run: |
+          set -euo pipefail
+          CORPORA=$(npx tsx scripts/fn-mine-rotation.ts)
+          if [ -z "$CORPORA" ]; then
+            echo "::error::today's rotation bucket is empty"
+            exit 1
+          fi
+          echo "Mining today: $CORPORA"
+          echo "corpora=$CORPORA" >> "$GITHUB_OUTPUT"
+
       - name: Run FN mining
         id: mine
         env:
@@ -206,9 +256,9 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           # Through env, never interpolated into the script: dispatch inputs are caller text.
-          # The daily (non-Thursday) cron mines only the corpora named here.
-          # Edit the list when a corpus is added or mined out.
-          CORPUS_INPUT: ${{ github.event_name == 'schedule' && github.event.schedule == '0 9 * * 0-3,5,6' && 'nemotron-agentic-ipi' || inputs.corpus }}
+          # The cron mines today's rotation bucket (the step above); a dispatch
+          # mines what it names, or every corpus when it names none.
+          CORPUS_INPUT: ${{ github.event_name == 'schedule' && steps.rotation.outputs.corpora || inputs.corpus }}
           CAP_INPUT: ${{ inputs.cap || '5' }}
         run: |
           set -eo pipefail
@@ -389,7 +439,7 @@ jobs:
           GH_TOKEN: ${{ secrets.ATR_REPO_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          BRANCH="fn-mine/rolling"
+          BRANCH="${ROLLING_BRANCH:-fn-mine/rolling}"
           git add rules/ docs/crosswalks/ stats.json data/stats.json
           if git diff --cached --quiet -- rules/; then
             echo "::error::the miner reported authored files but none are staged under rules/."
@@ -428,13 +478,13 @@ jobs:
             --base main \
             --head "$BRANCH" \
             --label "auto-generated,fn-mine,needs-human-review" \
-            --title "feat(rules): scheduled FN-mine sweep (rolling)" \
+            --title "feat(rules): scheduled FN-mine sweep (${BRANCH#fn-mine/})" \
             --body "$(cat <<'EOF'
           Unattended daily false-negative mining over the corpora in
-          scripts/lib/fn-mine-corpora.ts (every corpus on Thursdays, the ones still yielding
-          on other days), the scheduled counterpart to the interactive /fn-mine workflow.
+          scripts/lib/fn-mine-corpora.ts (each corpus once a week on a seven-day rotation,
+          scripts/lib/fn-mine-rotation.ts), the scheduled counterpart to the interactive /fn-mine workflow.
 
-          This is a rolling PR. Each run resumes fn-mine/rolling and adds the rules
+          This is a rolling PR. Each run resumes its branch while it has room and adds the rules
           it authored; clusters already covered by a rule on main or in this PR are skipped.
           Merge it when ready; the next run starts a new one.
 
