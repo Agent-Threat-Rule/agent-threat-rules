@@ -4,8 +4,49 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **Hand-written pull request and issue states are checked against GitHub.**
+  README.md, DEPLOYMENTS.md, STANDARDIZATION-STATUS.md and the website state
+  the current state of pull requests and issues in other repositories by hand.
+  `website/data/status-claims.json` lists each such link with the state the
+  files give it (open, closed or merged), the files that give it, and refs for
+  files that name it without a link ("PR #338"). `tests/status-claims.test.ts`,
+  in npm test, fails when a scanned file links or names (owner/repo#N) a pull
+  request or issue in another repository that the list does not cover for that
+  file, unless it is a merged pull request ADOPTERS.md gives as shipped
+  evidence; when a listed file no longer mentions its claim; when README's
+  "Under maintainer review" section lists anything but open claims; and when
+  an actor page's report status differs from the list.
+  `scripts/verify-status-claims.mjs` (standard library only, on
+  `scripts/lib/github-link-state.mjs`) checks every listed state against
+  GitHub, and `.github/workflows/verify-status-claims.yml` runs it when the
+  list or the checker changes and weekly; a failure on main opens one tracking
+  issue, which the next green run closes. On a pull request that edits the
+  list, the job also requires every file the base branch's list named for a
+  claim whose state changed, or that left the list or a claim's files, to be
+  edited in the same pull request (a pure rename or a change of file mode is
+  not an edit). It can see that each file was edited, not what the edit says,
+  and the job is not a required check. The /red-team page's list is left to
+  its own check (`scripts/verify-red-team-links.mjs`, #691).
+
 ### Fixed
 
+- **The threat-actor pages show NousResearch hermes-agent #9809 as closed.**
+  The three /threats pages gave the campaign's disclosure issue the status
+  OPEN from the day they were added; NousResearch had closed it as completed
+  on 2026-04-15. Recorded as erratum e-2026-11-07-actor-report-status.
+  HANDOVER.md no longer calls PR #500 open; it was closed unmerged on
+  2026-10-06.
+- **Erratum for the Cisco skill-scanner case study.** The integrate page said
+  PR #79 merged in three days, and from 2026-04-07 to 2026-05-23 that a Cisco
+  engineer submitted it and ATR reviewed it; the home page told the same
+  account until 2026-06-14. ATR's maintainer opened #79 on 2026-04-02, and the
+  repository's maintainers merged it 21 hours later. The 2026-11-06 redesign
+  corrected the page without recording the error; erratum
+  e-2026-11-07-cisco-merge-time records it. Two strings in
+  `website/lib/i18n.ts` that no page renders still told the reversed account;
+  they now say what happened.
 - **Four rules stop pairing words from opposite ends of a JSON-encoded
   document.** ATR-2026-00217 #3, -00142 #0 and #1, -00113 #1 and -00020 #8
   look for two words on the same line, written as `[^\n]*` or `.*`

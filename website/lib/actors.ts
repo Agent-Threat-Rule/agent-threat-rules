@@ -154,7 +154,7 @@ export const ACTORS: ThreatActor[] = [
         platform: "NousResearch/hermes-agent",
         id: "#9809",
         url: "https://github.com/NousResearch/hermes-agent/issues/9809",
-        status: "open",
+        status: "closed",
       },
     ],
     summary: {
@@ -224,7 +224,7 @@ export const ACTORS: ThreatActor[] = [
         platform: "NousResearch/hermes-agent",
         id: "#9809",
         url: "https://github.com/NousResearch/hermes-agent/issues/9809",
-        status: "open",
+        status: "closed",
       },
     ],
     summary: {
@@ -288,7 +288,7 @@ export const ACTORS: ThreatActor[] = [
         platform: "NousResearch/hermes-agent",
         id: "#9809",
         url: "https://github.com/NousResearch/hermes-agent/issues/9809",
-        status: "open",
+        status: "closed",
       },
     ],
     summary: {

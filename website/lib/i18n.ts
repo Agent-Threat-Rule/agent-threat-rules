@@ -55,7 +55,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "proof.heading.pre": "Cisco AI Defense",
     "proof.heading.post": " merged\n34 ATR rules into its open-source skill-scanner.",
     "proof.body":
-      "Their engineer submitted a PR. We reviewed it. It merged in 3 days. 1,272 additions. Then they built a --rule-packs CLI specifically to consume ATR.",
+      "ATR's maintainer opened the pull request; the repository's maintainers merged it 21 hours later. 1,272 additions. They then added a --rule-packs CLI flag for packs such as ATR's.",
     "proof.link": "View PR #79 on GitHub",
 
     // Ecosystem
@@ -149,7 +149,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "integrate.license.title": "License and legal",
     "integrate.cisco.title": "Case study: how Cisco did it",
     "integrate.cisco.body":
-      "Cisco's AI Defense team integrated ATR rules as an upstream dependency. Their engineer submitted PR #79, we reviewed it, and it merged in 3 days. They then built a --rule-packs CLI feature (PR #80) specifically to consume ATR as a first-class rule source.",
+      "Cisco AI Defense's open-source skill-scanner took ATR rules as an upstream rule pack. ATR's maintainer opened PR #79, and the repository's maintainers merged it 21 hours later. They then added a --rule-packs CLI flag (PR #80) to load packs such as ATR's.",
 
     // Contribute page
     "contribute.governance": "Governance",
@@ -424,7 +424,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "proof.heading.post":
       " 把 34 條 ATR 規則合併進它的開源 skill-scanner。",
     "proof.body":
-      "他們的工程師提了 PR。我們 review 完。3 天合併。1,272 行新增。然後他們建了 --rule-packs CLI 專門消費 ATR。",
+      "ATR 維護者提了 PR，該 repo 的維護者 21 小時後合併。1,272 行新增。之後他們加了 --rule-packs CLI 參數，用來載入 ATR 這類規則包。",
     "proof.link": "在 GitHub 查看 PR #79",
 
     // Ecosystem
@@ -528,7 +528,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "integrate.license.title": "授權與法律",
     "integrate.cisco.title": "實例：Cisco 怎麼接",
     "integrate.cisco.body":
-      "Cisco 的 AI Defense 團隊將 ATR rules 作為上游依賴整合。他們的工程師提交了 PR #79，我們 review 完，3 天合併。然後他們建了 --rule-packs CLI（PR #80）專門消費 ATR。",
+      "Cisco AI Defense 的開源 skill-scanner 把 ATR 規則納為上游規則包。ATR 維護者提了 PR #79，該 repo 的維護者 21 小時後合併。之後他們加了 --rule-packs CLI 參數（PR #80），用來載入 ATR 這類規則包。",
 
     // Contribute page
     "contribute.governance": "治理",
