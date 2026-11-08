@@ -154,6 +154,18 @@ export function selectCorpora(value: string, specs: readonly MinedCorpusSpec[] =
   return specs.filter((s) => names.includes(s.name));
 }
 
+/**
+ * The delivery shape of the mined corpus named `name`, which decides where an
+ * authored rule looks (finalizeAuthoredRule). An unknown name throws: falling
+ * back to llm_input would author a rule from a tool-output corpus unscoped,
+ * running on the user's own requests, with nothing to say so.
+ */
+export function minedCorpusShape(name: string, specs: readonly MinedCorpusSpec[] = MINED_CORPORA): DeliveryShape {
+  const spec = specs.find((s) => s.name === name);
+  if (!spec) throw new Error(`no mined corpus named ${JSON.stringify(name)}: cannot tell where its rules should look`);
+  return spec.shape;
+}
+
 /** What a vendored corpus file says it holds, or why it cannot be read. */
 function declaredCount(file: string): { readonly count: number | null } | { readonly problem: string } {
   try {

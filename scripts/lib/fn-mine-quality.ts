@@ -178,7 +178,8 @@ function earnedResponse(doc: Doc): Doc | undefined {
 
 /**
  * The detection block with exactly one condition, the gated regex verbatim on
- * the content field, and condition any. The author model is told to copy the
+ * the content field (tool_response for a rule from a tool-output corpus, see
+ * scopedToShape), and condition any. The author model is told to copy the
  * reference rule, whose detection holds several user_input conditions; what
  * the gate measured (recoveries, held-out, benign, tool output) is the regex
  * alone, so anything else the model wrote would run unmeasured. The model's
@@ -208,19 +209,6 @@ export function authoredRuleDate(at: Date): string {
 }
 
 /**
- * The authored rule as the PR's checks require it, whatever the model wrote:
- * status experimental (draft is never evaluated) at maturity test (alert lane,
- * never enforce), response actions the maturity has earned, no wild_fp_rate
- * (this lane measures nothing in the wild), and OWASP references as bare
- * allowlisted ids, with the category default when none survive, and a
- * detection block that is exactly `gatedRegex` (gatedDetection). Returns a
- * new object.
- *
- * `date` is the day the rule is authored (`authoredAt`, UTC), never the
- * model's: the author prompt says to copy the reference rule, and ATR-2026-02851,
- * 02855 and 02861 shipped with its date, 2026/03/08.
- */
-/**
  * Where a rule mined from a `tool_response` corpus looks: the tool's output
  * only (agent_source mcp_exchange, field tool_response), as ATR-2026-02861 was
  * scoped in #671. Authored as llm_io on content, such a rule also ran on what
@@ -235,6 +223,19 @@ function scopedToShape(doc: Doc, shape: DeliveryShape): Doc {
   return { tags: { ...tags, scan_target: 'mcp' }, agent_source: { ...agentSource, type: 'mcp_exchange' } };
 }
 
+/**
+ * The authored rule as the PR's checks require it, whatever the model wrote:
+ * status experimental (draft is never evaluated) at maturity test (alert lane,
+ * never enforce), response actions the maturity has earned, no wild_fp_rate
+ * (this lane measures nothing in the wild), and OWASP references as bare
+ * allowlisted ids, with the category default when none survive, and a
+ * detection block that is exactly `gatedRegex` (gatedDetection), looking
+ * where `shape`'s attacks arrive (scopedToShape). Returns a new object.
+ *
+ * `date` is the day the rule is authored (`authoredAt`, UTC), never the
+ * model's: the author prompt says to copy the reference rule, and ATR-2026-02851,
+ * 02855 and 02861 shipped with its date, 2026/03/08.
+ */
 export function finalizeAuthoredRule(
   doc: Doc,
   category: ATRCategory,

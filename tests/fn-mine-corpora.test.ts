@@ -14,6 +14,7 @@ import { join, resolve } from 'node:path';
 import { CORPORA, corpusById } from '../scripts/lib/fn-corpora.js';
 import {
   MINED_CORPORA,
+  minedCorpusShape,
   selectCorpora,
   channelNote,
   falseNegatives,
@@ -96,6 +97,15 @@ describe('MINED_CORPORA', () => {
       expect(hasBenchmarkArtifacts(spec.name), spec.name).toBe(true);
       expect(spec.goalNote, spec.name).toBeTruthy();
     }
+  });
+});
+
+describe('minedCorpusShape', () => {
+  it('gives each mined corpus its delivery shape, and refuses a name it does not know', () => {
+    expect(minedCorpusShape('hackaprompt')).toBe('llm_input');
+    expect(minedCorpusShape('nemotron-agentic-ipi')).toBe('tool_response');
+    expect(minedCorpusShape('llmail-inject')).toBe('tool_response');
+    expect(() => minedCorpusShape('nemotron')).toThrow(/no mined corpus named "nemotron"/);
   });
 });
 

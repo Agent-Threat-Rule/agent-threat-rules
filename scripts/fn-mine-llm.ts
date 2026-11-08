@@ -62,8 +62,8 @@ import {
   type CorpusStageCounts,
 } from './lib/fn-mine-input.js';
 import {
-  MINED_CORPORA,
   channelNote,
+  minedCorpusShape,
   selectCorpora,
   falseNegatives,
   planChunks,
@@ -276,7 +276,7 @@ function writeAuthoredRule(
   if (!doc || typeof doc !== 'object' || Array.isArray(doc)) return 'the output is not a single YAML mapping';
   const category = c.category as ATRCategory; // checked by isRuleCategory in the gate
   // A rule mined from a corpus that reaches the agent as tool output looks at tool output only.
-  const shape = MINED_CORPORA.find((spec) => spec.name === c.corpus)?.shape ?? 'llm_input';
+  const shape = minedCorpusShape(c.corpus);
   const rule = finalizeAuthoredRule(doc as Record<string, unknown>, category, allowlists, c.regex, new Date(), shape);
   fs.writeFileSync(fullPath, yaml.dump(rule, RULE_YAML_OPTIONS));
   return null;
@@ -444,7 +444,7 @@ function readBenignGate(toolBenign: ToolOutputBenign): { benignTexts: readonly s
   console.log(`[fn-mine] benign gate corpus: ${benignTexts.length} records`);
   console.log(
     `[fn-mine] benign tool-output corpus: ${toolBenign.emails.length} emails, ${toolBenign.pages.length} pages, ` +
-      `${toolBenign.records.length} records (every candidate, as tool_response)`,
+      `${toolBenign.records.length} records, ${toolBenign.tasks.length} tasks (every candidate, as tool_response)`,
   );
   const gateCorpus = prepareGateCorpus(loadBenignSamples(REPO_ROOT));
   if (gateCorpus.samples.length === 0) throw new Error('MEASUREMENT_CORPORA is empty: the visibility check would pass every candidate');
@@ -455,7 +455,12 @@ function readBenignGate(toolBenign: ToolOutputBenign): { benignTexts: readonly s
 function gateReportNote(toolBenign: ToolOutputBenign): Record<string, unknown> {
   return {
     heldOut: { percent: HELD_OUT_PERCENT, minRecovers: MIN_HELD_OUT_RECOVERS },
-    toolOutputBenign: { emails: toolBenign.emails.length, pages: toolBenign.pages.length, records: toolBenign.records.length },
+    toolOutputBenign: {
+      emails: toolBenign.emails.length,
+      pages: toolBenign.pages.length,
+      records: toolBenign.records.length,
+      tasks: toolBenign.tasks.length,
+    },
   };
 }
 
@@ -464,7 +469,7 @@ interface MineSettings {
   readonly minRecovers: number;
   readonly benignTexts: readonly string[];
   readonly gateCorpus: GateCorpus;
-  /** Benign emails, pages and records every candidate is run against as tool output. */
+  /** Benign emails, pages, records and tasks every candidate is run against as tool output. */
   readonly toolBenign: ToolOutputBenign;
 }
 
