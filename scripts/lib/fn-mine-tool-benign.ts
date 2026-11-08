@@ -16,16 +16,20 @@
  * corpora the run fails (requireToolOutputBenign).
  *
  * Applied to every candidate, not only those mined from tool_response corpora:
- * the lane authors llm_io rules, and the engine runs llm_io rules on
- * tool_response events (src/engine.ts llmIoOverToolResponse), so a rule mined
- * from HackAPrompt scans the same emails and pages.
+ * a rule mined from a prompt corpus is authored llm_io, and the engine runs
+ * llm_io rules on tool_response events (src/engine.ts llmIoOverToolResponse),
+ * so a rule mined from HackAPrompt scans the same emails and pages. A rule
+ * from a tool-output corpus ships as mcp_exchange on field tool_response
+ * (finalizeAuthoredRule); under this presentation the text is both the event
+ * content and fields.tool_response, so the llm_io candidate here gets the
+ * verdict the shipped rule would.
  */
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import yaml from 'js-yaml';
 import { detectionsByRule } from './fn-mine-input.js';
-import { BENIGN_EMAILS, BENIGN_PAGES, BENIGN_RECORDS, type BenignSource } from './tool-output-benign.js';
+import { BENIGN_EMAILS, BENIGN_PAGES, BENIGN_RECORDS, BENIGN_TASKS, type BenignSource } from './tool-output-benign.js';
 import { compileEngineAccurate, type GatedCandidate } from './fn-mine-candidate-gate.js';
 import { matchExcerpt } from './fn-mine-recoveries.js';
 
@@ -34,6 +38,8 @@ export interface ToolOutputBenign {
   readonly pages: readonly string[];
   /** Enterprise record fields (chart notes, product descriptions, case summaries) a read tool returns. */
   readonly records: readonly string[];
+  /** The benign requests the same records start from: an injection's twins, as a task or ticket a tool returns. */
+  readonly tasks: readonly string[];
 }
 
 /** The benign texts of one vendored corpus, or why they cannot be trusted. */
@@ -53,7 +59,7 @@ function readBenignFile(root: string, source: BenignSource): { texts: readonly s
   return { texts };
 }
 
-/** The three vendored corpora, or the first problem. */
+/** The vendored corpora (emails, pages, records and tasks), or the first problem. */
 export function readToolOutputBenign(root: string): { corpus: ToolOutputBenign } | { problem: string } {
   const emails = readBenignFile(root, BENIGN_EMAILS);
   if ('problem' in emails) return emails;
@@ -61,7 +67,9 @@ export function readToolOutputBenign(root: string): { corpus: ToolOutputBenign }
   if ('problem' in pages) return pages;
   const records = readBenignFile(root, BENIGN_RECORDS);
   if ('problem' in records) return records;
-  return { corpus: { emails: emails.texts, pages: pages.texts, records: records.texts } };
+  const tasks = readBenignFile(root, BENIGN_TASKS);
+  if ('problem' in tasks) return tasks;
+  return { corpus: { emails: emails.texts, pages: pages.texts, records: records.texts, tasks: tasks.texts } };
 }
 
 /**
@@ -115,10 +123,15 @@ function hitSnippet(kind: string, text: string, regex: string): string {
   return `${kind}: ${excerpt.replace(/\s+/g, ' ').trim()}`;
 }
 
-/** Which corpus benign text `i` (in emails, pages, records order) came from. */
+/** Which corpus benign text `i` (in emails, pages, records, tasks order) came from. */
 function benignKind(i: number, benign: ToolOutputBenign): string {
-  if (i < benign.emails.length) return 'email';
-  return i < benign.emails.length + benign.pages.length ? 'page' : 'record';
+  const bounds: [string, number][] = [['email', benign.emails.length], ['page', benign.pages.length], ['record', benign.records.length]];
+  let end = 0;
+  for (const [kind, n] of bounds) {
+    end += n;
+    if (i < end) return kind;
+  }
+  return 'task';
 }
 
 /** Each candidate's verdict, in order, from one engine run over every benign text and every candidate's own texts. */
@@ -127,7 +140,7 @@ export async function toolOutputVerdicts(
   benign: ToolOutputBenign,
 ): Promise<readonly ToolOutputVerdict[]> {
   if (candidates.length === 0) return [];
-  const benignTexts = [...benign.emails, ...benign.pages, ...benign.records];
+  const benignTexts = [...benign.emails, ...benign.pages, ...benign.records, ...benign.tasks];
   // Candidate i's own texts sit at [ownStart[i], ownStart[i] + own.length) after the benign texts.
   const ownStart: number[] = [];
   let next = benignTexts.length;
@@ -175,7 +188,7 @@ export async function dropToolOutputHits<T extends GatedCandidate>(
       return false;
     }
     if (v.benignHits > 0) {
-      drop(s, `fires on ${v.benignHits} benign tool output(s) (emails ${benign.emails.length}, pages ${benign.pages.length}, records ${benign.records.length}), first: ${JSON.stringify(v.firstHit)}`);
+      drop(s, `fires on ${v.benignHits} benign tool output(s) (emails ${benign.emails.length}, pages ${benign.pages.length}, records ${benign.records.length}, tasks ${benign.tasks.length}), first: ${JSON.stringify(v.firstHit)}`);
       return false;
     }
     return true;
