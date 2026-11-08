@@ -16,7 +16,7 @@ date: 2026/11/08
 schema_version: '0.1'
 detection_tier: pattern
 maturity: test
-severity: high
+severity: medium
 references:
   owasp_llm:
     - LLM04:2025
@@ -73,7 +73,7 @@ tags:
   scan_target: mcp
   confidence: high
 agent_source:
-  type: llm_io
+  type: mcp_exchange
   framework:
     - openai
     - anthropic
@@ -85,7 +85,7 @@ agent_source:
     - any
 detection:
   conditions:
-    - field: content
+    - field: tool_response
       operator: regex
       value: (?i)\bsubmit\s+interview\s+feedback\s+for\s+candidate\b[\s\S]{0,80}\brating\b
       description: >-

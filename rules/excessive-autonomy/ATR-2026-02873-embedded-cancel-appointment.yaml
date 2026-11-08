@@ -15,7 +15,7 @@ date: 2026/11/08
 schema_version: '0.1'
 detection_tier: pattern
 maturity: test
-severity: high
+severity: medium
 references:
   owasp_llm:
     - LLM01:2025
@@ -71,7 +71,7 @@ tags:
   scan_target: mcp
   confidence: high
 agent_source:
-  type: llm_io
+  type: mcp_exchange
   framework:
     - openai
     - anthropic
@@ -83,7 +83,7 @@ agent_source:
     - any
 detection:
   conditions:
-    - field: content
+    - field: tool_response
       operator: regex
       value: (?i)\bcancel\b[\s\S]{0,20}\bappointment\b[\s\S]{0,40}\b[A-Za-z]{2,6}-?\d{2,6}\b
       description: Imperative instruction to cancel a scheduled appointment/booking by record ID, embedded in processed content

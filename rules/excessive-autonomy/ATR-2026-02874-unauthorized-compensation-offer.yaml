@@ -14,7 +14,7 @@ date: 2026/11/08
 schema_version: '0.1'
 detection_tier: pattern
 maturity: test
-severity: high
+severity: medium
 references:
   owasp_llm:
     - LLM06:2025
@@ -68,7 +68,7 @@ tags:
   scan_target: mcp
   confidence: high
 agent_source:
-  type: llm_io
+  type: mcp_exchange
   framework:
     - openai
     - anthropic
@@ -80,7 +80,7 @@ agent_source:
     - any
 detection:
   conditions:
-    - field: content
+    - field: tool_response
       operator: regex
       value: (?i)\b(send|extend)\b[\s\S]{0,20}\b(job\s+)?offer\b[\s\S]{0,150}\bsalary\b[\s\S]{0,30}\$?[\d,]+
       description: >-

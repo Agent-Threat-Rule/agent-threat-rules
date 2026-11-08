@@ -64,10 +64,10 @@ compliance:
 tags:
   category: prompt-injection
   subcategory: embedded-email-send-directive
-  scan_target: tool_output
+  scan_target: mcp
   confidence: high
 agent_source:
-  type: llm_io
+  type: mcp_exchange
   framework:
     - openai
     - anthropic
@@ -79,7 +79,7 @@ agent_source:
     - any
 detection:
   conditions:
-    - field: content
+    - field: tool_response
       operator: regex
       value: (?i)\bsend\b[\s\S]{0,40}\b(?:message|email)\b[\s\S]{0,100}\bwith\s+subject\b[\s\S]{0,160}\bbody\b
       description: Fully-formed send-message/email directive with subject and body parameters embedded in tool-returned content

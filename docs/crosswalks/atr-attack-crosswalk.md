@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 853
-- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 238
+- ATR rules total: 851
+- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 236
 - Distinct enterprise ATT&CK techniques referenced: 87
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 853
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 851
 - Distinct MITRE ATLAS techniques referenced: 62
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 853
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 851
 - ATR categories (distinct `tags.category` values): 10
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -120,10 +120,10 @@ against.
 | T1562 | Impair Defenses | `ATR-2026-01993`, `ATR-2026-02001`, `ATR-2026-02013`, `ATR-2026-02400`, `ATR-2026-02401` | excessive-autonomy, prompt-injection |
 | T1562.001 | Disable or Modify Tools | `ATR-2026-02400`, `ATR-2026-02402`, `ATR-2026-02410`, `ATR-2026-02642`, `ATR-2026-02667` | excessive-autonomy, privilege-escalation, skill-compromise |
 | T1565 | Data Manipulation | `ATR-2026-00070`, `ATR-2026-00450`, `ATR-2026-02003` | data-poisoning, prompt-injection |
-| T1565.001 | Data Manipulation: Stored Data Manipulation | `ATR-2026-00075`, `ATR-2026-00200`, `ATR-2026-01155`, `ATR-2026-02143`, `ATR-2026-02144`, `ATR-2026-02303`, `ATR-2026-02865`, `ATR-2026-02873`, `ATR-2026-02874`, `ATR-2026-02875`, `ATR-2026-02876`, `ATR-2026-02878`, `ATR-2026-02879`, `ATR-2026-02880` | context-exfiltration, data-poisoning, excessive-autonomy, privilege-escalation, skill-compromise, tool-poisoning |
+| T1565.001 | Data Manipulation: Stored Data Manipulation | `ATR-2026-00075`, `ATR-2026-00200`, `ATR-2026-01155`, `ATR-2026-02143`, `ATR-2026-02144`, `ATR-2026-02303`, `ATR-2026-02865`, `ATR-2026-02873`, `ATR-2026-02874`, `ATR-2026-02875`, `ATR-2026-02876`, `ATR-2026-02878`, `ATR-2026-02879` | context-exfiltration, data-poisoning, excessive-autonomy, skill-compromise, tool-poisoning |
 | T1566 | Phishing | `ATR-2026-00119`, `ATR-2026-00420`, `ATR-2026-02850` | agent-manipulation, context-exfiltration, prompt-injection |
 | T1566.002 | Phishing: Spearphishing Link | `ATR-2026-02401` | excessive-autonomy |
-| T1567 | Exfiltration Over Web Service | `ATR-2026-00420`, `ATR-2026-02304`, `ATR-2026-02570`, `ATR-2026-02861`, `ATR-2026-02877` | context-exfiltration, prompt-injection |
+| T1567 | Exfiltration Over Web Service | `ATR-2026-00420`, `ATR-2026-02304`, `ATR-2026-02570`, `ATR-2026-02861` | context-exfiltration, prompt-injection |
 | T1573 | Encrypted Channel | `ATR-2026-01994` | excessive-autonomy |
 | T1574.002 | Hijack Execution Flow: DLL Side-Loading | `ATR-2026-02410` | skill-compromise |
 | T1574.006 | Hijack Execution Flow: Dynamic Linker Hijacking | `ATR-2026-02195`, `ATR-2026-02300` | privilege-escalation |
@@ -170,7 +170,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI03:2026, ASI04:2026, ASI05:202
 
 ### context-exfiltration
 
-Rules in category: 139
+Rules in category: 138
 
 ATT&CK techniques (join key):
 
@@ -202,7 +202,7 @@ ATT&CK techniques (join key):
 | T1552.005 | Cloud Instance Metadata API | `ATR-2026-01605`, `ATR-2026-01607`, `ATR-2026-01946` |
 | T1565.001 | Data Manipulation: Stored Data Manipulation | `ATR-2026-00075` |
 | T1566 | Phishing | `ATR-2026-02850` |
-| T1567 | Exfiltration Over Web Service | `ATR-2026-02304`, `ATR-2026-02570`, `ATR-2026-02861`, `ATR-2026-02877` |
+| T1567 | Exfiltration Over Web Service | `ATR-2026-02304`, `ATR-2026-02570`, `ATR-2026-02861` |
 | T1583.001 | Acquire Infrastructure: Domains | `ATR-2026-02649` |
 | T1598 | Phishing for Information | `ATR-2026-02847` |
 | T1657 | Financial Theft | `ATR-2026-00860`, `ATR-2026-00861` |
@@ -291,7 +291,7 @@ OWASP Agentic categories ATR adds: ASI04:2026, ASI05:2026
 
 ### privilege-escalation
 
-Rules in category: 80
+Rules in category: 79
 
 ATT&CK techniques (join key):
 
@@ -328,7 +328,6 @@ ATT&CK techniques (join key):
 | T1553 | Subvert Trust Controls | `ATR-2026-00539` |
 | T1556 | Modify Authentication Process | `ATR-2026-01992` |
 | T1562.001 | Disable or Modify Tools | `ATR-2026-02402`, `ATR-2026-02642` |
-| T1565.001 | Data Manipulation: Stored Data Manipulation | `ATR-2026-02880` |
 | T1574.006 | Hijack Execution Flow: Dynamic Linker Hijacking | `ATR-2026-02195`, `ATR-2026-02300` |
 | T1611 | Escape to Host | `ATR-2026-00040`, `ATR-2026-00436`, `ATR-2026-00441`, `ATR-2026-00539`, `ATR-2026-01615`, `ATR-2026-02301`, `ATR-2026-02302`, `ATR-2026-02407` |
 

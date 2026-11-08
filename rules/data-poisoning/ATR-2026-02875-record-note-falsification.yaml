@@ -18,7 +18,7 @@ date: 2026/11/08
 schema_version: '0.1'
 detection_tier: pattern
 maturity: test
-severity: high
+severity: medium
 references:
   owasp_llm:
     - LLM01:2025
@@ -74,17 +74,17 @@ compliance:
 tags:
   category: data-poisoning
   subcategory: record-note-falsification
-  scan_target: llm_io
+  scan_target: mcp
   confidence: high
 agent_source:
-  type: llm_io
+  type: mcp_exchange
   framework:
     - any
   provider:
     - any
 detection:
   conditions:
-    - field: content
+    - field: tool_response
       operator: regex
       value: >-
         (?i)\b(?:add|update)\s+(?:a\s+)?notes?\b[\s\S]{0,40}\b(?:client|student|advisor|policy|patient)\b[\s\S]{0,80}\b(?:stating|indicating|to\s*:|include)\b

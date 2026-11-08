@@ -16,7 +16,7 @@ date: 2026/11/08
 schema_version: '0.1'
 detection_tier: pattern
 maturity: test
-severity: high
+severity: medium
 references:
   owasp_llm:
     - LLM06:2025
@@ -81,7 +81,7 @@ tags:
   scan_target: mcp
   confidence: high
 agent_source:
-  type: tool_call
+  type: mcp_exchange
   framework:
     - openai
     - anthropic
@@ -93,7 +93,7 @@ agent_source:
     - any
 detection:
   conditions:
-    - field: content
+    - field: tool_response
       operator: regex
       value: >-
         (?i)\b(?:update|set|adjust|reduce|override)\b[\s\S]{0,80}\b(?:stock|price|amount|award(?:ed)?)\b[\s\S]{0,40}\bto\b\s*\$?0\b

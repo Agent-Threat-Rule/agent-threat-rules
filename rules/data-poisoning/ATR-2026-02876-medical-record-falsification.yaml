@@ -15,7 +15,7 @@ date: 2026/11/08
 schema_version: '0.1'
 detection_tier: pattern
 maturity: test
-severity: high
+severity: medium
 references:
   owasp_llm:
     - LLM04:2025
@@ -78,7 +78,7 @@ tags:
   scan_target: mcp
   confidence: high
 agent_source:
-  type: llm_io
+  type: mcp_exchange
   framework:
     - openai
     - anthropic
@@ -90,11 +90,9 @@ agent_source:
     - any
 detection:
   conditions:
-    - field: content
+    - field: tool_response
       operator: regex
-      value: >-
-        (?i)\bupdate\b[\s\S]{0,20}\b(?:chart|patient)\b[\s\S]{0,60}\b(?:allerg(?:y|ies)|medication|discontinue|dob|date
-        of birth)\b
+      value: '(?i)\bupdate\b[\s\S]{0,20}\b(?:chart|patient)\b[\s\S]{0,60}?(?:\bwith:\s*|\bto\s+(?:reflect:|change\b|remove\b|delete\b|clear\b|set\b))[\s\S]{0,40}?\b(?:allerg(?:y|ies)|medications?|discontinue|dob|date\s+of\s+birth)\b'
       description: >-
         Injected instruction directing a tool to update a patient chart field tied to allergies, medications,
         discontinuation orders, or date of birth
@@ -133,6 +131,12 @@ test_cases:
       expected: triggered
       description: Urgency-framed injection to falsify a patient's date of birth
   true_negatives:
+    - input: Review the patient's chart notes and update his chart with a summary of any allergy information.
+      expected: not_triggered
+      description: A user's own request to summarise allergies into the chart sets no field value
+    - input: Read the referral and update the patient's medication list regarding the penicillin allergy it mentions.
+      expected: not_triggered
+      description: A user's own request to record what a document says, with no value dictated for the field
     - input: Please update the inventory chart for the warehouse before Friday.
       expected: not_triggered
       description: Unrelated inventory chart update with no clinical field keywords nearby
