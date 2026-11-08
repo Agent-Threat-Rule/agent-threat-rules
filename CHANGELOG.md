@@ -35,15 +35,17 @@ All notable changes to ATR will be documented in this file.
 - **The `adoption` block of the root `stats.json`.** Nothing read it: no
   script, workflow or page here (`scripts/sync-stats.ts` only declared its
   type, now removed too), and the copy other projects sync is
-  `data/stats.json`, which never had it. It was written on 2026-05-16 and not
-  kept up since, and GitHub contradicts it in three places. It linked
+  `data/stats.json`, which never had it. It was written on 2026-05-16 and,
+  apart from the Microsoft entry (updated 2026-10-15), not kept up since, and
+  GitHub contradicts it in at least four places. It linked
   precize/Agent-Security-Regression-Harness#74, which returns 404; that pull
   request is OWASP/Agent-Security-Regression-Harness#74. It dated
-  MISP/misp-taxonomies#323 to 2026-04-12; it merged on 2026-05-10. It called
-  cisco-ai-defense/skill-scanner#99 a "344-rule pack (auto-syncs to 419)";
-  #99 took the pack from 34 to 314 rules, and later syncs came as pull
-  requests. Its counts (external organisations, pull requests, tier-1
-  institutions, standards bodies) were set by hand. Integrations are recorded
+  MISP/misp-taxonomies#323 to 2026-04-12; it merged on 2026-05-10. It gave
+  MISP 336 rules; misp-galaxy#1236 and misp-taxonomies#338 refreshed both to
+  713 on 2026-07-14. It called cisco-ai-defense/skill-scanner#99 a "344-rule
+  pack (auto-syncs to 419)"; #99 took the pack from 34 to 314 rules, and
+  later syncs came as pull requests. Its counts (external organisations, pull
+  requests, tier-1 institutions, standards bodies) were set by hand. Integrations are recorded
   in ADOPTERS.md, which `scripts/verify-adopters.mjs` checks against GitHub
   every week.
 
