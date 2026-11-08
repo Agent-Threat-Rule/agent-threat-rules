@@ -1,0 +1,65 @@
+name: Open problem (gap board)
+description: Something ATR rules or ATR Eval get wrong, cannot measure, or cannot yet detect. Solving one is recorded in the community ledger.
+title: "[Gap] "
+labels: ["gap-board"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The gap board lists problems where ATR loses as well as where it wins. A good entry has data and a way to reproduce it.
+        A new vulnerability in someone else's agent or product goes through SECURITY.md first, not here.
+        Reproduce known classes of attack only. Do not include working attack code aimed at a real, deployed system.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - rules
+        - eval (method, scoring, receipts)
+        - atomics (test questions)
+        - mappings (laws and frameworks)
+        - nodes (national deployments)
+        - community infrastructure
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What goes wrong, or what cannot be measured or detected today.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and how to reproduce it
+      description: Data, commands, versions. Links to public files are best.
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: What would count as solved
+      description: A result someone else could check, for example "the two runners agree within the plan's bounds on these atomics".
+    validations:
+      required: true
+  - type: textarea
+    id: disclosure
+    attributes:
+      label: Interests
+      description: Your employer or clients, if they make or test the agents or products involved. Write "none" if none.
+    validations:
+      required: true
+  - type: checkboxes
+    id: ai
+    attributes:
+      label: AI assistance
+      options:
+        - label: I used an AI tool to write part of this, and I have checked every claim myself.
+        - label: I did not use an AI tool for this.
+  - type: checkboxes
+    id: credit
+    attributes:
+      label: Credit
+      options:
+        - label: If this problem is solved or confirmed, my GitHub name may be recorded in the public community ledger.

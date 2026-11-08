@@ -26,6 +26,13 @@
  *     Face datasets-server rows API, which serves the main revision, so the
  *     sync checks main is still the pinned revision before and after.
  *
+ *   nvidia/Nemotron-RL-Agentic-Indirect-Prompt-Injection-v1 (CC-BY-4.0).
+ *     Enterprise agent tasks (nine domains) whose read tool returns a record
+ *     with an injection an attacker model rewrote until a defender model
+ *     followed it. Kept: the one environment field holding the injection, as
+ *     the tool returns it, one row per distinct injection. Read from
+ *     train.jsonl at the pinned revision.
+ *
  * Evaluated and not vendored: see NOT_VENDORED in scripts/lib/agent-attack-corpora.ts.
  *
  * It also vendors the BENIGN tool output the FN-mine gate checks candidates
@@ -39,10 +46,14 @@
  *     at the same revision, through the same text-unit extraction and masking
  *     as the attack pages, in content-hash order until the 5 MB budget.
  *
+ *   nvidia/Nemotron-RL-Agentic-Indirect-Prompt-Injection-v1 (CC-BY-4.0), the
+ *     same records' prose fields with every injection removed.
+ *
  * Usage:
  *   npx tsx scripts/sync-agent-attack-corpora.ts                      # dry-run
  *   npx tsx scripts/sync-agent-attack-corpora.ts --write              # write corpora
  *   npx tsx scripts/sync-agent-attack-corpora.ts --source llmail-inject --write
+ *   npx tsx scripts/sync-agent-attack-corpora.ts --source nemotron-agentic-ipi --write
  *   npx tsx scripts/sync-agent-attack-corpora.ts --source panza-emails --write
  *
  * No token is needed: every endpoint serves public datasets anonymously.
@@ -64,12 +75,14 @@ import {
   MAX_CORPUS_BYTES,
   MAX_PROJECTION_CHARS,
   MAX_ROWS,
+  NEMOTRON_IPI,
   browsesafeRows,
   cardLicenseLine,
   corpusDocument,
   licenseProblem,
   llmailRows,
   llmailSucceeded,
+  nemotronRows,
   sourceMarkdown,
   stratifiedSample,
   withinBudget,
@@ -77,6 +90,7 @@ import {
   type CorpusDocMeta,
   type CorpusRow,
   type LlmailRawRow,
+  type NemotronRawRow,
   type UpstreamDataset,
 } from './lib/agent-attack-corpora.js';
 import {
@@ -86,11 +100,13 @@ import {
   BENIGN_EMAILS,
   EMAIL_SET_LIMITS,
   BENIGN_PAGES,
+  BENIGN_RECORDS,
   MAX_BENIGN_PAGE_CHARS,
   benignDocument,
   benignPageRows,
   benignSourceMarkdown,
   jsonObjects,
+  nemotronBenignRows,
   panzaRows,
   type BenignDocMeta,
   type BenignSource,
@@ -214,6 +230,27 @@ async function collectBenignPages(): Promise<readonly CorpusRow[]> {
   return benignPageRows(await browsesafeSplit('test'), 'test');
 }
 
+/** One read of train.jsonl per run: the attack and the benign corpus are cut from the same records. */
+let nemotronRead: Promise<readonly NemotronRawRow[]> | undefined;
+
+function nemotronRaw(): Promise<readonly NemotronRawRow[]> {
+  nemotronRead ??= (async () => {
+    const raw: NemotronRawRow[] = [];
+    for await (const row of jsonLines(resolveUrl(NEMOTRON_IPI, 'train.jsonl'))) raw.push(row as NemotronRawRow);
+    console.log(`[sync]   ${raw.length} records read`);
+    return raw;
+  })();
+  return nemotronRead;
+}
+
+async function collectNemotron(): Promise<readonly CorpusRow[]> {
+  return nemotronRows(await nemotronRaw());
+}
+
+async function collectNemotronBenign(): Promise<readonly CorpusRow[]> {
+  return nemotronBenignRows(await nemotronRaw());
+}
+
 const PANZA_FILES = ['david', 'isabel', 'marcus'].flatMap((who) => [`${who}/train.jsonl`, `${who}/test.jsonl`]);
 
 /** Every Panza email, read at the pinned revision; family is donor/split. */
@@ -278,6 +315,15 @@ const SOURCES: readonly SourcePlan[] = [
     ],
     collect: collectBrowsesafe,
   },
+  {
+    dataset: NEMOTRON_IPI,
+    files: ['train.jsonl'],
+    filter:
+      'every record; the environment field that contains injection.injection_text, as the read tool returns it; ' +
+      'one row per distinct injection_text (whitespace and case folded); stratified by attack_category in ' +
+      `sha256 order; at most ${MAX_ROWS}`,
+    collect: collectNemotron,
+  },
 ];
 
 interface BenignPlan {
@@ -310,6 +356,19 @@ const BENIGN_SOURCES: readonly BenignPlan[] = [
         'that corpus is the attack pages minus every unit these benign pages share.',
     ],
     collect: collectBenignPages,
+  },
+  {
+    source: BENIGN_RECORDS,
+    files: ['train.jsonl'],
+    filter:
+      "every record's environment strings of 40+ characters with whitespace; a field holding the record's " +
+      'injection kept with the injection cut out; a field holding any other record\'s injection skipped; ' +
+      `deduplicated; stratified by domain in sha256 order; at most ${MAX_ROWS} and ${MAX_CORPUS_BYTES} bytes`,
+    notes: [
+      'Same records and revision as data/test-corpora/nemotron-agentic-ipi (see its SOURCE.md); this is their ' +
+        'content with every injection removed, the enterprise record text the email and page sets lack.',
+    ],
+    collect: collectNemotronBenign,
   },
 ];
 

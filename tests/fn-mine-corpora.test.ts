@@ -14,6 +14,7 @@ import { join, resolve } from 'node:path';
 import { CORPORA, corpusById } from '../scripts/lib/fn-corpora.js';
 import {
   MINED_CORPORA,
+  selectCorpora,
   channelNote,
   falseNegatives,
   planChunks,
@@ -24,7 +25,7 @@ import {
 import { hasBenchmarkArtifacts } from '../scripts/lib/fn-mine-quality.js';
 
 const REPO_ROOT = resolve(__dirname, '..');
-const AGENT_CORPORA = ['llmail-inject', 'browsesafe-bench'];
+const AGENT_CORPORA = ['llmail-inject', 'browsesafe-bench', 'nemotron-agentic-ipi'];
 
 describe('registry entries for the vendored agent corpora', () => {
   for (const id of AGENT_CORPORA) {
@@ -68,6 +69,7 @@ describe('MINED_CORPORA', () => {
       ['pint', 'report', 'llm_input'],
       ['llmail-inject', 'vendored', 'tool_response'],
       ['browsesafe-bench', 'vendored', 'tool_response'],
+      ['nemotron-agentic-ipi', 'vendored', 'tool_response'],
     ]);
   });
 
@@ -94,6 +96,19 @@ describe('MINED_CORPORA', () => {
       expect(hasBenchmarkArtifacts(spec.name), spec.name).toBe(true);
       expect(spec.goalNote, spec.name).toBeTruthy();
     }
+  });
+});
+
+describe('selectCorpora', () => {
+  it('selects every corpus for an empty value, and only the named ones otherwise', () => {
+    expect(selectCorpora('')).toBe(MINED_CORPORA);
+    expect(selectCorpora('nemotron-agentic-ipi, pint').map((s) => s.name)).toEqual(['pint', 'nemotron-agentic-ipi']);
+  });
+
+  it('refuses an unknown name and a value that names nothing, rather than mine all or none', () => {
+    expect(() => selectCorpora('nemotron')).toThrow(/unknown corpus nemotron \(known: hackaprompt/);
+    expect(() => selectCorpora(',')).toThrow(/names no corpus/);
+    expect(() => selectCorpora(' ')).toThrow(/names no corpus/);
   });
 });
 

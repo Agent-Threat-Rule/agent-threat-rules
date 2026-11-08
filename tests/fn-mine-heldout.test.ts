@@ -66,7 +66,7 @@ describe('splitHeldOut', () => {
   });
 
   it(`holds out about ${HELD_OUT_PERCENT}% of a real corpus`, () => {
-    for (const id of ['llmail-inject', 'browsesafe-bench']) {
+    for (const id of ['llmail-inject', 'browsesafe-bench', 'nemotron-agentic-ipi']) {
       const all = vendored(id);
       const share = splitHeldOut(all).heldOut.length / all.length;
       expect(share).toBeGreaterThan(HELD_OUT_PERCENT / 100 - 0.04);
@@ -124,7 +124,7 @@ describe('heldOutRecoveries', () => {
   it('gives a regex memorising eight shown lines no held-out credit on the real corpora', () => {
     const norm = (l: string): string => l.toLowerCase().replace(/\s+/g, ' ').trim();
     const esc = (t: string): string => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    for (const id of ['llmail-inject', 'browsesafe-bench']) {
+    for (const id of ['llmail-inject', 'browsesafe-bench', 'nemotron-agentic-ipi']) {
       const { minable, heldOut } = splitHeldOut(vendored(id));
       const heldLines = new Set(heldOut.flatMap((t) => t.split('\n').map(norm)));
       const shared = [...new Set(minable.flatMap((t) => t.split('\n').map(norm)))].filter((l) => l.length >= 30 && heldLines.has(l));

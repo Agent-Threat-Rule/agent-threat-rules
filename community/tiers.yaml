@@ -1,0 +1,59 @@
+# How community tiers are earned. Read by scripts/community/ledger.ts.
+#
+# Rules that do not change:
+#   - Tiers come only from public events in community/ledger.jsonl.
+#   - Money never grants a tier. There is no event type for payments,
+#     sponsorship or membership fees, and none may be added.
+#   - Automatic grants stop at reviewer; advisor and TSC seats are decided by
+#     people (invitation, or the process in TSC-CHARTER.md).
+#
+# grant:
+#   auto       the tier is granted when the conditions hold
+#   nominate   the program proposes the person; a maintainer confirms
+#   invite     never computed; decided by invitation
+#   charter    never computed; decided as TSC-CHARTER.md says
+#
+# A condition counts ledger events of one code for the person:
+#   min                at least this many events
+#   within_days        only events on or after (today - within_days)
+#   distinct_subjects  events must cover at least this many different subjects
+#   verified_by        only events verified this way (ci)
+
+version: 1
+working_on_window_days: 90
+
+tiers:
+  - id: contributor
+    grant: auto
+    any_of:
+      - { code: E1, min: 1 }
+      - { code: E3, min: 1 }
+      - { code: E9, min: 1 }
+
+  - id: reviewer
+    # Proposed as the definition of "TAG member" used in GOVERNANCE.md,
+    # docs/BDFL-charter.md and docs/REVIEWER-GUIDE.md. That needs a governance
+    # change with the 14-day public comment period before it takes effect.
+    grant: nominate
+    all_of:
+      - { code: E2, min: 3, within_days: 60, distinct_subjects: 2 }
+
+  - id: re_runner
+    # Also requires a registered signing key (identity level V2); the program
+    # cannot see that, so a maintainer checks it when confirming the listing.
+    grant: auto
+    any_of:
+      - { code: E4, min: 1, verified_by: ci }
+      - { code: E5, min: 1 }
+
+  - id: question_author
+    grant: auto
+    all_of:
+      - { code: E9, min: 3 }
+      - { code: E8, min: 1 }
+
+  - id: advisor
+    grant: invite
+
+  - id: tsc
+    grant: charter

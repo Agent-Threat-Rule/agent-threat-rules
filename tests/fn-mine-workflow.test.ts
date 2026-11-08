@@ -19,6 +19,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { load } from "js-yaml";
+import { MINED_CORPORA } from "../scripts/lib/fn-mine-corpora.js";
 
 const WORKFLOW = resolve(__dirname, "..", ".github", "workflows", "fn-mine-scheduled.yml");
 const RESUME = "Resume the rolling branch";
@@ -149,23 +150,62 @@ describe("resume step", () => {
 function scheduledMineRun(sb: Sandbox): string {
   return (step(MINE).run ?? "")
     .replaceAll("${{ inputs.dry_run }}", "")
-    .replaceAll("${{ inputs.cap || '5' }}", "5")
     .replaceAll("/tmp/fn-mine.out", join(sb.root, "fn-mine.out"));
 }
+
+/** The step's env block as a scheduled run resolves it: cap falls back to 5, corpus is empty. */
+const SCHEDULED_INPUTS = { CAP_INPUT: "5", CORPUS_INPUT: "" };
 
 describe("mining step", () => {
   it("passes --dry-run when the resume step forced one", () => {
     const sb = sandbox("feature");
-    const res = runStep(sb, scheduledMineRun(sb), { FORCE_DRY_RUN: "true" });
+    const res = runStep(sb, scheduledMineRun(sb), { ...SCHEDULED_INPUTS, FORCE_DRY_RUN: "true" });
     expect(res.status, res.stderr).toBe(0);
     expect(res.stdout).toMatch(/npx-args: .*--dry-run/);
   });
 
   it("does not pass --dry-run on a normal scheduled run", () => {
     const sb = sandbox("main");
-    const res = runStep(sb, scheduledMineRun(sb));
+    const res = runStep(sb, scheduledMineRun(sb), SCHEDULED_INPUTS);
     expect(res.status, res.stderr).toBe(0);
     expect(res.stdout).not.toMatch(/--dry-run/);
+    expect(res.stdout).not.toMatch(/--corpus/);
+    expect(res.stdout).toMatch(/npx-args: .*--cap 5/);
+  });
+
+  it("passes a dispatched corpus through as --corpus", () => {
+    const sb = sandbox("main");
+    const res = runStep(sb, scheduledMineRun(sb), { ...SCHEDULED_INPUTS, CORPUS_INPUT: "nemotron-agentic-ipi,pint" });
+    expect(res.status, res.stderr).toBe(0);
+    expect(res.stdout).toMatch(/npx-args: .*--corpus nemotron-agentic-ipi,pint/);
+  });
+
+  // Dispatch inputs reach the script through env and are checked before use.
+  it("refuses a corpus or cap that is not a plain name list or integer", () => {
+    for (const bad of [{ CORPUS_INPUT: "pint; rm -rf ." }, { CORPUS_INPUT: "$(id)" }, { CAP_INPUT: "5 --dry-run" }, { CAP_INPUT: "" }]) {
+      const sb = sandbox("main");
+      const res = runStep(sb, scheduledMineRun(sb), { ...SCHEDULED_INPUTS, ...bad });
+      expect(res.status, JSON.stringify(bad)).not.toBe(0);
+      expect(res.stdout).not.toMatch(/npx-args/);
+    }
+  });
+
+  // The daily cron names its corpora in an expression; a rename must not leave
+  // it mining a corpus that no longer exists (the run would fail every day).
+  it("runs every day, every corpus on Thursdays and only known corpora on the others", () => {
+    const wf = load(readFileSync(WORKFLOW, "utf8")) as { on: { schedule: { cron: string }[] } };
+    expect(wf.on.schedule.map((s) => s.cron)).toEqual(["0 9 * * 4", "0 9 * * 0-3,5,6"]);
+    const expr = String((step(MINE).env ?? {}).CORPUS_INPUT);
+    expect(expr).toContain("github.event.schedule == '0 9 * * 0-3,5,6'");
+    const fresh = /&& '([a-z0-9,-]+)' \|\| inputs\.corpus/.exec(expr)?.[1] ?? "";
+    expect(fresh).not.toBe("");
+    for (const name of fresh.split(",")) expect(MINED_CORPORA.map((c) => c.name)).toContain(name);
+  });
+
+  it("passes inputs through env, never interpolated into the script", () => {
+    const run = step(MINE).run ?? "";
+    expect(run).not.toMatch(/\$\{\{\s*inputs\.(cap|corpus)/);
+    expect(JSON.stringify(step(MINE).env ?? {})).toMatch(/CORPUS_INPUT.*CAP_INPUT/);
   });
 
   it("holds no GitHub token — it feeds attack payloads to a model CLI", () => {
