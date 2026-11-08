@@ -33,6 +33,11 @@ jobs:
 
       - name: Build (includes next-sitemap for SEO)
         working-directory: website
+        # Read-only token so the contributor list on /community is fetched as
+        # an authenticated request instead of sharing the runner's anonymous
+        # rate limit.
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
