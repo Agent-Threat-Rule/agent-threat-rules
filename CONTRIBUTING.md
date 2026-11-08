@@ -4,6 +4,12 @@ ATR is an MIT-licensed open standard for detecting AI agent attacks — think Sn
 
 No CLA. No proprietary tooling. No telemetry by default — the CLI sends nothing unless you pass `--report-to-cloud` (see the Telemetry section of the README).
 
+## Find where to help
+
+The [community page](https://agentthreatrule.org/en/community) lists the areas where work happens now (rules, engine and integrations, ATR Eval, test cases, laws and frameworks), what is in progress in each, and where help is needed. Issues labelled `good first issue` carry an area label (`wg/rules`, `wg/engine`, `wg/mappings`, `wg/community`) and say which files to touch and how to test. Issues for ATR Eval and its test cases open when the ATR Eval repository is published. Comment "I'd like to take this" on an issue before you start, so two people don't do the same work.
+
+Questions are welcome on the [ATR Discord](https://discord.gg/qX76Gb4Nzk). You never need Discord to contribute: everything can be done in issues and pull requests here.
+
 ---
 
 ## Path 1: Submit an attack probe (5 min, no setup)
