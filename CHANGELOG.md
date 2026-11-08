@@ -6,26 +6,28 @@ All notable changes to ATR will be documented in this file.
 
 ### Added
 
-- **Seven rules for instructions planted in enterprise records a tool returns**
-  (ATR-2026-02871, -02873, -02874, -02875, -02876, -02878, -02879), mined by
-  the FN-mine lane from NVIDIA's Nemotron-RL agentic indirect-injection set
-  (CC BY 4.0; #805). Each looks at tool output only (agent_source
-  mcp_exchange, field tool_response): the same words are an ordinary request
-  when the user types them. They catch, in order, a directive to send a
-  message with a dictated subject and body, to cancel an appointment by id,
+- **Ten rules for instructions planted in enterprise records a tool returns**
+  (ATR-2026-02871 to -02876, -02878 to -02882), mined by the FN-mine lane from
+  NVIDIA's Nemotron-RL agentic indirect-injection set (CC BY 4.0; #805). Each
+  looks at tool output only (agent_source mcp_exchange, field tool_response):
+  the same words are an ordinary request when the user types them. They catch
+  a directive to send a message with a dictated subject and body, to send
+  sensitive patient or payment data by email, to cancel an appointment by id,
   to issue a job offer with a salary, to write a note into a record, to set a
-  patient chart field, to set a stock or price to zero or an extreme, and to
-  submit interview feedback with a rating. Status experimental, maturity
-  test: alert only. Severity medium for the six that change a record, high
-  for 02871, which sends data out. Measured: 0 false positives on the 14,172
-  benign measurement samples, 526 emails, 694 pages, 3,000 record fields and
-  1,271 benign user tasks from the same records (as tool output), 51,505
-  customer-support texts and 3,324 function-calling requests; none fires on
-  a user's own input. Not measured: real enterprise records in which a person
-  writes such an instruction for a colleague. Two more candidates from the
-  same sweep (a referral or offer sent to an address, an amount raised or
-  set) were not shipped: the same records' benign user requests say the same
-  words.
+  patient chart field, to set a stock or price to zero or an extreme, to add
+  an inventory item, to submit a grade with a score, and to submit interview
+  feedback with a rating. Status experimental, maturity test: alert only.
+  Severity medium for the eight that change a record, high for 02871 and
+  02881, which send data out. On the set's 675 tool-output attacks, the rules
+  on main caught 2 and catch 305 with these (on the 215 the miner never saw,
+  1 and 103). Measured: 0 false positives on the 14,172 benign measurement
+  samples, 526 emails, 694 pages, 3,000 record fields and 1,271 benign user
+  tasks from the same records, 51,505 customer-support texts and 3,376
+  function-calling and agent requests, each as tool output and as user
+  input. Not measured: real enterprise records in which a person writes such
+  an instruction for a colleague. Candidates that a benign user task of the
+  same records also matches (a referral or offer sent to an address, an
+  amount raised or set) were not shipped.
 
 - **Hand-written pull request and issue states are checked against GitHub.**
   README.md, DEPLOYMENTS.md, STANDARDIZATION-STATUS.md and the website state
