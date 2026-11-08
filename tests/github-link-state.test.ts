@@ -8,7 +8,7 @@
 import { describe, it, expect } from "vitest";
 // @ts-expect-error -- stdlib-only .mjs module, no type declarations (it runs in
 // CI without npm install, so it must not depend on the TypeScript toolchain).
-import { classifyLink, linkKey, canonicalUrl, fetchState, failureKind, RETRIES } from "../scripts/lib/github-link-state.mjs";
+import { classifyLink, linkKey, canonicalUrl, fetchState, fetchFileText, failureKind, RETRIES } from "../scripts/lib/github-link-state.mjs";
 
 type Reply = { status: number; body?: unknown; raw?: string } | "network-error";
 type Call = { url: string; init: { headers: Record<string, string>; signal?: unknown } };
@@ -176,6 +176,33 @@ describe("fetchState", () => {
     const gh = fakeGitHub({});
     expect(await fetchState(classifyLink("https://github.com/o/r/commit/abcdef1"), quick({ fetchImpl: gh.impl }))).toBe("unverifiable");
     expect(gh.calls).toHaveLength(0);
+  });
+});
+
+describe("fetchFileText", () => {
+  const quick = (extra = {}) => ({ sleep: async () => undefined, ...extra });
+  const file = (text: string) => ({ type: "file", encoding: "base64", content: Buffer.from(text).toString("base64") });
+
+  it("reads a file on the default branch, encoding each path segment", async () => {
+    const gh = fakeGitHub({ "/repos/o/r/contents/docs/my%20file.md": [{ status: 200, body: file("Agent Threat Rules") }] });
+    expect(await fetchFileText("o", "r", "docs/my file.md", quick({ fetchImpl: gh.impl }))).toEqual({ text: "Agent Threat Rules" });
+  });
+
+  it("reports a gone path, a directory and a file GitHub will not inline", async () => {
+    const gone = fakeGitHub({ "/repos/o/r/contents/x.md": [{ status: 404 }] });
+    expect(await fetchFileText("o", "r", "x.md", quick({ fetchImpl: gone.impl }))).toEqual({ error: "api-404" });
+    const dir = fakeGitHub({ "/repos/o/r/contents/src": [{ status: 200, body: [{ name: "a.ts" }] }] });
+    expect(await fetchFileText("o", "r", "src", quick({ fetchImpl: dir.impl }))).toEqual({ error: "not-a-file" });
+    // Files over 1 MB come back with encoding "none" and empty content.
+    const big = fakeGitHub({ "/repos/o/r/contents/big.json": [{ status: 200, body: { type: "file", encoding: "none", content: "" } }] });
+    expect(await fetchFileText("o", "r", "big.json", quick({ fetchImpl: big.impl }))).toEqual({ error: "bad-response" });
+  });
+
+  it("retries like fetchState, and never throws", async () => {
+    const gh = fakeGitHub({ "/repos/o/r/contents/a.md": ["network-error", { status: 503 }, { status: 200, body: file("ok") }] });
+    expect(await fetchFileText("o", "r", "a.md", quick({ fetchImpl: gh.impl }))).toEqual({ text: "ok" });
+    const down = fakeGitHub({ "/repos/o/r/contents/a.md": ["network-error"] });
+    expect(await fetchFileText("o", "r", "a.md", quick({ fetchImpl: down.impl }))).toEqual({ error: "network-error" });
   });
 });
 

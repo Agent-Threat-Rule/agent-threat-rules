@@ -6,29 +6,46 @@
  * Why: ADOPTERS.md is the single source of truth for the website's adopter
  * wall. Its Status fields (shipped / in-review) are claims about external
  * repositories, and those repositories move — PRs merge, close, or get
- * superseded. This script turns "we claim" into "we checked, on this date":
- *   - shipped   + evidence PR   -> PR must be MERGED
- *   - in-review + evidence PR   -> PR must be OPEN
- *   - any       + evidence issue-> issue must be OPEN (conversation alive)
- *   - any       + plain link    -> URL must resolve (HTTP < 400)
+ * superseded. This script turns "we claim" into "we checked, on this date".
+ * Every evidence link of an entry is checked (an entry may give several):
+ *   - shipped   + evidence PR    -> PR must be MERGED
+ *   - in-review + evidence PR    -> PR must be OPEN
+ *   - any       + evidence issue -> issue must be OPEN (conversation alive)
+ *   - any       + plain link     -> URL must resolve (HTTP < 400)
+ * and a Still-present assertion ('<path> contains "<text>"') must hold on the
+ * default branch of the repository the first PR or issue link names.
  *
- * Output: data/adopters-verification.json (consumed by the website's
- * /ecosystem page to print the verification date, and by CI to alert on
- * drift). The script always exits 0 and always writes the file — drift is
- * data, not an error here. The workflow gates on the drift count separately
- * so the honest state still gets committed and published.
+ * GitHub is asked through scripts/lib/github-link-state.mjs: a rate limit, a
+ * 5xx or a network error is retried, and every request times out. A failed
+ * entry is one of three kinds:
+ *   - drift      GitHub disagrees with the declared status, or the asserted
+ *                file no longer holds the text
+ *   - gone       the PR, issue, repository or page no longer exists (404/410)
+ *   - unverified GitHub or the page could not be asked (rate limit, 5xx,
+ *                network, an answer that cannot be read)
+ *
+ * Output: data/adopters-verification.json, read by the website's /ecosystem
+ * page (verification date and per-entry result) and by CI. Drift and gone are
+ * data, not errors: the file is written and the script exits 0, so the honest
+ * state is committed and published, and the workflow gates on the drift count
+ * separately. An unverified entry is no result at all: the script then writes
+ * nothing and exits 1, so an API problem never changes what the site says.
  *
  * Auth: set GITHUB_TOKEN to avoid the 60 req/h unauthenticated API limit.
  * Run: node scripts/verify-adopters.mjs
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { evidenceUrls, firstUrl } from './lib/adopters-evidence.mjs';
+import { RETRIES, TIMEOUT_MS, classifyLink, failureKind, fetchFileText, fetchState } from './lib/github-link-state.mjs';
+
+export { evidenceUrls };
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const ADOPTERS_PATH = join(REPO_ROOT, 'ADOPTERS.md');
-const OUT_PATH = join(REPO_ROOT, 'data', 'adopters-verification.json');
+export const ADOPTERS_PATH = join(REPO_ROOT, 'ADOPTERS.md');
+export const OUT_PATH = join(REPO_ROOT, 'data', 'adopters-verification.json');
 
 const TIER_HEADINGS = [
   { heading: 'Tier S', tier: 'S' },
@@ -44,17 +61,7 @@ function extractField(block, fieldName) {
   return m ? m[1].trim() : undefined;
 }
 
-/** First canonical URL out of an Evidence value (mirrors website/lib/adopters.ts). */
-function firstUrl(evidence) {
-  const angle = evidence.match(/<(https?:\/\/[^>\s]+)>/);
-  if (angle) return angle[1];
-  const link = evidence.match(/^\[.*?\]\((.+?)\)/);
-  if (link) return link[1];
-  const bare = evidence.match(/https?:\/\/[^\s>)]+/);
-  return bare ? bare[0] : undefined;
-}
-
-function parseAdopters(raw) {
+export function parseAdopters(raw) {
   const entries = [];
   let currentTier = null;
   let block = [];
@@ -70,6 +77,7 @@ function parseAdopters(raw) {
       name,
       tier: currentTier,
       evidence: firstUrl(evidence),
+      evidenceUrls: evidenceUrls(evidence),
       status,
       stillPresent: extractField(body, 'Still-present'),
     });
@@ -98,170 +106,173 @@ function parseAdopters(raw) {
   return entries;
 }
 
-const API_HEADERS = {
-  Accept: 'application/vnd.github+json',
-  'User-Agent': 'atr-adopters-verify',
-  ...(process.env.GITHUB_TOKEN
-    ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
-    : {}),
-};
+const realSleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function checkPr(owner, repo, num) {
-  const res = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/pulls/${num}`,
-    { headers: API_HEADERS },
-  );
-  if (!res.ok) return { observed: `api-${res.status}` };
-  const pr = await res.json();
-  if (pr.merged_at) return { observed: 'merged' };
-  return { observed: pr.state === 'open' ? 'open' : 'closed' };
-}
-
-async function checkIssue(owner, repo, num) {
-  const res = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/issues/${num}`,
-    { headers: API_HEADERS },
-  );
-  if (!res.ok) return { observed: `api-${res.status}` };
-  const issue = await res.json();
-  return { observed: issue.state === 'open' ? 'open' : 'closed' };
-}
-
-async function checkLink(url) {
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: { 'User-Agent': 'atr-adopters-verify' },
-      redirect: 'follow',
-    });
-    return { observed: res.status < 400 ? 'reachable' : `http-${res.status}` };
-  } catch {
-    return { observed: 'unreachable' };
+/** 'reachable', 'http-<status>' or 'network-error'; a 429, a 5xx or a network error is retried. */
+async function checkReachable(url, { fetchImpl, sleep, retries }) {
+  let observed = 'network-error';
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    if (attempt > 0) await sleep(1000 * 2 ** (attempt - 1));
+    try {
+      const res = await fetchImpl(url, {
+        method: 'GET',
+        headers: { 'User-Agent': 'atr-adopters-verify' },
+        redirect: 'follow',
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+      if (res.status < 400) return 'reachable';
+      observed = `http-${res.status}`;
+      if (res.status !== 429 && res.status < 500) return observed;
+    } catch {
+      observed = 'network-error';
+    }
   }
+  return observed;
+}
+
+/** The state a link must be in for the declared status, or null when none can hold. */
+function expectedState(kind, declared) {
+  if (kind === 'pr') return { shipped: 'merged', 'in-review': 'open' }[declared] ?? null;
+  return kind === 'issue' ? 'open' : 'reachable';
+}
+
+async function checkUrl(url, declared, opts) {
+  const link = classifyLink(url);
+  const kind = link.kind === 'pr' || link.kind === 'issue' ? link.kind : 'link';
+  const observed = kind === 'link' ? await checkReachable(url, opts) : await fetchState(link, opts);
+  return { url, kind, observed, expected: expectedState(kind, declared) };
+}
+
+/** null when the check holds, else 'drift' | 'gone' | 'unverified'. */
+function checkFailure(check) {
+  if (check.expected !== null && check.observed === check.expected) return null;
+  if (check.kind === 'link') {
+    // A page that answers with any other error says nothing about the claim.
+    return check.observed === 'http-404' || check.observed === 'http-410' ? 'gone' : 'unverified';
+  }
+  return check.expected === null ? 'drift' : failureKind(check.observed);
+}
+
+/** 'present' | 'absent' | 'path-missing' | 'unparsable', or an error string when GitHub could not be asked. */
+async function checkStillPresent(link, spec, opts) {
+  const m = /^(\S+)\s+contains\s+"(.+)"\s*$/.exec(spec.trim());
+  if (!m) return 'unparsable';
+  const { text, error } = await fetchFileText(link.owner, link.repo, m[1], opts);
+  if (error === 'api-404' || error === 'api-410' || error === 'not-a-file') return 'path-missing';
+  if (error) return error;
+  return text.includes(m[2]) ? 'present' : 'absent';
+}
+
+function contentFailure(content) {
+  if (content === null || content === 'present') return null;
+  return ['absent', 'path-missing', 'unparsable'].includes(content) ? 'drift' : 'unverified';
+}
+
+async function verifyEntry(entry, opts) {
+  let checks = [];
+  for (const url of entry.evidenceUrls) checks = [...checks, await checkUrl(url, entry.status, opts)];
+  const repoLink = entry.evidenceUrls.map(classifyLink).find((l) => l.kind === 'pr' || l.kind === 'issue');
+  const content = entry.stillPresent && repoLink ? await checkStillPresent(repoLink, entry.stillPresent, opts) : null;
+  const failures = [...checks.map(checkFailure), contentFailure(content)];
+  // A definite finding (drift, then gone) outranks a question GitHub did not answer.
+  const found = ['drift', 'gone', 'unverified'].find((kind) => failures.includes(kind)) ?? null;
+  const failure = checks.length === 0 ? 'drift' : found;
+  const shown = checks.find((c) => checkFailure(c) !== null) ?? checks[0];
+  return {
+    name: entry.name,
+    tier: entry.tier,
+    evidence: entry.evidence,
+    declared: entry.status,
+    kind: shown?.kind ?? 'none',
+    observed: shown?.observed ?? 'missing',
+    checks,
+    content,
+    ok: failure === null,
+    failure,
+  };
 }
 
 /**
- * Assert that a path on the adopter's default branch still contains a string.
- *
- * Spec format, in the Still-present field:
- *   README.md contains "Agent-Threat-Rule"
- *
- * Returns 'present' | 'absent' | 'path-missing' | 'unparsable' | 'api-NNN'.
+ * One result per entry, checked one at a time (a few dozen requests).
+ * options: fetchImpl, sleep, retries, token (as for fetchState).
  */
-async function checkStillPresent(owner, repo, spec) {
-  const m = /^(\S+)\s+contains\s+"(.+)"\s*$/.exec(spec.trim());
-  if (!m) return 'unparsable';
-  const [, path, needle] = m;
-  const res = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-    { headers: API_HEADERS },
-  );
-  if (res.status === 404) return 'path-missing';
-  if (!res.ok) return `api-${res.status}`;
-  const body = await res.json();
-  if (!body.content) return 'path-missing';
-  const text = Buffer.from(body.content, 'base64').toString('utf8');
-  return text.includes(needle) ? 'present' : 'absent';
+export async function verifyAdopters(entries, options = {}) {
+  const opts = {
+    ...options,
+    fetchImpl: options.fetchImpl ?? globalThis.fetch,
+    sleep: options.sleep ?? realSleep,
+    retries: options.retries ?? RETRIES,
+  };
+  let results = [];
+  for (const entry of entries) results = [...results, await verifyEntry(entry, opts)];
+  return results;
 }
 
-function isOk(kind, declared, observed) {
-  if (kind === 'pr') {
-    if (declared === 'shipped') return observed === 'merged';
-    if (declared === 'in-review') return observed === 'open';
-    return false;
-  }
-  if (kind === 'issue') return observed === 'open';
-  if (kind === 'link') return observed === 'reachable';
-  return false;
-}
-
-async function main() {
-  const raw = readFileSync(ADOPTERS_PATH, 'utf8');
-  const entries = parseAdopters(raw);
-  const results = [];
-
-  for (const entry of entries) {
-    if (!entry.evidence) {
-      results.push({ ...entry, kind: 'none', observed: 'missing', ok: false });
-      continue;
-    }
-    const prMatch = entry.evidence.match(
-      /github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/,
-    );
-    const issueMatch = entry.evidence.match(
-      /github\.com\/([^/]+)\/([^/]+)\/issues\/(\d+)/,
-    );
-    let kind;
-    let observed;
-    if (prMatch) {
-      kind = 'pr';
-      ({ observed } = await checkPr(prMatch[1], prMatch[2], prMatch[3]));
-    } else if (issueMatch) {
-      kind = 'issue';
-      ({ observed } = await checkIssue(issueMatch[1], issueMatch[2], issueMatch[3]));
-    } else {
-      kind = 'link';
-      ({ observed } = await checkLink(entry.evidence));
-    }
-    const repoMatch = prMatch || issueMatch;
-    let content = null;
-    if (entry.stillPresent && repoMatch) {
-      content = await checkStillPresent(
-        repoMatch[1],
-        repoMatch[2],
-        entry.stillPresent,
-      );
-    }
-    const ok =
-      isOk(kind, entry.status, observed) &&
-      (content === null || content === 'present');
-    results.push({
-      name: entry.name,
-      tier: entry.tier,
-      evidence: entry.evidence,
-      declared: entry.status,
-      kind,
-      observed,
-      content,
-      ok,
-    });
-    const contentNote =
-      content === null
-        ? ' [no content assertion]'
-        : content === 'present'
-          ? ' [content present]'
-          : ` [content ${content}]`;
-    console.log(
-      `${ok ? '[ok]   ' : '[DRIFT]'} ${entry.name} — declared ${entry.status}, observed ${observed} (${kind})${contentNote}`,
-    );
-  }
-
-  const drift = results.filter((r) => !r.ok);
-  const out = {
-    $comment:
-      'AUTO by scripts/verify-adopters.mjs — every ADOPTERS.md evidence link re-checked against GitHub. Do not edit by hand.',
-    verified_at: new Date().toISOString().slice(0, 10),
+/** The data file's content: the fields the website reads, the failures, and every result. */
+export function summarize(results, today) {
+  const failed = results.filter((r) => !r.ok);
+  return {
+    $comment: 'AUTO by scripts/verify-adopters.mjs — every ADOPTERS.md evidence link re-checked against GitHub. Do not edit by hand.',
+    verified_at: today,
     total: results.length,
-    ok: results.length - drift.length,
-    drift: drift.map((d) => ({
-      name: d.name,
-      declared: d.declared,
-      observed: d.observed,
-      content: d.content,
-      evidence: d.evidence,
+    ok: results.length - failed.length,
+    drift: failed.map((r) => ({
+      name: r.name,
+      declared: r.declared,
+      observed: r.observed,
+      content: r.content,
+      evidence: (r.checks.find((c) => checkFailure(c) !== null) ?? r.checks[0])?.url ?? r.evidence,
+      failure: r.failure,
     })),
     results,
   };
-  writeFileSync(OUT_PATH, `${JSON.stringify(out, null, 2)}\n`);
-  const unasserted = results.filter((r) => r.content === null).length;
-  console.log(
-    `\nwrote ${OUT_PATH} — ${out.ok}/${out.total} verified, ${drift.length} drift`,
-  );
-  if (unasserted > 0) {
-    console.log(
-      `${unasserted} entries have no Still-present assertion — a merged PR is all that backs them.`,
+}
+
+function reportLine(r) {
+  const tag = { drift: '[DRIFT]', gone: '[GONE]', unverified: '[UNVERIFIED]' }[r.failure] ?? '[ok]';
+  const content = r.content === null ? ' [no content assertion]' : ` [content ${r.content}]`;
+  return `${tag.padEnd(12)} ${r.name} — declared ${r.declared}, observed ${r.observed} (${r.kind})${content}`;
+}
+
+/** options: adoptersPath, outPath, today (YYYY-MM-DD), and verifyAdopters' options. */
+export async function main(options = {}) {
+  const adoptersPath = options.adoptersPath ?? ADOPTERS_PATH;
+  const outPath = options.outPath ?? OUT_PATH;
+  let raw;
+  try {
+    raw = readFileSync(adoptersPath, 'utf8');
+  } catch (err) {
+    console.error(`[adopters] cannot read ${adoptersPath}: ${err instanceof Error ? err.message : err}`);
+    return 1;
+  }
+  const results = await verifyAdopters(parseAdopters(raw), options);
+  for (const r of results) console.log(reportLine(r));
+  const unverified = results.filter((r) => r.failure === 'unverified').map((r) => r.name);
+  if (unverified.length > 0) {
+    console.error(
+      `\n${unverified.length} entries could not be verified (GitHub or the page did not answer): ${unverified.join(', ')}.` +
+        ` Nothing was written. Re-run with a valid GITHUB_TOKEN; api-401 means the token itself was rejected.`,
     );
+    return 1;
+  }
+  const out = summarize(results, options.today ?? new Date().toISOString().slice(0, 10));
+  writeFileSync(outPath, `${JSON.stringify(out, null, 2)}\n`);
+  console.log(`\nwrote ${outPath} — ${out.ok}/${out.total} verified, ${out.drift.length} drift`);
+  const unasserted = results.filter((r) => r.content === null).length;
+  if (unasserted > 0) {
+    console.log(`${unasserted} entries have no Still-present assertion — a merged PR is all that backs them.`);
+  }
+  return 0;
+}
+
+/** True when node was asked to run this file, through any symlink to it. */
+function invokedDirectly() {
+  if (process.argv[1] === undefined) return false;
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
   }
 }
 
-await main();
+if (invokedDirectly()) process.exitCode = await main();

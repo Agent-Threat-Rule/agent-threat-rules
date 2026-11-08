@@ -32,6 +32,20 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **verify-adopters no longer reports an API problem as drift.**
+  `scripts/verify-adopters.mjs` asked GitHub with no retry, no timeout and no
+  error handling: a rate limit or a 5xx was recorded as drift, and a network
+  error crashed the run. Since #724 such a failure on main filed a tracking
+  issue saying the evidence no longer matched. The script now asks through
+  `scripts/lib/github-link-state.mjs` (retries, a timeout) and sorts each
+  failure into drift, gone or unverified. When GitHub, or a linked page,
+  could not be asked about an entry, it writes nothing and exits 1, so the
+  published data stays as it was and the tracking issue shows the report
+  rather than a drift list. Every evidence link of an entry is checked, not
+  only the first: MISP, AG2 and Tencent AI-Infra-Guard give two each. The
+  links are read by `scripts/lib/adopters-evidence.mjs`, shared with the
+  status-claims check, which now exempts every shipped pull request an entry
+  gives.
 - **The threat-actor pages show NousResearch hermes-agent #9809 as closed.**
   The three /threats pages gave the campaign's disclosure issue the status
   OPEN from the day they were added; NousResearch had closed it as completed

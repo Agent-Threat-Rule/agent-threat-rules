@@ -22,6 +22,7 @@
 
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { evidenceUrls } from './adopters-evidence.mjs';
 import { canonicalUrl, classifyLink, linkKey } from './github-link-state.mjs';
 
 export const REGISTRY_PATH = 'website/data/status-claims.json';
@@ -176,23 +177,13 @@ function adoptersField(block, name) {
   return m ? m[1].trim() : undefined;
 }
 
-/** First URL of an Evidence value, read as scripts/verify-adopters.mjs reads it. */
-function firstUrl(evidence) {
-  const angle = /<(https?:\/\/[^>\s]+)>/.exec(evidence);
-  if (angle) return angle[1];
-  const link = /^\[.*?\]\((.+?)\)/.exec(evidence);
-  if (link) return link[1];
-  const bare = /https?:\/\/[^\s>)]+/.exec(evidence);
-  return bare ? bare[0] : undefined;
-}
-
 /** The tier headings scripts/verify-adopters.mjs reads; it checks nothing under any other. */
 const ADOPTERS_TIERS = ['Tier S', 'Tier 1', 'Tier 2', 'Tier 3', 'Tier 4'];
 
 /**
  * Keys of the pull requests ADOPTERS.md gives as evidence for a shipped entry,
- * under the tiers verify-adopters.mjs reads (not the schema example or removed
- * entries). Status defaults to shipped, as there.
+ * every link of the field, under the tiers verify-adopters.mjs reads (not the
+ * schema example or removed entries). Status defaults to shipped, as there.
  */
 export function adoptersShippedKeys(text) {
   const keys = new Set();
@@ -203,8 +194,11 @@ export function adoptersShippedKeys(text) {
     const body = block.join('\n');
     const status = (adoptersField(body, 'Status') ?? 'shipped').toLowerCase();
     const evidence = adoptersField(body, 'Evidence');
-    const link = evidence === undefined ? { kind: 'other' } : classifyLink(firstUrl(evidence) ?? '');
-    if (status === 'shipped' && link.kind === 'pr') keys.add(linkKey(link));
+    if (status === 'shipped' && evidence !== undefined) {
+      for (const link of evidenceUrls(evidence).map(classifyLink)) {
+        if (link.kind === 'pr') keys.add(linkKey(link));
+      }
+    }
     block = null;
   };
   for (const line of text.split('\n')) {

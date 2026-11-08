@@ -57,11 +57,18 @@ jobs:
         with:
           node-version: 20
 
+      # Exits 1 and writes nothing when GitHub, or a linked page, could not be
+      # asked about an entry (a rate limit, a 5xx, the network): an API problem
+      # must not change the published data or read as drift. The report is kept
+      # for the tracking issue.
       - name: Re-verify every evidence link
         id: verify
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/verify-adopters.mjs
+        run: |
+          set -o pipefail
+          node scripts/verify-adopters.mjs 2>&1 | tee "$RUNNER_TEMP/verify-adopters.txt"
 
       - name: Commit refreshed verification data
         id: commit
@@ -129,14 +136,22 @@ jobs:
           set -euo pipefail
           title="ADOPTERS.md evidence no longer matches GitHub"
           if [ "$VERIFY_OUTCOME" != "success" ]; then
-            # The data file is then the last committed one, not this run's.
-            found="none listed: the verification itself did not finish (${VERIFY_OUTCOME}), so data/adopters-verification.json is not this run's; see the run."
+            # Nothing was written, so the data file is the last committed one.
+            report="$(cat "$RUNNER_TEMP/verify-adopters.txt" 2>/dev/null || true)"
+            found="$(printf '%s\n' \
+              "none listed: the verification did not finish (${VERIFY_OUTCOME}), so nothing was written." \
+              "An UNVERIFIED entry is one GitHub or its page did not answer (a rate limit, a 5xx, the network):" \
+              "re-run the workflow before editing ADOPTERS.md." \
+              "" \
+              '```' \
+              "$report" \
+              '```')"
           else
             drift="$(node -e '
               let d;
               try { d = JSON.parse(require("fs").readFileSync("data/adopters-verification.json", "utf8")); } catch { process.exit(0); }
               for (const x of d.drift || []) {
-                console.log("- " + x.name + ": declared " + x.declared + ", observed " + x.observed + (x.content ? ", content " + x.content : ""));
+                console.log("- " + x.name + ": declared " + x.declared + ", observed " + x.observed + (x.content ? ", content " + x.content : "") + (x.failure ? " (" + x.failure + ")" : "") + (x.evidence ? " " + x.evidence : ""));
               }
             ')"
             found="${drift:-none recorded, so the failure was elsewhere in the run (for example the push of the refreshed data); see the run.}"

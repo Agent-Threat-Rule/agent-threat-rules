@@ -4,7 +4,8 @@
  * npm install.
  *
  * Written for the scripts that hold a hand-written status to GitHub
- * (scripts/verify-status-claims.mjs). A request is retried on a rate limit, a
+ * (scripts/verify-status-claims.mjs, scripts/verify-adopters.mjs). A request
+ * is retried on a rate limit, a
  * 5xx or a network error, never on a 4xx such as a 404, and times out after
  * TIMEOUT_MS. An answer that is not a state comes back as an error string, so
  * a caller can never mistake "GitHub could not be asked" for a state:
@@ -106,14 +107,19 @@ async function getJson(path, { fetchImpl, sleep, retries, token }) {
  * request (GitHub redirects it) is read through the issues endpoint, which says
  * merged only in pull_request.merged_at.
  */
-export async function fetchState(link, options = {}) {
-  if (link.kind !== 'pr' && link.kind !== 'issue') return 'unverifiable';
-  const opts = {
+/** fetchImpl, sleep, retries and token, defaulted; token from GITHUB_TOKEN unless given. */
+function resolveOptions(options) {
+  return {
     fetchImpl: options.fetchImpl ?? globalThis.fetch,
     sleep: options.sleep ?? realSleep,
     retries: options.retries ?? RETRIES,
     token: 'token' in options ? options.token : process.env.GITHUB_TOKEN,
   };
+}
+
+export async function fetchState(link, options = {}) {
+  if (link.kind !== 'pr' && link.kind !== 'issue') return 'unverifiable';
+  const opts = resolveOptions(options);
   const endpoint = link.kind === 'pr' ? 'pulls' : 'issues';
   const { body, error } = await getJson(`/repos/${link.owner}/${link.repo}/${endpoint}/${link.number}`, opts);
   if (error) return error;
@@ -121,6 +127,21 @@ export async function fetchState(link, options = {}) {
   const mergedAt = link.kind === 'pr' ? body.merged_at : body.pull_request?.merged_at;
   if (mergedAt) return 'merged';
   return body.state === 'open' ? 'open' : 'closed';
+}
+
+/**
+ * The text of a file on a repository's default branch: { text }, or { error }:
+ * 'api-404' / 'api-410' when the path or the repository is gone, 'not-a-file'
+ * for a directory, 'bad-response' when GitHub sends no base64 content (as for
+ * a file over 1 MB), or another error string as for fetchState.
+ */
+export async function fetchFileText(owner, repo, path, options = {}) {
+  const encoded = path.split('/').map(encodeURIComponent).join('/');
+  const { body, error } = await getJson(`/repos/${owner}/${repo}/contents/${encoded}`, resolveOptions(options));
+  if (error) return { error };
+  if (Array.isArray(body) || body.type !== 'file') return { error: 'not-a-file' };
+  if (body.encoding !== 'base64' || typeof body.content !== 'string') return { error: 'bad-response' };
+  return { text: Buffer.from(body.content, 'base64').toString('utf8') };
 }
 
 const STATES = new Set(['open', 'closed', 'merged']);
