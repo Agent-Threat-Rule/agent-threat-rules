@@ -20,6 +20,8 @@ AI Agent 威脅偵測規則的開放格式
 
 </div>
 
+> Interests: ATR's lead maintainer founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR. See [GOVERNANCE.md](GOVERNANCE.md).
+
 ---
 
 ## Abstract
