@@ -1,0 +1,3339 @@
+{
+  "tools": [
+    {
+      "name": "list_autonomous_systems",
+      "description": "List Autonomous Systems",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "location": {
+            "type": "string",
+            "description": "Filters results by location. Specify a valid alpha-2 location code."
+          },
+          "orderBy": {
+            "type": "string",
+            "enum": [
+              "ASN",
+              "POPULATION"
+            ],
+            "description": "Optional order by parameter: \"ASN\" or \"POPULATION\"."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_as_details",
+      "description": "Get Autonomous System details by ASN",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "asn": {
+            "type": "number",
+            "description": "Autonomous System Number (ASN), must be a positive number."
+          }
+        },
+        "required": [
+          "asn"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_ip_details",
+      "description": "Get IP address information including full ASN details (name, country, population estimates from APNIC).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IPv4 or IPv6 address in standard notation."
+          }
+        },
+        "required": [
+          "ip"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_traffic_anomalies",
+      "description": "Get traffic anomalies and outages",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "asn": {
+            "type": "number",
+            "description": "Autonomous System Number (ASN), must be a positive number."
+          },
+          "location": {
+            "type": "string",
+            "description": "Filters results by location. Specify a valid alpha-2 location code."
+          },
+          "dateRange": {
+            "type": "string",
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+          },
+          "dateStart": {
+            "type": "string",
+            "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "string",
+            "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_internet_services_ranking",
+      "description": "Get top Internet services",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "date": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date."
+            },
+            "description": "Filters results by date."
+          },
+          "serviceCategory": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Generative AI",
+                "E-commerce",
+                "Cryptocurrency Services",
+                "Email",
+                "Fast Fashion",
+                "Financial Services",
+                "News",
+                "Social Media",
+                "Weather",
+                "Jobs",
+                "Low cost E-commerce",
+                "Messaging",
+                "Metaverse & Gaming"
+              ]
+            },
+            "description": "Filters results by Internet service category."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_domains_ranking",
+      "description": "Get top or trending domains",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "date": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date."
+            },
+            "description": "Filters results by date."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by location. Specify a valid alpha-2 location code."
+            },
+            "description": "Filters results by location. Specify a comma-separated list of alpha-2 location codes."
+          },
+          "rankingType": {
+            "type": "string",
+            "enum": [
+              "POPULAR",
+              "TRENDING_RISE",
+              "TRENDING_STEADY"
+            ],
+            "description": "The ranking type."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_domain_rank_details",
+      "description": "Get domain rank details",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "A valid domain name, e.g., example.com or sub.domain.co.uk. Must follow standard domain formatting rules without protocol or path."
+          },
+          "date": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date."
+            },
+            "description": "Filters results by date."
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_http_data",
+      "description": "Retrieve HTTP traffic trends.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "continent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by continent. Provide an array of alpha-2 continent codes (e.g., \"EU\", \"NA\"). Prefix a code with `-` to exclude it (e.g., [\"-EU\", \"NA\"] excludes Europe and includes North America). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same continent across time periods, repeat the continent code (e.g., continent: [\"EU\", \"EU\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single continent with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "geoId": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by Geolocation (ADM1 - administrative level 1, e.g., states/provinces). Provide an array of GeoNames IDs. Prefix with `-` to exclude. Example: [\"2267056\", \"-360689\"] includes Lisbon area but excludes another region. IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same region across time periods, repeat the GeoID (e.g., geoId: [\"2267056\", \"2267056\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single geoId with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all regions."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "timeseries",
+              "summary/adm1",
+              "summary/as",
+              "summary/bot_class",
+              "summary/browser",
+              "summary/browser_family",
+              "summary/device_type",
+              "summary/http_protocol",
+              "summary/http_version",
+              "summary/ip_version",
+              "summary/location",
+              "summary/os",
+              "summary/post_quantum",
+              "summary/tls_version",
+              "timeseries_groups/adm1",
+              "timeseries_groups/as",
+              "timeseries_groups/bot_class",
+              "timeseries_groups/browser",
+              "timeseries_groups/browser_family",
+              "timeseries_groups/device_type",
+              "timeseries_groups/http_protocol",
+              "timeseries_groups/http_version",
+              "timeseries_groups/ip_version",
+              "timeseries_groups/location",
+              "timeseries_groups/os",
+              "timeseries_groups/post_quantum",
+              "timeseries_groups/tls_version"
+            ],
+            "description": "Dimension indicating the type and format of HTTP data to retrieve."
+          },
+          "normalization": {
+            "timeseries": [
+              "PERCENTAGE_CHANGE",
+              "MIN0_MAX"
+            ],
+            "timeseries_groups": [
+              "PERCENTAGE",
+              "MIN0_MAX"
+            ]
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_dns_queries_data",
+      "description": "Retrieve trends in DNS queries to the 1.1.1.1 resolver.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "continent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by continent. Provide an array of alpha-2 continent codes (e.g., \"EU\", \"NA\"). Prefix a code with `-` to exclude it (e.g., [\"-EU\", \"NA\"] excludes Europe and includes North America). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same continent across time periods, repeat the continent code (e.g., continent: [\"EU\", \"EU\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single continent with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "timeseries",
+              "summary/as",
+              "summary/cache_hit",
+              "summary/dnssec",
+              "summary/dnssec_aware",
+              "summary/dnssec_e2e",
+              "summary/ip_version",
+              "summary/location",
+              "summary/matching_answer",
+              "summary/protocol",
+              "summary/query_type",
+              "summary/response_code",
+              "summary/response_ttl",
+              "summary/tld",
+              "summary/tld_dns_magnitude",
+              "timeseries_groups/as",
+              "timeseries_groups/cache_hit",
+              "timeseries_groups/dnssec",
+              "timeseries_groups/dnssec_aware",
+              "timeseries_groups/dnssec_e2e",
+              "timeseries_groups/ip_version",
+              "timeseries_groups/location",
+              "timeseries_groups/matching_answer",
+              "timeseries_groups/protocol",
+              "timeseries_groups/query_type",
+              "timeseries_groups/response_code",
+              "timeseries_groups/response_ttl",
+              "timeseries_groups/tld"
+            ],
+            "description": "Dimension indicating the type and format of DNS data to retrieve."
+          },
+          "normalization": {
+            "timeseries_groups": [
+              "PERCENTAGE",
+              "MIN0_MAX"
+            ]
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_l7_attack_data",
+      "description": "Retrieve application layer (L7) attack trends.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "continent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by continent. Provide an array of alpha-2 continent codes (e.g., \"EU\", \"NA\"). Prefix a code with `-` to exclude it (e.g., [\"-EU\", \"NA\"] excludes Europe and includes North America). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same continent across time periods, repeat the continent code (e.g., continent: [\"EU\", \"EU\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single continent with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "timeseries",
+              "summary/httpMethod",
+              "summary/httpVersion",
+              "summary/ipVersion",
+              "summary/managedRules",
+              "summary/mitigationProduct",
+              "top/vertical",
+              "top/industry",
+              "timeseriesGroups/httpMethod",
+              "timeseriesGroups/httpVersion",
+              "timeseriesGroups/ipVersion",
+              "timeseriesGroups/managedRules",
+              "timeseriesGroups/mitigationProduct",
+              "timeseriesGroups/vertical",
+              "timeseriesGroups/industry",
+              "top/locations/origin",
+              "top/locations/target",
+              "top/ases/origin",
+              "top/attacks"
+            ],
+            "description": "Dimension indicating the type and format of L7 attack data to retrieve."
+          },
+          "normalization": {
+            "timeseries": [
+              "PERCENTAGE_CHANGE",
+              "MIN0_MAX"
+            ],
+            "timeseriesGroups": [
+              "PERCENTAGE",
+              "MIN0_MAX"
+            ],
+            "top/attacks": [
+              "PERCENTAGE",
+              "MIN_MAX"
+            ]
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_l3_attack_data",
+      "description": "Retrieve network layer (L3/DDoS) attack trends.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "continent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by continent. Provide an array of alpha-2 continent codes (e.g., \"EU\", \"NA\"). Prefix a code with `-` to exclude it (e.g., [\"-EU\", \"NA\"] excludes Europe and includes North America). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same continent across time periods, repeat the continent code (e.g., continent: [\"EU\", \"EU\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single continent with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "timeseries",
+              "summary/protocol",
+              "summary/ipVersion",
+              "summary/vector",
+              "summary/bitrate",
+              "summary/duration",
+              "top/vertical",
+              "top/industry",
+              "timeseriesGroups/protocol",
+              "timeseriesGroups/ipVersion",
+              "timeseriesGroups/vector",
+              "timeseriesGroups/bitrate",
+              "timeseriesGroups/duration",
+              "timeseriesGroups/vertical",
+              "timeseriesGroups/industry",
+              "top/locations/origin",
+              "top/locations/target",
+              "top/attacks"
+            ],
+            "description": "Dimension indicating the type and format of L3 attack data to retrieve."
+          },
+          "normalization": {
+            "timeseries": [
+              "PERCENTAGE_CHANGE",
+              "MIN0_MAX"
+            ],
+            "timeseriesGroups": [
+              "PERCENTAGE",
+              "MIN0_MAX"
+            ],
+            "top/attacks": [
+              "PERCENTAGE",
+              "MIN_MAX"
+            ]
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_email_routing_data",
+      "description": "Retrieve Email Routing trends.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "summary/ipVersion",
+              "summary/encrypted",
+              "summary/arc",
+              "summary/dkim",
+              "summary/dmarc",
+              "summary/spf",
+              "timeseriesGroups/ipVersion",
+              "timeseriesGroups/encrypted",
+              "timeseriesGroups/arc",
+              "timeseriesGroups/dkim",
+              "timeseriesGroups/dmarc",
+              "timeseriesGroups/spf"
+            ],
+            "description": "Dimension indicating the type and format of Email Routing data to retrieve."
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_email_security_data",
+      "description": "Retrieve Email Security trends.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "summary/spam",
+              "summary/malicious",
+              "summary/spoof",
+              "summary/threatCategory",
+              "summary/arc",
+              "summary/dkim",
+              "summary/dmarc",
+              "summary/spf",
+              "summary/tlsVersion",
+              "timeseriesGroups/spam",
+              "timeseriesGroups/malicious",
+              "timeseriesGroups/spoof",
+              "timeseriesGroups/threatCategory",
+              "timeseriesGroups/arc",
+              "timeseriesGroups/dkim",
+              "timeseriesGroups/dmarc",
+              "timeseriesGroups/spf",
+              "timeseriesGroups/tlsVersion",
+              "top/tlds"
+            ],
+            "description": "Dimension indicating the type and format of Email Security data to retrieve."
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_internet_speed_data",
+      "description": "Retrieve summary of bandwidth, latency, jitter, and packet loss, from the previous 90 days of Cloudflare Speed Test.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "continent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by continent. Provide an array of alpha-2 continent codes (e.g., \"EU\", \"NA\"). Prefix a code with `-` to exclude it (e.g., [\"-EU\", \"NA\"] excludes Europe and includes North America). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same continent across time periods, repeat the continent code (e.g., continent: [\"EU\", \"EU\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single continent with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "top/locations",
+              "top/ases"
+            ],
+            "description": "Dimension indicating the type and format of Internet speed data to retrieve."
+          },
+          "orderBy": {
+            "type": "string",
+            "enum": [
+              "BANDWIDTH_DOWNLOAD",
+              "BANDWIDTH_UPLOAD",
+              "LATENCY_IDLE",
+              "LATENCY_LOADED",
+              "JITTER_IDLE",
+              "JITTER_LOADED"
+            ],
+            "description": "Specifies the metric to order the results by. Only allowed for top locations and ASes"
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_internet_quality_data",
+      "description": "Retrieves a summary or time series of bandwidth, latency, or DNS response time percentiles from the Radar Internet Quality Index (IQI).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "continent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by continent. Provide an array of alpha-2 continent codes (e.g., \"EU\", \"NA\"). Prefix a code with `-` to exclude it (e.g., [\"-EU\", \"NA\"] excludes Europe and includes North America). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same continent across time periods, repeat the continent code (e.g., continent: [\"EU\", \"EU\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single continent with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "timeseriesGroups"
+            ]
+          },
+          "metric": {
+            "type": "string",
+            "enum": [
+              "BANDWIDTH",
+              "DNS",
+              "LATENCY"
+            ],
+            "description": "Specifies which metric to return (bandwidth, latency, or DNS response time)."
+          }
+        },
+        "required": [
+          "format",
+          "metric"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_ai_data",
+      "description": "Retrieves AI-related data, including traffic from AI user agents, as well as popular models and model tasks specifically from Cloudflare Workers AI.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "continent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by continent. Provide an array of alpha-2 continent codes (e.g., \"EU\", \"NA\"). Prefix a code with `-` to exclude it (e.g., [\"-EU\", \"NA\"] excludes Europe and includes North America). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same continent across time periods, repeat the continent code (e.g., continent: [\"EU\", \"EU\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single continent with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "bots/timeseries",
+              "bots/summary/user_agent",
+              "bots/summary/crawl_purpose",
+              "bots/summary/industry",
+              "bots/summary/vertical",
+              "bots/timeseries_groups/user_agent",
+              "bots/timeseries_groups/crawl_purpose",
+              "bots/timeseries_groups/industry",
+              "bots/timeseries_groups/vertical",
+              "inference/summary/model",
+              "inference/summary/task",
+              "inference/timeseries_groups/model",
+              "inference/timeseries_groups/task"
+            ],
+            "description": "Dimension indicating the type and format of AI data to retrieve."
+          },
+          "normalization": {
+            "bots/timeseries_groups": [
+              "PERCENTAGE",
+              "MIN0_MAX"
+            ]
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_hijacks",
+      "description": "Retrieve BGP hijack events. BGP hijacks occur when an AS announces routes it does not own, potentially redirecting traffic.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "dateRange": {
+            "type": "string",
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+          },
+          "dateStart": {
+            "type": "string",
+            "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "string",
+            "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "hijackerAsn": {
+            "type": "integer",
+            "description": "Filter by the potential hijacker AS of a BGP hijack event."
+          },
+          "victimAsn": {
+            "type": "integer",
+            "description": "Filter by the potential victim AS of a BGP hijack event."
+          },
+          "involvedAsn": {
+            "type": "number",
+            "description": "Filter by ASN involved (as hijacker or victim) in a BGP event."
+          },
+          "involvedCountry": {
+            "type": "string",
+            "description": "Filter by country code of the involved AS in a BGP event."
+          },
+          "prefix": {
+            "type": "string",
+            "description": "Filter by IP prefix (e.g., \"1.1.1.0/24\")."
+          },
+          "minConfidence": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "Filter by minimum confidence score (1-4 low, 5-7 mid, 8+ high)."
+          },
+          "maxConfidence": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "Filter by maximum confidence score (1-4 low, 5-7 mid, 8+ high)."
+          },
+          "sortBy": {
+            "type": "string",
+            "enum": [
+              "TIME",
+              "CONFIDENCE",
+              "ID"
+            ],
+            "description": "Sort results by specified field."
+          },
+          "sortOrder": {
+            "type": "string",
+            "enum": [
+              "ASC",
+              "DESC"
+            ],
+            "description": "Sort order (ascending or descending)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_leaks",
+      "description": "Retrieve BGP route leak events. Route leaks occur when an AS improperly announces routes learned from one peer to another.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "dateRange": {
+            "type": "string",
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+          },
+          "dateStart": {
+            "type": "string",
+            "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "string",
+            "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "leakAsn": {
+            "type": "number",
+            "description": "Filter by the leaking AS of a route leak event."
+          },
+          "involvedAsn": {
+            "type": "number",
+            "description": "Filter by ASN involved (as hijacker or victim) in a BGP event."
+          },
+          "involvedCountry": {
+            "type": "string",
+            "description": "Filter by country code of the involved AS in a BGP event."
+          },
+          "sortBy": {
+            "type": "string",
+            "enum": [
+              "TIME",
+              "CONFIDENCE",
+              "ID"
+            ],
+            "description": "Sort results by specified field."
+          },
+          "sortOrder": {
+            "type": "string",
+            "enum": [
+              "ASC",
+              "DESC"
+            ],
+            "description": "Sort order (ascending or descending)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_route_stats",
+      "description": "Retrieve BGP routing table statistics including number of routes, origin ASes, and more.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "asn": {
+            "type": "number",
+            "description": "Autonomous System Number (ASN), must be a positive number."
+          },
+          "location": {
+            "type": "string",
+            "description": "Filters results by location. Specify a valid alpha-2 location code."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bots_data",
+      "description": "Retrieve bot traffic data including trends by bot name, operator, category, and kind. Covers AI crawlers, search engines, monitoring bots, and more.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "continent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by continent. Provide an array of alpha-2 continent codes (e.g., \"EU\", \"NA\"). Prefix a code with `-` to exclude it (e.g., [\"-EU\", \"NA\"] excludes Europe and includes North America). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same continent across time periods, repeat the continent code (e.g., continent: [\"EU\", \"EU\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single continent with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "bot": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "description": "Filter results by bot name."
+          },
+          "botOperator": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "description": "Filter results by bot operator (e.g., Google, Microsoft, OpenAI)."
+          },
+          "botCategory": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SEARCH_ENGINE_CRAWLER",
+                "SEARCH_ENGINE_OPTIMIZATION",
+                "MONITORING_AND_ANALYTICS",
+                "ADVERTISING_AND_MARKETING",
+                "SOCIAL_MEDIA_MARKETING",
+                "PAGE_PREVIEW",
+                "ACADEMIC_RESEARCH",
+                "SECURITY",
+                "ACCESSIBILITY",
+                "WEBHOOKS",
+                "FEED_FETCHER",
+                "AI_CRAWLER",
+                "AGGREGATOR",
+                "AI_ASSISTANT",
+                "AI_SEARCH",
+                "ARCHIVER"
+              ]
+            },
+            "description": "Filter results by bot category."
+          },
+          "botKind": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "AGENT",
+                "BOT"
+              ]
+            },
+            "description": "Filter results by bot kind (AGENT or BOT)."
+          },
+          "botVerificationStatus": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "VERIFIED"
+              ]
+            },
+            "description": "Filter results by bot verification status."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "timeseries",
+              "summary/bot",
+              "summary/bot_kind",
+              "summary/bot_operator",
+              "summary/bot_category",
+              "timeseries_groups/bot",
+              "timeseries_groups/bot_kind",
+              "timeseries_groups/bot_operator",
+              "timeseries_groups/bot_category"
+            ],
+            "description": "Dimension indicating the type and format of bot data to retrieve."
+          },
+          "limitPerGroup": {
+            "type": "integer",
+            "description": "Limits the number of items per group. Extra items appear grouped under \"other\"."
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_certificate_transparency_data",
+      "description": "Retrieve Certificate Transparency (CT) log data. CT provides visibility into SSL/TLS certificates issued for domains, useful for security monitoring.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "ca": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter results by certificate authority."
+          },
+          "caOwner": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter results by certificate authority owner."
+          },
+          "duration": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "LTE_3D",
+                "GT_3D_LTE_7D",
+                "GT_7D_LTE_10D",
+                "GT_10D_LTE_47D",
+                "GT_47D_LTE_100D",
+                "GT_100D_LTE_200D",
+                "GT_200D"
+              ]
+            },
+            "description": "Filter results by certificate duration."
+          },
+          "entryType": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "PRECERTIFICATE",
+                "CERTIFICATE"
+              ]
+            },
+            "description": "Filter results by entry type (certificate vs. pre-certificate)."
+          },
+          "tld": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 63
+            },
+            "description": "Filter results by top-level domain (e.g., \"com\", \"org\")."
+          },
+          "validationLevel": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "DOMAIN",
+                "ORGANIZATION",
+                "EXTENDED"
+              ]
+            },
+            "description": "Filter results by validation level (DV, OV, EV)."
+          },
+          "publicKeyAlgorithm": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "DSA",
+                "ECDSA",
+                "RSA"
+              ]
+            },
+            "description": "Filter results by public key algorithm."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "timeseries",
+              "summary/ca",
+              "summary/ca_owner",
+              "summary/duration",
+              "summary/entry_type",
+              "summary/expiration_status",
+              "summary/has_ips",
+              "summary/has_wildcards",
+              "summary/log_api",
+              "summary/public_key_algorithm",
+              "summary/signature_algorithm",
+              "summary/validation_level",
+              "timeseries_groups/ca",
+              "timeseries_groups/ca_owner",
+              "timeseries_groups/duration",
+              "timeseries_groups/entry_type",
+              "timeseries_groups/expiration_status",
+              "timeseries_groups/has_ips",
+              "timeseries_groups/has_wildcards",
+              "timeseries_groups/log_api",
+              "timeseries_groups/public_key_algorithm",
+              "timeseries_groups/signature_algorithm",
+              "timeseries_groups/validation_level"
+            ],
+            "description": "Dimension indicating the type and format of Certificate Transparency data to retrieve."
+          },
+          "limitPerGroup": {
+            "type": "integer",
+            "description": "Limits the number of items per group. Extra items appear grouped under \"other\"."
+          },
+          "normalization": {
+            "timeseries_groups": [
+              "RAW_VALUES",
+              "PERCENTAGE"
+            ],
+            "summary": [
+              "RAW_VALUES",
+              "PERCENTAGE"
+            ]
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_netflows_data",
+      "description": "Retrieve NetFlows traffic data showing network traffic patterns. Supports filtering by ADM1 (administrative level 1, e.g., states/provinces) via geoId.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "continent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by continent. Provide an array of alpha-2 continent codes (e.g., \"EU\", \"NA\"). Prefix a code with `-` to exclude it (e.g., [\"-EU\", \"NA\"] excludes Europe and includes North America). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same continent across time periods, repeat the continent code (e.g., continent: [\"EU\", \"EU\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single continent with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "geoId": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by Geolocation (ADM1 - administrative level 1, e.g., states/provinces). Provide an array of GeoNames IDs. Prefix with `-` to exclude. Example: [\"2267056\", \"-360689\"] includes Lisbon area but excludes another region. IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same region across time periods, repeat the GeoID (e.g., geoId: [\"2267056\", \"2267056\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single geoId with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all regions."
+          },
+          "product": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "HTTP",
+                "ALL"
+              ]
+            },
+            "description": "Filter results by network traffic product type."
+          },
+          "normalization": {
+            "timeseries": [
+              "PERCENTAGE_CHANGE",
+              "MIN0_MAX"
+            ],
+            "timeseries_groups": [
+              "PERCENTAGE",
+              "MIN0_MAX"
+            ]
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "summary/adm1",
+              "summary/as",
+              "summary/location",
+              "summary/product",
+              "timeseries",
+              "timeseries_groups/adm1",
+              "timeseries_groups/as",
+              "timeseries_groups/location",
+              "timeseries_groups/product"
+            ],
+            "description": "Dimension indicating the type and format of NetFlows data to retrieve."
+          },
+          "limitPerGroup": {
+            "type": "integer",
+            "description": "Limits the number of items per group. Extra items appear grouped under \"other\"."
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_origins",
+      "description": "List cloud provider origins (hyperscalers) available in Cloud Observatory. Returns Amazon (AWS), Google (GCP), Microsoft (Azure), and Oracle (OCI) with their available regions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_origin_details",
+      "description": "Get details for a specific cloud provider origin, including all available regions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "enum": [
+              "AMAZON",
+              "GOOGLE",
+              "MICROSOFT",
+              "ORACLE"
+            ],
+            "description": "The cloud provider origin to query. Supported values: AMAZON (AWS), GOOGLE (GCP), MICROSOFT (Azure), ORACLE (OCI)."
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_origins_data",
+      "description": "Retrieve cloud provider (AWS, GCP, Azure, OCI) performance metrics. Supports timeseries, summaries grouped by region/success_rate/percentile, and grouped timeseries.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "timeseries",
+              "summary/REGION",
+              "summary/SUCCESS_RATE",
+              "summary/PERCENTILE",
+              "timeseriesGroups/REGION",
+              "timeseriesGroups/SUCCESS_RATE",
+              "timeseriesGroups/PERCENTILE"
+            ],
+            "description": "Dimension indicating the type and format of origins data to retrieve. timeseries: Raw time series data. Requires setting the metric parameter.summary/*: Aggregated data grouped by dimension. timeseriesGroups/*: Time series grouped by dimension. REGION: Group by cloud provider region (e.g., us-east-1). SUCCESS_RATE: Group by connection success rate. PERCENTILE: Group by performance percentiles (p50, p90, p99). Requires setting the metric parameter."
+          },
+          "origin": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "AMAZON",
+                "GOOGLE",
+                "MICROSOFT",
+                "ORACLE"
+              ],
+              "description": "The cloud provider origin to query. Supported values: AMAZON (AWS), GOOGLE (GCP), MICROSOFT (Azure), ORACLE (OCI)."
+            },
+            "minItems": 1,
+            "description": "Array of cloud provider origins to query. At least one origin must be specified."
+          },
+          "metric": {
+            "type": "string",
+            "enum": [
+              "CONNECTION_FAILURES",
+              "REQUESTS",
+              "RESPONSE_HEADER_RECEIVE_DURATION",
+              "TCP_HANDSHAKE_DURATION",
+              "TCP_RTT",
+              "TLS_HANDSHAKE_DURATION"
+            ],
+            "description": "The performance metric to retrieve. Only valid when dimension is timeseries or percentile. CONNECTION_FAILURES: Number of failed connections. REQUESTS: Total request count. RESPONSE_HEADER_RECEIVE_DURATION: Time to receive response headers (ms). TCP_HANDSHAKE_DURATION: TCP handshake time (ms). TCP_RTT: TCP round-trip time (ms). TLS_HANDSHAKE_DURATION: TLS handshake time (ms)."
+          },
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "region": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "description": "Filters results by cloud provider region. Example regions: us-east-1, eu-west-1, ap-southeast-1."
+          },
+          "limitPerGroup": {
+            "type": "integer",
+            "description": "Limits the number of items per group. Extra items appear grouped under \"other\"."
+          },
+          "normalization": {
+            "timeseries_groups": [
+              "PERCENTAGE",
+              "MIN0_MAX"
+            ]
+          }
+        },
+        "required": [
+          "dimension",
+          "origin",
+          "metric"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_robots_txt_data",
+      "description": "Retrieve robots.txt analysis data. Shows how websites configure crawler access rules, particularly for AI crawlers. Useful for understanding web crawler policies across domains.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "date": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date."
+            },
+            "description": "Filters results by date."
+          },
+          "directive": {
+            "type": "string",
+            "enum": [
+              "ALLOW",
+              "DISALLOW"
+            ],
+            "description": "Filter by robots.txt directive type (ALLOW or DISALLOW)."
+          },
+          "pattern": {
+            "type": "string",
+            "enum": [
+              "FULLY",
+              "PARTIALLY"
+            ],
+            "description": "Filter by pattern matching type (FULLY or PARTIALLY matched)."
+          },
+          "domainCategory": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter by domain categories."
+          },
+          "userAgentCategory": {
+            "type": "string",
+            "enum": [
+              "AI"
+            ],
+            "description": "Filter by user agent category (currently only AI is supported)."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "summary/user_agent",
+              "timeseries_groups/user_agent",
+              "top/domain_categories",
+              "top/user_agents/directive"
+            ],
+            "description": "Dimension indicating the type and format of robots.txt data to retrieve."
+          },
+          "limitPerGroup": {
+            "type": "integer",
+            "description": "Limits the number of items per group. Extra items appear grouped under \"other\"."
+          },
+          "limit": {
+            "type": "number"
+          },
+          "normalization": {
+            "timeseries_groups": [
+              "PERCENTAGE"
+            ]
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bots_crawlers_data",
+      "description": "Retrieve web crawler HTTP request data. Shows crawler traffic patterns by client type, user agent, referrer, and industry. Useful for analyzing crawler behavior and traffic distribution.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "CLIENT_TYPE",
+              "USER_AGENT",
+              "REFERER",
+              "CRAWL_REFER_RATIO",
+              "VERTICAL",
+              "INDUSTRY"
+            ],
+            "description": "Dimension for crawler data. CLIENT_TYPE: crawler type, USER_AGENT: crawler user agent, REFERER: referrer analysis, CRAWL_REFER_RATIO: crawl to referrer ratio, VERTICAL: industry vertical, INDUSTRY: industry classification."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "timeseries_groups"
+            ],
+            "description": "Format for crawler data: summary or time series grouped data."
+          },
+          "botOperator": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "description": "Filter results by bot operator (e.g., Google, Microsoft, OpenAI)."
+          },
+          "vertical": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter by industry vertical."
+          },
+          "industry": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter by industry classification."
+          },
+          "clientType": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter by client type."
+          },
+          "limitPerGroup": {
+            "type": "integer",
+            "description": "Limits the number of items per group. Extra items appear grouped under \"other\"."
+          }
+        },
+        "required": [
+          "dimension",
+          "format"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_bots",
+      "description": "List known bots with their details. Includes AI crawlers, search engines, monitoring bots, and more. Filter by category, operator, kind, or verification status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "botCategory": {
+            "type": "string",
+            "enum": [
+              "SEARCH_ENGINE_CRAWLER",
+              "SEARCH_ENGINE_OPTIMIZATION",
+              "MONITORING_AND_ANALYTICS",
+              "ADVERTISING_AND_MARKETING",
+              "SOCIAL_MEDIA_MARKETING",
+              "PAGE_PREVIEW",
+              "ACADEMIC_RESEARCH",
+              "SECURITY",
+              "ACCESSIBILITY",
+              "WEBHOOKS",
+              "FEED_FETCHER",
+              "AI_CRAWLER",
+              "AGGREGATOR",
+              "AI_ASSISTANT",
+              "AI_SEARCH",
+              "ARCHIVER"
+            ],
+            "description": "Filter by bot category."
+          },
+          "botOperator": {
+            "type": "string",
+            "description": "Filter by bot operator name."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "AGENT",
+              "BOT"
+            ],
+            "description": "Filter by bot kind."
+          },
+          "botVerificationStatus": {
+            "type": "string",
+            "enum": [
+              "VERIFIED"
+            ],
+            "description": "Filter by verification status."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bot_details",
+      "description": "Get detailed information about a specific bot by its slug identifier.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "botSlug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "The bot slug identifier (e.g., \"googlebot\", \"bingbot\")."
+          }
+        },
+        "required": [
+          "botSlug"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_leaked_credentials_data",
+      "description": "Retrieve trends in HTTP authentication requests and compromised credential detection. Shows distribution by compromised status and bot class.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "continent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by continent. Provide an array of alpha-2 continent codes (e.g., \"EU\", \"NA\"). Prefix a code with `-` to exclude it (e.g., [\"-EU\", \"NA\"] excludes Europe and includes North America). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same continent across time periods, repeat the continent code (e.g., continent: [\"EU\", \"EU\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single continent with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "botClass": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter by bot class."
+          },
+          "compromised": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter by compromised status."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "timeseries",
+              "summary/compromised",
+              "summary/bot_class",
+              "timeseries_groups/compromised",
+              "timeseries_groups/bot_class"
+            ],
+            "description": "Dimension indicating the type and format of leaked credentials data to retrieve."
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_as112_data",
+      "description": "Retrieve AS112 DNS sink hole data. AS112 handles reverse DNS lookups for private IP addresses (RFC 1918). Useful for analyzing DNS misconfiguration patterns.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "continent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by continent. Provide an array of alpha-2 continent codes (e.g., \"EU\", \"NA\"). Prefix a code with `-` to exclude it (e.g., [\"-EU\", \"NA\"] excludes Europe and includes North America). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same continent across time periods, repeat the continent code (e.g., continent: [\"EU\", \"EU\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single continent with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "queryType": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter by DNS query type."
+          },
+          "protocol": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter by DNS protocol (UDP/TCP)."
+          },
+          "responseCode": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter by DNS response code."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "timeseries",
+              "summary/dnssec",
+              "summary/edns",
+              "summary/ip_version",
+              "summary/protocol",
+              "summary/query_type",
+              "summary/response_code",
+              "timeseries_groups/dnssec",
+              "timeseries_groups/edns",
+              "timeseries_groups/ip_version",
+              "timeseries_groups/protocol",
+              "timeseries_groups/query_type",
+              "timeseries_groups/response_code",
+              "top/locations"
+            ],
+            "description": "Dimension indicating the type and format of AS112 data to retrieve. AS112 is a DNS sink hole for reverse DNS lookups of private IP addresses."
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_geolocations",
+      "description": "List available geolocations (ADM1 - administrative divisions like states/provinces). Use this to find GeoNames IDs for filtering HTTP and NetFlows data by region.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "geoId": {
+            "type": "string",
+            "description": "Filter by specific GeoNames ID."
+          },
+          "location": {
+            "type": "string",
+            "description": "Filters results by location. Specify a valid alpha-2 location code."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_geolocation_details",
+      "description": "Get details for a specific geolocation by its GeoNames ID.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "geoId": {
+            "type": "string",
+            "description": "GeoNames ID for the geolocation (e.g., \"2267056\" for Lisbon)."
+          }
+        },
+        "required": [
+          "geoId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_tcp_resets_timeouts_data",
+      "description": "Retrieve TCP connection quality metrics including resets and timeouts. Useful for understanding connection reliability across networks and locations.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "continent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by continent. Provide an array of alpha-2 continent codes (e.g., \"EU\", \"NA\"). Prefix a code with `-` to exclude it (e.g., [\"-EU\", \"NA\"] excludes Europe and includes North America). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same continent across time periods, repeat the continent code (e.g., continent: [\"EU\", \"EU\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single continent with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "timeseries_groups"
+            ],
+            "description": "Format for TCP resets/timeouts data: summary or time series grouped data."
+          }
+        },
+        "required": [
+          "dimension"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_annotations",
+      "description": "Retrieve annotations including Internet events, outages, and anomalies from various Cloudflare data sources.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "dateRange": {
+            "type": "string",
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+          },
+          "dateStart": {
+            "type": "string",
+            "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "string",
+            "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "dataSource": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "AI_BOTS",
+              "AI_GATEWAY",
+              "BGP",
+              "BOTS",
+              "CONNECTION_ANOMALY",
+              "CT",
+              "DNS",
+              "DNS_MAGNITUDE",
+              "DNS_AS112",
+              "DOS",
+              "EMAIL_ROUTING",
+              "EMAIL_SECURITY",
+              "FW",
+              "FW_PG",
+              "HTTP",
+              "HTTP_CONTROL",
+              "HTTP_CRAWLER_REFERER",
+              "HTTP_ORIGINS",
+              "IQI",
+              "LEAKED_CREDENTIALS",
+              "NET",
+              "ROBOTS_TXT",
+              "SPEED",
+              "WORKERS_AI"
+            ],
+            "description": "Filter annotations by data source."
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "EVENT",
+              "GENERAL",
+              "OUTAGE",
+              "PARTIAL_PROJECTION",
+              "PIPELINE",
+              "TRAFFIC_ANOMALY"
+            ],
+            "description": "Filter annotations by event type."
+          },
+          "asn": {
+            "type": "number",
+            "description": "Autonomous System Number (ASN), must be a positive number."
+          },
+          "location": {
+            "type": "string",
+            "description": "Filters results by location. Specify a valid alpha-2 location code."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_outages",
+      "description": "Retrieve Internet outages and anomalies. Provides information about detected connectivity issues across ASes and locations.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "dateRange": {
+            "type": "string",
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+          },
+          "dateStart": {
+            "type": "string",
+            "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "string",
+            "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "number",
+            "description": "Autonomous System Number (ASN), must be a positive number."
+          },
+          "location": {
+            "type": "string",
+            "description": "Filters results by location. Specify a valid alpha-2 location code."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_ct_authorities",
+      "description": "List Certificate Authorities (CAs) tracked in Certificate Transparency logs.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_ct_authority_details",
+      "description": "Get details for a specific Certificate Authority by its SHA256 fingerprint.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "caSlug": {
+            "type": "string",
+            "description": "The Certificate Authority SHA256 fingerprint (64 hexadecimal characters)."
+          }
+        },
+        "required": [
+          "caSlug"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_ct_logs",
+      "description": "List Certificate Transparency logs.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_ct_log_details",
+      "description": "Get details for a specific Certificate Transparency log by its slug.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "logSlug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "The Certificate Transparency log slug identifier."
+          }
+        },
+        "required": [
+          "logSlug"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_timeseries",
+      "description": "Retrieve BGP updates time series data. Shows BGP announcement and withdrawal patterns over time.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "prefix": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter by IP prefix(es)."
+          },
+          "updateType": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ANNOUNCEMENT",
+                "WITHDRAWAL"
+              ]
+            },
+            "description": "Filter by BGP update type (ANNOUNCEMENT or WITHDRAWAL)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_top_ases",
+      "description": "Get top Autonomous Systems by BGP update count.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "prefix": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter by IP prefix(es)."
+          },
+          "updateType": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ANNOUNCEMENT",
+                "WITHDRAWAL"
+              ]
+            },
+            "description": "Filter by BGP update type (ANNOUNCEMENT or WITHDRAWAL)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_top_prefixes",
+      "description": "Get top IP prefixes by BGP update count.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "updateType": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ANNOUNCEMENT",
+                "WITHDRAWAL"
+              ]
+            },
+            "description": "Filter by BGP update type (ANNOUNCEMENT or WITHDRAWAL)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_moas",
+      "description": "Get Multi-Origin AS (MOAS) prefixes. MOAS occurs when a prefix is announced by multiple ASes, which can indicate hijacking or legitimate anycast.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "integer",
+            "description": "Filter by origin ASN."
+          },
+          "prefix": {
+            "type": "string",
+            "description": "Filter by IP prefix (e.g., \"1.1.1.0/24\")."
+          },
+          "invalidOnly": {
+            "type": "boolean",
+            "description": "Only return invalid MOAS prefixes."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_pfx2as",
+      "description": "Get prefix-to-ASN mapping. Useful for looking up which AS announces a given IP prefix.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "prefix": {
+            "type": "string",
+            "description": "Filter by IP prefix (e.g., \"1.1.1.0/24\")."
+          },
+          "origin": {
+            "type": "integer",
+            "description": "Filter by origin ASN."
+          },
+          "rpkiStatus": {
+            "type": "string",
+            "enum": [
+              "VALID",
+              "INVALID",
+              "UNKNOWN"
+            ],
+            "description": "Filter by RPKI validation status."
+          },
+          "longestPrefixMatch": {
+            "type": "boolean",
+            "description": "Whether to use longest prefix match."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_ip_space_timeseries",
+      "description": "Retrieve announced IP address space time series data. Shows the count of announced IPv4 /24s and IPv6 /48s over time. Essential for monitoring BGP route withdrawals, IPv6 address space changes, and detecting significant routing events by ASN or country.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "ipVersion": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "IPv4",
+                "IPv6"
+              ]
+            },
+            "description": "Filters results by IP version (IPv4 vs. IPv6). Useful for monitoring IPv6 address space specifically."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_routes_realtime",
+      "description": "Get real-time BGP routes for a specific IP prefix using public route collectors (RouteViews and RIPE RIS). Shows current routing state including AS paths, RPKI validation status, and visibility across peers. Useful for troubleshooting routing issues and verifying route announcements.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "prefix": {
+            "type": "string",
+            "description": "Filter by IP prefix (e.g., \"1.1.1.0/24\")."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_as_set",
+      "description": "Get IRR AS-SETs that an Autonomous System is a member of. AS-SETs are used in routing policies.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "asn": {
+            "type": "number",
+            "description": "Autonomous System Number (ASN), must be a positive number."
+          }
+        },
+        "required": [
+          "asn"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_as_relationships",
+      "description": "Get AS-level relationships for an Autonomous System. Shows peer, upstream, and downstream relationships with other ASes.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "asn": {
+            "type": "number",
+            "description": "Autonomous System Number (ASN), must be a positive number."
+          },
+          "asn2": {
+            "type": "integer",
+            "description": "Optional second ASN to check specific relationship."
+          }
+        },
+        "required": [
+          "asn"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_tlds",
+      "description": "List top-level domains (TLDs) including generic, country-code, and sponsored TLDs. Filter by type or manager.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "tldType": {
+            "type": "string",
+            "enum": [
+              "GENERIC",
+              "COUNTRY_CODE",
+              "GENERIC_RESTRICTED",
+              "INFRASTRUCTURE",
+              "SPONSORED"
+            ],
+            "description": "Filters results by TLD type."
+          },
+          "manager": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Filters results by TLD manager (e.g., \"VeriSign Global Registry Services\")."
+          },
+          "tld": {
+            "type": "string",
+            "description": "Filters results by top-level domain. Specify a comma-separated list of TLDs."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_tld_details",
+      "description": "Get detailed information about a specific top-level domain (TLD).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tld": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 63,
+            "description": "Top-level domain (e.g., \"com\", \"org\", \"net\")."
+          }
+        },
+        "required": [
+          "tld"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_domains_ranking_timeseries",
+      "description": "Get domain ranking timeseries data. Track how specific domains rank over time.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "domains": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 253
+            },
+            "description": "Filters results by domain name. Specify an array of domain names to track."
+          },
+          "domainCategory": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "description": "Filters results by domain category (e.g., \"News & Media\", \"Technology\")."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_speed_histogram",
+      "description": "Get speed test histogram data. Shows distribution of speed test results for bandwidth, latency, or jitter.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "asn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by ASN. Provide an array of ASN strings. Prefix with `-` to exclude (e.g., [\"-174\", \"3356\"] excludes AS174 and includes AS3356). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same ASN across time periods, repeat the ASN (e.g., asn: [\"13335\", \"13335\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single ASN with multiple dateRange values will filter only the first period, with subsequent periods defaulting to all ASNs."
+          },
+          "continent": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by continent. Provide an array of alpha-2 continent codes (e.g., \"EU\", \"NA\"). Prefix a code with `-` to exclude it (e.g., [\"-EU\", \"NA\"] excludes Europe and includes North America). IMPORTANT: When using multiple dateRange values, each array element maps positionally to each dateRange. To compare the same continent across time periods, repeat the continent code (e.g., continent: [\"EU\", \"EU\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single continent with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "location": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters results by location. Provide an array of alpha-2 country codes (e.g., \"US\", \"PT\"). Prefix a code with `-` to exclude it (e.g., [\"-US\", \"PT\"] excludes the US and includes Portugal). IMPORTANT: When using multiple dateRange values (e.g., [\"7d\", \"7dcontrol\"]), each array element maps positionally to each dateRange. To compare the same location across time periods, repeat the location code (e.g., location: [\"PT\", \"PT\"] with dateRange: [\"7d\", \"7dcontrol\"]). Using a single location with multiple dateRange values will filter only the first period, with subsequent periods defaulting to worldwide data."
+          },
+          "metric": {
+            "type": "string",
+            "enum": [
+              "BANDWIDTH",
+              "LATENCY",
+              "JITTER"
+            ],
+            "description": "Metrics to be returned in the histogram. Defaults to BANDWIDTH."
+          },
+          "bucketSize": {
+            "type": "integer",
+            "description": "Specifies the width for every bucket in the histogram."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_internet_services_timeseries",
+      "description": "Track internet service ranking changes over time. Useful for monitoring how services like ChatGPT, Google, etc. rank over time.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dateRange": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+            },
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters). IMPORTANT: When using multiple dateRange values for comparison, filter array parameters (location, asn, continent, geoId) map positionally to each dateRange element. For example, with dateRange: [\"7d\", \"7dcontrol\"] and location: [\"PT\", \"PT\"], the first period uses PT and the control period also uses PT. If you only provide location: [\"PT\"], only the first period is filtered by PT while the control period defaults to worldwide data."
+          },
+          "dateStart": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+            },
+            "description": "Start of the date range. Either use this parameter together with `dateEnd` or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+            },
+            "description": "End of the date range. Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "serviceCategory": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Generative AI",
+                "E-commerce",
+                "Cryptocurrency Services",
+                "Email",
+                "Fast Fashion",
+                "Financial Services",
+                "News",
+                "Social Media",
+                "Weather",
+                "Jobs",
+                "Low cost E-commerce",
+                "Messaging",
+                "Metaverse & Gaming"
+              ]
+            },
+            "description": "Filters results by Internet service category."
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_outages_by_location",
+      "description": "Get outage counts aggregated by location. Useful for identifying which countries have the most Internet outages.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "dateRange": {
+            "type": "string",
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+          },
+          "dateStart": {
+            "type": "string",
+            "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "string",
+            "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_traffic_anomalies_by_location",
+      "description": "Get traffic anomalies aggregated by location. Shows which countries have the most detected outage signals, automatically detected by Radar.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "dateRange": {
+            "type": "string",
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+          },
+          "dateStart": {
+            "type": "string",
+            "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "string",
+            "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "VERIFIED",
+              "UNVERIFIED"
+            ],
+            "description": "Filter by anomaly verification status."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_routing_table_ases",
+      "description": "List all ASes in global routing tables with routing statistics (prefix counts, IPv4/IPv6 address count, RPKI validation status). Data comes from public BGP MRT archives.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "location": {
+            "type": "string",
+            "description": "Filters results by location. Specify a valid alpha-2 location code."
+          },
+          "sortBy": {
+            "type": "string",
+            "enum": [
+              "cone",
+              "pfxs",
+              "ipv4",
+              "ipv6",
+              "rpki_valid",
+              "rpki_invalid",
+              "rpki_unknown"
+            ],
+            "description": "Sort ASes by: cone (customer cone size), pfxs (total prefixes), ipv4/ipv6 (address count), or rpki_* (RPKI validation status)."
+          },
+          "sortOrder": {
+            "type": "string",
+            "enum": [
+              "ASC",
+              "DESC"
+            ],
+            "description": "Sort order (ascending or descending)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_top_ases_by_prefixes",
+      "description": "Get top ASes ordered by announced prefix count. Useful for understanding which networks have the largest routing footprint. Data comes from public BGP MRT archives and updates every 2 hours.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "country": {
+            "type": "string",
+            "description": "Filter by country (alpha-2 code)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_rpki_aspa_snapshot",
+      "description": "Retrieve a snapshot of current or historical RPKI ASPA (Autonomous System Provider Authorization) objects. ASPA objects define which ASNs are authorized upstream providers for a customer ASN, helping prevent route leaks and hijacks.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "customerAsn": {
+            "type": "integer",
+            "description": "Filter by customer ASN (the ASN that authorizes upstream providers)."
+          },
+          "providerAsn": {
+            "type": "integer",
+            "description": "Filter by provider ASN (the authorized upstream provider ASN)."
+          },
+          "rir": {
+            "type": "string",
+            "enum": [
+              "AFRINIC",
+              "APNIC",
+              "ARIN",
+              "LACNIC",
+              "RIPE_NCC"
+            ],
+            "description": "Filter by Regional Internet Registry (RIR)."
+          },
+          "location": {
+            "type": "string",
+            "description": "Filter by country (alpha-2 code)."
+          },
+          "date": {
+            "type": "string",
+            "description": "Date for historical ASPA snapshot (ISO 8601 format, e.g. 2024-01-15)."
+          },
+          "page": {
+            "type": "integer",
+            "description": "Page number for paginated ASPA results."
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Number of results per page for ASPA queries (1-100)."
+          },
+          "sortBy": {
+            "type": "string",
+            "enum": [
+              "customerAsn",
+              "providerAsn"
+            ],
+            "description": "Sort ASPA results by specified field."
+          },
+          "sortOrder": {
+            "type": "string",
+            "enum": [
+              "ASC",
+              "DESC"
+            ],
+            "description": "Sort order (ascending or descending)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_rpki_aspa_changes",
+      "description": "Retrieve RPKI ASPA changes over time, including additions, removals, and modifications of ASPA objects.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "customerAsn": {
+            "type": "integer",
+            "description": "Filter by customer ASN (the ASN that authorizes upstream providers)."
+          },
+          "providerAsn": {
+            "type": "integer",
+            "description": "Filter by provider ASN (the authorized upstream provider ASN)."
+          },
+          "changeType": {
+            "type": "string",
+            "enum": [
+              "addition",
+              "removal",
+              "modification"
+            ],
+            "description": "Filter by type of ASPA change."
+          },
+          "rir": {
+            "type": "string",
+            "enum": [
+              "AFRINIC",
+              "APNIC",
+              "ARIN",
+              "LACNIC",
+              "RIPE_NCC"
+            ],
+            "description": "Filter by Regional Internet Registry (RIR)."
+          },
+          "location": {
+            "type": "string",
+            "description": "Filter by country (alpha-2 code)."
+          },
+          "dateRange": {
+            "type": "string",
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+          },
+          "dateStart": {
+            "type": "string",
+            "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "string",
+            "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+          },
+          "sortBy": {
+            "type": "string",
+            "enum": [
+              "customerAsn",
+              "providerAsn"
+            ],
+            "description": "Sort ASPA results by specified field."
+          },
+          "sortOrder": {
+            "type": "string",
+            "enum": [
+              "ASC",
+              "DESC"
+            ],
+            "description": "Sort order (ascending or descending)."
+          },
+          "page": {
+            "type": "integer",
+            "description": "Page number for paginated ASPA results."
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Number of results per page for ASPA queries (1-100)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_bgp_rpki_aspa_timeseries",
+      "description": "Retrieve a timeseries of RPKI ASPA object counts over time.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "rir": {
+            "type": "string",
+            "enum": [
+              "AFRINIC",
+              "APNIC",
+              "ARIN",
+              "LACNIC",
+              "RIPE_NCC"
+            ],
+            "description": "Filter by Regional Internet Registry (RIR)."
+          },
+          "location": {
+            "type": "string",
+            "description": "Filter by country (alpha-2 code)."
+          },
+          "dateRange": {
+            "type": "string",
+            "description": "Filters results by date range. For example, use `7d` and `7dcontrol` to compare this week with the previous week. Use this parameter or set specific start and end dates (`dateStart` and `dateEnd` parameters)."
+          },
+          "dateStart": {
+            "type": "string",
+            "description": "Start date in ISO 8601 format (e.g., 2023-04-01T00:00:00Z). Either use this parameter together with `dateEnd`, or use `dateRange`."
+          },
+          "dateEnd": {
+            "type": "string",
+            "description": "End date in ISO 8601 format (e.g., 2023-04-30T23:59:59Z). Either use this parameter together with `dateStart`, or use `dateRange`."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "search_url_scans",
+      "description": "Search URL scans using ElasticSearch-like query syntax. Examples: 'page.domain:example.com', 'verdicts.malicious:true', 'page.asn:AS24940 AND hash:xxx', 'apikey:me AND date:[2025-01 TO 2025-02]'",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "ElasticSearch-like query to filter scans. Examples: 'page.domain:example.com', 'verdicts.malicious:true', 'page.asn:AS24940', 'date:[2025-01 TO 2025-02]'"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 10,
+            "description": "Limit the number of results (1-100, default 10)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "create_url_scan",
+      "description": "Submit a URL to scan. Returns the scan UUID which can be used to retrieve results.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "A valid URL including protocol (e.g., \"https://example.com\")."
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "Public",
+              "Unlisted"
+            ],
+            "default": "Public",
+            "description": "Scan visibility. Public scans appear in search results. Unlisted scans require the scan ID to access."
+          },
+          "screenshotResolution": {
+            "type": "string",
+            "enum": [
+              "desktop",
+              "mobile",
+              "tablet"
+            ],
+            "default": "desktop",
+            "description": "Screenshot resolution/device type."
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_url_scan",
+      "description": "Get the results of a URL scan by its UUID. Returns detailed information including verdicts, page info, requests, cookies, and more.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scanId": {
+            "type": "string",
+            "description": "The UUID of the scan."
+          }
+        },
+        "required": [
+          "scanId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_url_scan_screenshot",
+      "description": "Get the screenshot URL for a completed scan.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scanId": {
+            "type": "string",
+            "description": "The UUID of the scan."
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "desktop",
+              "mobile",
+              "tablet"
+            ],
+            "default": "desktop",
+            "description": "Screenshot resolution/device type."
+          }
+        },
+        "required": [
+          "scanId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_url_scan_har",
+      "description": "Get the HAR (HTTP Archive) data for a completed scan. Contains detailed network request/response information.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scanId": {
+            "type": "string",
+            "description": "The UUID of the scan."
+          }
+        },
+        "required": [
+          "scanId"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

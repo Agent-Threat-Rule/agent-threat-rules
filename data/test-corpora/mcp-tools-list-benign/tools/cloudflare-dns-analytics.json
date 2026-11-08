@@ -1,0 +1,121 @@
+{
+  "tools": [
+    {
+      "name": "zones_list",
+      "description": "List all zones under a Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Filter zones by name"
+          },
+          "status": {
+            "type": "string",
+            "description": "Filter zones by status (active, pending, initializing, moved, deleted, deactivated, read only)"
+          },
+          "page": {
+            "type": "number",
+            "minimum": 1,
+            "default": 1,
+            "description": "Page number for pagination"
+          },
+          "perPage": {
+            "type": "number",
+            "minimum": 5,
+            "maximum": 1000,
+            "default": 50,
+            "description": "Number of zones per page"
+          },
+          "order": {
+            "type": "string",
+            "default": "name",
+            "description": "Field to order results by (name, status, account_name)"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc",
+            "description": "Direction to order results (asc, desc)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "List zones",
+        "readOnlyHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "zone_details",
+      "description": "Get details for a specific Cloudflare zone",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "zoneId": {
+            "type": "string",
+            "description": "The ID of the zone to get details for"
+          }
+        },
+        "required": [
+          "zoneId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get zone details",
+        "readOnlyHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "dns_report",
+      "description": "Fetch the DNS Report for a given zone since a date",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "zone": {
+            "type": "string"
+          },
+          "days": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "zone",
+          "days"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "show_account_dns_settings",
+      "description": "Show DNS settings for current account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "show_zone_dns_settings",
+      "description": "Show DNS settings for a zone",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "zone": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "zone"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,255 @@
+{
+  "tools": [
+    {
+      "name": "zones_list",
+      "description": "List all zones under a Cloudflare account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Filter zones by name"
+          },
+          "status": {
+            "type": "string",
+            "description": "Filter zones by status (active, pending, initializing, moved, deleted, deactivated, read only)"
+          },
+          "page": {
+            "type": "number",
+            "minimum": 1,
+            "default": 1,
+            "description": "Page number for pagination"
+          },
+          "perPage": {
+            "type": "number",
+            "minimum": 5,
+            "maximum": 1000,
+            "default": 50,
+            "description": "Number of zones per page"
+          },
+          "order": {
+            "type": "string",
+            "default": "name",
+            "description": "Field to order results by (name, status, account_name)"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc",
+            "description": "Direction to order results (asc, desc)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "List zones",
+        "readOnlyHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "zone_details",
+      "description": "Get details for a specific Cloudflare zone",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "zoneId": {
+            "type": "string",
+            "description": "The ID of the zone to get details for"
+          }
+        },
+        "required": [
+          "zoneId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get zone details",
+        "readOnlyHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "graphql_schema_search",
+      "description": "Search the Cloudflare GraphQL API schema for types, fields, and enum values matching a keyword\n\n\t\tUse this tool when:\n\n\t\t\t- You are unsure which dataset to use for your query.\n\t\t\t- A user is looking for specific types, fields, or enum values in the Cloudflare GraphQL API schema.\n\n\t\tIMPORTANT GUIDELINES:\n\t\t\t- DO NOT query for dimensions unless the user explicitly asked to group by or show dimensions.\n\t\t\t- Only include fields that the user specifically requested in their query.\n\t\t\t- Keep queries as simple as possible while fulfilling the user's request.\n\n\t\tWorkflow:\n\t\t\t1. Use this tool to search for dataset types by keyword.\n\t\t\t2. When a relevant dataset type is found, immediately use graphql_schema_details to get the complete structure of that dataset.\n\t\t\t3. After understanding the schema structure, proceed directly to constructing and executing queries using the graphql_query tool.\n\t\t\t4. Do not use graphql_schema_overview or graphql_complete_schema after finding the relevant dataset - these are redundant steps.\n\n\t\tThis tool searches the Cloudflare GraphQL API schema for any schema elements (such as object types, field names, or enum options) that match a given keyword. It returns schema fragments and definitions to assist in constructing valid and precise GraphQL queries.\n\t\t",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "The keyword to search for in the schema"
+          },
+          "maxDetailsToFetch": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10,
+            "description": "Maximum number of types to fetch details for"
+          },
+          "includeInternalTypes": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to include internal types (those starting with __) in the search results"
+          },
+          "onlyObjectTypes": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to only include OBJECT kind types in the search results with descriptions"
+          }
+        },
+        "required": [
+          "keyword"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "graphql_schema_overview",
+      "description": "Fetch the high-level overview of the Cloudflare GraphQL API schema\n\t\t\n\t\tUse this tool when:\n\n\t\t\t- A user requests insights into the structure or capabilities of Cloudflare’s GraphQL API.\n\t\t\t- You need to explore available types, queries, mutations, or schema relationships exposed by Cloudflare’s GraphQL interface.\n\t\t\t- You're generating or validating GraphQL queries against Cloudflare’s schema.\n\t\t\t- You are troubleshooting or developing integrations with Cloudflare’s API and require up-to-date schema information.\n\n\t\tThis tool returns a high-level summary of the Cloudflare GraphQL API schema. It provides a structured outline of API entry points, data models, and relationships to help guide query construction or system integration.\n\t\t",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pageSize": {
+            "type": "number",
+            "minimum": 10,
+            "maximum": 1000,
+            "default": 100,
+            "description": "Number of types to return per page"
+          },
+          "page": {
+            "type": "number",
+            "minimum": 1,
+            "default": 1,
+            "description": "Page number to fetch"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "graphql_type_details",
+      "description": "Fetch detailed information about a specific GraphQL type (dataset)\n\n\t\tIMPORTANT: After exploring the schema, DO NOT generate overly complicated GraphQL queries that the user didn't explicitly ask for. Only include fields that were specifically requested.\n\n\t\tUse this tool when:\n\n\t\t\t- You need to explore the fields by the type name (dataset) for detailed information\n\t\t\t- You're building or debugging GraphQL queries and want to ensure the correct usage of schema components\n\t\t\t- You need contextual information about how a certain concept or object is represented in Cloudflare's GraphQL API.\n\n\t\tGuidelines for query construction:\n\t\t\t- Keep queries as simple as possible while fulfilling the user's request\n\t\t\t- Only include fields that the user specifically asked for\n\t\t\t- Do not add dimensions or additional fields unless explicitly requested\n\t\t\t- When in doubt, ask the user for clarification rather than creating a complex query\n\t\t",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "typeName": {
+            "type": "string",
+            "description": "The type name (dataset) of the GraphQL type to fetch details for"
+          },
+          "fieldsPageSize": {
+            "type": "number",
+            "minimum": 5,
+            "maximum": 500,
+            "default": 50,
+            "description": "Number of fields to return per page"
+          },
+          "fieldsPage": {
+            "type": "number",
+            "minimum": 1,
+            "default": 1,
+            "description": "Page number for fields to fetch"
+          },
+          "enumValuesPageSize": {
+            "type": "number",
+            "minimum": 5,
+            "maximum": 500,
+            "default": 50,
+            "description": "Number of enum values to return per page"
+          },
+          "enumValuesPage": {
+            "type": "number",
+            "minimum": 1,
+            "default": 1,
+            "description": "Page number for enum values to fetch"
+          }
+        },
+        "required": [
+          "typeName"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "graphql_complete_schema",
+      "description": "Fetch the complete Cloudflare GraphQL API schema (combines overview and important type details)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "typesPageSize": {
+            "type": "number",
+            "minimum": 10,
+            "maximum": 500,
+            "default": 100,
+            "description": "Number of types to return per page"
+          },
+          "typesPage": {
+            "type": "number",
+            "minimum": 1,
+            "default": 1,
+            "description": "Page number for types to fetch"
+          },
+          "includeRootTypeDetails": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to include detailed information about root types"
+          },
+          "maxTypeDetailsToFetch": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10,
+            "default": 3,
+            "description": "Maximum number of important types to fetch details for"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "graphql_query",
+      "description": "Execute a GraphQL query against the Cloudflare API\n\n\t\tIMPORTANT: ONLY execute the EXACT GraphQL query provided by the user. DO NOT generate complicated queries that the user didn't explicitly ask for.\n\n\t\tCRITICAL: When querying, make sure to set a LIMIT (e.g., first: 10, limit: 20) otherwise the response may be too large for the MCP server to process.\n\n\t\tUse this tool when:\n\n\t\t\t- A user provides a GraphQL query and expects real-time data from Cloudflare's API.\n\t\t\t- You need to retrieve live information from Cloudflare, such as analytics, logs, account data, or configuration details.\n\t\t\t- You want to validate the behavior of a GraphQL query or inspect its runtime results.\n\n\t\tThis tool sends a user-defined GraphQL query to the Cloudflare API and returns the raw response exactly as received. When filtering or querying by time, use ISO 8601 datetime format (e.g., \"2020-08-03T02:07:05Z\").\n\n\t\tFor each query execution, a clickable GraphQL API Explorer link will be provided in the response. Users can click this link to open the query in Cloudflare's GraphQL Explorer interface where they can further modify and experiment with the query.\n\n\t\tGuidelines:\n\t\t\t- Only use the exact query provided by the user. Do not modify or expand it unless explicitly requested.\n\t\t\t- Always suggest including limits in queries (e.g., first: 10, limit: 20) to prevent response size issues.\n\t\t\t- If a query fails due to size limits, advise the user to add or reduce limits in their query.\n\t\t",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "The GraphQL query to execute"
+          },
+          "variables": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Variables for the query"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "graphql_api_explorer",
+      "description": "Generate a Cloudflare GraphQL API Explorer link\n\n\t\tUse this tool when:\n\n\t\t\t- A user asks for any GraphQL queries and wants to explore them in the Cloudflare GraphQL API Explorer.\n\t\t\t- You want to provide a shareable link to a specific GraphQL query for the user to explore and modify.\n\t\t\t- You need to help the user visualize or interact with GraphQL queries in a user-friendly interface.\n\n\t\tThis tool generates a direct link to the Cloudflare GraphQL API Explorer with a pre-populated query and variables.\n\t\tThe response includes a clickable Markdown link that users can click to open the query in Cloudflare's interactive GraphQL playground.\n\t\tThe original query and variables are also displayed for reference.\n\t\t",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "The GraphQL query to include in the explorer link"
+          },
+          "variables": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Variables for the query in JSON format"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

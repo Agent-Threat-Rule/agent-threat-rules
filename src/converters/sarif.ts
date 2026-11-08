@@ -84,6 +84,11 @@ function toArtifactUri(inputFile: string): string {
   return inputFile;
 }
 
+/** Keep filesystem diagnostics useful without publishing the scanner's absolute path. */
+function skippedReasonForSarif(reason: string, file: string, uri: string): string {
+  return file === uri ? reason : reason.split(file).join(uri);
+}
+
 /**
  * Raw-octet SHA-256 of a file's bytes — the digest basis the shared envelope
  * profile joins layers on (claude-code-skill-security-check#24 §2): computed
@@ -121,6 +126,14 @@ export interface SarifOptions {
    * properties.enforced false, so a gate that counts results can leave it out.
    */
   readonly heldBack?: (match: ATRMatch) => boolean;
+  /** Properties of the run as a whole (SARIF run.properties), e.g. the tool-definition scope of `atr scan`. */
+  readonly runProperties?: Readonly<Record<string, unknown>>;
+  /** Extra properties for every result of one scan result (e.g. the tool name of a tools/list entry). */
+  readonly resultProperties?: (result: ScanResult) => Readonly<Record<string, unknown>> | undefined;
+  /** Files the tool deliberately skipped, reported as SARIF execution warnings. */
+  readonly skippedFiles?: readonly { readonly file: string; readonly reason: string }[];
+  /** Whether the invocation produced at least one scan result. */
+  readonly executionSuccessful?: boolean;
 }
 
 export function scanResultToSARIF(
@@ -213,10 +226,26 @@ export function scanResultToSARIF(
           content_hash: result.content_hash,
           ...(match.decidedBy ? { decided_by: match.decidedBy } : {}),
           ...(heldBack ? { enforced: false } : {}),
+          ...(options.resultProperties?.(result) ?? {}),
         },
       });
     }
   }
+
+  const toolExecutionNotifications = options.skippedFiles?.map(({ file, reason }) => {
+    const uri = toArtifactUri(file);
+    const safeReason = skippedReasonForSarif(reason, file, uri);
+    return {
+      descriptor: { id: 'ATR_SCAN_SKIPPED' },
+      level: 'warning',
+      message: { text: `Skipped ${uri}: ${safeReason}` },
+      locations: [{
+        physicalLocation: {
+          artifactLocation: { uri, uriBaseId: '%SRCROOT%' },
+        },
+      }],
+    };
+  }) ?? [];
 
   return {
     $schema: 'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json',
@@ -233,6 +262,13 @@ export function scanResultToSARIF(
           },
         },
         ...(artifacts.length > 0 ? { artifacts } : {}),
+        ...(toolExecutionNotifications.length > 0 ? {
+          invocations: [{
+            executionSuccessful: options.executionSuccessful ?? true,
+            toolExecutionNotifications,
+          }],
+        } : {}),
+        ...(options.runProperties ? { properties: options.runProperties } : {}),
         results: sarifResults,
       },
     ],

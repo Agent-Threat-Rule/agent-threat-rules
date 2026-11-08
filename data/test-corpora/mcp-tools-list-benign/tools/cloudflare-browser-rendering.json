@@ -1,0 +1,346 @@
+{
+  "tools": [
+    {
+      "name": "get_url_html_content",
+      "description": "Get page HTML content",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "browser": {
+            "type": "string",
+            "enum": [
+              "kitesurf"
+            ],
+            "description": "Browser that renders the page. Omit to use the default Chrome browser. Set to \"kitesurf\" to use the Kitesurf browser engine."
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_url_markdown",
+      "description": "Get page converted into Markdown",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "browser": {
+            "type": "string",
+            "enum": [
+              "kitesurf"
+            ],
+            "description": "Browser that renders the page. Omit to use the default Chrome browser. Set to \"kitesurf\" to use the Kitesurf browser engine."
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_url_screenshot",
+      "description": "Get page screenshot",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "viewport": {
+            "type": "object",
+            "properties": {
+              "height": {
+                "type": "number",
+                "default": 600
+              },
+              "width": {
+                "type": "number",
+                "default": 800
+              }
+            },
+            "additionalProperties": false
+          },
+          "browser": {
+            "type": "string",
+            "enum": [
+              "kitesurf"
+            ],
+            "description": "Browser that renders the page. Omit to use the default Chrome browser. Set to \"kitesurf\" to use the Kitesurf browser engine."
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_url_pdf",
+      "description": "Render a page to PDF",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "browser": {
+            "type": "string",
+            "enum": [
+              "kitesurf"
+            ],
+            "description": "Browser that renders the page. Omit to use the default Chrome browser. Set to \"kitesurf\" to use the Kitesurf browser engine."
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_url_snapshot",
+      "description": "Get page HTML content and a screenshot in a single call",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "browser": {
+            "type": "string",
+            "enum": [
+              "kitesurf"
+            ],
+            "description": "Browser that renders the page. Omit to use the default Chrome browser. Set to \"kitesurf\" to use the Kitesurf browser engine."
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "scrape_url_elements",
+      "description": "Scrape elements from a page by CSS selector",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "elements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "selector": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "selector"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "description": "CSS selectors of the elements to scrape"
+          },
+          "browser": {
+            "type": "string",
+            "enum": [
+              "kitesurf"
+            ],
+            "description": "Browser that renders the page. Omit to use the default Chrome browser. Set to \"kitesurf\" to use the Kitesurf browser engine."
+          }
+        },
+        "required": [
+          "url",
+          "elements"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_url_json",
+      "description": "Extract structured JSON from a page using AI. Provide a prompt and/or a response_format JSON schema to guide extraction.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "Natural-language instruction for what to extract"
+          },
+          "response_format": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "json_schema": {}
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false,
+            "description": "Optional JSON-schema response format to constrain the output"
+          },
+          "browser": {
+            "type": "string",
+            "enum": [
+              "kitesurf"
+            ],
+            "description": "Browser that renders the page. Omit to use the default Chrome browser. Set to \"kitesurf\" to use the Kitesurf browser engine."
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_url_links",
+      "description": "Get the list of links on a page",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "visibleLinksOnly": {
+            "type": "boolean",
+            "description": "Only return links that are visible in the rendered page"
+          },
+          "browser": {
+            "type": "string",
+            "enum": [
+              "kitesurf"
+            ],
+            "description": "Browser that renders the page. Omit to use the default Chrome browser. Set to \"kitesurf\" to use the Kitesurf browser engine."
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "start_crawl",
+      "description": "Start an asynchronous crawl of a website. Returns a job_id — poll get_crawl_result to retrieve records.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "render": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to render pages with a browser (vs. fetching raw HTML)"
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "How many links deep to crawl"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Maximum number of pages to crawl"
+          },
+          "browser": {
+            "type": "string",
+            "enum": [
+              "kitesurf"
+            ],
+            "description": "Browser that renders the crawled pages. Omit to use the default Chrome browser. Set to \"kitesurf\" to use the Kitesurf browser engine. Requires render to be true."
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_crawl_result",
+      "description": "Get the status and records of a crawl job started with start_crawl",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "cancel_crawl",
+      "description": "Cancel a running crawl job",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_browser_sessions",
+      "description": "List active Browser Run sessions for the account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "kill_browser_session",
+      "description": "Close (kill) a Browser Run session by its session ID",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

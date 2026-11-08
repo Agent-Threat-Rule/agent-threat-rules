@@ -1,6 +1,6 @@
 title: BOLA Cross-User Data Access Attempt (Semantic)
 id: ATR-2026-01614
-rule_version: 1
+rule_version: 2
 status: experimental
 description: |
   Detects Broken Object Level Authorization (BOLA / IDOR) attempts where
@@ -85,7 +85,7 @@ detection:
     # bare id reference is ordinary and is not matched.
     - field: user_input
       operator: regex
-      value: "(?i)\\b(?:account|user|record|customer)\\s*(?:id|number|no\\.?|#)?\\s*[:#]?\\s*\\d{1,10}\\b[\\s\\S]{0,60}\\b(?:even\\s+though|although|but)\\s+(?:i'?m|i\\s+am|my|mine)\\b"
+      value: "(?i)\\b(?:account|user|record|customer)\\s*(?:(?:id|number|no\\.?|#)\\s*)?(?:[:#]\\s*)?\\d{1,10}\\b[\\s\\S]{0,60}\\b(?:even\\s+though|although|but)\\s+(?:i'?m|i\\s+am|my|mine)\\b"
       description: "Numbered record requested with an explicit admission that it belongs to someone else"
   condition: any
   semantic:

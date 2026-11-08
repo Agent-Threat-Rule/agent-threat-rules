@@ -21,6 +21,8 @@ export interface FlywheelConfig {
   readonly maxFPRate?: number;
   /** Minimum shadow evaluations before promotion (default: 1000) */
   readonly minEvaluations?: number;
+  /** Minimum matches with recorded feedback before promotion (default: 1; unreviewed matches never count) */
+  readonly minReviewedMatches?: number;
   /** Callback when a rule is auto-promoted */
   readonly onPromote?: (rule: ATRRule, stats: PromotionCandidate['stats']) => void | Promise<void>;
   /** Callback when a new shadow rule is generated */
@@ -32,6 +34,8 @@ export class FlywheelManager {
   private readonly shadow: ShadowEvaluator;
   private readonly config: Required<FlywheelConfig>;
   private readonly existingIds = new Set<string>();
+  /** Rules already handed to onPromote, so a periodic promoteReady() does not promote them again. */
+  private readonly promotedIds = new Set<string>();
 
   constructor(config: FlywheelConfig = {}) {
     this.scaffolder = new RuleScaffolder({ author: 'ATR Flywheel (auto-generated)' });
@@ -39,6 +43,7 @@ export class FlywheelManager {
     this.config = {
       maxFPRate: config.maxFPRate ?? 0.001,
       minEvaluations: config.minEvaluations ?? 1000,
+      minReviewedMatches: config.minReviewedMatches ?? 1,
       onPromote: config.onPromote ?? (() => {}),
       onShadowRule: config.onShadowRule ?? (() => {}),
     };
@@ -62,13 +67,13 @@ export class FlywheelManager {
 
     // 1. Matched patterns from the Tier 4 detection — these ARE the attack signals
     if (match.matchedPatterns.length > 0) {
-      payloads.push(...match.matchedPatterns.filter((p) => p.length > 5));
+      payloads.push(...match.matchedPatterns.filter((p) => p.trim().length > 5));
     }
 
     // 2. Event fields (tool_args, tool_response, etc.) — more specific than content
     if (event.fields) {
       for (const value of Object.values(event.fields)) {
-        if (value && value.length > 10) {
+        if (value && value.trim().length > 10) {
           payloads.push(value.slice(0, 500));
         }
       }
@@ -130,15 +135,17 @@ export class FlywheelManager {
    * Call periodically (e.g., every 15 minutes).
    */
   async promoteReady(): Promise<readonly PromotionCandidate[]> {
-    const candidates = this.shadow.getPromotionCandidates(
-      this.config.maxFPRate,
-      this.config.minEvaluations
-    );
+    const candidates = this.shadow
+      .getPromotionCandidates(this.config.maxFPRate, this.config.minEvaluations, this.config.minReviewedMatches)
+      .filter((candidate) => !this.promotedIds.has(candidate.rule.id));
 
     for (const candidate of candidates) {
-      // Promote: change status from experimental to stable
+      // Promote: change status from experimental to stable. maturity stays
+      // 'draft', so ATREngine's lane gate still keeps the rule out of the
+      // enforce and alert lanes until it passes canPromote().
       const promoted = { ...candidate.rule, status: 'stable' as const };
       await this.config.onPromote(promoted, candidate.stats);
+      this.promotedIds.add(candidate.rule.id);
     }
 
     return candidates;

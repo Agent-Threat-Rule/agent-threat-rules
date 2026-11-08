@@ -1,0 +1,1273 @@
+{
+  "tools": [
+    {
+      "name": "get_active_alarms",
+      "description": "Gets all CloudWatch Alarms currently in ALARM state.\n\n        This tool retrieves all CloudWatch Alarms that are currently in the ALARM state,\n        including both metric alarms and composite alarms. Results are optimized for\n        LLM reasoning with summary-level information.\n\n        Usage: Use this tool to get an overview of all active alarms in your AWS account\n        for troubleshooting, monitoring, and operational awareness.\n\n        Args:\n            ctx: The MCP context object for error handling and logging.\n            max_items: Maximum number of alarms to return (default: 50).\n            region: AWS region to query. Defaults to AWS_REGION environment variable or us-east-1 if not set.\n            profile_name: AWS CLI Profile Name to use for AWS access. Falls back to AWS_PROFILE environment variable if not specified, or uses default AWS credential chain.\n\n        Returns:\n            ActiveAlarmsResponse: Response containing active alarms.\n\n        Example:\n            result = await get_active_alarms(ctx, max_items=25)\n            if isinstance(result, ActiveAlarmsResponse):\n                print(f\"Found {len(result.metric_alarms + result.composite_alarms)} active alarms\")\n                for alarm in result.metric_alarms:\n                    print(f\"Metric Alarm: {alarm.alarm_name}\")\n                for alarm in result.composite_alarms:\n                    print(f\"Composite Alarm: {alarm.alarm_name}\")\n        ",
+      "inputSchema": {
+        "properties": {
+          "max_items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 50,
+            "description": "Maximum number of alarms to return (default: 50). Large values may cause context window overflow and impact LLM performance.",
+            "title": "Max Items"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region to query. Defaults to AWS_REGION environment variable or us-east-1 if not set.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name to use for AWS access. Falls back to AWS_PROFILE environment variable if not specified, or uses default AWS credential chain.",
+            "title": "Profile Name"
+          }
+        },
+        "title": "get_active_alarmsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_alarm_history",
+      "description": "Gets the history for a CloudWatch alarm with time range suggestions for investigation.\n\n        This tool retrieves the history for a specified CloudWatch alarm, focusing primarily\n        on state transitions to ALARM state. It also provides suggested time ranges for\n        investigation based on the alarm's configuration and history.\n\n        Usage: Use this tool to understand when an alarm fired and get useful time ranges\n        for investigating the underlying issue using other CloudWatch tools. The tool is\n        particularly useful for identifying patterns like alarm flapping (going in and out\n        of alarm state frequently).\n\n        Args:\n            ctx: The MCP context object for error handling and logging.\n            region: AWS region to query. Defaults to AWS_REGION environment variable or us-east-1 if not set.\n            alarm_name: Name of the alarm to retrieve history for.\n            start_time: Optional start time for the history query. Defaults to 24 hours ago.\n            end_time: Optional end time for the history query. Defaults to current time.\n            history_item_type: Optional type of history items to retrieve. Defaults to 'StateUpdate'.\n            max_items: Maximum number of history items to return. Defaults to 50.\n            include_component_alarms: For composite alarms, whether to include details about component alarms.\n            profile_name: AWS CLI Profile Name to use for AWS access. Falls back to AWS_PROFILE environment variable if not specified, or uses default AWS credential chain.\n\n        Returns:\n            Union[AlarmHistoryResponse, CompositeAlarmComponentResponse]: Either a response containing\n            alarm history with time range suggestions, or component alarm details for composite alarms.\n\n        Example:\n            result = await get_alarm_history(\n                ctx,\n                alarm_name=\"my-cpu-alarm\",\n                start_time=\"2025-06-18T00:00:00Z\",\n                end_time=\"2025-06-19T00:00:00Z\"\n            )\n            if isinstance(result, AlarmHistoryResponse):\n                print(f\"Found {len(result.history_items)} history items\")\n                for suggestion in result.time_range_suggestions:\n                    print(f\"Suggested investigation time range: {suggestion.start_time} to {suggestion.end_time}\")\n        ",
+      "inputSchema": {
+        "properties": {
+          "alarm_name": {
+            "description": "Name of the alarm to retrieve history for",
+            "title": "Alarm Name",
+            "type": "string"
+          },
+          "start_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "The start time for the history query in ISO format (e.g., '2023-01-01T00:00:00Z') or as a datetime object. Defaults to 24 hours ago.",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "The end time for the history query in ISO format (e.g., '2023-01-01T00:00:00Z') or as a datetime object. Defaults to current time.",
+            "title": "End Time"
+          },
+          "history_item_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Type of history items to retrieve. Possible values: 'ConfigurationUpdate', 'StateUpdate', 'Action'. Defaults to 'StateUpdate'.",
+            "title": "History Item Type"
+          },
+          "max_items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 50,
+            "description": "Maximum number of history items to return (default: 50). Large values may cause context window overflow and impact LLM performance. Adjust time-range to limit responses.",
+            "title": "Max Items"
+          },
+          "include_component_alarms": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": false,
+            "description": "For composite alarms, whether to include details about component alarms. Defaults to false.",
+            "title": "Include Component Alarms"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region to query. Defaults to AWS_REGION environment variable or us-east-1 if not set.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name to use for AWS access. Falls back to AWS_PROFILE environment variable if not specified, or uses default AWS credential chain.",
+            "title": "Profile Name"
+          }
+        },
+        "required": [
+          "alarm_name"
+        ],
+        "title": "get_alarm_historyArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "describe_log_groups",
+      "description": "Lists AWS CloudWatch log groups and saved queries associated with them, optionally filtering by a name prefix.\n\n        This tool retrieves information about log groups in the account, or log groups in accounts linked to this account as a monitoring account.\n        If a prefix is provided, only log groups with names starting with the specified prefix are returned.\n\n        Additionally returns any user saved queries that are associated with any of the returned log groups.\n\n        Usage: Use this tool to discover log groups that you'd retrieve or query logs from and queries that have been saved by the user.\n\n        Returns:\n        --------\n        List of log group metadata dictionaries and saved queries associated with them\n           Each log group metadata contains details such as:\n                - logGroupName: The name of the log group.\n                - creationTime: Timestamp when the log group was created\n                - retentionInDays: Retention period, if set\n                - storedBytes: The number of bytes stored.\n                - kmsKeyId: KMS Key Id used for data encryption, if set\n                - dataProtectionStatus: Displays whether this log group has a protection policy, or whether it had one in the past, if set\n                - logGroupClass: Type of log group class\n                - logGroupArn: The Amazon Resource Name (ARN) of the log group. This version of the ARN doesn't include a trailing :* after the log group name.\n            Any saved queries that are applicable to the returned log groups are also included.\n        ",
+      "inputSchema": {
+        "properties": {
+          "account_identifiers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "When include_linked_accounts is set to True, use this parameter to specify the list of accounts to search. IMPORTANT: Only has affect if include_linked_accounts is True",
+            "title": "Account Identifiers"
+          },
+          "include_linked_accounts": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": false,
+            "description": "If the AWS account is a monitoring account, set this to True to have the tool return log groups in the accounts listed in account_identifiers.\n                If this parameter is set to true and account_identifiers contains a null value, the tool returns all log groups in the monitoring account and all log groups in all source accounts that are linked to the monitoring account.",
+            "title": "Include Linked Accounts"
+          },
+          "log_group_class": {
+            "anyOf": [
+              {
+                "enum": [
+                  "STANDARD",
+                  "INFREQUENT_ACCESS"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "If specified, filters for only log groups of the specified class.",
+            "title": "Log Group Class"
+          },
+          "log_group_name_prefix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "An exact prefix to filter log groups by name. IMPORTANT: Only log groups with names starting with this prefix will be returned.",
+            "title": "Log Group Name Prefix"
+          },
+          "max_items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "The maximum number of log groups to return.",
+            "title": "Max Items"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region to query. Defaults to AWS_REGION environment variable or us-east-1 if not set.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name to use for AWS access. Falls back to AWS_PROFILE environment variable if not specified, or uses default AWS credential chain.",
+            "title": "Profile Name"
+          }
+        },
+        "title": "describe_log_groupsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "analyze_log_group",
+      "description": "Analyzes a CloudWatch log group for anomalies, message patterns, and error patterns within a specified time window.\n\n        This tool performs an analysis of the specified log group by:\n        1. Discovering and checking log anomaly detectors associated with the log group\n        2. Retrieving anomalies from those detectors that fall within the specified time range\n        3. Identifying the top 5 most common message patterns\n        4. Finding the top 5 patterns containing error-related terms\n\n        Usage: Use this tool to detect anomalies and understand common patterns in your log data, particularly\n        focusing on error patterns that might indicate issues. This can help identify potential problems and\n        understand the typical behavior of your application.\n\n        Returns:\n        --------\n        A LogsAnalysisResult object containing:\n            - log_anomaly_results: Information about anomaly detectors and their findings\n                * anomaly_detectors: List of anomaly detectors for the log group\n                * anomalies: List of anomalies that fall within the specified time range\n            - top_patterns: Results of the query for most common message patterns\n            - top_patterns_containing_errors: Results of the query for patterns containing error-related terms\n                (error, exception, fail, timeout, fatal)\n        ",
+      "inputSchema": {
+        "properties": {
+          "log_group_arn": {
+            "description": "The log group arn to look for anomalies in, as returned by the describe_log_groups tools",
+            "title": "Log Group Arn",
+            "type": "string"
+          },
+          "start_time": {
+            "description": "ISO 8601 formatted start time for the CloudWatch Logs Insights query window (e.g., \"2025-04-19T20:00:00+00:00\").",
+            "title": "Start Time",
+            "type": "string"
+          },
+          "end_time": {
+            "description": "ISO 8601 formatted end time for the CloudWatch Logs Insights query window (e.g., \"2025-04-19T21:00:00+00:00\").",
+            "title": "End Time",
+            "type": "string"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region to query. Defaults to AWS_REGION environment variable or us-east-1 if not set.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name to use for AWS access. Falls back to AWS_PROFILE environment variable if not specified, or uses default AWS credential chain.",
+            "title": "Profile Name"
+          }
+        },
+        "required": [
+          "log_group_arn",
+          "start_time",
+          "end_time"
+        ],
+        "title": "analyze_log_groupArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "execute_log_insights_query",
+      "description": "Executes a CloudWatch Logs Insights query and waits for the results to be available.\n\n        IMPORTANT: The operation must include exactly one of the following parameters: log_group_names, or log_group_identifiers.\n\n        CRITICAL: The volume of returned logs can easily overwhelm the agent context window. Always include a limit in the query\n        (| limit 50) or using the limit parameter.\n\n        Usage: Use to query, filter, collect statistics, or find patterns in one or more log groups. For example, the following\n        query lists exceptions per hour.\n\n        ```\n        filter @message like /Exception/\n        | stats count(*) as exceptionCount by bin(1h)\n        | sort exceptionCount desc\n        ```\n\n        Returns:\n        --------\n            A dictionary containing the final query results, including:\n                - status: The current status of the query (e.g., Scheduled, Running, Complete, Failed, etc.)\n                - results: A list of the actual query results if the status is Complete.\n                - statistics: Query performance statistics\n                - messages: Any informational messages about the query\n        ",
+      "inputSchema": {
+        "properties": {
+          "log_group_names": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "The list of up to 50 log group names to be queried. CRITICAL: Exactly one of [log_group_names, log_group_identifiers] should be non-null.",
+            "maxLength": 50,
+            "title": "Log Group Names"
+          },
+          "log_group_identifiers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "The list of up to 50 logGroupIdentifiers to query. You can specify them by the log group name or ARN. If a log group that you're querying is in a source account and you're using a monitoring account, you must use the ARN. CRITICAL: Exactly one of [log_group_names, log_group_identifiers] should be non-null.",
+            "maxLength": 50,
+            "title": "Log Group Identifiers"
+          },
+          "start_time": {
+            "description": "ISO 8601 formatted start time for the CloudWatch Logs Insights query window (e.g., \"2025-04-19T20:00:00+00:00\").",
+            "title": "Start Time",
+            "type": "string"
+          },
+          "end_time": {
+            "description": "ISO 8601 formatted end time for the CloudWatch Logs Insights query window (e.g., \"2025-04-19T21:00:00+00:00\").",
+            "title": "End Time",
+            "type": "string"
+          },
+          "query_string": {
+            "description": "The query string in the Cloudwatch Log Insights Query Language. See https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_QuerySyntax.html.",
+            "title": "Query String",
+            "type": "string"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "The maximum number of log events to return. It is critical to use either this parameter or a `| limit <int>` operator in the query to avoid consuming too many tokens of the agent.",
+            "title": "Limit"
+          },
+          "max_timeout": {
+            "default": 30,
+            "description": "Maximum time in second to poll for complete results before giving up",
+            "title": "Max Timeout",
+            "type": "integer"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region to query. Defaults to AWS_REGION environment variable or us-east-1 if not set.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name to use for AWS access. Falls back to AWS_PROFILE environment variable if not specified, or uses default AWS credential chain.",
+            "title": "Profile Name"
+          }
+        },
+        "required": [
+          "start_time",
+          "end_time",
+          "query_string"
+        ],
+        "title": "execute_log_insights_queryArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_logs_insight_query_results",
+      "description": "Retrieves the results of a previously started CloudWatch Logs Insights query.\n\n        Usage: If a log query is started by execute_log_insights_query tool and has a polling time out, this tool can be used to try to retrieve\n        the query results again.\n\n        Returns:\n        --------\n            A dictionary containing the final query results, including:\n                - status: The current status of the query (e.g., Scheduled, Running, Complete, Failed, etc.)\n                - results: A list of the actual query results if the status is Complete.\n                - statistics: Query performance statistics\n                - messages: Any informational messages about the query\n        ",
+      "inputSchema": {
+        "properties": {
+          "query_id": {
+            "description": "The unique ID of the query to retrieve the results for. CRITICAL: This ID is returned by the execute_log_insights_query tool.",
+            "title": "Query Id",
+            "type": "string"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region to query. Defaults to AWS_REGION environment variable or us-east-1 if not set.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name to use for AWS access. Falls back to AWS_PROFILE environment variable if not specified, or uses default AWS credential chain.",
+            "title": "Profile Name"
+          }
+        },
+        "required": [
+          "query_id"
+        ],
+        "title": "get_logs_insight_query_resultsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "cancel_logs_insight_query",
+      "description": "Cancels an ongoing CloudWatch Logs Insights query. If the query has already ended, returns an error that the given query is not running.\n\n        Usage: If a log query is started by execute_log_insights_query tool and has a polling time out, this tool can be used to cancel\n        it prematurely to avoid incurring additional costs.\n\n        Returns:\n        --------\n            A LogsQueryCancelResult with a \"success\" key, which is True if the query was successfully cancelled.\n        ",
+      "inputSchema": {
+        "properties": {
+          "query_id": {
+            "description": "The unique ID of the ongoing query to cancel. CRITICAL: This ID is returned by the execute_log_insights_query tool.",
+            "title": "Query Id",
+            "type": "string"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region to query. Defaults to AWS_REGION environment variable or us-east-1 if not set.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name to use for AWS access. Falls back to AWS_PROFILE environment variable if not specified, or uses default AWS credential chain.",
+            "title": "Profile Name"
+          }
+        },
+        "required": [
+          "query_id"
+        ],
+        "title": "cancel_logs_insight_queryArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_metric_data",
+      "description": "Retrieves CloudWatch metric data for a specific metric.\n\n        This tool retrieves metric data from CloudWatch for a specific metric identified by its\n        namespace, metric name, and dimensions, within a specified time range. It can use either\n        standard GetMetricData API or CloudWatch Metrics Insights for more advanced querying.\n\n        The function automatically determines whether to use standard GetMetricData or Metrics Insights\n        based on the parameters provided. If any Metrics Insights specific parameters are provided\n        (group_by_dimension, schema_dimension_keys, limit, sort_order, or order_by_statistic), it will use Metrics Insights.\n\n        When using group_by_dimension, you must include that dimension in schema_dimension_keys.\n\n        For advanced use cases, the optional `queries` parameter accepts a list of `MetricDataQueryInput`\n        objects and unlocks capabilities that the single-metric path cannot express: percentile statistics\n        (p50, p90, p99...), metric math expressions (e.g. `errors / invocations`), and multi-metric\n        batching (retrieving many metrics in a single API call). When `queries` is provided,\n        `namespace`, `metric_name`, `dimensions`, and `statistic` are not used.\n\n        `start_time` is optional; when omitted, it defaults to 3 hours before `end_time`\n        (which itself defaults to the current UTC time).\n\n        Usage: Use this tool to get actual metric data from CloudWatch for analysis or visualization.\n\n        Returns:\n            GetMetricDataResponse: An object containing the metric data results\n\n        Example 1 (Standard GetMetricData):\n            result = await get_metric_data(\n                ctx,\n                namespace=\"AWS/EC2\",\n                metric_name=\"CPUUtilization\",\n                start_time=\"2023-01-01T00:00:00Z\",\n                dimensions=[\n                    Dimension(name=\"InstanceId\", value=\"i-1234567890abcdef0\")\n                ],\n                statistic=\"Average\"\n                # Period will be auto-calculated based on time window and target_datapoints\n            )\n\n        Example 2 (Metrics Insights with group by):\n            result = await get_metric_data(\n                ctx,\n                namespace=\"AWS/EC2\",\n                metric_name=\"CPUUtilization\",\n                start_time=\"2023-01-01T00:00:00Z\",\n                end_time=\"2023-01-02T00:00:00Z\",\n                statistic=\"AVG\",\n                schema_dimension_keys=[\"InstanceType\"],\n                group_by_dimension=\"InstanceType\"\n                # This will generate a query like: SELECT AVG(\"CPUUtilization\") FROM SCHEMA(\"AWS/EC2\", \"InstanceType\") GROUP BY \"InstanceType\"\n            )\n\n        Example 3 (Metrics Insights with schema dimension keys):\n            result = await get_metric_data(\n                ctx,\n                namespace=\"AWS/EC2\",\n                metric_name=\"CPUUtilization\",\n                start_time=\"2023-01-01T00:00:00Z\",\n                end_time=\"2023-01-02T00:00:00Z\",\n                statistic=\"AVG\",\n                schema_dimension_keys=[\"InstanceId\", \"InstanceType\"],\n                group_by_dimension=\"InstanceId\"\n                # This will generate a query like: SELECT AVG(\"CPUUtilization\") FROM SCHEMA(\"AWS/EC2\", \"InstanceId\", \"InstanceType\") GROUP BY \"InstanceId\"\n            )\n\n        Example 4 (Metrics Insights with ORDER BY and LIMIT to find the top 5 EC2 instances with the highest CPU utilization):\n            result = await get_metric_data(\n                ctx,\n                namespace=\"AWS/EC2\",\n                metric_name=\"CPUUtilization\",\n                start_time=\"2023-01-01T00:00:00Z\",\n                end_time=\"2023-01-02T00:00:00Z\",\n                statistic=\"AVG\",\n                schema_dimension_keys=[\"InstanceId\"],\n                group_by_dimension=\"InstanceId\",\n                sort_order=\"DESC\",\n                limit=5,\n                order_by_statistic=\"MAX\"\n                # This will generate a query like: SELECT AVG(\"CPUUtilization\") FROM SCHEMA(\"AWS/EC2\", \"InstanceId\") GROUP BY \"InstanceId\" ORDER BY MAX() DESC LIMIT 5\n            )\n\n        Example 5 (Metrics Insights with ORDER BY without sort direction to find the EC2 instances with the highest CPU utilization ordered by default ASC):\n            result = await get_metric_data(\n                ctx,\n                namespace=\"AWS/EC2\",\n                metric_name=\"CPUUtilization\",\n                start_time=\"2023-01-01T00:00:00Z\",\n                end_time=\"2023-01-02T00:00:00Z\",\n                statistic=\"AVG\",\n                schema_dimension_keys=[\"InstanceId\"],\n                group_by_dimension=\"InstanceId\",\n                order_by_statistic=\"MAX\"\n                # This will generate a query like: SELECT AVG(\"CPUUtilization\") FROM SCHEMA(\"AWS/EC2\", \"InstanceId\") GROUP BY \"InstanceId\" ORDER BY MAX()\n            )\n\n        Example 6 (Metrics Insights without ORDER BY clause to find the EC2 instances with the highest CPU utilization in no specific order):\n            result = await get_metric_data(\n                ctx,\n                namespace=\"AWS/EC2\",\n                metric_name=\"CPUUtilization\",\n                start_time=\"2023-01-01T00:00:00Z\",\n                end_time=\"2023-01-02T00:00:00Z\",\n                statistic=\"AVG\",\n                schema_dimension_keys=[\"InstanceId\"],\n                group_by_dimension=\"InstanceId\"\n                # This will generate a query like: SELECT AVG(\"CPUUtilization\") FROM SCHEMA(\"AWS/EC2\", \"InstanceId\") GROUP BY \"InstanceId\"\n                # No ORDER BY clause is added since neither order_by_statistic nor sort_order is specified\n            )\n\n        For each result:\n            for metric_result in result.metricDataResults:\n                print(f\"Metric: {metric_result.label}\")\n                for datapoint in metric_result.datapoints:\n                    print(f\"  {datapoint.timestamp}: {datapoint.value}\")\n\n        Example 7 (Advanced queries - Lambda Latency Percentiles):\n            Use the queries parameter for percentile statistics (p50, p90, p99).\n\n            result = await get_metric_data(\n                ctx,\n                start_time=\"2025-12-21T00:00:00Z\",\n                queries=[\n                    MetricDataQueryInput(\n                        id=\"p50\",\n                        metric_stat=MetricStatInput(\n                            namespace=\"AWS/Lambda\",\n                            metric_name=\"Duration\",\n                            dimensions=[Dimension(name=\"FunctionName\", value=\"my-api-function\")],\n                            statistic=\"p50\"\n                        ),\n                        label=\"Median Latency\"\n                    ),\n                    MetricDataQueryInput(\n                        id=\"p99\",\n                        metric_stat=MetricStatInput(\n                            namespace=\"AWS/Lambda\",\n                            metric_name=\"Duration\",\n                            dimensions=[Dimension(name=\"FunctionName\", value=\"my-api-function\")],\n                            statistic=\"p99\"\n                        ),\n                        label=\"p99 Latency\"\n                    )\n                ]\n            )\n\n        Example 8 (Advanced queries - Error Rate Calculation with Math Expression):\n            Use queries with math expressions to calculate derived metrics.\n\n            result = await get_metric_data(\n                ctx,\n                start_time=\"2025-12-21T00:00:00Z\",\n                queries=[\n                    MetricDataQueryInput(\n                        id=\"errors\",\n                        metric_stat=MetricStatInput(\n                            namespace=\"AWS/Lambda\",\n                            metric_name=\"Errors\",\n                            dimensions=[Dimension(name=\"FunctionName\", value=\"my-api-function\")],\n                            statistic=\"Sum\"\n                        ),\n                        return_data=False  # Don't include raw errors in results\n                    ),\n                    MetricDataQueryInput(\n                        id=\"invocations\",\n                        metric_stat=MetricStatInput(\n                            namespace=\"AWS/Lambda\",\n                            metric_name=\"Invocations\",\n                            dimensions=[Dimension(name=\"FunctionName\", value=\"my-api-function\")],\n                            statistic=\"Sum\"\n                        ),\n                        return_data=False  # Don't include raw invocations in results\n                    ),\n                    MetricDataQueryInput(\n                        id=\"error_rate\",\n                        expression=\"(errors / invocations) * 100\",\n                        label=\"Error Rate %\"\n                    )\n                ]\n            )\n            # Result contains only the calculated error_rate percentage\n        ",
+      "inputSchema": {
+        "properties": {
+          "namespace": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "The namespace of the metric. Required unless queries parameter is provided.",
+            "title": "Namespace"
+          },
+          "metric_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "The name of the metric. Required unless queries parameter is provided.",
+            "title": "Metric Name"
+          },
+          "start_time": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "The start time for the metric data query (ISO format or datetime). Defaults to 3 hours before end_time if not provided.",
+            "title": "Start Time"
+          },
+          "dimensions": {
+            "default": [],
+            "items": {},
+            "title": "Dimensions",
+            "type": "array"
+          },
+          "end_time": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "The end time for the metric data query (ISO format or datetime), defaults to current time",
+            "title": "End Time"
+          },
+          "statistic": {
+            "default": "AVG",
+            "description": "The statistic to use for the metric",
+            "enum": [
+              "AVG",
+              "COUNT",
+              "MAX",
+              "MIN",
+              "SUM",
+              "Average",
+              "Sum",
+              "Maximum",
+              "Minimum",
+              "SampleCount"
+            ],
+            "title": "Statistic",
+            "type": "string"
+          },
+          "target_datapoints": {
+            "default": 60,
+            "description": "Target number of data points to return (default: 60). Controls the granularity of the returned data.",
+            "title": "Target Datapoints",
+            "type": "integer"
+          },
+          "group_by_dimension": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Dimension name to group by in Metrics Insights mode. Must be included in schema_dimension_keys.",
+            "title": "Group By Dimension"
+          },
+          "schema_dimension_keys": {
+            "default": [],
+            "description": "List of dimension keys to include in the SCHEMA definition for Metrics Insights query.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Schema Dimension Keys",
+            "type": "array"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Maximum number of results to return in Metrics Insights mode (used with LIMIT clause).",
+            "title": "Limit"
+          },
+          "sort_order": {
+            "anyOf": [
+              {
+                "enum": [
+                  "ASC",
+                  "DESC"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Sort order for results when using ORDER BY in Metrics Insights. Can be 'ASC', 'DESC', or None.",
+            "title": "Sort Order"
+          },
+          "order_by_statistic": {
+            "anyOf": [
+              {
+                "enum": [
+                  "AVG",
+                  "COUNT",
+                  "MAX",
+                  "MIN",
+                  "SUM"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Statistic to use in the ORDER BY clause. Required if sort_order is specified.",
+            "title": "Order By Statistic"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region to query. Defaults to AWS_REGION environment variable or us-east-1 if not set.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name to use for AWS access. Falls back to AWS_PROFILE environment variable if not specified, or uses default AWS credential chain.",
+            "title": "Profile Name"
+          },
+          "queries": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Advanced queries for percentiles, math expressions, and multi-metric batching. When provided, namespace/metric_name/dimensions/statistic parameters are ignored.",
+            "title": "Queries"
+          }
+        },
+        "title": "get_metric_dataArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_metric_metadata",
+      "description": "Gets metadata for a CloudWatch metric including description, unit and recommended\n        statistics that can be used for metric data retrieval.\n\n        This tool retrieves comprehensive metadata about a specific CloudWatch metric\n        identified by its namespace and metric name. Note: This function uses local metadata\n        and does not make AWS API calls.\n\n        Usage: Use this tool to get detailed information about CloudWatch metrics,\n        including their descriptions, units, and recommended statistics to use.\n\n        Args:\n            ctx: The MCP context object for error handling and logging.\n            namespace: The metric namespace (e.g., \"AWS/EC2\", \"AWS/Lambda\")\n            metric_name: The name of the metric (e.g., \"CPUUtilization\", \"Duration\")\n\n        Returns:\n            Optional[MetricMetadata]: An object containing the metric's description,\n                                     recommended statistics, and unit if found,\n                                     None if no metadata is available.\n\n        Example:\n            result = await get_metric_metadata(\n                ctx,\n                namespace=\"AWS/EC2\",\n                metric_name=\"CPUUtilization\"\n            )\n            if result:\n                print(f\"Description: {result.description}\")\n                print(f\"Unit: {result.unit}\")\n                print(f\"Recommended Statistics: {result.recommendedStatistics}\")\n        ",
+      "inputSchema": {
+        "properties": {
+          "namespace": {
+            "description": "The namespace of the metric (e.g., 'AWS/EC2', 'AWS/Lambda')",
+            "title": "Namespace",
+            "type": "string"
+          },
+          "metric_name": {
+            "description": "The name of the metric (e.g., 'CPUUtilization', 'Duration')",
+            "title": "Metric Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "namespace",
+          "metric_name"
+        ],
+        "title": "get_metric_metadataArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "analyze_metric",
+      "description": "Analyzes CloudWatch metric data to determine seasonality, trend, data density and statistical properties.\n\n        This tool provides RAW DATA ONLY about historical metric data and performs analysis including:\n        - Seasonality detection\n        - Trend analysis\n        - Data density and publishing period\n        - Advanced statistical measures (min/max/median, std dev, noise)\n\n        Usage: Use this tool to get objective metric analysis data.\n\n        Args:\n            ctx: The MCP context object for error handling and logging.\n            namespace: The metric namespace (e.g., \"AWS/EC2\", \"AWS/Lambda\")\n            metric_name: The name of the metric (e.g., \"CPUUtilization\", \"Duration\")\n            dimensions: List of dimensions with name and value pairs\n            region: AWS region to query. Defaults to AWS_REGION environment variable or us-east-1 if not set.\n            profile_name: AWS CLI Profile Name to use for AWS access. Falls back to AWS_PROFILE environment variable if not specified, or uses default AWS credential chain.\n            statistic: The statistic to use for metric analysis. For guidance on choosing the correct statistic, refer to the get_recommended_metric_alarms tool.\n\n        Returns:\n            Dict[str, Any]: Analysis results including:\n                - message: Status message indicating success or reason for empty result\n                - seasonality_seconds: Detected seasonality period in seconds\n                - trend: Trend direction (INCREASING, DECREASING, or NONE)\n                - statistics: Statistical measures (std_deviation, variance, etc.)\n                - data_quality: Data density and publishing period information\n\n        Example:\n            analysis = await analyze_metric(\n                ctx,\n                namespace=\"AWS/EC2\",\n                metric_name=\"CPUUtilization\",\n                dimensions=[\n                    Dimension(name=\"InstanceId\", value=\"i-1234567890abcdef0\")\n                ]\n            )\n            print(f\"Status: {analysis['message']}\")\n            print(f\"Seasonality: {analysis['seasonality_seconds']} seconds\")\n            print(f\"Trend: {analysis['trend']}\")\n        ",
+      "inputSchema": {
+        "properties": {
+          "namespace": {
+            "description": "The namespace of the metric (e.g., 'AWS/EC2', 'AWS/Lambda')",
+            "title": "Namespace",
+            "type": "string"
+          },
+          "metric_name": {
+            "description": "The name of the metric (e.g., 'CPUUtilization', 'Duration')",
+            "title": "Metric Name",
+            "type": "string"
+          },
+          "dimensions": {
+            "default": null,
+            "description": "List of dimensions that identify the metric, each with name and value",
+            "items": {},
+            "title": "Dimensions",
+            "type": "array"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region to query. Defaults to AWS_REGION environment variable or us-east-1 if not set.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name to use for AWS access. Falls back to AWS_PROFILE environment variable if not specified, or uses default AWS credential chain.",
+            "title": "Profile Name"
+          },
+          "statistic": {
+            "default": "AVG",
+            "description": "The statistic to use for the metric analysis",
+            "enum": [
+              "AVG",
+              "COUNT",
+              "MAX",
+              "MIN",
+              "SUM",
+              "Average",
+              "Sum",
+              "Maximum",
+              "Minimum",
+              "SampleCount"
+            ],
+            "title": "Statistic",
+            "type": "string"
+          }
+        },
+        "required": [
+          "namespace",
+          "metric_name"
+        ],
+        "title": "analyze_metricArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_recommended_metric_alarms",
+      "description": "Gets recommended alarms for a CloudWatch metric.\n\n        This tool retrieves alarm recommendations for a specific CloudWatch metric\n        identified by its namespace, metric name, and dimensions. The recommendations\n        are filtered to match the provided dimensions.\n\n        Usage: Use this tool to get recommended alarm configurations for CloudWatch metrics,\n        including thresholds, evaluation periods, and other alarm settings.\n\n        Args:\n            ctx: The MCP context object for error handling and logging.\n            namespace: The metric namespace (e.g., \"AWS/EC2\", \"AWS/Lambda\")\n            metric_name: The name of the metric (e.g., \"CPUUtilization\", \"Duration\")\n            dimensions: List of dimensions with name and value pairs\n            region: AWS region to query. Defaults to AWS_REGION environment variable or us-east-1 if not set.\n            profile_name: AWS CLI Profile Name to use for AWS access. Falls back to AWS_PROFILE environment variable if not specified, or uses default AWS credential chain.\n            statistic: The statistic to use for alarm recommendations. Must match the metric's data type:\n                - Aggregate count metrics (RequestCount, Errors, Faults, Throttles, CacheHits, Connections, EventsProcessed): Use 'Sum'\n                - Event occurrence metrics (Invocations, CacheMisses): Use 'SampleCount'\n                - Utilization metrics (CPUUtilization, MemoryUtilization, DiskUtilization, NetworkUtilization): Use 'Average'\n                - Latency/Time metrics (Duration, Latency, ResponseTime, ProcessingTime, Delay, ExecutionTime, WaitTime): Use 'Average'\n                - Size metrics (PayloadSize, MessageSize, RequestSize, BodySize): Use 'Average'\n                If uncertain about the correct statistic for a custom metric, ask the user\n                to confirm the metric type before generating recommendations. Using the wrong statistic\n                (e.g., 'Average' on Invocations) will produce ineffective alarm thresholds\n\n        Returns:\n            AlarmRecommendationResult: A result containing alarm recommendations and optional message.\n                                     Empty recommendations list if no recommendations are found.\n\n        Example:\n            recommendations = await get_recommended_metric_alarms(\n                ctx,\n                namespace=\"AWS/EC2\",\n                metric_name=\"StatusCheckFailed_Instance\",\n                dimensions=[\n                    Dimension(name=\"InstanceId\", value=\"i-1234567890abcdef0\")\n                ]\n            )\n            for alarm in recommendations:\n                print(f\"Alarm: {alarm.alarmDescription}\")\n                print(f\"Threshold: {alarm.threshold.staticValue}\")\n        ",
+      "inputSchema": {
+        "properties": {
+          "namespace": {
+            "description": "The namespace of the metric (e.g., 'AWS/EC2', 'AWS/Lambda')",
+            "title": "Namespace",
+            "type": "string"
+          },
+          "metric_name": {
+            "description": "The name of the metric (e.g., 'CPUUtilization', 'Duration')",
+            "title": "Metric Name",
+            "type": "string"
+          },
+          "dimensions": {
+            "default": null,
+            "description": "List of dimensions that identify the metric, each with name and value",
+            "items": {},
+            "title": "Dimensions",
+            "type": "array"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region to query. Defaults to AWS_REGION environment variable or us-east-1 if not set.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name to use for AWS access. Falls back to AWS_PROFILE environment variable if not specified, or uses default AWS credential chain.",
+            "title": "Profile Name"
+          },
+          "statistic": {
+            "default": "AVG",
+            "description": "The statistic to use for alarm recommendations",
+            "enum": [
+              "AVG",
+              "COUNT",
+              "MAX",
+              "MIN",
+              "SUM",
+              "Average",
+              "Sum",
+              "Maximum",
+              "Minimum",
+              "SampleCount"
+            ],
+            "title": "Statistic",
+            "type": "string"
+          }
+        },
+        "required": [
+          "namespace",
+          "metric_name"
+        ],
+        "title": "get_recommended_metric_alarmsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "execute_promql_query",
+      "description": "Execute an instant PromQL query against CloudWatch.\n\n        Returns the current value of metrics at a single point in time (instant vector).\n        For time series over a range, use execute_promql_range_query instead.\n\n        Use this tool when:\n        - The user provides a PromQL expression\n        - The user references OTLP-ingested metrics or labels (@resource.*, @aws.*, @instrumentation.*)\n        - The user asks about enriched vended AWS metrics with OTel labels\n        - The user wants to query by AWS resource tags (@aws.tag.*)\n\n        Use get_metric_data instead when:\n        - The user references classic CloudWatch namespaces/dimensions (AWS/EC2, etc.)\n        - The user wants Metrics Insights SQL syntax\n\n        PromQL label conventions (OTLP scope to label mapping):\n        - @resource.{attr} - OTel resource attributes (e.g., @resource.service.name=\"myservice\")\n        - @instrumentation.{attr} - instrumentation scope (e.g., @instrumentation.@name=\"cloudwatch.aws/ec2\")\n        - @datapoint.{attr} or bare - datapoint attributes / CW dimensions (e.g., InstanceId=\"i-xxx\")\n        - @aws.account_id, @aws.region - AWS system labels\n        - @aws.tag.{Key} - AWS resource tags (e.g., @aws.tag.Environment=\"production\", @aws.tag.Team=\"backend\")\n\n        For enriched vended AWS metrics, use histogram functions\n        (OTel enrichment must be enabled first: `aws cloudwatch start-otel-enrichment`):\n        - histogram_avg({CPUUtilization, \"@instrumentation.@name\"=\"cloudwatch.aws/ec2\"})\n        - histogram_sum({Invocations, FunctionName=\"my-func\"})\n\n        Limits: max 500 series returned, 7-day range, 20s timeout.\n\n        Example queries:\n        - {\"http.server.active_requests\", \"@resource.service.name\"=\"myservice\"}\n        - histogram_avg({CPUUtilization, \"@instrumentation.@name\"=\"cloudwatch.aws/ec2\"})\n        - sum by (\"@aws.tag.Team\")(histogram_sum({Invocations, \"@instrumentation.@name\"=\"cloudwatch.aws/lambda\"}))\n        ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "The PromQL query to execute",
+            "title": "Query",
+            "type": "string"
+          },
+          "time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Evaluation timestamp (RFC3339 or Unix timestamp). Defaults to current time.",
+            "title": "Time"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region. Defaults to AWS_REGION env or us-east-1.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name. Falls back to AWS_PROFILE env or default credential chain.",
+            "title": "Profile Name"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "execute_promql_queryArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "execute_promql_range_query",
+      "description": "Execute a PromQL range query against CloudWatch.\n\n        Returns time series data over a time range (matrix). Use for trend analysis and graphs.\n\n        Use this tool when:\n        - The user provides a PromQL expression and wants data over a time window\n        - The user references OTLP-ingested metrics or labels (@resource.*, @aws.*, @instrumentation.*)\n        - The user asks about enriched vended AWS metrics with OTel labels\n\n        Use get_metric_data instead when:\n        - The user references classic CloudWatch namespaces/dimensions (AWS/EC2, etc.)\n        - The user wants Metrics Insights SQL syntax\n\n        For enriched vended AWS metrics, use histogram functions\n        (OTel enrichment must be enabled first: `aws cloudwatch start-otel-enrichment`):\n        - histogram_avg({CPUUtilization, \"@instrumentation.@name\"=\"cloudwatch.aws/ec2\"})\n        - histogram_sum({Errors, \"@instrumentation.@name\"=\"cloudwatch.aws/lambda\", \"@aws.tag.Team\"=\"backend\"})\n\n        Limits: max 500 series, max 7-day range (including lookback), 20s timeout.\n\n        Example:\n            query: 'avg_over_time({\"http.server.active_requests\", \"@resource.service.name\"=\"myservice\"}[5m])'\n            start: \"2024-01-01T00:00:00Z\"\n            end: \"2024-01-01T01:00:00Z\"\n            step: \"5m\"\n        ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "The PromQL query to execute",
+            "title": "Query",
+            "type": "string"
+          },
+          "start": {
+            "description": "Start timestamp (RFC3339 or Unix timestamp)",
+            "title": "Start",
+            "type": "string"
+          },
+          "end": {
+            "description": "End timestamp (RFC3339 or Unix timestamp)",
+            "title": "End",
+            "type": "string"
+          },
+          "step": {
+            "description": "Query resolution step width (e.g., '60s', '5m', '1h')",
+            "title": "Step",
+            "type": "string"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region. Defaults to AWS_REGION env or us-east-1.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name. Falls back to AWS_PROFILE env or default credential chain.",
+            "title": "Profile Name"
+          }
+        },
+        "required": [
+          "query",
+          "start",
+          "end",
+          "step"
+        ],
+        "title": "execute_promql_range_queryArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_promql_label_values",
+      "description": "Get values for a specific PromQL label from CloudWatch.\n\n        Use label_name=\"__name__\" to list all available metric names.\n        Use label_name=\"@resource.service.name\" to list all services.\n\n        Use this tool when:\n        - The user wants to discover available metrics via PromQL\n        - The user wants to see what values exist for a label\n        - The user is exploring OTLP-ingested or enriched vended metrics\n\n        Limits: max 10,000 values returned per request.\n\n        Examples:\n        - label_name=\"__name__\" → list all metric names\n        - label_name=\"@resource.service.name\" → list all service names\n        - label_name=\"@instrumentation.@name\" → list all instrumentation scopes\n        - label_name=\"@aws.tag.Environment\" → list all Environment tag values\n        ",
+      "inputSchema": {
+        "properties": {
+          "label_name": {
+            "description": "Label name to get values for (e.g., \"__name__\" for metric names, \"@resource.service.name\" for services)",
+            "title": "Label Name",
+            "type": "string"
+          },
+          "match": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional series selectors to filter results (e.g., ['{\"@instrumentation.@name\"=\"cloudwatch.aws/ec2\"}'])",
+            "title": "Match"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional start timestamp (RFC3339 or Unix)",
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional end timestamp (RFC3339 or Unix)",
+            "title": "End"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region. Defaults to AWS_REGION env or us-east-1.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name. Falls back to AWS_PROFILE env or default credential chain.",
+            "title": "Profile Name"
+          }
+        },
+        "required": [
+          "label_name"
+        ],
+        "title": "get_promql_label_valuesArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_promql_series",
+      "description": "Find time series matching label selectors in CloudWatch.\n\n        Returns the label sets of all series matching the provided matchers.\n        Useful for discovering what series exist and their label structure.\n\n        Use this tool when:\n        - The user wants to explore what time series exist for a metric\n        - The user wants to see the full label set of matching series\n        - The user is investigating OTLP-ingested or enriched vended metrics\n\n        Limits: max 10,000 series returned per request.\n\n        Example:\n            match: ['{\"@instrumentation.@name\"=\"cloudwatch.aws/ec2\"}']\n        ",
+      "inputSchema": {
+        "properties": {
+          "match": {
+            "description": "Series selectors to match (e.g., ['{\"http.server.active_requests\", \"@resource.service.name\"=\"myservice\"}'])",
+            "items": {
+              "type": "string"
+            },
+            "title": "Match",
+            "type": "array"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional start timestamp (RFC3339 or Unix)",
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional end timestamp (RFC3339 or Unix)",
+            "title": "End"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region. Defaults to AWS_REGION env or us-east-1.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name. Falls back to AWS_PROFILE env or default credential chain.",
+            "title": "Profile Name"
+          }
+        },
+        "required": [
+          "match"
+        ],
+        "title": "get_promql_seriesArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_promql_labels",
+      "description": "Get all label names available in CloudWatch PromQL.\n\n        Returns a list of all label names. Useful for discovering the label structure\n        of OTLP-ingested metrics and enriched vended AWS metrics.\n\n        Use this tool when:\n        - The user wants to know what labels/dimensions are available\n        - The user is exploring the label structure of their metrics\n\n        Common labels include:\n        - __name__ (metric name)\n        - @resource.service.name, @resource.cloud.region, @resource.cloud.account.id (OTel resource attributes)\n        - @instrumentation.@name (instrumentation scope, e.g., \"cloudwatch.aws/ec2\", \"cloudwatch.aws/lambda\")\n        - @aws.account_id, @aws.region (AWS system labels)\n        - @aws.tag.{Key} (AWS resource tags, e.g., @aws.tag.Environment, @aws.tag.Team)\n        - Bare dimension names (e.g., InstanceId, FunctionName) — these are datapoint attributes\n\n        Limits: max 10,000 labels returned per request.\n        ",
+      "inputSchema": {
+        "properties": {
+          "match": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional series selectors to filter which labels are returned",
+            "title": "Match"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional start timestamp (RFC3339 or Unix)",
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional end timestamp (RFC3339 or Unix)",
+            "title": "End"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS region. Defaults to AWS_REGION env or us-east-1.",
+            "title": "Region"
+          },
+          "profile_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AWS CLI Profile Name. Falls back to AWS_PROFILE env or default credential chain.",
+            "title": "Profile Name"
+          }
+        },
+        "title": "get_promql_labelsArguments",
+        "type": "object"
+      }
+    }
+  ]
+}

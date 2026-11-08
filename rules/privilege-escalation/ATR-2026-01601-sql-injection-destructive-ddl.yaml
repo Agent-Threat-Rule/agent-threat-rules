@@ -17,17 +17,18 @@ maturity: stable
 severity: critical
 references:
   owasp_llm:
-    - "LLM02:2025"
+    - "LLM05:2025"
   owasp_agentic:
-    - "ASI03:2026"
+    - "ASI02:2026"
   mitre_atlas:
-    - "AML.T0043 - Craft Adversarial Data"
+    - "AML.T0053 - AI Agent Tool Invocation"
+    - "AML.T0101 - Data Destruction via AI Agent Tool Invocation"
   mitre_attack:
     - "T1485 - Data Destruction"
 compliance:
   owasp_llm:
-    - id: "LLM02:2025"
-      context: "Destructive DDL injection causes permanent data loss and denial of service to legitimate users."
+    - id: "LLM05:2025"
+      context: "The patterns match a quote-and-semicolon break or a SQL comment marker followed by DROP TABLE, DATABASE, INDEX or VIEW, TRUNCATE or DELETE FROM, and DROP TABLE followed by a comment, in tool arguments or user input. LLM05:2025 lists LLM-generated SQL executed without parameterization as improper output handling; these statements delete data or schema in the database the tool queries."
       strength: primary
   nist_ai_rmf:
     - subcategory: "MS.2.7"
@@ -67,7 +68,7 @@ detection:
   conditions:
     - field: tool_args
       operator: regex
-      value: "(?i)(?:';|\"\\s*;|--)\\s*(?:DROP\\s+(?:TABLE|DATABASE|INDEX|VIEW)|TRUNCATE\\s+(?:TABLE\\s+)?\\w|DELETE\\s+FROM\\s+\\w)"
+      value: "(?i)(?:'\\s*;|\"\\s*;|--)\\s*(?:DROP\\s+(?:TABLE|DATABASE|INDEX|VIEW)|TRUNCATE\\s+(?:TABLE\\s+)?\\w|DELETE\\s+FROM\\s+\\w)"
       description: "SQL injection: quote-termination followed by destructive DDL"
     - field: tool_args
       operator: regex
@@ -75,7 +76,7 @@ detection:
       description: "DROP TABLE with comment suppressor"
     - field: user_input
       operator: regex
-      value: "(?i)(?:';|\"\\s*;)\\s*(?:DROP\\s+TABLE|TRUNCATE|DELETE\\s+FROM\\s+\\w)"
+      value: "(?i)(?:'\\s*;|\"\\s*;)\\s*(?:DROP\\s+TABLE|TRUNCATE|DELETE\\s+FROM\\s+\\w)"
       description: "Destructive DDL injection in user input"
   condition: any
   false_positives:
@@ -103,6 +104,12 @@ test_cases:
     - tool_args: "{\"filter\": \"x'; TRUNCATE TABLE orders; --\"}"
       expected: triggered
       description: "TRUNCATE TABLE injection"
+    - tool_args: "{\"filter\": \"1' ; TRUNCATE TABLE accounts; --\"}"
+      expected: triggered
+      description: "TRUNCATE with a space between the quote and the semicolon (issue #620)"
+    - tool_args: "{\"id\": \"7' ; DELETE FROM sessions; --\"}"
+      expected: triggered
+      description: "DELETE FROM with a space between the quote and the semicolon (issue #620)"
     - user_input: "Find products with name = \"'; DROP TABLE products; --\""
       expected: triggered
       description: "Destructive DDL in user-facing search input"

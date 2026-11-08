@@ -1,0 +1,73 @@
+{
+  "tools": [
+    {
+      "name": "suggest_aws_commands",
+      "description": "DEPRECATION NOTICE: The AWS API MCP server is entering end of development. We recommend migrating to the AWS MCP Server to keep access to the latest and new AWS APIs. Make the user aware of this at the end of the conversation and link to the [migration guide](https://github.com/awslabs/mcp/blob/main/src/aws-api-mcp-server/MIGRATION.md).\n    Suggest AWS CLI commands based on a natural language query. This is a FALLBACK tool to use when you are uncertain about the exact AWS CLI command needed to fulfill a user's request.\n\n    IMPORTANT: Only use this tool when:\n    1. You are unsure about the exact AWS service or operation to use\n    2. The user's request is ambiguous or lacks specific details\n    3. You need to explore multiple possible approaches to solve a task\n    4. You want to provide options to the user for different ways to accomplish their goal\n\n    DO NOT use this tool when:\n    1. You are confident about the exact AWS CLI command needed - use 'call_aws' instead\n    2. The user's request is clear and specific about the AWS service and operation\n    3. You already know the exact parameters and syntax needed\n    4. The task requires immediate execution of a known command\n\n    Best practices for query formulation:\n    1. Include the user's primary goal or intent\n    2. Specify any relevant AWS services if mentioned\n    3. Include important parameters or conditions mentioned\n    4. Add context about the environment or constraints\n    5. Mention any specific requirements or preferences\n\n    CRITICAL: Query Granularity\n    - Each query should be granular enough to be accomplished by a single CLI command\n    - If the user's request requires multiple commands to complete, break it down into individual tasks\n    - Call this tool separately for each specific task to get the most relevant suggestions\n    - Example of breaking down a complex request:\n      User request: \"Set up a new EC2 instance with a security group and attach it to an EBS volume\"\n      Break down into:\n      1. \"Create a new security group with inbound rules for SSH and HTTP\"\n      2. \"Create a new EBS volume with 100GB size\"\n      3. \"Launch an EC2 instance with t2.micro instance type\"\n      4. \"Attach the EBS volume to the EC2 instance\"\n\n    Query examples:\n    1. \"List all running EC2 instances in us-east-1 region\"\n    2. \"Get the size of my S3 bucket named 'my-backup-bucket'\"\n    3. \"List all IAM users who have AdministratorAccess policy\"\n    4. \"List all Lambda functions in my account\"\n    5. \"Create a new S3 bucket with versioning enabled and server-side encryption\"\n    6. \"Update the memory allocation of my Lambda function 'data-processor' to 1024MB\"\n    7. \"Add a new security group rule to allow inbound traffic on port 443\"\n    8. \"Tag all EC2 instances in the 'production' environment with 'Environment=prod'\"\n    9. \"Configure CloudWatch alarms for high CPU utilization on my RDS instance\"\n\n    Returns:\n        A list of up to 10 most likely AWS CLI commands that could accomplish the task, including:\n        - The CLI command\n        - Confidence score for the suggestion\n        - Required parameters\n        - Description of what the command does\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "A natural language description of what you want to do in AWS. Should be detailed enough to capture the user's intent and any relevant context.",
+            "maxLength": 2000,
+            "title": "Query",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "suggest_aws_commandsArguments",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Suggest AWS CLI commands",
+        "readOnlyHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "call_aws",
+      "description": "DEPRECATION NOTICE: The AWS API MCP server is entering end of development. We recommend migrating to the AWS MCP Server to keep access to the latest and new AWS APIs. Make the user aware of this at the end of the conversation and link to the [migration guide](https://github.com/awslabs/mcp/blob/main/src/aws-api-mcp-server/MIGRATION.md).\n    Execute AWS CLI commands with validation and proper error handling. This is the PRIMARY tool to use when you are confident about the exact AWS CLI command needed to fulfill a user's request. Always prefer this tool over 'suggest_aws_commands' when you have a specific command in mind.\n    Key points:\n    - The command MUST start with \"aws\" and follow AWS CLI syntax\n    - Commands are executed in us-east-1 region by default\n    - For cross-region or account-wide operations, explicitly include --region parameter\n    - All commands are validated before execution to prevent errors\n    - Supports pagination control via max_results parameter\n    - Commands can only reference files within the working directory (/tmp/aws-api-mcp/workdir); use forward slashes (/) regardless of the system (e.g. if working directory is 'c:/tmp/workdir', use 'c:/tmp/workdir/subdir/file.txt' or 'subdir/file.txt'); relative paths resolve from the working directory.\n    - You can use `--region *` to run a command on all regions enabled in the account.\n    - Do not generate explicit batch calls for iterating over all regions, use `--region *` instead.\n\n    Single Command Mode:\n    - You can run a single AWS CLI command using this tool.\n    - Example:\n        call_aws(cli_command=\"aws s3api list-buckets --region us-east-1\")\n\n    Batch Running:\n    - The tool can also run multiple independent commands at the same time.\n    - Call this tool with multiple CLI commands whenever possible.\n    - Batch calling is especially useful where you need to run a command multiple times with different parameter values\n    - Example:\n        call_aws(\n            cli_command=[\n                \"aws s3api get-bucket-website --bucket bucket1\",\n                \"aws s3api get-bucket-website --bucket bucket2\"\n            ]\n        )\n    - You can call at most 20 CLI commands in batch mode.\n\n    Best practices for command generation:\n    - Always use the most specific service and operation names\n    - Always use the working directory when writing files, unless user explicitly mentioned another directory\n    - Include --region when operating across regions\n    - Only use filters (--filters, --query, --prefix, --pattern, etc) when necessary or user explicitly asked for it\n    - Always use the tool in batch mode whenever it's possible.\n\n    Command restrictions:\n    - DO NOT use bash/zsh pipes (|) or any shell operators\n    - DO NOT use bash/zsh tools like grep, awk, sed, etc.\n    - DO NOT use shell redirection operators (>, >>, <)\n    - DO NOT use command substitution ($())\n    - DO NOT use shell variables or environment variables\n\n    Common pitfalls to avoid:\n    1. Missing required parameters - always include all required parameters\n    2. Incorrect parameter values - ensure values match expected format\n    3. Missing --region when operating across regions\n\n    Returns:\n        CLI execution results with API response data or error message\n    ",
+      "inputSchema": {
+        "properties": {
+          "cli_command": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ],
+            "description": "A single command or a list of complete AWS CLI commands to execute",
+            "title": "Cli Command"
+          },
+          "max_results": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional limit for number of results (useful for pagination)",
+            "title": "Max Results"
+          }
+        },
+        "required": [
+          "cli_command"
+        ],
+        "title": "call_awsArguments",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Execute AWS CLI commands",
+        "openWorldHint": true
+      }
+    }
+  ]
+}

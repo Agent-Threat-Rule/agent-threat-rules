@@ -253,6 +253,57 @@ describe('finalizeAuthoredRule', () => {
     expect(PR639_RULE.status).toBe('draft');
     expect(PR639_RULE).toHaveProperty('wild_fp_rate');
   });
+
+  // #671 shipped ATR-2026-02861 (and 02851, 02855 before it) dated 2026/03/08,
+  // the date of the reference rule the author prompt says to copy
+  // (ATR-2026-00003); they were authored on 2026-10-15 and 2026-10-08. The date
+  // a rule was written is the run's to state, not the model's.
+  describe('date is the day the rule was authored', () => {
+    const COPIED = { ...PR639_RULE, date: '2026/03/08' };
+
+    it('replaces a date the model copied from the reference rule', () => {
+      const out = finalizeAuthoredRule(COPIED, 'prompt-injection', ALLOW, GATED, new Date('2026-10-15T15:22:32Z'));
+      expect(out.date).toBe('2026/10/15');
+    });
+
+    it('uses the UTC day, as YYYY/MM/DD like the rest of rules/', () => {
+      // 23:30 in UTC-5 is already the next day in UTC.
+      const out = finalizeAuthoredRule(COPIED, 'prompt-injection', ALLOW, GATED, new Date('2026-10-15T23:30:00-05:00'));
+      expect(out.date).toBe('2026/10/16');
+      const early = finalizeAuthoredRule(COPIED, 'prompt-injection', ALLOW, GATED, new Date('2026-01-02T00:00:00Z'));
+      expect(early.date).toBe('2026/01/02');
+    });
+
+    it('adds the date when the model left it out', () => {
+      const { date: _none, ...undated } = COPIED;
+      const out = finalizeAuthoredRule(undated, 'prompt-injection', ALLOW, GATED, new Date('2026-10-22T08:00:00Z'));
+      expect(out.date).toBe('2026/10/22');
+    });
+
+    it('ignores whatever the model wrote there, not only the reference date', () => {
+      for (const written of ['2026/10/06', '2099-01-01', 'today', 20261015, null]) {
+        const out = finalizeAuthoredRule({ ...COPIED, date: written }, 'prompt-injection', ALLOW, GATED, new Date('2026-10-15T00:00:00Z'));
+        expect(out.date, String(written)).toBe('2026/10/15');
+      }
+    });
+
+    it('defaults to the current UTC day', () => {
+      const out = finalizeAuthoredRule(COPIED, 'prompt-injection', ALLOW, GATED);
+      const now = new Date().toISOString().slice(0, 10).replace(/-/g, '/');
+      expect(out.date).toBe(now);
+    });
+
+    it('keeps the field where the model put it', () => {
+      const out = finalizeAuthoredRule(COPIED, 'prompt-injection', ALLOW, GATED, new Date('2026-10-15T00:00:00Z'));
+      const keys = Object.keys(out);
+      expect(keys.indexOf('date')).toBe(Object.keys(COPIED).indexOf('date'));
+    });
+
+    it('leaves the input alone', () => {
+      finalizeAuthoredRule(COPIED, 'prompt-injection', ALLOW, GATED, new Date('2026-10-15T00:00:00Z'));
+      expect(COPIED.date).toBe('2026/03/08');
+    });
+  });
 });
 
 // Two more scoring artifacts that produced rules keyed on the benchmark, not on

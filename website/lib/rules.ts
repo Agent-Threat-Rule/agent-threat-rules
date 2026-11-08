@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { join, extname, relative, basename, dirname } from "node:path";
+import { join, extname, relative, basename, dirname, sep } from "node:path";
 import yaml from "js-yaml";
 
 /**
@@ -37,9 +37,18 @@ export interface RuleSummary {
   date: string;
   filePath: string;
   status?: string;
+  /** YAML `maturity`; decides which lanes load the rule (lib/lanes.ts). */
+  maturity?: string;
   responseActions?: string[];
   detectionTier?: string;
   confidence?: string;
+  /** String values of YAML `metadata_provenance` (who or what set each mapping field); undefined when the rule has none. */
+  provenance?: readonly string[];
+}
+
+function provenanceValues(raw: unknown): readonly string[] | undefined {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  return Object.freeze(Object.values(raw).filter((v): v is string => typeof v === "string"));
 }
 
 interface RawRule {
@@ -50,6 +59,7 @@ interface RawRule {
   author?: string;
   date?: string;
   status?: string;
+  maturity?: string;
   detection_tier?: string;
   tags?: {
     category?: string;
@@ -66,6 +76,7 @@ interface RawRule {
   response?: {
     actions?: string[];
   };
+  metadata_provenance?: unknown;
 }
 
 function loadRulesRecursive(dir: string, rootDir: string): RuleSummary[] {
@@ -104,9 +115,11 @@ function loadRulesRecursive(dir: string, rootDir: string): RuleSummary[] {
           date: raw.date ?? "",
           filePath: relative(rootDir, fullPath),
           status: raw.status,
+          maturity: typeof raw.maturity === "string" ? raw.maturity : undefined,
           responseActions: raw.response?.actions,
           detectionTier: raw.detection_tier,
           confidence: raw.tags?.confidence,
+          provenance: provenanceValues(raw.metadata_provenance),
         });
       } catch {
         // Skip malformed files
@@ -117,10 +130,20 @@ function loadRulesRecursive(dir: string, rootDir: string): RuleSummary[] {
   return results;
 }
 
+// Every page (and the layout, footer and metadata of every page) asks for the
+// rule set; parsing 844 YAML files each time ran static generation past the
+// 60 s page timeout. The parsed set is cached per build worker and frozen, so
+// a caller that tried to sort or splice it in place would throw instead of
+// corrupting every later page. Development reloads it each time so YAML edits
+// show up without a restart.
+let allRulesCache: RuleSummary[] | null = null;
+
 export function loadAllRules(): RuleSummary[] {
+  if (allRulesCache && process.env.NODE_ENV === "production") return allRulesCache;
   const rulesDir = join(process.cwd(), "..", "rules");
   const rules = loadRulesRecursive(rulesDir, join(process.cwd(), ".."));
-  return rules.sort((a, b) => a.id.localeCompare(b.id));
+  allRulesCache = Object.freeze(rules.sort((a, b) => a.id.localeCompare(b.id))) as RuleSummary[];
+  return allRulesCache;
 }
 
 export function findRuleById(rules: RuleSummary[], id: string): RuleSummary | undefined {
@@ -164,6 +187,28 @@ export interface EvasionTest {
   notes?: string;
 }
 
+/**
+ * Event fields a test case may carry instead of `input` (a tool call, a tool
+ * result, an agent reply...), in the order a reader meets them in a session.
+ */
+const EVENT_FIELDS = ["user_input", "content", "agent_output", "tool_name", "tool_description", "tool_args", "tool_call", "tool_response"] as const;
+
+function asText(value: unknown): string {
+  if (typeof value === "string") return value;
+  try {
+    return yaml.dump(value, { lineWidth: 100 }).trimEnd();
+  } catch {
+    return String(value);
+  }
+}
+
+/** A test case with no `input`: show its event fields, each under its name. */
+function eventText(tc: Record<string, unknown>): string {
+  return EVENT_FIELDS.filter((k) => tc[k] !== undefined && tc[k] !== null)
+    .map((k) => `${k}:\n${asText(tc[k])}`)
+    .join("\n\n");
+}
+
 function normalizeTestCase<T extends { input?: unknown }>(
   tc: T,
 ): Omit<T, "input"> & { input: string } {
@@ -172,7 +217,7 @@ function normalizeTestCase<T extends { input?: unknown }>(
     return { ...(rest as Omit<T, "input">), input };
   }
   if (input === undefined || input === null) {
-    return { ...(rest as Omit<T, "input">), input: "" };
+    return { ...(rest as Omit<T, "input">), input: eventText(tc as Record<string, unknown>) };
   }
   try {
     return {
@@ -207,6 +252,7 @@ interface RawRuleDetail {
   author?: string;
   date?: string;
   status?: string;
+  maturity?: string;
   detection_tier?: string;
   tags?: {
     category?: string;
@@ -242,7 +288,7 @@ interface RawRuleDetail {
 /**
  * Build-time caches, populated once per worker and reused across all rule
  * detail page renders. SSG otherwise walks the rules tree O(N) times for N
- * rules, and spawns one `git log` subprocess per rule per locale.
+ * rules, and runs `git log` for every rule on every render.
  */
 let rulePathCache: Map<string, string> | null = null;
 let lastModifiedCache: Map<string, string> | null = null;
@@ -278,24 +324,43 @@ function getRulePathMap(): Map<string, string> {
   return map;
 }
 
+/** Date (YYYY-MM-DD) of the last commit touching the rule's YAML, when git can say. */
+export function ruleLastModified(id: string): string | undefined {
+  return getLastModifiedMap().get(id);
+}
+
 function getLastModifiedMap(): Map<string, string> {
   if (lastModifiedCache) return lastModifiedCache;
-  const map = new Map<string, string>();
   const repoRoot = join(process.cwd(), "..");
   const pathMap = getRulePathMap();
 
-  for (const [id, fullPath] of pathMap.entries()) {
-    try {
-      const relPath = relative(repoRoot, fullPath);
-      const iso = execSync(`git log -1 --format=%cs -- "${relPath}"`, {
-        cwd: repoRoot,
-        encoding: "utf-8",
-        stdio: ["ignore", "pipe", "ignore"],
-      }).trim();
-      if (iso) map.set(id, iso);
-    } catch {
-      // Skip — file may be untracked or git unavailable.
+  // One `git log` over rules/, newest commit first: the first date seen for a
+  // path is the date `git log -1 -- <path>` gives. One process instead of one
+  // per rule; the per-rule calls took ~0.7 s each on a loaded machine, so the
+  // first rule page in every build worker ran past Next's 60 s page timeout.
+  const latestByPath = new Map<string, string>();
+  try {
+    const log = execSync("git log --format=%x00%cs --name-only -- rules", {
+      cwd: repoRoot,
+      encoding: "utf-8",
+      maxBuffer: 256 * 1024 * 1024,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    for (const commit of log.split("\0")) {
+      const [date, ...paths] = commit.split("\n").map((l) => l.trim());
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date ?? "")) continue;
+      for (const path of paths) {
+        if (path && !latestByPath.has(path)) latestByPath.set(path, date);
+      }
     }
+  } catch {
+    // git unavailable or not a repository: rule pages show no last-modified date.
+  }
+
+  const map = new Map<string, string>();
+  for (const [id, fullPath] of pathMap.entries()) {
+    const date = latestByPath.get(relative(repoRoot, fullPath).split(sep).join("/"));
+    if (date) map.set(id, date);
   }
   lastModifiedCache = map;
   return map;
@@ -332,6 +397,7 @@ export function loadRuleDetail(id: string): RuleDetail | undefined {
     date: parsed.date ?? "",
     filePath: relFile,
     status: parsed.status,
+    maturity: typeof parsed.maturity === "string" ? parsed.maturity : undefined,
     responseActions: parsed.response?.actions,
     detectionTier: parsed.detection_tier,
     confidence: parsed.tags?.confidence,

@@ -1,0 +1,262 @@
+title: "Dot-Dot Path Segment Inside an Identifier-Typed Tool Argument (REST-Wrapper Path Traversal)"
+id: ATR-2026-02867
+rule_version: 1
+status: experimental
+description: >
+  Detects a tool-call argument whose KEY says it is an opaque identifier
+  (product_number, licensee_number, customer_id, order_no, user_uuid,
+  productNumber, productId, ...) but whose VALUE carries a dot-dot path
+  segment: a '..' (or %2e%2e, .%2e, %2e.) that starts the value or follows a
+  separator, and is itself followed by a separator ('/', '\', %2f, %5c) or by
+  the end of the value.
+
+  This is the shape of CVE-2026-57496 / GHSA-hxpf-9xvq-wph8 in the NetLicensing
+  MCP Server (< 0.1.8): netlicensing_get_product interpolated the caller-controlled
+  product_number into the REST path /product/{product_number}. A single
+  product_number of "../token" is normalised by httpx from /product/../token to
+  /token, the response is serialised through the ordinary wrapper instead of the
+  token-redacting one, and the raw API token is returned to the agent. The fix
+  (commit b8fd0ea) added a path-segment validator that rejects '..', '..%2f',
+  '%2e%2e/', backslashes and encoded separators.
+
+  The rule is deliberately not vendor-scoped. Any MCP server that wraps a REST
+  API by formatting identifier arguments into a URL path has the same bug class,
+  and an identifier never legitimately contains a dot-dot path segment. It keys on
+  the identifier-typed argument name rather than on the tool name or on the
+  '/token' target, so it also fires on licensee_number, a camelCase productNumber,
+  a bare '..' (which walks to the API root) or an encoded separator.
+
+  Why a new rule rather than relying on existing ones (measured 2026-10-22 on
+  origin/main 69f7f2809 with tool_call and mcp_exchange events whose tool_args is
+  the JSON-encoded argument object): the GHSA PoC {"product_number":"../token"},
+  "%2e%2e/token", "..\\token" and {"licensee_number":"../token"} matched no rule.
+  ATR-2026-01948 targets this exact CVE but its key regexes expect product_number
+  to be followed directly by ':' or '=', so the closing JSON quote of a real
+  tool_args key defeats it; ATR-2026-02251 / 02353 have the same key-quote gap and
+  list only *_id fields. ATR-2026-00569 catches only the '..%2f' encoding and
+  ATR-2026-00066 / 01616 need two or more '../' levels, while one level is enough
+  against a REST path.
+
+  Related rule: ATR-2026-01948 (context-exfiltration) is the vendor-specific rule
+  for this same CVE. This rule is the generalised identifier-argument form; keep
+  the two cross-referenced when either is merged, narrowed or retired.
+
+  Scope and limits. Only JSON double-quoted keys are read ("key": "value"), so a
+  JSON-escaped snippet quoted inside another argument (an agent writing an
+  advisory) does not match. Path-typed keys (path, file, dir, url, key,
+  object_key) are intentionally out of scope - they are covered by the file-path
+  traversal rules - so a traversal smuggled through a key with a non-identifier
+  name (sku, name, product) is not detected here. *_code keys are also out of
+  scope: source_code / python_code / shell_code usually hold free-form program
+  text in which '/../' is ordinary, so product_code / promo_code identifiers are
+  an accepted gap. Plural keys (product_numbers) and array values are not read,
+  and a Tomcat-style path parameter ('..;/token') is not in the separator set.
+  Keys that only END in "id" are matched case-insensitively, so a non-identifier
+  key such as "valid" or "android" holding a dot-dot segment would also match,
+  and identifier keys that legitimately carry a relative path (model_id,
+  doc_id, folder_id) will match as well. CWE-22, CWE-23.
+author: "ATR Community (CVE sync)"
+date: "2026/10/22"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-57496"
+  ghsa:
+    - "GHSA-hxpf-9xvq-wph8"
+  cwe:
+    - "CWE-22"
+    - "CWE-23"
+  owasp_llm:
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI03:2026"
+    - "ASI02:2026"
+  mitre_atlas:
+    - "AML.T0053 - AI Agent Tool Invocation"
+    - "AML.T0055 - Unsecured Credentials"
+  mitre_attack:
+    - "T1552 - Unsecured Credentials"
+  external:
+    - "https://github.com/Labs64/NetLicensing-MCP/security/advisories/GHSA-hxpf-9xvq-wph8"
+    - "https://github.com/Labs64/NetLicensing-MCP/commit/b8fd0ea76d533202573eb24add9fb2fbd9331496"
+    - "https://nvd.nist.gov/vuln/detail/CVE-2026-57496"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_atlas: human-reviewed
+  mitre_attack: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resilience against attempts to exploit system vulnerabilities; this rule provides detection evidence supporting that requirement by flagging an identifier argument that steers an MCP server's REST request onto an unintended endpoint such as /token."
+      strength: primary
+    - article: "14"
+      context: "Article 14 (human oversight) needs operators to be able to see and interrupt anomalous agent actions; an alert on a traversal-bearing identifier argument provides detection evidence supporting oversight of tool calls that would otherwise silently return credentials to the model."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "MEASURE 2.7 requires AI system security and resilience to be evaluated; inspecting identifier-typed tool arguments for dot-dot path segments is a per-invocation measurement of the agent-to-tool boundary rather than an assumption that each MCP server validates its own path segments."
+      strength: primary
+    - subcategory: "MG.2.3"
+      context: "MANAGE 2.3 requires procedures to respond to and recover from identified AI risks; this rule is the runtime trigger for responding to a privilege-escalating path traversal through an agent tool argument."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational planning and control covers externally provided processes such as third-party MCP servers; this rule is an operational control applied to each tool invocation independent of the server's own input validation."
+      strength: primary
+    - clause: "6.2"
+      context: "Clause 6.2 AI objectives and planning to achieve them include keeping credentials out of model context; detecting the traversal that reroutes a lookup onto a token endpoint supports that objective."
+      strength: secondary
+
+tags:
+  category: privilege-escalation
+  subcategory: identifier-argument-path-traversal
+  scan_target: tool_args
+  confidence: medium
+  source: cve-disclosure
+  vendor_sources: netlicensing-mcp-cve-2026-57496
+  suppress_in_code_blocks: true
+
+agent_source:
+  type: tool_call
+  framework:
+    - mcp
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  method: pattern
+  false_positives:
+    - "A tool whose API genuinely uses '..' as an identifier, for example a filesystem-browser tool that addresses the parent entry as {\"entry_id\": \"..\"}. Such an argument is itself a traversal and will match."
+    - "Security test fixtures and CVE reproductions that pass the traversal payload through a real tool call match by design."
+    - "Keys that end in 'id' are matched case-insensitively (the engine compiles this condition format with flag 'i'), so a non-identifier key such as 'valid' or 'android' holding a dot-dot segment would also match."
+    - "Identifier-named keys that legitimately hold a relative filesystem path will match: a Hugging Face from_pretrained-style local checkpoint {\"model_id\": \"../checkpoints/llama-ft\"}, a RAG or document tool that uses the file path as the document id {\"doc_id\": \"docs/../README.md\"}, or a folder-navigation tool addressing the parent folder {\"folder_id\": \"..\"}. These are indistinguishable from the traversal by value alone; suppress per tool when the target server resolves such ids against a sandboxed root."
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: '"(?:[a-z0-9_-]{0,40}[_-](?:id|number|num|no|nr|uuid|guid|slug)|[a-z0-9]{1,40}(?:number|uuid|guid|id)|id|number|uuid|guid|slug)"\s{0,3}:\s{0,3}"(?:[^"\n]{0,120}?(?:/|\\|%2f|%5c))?(?:\.\.|%2e%2e|\.%2e|%2e\.|%252e%252e)(?:/|\\|%2f|%5c|%252f|%255c|")'
+      description: "An identifier-typed JSON argument (snake_case *_id/*_number/*_no/*_uuid/*_slug, camelCase *Number/*Id/*Uuid, or a bare id/number key; *_code keys excluded because they usually carry program text) whose value contains a dot-dot path segment - at the start of the value or after a separator, followed by a separator or the end of the value - literal or percent-encoded"
+
+response:
+  actions:
+    - alert
+    - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): new CVE-derived
+    candidate without a benign-corpus FP measurement beyond the CI gate; ceiling = observe.
+  notify:
+    - security_team
+  message_template: >
+    [ATR-2026-02867] HIGH: an identifier-typed tool argument contains a dot-dot
+    path segment. Opaque IDs never contain '..'; when an MCP server formats the
+    ID into a REST path, the segment is normalised away and the request lands on
+    a different endpoint (CVE-2026-57496: product_number "../token" reached
+    /token and leaked the API token). Check whether the target server validates
+    path segments before building URLs.
+
+confidence: 72
+
+test_cases:
+  true_positives:
+    - input: '{"product_number":"../token"}'
+      expected: triggered
+      description: "GHSA-hxpf-9xvq-wph8 PoC from the fix commit's regression test: one ../ turns /product/{n} into /token"
+    - input: '{"product_number":"%2e%2e/token"}'
+      expected: triggered
+      description: "Percent-encoded dots, listed among the rejected inputs in tests/test_path_traversal.py"
+    - input: '{"product_number":"..\\token"}'
+      expected: triggered
+      description: "Backslash separator (JSON-escaped), also rejected by the fix"
+    - input: '{"licensee_number":"../token"}'
+      expected: triggered
+      description: "Same bug class through a sibling NetLicensing identifier argument"
+    - input: '{"product_number":"..%2ftoken"}'
+      expected: triggered
+      description: "Literal dots with an encoded separator"
+    - input: '{"productNumber": "P001/../../token"}'
+      expected: triggered
+      description: "camelCase identifier key, traversal after a leading legitimate segment"
+    - input: '{"tool_name":"crm_get_customer","customer_id":".."}'
+      expected: triggered
+      description: "Bare '..' as the whole value walks the REST path up to the collection root"
+  true_negatives:
+    - input: '{"product_number":"P001"}'
+      expected: not_triggered
+      description: "Benign twin: normal product lookup"
+    - input: '{"licensee_number":"LT-2024"}'
+      expected: not_triggered
+      description: "Benign twin: normal licensee lookup"
+    - input: '{"product_number":"TR_001"}'
+      expected: not_triggered
+      description: "Benign twin: identifier with underscore"
+    - input: '{"version_id":"1..2"}'
+      expected: not_triggered
+      description: "Benign twin: '..' inside a range token, not a path segment"
+    - input: '{"order_id":"..."}'
+      expected: not_triggered
+      description: "Benign twin: ellipsis placeholder value"
+    - input: '{"product_number":"PRD/2024/0042"}'
+      expected: not_triggered
+      description: "Benign twin: identifier that contains slashes but no dot-dot segment"
+    - input: '{"commit_id":"a1b2c3..d4e5f6"}'
+      expected: not_triggered
+      description: "Benign twin: git-style commit range in an id field"
+    - input: '{"path":"notes.md","content":"repro: {\"product_number\":\"../token\"}"}'
+      expected: not_triggered
+      description: "An agent writing an advisory that quotes the payload as escaped JSON inside another argument"
+    - input: '{"query":"why does product_number=../token reach the token endpoint?"}'
+      expected: not_triggered
+      description: "Free-text query discussing the vulnerability"
+    - input: '{"file_path":"../shared/config.yaml"}'
+      expected: not_triggered
+      description: "Path-typed key is out of scope for this rule (handled by the file-path traversal rules)"
+    - input: '{"source_code":"const cfg = require(__dirname + ''/../config.json'')"}'
+      expected: not_triggered
+      description: "Round-1 reviewer FP: a *_code key holding program text with an ordinary relative require path"
+    - input: '{"python_code":"open(os.path.join(base, \"../data/input.csv\"))"}'
+      expected: not_triggered
+      description: "Benign twin: code-execution tool whose code argument walks to a sibling data directory"
+
+evasion_tests:
+  - input: '{"product_number":"%252e%252e%252ftoken"}'
+    expected: triggered
+    bypass_technique: double_percent_encoding
+    notes: "Double-encoded dots and separator are in the alternation."
+  - input: '{"object_key":"../token"}'
+    expected: not_triggered
+    bypass_technique: non_identifier_key_name
+    notes: "Accepted gap: *_key names are often legitimately path-like (S3 object keys), so they were left out."
+  - input: "{'product_number': '../token'}"
+    expected: not_triggered
+    bypass_technique: single_quoted_python_repr
+    notes: "Accepted gap: only JSON double-quoted keys are read, which is what keeps escaped or prose mentions inside other arguments clean."
+  - input: '{"product_number":"..;/token"}'
+    expected: not_triggered
+    bypass_technique: tomcat_path_parameter
+    notes: "Accepted gap: ';' is not in the separator set. A Tomcat/Java servlet backend strips the ;param before normalising, so '..;/token' still walks up there; httpx (the CVE target) does not."
+  - input: '{"product_numbers":["../token"]}'
+    expected: not_triggered
+    bypass_technique: plural_key_array_value
+    notes: "Accepted gap: plural identifier keys and array values are not read; the value must be a JSON string directly after an identifier key."
+  - input: '{"sku":"../token"}'
+    expected: not_triggered
+    bypass_technique: non_identifier_key_name
+    notes: "Accepted gap: identifier keys without an id/number/no/uuid/slug suffix (sku, name, product) are not in scope."
+  - input: '{"product":"../token"}'
+    expected: not_triggered
+    bypass_technique: non_identifier_key_name
+    notes: "Accepted gap: a bare entity-name key is not recognised as identifier-typed."
+  - input: '{"product_code":"../token"}'
+    expected: not_triggered
+    bypass_technique: code_suffix_key
+    notes: "Accepted gap introduced deliberately in round 2: *_code was dropped from the suffix list because source_code / python_code carry program text."

@@ -75,7 +75,10 @@ export function renderSignatureFile(file: SignatureFile, context: RenderContext)
   ].join('\n');
   const body = emitYaml(
     { signatures: file.signatures.map(signatureNode) },
-    { anchoredKeys: { file_types: FILE_TYPES_ANCHOR } },
+    {
+      anchoredKeys: { file_types: FILE_TYPES_ANCHOR },
+      escapeInvisible: !context.reproduceVendored,
+    },
   );
   return banner + body;
 }
@@ -190,6 +193,25 @@ export function renderPackManifest(files: readonly SignatureFile[], context: Ren
   );
 }
 
+/**
+ * What the README says about where the patterns come from. A reproduction of
+ * the vendored pack carries the rules' patterns verbatim, as that pack did; a
+ * real export rewrites each one's leading flag group (toScannerPattern).
+ */
+function provenanceParagraph(context: RenderContext): string {
+  if (context.reproduceVendored) {
+    return `All regex patterns are extracted verbatim from ATR YAML rule files
+(\`detection.conditions[].value\`). No patterns were invented for this pack.`;
+  }
+  return `Every regex pattern is taken from an ATR YAML rule file
+(\`detection.conditions[].value\`); no patterns were invented for this pack.
+ATR matches each pattern case-insensitively and gives a leading \`(?m)\`,
+\`(?s)\` or \`(?x)\` no effect (ATR SPEC.md §6.4), while this scanner compiles
+patterns with no flags. Each pattern is therefore written as \`(?i)\`
+followed by the rule's pattern with any leading flag group removed, which is
+the pattern ATR's engine compiles.`;
+}
+
 function categoryRow(file: SignatureFile): string {
   const label = CATEGORY_LABELS[file.signatures[0]?.category ?? ''] ?? file.category;
   return `| \`${file.path}\` | ${label} | ${file.signatures.length} |`;
@@ -199,16 +221,24 @@ export function renderReadme(
   files: readonly SignatureFile[],
   context: RenderContext,
   excluded: readonly { readonly id: string; readonly reason: string }[],
+  trimmed: readonly { readonly id: string; readonly conditions: readonly number[] }[] = [],
 ): string {
   const total = files.reduce((sum, file) => sum + file.signatures.length, 0);
   const ordered = [...files].sort((a, b) => b.signatures.length - a.signatures.length);
   const exclusionNote =
     excluded.length === 0
       ? 'Every rule in the ATR release is representable as a static signature.'
-      : `${excluded.length} rule(s) in the ATR release are not representable as static ` +
-        `signatures and are excluded: ${excluded.map((e) => `\`${e.id}\` (${e.reason})`).join(', ')}. ` +
+      : `${excluded.length} rule(s) in the ATR release are excluded: ` +
+        `${excluded.map((e) => `\`${e.id}\` (${e.reason})`).join(', ')}. ` +
         'A signature pack matches regular expressions against file content; it cannot ' +
-        'evaluate a per-session time window or a tool-call count.';
+        'evaluate a per-session time window or a tool-call count, and it has no field to ' +
+        'tell a tool call or tool response apart from the text of a skill.';
+  const trimmedNote =
+    trimmed.length === 0
+      ? ''
+      : ` ${trimmed.length} rule(s) are exported without some conditions that backtrack ` +
+        'badly in a backtracking regex engine such as Python\'s `re`: ' +
+        `${trimmed.map((t) => `\`${t.id}\` (${t.conditions.map((i) => `#${i}`).join(', ')})`).join(', ')}.`;
   return `# ATR Rule Pack for Cisco Skill Scanner
 
 **Source:** [Agent Threat Rules (ATR)](${context.repoUrl})
@@ -222,7 +252,7 @@ export function renderReadme(
 This pack adds AI-agent security detection rules from the open-source ATR
 project, covering attack surfaces specific to modern AI-agent deployments
 (MCP tool layer, multi-agent trust, skill manifests, agent autonomy). It is
-the current ATR \`${context.version}\` static ruleset. ${exclusionNote}
+the current ATR \`${context.version}\` static ruleset. ${exclusionNote}${trimmedNote}
 
 ## Attack Categories
 
@@ -246,8 +276,7 @@ skill_scanner/data/packs/atr/
 
 ## Pattern Provenance
 
-All regex patterns are extracted verbatim from ATR YAML rule files
-(\`detection.conditions[].value\`). No patterns were invented for this pack.
+${provenanceParagraph(context)}
 Every signature records its originating ATR rule id and a direct link to the
 source YAML.
 

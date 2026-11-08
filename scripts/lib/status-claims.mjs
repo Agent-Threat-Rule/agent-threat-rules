@@ -41,9 +41,9 @@ export const SCOPE = {
     [REGISTRY_PATH]: 'the list itself',
     'website/data/errata.json': 'dated corrections: each entry says what was true on its date',
     'website/app/[locale]/red-team/page.tsx':
-      'the red-team list has a check of its own in review (PR #691), which moves it to website/data/red-team-tools.json',
+      'the red-team list, held to GitHub by scripts/verify-red-team-links.mjs (#691)',
     'website/data/red-team-tools.json': 'see the red-team page',
-    'website/lib/red-team-tools.ts': 'see the red-team page (the list\'s loader in #691)',
+    'website/lib/red-team-tools.ts': 'see the red-team page (the list\'s loader)',
   },
 };
 

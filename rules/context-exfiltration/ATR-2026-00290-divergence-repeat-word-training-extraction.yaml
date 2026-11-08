@@ -85,10 +85,6 @@ detection:
       operator: regex
       value: '(?:keep\s+(?:saying|repeating|writing|printing|outputting)\s+["\x27]?\w{1,30}["\x27]?\s+(?:forever|indefinitely|endlessly|over\s+and\s+over|non-?stop|continuously|until\s+I\s+(?:say|tell\s+you)\s+stop))'
       description: 'Keep saying/repeating X forever — semantic variant of the divergence probe'
-    - field: tool_response
-      operator: regex
-      value: '(?:(?:\w+\s+){40,})\1{3,}'
-      description: 'Highly repeated word sequence (40+ word repetitions of same token x3 or more) — pre-primed divergence bait via repeated word list'
   condition: any
   false_positives:
     - 'Music lyric repetition instructions ("repeat the chorus 4 times")'

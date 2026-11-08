@@ -319,6 +319,19 @@ rules (LLM input and output, and tool responses), and a `skill_lifecycle`,
 `memory_access` rule on a typed event (`WITHHELD_SOURCE_TYPES`, which gives the
 reason); such a rule runs on an event with no source type and in a skill scan.
 
+Tool definitions. When `atr scan` reads an MCP `tools/list` document, each tool
+definition is an `mcp_exchange` event evaluated on an engine constructed with
+`toolDefinitions: true`. This is reference-engine scan-context behaviour, off by
+default; only `atr scan` sets it, and only for a `tools/list` document. On such
+an engine a `tool_call` rule runs only if at least one of its conditions reads
+`tool_description` (the whole rule is then admitted, every condition included),
+or if its subject is the tool's identity and it is listed in
+`TOOL_IDENTITY_RULES` (`src/tool-definition-scope.ts`); rules of every other
+type run as on any `mcp_exchange` event. A definition calls nothing, so a rule
+written to judge a call does not apply to it. The schema has no field for this
+yet: applicability is derived from `agent_source.type` and the fields the
+conditions read.
+
 ### agent_source.framework
 
 | Property | Value |

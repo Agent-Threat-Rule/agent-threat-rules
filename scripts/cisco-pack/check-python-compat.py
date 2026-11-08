@@ -11,9 +11,11 @@ A pattern that Python cannot compile is silently skipped by the consumer's
 shipped rule. That gap is invisible from the JavaScript side, which is why it
 gets its own check rather than being folded into the exporter.
 
-This reports; it never rewrites a pattern. A pattern in the pack is a verbatim
-copy of the rule, and quietly "fixing" one here would make the pack disagree
-with the rule it links to. The fix belongs in the rule.
+This reports; it never rewrites a pattern. A pattern in the pack is the rule's
+own pattern behind a ``(?i)`` that replaces any leading flag group the rule
+wrote (ATR's engine applies only ``i``, SPEC.md section 6.4), and quietly
+"fixing" one here would make the pack disagree with the rule it links to. The
+fix belongs in the rule.
 
 Usage:
     python3 scripts/cisco-pack/check-python-compat.py --pack dist/cisco-pack

@@ -3,9 +3,11 @@
  * locale. Each entry anchored by slug for deep linking.
  */
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -17,13 +19,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "Glossary — ATR",
+  return pageMetadata({
+    locale,
+    path: "/glossary",
+    title: "Glossary",
     description:
       locale === "zh"
         ? "ATR 規格中關鍵術語的定義。"
         : "Definitions for key terms used throughout the ATR specification.",
-  };
+  });
 }
 
 interface GlossaryEntry {
@@ -67,8 +71,8 @@ const ENTRIES: GlossaryEntry[] = [
   },
   {
     term: "crystallization",
-    en: "The Threat Cloud pipeline that converts an observed attack into a candidate ATR rule and routes it through review. (Reference implementation, not part of the normative standard.)",
-    zh: "Threat Cloud pipeline,將觀察到的攻擊轉換為 ATR 候選規則並送入審查。(參考實作,非規範標準的一部分。)",
+    en: "The process that turns an observed attack into a candidate ATR rule and sends it to review. It is not part of the normative standard.",
+    zh: "把觀察到的攻擊轉成 ATR 候選規則、再送去審查的流程。它不屬於規範標準。",
   },
   {
     term: "detection.conditions",
@@ -150,11 +154,6 @@ const ENTRIES: GlossaryEntry[] = [
     en: "The body that governs ATR's evolution. Currently in BDFL transition; see /charter.",
     zh: "治理 ATR 演化的機構。目前處於 BDFL 過渡階段;見 /charter。",
   },
-  {
-    term: "Threat Cloud",
-    en: "An optional reference service operated by the ATR maintainers — not part of the standard. The standard is the spec plus the MIT-licensed rules, fully usable offline via npm / PyPI / raw YAML. Threat Cloud only adds hosted convenience (rule sync, threat submission); the same outcomes are reachable without it. Technically, it is an auto-review backend for community-submitted rules, running the crystallization pipeline and safety gates.",
-    zh: "Threat Cloud 是 ATR 維護者運營的選用參考服務,並非標準的一部分。標準本體是規格加上 MIT 授權的規則,透過 npm / PyPI / 純 YAML 完全可離線使用;Threat Cloud 只提供 hosted 便利(規則同步、威脅提交),不用它也能達到同樣結果。技術上,它是對社群提交規則的自動審查後端,執行 crystallization pipeline 與安全閘 (safety gate)。",
-  },
 ];
 
 function slugify(term: string): string {
@@ -193,21 +192,22 @@ export default async function GlossaryPage({
   }
 
   return (
+    <Phrased>
     <main
       id="main-content"
-      className="spec-document w-full max-w-7xl mx-auto px-5 md:px-8 pt-24 md:pt-28 pb-24"
+      className="spec-document w-full px-6 md:px-14 pt-24 md:pt-28 pb-24"
       lang={zh ? "zh-Hant" : "en"}
     >
       {/* Header */}
       <header className="mb-8 md:mb-10 max-w-3xl">
         <p
-          className="text-xs uppercase tracking-[0.18em] text-stone mb-3"
+          className="text-[13px] text-stone mb-3"
           style={{ fontFamily: "var(--font-data)" }}
         >
           {zh ? "詞彙 — Glossary" : "Glossary"}
         </p>
         <h1
-          className="text-3xl md:text-5xl font-bold text-navy-ink mb-4 leading-[1.1]"
+          className="text-[32px] md:text-[48px] font-bold text-navy-ink mb-4 leading-[1.1]"
           style={{
             fontFamily: "var(--font-display)",
             letterSpacing: "-0.02em",
@@ -230,7 +230,7 @@ export default async function GlossaryPage({
         <aside aria-label="Alphabetical index" className="lg:order-first">
           <nav className="spec-toc" aria-label={t(locale, "spec.toc_aria")}>
             <p
-              className="text-xs font-semibold uppercase tracking-wider text-stone mb-3"
+              className="text-[13px] text-stone mb-3"
               style={{ fontFamily: "var(--font-body)" }}
             >
               {zh ? "字母索引" : "Alphabetical Index"}
@@ -332,5 +332,6 @@ export default async function GlossaryPage({
         </div>
       </div>
     </main>
+    </Phrased>
   );
 }

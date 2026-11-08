@@ -10,13 +10,24 @@
  * the concrete case that caught it.
  */
 
-import { mkdtempSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { describe, expect, it } from 'vitest';
+import { regexConditionSpec } from '../src/engine.js';
+import { benignGateExclusions, parseBenignGate } from '../scripts/cisco-pack/benign-gate.js';
 import { loadRules, extractPatterns, type AtrRule } from '../scripts/cisco-pack/load-rules.js';
-import { buildSignatureFiles, toSignature, toSignatureId, DEFAULT_REPO_URL } from '../scripts/cisco-pack/transform.js';
+import {
+  buildSignatureFiles,
+  capSeverity,
+  toScannerPattern,
+  toSignature,
+  toSignatureId,
+  DEFAULT_REPO_URL,
+} from '../scripts/cisco-pack/transform.js';
 import { chooseScalarStyle, emitYaml } from '../scripts/cisco-pack/yaml-emit.js';
 
 const OPTIONS = { ref: 'main', repoUrl: DEFAULT_REPO_URL };
@@ -82,6 +93,28 @@ describe('emitYaml', () => {
     expect(parsed.signatures[0].patterns).toEqual(values);
   });
 
+  it('writes invisible characters as escapes when asked, without changing the value', () => {
+    const cp = (...codes: number[]) => String.fromCodePoint(...codes);
+    const values = [
+      `(?i)[${cp(0xe0000)}-${cp(0xe007f)}]{3,}`,
+      `[${cp(0x200b, 0x200c, 0x200d, 0x2060)}]`,
+      `${cp(0x202e)}gnp.exe`,
+      `[${cp(0x2066)}-${cp(0x2069)}]`,
+      `short ${cp(0x00ad)} value`,
+    ];
+    const text = emitYaml({ signatures: [{ patterns: values }] }, { escapeInvisible: true });
+    expect([...text].filter((char) => /[\p{Cf}\p{Cn}\p{Co}\p{Cs}]/u.test(char))).toEqual([]);
+    expect(text).toContain('\\U000E0000');
+    expect(text).toContain('\\u202E');
+    const parsed = yaml.load(text) as { signatures: { patterns: string[] }[] };
+    expect(parsed.signatures[0].patterns).toEqual(values);
+  });
+
+  it('keeps invisible characters raw by default, as the reproduction target does', () => {
+    const value = `[${String.fromCodePoint(0x200b)}]`;
+    expect(emitYaml({ p: [value] })).toContain(value);
+  });
+
   it('emits a shared array once as an anchor and then as an alias', () => {
     const shared = ['markdown', 'json'];
     const text = emitYaml(
@@ -111,6 +144,16 @@ describe('toSignature', () => {
     expect(signature.atr_url).toBe(
       `${DEFAULT_REPO_URL}/blob/main/rules/tool-poisoning/ATR-2026-00001-example.yaml`,
     );
+  });
+
+  it('lowers severity to --max-severity and leaves less severe rules alone', () => {
+    expect(toSignature(loaded, { ...OPTIONS, maxSeverity: 'LOW' }).severity).toBe('LOW');
+    const low = { ...loaded, rule: rule({ id: 'ATR-2026-00002', severity: 'low' }) };
+    expect(toSignature(low, { ...OPTIONS, maxSeverity: 'MEDIUM' }).severity).toBe('LOW');
+    expect(capSeverity('HIGH', 'MEDIUM')).toBe('MEDIUM');
+    expect(capSeverity('MEDIUM', 'MEDIUM')).toBe('MEDIUM');
+    expect(capSeverity('INFO', 'LOW')).toBe('INFO');
+    expect(() => capSeverity('HIGH', 'SEVERE')).toThrow(/severity cap/);
   });
 
   it('takes the category from the directory, not from tags.category', () => {
@@ -152,6 +195,70 @@ describe('toSignature', () => {
       },
     });
     expect(extractPatterns(repeated)).toEqual(['pickle\\.load', 'pickle\\.load']);
+    expect(toSignature({ ...loaded, rule: repeated }, OPTIONS).patterns).toEqual([
+      '(?i)pickle\\.load',
+      '(?i)pickle\\.load',
+    ]);
+  });
+
+  it('writes a condition: all rule as one pattern that needs every condition', () => {
+    const both = rule({
+      id: 'ATR-2026-00006',
+      detection: {
+        condition: 'all',
+        conditions: [
+          { field: 'content', operator: 'regex', value: 'you\\s+are\\s+now' },
+          { field: 'content', operator: 'regex', value: '(?i)unfiltered' },
+        ],
+      },
+    });
+    expect(toSignature({ ...loaded, rule: both }, OPTIONS).patterns).toEqual([
+      '(?i)\\A(?=[\\s\\S]*?(?:you\\s+are\\s+now))(?=[\\s\\S]*?(?:unfiltered))',
+    ]);
+  });
+
+  it('keeps one pattern per condition for any, and for a single all condition', () => {
+    const conditions = [
+      { field: 'content', operator: 'regex', value: 'abc' },
+      { field: 'content', operator: 'regex', value: 'def' },
+    ];
+    const any = rule({ id: 'ATR-2026-00007', detection: { condition: 'any', conditions } });
+    expect(toSignature({ ...loaded, rule: any }, OPTIONS).patterns).toEqual(['(?i)abc', '(?i)def']);
+    const single = rule({
+      id: 'ATR-2026-00008',
+      detection: { condition: 'all', conditions: conditions.slice(0, 1) },
+    });
+    expect(toSignature({ ...loaded, rule: single }, OPTIONS).patterns).toEqual(['(?i)abc']);
+  });
+
+  // One condition per leading-group shape on main: none, (?i), and the three
+  // rules that write more than i (ATR-2026-00450, -00859, -00207).
+  const SHAPES = ['abc', '(?i)abc', '(?im)^abc', '(?si)<x>[^<]*', '(?is)a[.]b'];
+  const shaped = {
+    ...loaded,
+    rule: rule({
+      id: 'ATR-2026-00005',
+      detection: {
+        conditions: SHAPES.map((value) => ({ field: 'user_input', operator: 'regex', value })),
+      },
+    }),
+  };
+
+  it('writes each pattern as (?i) plus the pattern the engine compiles', () => {
+    // The scanner compiles with re.compile(pattern) and no flags. ATR matches
+    // every regex condition case-insensitively and applies no m, s or x
+    // (SPEC.md §6.4), so the rule's own group must not reach the scanner and
+    // a pattern without one must not arrive case-sensitive.
+    const { patterns } = toSignature(shaped, OPTIONS);
+    expect(patterns).toEqual(['(?i)abc', '(?i)abc', '(?i)^abc', '(?i)<x>[^<]*', '(?i)a[.]b']);
+    expect(patterns).toEqual(SHAPES.map((v) => `(?i)${regexConditionSpec(v).source}`));
+    expect(patterns).toEqual(SHAPES.map(toScannerPattern));
+  });
+
+  it('copies patterns verbatim when reproducing the vendored pack', () => {
+    // verify-reproduction.ts compares that pack byte for byte, and it was
+    // built from the rules' own values.
+    expect(toSignature(shaped, { ...OPTIONS, verbatimPatterns: true }).patterns).toEqual(SHAPES);
   });
 
   it('drops conditions whose operator is not regex', () => {
@@ -234,6 +341,67 @@ describe('loadRules', () => {
       { dir: 'prompt-injection', name: 'broken.yaml', body: { severity: 'high' } },
     ]);
     expect(() => loadRules(root)).toThrow(/missing rule id/);
+  });
+
+  function fieldRule(id: string, fields: readonly string[]) {
+    return {
+      dir: 'excessive-autonomy',
+      name: `${id}-x.yaml`,
+      body: {
+        id,
+        severity: 'high',
+        description: 'x',
+        detection: { conditions: fields.map((field) => ({ field, operator: 'regex', value: 'delete' })) },
+      },
+    };
+  }
+
+  it('leaves out a rule with a condition on a runtime-only field, and says which', () => {
+    const root = writeRuleTree([
+      fieldRule('ATR-2026-00099', ['tool_name', 'tool_args']),
+      fieldRule('ATR-2026-00100', ['content', 'user_input', 'tool_description']),
+      // One static and one runtime condition: dropping only the runtime one
+      // would broaden a condition: all rule, so the whole rule goes.
+      fieldRule('ATR-2026-00101', ['content', 'tool_response']),
+    ]);
+    const loaded = loadRules(root);
+    expect(loaded.rules.map((r) => r.rule.id)).toEqual(['ATR-2026-00100']);
+    expect(loaded.excluded).toEqual([
+      { id: 'ATR-2026-00099', reason: 'runtime-only field: tool_args, tool_name' },
+      { id: 'ATR-2026-00101', reason: 'runtime-only field: tool_response' },
+    ]);
+    expect(loadRules(root, { includeRuntimeFields: true }).rules).toHaveLength(3);
+  });
+
+  it('leaves out the rules it is told to, with the given reason', () => {
+    const root = writeRuleTree([
+      fieldRule('ATR-2026-00100', ['content']),
+      fieldRule('ATR-2026-00102', ['content']),
+    ]);
+    const loaded = loadRules(root, { exclude: new Map([['ATR-2026-00102', 'benign gate: x']]) });
+    expect(loaded.rules.map((r) => r.rule.id)).toEqual(['ATR-2026-00100']);
+    expect(loaded.excluded).toEqual([{ id: 'ATR-2026-00102', reason: 'benign gate: x' }]);
+  });
+});
+
+describe('benign gate result', () => {
+  const gate = {
+    scanner: { repo: 'cisco-ai-defense/skill-scanner', commit: 'a'.repeat(40) },
+    corpus: { path: 'data/skill-benchmark/benign', records: 432, sha256: 'b'.repeat(64) },
+    hits: { 'ATR-2026-00111': 27, 'ATR-2026-00001': 2 },
+  };
+
+  it('turns every rule that fired into an exclusion with its count', () => {
+    expect([...benignGateExclusions(parseBenignGate(JSON.stringify(gate)))]).toEqual([
+      ['ATR-2026-00001', 'benign gate: fires on 2 of 432 benign skills in Skill Scanner'],
+      ['ATR-2026-00111', 'benign gate: fires on 27 of 432 benign skills in Skill Scanner'],
+    ]);
+  });
+
+  it('rejects a result it cannot trust', () => {
+    expect(() => parseBenignGate(JSON.stringify({ ...gate, hits: { ATR_2026_00111: 1 } }))).toThrow(/rule id/);
+    expect(() => parseBenignGate(JSON.stringify({ ...gate, hits: { 'ATR-2026-00111': 0 } }))).toThrow(/count/);
+    expect(() => parseBenignGate(JSON.stringify({ ...gate, corpus: { records: 0 } }))).toThrow(/records/);
   });
 });
 
@@ -358,6 +526,31 @@ describe('generated signature files', () => {
   });
 });
 
+describe('generated README', () => {
+  it('says how the patterns were written, and calls them verbatim only in a reproduction', async () => {
+    const { renderReadme } = await import('../scripts/cisco-pack/render.js');
+    const files = buildSignatureFiles(
+      [{ category: 'tool-poisoning', fileName: 'a.yaml', rule: rule({ id: 'ATR-2026-00001' }) }],
+      OPTIONS,
+    );
+    const context = {
+      version: '4.1.5',
+      repoUrl: DEFAULT_REPO_URL,
+      benchmarkSentence: '',
+      benchmarkReadmeLine: '',
+    };
+    const exported = renderReadme(files, context, []);
+    expect(exported).toContain('ATR SPEC.md §6.4');
+    expect(exported).not.toContain('verbatim');
+    const reproduced = renderReadme(
+      files,
+      { ...context, reproduceVendored: true, filesPerCategory: { 'tool-poisoning': 1 } },
+      [],
+    );
+    expect(reproduced).toContain('extracted verbatim');
+  });
+});
+
 describe('exporter output is stable', () => {
   it('produces identical bytes on two runs of the same input', () => {
     const root = mkdtempSync(join(tmpdir(), 'atr-stable-'));
@@ -376,5 +569,101 @@ describe('exporter output is stable', () => {
     const twice = buildSignatureFiles(loadRules(root).rules, OPTIONS);
     expect(JSON.stringify(once)).toBe(JSON.stringify(twice));
     expect(readFileSync(join(root, 'prompt-injection', 'ATR-2026-00001-x.yaml'), 'utf8').length).toBeGreaterThan(0);
+  });
+});
+
+describe('export-cisco-pack.ts', () => {
+  // writePack() hands --reproduce-vendored to buildSignatureFiles() as
+  // verbatimPatterns. Without this test only verify-reproduction.ts, which
+  // needs a downstream checkout and runs in no workflow, would notice if that
+  // wiring broke.
+  const REPO = join(dirname(fileURLToPath(import.meta.url)), '..');
+  const TSX = join(REPO, 'node_modules', '.bin', 'tsx');
+  const SCRIPT = join(REPO, 'scripts', 'export-cisco-pack.ts');
+
+  function exportedPatterns(extraArgs: readonly string[]): string[] {
+    const rules = mkdtempSync(join(tmpdir(), 'atr-cisco-cli-rules-'));
+    mkdirSync(join(rules, 'prompt-injection'), { recursive: true });
+    writeFileSync(
+      join(rules, 'prompt-injection', 'ATR-2026-00005-x.yaml'),
+      yaml.dump({
+        id: 'ATR-2026-00005',
+        severity: 'high',
+        description: 'A rule.',
+        detection: {
+          conditions: [
+            { field: 'user_input', operator: 'regex', value: 'abc' },
+            { field: 'user_input', operator: 'regex', value: '(?im)^abc' },
+          ],
+        },
+      }),
+      'utf8',
+    );
+    const out = mkdtempSync(join(tmpdir(), 'atr-cisco-cli-out-'));
+    const run = spawnSync(
+      TSX,
+      [SCRIPT, '--rules', rules, '--out', out, '--version', '0.0.0', '--json', ...extraArgs],
+      { encoding: 'utf8' },
+    );
+    expect(run.status, run.stderr).toBe(0);
+    const dir = join(out, 'signatures');
+    return readdirSync(dir).flatMap((file) => {
+      const parsed = yaml.load(readFileSync(join(dir, file), 'utf8')) as {
+        signatures: { patterns: string[] }[];
+      };
+      return parsed.signatures.flatMap((signature) => signature.patterns);
+    });
+  }
+
+  it('writes (?i) patterns, and verbatim ones only with --reproduce-vendored', () => {
+    expect(exportedPatterns([])).toEqual(['(?i)abc', '(?i)^abc']);
+    expect(exportedPatterns(['--reproduce-vendored'])).toEqual(['abc', '(?im)^abc']);
+  }, 60_000);
+});
+
+describe('withoutSlowConditions', () => {
+  const conditions = [
+    { field: 'content', operator: 'regex', value: 'fast one' },
+    { field: 'content', operator: 'contains', value: 'not a regex' },
+    { field: 'content', operator: 'regex', value: 'slow one' },
+  ];
+
+  it('leaves a rule with no slow condition as it is', async () => {
+    const { withoutSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const r = rule({ id: 'ATR-2026-09001', detection: { conditions } });
+    expect(withoutSlowConditions(r, new Set(['ATR-2026-09999#0']))).toEqual({ kind: 'unchanged', rule: r });
+  });
+
+  it('drops only the slow condition of an any-rule, counting non-regex conditions in the index', async () => {
+    const { withoutSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const r = rule({ id: 'ATR-2026-09001', detection: { conditions } });
+    const result = withoutSlowConditions(r, new Set(['ATR-2026-09001#2']));
+    expect(result.kind).toBe('trimmed');
+    if (result.kind !== 'trimmed') return;
+    expect(result.dropped).toEqual([2]);
+    expect(extractPatterns(result.rule)).toEqual(['fast one']);
+    expect(r.detection?.conditions).toHaveLength(3);
+  });
+
+  it('leaves out an all-rule whole rather than broaden it', async () => {
+    const { withoutSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const r = rule({ id: 'ATR-2026-09001', detection: { condition: 'all', conditions } });
+    const result = withoutSlowConditions(r, new Set(['ATR-2026-09001#2']));
+    expect(result).toEqual({ kind: 'excluded', reason: 'slow on a backtracking regex engine: condition #2' });
+  });
+
+  it('leaves out an any-rule whose every regex condition is slow', async () => {
+    const { withoutSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const r = rule({ id: 'ATR-2026-09001', detection: { conditions } });
+    const result = withoutSlowConditions(r, new Set(['ATR-2026-09001#0', 'ATR-2026-09001#2']));
+    expect(result.kind).toBe('excluded');
+  });
+
+  it('reads the slow conditions from the repository baseline', async () => {
+    const { readSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const here = dirname(fileURLToPath(import.meta.url));
+    const slow = readSlowConditions(join(here, '..', 'data', 'redos-baseline.json'));
+    expect(slow.size).toBeGreaterThan(0);
+    for (const key of slow) expect(key).toMatch(/^ATR-\d{4}-\d{5}#\d+$/);
   });
 });

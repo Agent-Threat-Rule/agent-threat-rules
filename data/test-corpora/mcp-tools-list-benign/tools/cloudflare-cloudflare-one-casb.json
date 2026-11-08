@@ -1,0 +1,301 @@
+{
+  "tools": [
+    {
+      "name": "integration_by_id",
+      "description": "Analyze Cloudflare One Integration by ID",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "integrationIdParam": {
+            "type": "string",
+            "description": "The UUID of the integration to analyze"
+          }
+        },
+        "required": [
+          "integrationIdParam"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "integrations_list",
+      "description": "List all Cloudflare One Integrations in a given account",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "assets_search",
+      "description": "Search Assets by keyword",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assetSearchTerm": {
+            "type": "string",
+            "description": "The search keyword for assets"
+          }
+        },
+        "required": [
+          "assetSearchTerm"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "asset_by_id",
+      "description": "Search Assets by ID",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assetIdParam": {
+            "type": "string",
+            "description": "The UUID of the asset to analyze"
+          }
+        },
+        "required": [
+          "assetIdParam"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "assets_by_integration_id",
+      "description": "Search Assets by Integration ID",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "integrationIdParam": {
+            "type": "string",
+            "description": "The UUID of the integration to analyze"
+          }
+        },
+        "required": [
+          "integrationIdParam"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "assets_by_category_id",
+      "description": "Search Assets by Asset Category ID",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assetCategoryIdParam": {
+            "type": "string",
+            "description": "The UUID of the asset category to analyze"
+          }
+        },
+        "required": [
+          "assetCategoryIdParam"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "assets_list",
+      "description": "Paginated list of Assets",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "asset_categories_list",
+      "description": "List Asset Categories",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "asset_categories_by_vendor",
+      "description": "List asset categories by vendor",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assetCategoryVendorParam": {
+            "type": "string",
+            "enum": [
+              "AWS",
+              "Bitbucket",
+              "Box",
+              "Confluence",
+              "Dropbox",
+              "GitHub",
+              "Google Cloud Platform",
+              "Google Workspace",
+              "Jira",
+              "Microsoft",
+              "Microsoft Azure",
+              "Okta",
+              "Salesforce",
+              "ServiceNow",
+              "Slack",
+              "Workday",
+              "Zoom"
+            ],
+            "description": "Vendor of the cloud service or resource"
+          }
+        },
+        "required": [
+          "assetCategoryVendorParam"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "asset_categories_by_type",
+      "description": "Search Asset Categories by type",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assetCategoryTypeParam": {
+            "type": "string",
+            "enum": [
+              "Account",
+              "Alert",
+              "App",
+              "Authentication Method",
+              "Bucket",
+              "Bucket Iam Permission",
+              "Bucket Permission",
+              "Calendar",
+              "Certificate",
+              "Channel",
+              "Commit",
+              "Content",
+              "Credential",
+              "Domain",
+              "Drive",
+              "Environment",
+              "Factor",
+              "File",
+              "File Permission",
+              "Folder",
+              "Group",
+              "Incident",
+              "Instance",
+              "Issue",
+              "Label",
+              "Meeting",
+              "Message",
+              "Message Rule",
+              "Namespace",
+              "Organization",
+              "Package",
+              "Pipeline",
+              "Project",
+              "Report",
+              "Repository",
+              "Risky User",
+              "Role",
+              "Server",
+              "Site",
+              "Space",
+              "Submodule",
+              "Third Party User",
+              "User",
+              "User No Mfa",
+              "Variable",
+              "Webhook",
+              "Workspace"
+            ],
+            "description": "Type of cloud resource or service category"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "asset_categories_by_vendor_and_type",
+      "description": "Search Asset Categories by vendor and type",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assetCategoryTypeParam": {
+            "type": "string",
+            "enum": [
+              "Account",
+              "Alert",
+              "App",
+              "Authentication Method",
+              "Bucket",
+              "Bucket Iam Permission",
+              "Bucket Permission",
+              "Calendar",
+              "Certificate",
+              "Channel",
+              "Commit",
+              "Content",
+              "Credential",
+              "Domain",
+              "Drive",
+              "Environment",
+              "Factor",
+              "File",
+              "File Permission",
+              "Folder",
+              "Group",
+              "Incident",
+              "Instance",
+              "Issue",
+              "Label",
+              "Meeting",
+              "Message",
+              "Message Rule",
+              "Namespace",
+              "Organization",
+              "Package",
+              "Pipeline",
+              "Project",
+              "Report",
+              "Repository",
+              "Risky User",
+              "Role",
+              "Server",
+              "Site",
+              "Space",
+              "Submodule",
+              "Third Party User",
+              "User",
+              "User No Mfa",
+              "Variable",
+              "Webhook",
+              "Workspace"
+            ],
+            "description": "Type of cloud resource or service category"
+          },
+          "assetCategoryVendorParam": {
+            "type": "string",
+            "enum": [
+              "AWS",
+              "Bitbucket",
+              "Box",
+              "Confluence",
+              "Dropbox",
+              "GitHub",
+              "Google Cloud Platform",
+              "Google Workspace",
+              "Jira",
+              "Microsoft",
+              "Microsoft Azure",
+              "Okta",
+              "Salesforce",
+              "ServiceNow",
+              "Slack",
+              "Workday",
+              "Zoom"
+            ],
+            "description": "Vendor of the cloud service or resource"
+          }
+        },
+        "required": [
+          "assetCategoryVendorParam"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

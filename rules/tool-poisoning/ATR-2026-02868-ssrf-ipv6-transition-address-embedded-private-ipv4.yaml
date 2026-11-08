@@ -1,0 +1,200 @@
+title: "SSRF via IPv6 Transition Address Embedding a Private IPv4 Target"
+id: ATR-2026-02868
+rule_version: 1
+status: experimental
+description: >
+  Detects an agent tool argument whose URL host (or host-typed argument) is an
+  IPv6 transition-mechanism address that carries an internal IPv4 address in
+  its embedded 32 bits: IPv4-compatible (::a.b.c.d / ::XXXX:XXXX),
+  IPv4-mapped written in hex (::ffff:XXXX:XXXX), IPv4-translated
+  (::ffff:0:XXXX:XXXX), 6to4 (2002:XXXX:XXXX::/48) and NAT64
+  (64:ff9b::/96 and the local-use 64:ff9b:1::/48 prefix written with the
+  IPv4 in the last 32 bits). The embedded IPv4 must fall in loopback
+  127.0.0.0/8, RFC 1918 (10/8, 172.16/12, 192.168/16) or link-local / cloud
+  metadata 169.254/16.
+
+  Source: CVE-2026-55787 / GHSA-794r-5rp2-fpg8 in flytohub/flyto-core
+  (< 2.26.3), an execution kernel for AI-agent workflows. Its
+  validate_url_ssrf / is_private_ip guard compared resolved addresses only
+  against native private IPv4 and IPv6 ranges and never unwrapped transition
+  addresses, so a workflow author could hand http.get, http.request,
+  browser.goto or llm.chat a URL such as http://[64:ff9b::a9fe:a9fe]/ and
+  reach cloud metadata, loopback or RFC 1918 services. The same blind spot
+  exists in any agent fetch tool whose guard checks ipaddress.is_private on
+  the IPv6 object without first extracting the embedded IPv4.
+
+  Scope and limits: the rule matches the address literal only when it is the
+  bracketed host of a URL (scheme://[...] or the %5B/%5D percent-encoded
+  bracket form) or the value of a host / hostname / ip / address argument. It
+  does not resolve DNS names that point at transition addresses, does not
+  cover 100.64.0.0/10 CGNAT or 0.0.0.0/8 embeddings, and does not decode the
+  RFC 6052 /32-/64 NAT64 layouts where the IPv4 is split around the u-octet.
+  Overlap is intentional and partial: the dotted IPv4-mapped forms are
+  already covered by ATR-2026-00013, hex ::ffff:7f00:1 / ::ffff:a9fe:a9fe by
+  ATR-2026-02193, and the 169.254.169.254 NAT64 / 6to4 spellings by
+  ATR-2026-02140; this rule adds the IPv4-compatible hex, 6to4 and NAT64
+  embeddings of loopback and RFC 1918 targets that no existing rule covers.
+  CWE-918 (Server-Side Request Forgery).
+author: "ATR Community (CVE sync)"
+date: "2026/10/22"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-55787"
+  ghsa:
+    - "GHSA-794r-5rp2-fpg8"
+  euvd:
+    - "EUVD-2026-101588"
+  cwe:
+    - "CWE-918"
+  owasp_llm:
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI02:2026"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1552.005 - Unsecured Credentials: Cloud Instance Metadata API"
+    - "T1046 - Network Service Discovery"
+  external:
+    - "https://github.com/flytohub/flyto-core/security/advisories/GHSA-794r-5rp2-fpg8"
+    - "https://github.com/flytohub/flyto-core/commit/519e040384a74984848c4e84a6600e5f1020a6d2"
+    - "https://github.com/flytohub/flyto-core/releases/tag/v2.26.3"
+    - "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-101588"
+
+metadata_provenance:
+  cve: human-reviewed
+  ghsa: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_atlas: human-reviewed
+  mitre_attack: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires high-risk AI systems to resist attempts to misuse their tools; this rule provides detection evidence supporting that requirement by flagging agent fetch-tool URLs that smuggle an internal IPv4 target inside an IPv6 transition address past an SSRF guard."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management must treat identified risks; this rule provides detection evidence supporting the treatment of the transition-address SSRF bypass risk for agent workflows whose outbound-request guard may not unwrap embedded IPv4."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "MS.2.7 requires AI system security and resilience to be evaluated and documented; inspecting every outbound URL argument for transition-encoded internal targets is a measurable per-invocation control at the agent-to-network boundary."
+      strength: primary
+    - function: Manage
+      subcategory: "MG.3.2"
+      context: "MG.3.2 requires third-party and pre-built components to be monitored in operation; agent workflow kernels such as flyto-core ship their own SSRF guards, and this rule monitors for the input class those guards are known to miss."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational planning and control is supported by this rule's runtime detection of transition-address SSRF targets in agent tool calls."
+      strength: primary
+    - clause: "8.3"
+      context: "Clause 8.3 AI risk treatment is supported by this rule's detection of the SSRF guard bypass before the request leaves the agent."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: ssrf-ipv6-transition-address-bypass
+  scan_target: tool_args
+  confidence: high
+  source: cve-disclosure
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  false_positives:
+    - "Security test suites and SSRF-guard fixtures (for example flyto-core tests/core/test_ssrf_ipv6_transition.py) that pass these addresses to a fetch tool on purpose will match; that is the intended behaviour for a detection corpus."
+    - "A NAT64 or 6to4 deployment that deliberately reaches an internal RFC 1918 service through its translated IPv6 address would match; such deployments are rare and should be allow-listed by destination."
+    - "Public IPv4 embeddings (::ffff:8.8.8.8, 64:ff9b::808:808, 2002:808:808::) and ordinary native IPv6 hosts do not match."
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: '(?i)//(?:[^\s/@\[\]"]{1,64}@)?(?:\[|%5b)(?:(?:(?:0{1,4}:){1,4}|:):(?:ffff:(?:0{1,4}:)?)?|(?:0{1,4}:){5}(?:ffff|0{1,4}):|0{0,2}64:ff9b(?::0{0,3}1)?(?::0{1,4}){0,4}::?)(?:(?:7f[0-9a-f]{2}|0?a[0-9a-f]{2}|ac1[0-9a-f]|c0a8|a9fe):[0-9a-f]{1,4}|(?:127|10)(?:\.\d{1,3}){3}|172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2}|(?:192\.168|169\.254)(?:\.\d{1,3}){2})(?:\]|%5d)'
+      description: "URL bracketed host is an IPv4-compatible, IPv4-mapped/translated or NAT64 address whose final 32 bits are a loopback, RFC 1918 or link-local IPv4"
+    - field: tool_args
+      operator: regex
+      value: '(?i)//(?:[^\s/@\[\]"]{1,64}@)?(?:\[|%5b)0{0,2}2002:(?:7f[0-9a-f]{2}|0?a[0-9a-f]{2}|ac1[0-9a-f]|c0a8|a9fe):[0-9a-f:]{0,35}(?:\]|%5d)'
+      description: "URL bracketed host is a 6to4 (2002::/16) address whose embedded IPv4 (bits 16-47) is a loopback, RFC 1918 or link-local IPv4"
+    - field: tool_args
+      operator: regex
+      value: '(?i)["''](?:host|hostname|host_?name|ip|ip_?addr(?:ess)?|addr(?:ess)?|target_?host|server)["'']\s*:\s*["'']\[?(?:(?:(?:0{1,4}:){1,4}|:):(?:ffff:(?:0{1,4}:)?)?(?:7f[0-9a-f]{2}|0?a[0-9a-f]{2}|ac1[0-9a-f]|c0a8|a9fe):[0-9a-f]{1,4}|0{0,2}64:ff9b(?::0{0,3}1)?(?::0{1,4}){0,4}::?(?:7f[0-9a-f]{2}|0?a[0-9a-f]{2}|ac1[0-9a-f]|c0a8|a9fe):[0-9a-f]{1,4}|0{0,2}2002:(?:7f[0-9a-f]{2}|0?a[0-9a-f]{2}|ac1[0-9a-f]|c0a8|a9fe):[0-9a-f:]{0,35})\]?["'']'
+      description: "Host-typed tool argument whose whole value is an IPv6 transition address (hex embedding) carrying a loopback, RFC 1918 or link-local IPv4"
+
+response:
+  actions:
+    - alert
+    - snapshot
+  message_template: >
+    [ATR-2026-02868] HIGH: an agent tool is being sent to an IPv6 transition
+    address (IPv4-compatible, IPv4-mapped, 6to4 or NAT64) whose embedded IPv4
+    is loopback, private or cloud metadata. This is the CVE-2026-55787
+    (flyto-core) SSRF guard bypass shape: unwrap the embedded IPv4 before the
+    private-address check, and block the request.
+
+confidence: 78
+
+test_cases:
+  true_positives:
+    - input: '{"url":"http://[::7f00:1]:8080/"}'
+      expected: triggered
+      description: "CVE-2026-55787 fix-test input: IPv4-compatible hex form of 127.0.0.1"
+    - input: '{"url":"http://[2002:7f00:1::]:8080/"}'
+      expected: triggered
+      description: "CVE-2026-55787 fix-test input: 6to4 address embedding 127.0.0.1"
+    - input: '{"url":"http://[64:ff9b::7f00:1]:8080/status"}'
+      expected: triggered
+      description: "CVE-2026-55787 fix-test input: NAT64 well-known prefix embedding 127.0.0.1"
+    - input: '{"url":"http://[64:ff9b::a00:1]/internal"}'
+      expected: triggered
+      description: "CVE-2026-55787 fix-test input: NAT64 embedding RFC 1918 10.0.0.1"
+    - input: '{"url":"http://[::ffff:c0a8:101]/router"}'
+      expected: triggered
+      description: "CVE-2026-55787 fix-test input: hex IPv4-mapped 192.168.1.1"
+    - input: '{"tool":"http.request","url":"https://[64:ff9b:1::ac10:5]/api/v1/secrets","method":"GET"}'
+      expected: triggered
+      description: "Derived variant: NAT64 local-use prefix 64:ff9b:1:: embedding 172.16.0.5"
+    - input: '{"tool":"browser.goto","url":"http://[2002:c0a8:1:0:0:0:0:1]/admin"}'
+      expected: triggered
+      description: "Derived variant: uncompressed 6to4 address embedding 192.168.0.1"
+    - input: '{"host":"64:ff9b::a9fe:a9fe","port":80,"path":"/latest/meta-data/"}'
+      expected: triggered
+      description: "Derived variant: host-typed argument carrying a NAT64 cloud-metadata address"
+  true_negatives:
+    - input: '{"url":"http://[::ffff:8.8.8.8]/"}'
+      expected: not_triggered
+      description: "Benign twin from the fix-test TRANSITION_PUBLIC list: IPv4-mapped public resolver"
+    - input: '{"url":"http://[64:ff9b::808:808]/dns"}'
+      expected: not_triggered
+      description: "Benign twin: NAT64 address of public 8.8.8.8, the normal use of NAT64 on an IPv6-only network"
+    - input: '{"url":"http://[2002:808:808::]/"}'
+      expected: not_triggered
+      description: "Benign twin: 6to4 address embedding public 8.8.8.8"
+    - input: '{"url":"https://[2606:4700:4700::1111]/dns-query"}'
+      expected: not_triggered
+      description: "Ordinary native IPv6 public host"
+    - input: '{"url":"http://[::ffff:ac20:1]/status"}'
+      expected: not_triggered
+      description: "Near-miss twin: IPv4-mapped 172.32.0.1, just outside 172.16.0.0/12"
+    - input: '{"url":"http://[2001:db8::a00:1]/api"}'
+      expected: not_triggered
+      description: "Near-miss twin: documentation-range native IPv6 whose last groups happen to read a00:1"
+    - input: '{"url":"https://api.example.com/v1/items?id=7f00:1"}'
+      expected: not_triggered
+      description: "Hex-looking value in a query string, not a bracketed host"
+    - input: '{"host":"[2002:c0a9:101::]","port":443}'
+      expected: not_triggered
+      description: "Near-miss twin: 6to4 embedding 192.169.1.1, a public address adjacent to 192.168/16"

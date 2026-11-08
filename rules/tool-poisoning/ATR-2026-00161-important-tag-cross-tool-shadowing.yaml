@@ -1,6 +1,6 @@
 title: "MCP Tool Description — IMPORTANT Tag Cross-Tool Shadowing Attack"
 id: ATR-2026-00161
-rule_version: 2
+rule_version: 4
 status: experimental
 description: >
   Detects MCP tool poisoning attacks that embed hidden instructions inside an
@@ -125,8 +125,8 @@ detection:
     # variants like $HOME/.ssh/id_rsa, ~/.ssh/id_rsa, /root/.ssh/id_rsa.
     - field: content
       operator: regex
-      value: '\b(?:id_rsa|id_dsa|id_ed25519|id_ecdsa)\b(?!\.pub)|\b(?:\.aws/credentials|\.kube/config|\.docker/config\.json|\.netrc|known_hosts)\b|/etc/(?:passwd|shadow|ssl/private)|/proc/self/environ|\b\.env(?:\.local|\.production|\.secret)?\b(?![/a-zA-Z])'
-      description: "Sensitive credential file referenced in tool description — private keys or cloud credentials (v2: dropped mcp.json + .aws/config — common non-secret config files that appear in ordinary git/edit operations; the exfil case is still caught by the <IMPORTANT>-tag and read/send-directive layers. id_rsa excludes the .pub public key.)"
+      value: '\b(?:id_rsa|id_dsa|id_ed25519|id_ecdsa)\b(?!\.pub)|\b(?:\.aws/credentials|\.kube/config|\.docker/config\.json|\.netrc|known_hosts)\b|/etc/(?:passwd|shadow|ssl/private)|/proc/self/environ'
+      description: "Sensitive credential file referenced in tool description — private keys or cloud credentials (v2: dropped mcp.json + .aws/config — common non-secret config files that appear in ordinary git/edit operations; the exfil case is still caught by the <IMPORTANT>-tag and read/send-directive layers. id_rsa excludes the .pub public key. v4: dropped .env — as written it matched only when a letter came right before the dot, as in process.env or backup.env, and never a .env file path; a bare mention of a .env file is ordinary setup documentation.)"
 
     # Layer 4 — Concealment directive combined with "implementation detail"
     # justification. This is the exact pattern Invariant Labs documented for
@@ -181,6 +181,9 @@ test_cases:
       description: "Chained tool invocation directive with environment variable exfiltration — fake Postmark MCP pattern"
 
   true_negatives:
+    - input: "Reads configuration from the environment. Set clientSecret: process.env.CLIENT_SECRET and copy the values into ~/.openclaw/.backup.env before the first run."
+      expected: not_triggered
+      description: "process.env and a .env file name in setup documentation are not a credential-file reference"
     - input: "This tool calculates the sum of two integers. Example: add(2, 3) returns 5."
       expected: not_triggered
       description: "Minimal legitimate tool description — no hidden directives, no cross-tool references"

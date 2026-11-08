@@ -5,10 +5,14 @@
  */
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
+import { loadVersionLabels } from "@/lib/versions";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
 import { CitationBlock } from "@/components/spec/CitationBlock";
+import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -20,13 +24,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "Citation — ATR",
+  return pageMetadata({
+    locale,
+    path: "/citations",
+    title: "Citation",
     description:
       locale === "zh"
-        ? "ATR 引用格式 (BibTeX / APA / IEEE / Chicago) 與相關識別碼。"
-        : "Citation formats (BibTeX / APA / IEEE / Chicago) and related identifiers for citing ATR.",
-  };
+        ? "ATR 的引用格式（BibTeX、APA、IEEE、Chicago）和相關識別碼。"
+        : "Citation formats (BibTeX, APA, IEEE, Chicago) and related identifiers for citing ATR.",
+  });
 }
 
 export default async function CitationsPage({
@@ -37,6 +43,7 @@ export default async function CitationsPage({
   const { locale: l } = await params;
   const locale = (locales.includes(l as Locale) ? l : "en") as Locale;
   const meta = getSpecMeta();
+  const versions = await loadVersionLabels();
   const prefix = `/${locale}`;
   const zh = locale === "zh";
 
@@ -48,21 +55,22 @@ export default async function CitationsPage({
   const pypiUrl = `https://pypi.org/project/${pypiPackage}/`;
 
   return (
+    <Phrased>
     <main
       id="main-content"
-      className="spec-document w-full max-w-7xl mx-auto px-5 md:px-8 pt-24 md:pt-28 pb-24"
+      className="spec-document w-full px-6 md:px-14 pt-24 md:pt-28 pb-24"
       lang={zh ? "zh-Hant" : "en"}
     >
       {/* Header */}
       <header className="mb-8 md:mb-10 max-w-3xl">
         <p
-          className="text-xs uppercase tracking-[0.18em] text-stone mb-3"
+          className="text-[13px] text-stone mb-3"
           style={{ fontFamily: "var(--font-data)" }}
         >
-          {zh ? "引用 — Citation" : "Citation"}
+          {zh ? "引用" : "Citation"}
         </p>
         <h1
-          className="text-3xl md:text-5xl font-bold text-navy-ink mb-4 leading-[1.1]"
+          className="text-[32px] md:text-[48px] font-bold text-navy-ink mb-4 leading-[1.1]"
           style={{
             fontFamily: "var(--font-display)",
             letterSpacing: "-0.02em",
@@ -85,7 +93,7 @@ export default async function CitationsPage({
         <aside aria-label="Table of contents" className="lg:order-first">
           <nav className="spec-toc" aria-label={t(locale, "spec.toc_aria")}>
             <p
-              className="text-xs font-semibold uppercase tracking-wider text-stone mb-3"
+              className="text-[13px] text-stone mb-3"
               style={{ fontFamily: "var(--font-body)" }}
             >
               {t(locale, "spec.toc")}
@@ -112,7 +120,7 @@ export default async function CitationsPage({
             </ol>
             <hr className="my-5 border-fog" />
             <p
-              className="text-xs uppercase tracking-wider text-stone mb-2"
+              className="text-[13px] text-stone mb-2"
               style={{ fontFamily: "var(--font-body)" }}
             >
               {zh ? "完整規格" : "Full Specification"}
@@ -122,7 +130,7 @@ export default async function CitationsPage({
               className="text-sm text-navy underline decoration-navy/30 hover:decoration-navy"
               style={{ fontFamily: "var(--font-body)" }}
             >
-              {t(locale, "spec.read_full")} →
+              {t(locale, "spec.read_full")}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </Link>
           </nav>
         </aside>
@@ -139,8 +147,8 @@ export default async function CitationsPage({
             </h2>
             <p>
               {zh
-                ? "URL 會搬家,專案會改名,網頁會 404。引用是把一個會動的東西釘成不會動的錨點——所以下列場景請引用本規格,而非僅以 URL 連結。引用之版本應以引用時 /spec 所載之最新版本為準,並於引用文字中標示該版本號 (例如 v3.5.0)。版本會前進,但被引用的那一版永遠指得回去。"
-                : "URLs move, projects get renamed, pages 404. A citation pins something that changes into an anchor that does not — so in the following contexts, cite this specification rather than only linking to a URL. The cited version should be the latest version published on /spec at the time of writing, and the citation should include that version number (e.g. v3.5.0). The version moves forward, but the version you cited remains reachable."}
+                ? "網址會搬，專案會改名，網頁會 404。引用是把一個會變的東西，釘成一個不會變的錨點。所以在下面這些場合，請引用這份規格，不要只貼網址。引用的版本，以撰寫當下 /spec 上的最新版為準，並在引用裡寫出版本號。版本會往前走，你引用的那一版永遠找得回來。"
+                : "URLs move, projects get renamed, pages 404. A citation pins something that changes to an anchor that does not. So in the contexts below, cite this specification instead of only linking to a URL. Cite the latest version on /spec at the time you write, and include its version number. Versions move forward. The one you cited stays reachable."}
             </p>
             <ul>
               <li>
@@ -148,15 +156,15 @@ export default async function CitationsPage({
                   {zh ? "學術出版品" : "Academic publications"}.
                 </strong>{" "}
                 {zh
-                  ? "會議論文、期刊文章、學位論文中提及 ATR 規則格式、ATR engine、ATR benchmark 結果,或將 ATR 作為 baseline 比較對象。"
-                  : "Conference papers, journal articles, theses that reference the ATR rule format, an ATR engine, ATR benchmark results, or use ATR as a baseline for comparison."}
+                  ? "會議論文、期刊文章、學位論文，提到 ATR 規則格式、ATR engine、ATR benchmark 結果，或拿 ATR 當 baseline 來比較。"
+                  : "Conference papers, journal articles and theses that reference the ATR rule format, an ATR engine or ATR benchmark results, or use ATR as a baseline for comparison."}
               </li>
               <li>
                 <strong>
                   {zh ? "安全研究與技術報告" : "Security research and technical reports"}.
                 </strong>{" "}
                 {zh
-                  ? "在外部報告中重用 ATR 規則、引用 ATR 之偵測涵蓋率數字、或在威脅情報文件中以 ATR-YYYY-NNNNN 識別碼指涉特定威脅。"
+                  ? "外部報告重用 ATR 規則、引用 ATR 的偵測覆蓋數字，或在威脅情報文件裡用 ATR-YYYY-NNNNN 識別碼指稱某個威脅。"
                   : "External reports that reuse ATR rules, cite ATR coverage figures, or reference specific threats by their ATR-YYYY-NNNNN identifier in threat-intelligence documents."}
               </li>
               <li>
@@ -164,16 +172,16 @@ export default async function CitationsPage({
                   {zh ? "機構文件" : "Institutional documentation"}.
                 </strong>{" "}
                 {zh
-                  ? "標準組織、研究機構、政府機構之白皮書或建議書中,將 ATR 列為參考標準或互通格式。"
+                  ? "標準組織、研究機構或政府機關的出版品、白皮書和建議書，把 ATR 列為參考標準或互通格式。"
                   : "Standards-body publications, research-institute white papers, and government recommendations that list ATR as a reference standard or interoperability format."}
               </li>
               <li>
                 <strong>
-                  {zh ? "主權 AI 合規與符規申報" : "Sovereign-AI compliance and conformance filings"}.
+                  {zh ? "主權 AI 的合規與符規申報" : "Sovereign-AI compliance and conformance filings"}.
                 </strong>{" "}
                 {zh
-                  ? "向監管機關提交之 AI 風險管理或 agent 安全文件中,引用 ATR 作為偵測規則層 (detection-rule layer) 之依據,或以 L1 / L2 / L3 符規等級宣告其組織之 ATR 整合層級。"
-                  : "AI risk-management and agent-security filings submitted to regulators that cite ATR as the basis for the detection-rule layer, or declare an organization's ATR integration level by L1 / L2 / L3 conformance."}
+                  ? "交給主管機關的 AI 風險管理或 agent 安全文件，引用 ATR 作為偵測規則層的依據，或用 L1、L2、L3 符規等級，宣告組織把 ATR 整合到哪一層。"
+                  : "AI risk-management and agent-security filings to regulators that cite ATR as the basis for the detection-rule layer, or declare an organization's ATR integration level as L1, L2 or L3 conformance."}
               </li>
             </ul>
           </section>
@@ -188,13 +196,15 @@ export default async function CitationsPage({
             </h2>
             <p>
               {zh
-                ? "AI agent 的攻擊面不分學科——寫工程論文的、寫政策白皮書的、寫合規申報的,面對的是同一層威脅。所以同一個標準要在四種引用體裁裡都讀得通。下方四種格式對應四個學術傳統:BibTeX 為 LaTeX 之原生格式;APA 為社會科學標準;IEEE 為工程學科標準;Chicago 為人文學科常見格式。請依目標期刊或機構之要求選用——背後指向的,是同一份規格、同一個 DOI。"
-                : "The AI-agent attack surface does not respect disciplinary lines — the engineer writing a paper, the analyst writing a policy white paper, the officer filing for compliance are all describing the same layer of threat. So the same standard has to read cleanly across four citation traditions. The four formats below map to four of them: BibTeX is native to LaTeX; APA is the social-sciences standard; IEEE is the engineering standard; Chicago is common in the humanities. Select the one your target journal or institution requires — each points back to the same specification, the same DOI."}
+                ? "寫工程論文的、寫政策白皮書的、寫合規申報的，碰到的是同一層 agent 威脅。所以同一個標準，要在四種引用體例裡都讀得通。BibTeX 是 LaTeX 原生的格式，APA 是社會科學的標準，IEEE 是工程學科的標準，Chicago 常見於人文學科。照目標期刊或機構的要求選一種。四種指向的都是同一份規格、同一個 DOI。"
+                : "An engineer writing a paper, an analyst writing a policy white paper and an officer filing for compliance are all describing the same layer of agent threats. So the same standard has to read cleanly in four citation styles. BibTeX is native to LaTeX. APA is the social-sciences standard. IEEE is the engineering standard. Chicago is common in the humanities. Pick the one your target journal or institution asks for. All four point to the same specification and the same DOI."}
             </p>
             <CitationBlock
               locale={locale}
               meta={{
-                version: meta.version,
+                // Cited as software ([Computer software] in APA), so the
+                // version is the npm release, not the written spec's.
+                version: versions.npm,
                 lastModified: meta.lastModified,
                 canonicalUrl: meta.canonicalUrl,
                 doi: meta.doi,
@@ -213,8 +223,8 @@ export default async function CitationsPage({
             </h2>
             <p>
               {zh
-                ? "一個標準有很多個面向世界的入口,但只有一個錨。下列識別碼指向本規格之等效或衍生發布物:DOI 是那個錨——學術引用的規範性錨點,即使每個 npm 版本、每支 GitHub 分支都在動,它指向的那份 snapshot 永不改變。其餘 (GitHub / npm / PyPI / Zenodo / canonical URL) 是給實作者用的散佈格式 (distribution form),是錨周圍的鷹架,不是錨本身。"
-                : "A standard has many doors facing the world, but only one anchor. The identifiers below point to equivalent or derived distributions of this specification. The DOI is the anchor — the normative anchor for academic citation, pointing at a snapshot that never changes even as every npm version and every GitHub branch keeps moving. The rest (GitHub, npm, PyPI, Zenodo, canonical URL) are distribution forms for implementers — scaffolding around the anchor, not the anchor itself."}
+                ? "一個標準有很多對外的入口，但錨點只有一個。下面這些識別碼，指向這份規格的等效或衍生發布物。DOI 就是那個錨點，也是學術引用的規範性錨點。npm 每出一版、GitHub 每個分支都在動，DOI 指向的那份 snapshot 不會變。其他的，像 GitHub、npm、PyPI、Zenodo、canonical URL，是給實作者用的散佈形式。它們是錨點周圍的鷹架，不是錨點本身。"
+                : "A standard has many doors facing the world but only one anchor. The identifiers below point to equivalent or derived distributions of this specification. The DOI is the anchor, the normative one for academic citation. Every npm version and every GitHub branch keeps moving. The snapshot the DOI points at never changes. The rest, GitHub, npm, PyPI, Zenodo and the canonical URL, are distribution forms for implementers. They are scaffolding around the anchor, not the anchor itself."}
             </p>
 
             <div className="hidden md:block overflow-x-auto -mx-2 my-5">
@@ -237,7 +247,7 @@ export default async function CitationsPage({
                         rel="noopener noreferrer"
                         className="text-navy underline"
                       >
-                        {doiUrl} ↗
+                        {doiUrl}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                       </a>
                     </td>
                   </tr>
@@ -251,7 +261,7 @@ export default async function CitationsPage({
                         rel="noopener noreferrer"
                         className="text-navy underline"
                       >
-                        {zenodoUrl} ↗
+                        {zenodoUrl}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                       </a>
                     </td>
                   </tr>
@@ -267,7 +277,7 @@ export default async function CitationsPage({
                         rel="noopener noreferrer"
                         className="text-navy underline"
                       >
-                        {meta.repository} ↗
+                        {meta.repository}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                       </a>
                     </td>
                   </tr>
@@ -281,7 +291,7 @@ export default async function CitationsPage({
                         rel="noopener noreferrer"
                         className="text-navy underline"
                       >
-                        {npmUrl} ↗
+                        {npmUrl}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                       </a>
                     </td>
                   </tr>
@@ -295,7 +305,7 @@ export default async function CitationsPage({
                         rel="noopener noreferrer"
                         className="text-navy underline"
                       >
-                        {pypiUrl} ↗
+                        {pypiUrl}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                       </a>
                     </td>
                   </tr>
@@ -311,7 +321,7 @@ export default async function CitationsPage({
                         rel="noopener noreferrer"
                         className="text-navy underline"
                       >
-                        {meta.canonicalUrl} ↗
+                        {meta.canonicalUrl}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                       </a>
                     </td>
                   </tr>
@@ -355,10 +365,10 @@ export default async function CitationsPage({
               ].map((row) => (
                 <div
                   key={row.label}
-                  className="border border-fog rounded-sm p-4 bg-paper"
+                  className="border border-fog  p-4 bg-paper"
                 >
                   <p
-                    className="text-xs uppercase tracking-wider text-stone mb-1"
+                    className="text-[13px] text-stone mb-1"
                     style={{ fontFamily: "var(--font-data)" }}
                   >
                     {row.label}
@@ -375,7 +385,7 @@ export default async function CitationsPage({
                     rel="noopener noreferrer"
                     className="text-navy underline text-sm inline-flex items-center min-h-[44px] break-all"
                   >
-                    {row.url} ↗
+                    {row.url}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
                   </a>
                 </div>
               ))}
@@ -383,15 +393,15 @@ export default async function CitationsPage({
 
             <p className="text-sm text-stone mt-4" style={{ maxWidth: "42em" }}>
               {zh
-                ? "規範性之引用錨點 (normative anchor) 為 DOI。儲存於 Zenodo 之版本為每一發布版本之獨立 snapshot;GitHub 倉庫為持續演進之原始碼;npm 與 PyPI 套件為實作者使用之分發格式。在規格之下、單條規則之層級,則以 CVE / CWE 風格之 ATR-YYYY-NNNNN 識別碼指涉——一經發布永不改 ID,規則內容可修訂,但識別碼穩定,讓論文、威脅情報與 CI 腳本得以安全引用某一條具體規則,而非整份標準。穩定的識別碼,是一個標準能被當作基礎建設依賴的前提。"
-                : "The normative anchor for citation is the DOI. Zenodo holds an immutable snapshot per release; the GitHub repository tracks ongoing evolution; the npm and PyPI packages are distribution artifacts used by implementers. Below the specification, at the level of a single rule, threats are referenced by CVE / CWE-style ATR-YYYY-NNNNN identifiers — the ID never changes after publication; the rule's content may be revised, but the identifier stays stable, so a paper, a threat-intel feed, or a CI script can safely reference one specific rule rather than the whole standard. A stable identifier is the precondition for a standard to be depended on as infrastructure."}
+                ? "引用的規範性錨點是 DOI。Zenodo 替每個發布版本存一份獨立、不會變的 snapshot。GitHub repository 是持續演進的原始碼。npm 和 PyPI 套件是給實作者用的散佈形式。到了規格底下、單條規則這一層，用的是 CVE、CWE 風格的 ATR-YYYY-NNNNN 識別碼。發布後 ID 不會改。規則內容可以修訂，識別碼不動，所以論文、威脅情報和 CI 腳本都能放心指向某一條規則，而不是整份標準。識別碼穩定，標準才能被當成基礎建設來依賴。"
+                : "The DOI is the normative anchor for citation. Zenodo holds an immutable snapshot of each release. The GitHub repository tracks ongoing changes. The npm and PyPI packages are distribution artifacts for implementers. Below the specification, at the level of a single rule, threats are referenced by CVE- and CWE-style ATR-YYYY-NNNNN identifiers. An ID never changes after publication. A rule's content may be revised while its identifier stays put, so a paper, a threat-intel feed or a CI script can safely point at one specific rule instead of the whole standard. A standard can be depended on as infrastructure only if its identifiers are stable."}
             </p>
           </section>
 
           {/* End matter */}
           <hr className="my-12 border-fog" />
           <p className="spec-meta">
-            {zh ? "編輯" : "Editor"}: {meta.editors[0].name}
+            {zh ? "編輯：" : "Editor: "}{meta.editors[0].name}
             {" <"}
             <a
               href={`mailto:${meta.editors[0].email}`}
@@ -399,7 +409,7 @@ export default async function CitationsPage({
             >
               {meta.editors[0].email}
             </a>
-            {">"} — DOI{" "}
+            {">"} · DOI{" "}
             <a
               href={`https://doi.org/${meta.doi}`}
               target="_blank"
@@ -408,10 +418,11 @@ export default async function CitationsPage({
             >
               {meta.doi}
             </a>{" "}
-            — MIT License — ISO 8601 {meta.lastModified}
+            · MIT License · ISO 8601 {meta.lastModified}
           </p>
         </div>
       </div>
     </main>
+    </Phrased>
   );
 }

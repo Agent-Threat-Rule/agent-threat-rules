@@ -4,6 +4,7 @@
  */
 
 import yaml from 'js-yaml';
+import { compileRegexCondition, safeRegexTest } from './engine.js';
 import type {
   ATRCategory,
   ATRSeverity,
@@ -202,13 +203,40 @@ export const ATTACK_PATTERN_INDICATORS: ReadonlyArray<{
  * 1. Match known attack indicators in the payload -> use behavioral regex
  * 2. Combine multiple indicators with alternation for multi-vector attacks
  * 3. Fall back to keyword extraction only for text that has no code patterns
+ *
+ * Whatever it picks must match the payload it came from, because that payload
+ * is also the rule's first true positive. An indicator is chosen by a broad
+ * `test`, and its emitted `pattern` can be narrower ("Ignore all previous
+ * instructions" passes the override indicator's test, but its pattern wants
+ * one qualifier word between the verb and the noun), so an indicator counts
+ * only when its pattern matches too. If the result still misses the payload,
+ * the exact payload is used instead.
+ *
+ * The keyword and exact shapes are written to stay linear: shadow evaluation
+ * runs every generated rule against every event, and `(?=.*a)(?=.*b)` or
+ * `.*text.*` is retried from every position, which is quadratic in the length
+ * of a long single-line input.
  */
 function buildRegexPattern(payload: string, category?: ATRCategory): string {
   const trimmed = payload.trim();
+  const candidate = buildCandidatePattern(trimmed, category);
+  return matchesOwnPayload(candidate, trimmed) ? candidate : buildExactPayloadPattern(trimmed);
+}
 
+/**
+ * Whether `pattern`, compiled and tested as the engine compiles and tests a
+ * regex condition (SPEC §6.4, including its input-length limit), matches
+ * `payload`.
+ */
+function matchesOwnPayload(pattern: string, payload: string): boolean {
+  const regex = compileRegexCondition(pattern);
+  return regex !== null && safeRegexTest(regex, payload);
+}
+
+function buildCandidatePattern(trimmed: string, category?: ATRCategory): string {
   // Step 1: Find all attack indicators present in this payload
   const matched = ATTACK_PATTERN_INDICATORS.filter((ind) => {
-    const matchesPayload = ind.test.test(trimmed);
+    const matchesPayload = ind.test.test(trimmed) && matchesOwnPayload(`(?i)${ind.pattern}`, trimmed);
     const matchesCategory = !category || ind.categories.includes(category);
     return matchesPayload && matchesCategory;
   });
@@ -234,15 +262,23 @@ function buildRegexPattern(payload: string, category?: ATRCategory): string {
   const words = trimmed.split(/\s+/).filter((w) => w.length > 3);
 
   if (words.length === 0) {
-    return `(?i).*${escapeRegex(trimmed)}.*`;
+    return buildExactPayloadPattern(trimmed);
   }
 
+  // Same matches as (?=.*k1)(?=.*k2)... -- every keyword on one line -- but tried
+  // only at line starts, so a miss is linear instead of quadratic in the line length.
   const keywords = words.slice(0, 4);
-  return `(?i)${keywords.map((k) => `(?=.*${escapeRegex(k)})`).join('')}`;
+  const NOT_EOL = '[^\\n\\r\\u2028\\u2029]';
+  return `(?i)(?:^|[\\n\\r\\u2028\\u2029])${keywords.map((k) => `(?=${NOT_EOL}*${escapeRegex(k)})`).join('')}`;
 }
 
+/**
+ * The escaped payload as an unanchored literal. Same matches as `.*payload.*`
+ * (each `.*` can match empty), but linear: the `.*` prefix made every miss
+ * quadratic in the longest line of the input.
+ */
 function buildExactPayloadPattern(payload: string): string {
-  return `(?i).*${escapeRegex(payload.trim())}.*`;
+  return `(?i)${escapeRegex(payload.trim())}`;
 }
 
 function generateId(existingIds: ReadonlySet<string> = new Set()): string {
@@ -646,6 +682,10 @@ export class RuleScaffolder {
     }
     if (!input.examplePayloads || input.examplePayloads.length === 0) {
       throw new Error('ScaffoldInput.examplePayloads must contain at least one payload');
+    }
+    // An empty payload would become a pattern that matches every input.
+    if (input.examplePayloads.some((p) => typeof p !== 'string' || p.trim().length === 0)) {
+      throw new Error('ScaffoldInput.examplePayloads must not contain an empty or whitespace-only payload');
     }
 
     if (input.examplePayloads.length < 3) {

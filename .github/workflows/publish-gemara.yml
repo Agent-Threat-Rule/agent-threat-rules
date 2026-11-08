@@ -218,7 +218,12 @@ jobs:
             diff <(printf '%s\n' "$remote_layers") <(printf '%s\n' "$local_layers") || true
             exit 1
           fi
-          if grep -Eqi 'manifest unknown|name unknown' "$err"; then
+          # oras 1.2.0 reports a tag that does not exist on GHCR as
+          #   failed to fetch the content of "<ref>": <ref>: not found
+          # (seen on the first publish, v4.2.0); registries that return the OCI
+          # error codes say "manifest unknown" or "name unknown". A bare
+          # "not found" elsewhere in the output is not taken as "unpublished".
+          if grep -Eqi 'manifest unknown|name unknown|failed to fetch the content of "[^"]+": [^ ]+: not found' "$err"; then
             echo "::notice::$tag_ref is not published yet."
             echo "publish=true" >> "$GITHUB_OUTPUT"
             exit 0

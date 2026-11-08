@@ -1,0 +1,291 @@
+title: "Non-Canonical Numeric IPv4 Host in a URL-Typed Tool Argument (SSRF Filter Bypass)"
+id: ATR-2026-02864
+rule_version: 1
+status: experimental
+description: >
+  Detects an agent or node tool call whose URL-typed argument names its host as a
+  NON-CANONICAL numeric IPv4 literal: a bare decimal integer (http://2130706433/),
+  a bare octal integer (http://017700000001/), a bare hex integer
+  (http://0x7f000001/), a dotted address whose first part is octal or hex
+  (http://0177.0.0.1/, http://0x7f.0.0.1/), or the two- and three-part short
+  forms (http://127.1/, http://127.0.1/, http://10.1/). URL parsers and the
+  OS resolver expand every one of these into an ordinary address such as
+  127.0.0.1, 10.0.0.1 or 169.254.169.254, but a deny-list that only recognises
+  the four-part dotted-decimal spelling does not, so the request reaches
+  loopback, LAN or cloud-metadata services the filter was meant to stop.
+
+  This is the bypass core of CVE-2026-101883 (OpenClaw Windows Node through
+  2026.9.4): the canvas.present capability skipped the URL risk evaluation that
+  canvas.navigate enforced, and the regex-based check that did exist only
+  matched dotted-decimal private ranges. Anyone with gateway or agent access
+  could send canvas.present with {"url": "http://2130706433:8080/admin"} and make
+  the node's WebView issue the request from the user's machine. The fix commit
+  16528aa added CanvasUrlSafety, whose tests enumerate exactly these encodings.
+  The same parser differential applies to any URL-typed argument of any tool
+  (fetch, browse, open_url, webhook targets), so the rule is not keyed to the
+  canvas tool name.
+
+  SCOPE AND LIMITS, stated honestly. The rule matches only when the URL is a
+  JSON string value with a quoted key ("url":"..."), a quoted element of a JSON
+  array ({"urls":["..."]}), or the whole argument string, so prose that quotes
+  the payload does not fire. A single trailing dot after the host
+  (http://2130706433./) is accepted because WHATWG/Chromium URL parsers (the
+  WebView2 used by the Windows node) drop the empty final label and still
+  resolve it to 127.0.0.1. JSON-escaped slashes after the scheme
+  (http:\/\/0x7f000001\/, as produced by PHP json_encode) are also accepted. It deliberately does
+  NOT match canonical dotted-decimal loopback or private addresses
+  (127.0.0.1, 10.x, 192.168.x), 0.0.0.0, the bare "0" host, or the
+  100.64.0.0/10 CGNAT / Tailscale range, even though the upstream fix blocks
+  all of them: coding agents and node canvases legitimately open local dev
+  servers, LAN devices and tailnet dashboards constantly, and those values are
+  byte-for-byte the same shape as the attack. IPv4-mapped IPv6, [::1] and ULA
+  ([fd00::1]) hosts are matched by ATR-2026-00013. That rule lists only
+  a few hard-coded hex/octal loopback strings (0x7f000001, 0x7f.0x0.0x0.0x1,
+  017700000001 and similar), so the overlap is limited to those exact strings;
+  general hex forms such as http://0x7f.1:9222/ are not matched by
+  ATR-2026-00013 (its own evasion_tests list 0x7f.1 as a gap) and are covered
+  here. Unicode full-width dots, percent-encoded hosts, zero-padded
+  dotted-decimal octets (http://127.000.000.001/), scheme-relative URLs
+  (//2130706433/) and DNS names that resolve to internal addresses are out of
+  scope.
+
+  CWE-918 (Server-Side Request Forgery), CWE-1286 (Improper Validation of
+  Syntactic Correctness of Input).
+author: "ATR Community (CVE sync)"
+date: "2026/10/22"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-101883"
+  ghsa:
+    - "GHSA-7vch-pmw9-3g4q"
+  euvd:
+    - "EUVD-2026-90256"
+  owasp_llm:
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI02:2026"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+    - "AML.T0053 - AI Agent Tool Invocation"
+  mitre_attack:
+    - "T1090 - Proxy"
+    - "T1046 - Network Service Discovery"
+  external:
+    - "https://github.com/openclaw/openclaw-windows-node/security/advisories/GHSA-7vch-pmw9-3g4q"
+    - "https://github.com/openclaw/openclaw-windows-node/commit/16528aadaa45d7bc6718b07ccf8b01f3eb033ad1"
+    - "https://www.vulncheck.com/advisories/openclaw-windows-node-through-2026.9.4-ssrf-via-canvas-present"
+    - "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-90256"
+
+metadata_provenance:
+  cve: human-reviewed
+  ghsa: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_atlas: human-reviewed
+  mitre_attack: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 requires accuracy, robustness and cybersecurity appropriate to the intended purpose. A URL argument whose host is spelled as a decimal, octal or short-form IPv4 literal is a known way to slip past a dotted-decimal deny-list; this rule provides detection evidence supporting the Article 15 robustness obligation at the agent-to-tool boundary while the receiving tool remains unpatched."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management must account for the network reach an agent's tools give it. Runtime evidence that tool calls are steering a node's browser or fetcher at encoded internal addresses feeds the risk register for that surface."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "MS.2.7 requires AI system security and resilience to be evaluated and documented. Inspecting each URL-typed tool argument for non-canonical IPv4 host encodings is a measurable, per-invocation control against SSRF filter bypass rather than an assumption that every tool canonicalises hosts correctly."
+      strength: primary
+    - function: Manage
+      subcategory: "MG.3.2"
+      context: "MG.3.2 requires pre-trained models and third-party components to be monitored. Node capabilities and MCP tools that fetch URLs are third-party components whose host validation the deployer cannot audit; flagging encoded internal hosts in their arguments is the monitoring control."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational planning and control covers the tools an AI system invokes. This rule is an operational control applied to every URL-typed tool argument, independent of the tool's own URL validation."
+      strength: primary
+    - clause: "8.3"
+      context: "Clause 8.3 AI risk treatment requires controls proportionate to identified risks. Because one encoded host can expose loopback admin panels or cloud metadata from the user's machine, inspecting URL hosts at call time is a proportionate treatment."
+      strength: secondary
+
+tags:
+  category: tool-poisoning
+  subcategory: ssrf-encoded-ip-host
+  scan_target: tool_args
+  confidence: medium
+  source: cve-disclosure
+  vendor_sources: openclaw-windows-node-cve-2026-101883
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  method: pattern
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: '(?:^|\\?"[A-Za-z_][A-Za-z0-9_.-]{0,40}\\?"\s{0,3}:\s{0,3}\\?"|[\[,]\s{0,3}\\?")(?:https?|wss?|ftp):\\?/\\?/(?:[^/\s"\x27@?#\\]{1,64}@)?(?:\d{8,10}|0[0-7]{8,11}|0x[0-9a-f]{1,8}|0(?:[0-7]{1,3}|x[0-9a-f]{1,2})(?:\.(?:0x[0-9a-f]{1,2}|\d{1,4})){1,3}|\d{1,3}\.\d{1,8}|\d{1,3}\.\d{1,3}\.\d{1,5})\.?(?:[:/?#"\x27\\\s\]]|$)'
+      description: "A URL that is a quoted JSON value, a quoted JSON array element (or the whole argument) whose host is a decimal integer, octal integer, hex integer, octal/hex-first-part dotted address, or a two/three-part short IPv4 form - every spelling that resolves to an IPv4 address while evading a dotted-decimal deny-list"
+  false_positives:
+    - "Security test suites, SSRF fuzzing harnesses and CVE reproductions that deliberately pass encoded hosts in a URL argument will match; that is the intended behaviour for a detection corpus."
+    - "A serialized tool call or JSON document quoted verbatim inside an article is the same bytes as the attack and still matches. Prose that mentions the URL without a quoted key does not."
+    - "Embedded or industrial devices whose documentation tells users to reach them by a short-form address (http://10.1/) would match; this is rare and the short form is itself a canonicalisation hazard."
+
+response:
+  actions:
+    - alert
+    - snapshot
+  actions_rationale: >-
+    response-action eligibility (docs/RESPONSE-ACTION-ELIGIBILITY.md): new rule with no
+    benign-corpus FP measurement beyond the gate; ceiling = observe.
+  auto_response_threshold: high
+  message_template: >
+    [ATR-2026-02864] HIGH: a URL-typed tool argument names its host as a
+    non-canonical numeric IPv4 literal (decimal / octal / hex integer, octal or
+    hex dotted part, or short form). These spellings resolve to internal
+    addresses such as 127.0.0.1 or 169.254.169.254 while slipping past
+    dotted-decimal deny-lists - the CVE-2026-101883 canvas.present SSRF bypass.
+    Canonicalise the host before applying URL policy.
+
+confidence: 72
+
+test_cases:
+  true_positives:
+    - tool_name: "canvas.present"
+      tool_args: '{"url":"http://2130706433:8080/admin","title":"Canvas"}'
+      expected: triggered
+      description: "CVE-2026-101883 reproducer input: decimal-integer loopback (127.0.0.1) with a port"
+    - tool_name: "canvas.present"
+      tool_args: '{"url":"http://0177.0.0.1:8080/"}'
+      expected: triggered
+      description: "CVE-2026-101883 fix test: octal first octet"
+    - tool_name: "canvas.present"
+      tool_args: '{"url":"http://127.1/"}'
+      expected: triggered
+      description: "CVE-2026-101883 fix test: two-part short form of 127.0.0.1"
+    - tool_name: "canvas.present"
+      tool_args: '{"url":"http://3232235777/router/admin","width":800}'
+      expected: triggered
+      description: "Derived variant: 192.168.1.1 as a decimal integer, reaching a LAN router panel"
+    - tool_name: "canvas.present"
+      tool_args: '{"url":"http://0x7f.0.0.1:9222/json/version"}'
+      expected: triggered
+      description: "Derived variant: hex first octet aimed at a local Chrome DevTools endpoint"
+    - tool_name: "browser.open"
+      tool_args: '{"target_url":"https://user@0300.0250.0.1/"}'
+      expected: triggered
+      description: "Derived variant: all-octal 192.168.0.1 behind a userinfo prefix, different tool and key"
+    - tool_name: "web_fetch"
+      tool_args: '{"url":"http://10.1:8500/v1/kv/?recurse"}'
+      expected: triggered
+      description: "Derived variant: short form of 10.0.0.1 aimed at a Consul KV API"
+    - tool_args: "http://0xa9fea9fe/latest/meta-data/"
+      expected: triggered
+      description: "Derived variant: whole-argument URL with hex-integer 169.254.169.254 metadata host"
+    - tool_name: "canvas.present"
+      tool_args: '{"urls":["http://2130706433:8080/admin"]}'
+      expected: triggered
+      description: "Round-2 variant: batch-fetch style argument, encoded host as a JSON array element instead of a keyed value"
+    - tool_name: "web_fetch"
+      tool_args: '{"urls":["https://example.com/","http://0x7f.1:9222/json/version"]}'
+      expected: triggered
+      description: "Round-2 variant: encoded host as the second element of a URL list (comma-led array element)"
+    - tool_name: "canvas.present"
+      tool_args: '{"url":"http://2130706433./admin"}'
+      expected: triggered
+      description: "Round-2 variant: trailing-dot host; WHATWG/Chromium (WebView2) drops the empty last label and still resolves 127.0.0.1"
+    - tool_name: "canvas.present"
+      tool_args: '{"url":"http:\/\/0x7f000001\/"}'
+      expected: triggered
+      description: "Round-2 variant: JSON-escaped slashes (PHP json_encode style) around a hex-integer loopback host"
+  true_negatives:
+    - tool_name: "canvas.present"
+      tool_args: '{"url":"http://127.0.0.1:5173/","title":"Vite dev"}'
+      expected: not_triggered
+      description: "BENIGN TWIN: same tool and parameter opening a local dev server by canonical loopback"
+    - tool_name: "canvas.present"
+      tool_args: '{"url":"http://192.168.1.20:8080/status","title":"NAS"}'
+      expected: not_triggered
+      description: "BENIGN TWIN: same tool and parameter opening a LAN device by canonical dotted-decimal"
+    - tool_name: "canvas.present"
+      tool_args: '{"url":"http://localhost:3000/?session=2130706433&build=10.1","title":"preview"}'
+      expected: not_triggered
+      description: "BENIGN TWIN: the encoded-looking numbers sit in the query string, not the host"
+    - tool_name: "canvas.present"
+      tool_args: '{"url":"http://100.101.12.7:3000/d/fleet","title":"Grafana (tailnet)"}'
+      expected: not_triggered
+      description: "BENIGN TWIN: a tailnet dashboard in 100.64.0.0/10 - deliberately out of scope, same shape as the CGNAT attack input"
+    - tool_name: "canvas.present"
+      tool_args: '{"url":"https://docs.openclaw.ai/v2026.9/canvas","width":1024,"height":768}'
+      expected: not_triggered
+      description: "Ordinary public documentation page with a version segment in the path"
+    - tool_name: "web_fetch"
+      tool_args: '{"url":"https://203.0.113.10:8443/health"}'
+      expected: not_triggered
+      description: "Canonical four-part public IPv4 host"
+    - tool_name: "web_fetch"
+      tool_args: '{"url":"http://build-20261022.ci.example.com:8080/artifacts/12345678"}'
+      expected: not_triggered
+      description: "Long digit runs inside a DNS label and the path, not as the host"
+    - input: "CVE-2026-101883: canvas.present accepted http://2130706433:8080/admin and http://127.1/ because the regex only knew dotted-decimal ranges."
+      expected: not_triggered
+      description: "Advisory prose describing the bypass - no quoted key, URL not the whole argument"
+    - tool_name: "web_fetch"
+      tool_args: '{"urls":["http://127.0.0.1:3000/","http://192.168.1.5:8080/status","https://203.0.113.10/"]}'
+      expected: not_triggered
+      description: "BENIGN TWIN: batch-fetch array of canonical dotted-decimal URLs, same array shape as the round-2 variant"
+    - tool_name: "canvas.present"
+      tool_args: '{"url":"http://127.0.0.1./","title":"local"}'
+      expected: not_triggered
+      description: "BENIGN TWIN: canonical loopback with a trailing dot - the trailing-dot allowance must not make canonical hosts match"
+    - tool_name: "canvas.present"
+      tool_args: '{"url":"http:\/\/127.0.0.1:8080\/dashboard"}'
+      expected: not_triggered
+      description: "BENIGN TWIN: JSON-escaped slashes around a canonical loopback host"
+    - tool_name: "release.notes"
+      tool_args: '{"versions":["1.2","10.1","2026.9.4"],"links":["https://example.com/v10.1/"]}'
+      expected: not_triggered
+      description: "Short-form-looking version numbers as array elements with no URL scheme"
+
+evasion_tests:
+  - tool_name: "canvas.present"
+    tool_args: '{"url":"http://0.0.0.0:5000/"}'
+    expected: not_triggered
+    bypass_technique: unspecified_address
+    notes: "Real gap, accepted. 0.0.0.0 is blocked by the upstream fix but is also the address every Flask/Vite/uvicorn dev server prints and agents open; it is the same shape whether benign or malicious."
+  - tool_name: "canvas.present"
+    tool_args: '{"url":"http://100.119.0.78:8384/","title":"dash"}'
+    expected: not_triggered
+    bypass_technique: cgnat_tailnet_range
+    notes: "Real gap, accepted. 100.64.0.0/10 (Tailscale/CGNAT) is the same shape as legitimate tailnet dashboards, exactly like RFC1918 addresses that ATR-2026-00013 also leaves alone."
+  - tool_name: "canvas.present"
+    tool_args: '{"url":"http://0:8080/"}'
+    expected: not_triggered
+    bypass_technique: zero_host
+    notes: "Real gap. A bare 0 host resolves to 0.0.0.0 on most stacks; a one-digit host was left out to avoid matching truncated or templated URLs."
+  - tool_name: "canvas.present"
+    tool_args: '{"url":"http://127%2e0%2e0%2e1/"}'
+    expected: not_triggered
+    bypass_technique: percent_encoded_host
+    notes: "Real gap. Percent-encoded and full-width-dot hosts need decoding before matching and are out of this rule's scope."
+  - tool_name: "canvas.present"
+    tool_args: '{"url":"http://127.000.000.001:8080/"}'
+    expected: not_triggered
+    bypass_technique: zero_padded_dotted_decimal
+    notes: "Real gap. Four-part dotted address with zero-padded octets; some parsers read 000/001 as octal and still reach 127.0.0.1. Four-part forms are excluded to keep canonical dotted-decimal hosts out of scope."
+  - tool_name: "web_fetch"
+    tool_args: '{"url":"//2130706433/admin"}'
+    expected: not_triggered
+    bypass_technique: scheme_relative_url
+    notes: "Real gap. A scheme-relative URL inherits the caller's scheme; the rule anchors on an explicit scheme to avoid matching path-like strings."

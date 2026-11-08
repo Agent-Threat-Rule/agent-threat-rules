@@ -8,6 +8,21 @@
  */
 
 import type { ATRRule, ATRArrayCondition } from '../types.js';
+import { inlineCaseInsensitive } from '../regex-dialect.js';
+
+/**
+ * A regex condition as a PCRE pattern for SPL's `regex` command and match().
+ * PCRE applies a leading inline group itself, so the condition's own group
+ * used to reach Splunk unchanged: a pattern without (?i) matched
+ * case-sensitively and (?im) or (?is) turned on multiline or dotall. SPEC
+ * §6.4 matches every condition case-insensitively and gives m, s and x no
+ * effect, so the group is replaced by (?i). PCRE still differs from
+ * ECMAScript in places ($ also matches before a final newline, . also
+ * matches \r, U+2028 and U+2029).
+ */
+function splRegex(value: string): string {
+  return escapeForSPL(inlineCaseInsensitive(value));
+}
 
 /**
  * Escape a string for use in Splunk SPL double-quoted values.
@@ -27,7 +42,7 @@ function conditionToSPL(cond: ATRArrayCondition): string {
 
   switch (cond.operator) {
     case 'regex':
-      return `| regex ${field}="${escapeForSPL(value)}"`;
+      return `| regex ${field}="${splRegex(value)}"`;
 
     case 'contains':
       return `${field}="*${escapeForSPL(value)}*"`;
@@ -117,7 +132,7 @@ export function ruleToSPL(rule: ATRRule): string {
       lines.push('| where (');
       const regexClauses = regexConditions.map((cond, i) => {
         const prefix = i === 0 ? '    ' : '    OR ';
-        return `${prefix}match(${cond.field}, "${escapeForSPL(cond.value)}")`;
+        return `${prefix}match(${cond.field}, "${splRegex(cond.value)}")`;
       });
       lines.push(...regexClauses);
       lines.push(')');
@@ -128,7 +143,7 @@ export function ruleToSPL(rule: ATRRule): string {
       for (const cond of arrayConditions) {
         switch (cond.operator) {
           case 'regex':
-            clauses.push(`match(${cond.field}, "${escapeForSPL(cond.value)}")`);
+            clauses.push(`match(${cond.field}, "${splRegex(cond.value)}")`);
             break;
           case 'contains':
             clauses.push(`like(${cond.field}, "%${escapeForSPL(cond.value)}%")`);

@@ -4,11 +4,13 @@
  */
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
 import { RFC2119 } from "@/components/spec/RFC2119";
-import { NormativeBadge, InformativeBadge } from "@/components/spec/Badges";
+import Phrased from "@/components/Phrased";
+import { phraseHtml } from "@/lib/phrase";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -20,13 +22,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "Specification | ATR",
+  return pageMetadata({
+    locale,
+    path: "/spec",
+    title: "Specification",
     description:
       locale === "zh"
         ? "ATR 開放偵測規則格式的正式規格文件。"
         : "Canonical specification of the ATR open detection rule format.",
-  };
+  });
 }
 
 interface Section {
@@ -50,9 +54,9 @@ const SECTIONS: Section[] = [
 <p>ATR is to AI-agent threat detection what <a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a> is to SIEM detection and <a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a> is to malware signatures: a vendor-neutral, machine-readable, peer-reviewable rule format that any engine may implement and any party may cite. A detection written once is portable across every conforming engine — no reinvention of the rule format per vendor.</p>`,
     },
     zh: {
-      title: "Abstract (摘要)",
-      body: `<p>Agent Threat Rules (ATR) 是 AI Agent 安全威脅的開放偵測規則格式。規則以 YAML 撰寫,遵循版本化 schema,使用公開的 <code>ATR-YYYY-NNNNN</code> 識別碼方案 ── 一如 CVE 編號,ID 一經發布即永久穩定、永不重新指派 ── 並可由任何 conforming engine 評估。Reference TypeScript engine 與 Python wrapper 於主 repository 中以 MIT license 發布。</p>
-<p>ATR 之於 AI Agent 威脅偵測,如同 <a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a> 之於 SIEM 偵測、<a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a> 之於 malware signature:一個廠商中立、機器可讀、可同儕審查 (peer-reviewable) 的規則格式,任何引擎皆可實作、任何人皆可引用。一條偵測寫一次,即可在每個 conforming engine 間流通 ── 不必為每家廠商重新發明規則格式。</p>`,
+      title: "摘要",
+      body: `<p>Agent Threat Rules（ATR）是偵測 AI agent 安全威脅的開放規則格式。規則用 YAML 撰寫，遵循有版本的 schema，編號採公開的 <code>ATR-YYYY-NNNNN</code> 格式。編號和 CVE 一樣，發布後就固定，永遠不會改派給別的規則。任何符規的引擎都能執行這些規則。參考用的 TypeScript 引擎和 Python 封裝都放在主 repository，以 MIT 授權發布。</p>
+<p>ATR 之於 AI agent 威脅偵測，就像 <a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a> 之於 SIEM 偵測、<a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a> 之於惡意程式特徵：一種不屬於任何廠商、機器讀得懂、能公開審查的規則格式，任何引擎都能實作，任何人都能引用。一條偵測寫一次，就能在每個符規的引擎上執行，不必每家廠商各發明一套規則格式。</p>`,
     },
   },
   {
@@ -61,15 +65,15 @@ const SECTIONS: Section[] = [
     status: "informative",
     en: {
       title: "Status of This Document",
-      body: `<p>This document is a <strong>Working Draft</strong> published by the ATR Community. Although the rule format has been shipping in production for over a year, the surrounding governance is still transitioning from a single-maintainer model (BDFL) to a Technical Steering Committee (TSC). The transition criteria and seating process are defined in the <a href="/en/charter">project charter</a>.</p>
+      body: `<p>This document is a <strong>Draft</strong> published by the ATR Community. It follows SPEC.md, whose header gives ATR Core version {SPEC_VERSION} with status Draft. Although the rule format has been published on npm since March 2026, the surrounding governance is still transitioning from a lead-maintainer model (BDFL) to a Technical Steering Committee (TSC). The transition criteria and seating process are defined in the <a href="/en/charter">project charter</a>.</p>
 <p>Discussion of this document takes place on the public GitHub repository at <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules" target="_blank" rel="noopener noreferrer">github.com/Agent-Threat-Rule/agent-threat-rules</a>. Substantive feedback should be filed as issues.</p>
 <p>All numbers in this document are sourced from <code>data/stats.json</code> in the repository, which is the canonical record of the project's current state. Benchmark figures additionally resolve through the per-source pointer at <code>data/measurements/&lt;source&gt;/latest.json</code> (aggregated into <code>stats.json</code> under <code>benchmarks[]</code>). Where this document and these files disagree, the files are authoritative.</p>`,
     },
     zh: {
-      title: "本文件狀態 (Status of This Document)",
-      body: `<p>本文件為 ATR 社群發布的 <strong>Working Draft</strong>。儘管規則格式已在 production 運行超過一年,周邊治理仍處於從單一維護者模型 (BDFL) 過渡到 Technical Steering Committee (TSC) 的階段。過渡條件與就任程序定義於 <a href="/zh/charter">專案章程</a>。</p>
-<p>本文件討論於公開 GitHub repository <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules" target="_blank" rel="noopener noreferrer">github.com/Agent-Threat-Rule/agent-threat-rules</a> 進行。實質性回饋請開 issue。</p>
-<p>本文件所有數字皆源自 repository 中的 <code>data/stats.json</code>,此為專案目前狀態的正本紀錄。Benchmark 數字另經各來源指標 <code>data/measurements/&lt;source&gt;/latest.json</code> 解析 (彙總於 <code>stats.json</code> 的 <code>benchmarks[]</code>)。若本文件與這些檔案不一致,以這些檔案為準。</p>`,
+      title: "本文件狀態",
+      body: `<p>本文件是 ATR 社群發布的<strong>草案</strong>（Draft），內容依照 SPEC.md；SPEC.md 開頭寫的是 ATR Core 版本 {SPEC_VERSION}，狀態為 Draft。規則格式從 2026 年 3 月起就在 npm 公開發布，但治理方式還在過渡：從首席維護者（BDFL）主導，轉到技術指導委員會（TSC）。過渡條件和委員就任的程序寫在<a href="/zh/charter">專案章程</a>。</p>
+<p>關於本文件的討論在公開的 GitHub repository 進行：<a href="https://github.com/Agent-Threat-Rule/agent-threat-rules" target="_blank" rel="noopener noreferrer">github.com/Agent-Threat-Rule/agent-threat-rules</a>。有實質意見，請開 issue。</p>
+<p>本文件的所有數字都來自 repository 裡的 <code>data/stats.json</code>，這是專案現況的正式紀錄。Benchmark 數字還會再經過各來源的指標檔 <code>data/measurements/&lt;source&gt;/latest.json</code>（彙整在 <code>stats.json</code> 的 <code>benchmarks[]</code>）。本文件和這些檔案不一致時，以檔案為準。</p>`,
     },
   },
   {
@@ -80,7 +84,7 @@ const SECTIONS: Section[] = [
       title: "Background",
       body: `<p>AI agents — MCP servers, autonomous coding assistants, multi-agent frameworks — are now an active attack surface. Public CVE feeds confirm prompt-injection, tool-poisoning, credential-exfiltration, and unauthenticated agent-execution vulnerabilities are shipping in production agent infrastructure faster than the security tooling that detects them.</p>
 <p>Existing security primitives do not cover this surface natively:</p>
-<ul>
+<ul class="list-[square]">
   <li><strong>Sigma</strong> describes log-based detections for SIEM ingestion; it has no native model for LLM I/O, tool-call arguments, or agent context windows.</li>
   <li><strong>YARA</strong> describes binary and text patterns for file-system artifacts; it has no native model for runtime agent events.</li>
   <li><strong>OWASP Agentic Top 10</strong> and <strong>MITRE ATLAS</strong> are taxonomies — they enumerate risks, not executable detections.</li>
@@ -88,15 +92,15 @@ const SECTIONS: Section[] = [
 <p>ATR fills the gap between <em>taxonomy</em> and <em>deployable rule</em>. Each rule is a YAML document declaring (a) what attack pattern it matches, (b) what input field it inspects (LLM I/O, tool-call args, SKILL.md content, agent config), (c) how to test it, and (d) how to map it back to OWASP / MITRE / SAFE-MCP / NIST AI RMF. The schema is intentionally narrow so that any engine — TypeScript, Python, Go, Rust — can implement it without ambiguity.</p>`,
     },
     zh: {
-      title: "背景 (Background)",
-      body: `<p>AI Agent ── MCP server、autonomous coding assistant、multi-agent framework ── 已成為活躍的攻擊面。公開的 CVE feed 證實,prompt injection、tool poisoning、credential exfiltration、unauthenticated agent execution 等漏洞,在 production agent infrastructure 中出現的速度,快於能偵測它們的安全工具。</p>
-<p>既有的安全 primitive 並未原生涵蓋此攻擊面:</p>
-<ul>
-  <li><strong>Sigma</strong> 描述 SIEM 攝取用的 log 偵測;沒有 LLM I/O、tool-call argument、agent context window 的原生模型。</li>
-  <li><strong>YARA</strong> 描述檔案系統 artifact 的 binary 與 text pattern;沒有 runtime agent event 的原生模型。</li>
-  <li><strong>OWASP Agentic Top 10</strong> 與 <strong>MITRE ATLAS</strong> 是分類學 (taxonomy) ── 它們列舉風險,而非可執行的偵測。</li>
+      title: "背景",
+      body: `<p>AI agent，包括 MCP server、自動寫程式的助理、多 agent 框架，已經是實際被攻擊的目標。公開的 CVE 紀錄顯示，prompt injection、工具投毒、竊取憑證、未經驗證就能讓 agent 執行指令這類漏洞，出現在正式環境 agent 基礎設施裡的速度，比偵測它們的資安工具還快。</p>
+<p>現有的資安工具原本就不是為這個攻擊面設計的：</p>
+<ul class="list-[square]">
+  <li><strong>Sigma</strong> 描述給 SIEM 收的日誌偵測，沒有描述 LLM 輸入輸出、工具呼叫參數或 agent context window 的方式。</li>
+  <li><strong>YARA</strong> 描述檔案系統裡的二進位與文字特徵，沒有描述 agent 執行期事件的方式。</li>
+  <li><strong>OWASP Agentic Top 10</strong> 和 <strong>MITRE ATLAS</strong> 是分類體系，列出風險，但不是能執行的偵測。</li>
 </ul>
-<p>ATR 填補了 <em>taxonomy</em> 與 <em>可部署規則</em> 之間的空缺。每條規則是一份 YAML 文件,宣告:(a) 比對哪個攻擊 pattern,(b) 檢測哪個 input field (LLM I/O、tool-call args、SKILL.md 內容、agent config),(c) 如何測試,(d) 如何對應回 OWASP / MITRE / SAFE-MCP / NIST AI RMF。Schema 刻意設計得 narrow,讓任何引擎 ── TypeScript、Python、Go、Rust ── 都能無歧義地實作。</p>`,
+<p>ATR 補上的是「分類」和「能部署的規則」之間那一段。每條規則是一份 YAML 文件，寫明四件事：（a）比對哪一種攻擊 pattern；（b）檢查哪個輸入欄位（LLM 輸入輸出、工具呼叫參數、SKILL.md 內容、agent 設定）；（c）怎麼測試；（d）怎麼對應回 OWASP、MITRE、SAFE-MCP、NIST AI RMF。Schema 刻意定得很窄，讓 TypeScript、Python、Go、Rust 寫的任何引擎都能照著實作，不會有不同解讀。</p>`,
     },
   },
   {
@@ -107,7 +111,7 @@ const SECTIONS: Section[] = [
       title: "Conformance Levels",
       body: `<p>The keywords MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY in this document and in <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a> are to be interpreted as described in <a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a>.</p>
 <h3>A conforming <strong>ATR engine</strong> MUST:</h3>
-<ol>
+<ol class="list-decimal">
   <li>Parse all fields defined in <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer"><code>spec/atr-schema.yaml</code></a> without error.</li>
   <li>Evaluate <code>detection.conditions</code> with the semantics defined in <code>SPEC.md §6</code> (Detection Semantics), and emit Match output as defined in <code>SPEC.md §7</code> (Match Output).</li>
   <li>Honor the <code>scan_target</code> field — a rule with <code>scan_target: skill</code> MUST NOT be evaluated against <code>mcp_exchange</code> events and vice versa.</li>
@@ -115,7 +119,7 @@ const SECTIONS: Section[] = [
   <li>Emit <code>rule_id</code> and rule <code>severity</code> on every match.</li>
 </ol>
 <h3>A conforming <strong>ATR rule</strong> MUST:</h3>
-<ol>
+<ol class="list-decimal">
   <li>Declare an <code>id</code> matching <code>ATR-YYYY-NNNNN</code> for community-published rules, or a vendor-prefixed scheme (e.g. <code>ACME-YYYY-NNNNN</code>) for vendor-private rules.</li>
   <li>Declare at least one <code>detection.conditions[]</code> entry.</li>
   <li>Include <code>test_cases.true_positives</code> and <code>test_cases.true_negatives</code> (minimum 1 each at <code>maturity: experimental</code>, ≥5 each at <code>maturity: stable</code>).</li>
@@ -124,24 +128,24 @@ const SECTIONS: Section[] = [
 <p>See <a href="/en/conformance">/conformance</a> for the L1/L2/L3 conformance levels and the test-suite-based self-certification process.</p>`,
     },
     zh: {
-      title: "符規等級 (Conformance Levels)",
-      body: `<p>本文件與 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a> 中的關鍵詞 MUST、MUST NOT、SHOULD、SHOULD NOT、MAY,皆依 <a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a> 詮釋。</p>
-<h3>一個符規的 <strong>ATR engine</strong> MUST:</h3>
-<ol>
-  <li>解析 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer"><code>spec/atr-schema.yaml</code></a> 中所有定義的欄位,且不應出錯。</li>
-  <li>以 <code>SPEC.md §6</code> (Detection Semantics) 中定義的語意評估 <code>detection.conditions</code>,並依 <code>SPEC.md §7</code> (Match Output) 的定義發出 Match 輸出。</li>
-  <li>遵守 <code>scan_target</code> 欄位 ── 帶 <code>scan_target: skill</code> 的規則 MUST NOT 對 <code>mcp_exchange</code> event 評估,反之亦然。</li>
-  <li>遵守規則的 <code>status</code> ── <code>status: deprecated</code> 或 <code>status: draft</code> 的規則 MUST NOT 參與生產環境比對,除非消費者明示 opt in。</li>
-  <li>每次 match 皆 MUST 發出 <code>rule_id</code> 與 <code>severity</code>。</li>
+      title: "符規等級",
+      body: `<p>本文件與 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a> 裡的關鍵詞 MUST、MUST NOT、SHOULD、SHOULD NOT、MAY，都依 <a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a> 的定義解讀。</p>
+<h3>符規的 <strong>ATR 引擎</strong> MUST：</h3>
+<ol class="list-decimal">
+  <li>解析 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer"><code>spec/atr-schema.yaml</code></a> 定義的所有欄位，不出錯。</li>
+  <li>依 <code>SPEC.md §6</code>（偵測語意）定義的語意評估 <code>detection.conditions</code>，並依 <code>SPEC.md §7</code>（比對輸出）的定義輸出比對結果。</li>
+  <li>遵守 <code>scan_target</code> 欄位：<code>scan_target: skill</code> 的規則 MUST NOT 拿來評估 <code>mcp_exchange</code> 事件，反過來也一樣。</li>
+  <li>遵守規則的 <code>status</code>：<code>status: deprecated</code> 或 <code>status: draft</code> 的規則 MUST NOT 參與正式環境的比對，除非使用者明確選擇開啟。</li>
+  <li>每一筆比對結果都 MUST 輸出 <code>rule_id</code> 和規則的 <code>severity</code>。</li>
 </ol>
-<h3>一條符規的 <strong>ATR rule</strong> MUST:</h3>
-<ol>
-  <li>宣告 <code>id</code>:社群發布規則使用 <code>ATR-YYYY-NNNNN</code>,廠商私有規則使用 vendor-prefixed scheme (例如 <code>ACME-YYYY-NNNNN</code>)。</li>
+<h3>符規的 <strong>ATR 規則</strong> MUST：</h3>
+<ol class="list-decimal">
+  <li>宣告 <code>id</code>：社群發布的規則用 <code>ATR-YYYY-NNNNN</code>，廠商私有規則用廠商自己的前綴（例如 <code>ACME-YYYY-NNNNN</code>）。</li>
   <li>至少宣告一個 <code>detection.conditions[]</code> 條目。</li>
-  <li>包含 <code>test_cases.true_positives</code> 與 <code>test_cases.true_negatives</code> (在 <code>maturity: experimental</code> 時各至少 1 個,在 <code>maturity: stable</code> 時各至少 5 個)。</li>
-  <li>宣告 <code>severity</code>,值取自 <code>{informational, low, medium, high, critical}</code>。</li>
+  <li>包含 <code>test_cases.true_positives</code> 和 <code>test_cases.true_negatives</code>（<code>maturity: experimental</code> 時各至少 1 個，<code>maturity: stable</code> 時各至少 5 個）。</li>
+  <li>宣告 <code>severity</code>，值從 <code>{informational, low, medium, high, critical}</code> 中選一個。</li>
 </ol>
-<p>L1/L2/L3 符規等級與基於 test suite 的自我認證 (self-certification) 程序見 <a href="/zh/conformance">/conformance</a>。</p>`,
+<p>L1、L2、L3 三個符規等級，以及用測試套件自我認證的程序，見 <a href="/zh/conformance">/conformance</a>。</p>`,
     },
   },
   {
@@ -197,20 +201,20 @@ test_cases:
 </code></pre>`,
     },
     zh: {
-      title: "規格 Artifact (Specification Artifacts)",
-      body: `<p>完整規格分散於下列 artifact。Markdown 渲染為正本 (canonical);YAML schema 為機器可讀的衍生 artifact。</p>
+      title: "規格文件",
+      body: `<p>完整的規格分成下面幾份文件。以 Markdown 版為正本；YAML schema 是從正本衍生、給機器讀的版本。</p>
 <table>
   <thead>
-    <tr><th>Artifact</th><th>用途</th><th>位置</th></tr>
+    <tr><th>文件</th><th>用途</th><th>位置</th></tr>
   </thead>
   <tbody>
-    <tr><td>SPEC.md</td><td>規則格式 spec (normative)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a></td></tr>
-    <tr><td>spec/atr-schema.yaml</td><td>機器可讀 schema</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer">atr-schema.yaml</a></td></tr>
-    <tr><td>docs/QUALITY-STANDARD.md</td><td>規則晉升標準 (RFC-001)</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/QUALITY-STANDARD.md" target="_blank" rel="noopener noreferrer">QUALITY-STANDARD.md</a></td></tr>
-    <tr><td>LIMITATIONS.md</td><td>已記錄的 evasion 技術</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" target="_blank" rel="noopener noreferrer">LIMITATIONS.md</a></td></tr>
+    <tr><td>SPEC.md</td><td>規則格式規格（規範性）</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a></td></tr>
+    <tr><td>spec/atr-schema.yaml</td><td>給機器讀的 schema</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer">atr-schema.yaml</a></td></tr>
+    <tr><td>docs/QUALITY-STANDARD.md</td><td>規則晉升標準（RFC-001）</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/QUALITY-STANDARD.md" target="_blank" rel="noopener noreferrer">QUALITY-STANDARD.md</a></td></tr>
+    <tr><td>LIMITATIONS.md</td><td>已記錄的繞過手法</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" target="_blank" rel="noopener noreferrer">LIMITATIONS.md</a></td></tr>
   </tbody>
 </table>
-<h3>規則形狀 (示例)</h3>
+<h3>規則長什麼樣子（示例）</h3>
 <pre><code>id: ATR-2026-00001
 title: System Prompt Override Attempt
 status: stable
@@ -255,9 +259,9 @@ test_cases:
 <p>New adopters self-declare via pull request to <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ADOPTERS.md" target="_blank" rel="noopener noreferrer"><code>ADOPTERS.md</code></a>. The maintainers do not pre-approve entries; self-certification is the model.</p>`,
     },
     zh: {
-      title: "採用 (Adoption)",
-      body: `<p>完整的 Implementer Report ── 包含每個組織的符規等級、規格版本、整合日期、公開憑據 ── 發布於 <a href="/zh/implementers">/implementers</a>。截至本文件日期,已實作的整合包含 Microsoft Agent Governance Toolkit(範例目錄)、Cisco AI Defense 的開源 skill-scanner、MISP / CIRCL (galaxy + taxonomies)、OWASP A-S-R-H Project、以及 Gen Digital Sage (Norton / Avast / AVG 的母公司)。每一筆的憑據都是公開 repo 裡一個已合併的 pull request;已合併的 PR 不等於對任何廠商商業產品的陳述。NIST OSCAL 的 pull request(#338)提供 AI RMF profile 範例,仍開著、等待 NIST 審查;此非 NIST 背書。</p>
-<p>新採用者透過對 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ADOPTERS.md" target="_blank" rel="noopener noreferrer"><code>ADOPTERS.md</code></a> 開立 pull request 自我宣告。維護者不預先審核條目;自我認證 (self-certification) 即是模型。</p>`,
+      title: "採用",
+      body: `<p>完整的實作者報告列出每個組織的符規等級、規格版本、整合日期和公開憑據，放在 <a href="/zh/implementers">/implementers</a>。截至本文件日期，已經實作的整合有：Microsoft Agent Governance Toolkit（範例目錄）、Cisco AI Defense 的開源 skill-scanner、MISP／CIRCL（galaxy 與 taxonomies）、OWASP A-S-R-H Project，以及 Gen Digital Sage（Norton、Avast、AVG 的母公司）。每一筆的憑據都是公開 repo 裡一個已合併的 pull request；PR 合併了，不代表對任何廠商的商業產品有所表示。NIST OSCAL 有一個 pull request（#338）提供 AI RMF profile 範例，還開著，在等 NIST 審查；這不是 NIST 的背書。</p>
+<p>新的採用者自己對 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ADOPTERS.md" target="_blank" rel="noopener noreferrer"><code>ADOPTERS.md</code></a> 開 pull request 登記。維護者不預先審核，採用的是自我認證。</p>`,
     },
   },
   {
@@ -275,30 +279,30 @@ test_cases:
     <tr><td>OWASP LLM Top 10 (2025)</td><td>Per-rule references</td><td>Per-rule <code>references.owasp_llm</code></td></tr>
     <tr><td>MITRE ATLAS</td><td>Per-rule references</td><td>Per-rule <code>references.mitre_atlas</code></td></tr>
     <tr><td>NIST AI RMF (community OSCAL catalog)</td><td>Per-rule subcategory mappings</td><td><a href="https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog" target="_blank" rel="noopener noreferrer">ai-rmf-oscal-catalog</a></td></tr>
-    <tr><td>Five Eyes joint guidance (2026-04-30)</td><td>5-category mapping</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/FIVE-EYES-MAPPING.md" target="_blank" rel="noopener noreferrer">FIVE-EYES-MAPPING.md</a></td></tr>
+    <tr><td>Five Eyes joint guidance (<span class="whitespace-nowrap">2026-04-30</span>)</td><td>5-category mapping</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/FIVE-EYES-MAPPING.md" target="_blank" rel="noopener noreferrer">FIVE-EYES-MAPPING.md</a></td></tr>
     <tr><td>CSA MAESTRO (2025)</td><td>7-layer architectural mapping</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/CSA-MAESTRO-MAPPING.md" target="_blank" rel="noopener noreferrer">CSA-MAESTRO-MAPPING.md</a></td></tr>
     <tr><td>ETSI TS 104 223</td><td>13-principle mapping</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/ETSI-TS-104223-MAPPING.md" target="_blank" rel="noopener noreferrer">ETSI-TS-104223-MAPPING.md</a></td></tr>
   </tbody>
 </table>
-<p>NIST has not endorsed the community OSCAL catalog. The mapping is community-maintained.</p>`,
+<p>These mappings are ATR's own work. The bodies whose documents are mapped, including OWASP, MITRE, NIST, the Five Eyes agencies, CSA and ETSI, have not reviewed or endorsed them. NIST has not endorsed the community OSCAL catalog. The mapping is community-maintained.</p>`,
     },
     zh: {
-      title: "框架覆蓋 (Framework Coverage)",
-      body: `<p>ATR 將其規則對應到既有框架,讓採用者能回答「我們部署 ATR ── 這在 [你的框架] 上代表多少覆蓋率?」,而不必自己重新做對應。</p>
+      title: "框架對應",
+      body: `<p>ATR 把規則對應到現有的框架。採用者想知道「部署了 ATR，在我們用的框架上能涵蓋多少」時，不必自己從頭再對一次。</p>
 <table>
-  <thead><tr><th>框架</th><th>覆蓋率</th><th>對應</th></tr></thead>
+  <thead><tr><th>框架</th><th>涵蓋範圍</th><th>對應文件</th></tr></thead>
   <tbody>
-    <tr><td>OWASP Agentic Top 10 (2026)</td><td>10/10 類別</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/OWASP-AGENTIC-MAPPING.md" target="_blank" rel="noopener noreferrer">OWASP-AGENTIC-MAPPING.md</a></td></tr>
-    <tr><td>SAF-MCP</td><td>對 SAF Framework Model v2 的經審查候選技術對應(partial 或 adjacent);未經 SAF 驗證</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md" target="_blank" rel="noopener noreferrer">SAFE-MCP-MAPPING.md</a></td></tr>
-    <tr><td>OWASP LLM Top 10 (2025)</td><td>Per-rule references</td><td>Per-rule <code>references.owasp_llm</code></td></tr>
-    <tr><td>MITRE ATLAS</td><td>Per-rule references</td><td>Per-rule <code>references.mitre_atlas</code></td></tr>
-    <tr><td>NIST AI RMF (community OSCAL catalog)</td><td>逐條規則的 subcategory 對應</td><td><a href="https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog" target="_blank" rel="noopener noreferrer">ai-rmf-oscal-catalog</a></td></tr>
-    <tr><td>Five Eyes joint guidance (2026-04-30)</td><td>5-category mapping</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/FIVE-EYES-MAPPING.md" target="_blank" rel="noopener noreferrer">FIVE-EYES-MAPPING.md</a></td></tr>
-    <tr><td>CSA MAESTRO (2025)</td><td>7 層架構對應</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/CSA-MAESTRO-MAPPING.md" target="_blank" rel="noopener noreferrer">CSA-MAESTRO-MAPPING.md</a></td></tr>
+    <tr><td>OWASP Agentic Top 10（2026）</td><td>10/10 類別</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/OWASP-AGENTIC-MAPPING.md" target="_blank" rel="noopener noreferrer">OWASP-AGENTIC-MAPPING.md</a></td></tr>
+    <tr><td>SAF-MCP</td><td>對 SAF Framework Model v2 做過審查的候選技術對應（partial 或 adjacent）；未經 SAF 驗證</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/SAFE-MCP-MAPPING.md" target="_blank" rel="noopener noreferrer">SAFE-MCP-MAPPING.md</a></td></tr>
+    <tr><td>OWASP LLM Top 10（2025）</td><td>逐條規則標註</td><td>各規則的 <code>references.owasp_llm</code></td></tr>
+    <tr><td>MITRE ATLAS</td><td>逐條規則標註</td><td>各規則的 <code>references.mitre_atlas</code></td></tr>
+    <tr><td>NIST AI RMF（社群 OSCAL catalog）</td><td>逐條規則對應到子類別</td><td><a href="https://github.com/Agent-Threat-Rule/ai-rmf-oscal-catalog" target="_blank" rel="noopener noreferrer">ai-rmf-oscal-catalog</a></td></tr>
+    <tr><td>五眼聯盟聯合指引（<span class="whitespace-nowrap">2026-04-30</span>）</td><td>5 個類別的對應</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/FIVE-EYES-MAPPING.md" target="_blank" rel="noopener noreferrer">FIVE-EYES-MAPPING.md</a></td></tr>
+    <tr><td>CSA MAESTRO（2025）</td><td>7 層架構對應</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/CSA-MAESTRO-MAPPING.md" target="_blank" rel="noopener noreferrer">CSA-MAESTRO-MAPPING.md</a></td></tr>
     <tr><td>ETSI TS 104 223</td><td>13 項原則對應</td><td><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/docs/ETSI-TS-104223-MAPPING.md" target="_blank" rel="noopener noreferrer">ETSI-TS-104223-MAPPING.md</a></td></tr>
   </tbody>
 </table>
-<p>NIST 並未背書社群 OSCAL catalog。該對應由社群維護。</p>`,
+<p>這些對應是 ATR 自己做的。被對照的文件出自 OWASP、MITRE、NIST、五眼聯盟各機關、CSA、ETSI 等單位，它們都沒有審查或背書這些對應。NIST 沒有背書社群的 OSCAL catalog。這份對應由社群維護。</p>`,
     },
   },
   {
@@ -314,12 +318,12 @@ test_cases:
 <p>Precision is not reported as a single number. Each rule declares a <code>maturity</code>, and maturity maps to a detection <em>lane</em>: the <code>enforce</code> lane fires only the most mature rules, the <code>alert</code> lane adds rules under observation, and the default <code>hunt</code> lane runs the whole corpus as advisory signal. False-positive rates are published lane by lane so a consumer chooses the precision/coverage trade-off explicitly rather than inheriting one. <strong>The specific per-lane false-positive rates previously published here are withdrawn and awaiting re-measurement</strong>: the benign corpus they were measured against was found to contain real jailbreak samples, so the basis did not hold. They should not be cited by anyone until the re-measurement is published. A standard earns trust by publishing its worst figure — and by withdrawing any figure it can no longer stand behind.</p>`,
     },
     zh: {
-      title: "評估 (Evaluation)",
-      body: `<p>本站發布的每一個 benchmark 數字皆為版本綁定 (version-pinned)、可重現的測量結果。每個來源的完整歷史序列位於 <code>data/measurements/&lt;source&gt;/</code> (immutable, append-only)。各來源的目前指標為 <code>data/measurements/&lt;source&gt;/latest.json</code>。彙總於 <code>data/stats.json</code> 的 <code>benchmarks[]</code>。</p>
-<p>在 AdvBench / HarmBench / JailbreakBench 上的個位數 recall 是誠實且符合預期的。這三個 corpus 測試的是 <em>LLM safety alignment</em> (模型是否拒絕有害請求),而不是 <em>prompt injection detection</em> (ATR regex 層所針對的攻擊面)。ATR 在這些 corpus 上接近零的 recall 證實了分層假設:regex 抓結構化攻擊 pattern;alignment 與 content moderation 抓自然語言的有害請求。</p>
-<p>召回率取決於偵測車道 (lane),所以本站從量測檔讀出的每個召回率都標明車道。第一個數字是 <code>hunt</code> 車道:引擎預設,載入所有成熟度的規則;第二個是 <code>enforce</code> 車道:開啟封鎖時要用的車道,只載入 <code>stable</code> 規則。兩者來自同一個量測檔(<code>metrics.recall</code> 與 <code>breakdown.enforce_lane</code>);enforce 數字算的是偵測,所以它是封鎖能擋下的上限。兩份 <code>garak</code> 語料部分屬於 closed-book:在上面開火的規則有不少是從它們寫出來的,所以它們的 <code>hunt</code> 數字不是樣本外成績。對 in-the-wild 語料,README 的評估章節附有拿掉這些規則後的重跑結果。</p>
-<p>Wild scan 沒有 ground truth label。其「已確認」集合是以整個帳號為單位裁定的(「這個發布者是已知惡意行動」),屬於發布者層級歸因而非逐檔判讀,因此本站不由它推導任何 precision 數字。唯一開放對外引用的 wild scan 數字為 <strong>101,280 個掃描項目 / 1,434 個標記項目,engine v2.0.0,資料日期 2026-04-13</strong>。限制公開記錄於 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" target="_blank" rel="noopener noreferrer">LIMITATIONS.md</a>。</p>
-<p>Precision 不以單一數字呈現。每條規則宣告自身的 <code>maturity</code>,而 maturity 對應到一個偵測<em>車道 (lane)</em>:<code>enforce</code> 車道只讓最成熟的規則開火,<code>alert</code> 車道納入觀察中的規則,預設的 <code>hunt</code> 車道則把整個 corpus 當作 advisory 訊號跑。誤報率逐車道發布,讓消費者明示地選擇 precision 與 coverage 的取捨,而非被動繼承某個預設。<strong>原先公布於此的各車道誤報率數字已撤回、等待重新量測</strong>:量測所用的良性語料被發現混入真實越獄樣本,基準站不住腳。在重測結果發布前,任何人都不應引用那些數字。一個標準的可信度,取決於它願不願意公開自己最差的數字——以及在一個數字站不住時,願不願意把它撤掉。</p>`,
+      title: "評估",
+      body: `<p>本站公布的每一個 benchmark 數字，都綁定版本、可以重現。每個來源的完整歷史紀錄放在 <code>data/measurements/&lt;source&gt;/</code>，只增不改。各來源目前採用的那一筆，記在 <code>data/measurements/&lt;source&gt;/latest.json</code>，再彙整到 <code>data/stats.json</code> 的 <code>benchmarks[]</code>。</p>
+<p>ATR 在 AdvBench、HarmBench、JailbreakBench 上的召回率只有個位數，這是真實的結果，也在預期之內。這三份語料測的是 <em>LLM 的安全對齊</em>（模型會不會拒絕有害的請求），不是 <em>prompt injection 偵測</em>（ATR 的 regex 層針對的攻擊面）。召回率接近零，正好說明分層的想法：regex 抓有固定結構的攻擊 pattern，用自然語言提出的有害請求，交給模型的安全對齊和內容審核去擋。</p>
+<p>召回率會隨偵測車道不同，所以本站從量測檔讀出的每個召回率都標明車道。第一個數字是 <code>hunt</code> 車道：引擎預設，載入所有成熟度的規則。第二個是 <code>enforce</code> 車道：要開封鎖時用的車道，只載入 <code>stable</code> 規則。兩個數字來自同一個量測檔（<code>metrics.recall</code> 和 <code>breakdown.enforce_lane</code>）。enforce 數字算的是偵測到的筆數，所以是封鎖能擋下的上限。兩份 <code>garak</code> 語料有一部分是開卷考：在上面觸發的規則，不少正是從它們寫出來的，所以它們的 <code>hunt</code> 數字不是樣本外的成績。in-the-wild 語料拿掉這些規則後的重跑結果，附在 README 的評估章節。</p>
+<p>野外掃描沒有標準答案。它的「已確認」名單是以整個帳號為單位判定的（「這個發布者是已知的惡意行動」），屬於發布者層級的歸因，不是一個檔案一個檔案判讀，所以本站不從它推算任何精確度。唯一可以對外引用的野外掃描數字是<strong>掃描 101,280 個項目、標記 1,434 個，engine v2.0.0，資料截至 <span class="whitespace-nowrap">2026-04-13</span></strong>。限制都公開記在 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/LIMITATIONS.md" target="_blank" rel="noopener noreferrer">LIMITATIONS.md</a>。</p>
+<p>精確度不用單一數字表示。每條規則都宣告自己的 <code>maturity</code>，maturity 決定它屬於哪一條偵測<em>車道</em>：<code>enforce</code> 車道只讓最成熟的規則觸發，<code>alert</code> 車道再加上觀察中的規則，預設的 <code>hunt</code> 車道則把全部規則當成建議性訊號來跑。誤報率一條車道一條車道公布，讓使用者自己決定要在精確度和涵蓋範圍之間怎麼取捨，而不是被動接受某個預設值。<strong>原本公布在這裡的各車道誤報率已經撤回，等重新量測</strong>：後來發現量測用的良性語料混進了真實的越獄樣本，量測的基礎站不住。重測結果公布之前，任何人都不應該引用那些數字。一個標準可不可信，要看它願不願意公開自己最差的數字，也要看數字站不住時，願不願意把它撤掉。</p>`,
     },
   },
   {
@@ -328,13 +332,13 @@ test_cases:
     status: "informative",
     en: {
       title: "Governance",
-      body: `<p>ATR is currently single-maintainer (BDFL) under Adam Lin, transitioning to a Technical Steering Committee (TSC). The transition criteria and seating process are defined in <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/GOVERNANCE.md" target="_blank" rel="noopener noreferrer">GOVERNANCE.md</a> and <a href="/en/charter">the project charter</a>.</p>
+      body: `<p>ATR is currently led by a lead maintainer (BDFL), Adam Lin, transitioning to a Technical Steering Committee (TSC). The transition criteria and seating process are defined in <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/GOVERNANCE.md" target="_blank" rel="noopener noreferrer">GOVERNANCE.md</a> and <a href="/en/charter">the project charter</a>.</p>
 <p>The full quality-gate process (RFC-001) for any rule entering the corpus is at <a href="/en/quality-standard">/quality-standard</a>. Decisions on spec amendments follow rough consensus from active contributors, with the BDFL retaining final call until TSC seating.</p>`,
     },
     zh: {
-      title: "治理 (Governance)",
-      body: `<p>ATR 目前為單一維護者治理 (BDFL),維護者為 Adam Lin,正過渡至 Technical Steering Committee (TSC)。過渡條件與就任程序定義於 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/GOVERNANCE.md" target="_blank" rel="noopener noreferrer">GOVERNANCE.md</a> 與 <a href="/zh/charter">專案章程</a>。</p>
-<p>任何進入 corpus 的規則之完整品質閘流程 (RFC-001) 位於 <a href="/zh/quality-standard">/quality-standard</a>。Spec 修訂的決策依循 rough consensus(由活躍貢獻者形成),BDFL 在 TSC 就任前保有最終定奪權。</p>`,
+      title: "治理",
+      body: `<p>ATR 目前由首席維護者 Adam Lin 主導（BDFL），正在過渡到技術指導委員會（TSC）。過渡條件和委員就任的程序，寫在 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/GOVERNANCE.md" target="_blank" rel="noopener noreferrer">GOVERNANCE.md</a> 和<a href="/zh/charter">專案章程</a>。</p>
+<p>規則要進入規則集，得通過完整的品質閘流程（RFC-001），內容在 <a href="/zh/quality-standard">/quality-standard</a>。規格的修訂，以活躍貢獻者之間的大致共識（rough consensus）決定；TSC 就任之前，最後由 BDFL 拍板。</p>`,
     },
   },
   {
@@ -347,9 +351,9 @@ test_cases:
 <p>Responsible disclosure embargo is 90 days from acknowledgement, unless the affected ecosystem requests a different window.</p>`,
     },
     zh: {
-      title: "安全 (Security)",
-      body: `<p>漏洞報告由 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SECURITY.md" target="_blank" rel="noopener noreferrer">SECURITY.md</a> 協調。任何對 engine 或 rule corpus 漏洞的報告,請使用 GitHub repository 的 private security advisory channel,而非公開 issue。</p>
-<p>負責任揭露 (responsible disclosure) 的 embargo 期為自確認起 90 天,除非受影響的生態系要求不同的窗口。</p>`,
+      title: "安全",
+      body: `<p>漏洞通報依 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SECURITY.md" target="_blank" rel="noopener noreferrer">SECURITY.md</a> 協調處理。引擎或規則集的漏洞，請透過 GitHub repository 的私人安全通報（private security advisory）回報，不要開公開的 issue。</p>
+<p>負責任揭露的保密期，是從確認收到報告起算 90 天；受影響的生態系要求不同期限時，另外協調。</p>`,
     },
   },
   {
@@ -359,7 +363,7 @@ test_cases:
     en: {
       title: "Contributing",
       body: `<p>The fastest contribution path requires no local setup:</p>
-<ol>
+<ol class="list-decimal">
   <li>Open a <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=new-rule.yml" target="_blank" rel="noopener noreferrer">New Rule Proposal issue</a>. Fill in attack type, description, and one example payload.</li>
   <li>A bot converts the issue to a draft proposal in <code>proposals/community/</code> and opens a PR automatically.</li>
   <li>The proposal is queued for regex authoring. You can stop here, or continue to write the detection regex on the PR branch.</li>
@@ -367,14 +371,14 @@ test_cases:
 <p>All contributions are MIT-licensed by submission. There is no CLA. Other paths (evasion reports, false-positive reports, full rule authoring) are documented in <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">CONTRIBUTING.md</a>.</p>`,
     },
     zh: {
-      title: "貢獻 (Contributing)",
-      body: `<p>最快的貢獻路徑無需 local setup:</p>
-<ol>
-  <li>開立 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=new-rule.yml" target="_blank" rel="noopener noreferrer">New Rule Proposal issue</a>。填入攻擊類型、描述、與一個範例 payload。</li>
-  <li>Bot 會將 issue 轉為 <code>proposals/community/</code> 中的 draft proposal,並自動開立 PR。</li>
-  <li>該 proposal 會排入 regex 撰寫佇列。你可以在此停下,或在 PR 分支上繼續撰寫 detection regex。</li>
+      title: "貢獻",
+      body: `<p>最快的貢獻方式，不需要在自己電腦上裝任何東西：</p>
+<ol class="list-decimal">
+  <li>開一個 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=new-rule.yml" target="_blank" rel="noopener noreferrer">New Rule Proposal issue</a>，填寫攻擊類型、描述和一個 payload 範例。</li>
+  <li>Bot 會把 issue 轉成 <code>proposals/community/</code> 裡的提案草稿，並自動開一個 PR。</li>
+  <li>這個提案會排進撰寫 regex 的佇列。你可以到這裡就停，也可以在 PR 分支上自己把偵測用的 regex 寫完。</li>
 </ol>
-<p>所有貢獻於提交時即為 MIT 授權。無 CLA。其他路徑 (evasion report、false-positive report、完整規則撰寫) 記錄於 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">CONTRIBUTING.md</a>。</p>`,
+<p>所有貢獻在送出時就以 MIT 授權釋出，不用簽 CLA。其他貢獻方式（回報繞過手法、回報誤報、完整撰寫一條規則）寫在 <a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">CONTRIBUTING.md</a>。</p>`,
     },
   },
   {
@@ -387,9 +391,9 @@ test_cases:
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.19178002" target="_blank" rel="noopener noreferrer">10.5281/zenodo.19178002</a></p>`,
     },
     zh: {
-      title: "引用 (Citation)",
-      body: `<p>若你在學術工作、安全研究、機構文件或主權 AI 合規送件中使用 ATR,請以 DOI 引用本規格。完整 BibTeX / APA / IEEE / Chicago 格式位於 <a href="/zh/citations">/citations</a>。</p>
-<p>DOI: <a href="https://doi.org/10.5281/zenodo.19178002" target="_blank" rel="noopener noreferrer">10.5281/zenodo.19178002</a></p>`,
+      title: "引用",
+      body: `<p>在學術論文、資安研究、機構文件或主權 AI 的合規送件裡用到 ATR，請用 DOI 引用本規格。BibTeX、APA、IEEE、Chicago 各種格式都在 <a href="/zh/citations">/citations</a>。</p>
+<p>DOI：<a href="https://doi.org/10.5281/zenodo.19178002" target="_blank" rel="noopener noreferrer">10.5281/zenodo.19178002</a></p>`,
     },
   },
   {
@@ -399,13 +403,13 @@ test_cases:
     en: {
       title: "References",
       body: `<h3>Normative References</h3>
-<ul>
+<ul class="list-[square]">
   <li><a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a> — Key words for use in RFCs to Indicate Requirement Levels.</li>
-  <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a> — ATR rule format specification, v1.0 Draft.</li>
+  <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a> — ATR rule format specification, version {SPEC_VERSION}, Draft.</li>
   <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer">spec/atr-schema.yaml</a> — Authoritative machine-readable schema.</li>
 </ul>
 <h3>Informative References</h3>
-<ul>
+<ul class="list-[square]">
   <li><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10 (2026)</a> — Taxonomy of agentic-application risk categories.</li>
   <li><a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener noreferrer">OWASP LLM Top 10 (2025)</a> — Taxonomy of LLM-application risk categories.</li>
   <li><a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> — Adversarial-threat landscape for AI systems.</li>
@@ -415,25 +419,42 @@ test_cases:
 </ul>`,
     },
     zh: {
-      title: "參考 (References)",
-      body: `<h3>Normative References</h3>
-<ul>
-  <li><a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a> — Key words for use in RFCs to Indicate Requirement Levels.</li>
-  <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a> — ATR rule format specification, v1.0 Draft.</li>
-  <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer">spec/atr-schema.yaml</a> — 規範性機器可讀 schema。</li>
+      title: "參考文獻",
+      body: `<h3>規範性參考文獻</h3>
+<ul class="list-[square]">
+  <li><a href="https://datatracker.ietf.org/doc/html/rfc2119" target="_blank" rel="noopener noreferrer">RFC 2119</a>：在 RFC 中標示要求等級的關鍵詞。</li>
+  <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/SPEC.md" target="_blank" rel="noopener noreferrer">SPEC.md</a>：ATR 規則格式規格，{SPEC_VERSION} 版，草案。</li>
+  <li><a href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/spec/atr-schema.yaml" target="_blank" rel="noopener noreferrer">spec/atr-schema.yaml</a>：具規範效力、給機器讀的 schema。</li>
 </ul>
-<h3>Informative References</h3>
-<ul>
-  <li><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10 (2026)</a> ── Agentic application 風險類別分類。</li>
-  <li><a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener noreferrer">OWASP LLM Top 10 (2025)</a> ── LLM application 風險類別分類。</li>
-  <li><a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a> ── AI 系統的對抗性威脅 landscape。</li>
-  <li><a href="https://github.com/secure-agentic-framework/saf-mcp" target="_blank" rel="noopener noreferrer">SAF-MCP</a> ── 安全 agentic 框架 MCP 版 (secure-agentic-framework)、技術型錄。</li>
-  <li><a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a> ── SIEM 通用偵測規則格式 (架構先例)。</li>
-  <li><a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a> ── 惡意程式比對語言 (架構先例)。</li>
+<h3>資訊性參考文獻</h3>
+<ul class="list-[square]">
+  <li><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Top 10（2026）</a>：agent 應用程式的風險分類。</li>
+  <li><a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/" target="_blank" rel="noopener noreferrer">OWASP LLM Top 10（2025）</a>：LLM 應用程式的風險分類。</li>
+  <li><a href="https://atlas.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATLAS</a>：針對 AI 系統的對抗性威脅知識庫。</li>
+  <li><a href="https://github.com/secure-agentic-framework/saf-mcp" target="_blank" rel="noopener noreferrer">SAF-MCP</a>：Model Context Protocol 的安全 agent 框架（secure-agentic-framework）技術目錄。</li>
+  <li><a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener noreferrer">Sigma</a>：SIEM 通用的偵測規則格式（架構上的先例）。</li>
+  <li><a href="https://github.com/VirusTotal/yara" target="_blank" rel="noopener noreferrer">YARA</a>：比對惡意程式的特徵語言（架構上的先例）。</li>
 </ul>`,
     },
   },
 ];
+
+const SUBTITLE = {
+  en: "The rule format for detecting threats to AI agents, written so machines can read it. It does for agents what Sigma does for SIEM and YARA does for malware. This is a Draft, maintained in public by the ATR community. Where this page and the files in the repository disagree, the files win.",
+  zh: "偵測 AI agent 威脅用的規則格式，寫成機器讀得懂的樣子。它對 agent 的意義，就像 Sigma 之於 SIEM、YARA 之於惡意程式。目前是草案（Draft），由 ATR 社群公開維護。這一頁和 repository 裡的檔案說法不一致時，以檔案為準。",
+} as const;
+
+const RELATED = ["charter", "conformance", "implementers", "errata", "glossary"] as const;
+
+/* SPEC.md's header says "Status: Draft"; the banner follows it here. */
+const STATUS_LABEL = { en: "Draft", zh: "草案" } as const;
+
+/* .spec-document (globals.css) sets a serif body; every other page reads in
+   the sans, so this page sets the body face back to it. Titles stay serif. */
+const SANS_BODY = {
+  fontFamily: "var(--font-body), system-ui, sans-serif",
+  fontFeatureSettings: "normal",
+} as const;
 
 export default async function SpecPage({
   params,
@@ -442,42 +463,29 @@ export default async function SpecPage({
 }) {
   const { locale: l } = await params;
   const locale = (locales.includes(l as Locale) ? l : "en") as Locale;
+  const zh = locale === "zh";
   const meta = getSpecMeta();
+  const fill = (html: string) => phraseHtml(html.replaceAll("{SPEC_VERSION}", meta.specVersion));
 
   return (
+    <Phrased>
     <main
       id="main-content"
-      className="spec-document w-full max-w-7xl mx-auto px-5 md:px-8 pt-24 md:pt-28 pb-24"
-      lang={locale === "zh" ? "zh-Hant" : "en"}
+      className="spec-document w-full px-6 md:px-14 pt-24 md:pt-28 pb-24"
+      style={SANS_BODY}
+      lang={zh ? "zh-Hant" : "en"}
     >
       <header className="mb-8 md:mb-10 max-w-3xl">
-        <p
-          className="text-xs uppercase tracking-[0.18em] text-stone mb-3"
-          style={{ fontFamily: "var(--font-data)" }}
-        >
-          {locale === "zh"
-            ? "正式規格 — Working Draft"
-            : "Canonical Specification — Working Draft"}
+        <p className="text-[13px] text-stone mb-3">
+          {zh ? `正式規格 · ATR Core ${meta.specVersion} · 草案` : `Canonical specification · ATR Core ${meta.specVersion} · Draft`}
         </p>
-        <h1
-          className="text-3xl md:text-5xl font-bold text-navy-ink mb-4 leading-[1.1]"
-          style={{
-            fontFamily: "var(--font-display)",
-            letterSpacing: "-0.02em",
-          }}
-        >
+        <h1 className="text-[32px] md:text-[48px] text-ink mb-4 leading-[1.1]">
           {t(locale, "spec.title")}
         </h1>
-        <p
-          className="text-base md:text-xl text-graphite leading-snug mb-6"
-          style={{
-            fontFamily: "var(--font-body)",
-            maxWidth: "44em",
-          }}
-        >
-          {t(locale, "spec.subtitle")}
+        <p className="text-[17px] text-graphite leading-[1.7] mb-6 max-w-[720px]">
+          {zh ? SUBTITLE.zh : SUBTITLE.en}
         </p>
-        <DocumentStatus locale={locale} />
+        <DocumentStatus locale={locale} statusOverride={zh ? STATUS_LABEL.zh : STATUS_LABEL.en} />
       </header>
 
       <RFC2119 locale={locale} />
@@ -485,12 +493,7 @@ export default async function SpecPage({
       <div className="grid grid-cols-1 lg:grid-cols-[16rem_minmax(0,1fr)] gap-10 lg:gap-14 mt-6">
         <aside aria-label="Specification table of contents" className="lg:order-first">
           <nav className="spec-toc">
-            <p
-              className="text-xs font-semibold uppercase tracking-wider text-stone mb-3"
-              style={{ fontFamily: "var(--font-body)" }}
-            >
-              {t(locale, "spec.toc")}
-            </p>
+            <p className="text-[13px] text-stone mb-3">{t(locale, "spec.toc")}</p>
             <ol>
               {SECTIONS.map((s) => (
                 <li key={s.id}>
@@ -502,39 +505,15 @@ export default async function SpecPage({
               ))}
             </ol>
             <hr className="my-5 border-fog" />
-            <p
-              className="text-xs uppercase tracking-wider text-stone mb-2"
-              style={{ fontFamily: "var(--font-body)" }}
-            >
-              {locale === "zh" ? "相關文件" : "Related documents"}
-            </p>
-            <ul className="space-y-2 text-sm" style={{ fontFamily: "var(--font-body)" }}>
-              <li>
-                <Link href={`/${locale}/charter`} className="text-navy underline decoration-navy/30 hover:decoration-navy">
-                  /charter
+            <p className="text-[13px] text-stone mb-2">{zh ? "相關文件" : "Related documents"}</p>
+            {/* Not a list: .spec-document indents ul/ol, and .spec-toc styles these links like the contents above. */}
+            <div>
+              {RELATED.map((slug) => (
+                <Link key={slug} href={`/${locale}/${slug}`}>
+                  /{slug}
                 </Link>
-              </li>
-              <li>
-                <Link href={`/${locale}/conformance`} className="text-navy underline decoration-navy/30 hover:decoration-navy">
-                  /conformance
-                </Link>
-              </li>
-              <li>
-                <Link href={`/${locale}/implementers`} className="text-navy underline decoration-navy/30 hover:decoration-navy">
-                  /implementers
-                </Link>
-              </li>
-              <li>
-                <Link href={`/${locale}/errata`} className="text-navy underline decoration-navy/30 hover:decoration-navy">
-                  /errata
-                </Link>
-              </li>
-              <li>
-                <Link href={`/${locale}/glossary`} className="text-navy underline decoration-navy/30 hover:decoration-navy">
-                  /glossary
-                </Link>
-              </li>
-            </ul>
+              ))}
+            </div>
           </nav>
         </aside>
 
@@ -547,7 +526,9 @@ export default async function SpecPage({
                 </a>
                 {s[locale].title}
                 {s.status === "normative" ? (
-                  <NormativeBadge className="ml-2 align-middle" />
+                  <span className="ml-3 align-middle text-[13px] text-stone font-normal" style={SANS_BODY}>
+                    {zh ? "規範性" : "Normative"}
+                  </span>
                 ) : null}
               </h2>
               {/* Wrapper allows section content (which can include wide
@@ -555,31 +536,32 @@ export default async function SpecPage({
                   instead of pushing the entire page wider than the viewport. */}
               <div
                 className="spec-body min-w-0 overflow-x-auto -mx-2 px-2"
-                dangerouslySetInnerHTML={{ __html: s[locale].body }}
+                dangerouslySetInnerHTML={{ __html: fill(s[locale].body) }}
               />
             </section>
           ))}
 
           <hr className="my-12 border-fog" />
           <p className="spec-meta">
-            {locale === "zh" ? "編輯" : "Editor"}: {meta.editors[0].name}
+            {zh ? "編者：" : "Editor: "}{meta.editors[0].name}
             {" <"}
-            <a href={`mailto:${meta.editors[0].email}`} className="text-navy underline">
+            <a href={`mailto:${meta.editors[0].email}`} className="text-blue underline">
               {meta.editors[0].email}
             </a>
-            {">"} — DOI{" "}
+            {">"} · DOI{" "}
             <a
               href={`https://doi.org/${meta.doi}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-navy underline"
+              className="text-blue underline"
             >
               {meta.doi}
             </a>{" "}
-            — MIT License — ISO 8601 {meta.lastModified}
+            · {zh ? "MIT 授權" : "MIT License"} · ISO 8601 {meta.lastModified}
           </p>
         </div>
       </div>
     </main>
+    </Phrased>
   );
 }

@@ -1,0 +1,172 @@
+{
+  "tools": [
+    {
+      "name": "list_gateways",
+      "description": "List Gateways",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 20
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_logs",
+      "description": "List Logs",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gateway_id": {
+            "type": "string",
+            "description": "The gateway ID."
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 20
+          },
+          "order_by": {
+            "type": "string",
+            "enum": [
+              "created_at",
+              "provider",
+              "model",
+              "model_type",
+              "success",
+              "cached",
+              "cost",
+              "tokens_in",
+              "tokens_out",
+              "duration",
+              "feedback"
+            ],
+            "default": "created_at"
+          },
+          "order_by_direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          },
+          "start_date": {
+            "type": "string"
+          },
+          "end_date": {
+            "type": "string"
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "const": -1
+              },
+              {
+                "const": 0
+              },
+              {
+                "const": 1
+              }
+            ]
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "cached": {
+            "type": "boolean"
+          },
+          "model": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "gateway_id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_log_details",
+      "description": "Get a single Log details",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gateway_id": {
+            "type": "string",
+            "description": "The gateway ID."
+          },
+          "log_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "gateway_id",
+          "log_id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_log_request_body",
+      "description": "Get Log Request Body",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gateway_id": {
+            "type": "string",
+            "description": "The gateway ID."
+          },
+          "log_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "gateway_id",
+          "log_id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_log_response_body",
+      "description": "Get Log Response Body",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gateway_id": {
+            "type": "string",
+            "description": "The gateway ID."
+          },
+          "log_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "gateway_id",
+          "log_id"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

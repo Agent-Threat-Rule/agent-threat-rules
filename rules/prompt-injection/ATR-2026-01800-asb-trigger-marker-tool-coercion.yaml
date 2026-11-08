@@ -29,7 +29,7 @@ severity: high
 references:
   owasp_llm:
     - "LLM01:2025"
-    - "LLM08:2025"
+    - "LLM06:2025"
   owasp_agentic:
     - "ASI01:2026"
     - "ASI03:2026"
@@ -49,8 +49,8 @@ compliance:
     - id: "LLM01:2025"
       context: "The fabricated 'because marker X is present, use tool Y' rule is an injected directive overriding the agent's own tool-selection logic — the core LLM01:2025 prompt-injection pattern."
       strength: primary
-    - id: "LLM08:2025"
-      context: "Forcing the agent to invoke an attacker-named capability (e.g. EngineTampering, DesignDataTheft) is an excessive-agency outcome under LLM08:2025."
+    - id: "LLM06:2025"
+      context: "The patterns match the AgentSecurityBench template that tells the agent to use a named, bracketed tool because a marker such as [:)] is 'in the question'. LLM06:2025 covers damaging actions an agent takes through its extensions in response to unexpected, ambiguous or manipulated LLM outputs, with prompt injection among the listed triggers; here the injected rule picks the tool, so the harm depends on what that tool can do."
       strength: secondary
   owasp_agentic:
     - id: "ASI03:2026"

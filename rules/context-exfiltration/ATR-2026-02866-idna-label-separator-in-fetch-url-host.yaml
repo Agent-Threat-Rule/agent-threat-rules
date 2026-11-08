@@ -1,0 +1,270 @@
+title: "Non-ASCII IDNA Label Separator Inside the Host of a Fetch-Tool URL Argument"
+id: ATR-2026-02866
+rule_version: 1
+status: experimental
+description: >
+  Detects a tool call whose URL-typed argument (url, uri, target_url, href,
+  link, src, endpoint, location, website, site, page, target) or host-typed
+  argument (host, hostname, domain, *_host, server_name) carries one of five
+  separator characters: the three that IDNA / UTS #46 mapping turns into an
+  ordinary dot -- U+3002 IDEOGRAPHIC FULL STOP, U+FF0E FULLWIDTH FULL STOP,
+  U+FF61 HALFWIDTH IDEOGRAPHIC FULL STOP -- plus the two look-alike
+  separators U+2024 ONE DOT LEADER and U+FE52 SMALL FULL STOP,
+  INSIDE THE HOST COMPONENT (after '//' and before the first '/', '?' or '#'),
+  and immediately followed by another hostname label, a path/query/fragment
+  delimiter, or a ':port'. Examples: https://evil。com/page,
+  https://evil.com．/page, https://internal-admin。corp。example/api/keys.
+
+  Mined from CVE-2026-107288 (Pydantic AI web_fetch_tool and the WebFetch local
+  fallback, 1.77.0 up to 1.107.6 / 2.44.0): blocked_domains entries were compared
+  with the URL hostname before either side was normalised to the form
+  getaddrinfo resolves, so a model steered by injected content could spell a
+  blocked host with a non-ASCII label separator and the application fetched it
+  with its own privileges (SSRF). The detection is not bound to any domain: a
+  hostname has no legitimate reason to carry these characters in the
+  serialized tool argument, because every conforming client folds them to '.'
+  before resolution, so their presence is the signature of a string-level
+  allow/block-list being dodged. The same shape defeats any agent fetch tool
+  whose domain filter compares strings before IDNA mapping.
+
+  BOTH ENCODINGS. The separator is matched as the literal character (what
+  JSON.stringify emits) and as the JSON escape \u3002 / \uff0e / \uff61 /
+  \u2024 / \ufe52 (what Python json.dumps emits with its default
+  ensure_ascii=True), so a Python-side hook log is covered as well.
+
+  WHY A KEYED ARGUMENT IS REQUIRED. Chinese and Japanese prose routinely ends a
+  sentence with U+3002 directly after a URL ("請參考 https://example.com。謝謝"),
+  and mixed-language text can put an ASCII word straight after that full stop
+  ("https://example.com。GitHub 上也有說明"). The second form is
+  indistinguishable by pattern from https://evil。com, so the rule only reads a
+  value that sits behind a quoted URL/host argument key, where prose does not
+  appear. A separator that is the LAST character of the value (the trailing
+  full stop an extractor copies from a sentence) is also excluded.
+
+  HOST-TYPED ARGUMENTS ARE READ STRICTLY. Keys such as domain, host or
+  server_name are also used for free text (a topic domain, a podcast host, a
+  display name), so for those keys the WHOLE value must be ASCII hostname
+  shaped -- [a-z0-9.-] labels, the separator, more labels, an optional
+  ':port' -- and must run to the closing quote. CJK prose in such a field
+  (醫療。AI 應用, 王小明。Guest: Amy, 東京サーバー。Tokyo-1) is therefore not read.
+
+  SCOPE AND LIMITS, stated honestly. (1) Not covered: case variation
+  (EVIL.COM) and a plain trailing root dot (evil.com.) -- they are the same
+  bytes as ordinary URLs. (2) Not covered by this rule: fullwidth-letter
+  hostnames with only ASCII dots (ｅｖｉｌ.ｃｏｍ) -- ATR-2026-00444 sees those;
+  cloud-metadata hosts written with separators also hit ATR-2026-00013. (3) Not
+  covered: a bare URL in prose or in a non-URL argument (a chat message, a
+  document body, a search query); that form is undecidable from Chinese
+  punctuation. A URL passed under a key outside the lists above (q, query,
+  text, content, input) is a known gap. (4) Not
+  covered: punycode (xn--) spellings of a blocked IDN, percent-encoded host
+  bytes, and a trailing separator that ends the value. (5) A security test
+  suite or advisory that reproduces the serialized call verbatim will match.
+
+  RE2 PORTABILITY. Both conditions are written for RE2-family engines (Go
+  regexp, Rust regex) as well as JavaScript and Python re: the five separator
+  characters and the fullwidth letter/digit ranges are written as literal
+  characters rather than \\uXXXX escapes (which RE2 spells \\x{XXXX} and JS
+  without the u flag does not), there is no lookahead or lookbehind, and
+  every repeat bound is at most 253. The "not the last character of the
+  value" exclusion is expressed by requiring a following label character,
+  delimiter or ':port' after the separator instead of a negative lookahead,
+  so the matched behaviour is unchanged.
+author: "ATR Community (CVE sync)"
+date: "2026/10/22"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: medium
+
+references:
+  cve:
+    - "CVE-2026-107288"
+  cwe:
+    - "CWE-918"
+    - "CWE-1289"
+    - "CWE-176"
+  owasp_llm:
+    - "LLM02:2025"
+    - "LLM06:2025"
+  owasp_agentic:
+    - "ASI02:2026"
+  mitre_atlas:
+    - "AML.T0053 - AI Agent Tool Invocation"
+  mitre_attack:
+    - "T1090 - Proxy"
+  external:
+    - "https://nvd.nist.gov/vuln/detail/CVE-2026-107288"
+    - "https://github.com/pydantic/pydantic-ai/commit/a9dab92099d0ef9d5d4aa34ccac8a6f1b0e51284"
+    - "https://github.com/pydantic/pydantic-ai/commit/c1f212a084cbfa0012f2044cdb4731d214b3b983"
+    - "https://github.com/pydantic/pydantic-ai/commit/490335f8e2322e143a79337ddca9410e0176c812"
+    - "https://github.com/pydantic/pydantic-ai/releases/tag/v1.107.6"
+    - "https://www.unicode.org/reports/tr46/"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_atlas: human-reviewed
+  mitre_attack: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) calls for resilience against attempts to circumvent security controls. This rule provides detection evidence supporting that requirement by flagging a fetch-tool URL whose host is spelled with an IDNA label separator so that a string-compared domain block list is bypassed."
+      strength: primary
+    - article: "10"
+      context: "Article 10 (data and data governance) concerns which data an AI system draws on. An SSRF fetch of a blocked internal host pulls unauthorised data into the agent's context; this rule provides detection evidence supporting control over that data path."
+      strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MS.2.7"
+      context: "MS.2.7 requires security and resilience of the AI system to be evaluated. Counting tool calls whose URL host carries a non-ASCII label separator measures whether the fetch tool's domain control actually holds against normalisation-based bypass."
+      strength: primary
+    - subcategory: "MS.2.10"
+      context: "MS.2.10 covers privacy risk. A blocked internal or metadata host reached through SSRF can expose credentials and personal data to the model; this rule surfaces the attempt for that assessment."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 (operational planning and control): the fetch tool's domain block list is an operational control, and this rule reports arguments crafted to slip past it before IDNA normalisation."
+      strength: primary
+    - clause: "6.2"
+      context: "ISO/IEC 42001 Clause 6.2 (AI objectives and planning): keeping agent egress inside approved destinations is a security objective, and this rule supplies runtime evidence of attempts to defeat it."
+      strength: secondary
+
+tags:
+  category: context-exfiltration
+  subcategory: ssrf-idna-label-separator-host
+  scan_target: runtime
+  confidence: high
+  source: cve-disclosure
+
+agent_source:
+  type: tool_call
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  conditions:
+    - field: tool_args
+      operator: regex
+      value: '\\?["\x27](?:[a-z]{0,16}_?ur[il]|href|link|src|endpoint|location|website|site|page|target)\\?["\x27]\s{0,3}[:=]\s{0,3}\\?["\x27]\s{0,3}(?:[a-z][a-z0-9+.-]{0,15}:)?//[^\s/?#"\x27\\。．｡․﹒]{0,253}(?:[。．｡․﹒]|\\u(?:3002|ff0e|ff61|2024|fe52))(?:[a-z0-9-]|[０-９Ａ-Ｚａ-ｚ]|[/?#]|:\d)'
+      description: "A quoted URL-typed argument whose HOST component (between '//' and the first '/', '?' or '#') contains an IDNA label separator (U+3002, U+FF0E, U+FF61) or look-alike dot (U+2024, U+FE52), literal or JSON-escaped, followed by another label, a delimiter or a port -- the CVE-2026-107288 blocked_domains bypass shape."
+    - field: tool_args
+      operator: regex
+      value: '\\?["\x27](?:host|hostname|domain|[a-z]{1,12}_host|server_name)\\?["\x27]\s{0,3}[:=]\s{0,3}\\?["\x27]\s{0,3}[a-z0-9.-]{1,253}(?:[。．｡․﹒]|\\u(?:3002|ff0e|ff61|2024|fe52))[a-z0-9-](?:[a-z0-9.-]|[。．｡․﹒]|\\u(?:3002|ff0e|ff61|2024|fe52)){0,253}(?::\d{1,5})?\\?["\x27]'
+      description: "The same separator inside a bare host-typed argument (host / hostname / domain / *_host / server_name) that a tool resolves directly -- the scheme-less form of the same normalisation bypass. The whole value must be an ASCII hostname (labels, separators, optional :port) running to the closing quote, so CJK free text in such a field is not read."
+  false_positives:
+    - "Security test suites, CVE reproductions and advisories that quote the serialized tool call verbatim (for example the upstream tests/test_ssrf.py fixtures) match -- same bytes as the attack."
+    - "A URL argument whose host was copied out of East Asian text together with a full stop AND has more host text after it (https://example.com。cn/...) matches. That value does not resolve as written by a strict parser and does resolve to a different host after IDNA folding, so it is reported deliberately."
+    - "A link / href / url field populated from scraped prose can carry a sentence-final full stop followed by an ASCII word, for example {\"link\":\"https://t.co。Thanks\"}. That value matches, because it is byte-for-byte the same shape as https://evil。com and cannot be told apart by pattern."
+    - "Not matched by design: a separator in the PATH, QUERY or FRAGMENT (https://zh.wikipedia.org/wiki/句號。, ?q=台北。天氣), a separator that is the last character of the value, punycode xn-- hosts, native IDN hosts such as bücher.example, and any URL that appears in prose or a non-URL argument."
+
+response:
+  actions:
+    - alert
+  message_template: >
+    [ATR-2026-02866] A fetch-tool URL or host argument spells its hostname with a
+    non-ASCII label separator (U+3002 / U+FF0E / U+FF61 / U+2024 / U+FE52). DNS
+    resolution folds these to '.', so a string-compared domain block list can be
+    bypassed (CVE-2026-107288). Normalise the host with IDNA/UTS #46 before any
+    allow/block-list check and re-evaluate this call.
+
+confidence: 78
+
+test_cases:
+  true_positives:
+    - input: "{\"tool_name\":\"web_fetch\",\"arguments\":{\"url\":\"https://evil。com/page\"}}"
+      expected: triggered
+      description: "CVE-2026-107288 evidence (upstream test_blocked_domains_folds_idna): U+3002 between two labels of a blocked host"
+    - input: "{\"tool_name\":\"web_fetch\",\"arguments\":{\"url\":\"https://evil.com．/page\"}}"
+      expected: triggered
+      description: "CVE-2026-107288 evidence: U+FF0E used as a trailing root separator before the path"
+    - input: "{\"tool_name\":\"web_fetch\",\"arguments\":{\"url\":\"https://evil.com｡/page\"}}"
+      expected: triggered
+      description: "CVE-2026-107288 evidence: U+FF61 halfwidth ideographic full stop"
+    - input: "{\"tool_name\":\"web_fetch\",\"arguments\":{\"url\":\"https://evil.com․/page\"}}"
+      expected: triggered
+      description: "CVE-2026-107288 evidence: U+2024 one dot leader"
+    - input: "{\"tool_name\":\"web_fetch\",\"arguments\":{\"url\":\"https://internal-admin。corp。example/api/keys\"}}"
+      expected: triggered
+      description: "CVE-2026-107288 evidence: an internal admin host spelled entirely with U+3002"
+    - input: "{\"tool_name\":\"web_fetch\",\"arguments\":{\"url\":\"https://evil\\u3002com/page\"}}"
+      expected: triggered
+      description: "Derived variant: the same call logged by a Python hook with json.dumps(ensure_ascii=True), so the separator is the escape \\u3002"
+    - input: "{\"tool_name\":\"http_get\",\"arguments\":{\"target_url\":\"http://intranet﹒corp:8443/admin\"}}"
+      expected: triggered
+      description: "Derived variant: U+FE52 small full stop, a different URL key and an explicit port"
+    - input: "{\"tool_name\":\"dns_lookup\",\"arguments\":{\"hostname\":\"internal-admin．corp．example\"}}"
+      expected: triggered
+      description: "Derived variant: scheme-less host argument with U+FF0E separators"
+    - input: "{\"tool_name\":\"connect_db\",\"arguments\":{\"db_host\":\"pg-primary。internal:5432\"}}"
+      expected: triggered
+      description: "Derived variant: *_host key with U+3002 separator and an explicit port"
+    - input: "{\"tool_name\":\"dns_lookup\",\"arguments\":{\"hostname\":\"internal-admin\\u3002corp\\u3002example\"}}"
+      expected: triggered
+      description: "Derived variant: host-typed argument logged by a Python hook with ensure_ascii=True (escaped \\u3002)"
+    - input: "{\"tool_name\":\"crawl\",\"arguments\":{\"website\":\"https://evil。com/\"}}"
+      expected: triggered
+      description: "Derived variant: website key (reviewer-reported miss in round 1)"
+    - input: "{\"tool_name\":\"web_fetch\",\"arguments\":{\"url\":\"https://evil。ｃｏｍ/page\"}}"
+      expected: triggered
+      description: "Derived variant: U+3002 followed by a fullwidth-letter label (exercises the literal fullwidth range kept in the RE2 rewrite)"
+    - input: "{\"tool_name\":\"dns_lookup\",\"arguments\":{\"host\":\"metadata﹒internal\"}}"
+      expected: triggered
+      description: "Derived variant: U+FE52 small full stop in a scheme-less host argument (literal character in the RE2 rewrite)"
+  true_negatives:
+    - input: "{\"tool_name\":\"web_fetch\",\"arguments\":{\"url\":\"https://example.com/page\"}}"
+      expected: not_triggered
+      description: "BENIGN TWIN: ordinary web_fetch call on the same tool and argument"
+    - input: "{\"tool_name\":\"web_fetch\",\"arguments\":{\"url\":\"https://xn--bcher-kva.example/page\"}}"
+      expected: not_triggered
+      description: "BENIGN TWIN: a punycode IDN host, the legitimate ASCII-compatible form"
+    - input: "{\"tool_name\":\"web_fetch\",\"arguments\":{\"url\":\"https://bücher.example/page\"}}"
+      expected: not_triggered
+      description: "BENIGN TWIN: a native Unicode IDN host with ordinary ASCII dots"
+    - input: "{\"tool_name\":\"web_fetch\",\"arguments\":{\"url\":\"https://zh.wikipedia.org/wiki/句號。Wiki\"}}"
+      expected: not_triggered
+      description: "BENIGN TWIN: U+3002 in the PATH followed by ASCII -- outside the host component"
+    - input: "{\"tool_name\":\"web_fetch\",\"arguments\":{\"url\":\"https://www.google.com/search?q=台北。weather\"}}"
+      expected: not_triggered
+      description: "BENIGN TWIN: U+3002 in the query string"
+    - input: "{\"tool_name\":\"web_fetch\",\"arguments\":{\"url\":\"https://example.com。\"}}"
+      expected: not_triggered
+      description: "BENIGN TWIN: a URL extracted from a Chinese sentence with its trailing full stop -- the separator ends the value"
+    - input: "{\"tool_name\":\"send_message\",\"arguments\":{\"text\":\"請參考 https://example.com。謝謝\"}}"
+      expected: not_triggered
+      description: "BENIGN TWIN: Chinese sentence-final full stop right after a URL, followed by CJK text"
+    - input: "{\"tool_name\":\"send_message\",\"arguments\":{\"text\":\"網址是 https://github.com。GitHub 上也有 CI/CD 說明\"}}"
+      expected: not_triggered
+      description: "BENIGN TWIN: full stop followed by an ASCII word in prose -- not a URL-typed argument, so not read"
+    - input: "{\"tool_name\":\"dns_lookup\",\"arguments\":{\"hostname\":\"api.example.com\"}}"
+      expected: not_triggered
+      description: "Ordinary host-typed argument"
+    - input: "請參考 https://example.com。謝謝"
+      expected: not_triggered
+      description: "Raw Chinese prose with a URL and a sentence-final full stop"
+    - input: "{\"tool_name\":\"web_fetch\",\"arguments\":{\"url\":\"https://example.com/\\u8def\\u5f91\\u3002\"}}"
+      expected: not_triggered
+      description: "Python-escaped Chinese path ending in an escaped U+3002 -- outside the host"
+    - input: "{\"tool_name\":\"classify\",\"arguments\":{\"domain\":\"醫療。AI 應用\"}}"
+      expected: not_triggered
+      description: "BENIGN TWIN: domain key holding a CJK topic phrase with a full stop followed by ASCII (round-1 FP)"
+    - input: "{\"tool_name\":\"podcast_note\",\"arguments\":{\"host\":\"王小明。Guest: Amy\"}}"
+      expected: not_triggered
+      description: "BENIGN TWIN: host key meaning a podcast host, CJK name then an ASCII word (round-1 FP)"
+    - input: "{\"tool_name\":\"create_vm\",\"arguments\":{\"server_name\":\"東京サーバー。Tokyo-1\"}}"
+      expected: not_triggered
+      description: "BENIGN TWIN: server_name display label in Japanese followed by an ASCII tag (round-1 FP)"
+    - input: "{\"tool_name\":\"connect\",\"arguments\":{\"db_host\":\"本番DB。Primary\"}}"
+      expected: not_triggered
+      description: "BENIGN TWIN: *_host key holding a Japanese label, not a hostname (round-1 FP)"
+    - input: "{\"tool_name\":\"set_config\",\"arguments\":{\"domain\":\"example.com。\"}}"
+      expected: not_triggered
+      description: "BENIGN TWIN: host-typed value whose separator is the last character (copied sentence stop)"
+    - input: "{\"tool_name\":\"crawl\",\"arguments\":{\"website\":\"https://example.com/about\"}}"
+      expected: not_triggered
+      description: "BENIGN TWIN: ordinary website argument with ASCII dots"

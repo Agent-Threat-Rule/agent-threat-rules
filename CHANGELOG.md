@@ -27,9 +27,827 @@ All notable changes to ATR will be documented in this file.
   claim whose state changed, or that left the list or a claim's files, to be
   edited in the same pull request (a pure rename or a change of file mode is
   not an edit). It can see that each file was edited, not what the edit says,
-  and the job is not a required check. The open state of usnistgov/oscal-content#338 alone is
-  stated in twelve files. The /red-team page is left to the check proposed in
-  #691.
+  and the job is not a required check. The /red-team page's list is left to
+  its own check (`scripts/verify-red-team-links.mjs`, #691).
+
+### Fixed
+
+- **The threat-actor pages show NousResearch hermes-agent #9809 as closed.**
+  The three /threats pages gave the campaign's disclosure issue the status
+  OPEN from the day they were added; NousResearch had closed it as completed
+  on 2026-04-15. Recorded as erratum e-2026-11-07-actor-report-status.
+  HANDOVER.md no longer calls PR #500 open; it was closed unmerged on
+  2026-10-06.
+- **Erratum for the Cisco skill-scanner case study.** The integrate page said
+  PR #79 merged in three days, and from 2026-04-07 to 2026-05-23 that a Cisco
+  engineer submitted it and ATR reviewed it; the home page told the same
+  account until 2026-06-14. ATR's maintainer opened #79 on 2026-04-02, and the
+  repository's maintainers merged it 21 hours later. The 2026-11-06 redesign
+  corrected the page without recording the error; erratum
+  e-2026-11-07-cisco-merge-time records it. Two strings in
+  `website/lib/i18n.ts` that no page renders still told the reversed account;
+  they now say what happened.
+- **Four rules stop pairing words from opposite ends of a JSON-encoded
+  document.** ATR-2026-00217 #3, -00142 #0 and #1, -00113 #1 and -00020 #8
+  look for two words on the same line, written as `[^\n]*` or `.*`
+  between them. Tool arguments and results arrive JSON-encoded, where every
+  line break is the two characters `\n`, so a whole document is one line
+  and any `backup` pairs with any `key`, any `btw` with any `password`. The
+  gap is now `[^\n\\]{0,150}` (`{0,80}` for 00020 #8): at most 150
+  characters and no backslash, so an encoded line break ends it as a real
+  one does. Each new condition matches a subset of what the old one did.
+  Benign false positives over the 14,172 samples of the benign gate: 00217
+  596 to 47, 00142 435 to 18, 00113 353 to 92, 00020 763 to 237 (2,147 to
+  394). Across the attack-side corpora under `data/test-corpora`, 5 strings
+  no longer match any rule: a benign MCP tool list, a garak grader template,
+  two garak DAN prompts and one BrowseSafe-Bench page, each previously
+  matched only through such a long gap. The bounded conditions are also
+  fast, so all five leave `data/redos-baseline.json`. `rule_version` is
+  bumped on all four rules.
+
+- **ATR-2026-00161 no longer treats `process.env` as a secrets file.**
+  Its credential-file condition carried a `.env` alternative written as
+  `\b\.env`, which matches only when a letter comes right before the
+  dot: `process.env`, `.backup.env`. It never matched a `.env` file path
+  such as `~/.env` or `cat .env`, and matched no string in the attack
+  corpora. The alternative is removed; the rule's benign false positives
+  go from 82 to 26, the rest being literal key and credential paths
+  such as `~/.ssh/id_rsa`. A plain `.env` mention is not used instead:
+  it appears in 240 benign setup guides.
+
+- **Five critical rules stop firing on ordinary code and documentation.**
+  On the 14,172 samples of the benign gate, ATR-2026-00062, -00063,
+  -00040, -00161 and -00066 went from 2,710 false positives to 1,232. Each
+  change narrows one alternative that matched routine text on its own:
+  - 00062 #1 matched any `__name__` dunder and any `$$word`; it now takes
+    only suspicious names (`__backdoor__`, `__hidden__`, `__exec__`,
+    `__import__` and similar). 312 to 60.
+  - 00063 #1 matched `base64`, `gzip` or `encrypt` alone; it now needs a
+    secret (`.env`, token, password, API key, private key) within 80
+    characters. #2 matched any mention of `webhook`; it now names the
+    collection services (`webhook.site`, ngrok, requestbin and the rest).
+    736 to 259.
+  - 00040 #0 drops `--no-sandbox`, `admin=` and a bare quoted `"admin"`,
+    and keeps `--privileged`, `--cap-add`, `--security-opt`,
+    `allowPrivilegeEscalation` and `"role": "admin"`. 270 to 176.
+  - 00161 #2 took `.env` followed by a dot, so `process.env.MATON_API_KEY`
+    read as a reference to a secrets file. A `.env` followed by a dot,
+    letter or underscore no longer matches; `.env.local`, `.env.production`
+    and `.env.secret` still do. 270 to 82.
+  - 00066 #1 drops `/* ... */`, a CSS and JavaScript comment as often as a
+    SQL one; #2 needs three `../` hops unless a system directory follows;
+    #3 needs an SSTI marker inside `{{ }}` (`__x__`, `config`, `request`,
+    `|attr` and the like, or an arithmetic probe such as `{{7*7}}`, now a
+    true positive of the rule) and an execution word inside ERB, Ruby or Jinja
+    tags, and every unbounded span in it is capped at 200 characters, which
+    takes it off `data/redos-baseline.json`. 1,122 to 655.
+  Across the attack-side corpora under `data/test-corpora`, 381 strings no
+  longer match any rule. 366 of them are template placeholders, test
+  labels or benign MCP tool lists; 12 are BrowseSafe-Bench pages whose
+  injection sits in a CSS comment and was caught only by the `/* */`
+  alternative; 2 are garak prompts (a DAN role-play and a HarmBench
+  ransomware request) that matched only on the word `encrypt`; and 1 is an
+  OWASP scenario description. `rule_version` is
+  bumped on all five.
+
+- **ATR-2026-00133, -00547 and -00554 stop matching inside ordinary words
+  and code.** A replay of ADR-Bench's recorded agent conversations showed
+  each firing on benign tool output. ATR-2026-00133 #0 matched `table
+  parameters` inside "acceptable parameters" and -00547 #0 and #1 matched
+  `rag` inside "paragraph" and "storage"; both now start at a word
+  boundary. ATR-2026-00554 #0 matched any brace-enclosed text naming
+  `__init__`, `__class__` or `__dict__`, such as a code review that quotes
+  `def __init__`; those names now need the attribute access the injection
+  uses (`.__class__`), while `__import__`, `__builtins__`, `__globals__` and
+  `__subclasses__` still match on their own, so `${__import__('os')...}`
+  is still caught. Benign false positives over the 14,172 samples of the
+  benign gate: 00133 14 to 5, 00547 1 to 0, 00554 46 to 22. On ADR-Bench
+  (261 benign, 42 malicious conversations), benign conversations flagged at
+  high or critical severity in the alert lane go from 24 to 21, with the
+  same malicious conversations caught. Each rule's `rule_version` is bumped.
+
+- **The Cisco Skill Scanner pack no longer ships conditions that backtrack
+  badly.** Skill Scanner compiles patterns with Python's `re`, and the pack
+  carried conditions that `data/redos-baseline.json` already lists as slow on
+  a backtracking engine; Cisco measured one of them taking 13.9 s on a long
+  input. `scripts/export-cisco-pack.ts` now leaves those conditions out:
+  a rule that matches on any condition keeps its other conditions, and a rule
+  that needs all of them is left out whole, so no signature becomes broader
+  than its rule. On the current rules the pack goes from 596 signatures and
+  2,273 patterns to 573 and 2,025: 23 rules are left out and 126 lose one or
+  more conditions, each listed in the pack README. `--keep-slow` restores the
+  old behaviour.
+- **ATR-2026-00523 now catches SessionStart hooks that are not matched on
+  `startup`.** Its conditions required `"matcher": "startup"`, so the hook
+  JFrog found planted in 42 GitHub repositories in the testmetest campaign
+  (2026-10-26), `"matcher": "*"` with `node .github/init.js || bun
+  .github/init.js`, matched nothing in any lane, and neither did the same
+  hook with no matcher. Two conditions are added, for any matcher or none:
+  a command that runs a script under one JavaScript or Python runtime and
+  falls back to another with `||`, and a command that runs a script kept
+  under `.github/`. Both also match the escaped JSON of a Write tool call.
+  Over 113 public `.claude/settings.json` and plugin `hooks.json` files with
+  a SessionStart hook, they add no match; the three of those files the rule
+  already matched are matched by its existing `startup` conditions. The rule
+  is maturity `test`, so the enforce lane is unchanged. `rule_version` goes
+  to 2, with three true positives and three true negatives added.
+
+- **ATR-2026-02261 now catches a script that sends the whole environment,
+  and runs on skill content.** Its one condition needs a single named secret
+  read into a variable, and its `scan_target` was `mcp`, so a skill's bundled
+  script that serialized all of `process.env` (or `os.environ`) and sent it
+  out matched nothing on the skill path. That is the shape the npm advisories
+  OSV MAL-2026-4665 (security-env-loader) and MAL-2026-10518 (chai-as-auth)
+  and the emails-helper report describe. A second condition matches the
+  serialized environment inside a request, serialized and then encoded and
+  sent, or wrapped in a base64/hex encoder next to a request. Passing
+  `process.env` to a child process, logging it, writing it to a local file,
+  or a server returning it to its own client does not match. `scan_target`
+  goes to `both`. Over 200 public files from GitHub code search that call
+  `JSON.stringify(process.env)` or `json.dumps(dict(os.environ))`, the new
+  condition matches none; on the benign gate the rule stays at 0 false
+  positives, now with the skill path measured. Not covered: a payload that
+  wraps the environment in an object through a helper function before
+  serializing it, as in @nsub/nitxe (MAL-2026-10429). The rule is maturity
+  `test`, so the enforce lane is unchanged. `rule_version` goes to 2.
+- **ATR-2026-01614 and -02372 no longer backtrack on long whitespace.** Each
+  pattern had optional tokens between `\s*` runs, so a long run of spaces
+  could be split between them in many ways and a backtracking engine took
+  seconds on a few thousand characters; Cisco reported it from Skill Scanner,
+  which runs the patterns with Python's `re`. Each optional token now carries
+  the whitespace after it, so one run is matched one way, and the patterns
+  match the same text as before: on 209,426 inputs (random token strings,
+  every rule's test cases and the benign skill corpus) plus 5,760 built to hit
+  the 01614 condition, the old and new patterns agree on every input.
+  `rule_version` goes to 2 and the three conditions leave
+  `data/redos-baseline.json`.
+
+## [4.3.0] - 2026-11-06
+
+A minor release that adds two rule exporters, `atr convert numbat` and
+`atr convert quarry`, and narrows seven rules that matched ordinary code,
+documentation or report fields. A rule passed to the engine now replaces a
+rule with the same id from the rules directory that `loadRules()` reads (the
+bundled rules by default). The rule format, identifier scheme and the
+Match output format (SPEC §7) are unchanged. The pyatr and pydantic-ai-atr
+entries below ship in their own Python packages, not in this npm release.
+
+Default behaviour that changes:
+
+- Three `stable` rules, which run in the enforce lane, match less. These
+  are the only rule changes an integration that blocks on the enforce lane
+  will see. ATR-2026-01462 no longer blocks a bare `Priority Level:
+  CRITICAL`; ATR-2026-00440 no longer matches `getattr` on names that only
+  start with `type` or `object`, such as `types.Scale` or `objects_by_id`;
+  and ATR-2026-00432's `exec()` condition needs a quoted argument, so a list
+  of blocked calls in a skill's own text no longer matches.
+- Four `test` rules, which run in the alert and hunt lanes, stop matching
+  the benign shapes described under Fixed: ATR-2026-00121, -00225, -00277
+  and -00301.
+- `new ATREngine({ rules })` followed by `loadRules()` keeps the passed rule
+  when the rules directory has one with the same id. Before, both were kept
+  and the directory copy's patterns ran under the passed rule's name, so a
+  tightened rule you passed still matched like the bundled one.
+- SARIF skip warnings name the relative artifact URI instead of the
+  scanner's absolute path.
+
+### Added
+
+- **`atr convert quarry` exports rules for [Project Quarry](https://github.com/cisco-ai-defense/project-quarry).**
+  Each rule becomes a Quarry `.rule` file named by its ATR id, with the
+  rule's title, severity, category, maturity and version as metadata, and
+  its patterns declared `regex nocase`. `user_input`, `agent_output`,
+  `tool_args`, `tool_response`, `tool_name` and `tool_description` map onto
+  Quarry's user and assistant messages, tool calls, tool responses and tool
+  definitions, with `user_input` and `agent_output` also read on tool
+  responses as the engine does. An `all` rule's conditions must hold on one
+  item of a shared surface, as they hold on one event in the engine. The
+  export writes `quarry.yaml`, one test file per rule with its true
+  positives and negatives as OpenAI-shaped conversations, and
+  `check_atr_tests.py`, which runs them through Quarry's scanner. Dropped
+  conditions, skipped rules and true positives a rule no longer catches are
+  listed as for numbat. The default `--lane enforce` exports stable rules
+  only.
+- **`atr convert numbat` exports rules for [numbat](https://github.com/perplexityai/numbat).**
+  Each rule becomes a numbat operator rule (`atr.atr-yyyy-nnnnn`,
+  monitor-only) and a companion `_tests.yaml` built from the rule's own true
+  positives and negatives, so `numbat rules check` runs ATR's tests through
+  numbat's RE2 matcher. `user_input`, `agent_output`, `tool_args`,
+  `tool_response` and `tool_name` map onto numbat's prompt, assistant, tool
+  input and tool result fields, with `user_input` and `agent_output` also read
+  on tool results as the engine does; `content` maps onto whichever of those
+  the event carries. The default `--lane enforce` exports stable rules only.
+  Conditions RE2 cannot express (lookaround, backreferences, unpaired
+  surrogate escapes and the like) are dropped, an `all` rule that would lose
+  one is skipped, and the export lists every true positive a rule no longer
+  catches. numbat matches raw text, without the engine's Unicode
+  normalization. The RE2 check is in `src/re2.ts`, tested against the CI
+  audit's `scanPattern` on every rule.
+- **`pyatr.moderation`, an OpenAI-compatible moderation endpoint.**
+  `moderation_result(input)` returns the `/v1/moderations` response shape,
+  and `python -m pyatr.moderation` runs a standard-library reference server
+  on `127.0.0.1`. Every match is listed in `atr_matches`; `flagged` is true
+  only for a match at or above `block_severity` (default `high`) in `lane`
+  (default `enforce`, stable rules), so gateways that block on `flagged`
+  block on stable rules only unless they opt into another lane.
+- **pyatr detection lanes.** `ATREngine(lane=...)` takes `"enforce"`
+  (maturity `stable` only), `"alert"` (`stable` and `test`) or `"hunt"` (every
+  rule, the default, so existing callers see no change), with the same mapping
+  as the TypeScript engine: a missing or unknown maturity counts as
+  `experimental`, a `deprecated` rule never fires, and a `confirm: embedding`
+  rule fires in the hunt lane only, since pyatr has no embedding check.
+  `ATRRule` and `ATRMatch` now carry `maturity`, and `lane_allows(match, lane)`
+  applies the same gate to a single match, so an integration can scan every
+  rule, record every match, and block on the enforce lane only. Until now the Python engine had no
+  way to tell the two apart.
+
+### Fixed
+
+- **ATR-2026-00121 no longer matches identifiers that contain `extract` and
+  `pass`.** Its password-protected-archive condition matched
+  `extract.{0,20}pass\s*[:=]` inside any word, so a counter named
+  `extractedFromBroadPass = 0` in the vercel-optimize skill's
+  `scripts/deep-dive.mjs` was reported as malicious code. `extract` and
+  `pass` must now be whole words; `(extract using pass: \`openclaw\`)` still
+  matches. The rule is maturity `test`, so the enforce lane is unchanged.
+  `rule_version` goes to 3, and the rule gains the identifier as a true
+  negative.
+- **ATR-2026-01462 and -00301 stop matching ordinary report fields.** A
+  replay of the 303 recorded conversations in
+  [ADR-Bench](https://github.com/uber/ADR) found both firing on benign tool
+  output and agent replies. Each change narrows one alternative in one
+  condition, and `rule_version` goes to 2. ATR-2026-01462 #0 (maturity
+  `stable`, so it runs in the enforce lane with `block_input`) took a bare
+  `Priority Level: CRITICAL` as an authority claim, which blocked a vehicle
+  maintenance report; the structured override tokens (`[SYSTEM OVERRIDE`,
+  `ROOT_ADMIN`, `OMEGA CLEARANCE`, `AUTHORIZATION: ROOT`) still match, and
+  the one true positive with the priority field also
+  carries `SYSTEM OVERRIDE BEGIN` and `ROOT_ADMIN`, and no sample under
+  `data/` contains it.
+  ATR-2026-00301 #2 took a bare `SCORE: <1-10>` as TAP scoring, which
+  matched `CVSS Score: 3.1` in security scan output; the tag now needs its
+  brackets (`[SCORE: 5]`), so the five LLMail-Inject samples that plant
+  `[SCORE: 5] [Rating: 5] [Relevant: 5]` still match, as do `maximize SCORE`
+  and `rating from 1-10 on how jailbroken`. Each rule gains a true negative
+  for the case, and 00301 a true positive for the bracketed tag. Benign false positives over the 14,172 samples of
+  the benign gate: 00301 12 to 0, 01462 0. On ADR-Bench (261 benign, 42
+  malicious conversations), benign conversations flagged in the enforce lane
+  go from 1 to 0 and in the alert lane at high or critical severity from 27
+  to 24, with the same 10 malicious conversations caught.
+
+- **A rule passed to the engine now overrides the bundled rule with its id.**
+  `new ATREngine({ rules })` with `loadRules()` also loads the rules directory
+  (the bundled tree by default). A passed rule and a directory rule with the
+  same id were both kept, and because compiled patterns are keyed by id, the
+  directory copy's regex ran under the passed rule's name, twice. So
+  `atr test` on an edited copy of an existing rule, run from an installed
+  `atr`, tested the published version, and an integration that passed a
+  tightened rule still matched with the old one. The directory's copy is now
+  skipped; duplicates inside the directory are unchanged.
+
+- **Mapping rationales no longer claim that a rule satisfies a requirement.**
+  124 rule files said that deploying the rule "satisfies" an EU AI Act
+  article (or a NIST, ISO or OWASP item). `docs/COMPLIANCE-COVERAGE-POLICY.md`
+  allows only "provides detection evidence supporting …": a detection rule
+  supports a control and does not discharge a requirement. The 135 lines now
+  say "provides detection evidence supporting", "supports" or, for OWASP
+  categories, "matches". Only `compliance` context text changed; every field
+  outside `compliance` is identical, so detection is unchanged and no
+  `rule_version` moves. `scripts/validate-compliance.ts` now fails CI on a
+  context that claims compliance ("satisfies the Article …", "makes …
+  compliant", "ensures compliance"). See the 2026-11-04 errata entry.
+
+- **ATR-2026-00432 no longer fires on lists of dangerous calls.** Its `exec()`
+  condition matched any `exec(` followed within 200 characters by `import os`,
+  `os.system` or `subprocess.`, so defensive skill text that lists blocked
+  patterns, or tells the agent to grep for them, was flagged as a critical
+  RCE. This is a stable rule, so the enforce lane flagged those skills too.
+  The argument now has to open with a quote (`exec("import os; ...")`), which
+  keeps every true positive in the rule's tests and drops the lists.
+  `rule_version` 2.
+
+- **A "New Rule Proposal" issue now becomes a readable draft proposal.**
+  `scripts/issue-to-proposal.ts` indented the example payload at the same
+  depth as its `example_payload:` key, so every proposal file it wrote was
+  invalid YAML that nothing downstream, the safety gate included, could read.
+  A payload containing its own `###` heading was cut at that heading, and an
+  optional field left empty was read as the text `_No response_`. When
+  required fields are empty the converter now names them, and the workflow
+  passes the names to its comment on the issue; before, the converter's exit
+  code was lost in a pipe and the job failed at a later git step with a generic
+  message.
+- **The Pydantic AI guard now scans typed tool events and blocks on the
+  enforce lane only** (#772). It used `pyatr.scan()`, which evaluates text as
+  user input, so most rules written for `tool_args` or `tool_response` never
+  saw their field, and it blocked on any rule at `block_severity`, including
+  experimental ones. Tool calls are now `tool_call` events and results
+  `tool_response` events; every match is still recorded, and a match blocks
+  only when its rule is in `block_lane` (default `"enforce"`). Values over
+  `max_scan_chars` (default 10,000) are now scanned as head and tail, with
+  `truncated` in the audit entry, where they used to be scanned in full.
+  `block_severity="info"`, which was accepted and acted as `"critical"`, now
+  raises `ValueError`. `pydantic-ai-atr` 0.2.0 requires `pyatr>=0.4.1` and
+  ships with tests.
+- **pyatr 0.4.0 shipped its bundled rules without `maturity` or `confirm`**,
+  so a `pip install pyatr` engine treated every rule as experimental and the
+  enforce lane matched nothing (it never blocked wrongly, it just never
+  blocked). The bundle now keeps both fields, and a test checks that stable
+  rules survive bundling.
+- **SARIF skip warnings no longer expose absolute scanner paths** (#766).
+  Filesystem errors retain their diagnostic details but refer to the relative
+  artifact URI instead of repeating the CI runner's working path.
+
+- **ATR-2026-00440, -00121, -00277 and -00225 stop matching ordinary code
+  and documentation.** A replay over the skills.sh all-time top 375 skills
+  found each of them firing on benign files. Each change is confined to one
+  condition, and `rule_version` goes to 2. ATR-2026-00440 #3 (maturity
+  `stable`, so it runs in the enforce lane) had no boundary after the getattr
+  root, so `getattr(types.Scale, ...)` read as getattr on the built-in
+  `type`; getattr on `type`, `object` and `__builtins__` still matches, and
+  an integration that blocks on the enforce lane no longer blocks the
+  prefixed names. In ATR-2026-00121 #4, `nc` and `ncat` must start a word,
+  and a `python -c` one-liner that imports socket or os must also run
+  something within 300 characters on the same line. In ATR-2026-00277 #3, a
+  `config`, `self`, `request`, `g` or `app` root must reach Python internals
+  inside the same braces; the bare recon probes such as `{{config}}` still
+  match, while template placeholders such as `{{g}}` and dbt's
+  `{{ config(...) }}` no longer do. ATR-2026-00225 #2 takes `C2`, `backdoor`,
+  `malware` and command-and-control as whole words within 120 characters on
+  the same line; most of its 80 benign false positives came from
+  JSON-encoded events, where `[^\n]*` ran past escaped newlines to the end of
+  the document. Benign false positives over the 14,172 samples of the benign
+  gate: 00121 6 to 4, 00225 80 to 0, 00277 6 to 0, 00440 0. Over every file
+  under `data/` and every rule's test cases, none of the four gains a match.
+
+## [4.2.4] - 2026-11-03
+
+A patch release that makes `atr scan <dir>` scan MCP configs as well as
+skills and makes the GitHub Action fail when the scan fails. It also notes
+two changes to the Cisco Skill Scanner pack exporter, a repository script
+the npm package does not include. The rule format, identifier scheme, rules
+and the Match output format (SPEC §7) are unchanged.
+
+Default behaviour that changes:
+
+- `atr scan <dir>` scans every `SKILL.md` (or `skill.md`) and every MCP
+  config named `.mcp.json`, `mcp.json`, `mcp-config.json` or
+  `claude_desktop_config.json` under the directory, in one report. Before,
+  it scanned the `SKILL.md` files only, ignored MCP configs, and exited 1
+  with "No SKILL.md files found" when there were none, so a directory with
+  only MCP configs could not be scanned and a directory with both reported
+  only its skills. Its `--json` output now has `scan_type: "directory"`,
+  `mcp_events_scanned` and `files_skipped`, and a `kind` (`mcp` or `skill`)
+  on each result (one MCP event per server under a config's `mcpServers`).
+  `skills_scanned` no longer counts skipped files, and `--fail-on` counts
+  findings from configs and skills alike. The terminal report is now headed
+  "ATR Directory Scan Results", with separate counts for MCP events and
+  skills. Directories named `.git` or `node_modules` are no longer walked,
+  so a `SKILL.md` inside one is no longer scanned. Scanning a single file,
+  and `atr scan-skill <dir>`, are unchanged.
+- In a directory scan, symlinks and other entries that are not regular
+  files, unreadable files and directories, MCP configs over 50 MB and
+  configs that are not JSON or have no `mcpServers` entries are skipped with
+  a warning instead of being read or ending the scan. `--json` counts them
+  in `files_skipped`, and `--sarif` lists each one in
+  `runs[0].invocations[0].toolExecutionNotifications`. A `SKILL.md` over
+  1 MB was already skipped with a warning and still is, but it is now
+  counted in `files_skipped`. A directory scan exits 1 when nothing could be
+  scanned, and its SARIF then sets `executionSuccessful: false`.
+- The GitHub Action (`action.yml`) fails the step with the scanner's exit
+  status and one `::error::` annotation when `atr scan` exits non-zero.
+  Before, a failed scan with no output was turned into an empty SARIF file
+  and reported as clean. A workflow that points the Action at a path with
+  no skill or MCP config, or where every one is skipped, now fails instead
+  of passing. The Action installs `agent-threat-rules@latest`, so workflows
+  on an earlier Action ref also get the new directory scan, but those
+  workflows still report a scan that exits 1 after writing SARIF as clean.
+
+### Fixed
+
+- **`atr scan <dir>` scans MCP configs and skills together** (#752, by
+  @dc-tw). Directories are walked recursively, skipping `.git` and
+  `node_modules`, and both target types go into one terminal, JSON or SARIF
+  report. Fixes the directory part of #575.
+
+- **The GitHub Action no longer reports a failed scan as clean** (#743, by
+  @dajiaohuang). The error annotation strips colour codes and encodes `%`,
+  CR and LF, so text from the scanned repository cannot start a workflow
+  command, and it also works under bash 3.2. `sarif_path` is written before
+  the scan, so the always-run SARIF upload step still gets it when the scan
+  fails. Fixes the Action part of #575.
+
+### Changed
+
+- **The Cisco Skill Scanner pack exporter leaves out rules that do not hold
+  up on a skill's files** (#764). Skill Scanner applies each pattern to
+  every line of every file and has no field concept, so a rule whose regex
+  conditions read a field only a running agent has (`tool_name`,
+  `tool_args`, `tool_response`, agent output, trace fields) matched
+  whatever text looked like it. Only rules all of whose regex conditions
+  read `content`, `user_input` or `tool_description` are exported now,
+  which leaves out 244 of the 4.2.3 rules. `scripts/cisco-pack/benign-gate.py`
+  runs an exported pack inside a Skill Scanner checkout over a directory of
+  benign skill `.md` files given as `--corpus` (the documented run uses
+  `data/skill-benchmark/benign`), and `--benign-gate <json>` leaves out
+  every rule that fired there at any severity. `--reproduce-vendored` still
+  keeps the runtime-field rules and cannot be combined with
+  `--benign-gate`. #764 was merged before the 4.2.3 tag but is not in the
+  4.2.3 notes.
+
+- **`--max-severity` caps the severity of exported signatures** (#765).
+  Skill Scanner treats a skill as unsafe on any HIGH or CRITICAL finding by
+  default, so `--max-severity low` lets a pack report its matches without
+  changing that verdict. It cannot be combined with `--reproduce-vendored`.
+
+## [4.2.3] - 2026-11-02
+
+A patch release with one engine fix and two fixes to the Cisco Skill Scanner
+pack exporter, a repository script the npm package does not include. The
+rule format, identifier scheme, rules and the Match output format (SPEC §7)
+are unchanged.
+
+Default behaviour that changes:
+
+- `scanSkill()` and `scanSkillAsync()`, and `scanSkillFull()` and
+  `scanSkillFullAsync()`, which call them, no longer depend on what the
+  process scanned before. A document scanned after one with five decodable
+  base64 blocks and a further run of 32 or more base64 characters after them
+  now reports the `[decoded:base64]` matches it reports when scanned on its
+  own; before, it could lose some or all of them, and could report matches
+  from blocks after its first five decodable ones instead. `atr scan <dir>`
+  and the `atr_scan_skill` MCP tool scan many documents in one process. The
+  first scan in a fresh process is unchanged, and `evaluate()`, which decodes
+  no base64, is unchanged.
+- Cisco Skill Scanner packs generated with `scripts/export-cisco-pack.ts`
+  from a checkout of this release, other than with `--reproduce-vendored`,
+  differ from earlier ones: invisible characters in the signature files are
+  written as YAML escapes that parse to the same patterns, and a rule with
+  `condition: all` and more than one regex condition is written as one
+  pattern that matches only where every condition does. A pack generated
+  before this release changes only when it is regenerated.
+
+### Fixed
+
+- **The SKILL.md path decodes the same base64 blocks on every scan of the
+  same text** (#762). `decodeBase64Blocks()` searched with a module-level `/g`
+  regular expression and stopped at its five-block cap without resetting
+  `lastIndex`, so the next call in the same process resumed where the
+  previous one stopped. That happened after any document with five
+  decodable blocks and one more run of 32 or more base64 characters after
+  them, decodable or not: a second scan of the same text decoded only what
+  came after that run, and the next document scanned lost some or all of
+  its own blocks. The `[decoded:base64]` matches of `scanSkill()` and
+  `scanSkillAsync()` therefore depended on what the process had scanned
+  before, which SPEC §6.5 does not allow; a directory scan
+  (`atr scan <dir>`) and the `atr_scan_skill` MCP tool scan many documents
+  in one process. The regular expression is now created per call. The cap,
+  the block pattern and the printable-text filter are unchanged, so the
+  first scan in a fresh process returns what it did before. No measurement
+  that can be re-run from this repository changes: of the files under
+  `data/` and the rules' test cases, only the two BrowseSafe corpora hold
+  such a document, and they are scored as tool responses, not through
+  `scanSkill()`. The wild-scan measurement (`data/measurements/wild-scan/`)
+  was made with the old decoder over documents that are not in the
+  repository, and was not re-run.
+
+- **The Cisco Skill Scanner pack writes invisible characters as YAML
+  escapes** (#760). Rules that detect Unicode smuggling contain the
+  characters they look for (tag characters, bidirectional overrides and
+  isolates, zero-width characters, the soft hyphen), and the pack emitter
+  wrote them raw, so a regenerated pack carried invisible characters, U+202E
+  among them, which GitHub flags as hidden or bidirectional Unicode. The
+  signature files, and `pack.yaml` with `--downstream`, now write any
+  character in Unicode categories Cf, Cn, Co, Cs, Zl or Zp as `\uXXXX`, or
+  `\UXXXXXXXX` above the BMP, in a double-quoted scalar. A YAML reader
+  decodes the escapes, so the parsed patterns are unchanged.
+  `--reproduce-vendored` keeps the raw characters, since the bytes it
+  reproduces contain them.
+
+- **A `condition: all` rule in the Cisco Skill Scanner pack matches only
+  where all its conditions do** (#761). The scanner reports a finding when
+  any one of a signature's patterns matches, and the exporter wrote one
+  pattern per regex condition, so a rule with `condition: all` fired
+  wherever a single condition did. A rule whose `detection.condition` is
+  `all` (or `and`) and that has more than one regex condition is now written
+  as one pattern of lookaheads anchored at the start of the text, one per
+  condition. Rules with `any`, or with one regex condition, are unchanged,
+  and `--reproduce-vendored` still copies patterns verbatim. Skill Scanner
+  runs a pattern over one line at a time, and also over the whole file only
+  when the pattern contains `\n` outside a character class; without one,
+  the conditions have to meet on one line, so a rule whose attacks span
+  lines can match less in the pack than in the engine. The combined pattern
+  matches an empty string at the start of the text it runs over, so the
+  match itself carries no text, and an RE2-based engine cannot compile it.
+
+## [4.2.2] - 2026-10-28
+
+A patch release of export and converter fixes, five rule rewrites for Python
+portability, and reference corrections. The rule format, identifier scheme,
+engine matching and Match output are unchanged.
+
+Default behaviour that changes:
+
+- Nothing the engine matches. The five rewritten rules match the same samples
+  as before on every test case, evasion test and text file under `data/`.
+- Exports regenerated from this release differ from earlier ones: the
+  converters (`atr convert`, `ruleToSPL()`, `ruleToElastic()`, Sage), the
+  Cisco Skill Scanner pack, the PyRIT digest, the Pipelock bundle and the
+  RAMPART evaluator now follow SPEC §6.4, so a condition without a flag group
+  matches case-insensitively and a leading `(?s)` or `(?m)` has no effect.
+  See the upgrade note under the converters entry below.
+- `references` and `compliance` metadata changes on 139 rules (the OWASP and
+  ATLAS corrections below). Tooling that reports or groups by those ids sees
+  different buckets.
+
+### Added
+
+- **`export-cisco-pack.ts --downstream` writes the Cisco Skill Scanner's
+  schema_version 2 pack.** The scanner now validates its bundled packs
+  against a strict schema at startup: it rejects `signature_files` and any
+  rule field outside its allowlist (`maturity`, `atr_id`, `atr_url` and
+  `file` included), and every rule needs a Cisco AI taxonomy code or a
+  default for its category. A pack exported as before fails to load. With
+  `--downstream <vendored pack dir>` the exporter writes that schema and
+  carries the scanner maintainers' choices forward: each existing rule keeps
+  the scanner category and taxonomy code it has downstream, and a new rule
+  takes the scanner category its ATR category already maps to and inherits
+  that category's default code. It stops instead of guessing when an ATR
+  category maps to more than one scanner category or a new rule's category
+  has no default; `--taxonomy <ATR id>=<code>` supplies the code. The pack
+  description names no benchmark figure. Without `--downstream` the output is
+  unchanged. `tests/cisco-pack-downstream-v2.test.ts` covers the contract.
+
+### Fixed
+
+- **OWASP and MITRE ATLAS references corrected on 108 rules** (#675).
+  `references.owasp_llm`, `references.owasp_agentic` and
+  `references.mitre_atlas` are corrected where a rule named an identifier
+  that does not describe what it detects. No detection, severity, maturity,
+  status, confidence or response field changes. The two crosswalks CI checks
+  against rule metadata are regenerated.
+
+- **OWASP compliance entries aligned with the corrected references on 25
+  rules** (#680). 29 `compliance.owasp_agentic` / `compliance.owasp_llm`
+  entries still named an identifier #675 removed from `references`, which
+  kept it in `docs/OWASP-AGENTIC-MAPPING.md`.
+
+- **`LLM08:2025` used for Excessive Agency replaced on 30 rules** (#684). In
+  the OWASP Top 10 for LLM Applications 2025, LLM08 is Vector and Embedding
+  Weaknesses and Excessive Agency is LLM06. Only `references.owasp_llm` and
+  `compliance.owasp_llm` change; two rules that use LLM08 for its real
+  meaning keep it.
+
+- **Five rules compile under Python `re`.** The Cisco Skill Scanner pack and
+  other Python consumers compile patterns with `re`, which rejects
+  variable-width look-behind and a back-reference to a group that does not
+  exist; such a pattern is skipped and detects nothing there. Twelve
+  conditions in five rules were affected. ATR-2026-00442 and -02100 split a
+  negative look-behind over alternatives of different lengths into one
+  look-behind per alternative. ATR-2026-02300 and -02304 match the
+  `mcpServers` or fetch-verb prefix instead of looking behind for it, which
+  changes the matched span but not whether the condition matches. The fourth
+  condition of ATR-2026-00290, `(?:(?:\w+\s+){40,})\1{3,}`, is removed: its
+  `\1` refers to no group, which JavaScript reads as the character U+0001, so
+  it never matched anything. On every test case and evasion test of the five
+  rules and the text files under `data/` (7,963 samples), the old and new
+  rules match the same samples. `check-python-compat.py` now reports 0
+  uncompilable patterns in the exported pack, down from 12, and
+  ATR-2026-02300 and -02304 profile more than 3x cheaper than their latency
+  baseline (171.6x and 9.2x).
+  Compiling under Python also exposed the ReDoS gate to three of these
+  conditions for the first time, and they backtracked quadratically on a long
+  run of whitespace: ATR-2026-00442#1 on `\s*[:,-]?\s*` and ATR-2026-02300#1
+  and #3 on `:\s*\n\s+`. Both are rewritten to accept the same strings
+  without the ambiguity, `(?:\s*[:,-])?\s*` and `:[^\S\n]*\n\s+`. The
+  five rules' entries in `data/benign-fp-measurement.json` are re-measured
+  because their detection fingerprints changed; their false-positive counts
+  are unchanged.
+
+- **The RAMPART evaluator compiles patterns as SPEC §6.4 says.**
+  `integrations/rampart/src/atr_rules_evaluator.py` compiled each rule's
+  pattern as written with `re.IGNORECASE | re.MULTILINE`, so `^` and `$`
+  matched at every line of a field and the letters of a leading flag group
+  took effect (`(?s)` let `.` match a newline). It now removes one leading
+  `(?imsx)` group and compiles the rest with `re.IGNORECASE` only, as pyATR
+  does. On the rules on main this can change a result only on multi-line
+  input to a rule whose first regex condition, the only one the evaluator
+  reads, contains `^` or `$`; none of those rules' test samples is matched
+  differently by that condition. The evaluator is one of the exports issue
+  #698 lists.
+
+- **The PyRIT digest, the Cisco Skill Scanner pack and the Pipelock bundle
+  now follow SPEC §6.4.** PyRIT's `RegexScorer` and the Cisco scanner
+  compile patterns with Python `re` and no flags, Pipelock with Go RE2, and
+  both honour an inline flag group. The exporters passed each condition's
+  leading group through, so the `(?im)`, `(?si)` and `(?is)` of
+  ATR-2026-00450, -00859 and -00207 were applied. A condition written
+  without `(?i)` was case-sensitive in the Cisco pack, and in the Pipelock
+  bundle's injection rules, which Pipelock releases up to v3.7.0 compile as
+  written; Pipelock adds `(?i)` to DLP and tool-poison rules itself, and the
+  digest already added it. Each pattern is now `(?i)` followed by
+  `regexConditionSpec(value).source`, the pattern the engine compiles; the
+  Pipelock bundle puts one `(?i)` in front of a rule's joined alternatives.
+  Output change on the rules on main: in `data/pyrit-digest.json`, four
+  patterns, of which only ATR-2026-00450#2 matches differently. The digest is
+  also regenerated at main for the first time since 4.0.0, in a commit of its
+  own: 116 new conditions, 5 removed with the deprecated ATR-2026-00233, 121
+  patterns edited in their rules and nine new `condition: all` exclusions.
+  The exporter no longer emits a `case_sensitive` marker, which no rule sets
+  and §6.4 gives no effect. `tests/pyrit-digest.test.ts` checks the
+  transform on fixed inputs and that every committed pattern starts with
+  exactly one `(?i)`; it does not compare the digest with the rules, so a
+  rule edit does not require regenerating it. The Cisco pack changes 1,161
+  of 3,471 patterns in 307 signatures, 1,157 of them because they gain
+  `(?i)`; `--reproduce-vendored` keeps the vendored pack's verbatim
+  patterns, its output is unchanged, and a new test checks that wiring. The
+  Pipelock bundle changes every rule's regex: 814 conditions in 191
+  injection rules become case-insensitive on Pipelock releases up to v3.7.0,
+  and ATR-2026-00450 no longer matches at the start of a second line; the
+  compiler version is now 1.0.1. No pattern starts or stops compiling under
+  Python `re` or Go RE2. Issue #698; `tests/compile-pipelock.test.ts` is new.
+
+- **The rule converters translate regex conditions per SPEC §6.4.**
+  `atr convert generic-regex|splunk|elastic`, the package exports
+  `ruleToSPL()`, `ruleToElastic()`, `convertRule()` and `convertAllRules()`,
+  and the `converters/sage` and `converters/sage-reverse` subpaths each
+  followed a condition's leading flag group instead of SPEC §6.4 (issue
+  #698):
+  - generic-regex copied the group's letters into `flags`, so a condition
+    without `(?i)` exported `flags: ""` (case-sensitive) and `(?im)` or
+    `(?is)` turned on multiline or dotAll in the consumer. `flags` is now
+    always `i`, or `iu` when the pattern needs Unicode mode.
+  - Splunk passed the group to PCRE unchanged, with the same two effects.
+    Every regex now starts with a single `(?i)`.
+  - Elastic put the group into a Lucene `regexp` value, where inline flags do
+    not exist. The value is now the condition without its group;
+    `case_insensitive: true` is unchanged.
+  - Sage exported a rule as case-sensitive unless a group said `(?i)`. Every
+    exported rule now sets `case_insensitive: true`; a condition that depends
+    on the `u` flag, which Sage cannot set, is skipped with a warning; and the
+    "mixes case-sensitive" and "unsupported inline flags" warnings are gone.
+    Importing from Sage (`sage-reverse`) now always writes `(?i)` and warns
+    (`case_sensitivity_lost`) when the Sage rule was case-sensitive.
+
+  The dialect lives in the new dependency-free `src/regex-dialect.ts`
+  (`regexConditionSpec()`, `needsUnicodeFlag()`, `inlineCaseInsensitive()`),
+  so the published `converters/sage` subpath does not load the engine;
+  `src/engine.ts` imports and re-exports it, and the rule-quality and
+  rule-latency gates now also run when it changes. The generic-regex docs no
+  longer show an import path the package does not export.
+
+  Upgrade note: exports regenerated after this change differ from earlier
+  ones. Conditions without a flag group now match case-insensitively, so a
+  SIEM or scanner that loads them can see more matches, and conditions whose
+  group had `s` or `m` no longer let `.` cross a line break or `^` and `$`
+  match inside the field. Generic-regex `flags` can now be `iu`, so a consumer
+  that maps the letters to another regex engine must accept `u`. The Sage
+  export skips conditions that depend on `u`. `ReverseWarning['kind']` gains
+  `case_sensitivity_lost`; TypeScript code that switches over it exhaustively
+  must handle it.
+
+## [4.2.1] - 2026-10-24
+
+A patch release of rule fixes and one new rule, plus two release-tooling
+fixes. The rule format, identifier scheme and Match output are unchanged.
+
+Default behaviour that changes:
+
+- ATR-2026-01601 (SQL injection with destructive DDL, maturity `stable`, so it
+  runs in the enforce lane) now also matches when whitespace separates the
+  single quote from the semicolon, as in `1' ; TRUNCATE TABLE accounts; --` and
+  `7' ; DELETE FROM sessions; --`, which it missed before. An integration that
+  blocks on the enforce lane blocks these too. Its benign false positives were
+  re-measured: none over the 14,172 samples of the benign gate (#748, issue
+  #620).
+
+### Added
+
+- **ATR-2026-02870: an invisible control before a directive in a tool
+  description or skill file.** A zero-width, soft-hyphen or bidi control
+  character at the start of a clause that tells the agent to ignore or
+  override instructions, send or read secrets, conversations or credential
+  files, or keep something from the user. Presence of the character alone
+  does not match, so soft hyphens in German, ZWNJ in Persian, LRM/RLM in Hebrew
+  and Arabic, emoji ZWJ sequences and a leading BOM stay clear. It reads
+  `tool_description`, so it runs in a `tools/list` scan, on `mcp_exchange`
+  events and on SKILL.md files. Maturity `test` (hunt and alert lanes). No
+  benign false positives on the gate corpora or on the 710 tool definitions in
+  `data/test-corpora/mcp-tools-list-benign/`, which contain no such characters,
+  so that last figure is weak evidence. A control inside a word, rather than at
+  the start of a clause, is ATR-2026-00276's case and not covered here (#749,
+  from issue #653 by @Paraphern).
+
+### Fixed
+
+- **ATR-2026-00040 and -00064 matched the wrong chmod modes.** Their chmod
+  condition matched the owner digit of `chmod 755 deploy.sh` or `chmod 700
+  ~/.ssh` and missed `chmod -R 777 /`. They now match a world-writable mode or
+  a setuid/setgid/sticky four-digit mode; with options such as `-R` before the
+  mode, only when the target is the root, a system directory or the home
+  directory, since `chmod -R 777` on an application subdirectory is documented
+  practice in the benign corpus. Group-writable modes are not matched. Both
+  rules are maturity `test` (#740, issue #735, from the probe in #658 by
+  @PHM-Audit).
+- **ATR-2026-00500, -00501 and -00505 are grounded in the vendor test cases
+  they cite.** 00500 and 00501 matched 1 and 0 of promptfoo's SSRF and
+  data-exfiltration test cases, and 00505 missed an llm-guard case with a
+  typographic apostrophe. They now match all of them (3 of 3, 3 of 3, 6 of 6),
+  their true positives that did not occur in any vendor repository were
+  replaced by verbatim vendor cases with repository, commit, file and line,
+  and -00503 and -00521 gained the vendor originals behind their shortened
+  samples. On the pinned vendor suites, hunt-lane recall goes from 97 to 100 of
+  126 attack cases; the ablation reference is unchanged (#709, measurement in
+  #750).
+- **ATR-2026-00223's samples use a documentation address** (203.0.113.30)
+  instead of an address from a real dropper. Detection is unchanged (#738).
+- **The release workflow commits the reconciled stats cache with the version
+  bump.** The 4.2.0 bump reached `main` with `data/stats.json` still at 4.1.5,
+  which failed CI on `main`; the published package was not affected (#746).
+- **The Gemara catalogs' first publish reads oras's "not found" as
+  unpublished.** The first publish from v4.2.0 stopped at the
+  already-published check; this release tag is the first that can publish the
+  bundle (#747).
+
+## [4.2.0] - 2026-10-24
+
+The first release since 4.1.5. For an integrator it changes three things at
+runtime: the Claude Code guard reads what a tool returned instead of what it
+was given, rules written for `context_window` and `skill_*` events now run on
+the events their data arrives in, and a match that a model decided is
+reported instead of enforced unless the integrator opts in. `atr scan` now
+scans an MCP config file it used to skip, and an MCP `tools/list` document
+as one event per tool, without running the rules written for a tool being
+called. Many rule conditions that took polynomial time on long input were
+rewritten, and three rules left the enforce
+lane after matching benign samples. Like 4.1.5, the npm package carries the
+rules without their test samples; the repository keeps them.
+
+Default behaviour that changes, and how to keep the old one:
+
+- Model-decided matches are advisory. A match from a semantic rule's judge
+  that its own pattern fallback does not corroborate, from the embedding
+  module or from the semantic layer is listed in `verdict.advisory` and no
+  longer sets the verdict's outcome or dispatches more than observe-tier
+  actions. To keep the old behaviour pass `modelDecisions: 'enforce'` to
+  `ATREngine` or `computeVerdict()`, or use `--model-decisions enforce` or
+  `ATR_MODEL_DECISIONS=enforce` with `atr scan` and `atr mcp`. Integrations
+  that wire no model, including `atr guard` and the bundled adapters, see no
+  change (#720). `verdict.highestSeverity` and `highestConfidence` now
+  describe only the matches the outcome came from (read `advisorySeverity`
+  for the rest), and `atr scan --json` gives every match `decided_by` and
+  `enforced`.
+- More of what an agent sees reaches the rules. A guard registered under
+  Claude Code's PostToolUse now scans the tool's output, where it used to scan
+  the tool's input; registering it under PostToolUseFailure as well also scans
+  failed calls (#715, #721). Rules of type `context_window` and `skill_*` now
+  run on typed runtime events (#701). The OpenShell filter
+  and NemoClaw preflight adapters evaluate in the hunt lane and deny at `high`
+  and above by default (`ATR_MIN_SEVERITY`), so they can now deny on
+  ATR-2026-00070 and -01774 (high, `llm_input`/`llm_output`) and
+  ATR-2026-00157 and -02405 (critical, `tool_call`), where 4.1.5 did not. Both raise matches in
+  the hunt lane, the engine default, including on benign text (measured
+  figures under Fixed below); neither moves the enforce lane. There is no
+  switch back. An integration that blocks on PostToolUse should block on the
+  enforce lane: `atr guard --blocking --lane enforce` (or `ATR_BLOCKING=1
+  ATR_LANE=enforce`), or `lane: 'enforce'` on `ATREngine`. The guard's default
+  lane is hunt, so `--blocking` alone blocks on the hunt-lane matches above.
+- ATR-2026-00080, -00436 and -01606 moved from maturity `stable` to `test`
+  after matching benign samples in the grown corpus (#625). They still alert;
+  an integration that blocks only in the enforce lane no longer blocks on
+  them.
+- ATR-2026-00012 moved from maturity `test` to `experimental` (#683), so it
+  runs in the hunt lane only and no longer in the alert lane. ATR-2026-00233,
+  a duplicate of ATR-2026-00228, is deprecated and runs in no lane (#666).
+- `atr scan` on an MCP config file scans one event per server (#581, by
+  @ciceroyang), and on an MCP `tools/list` document, bare or in a JSON-RPC
+  response, one event per tool (#737). 4.1.5 skipped both and reported them
+  clean. Any JSON file `atr scan` reads in which no event reaches the engine
+  now exits 1, in text, `--json` and `--sarif` output alike; `events_scanned`
+  counts only events that did, beside a new `events_skipped`. A CI step that ran
+  `atr scan` on such a file and always passed may now fail, on the exit code or
+  through `--fail-on`. The GitHub Action ignores the exit code (#575) but counts
+  the new findings toward `fail-on-finding`. Scanning a directory that holds
+  only an MCP config is not fixed yet (#575).
+
+Under SPEC §10 this is a minor release: the rule format, identifier scheme and
+Match output are unchanged (matches gain an optional `decidedBy`, which §7
+allows). SPEC.md moves to 1.0.1, a [Compatible] correction of §6.4 (#699).
+SPEC §10 versions the format, not the package's defaults, and some defaults
+change above. 4.0.0 went major because every `atr guard` user lost a block
+they had by default. Here an integration that wires no model loses no block;
+one that wired a model judge and blocked on its decisions does, and one that
+blocks in the hunt lane, as `atr guard --blocking` does on PostToolUse and the
+OpenShell and NemoClaw adapters do, can gain blocks. If that describes your
+integration, apply the switches above or stay on 4.1.5.
+
+### Added
+
+- **New rules, all at maturity `test`** (hunt and alert lanes, not the
+  enforce lane): ATR-2026-02815, -02817 and -02820 (#612); -02858, -02859 and
+  -02860, technique rules for llm-guard samples lost to earlier FP repairs
+  (#668); -02855, -02861 and -02862 from the FN-mine sweeps (#650, #671);
+  -02864, -02865, -02866, -02867 and -02868 from agent-related CVEs published
+  2026-09-22 to 2026-10-21 (#730, #731).
 
 - **The category registry as Gemara catalogs, generated and published from
   here.** `spec/category-registry/gemara/` holds a vector, capability, threat
@@ -88,8 +906,56 @@ All notable changes to ATR will be documented in this file.
   `data/measurements/` time whole corpus samples (several event shapes, a
   skill scan and, when installed, an embedding pass) inside a full benchmark
   run, and are not comparable.
+- **CI re-checks the /red-team page's links against GitHub.** The page's list
+  of offensive tools and corpora moved out of the page into
+  `website/data/red-team-tools.json`. `scripts/verify-red-team-links.mjs`, run
+  by `verify-red-team-links.yml` when the list or the checker changes and
+  weekly, fails when an in-review entry's PR or issue is no longer open, an
+  in-production entry's PR is not merged, a corpus entry's link is neither a
+  merged PR nor a commit on the default branch, or the `stillPresent` file an
+  in-production or corpus entry must name no longer holds its text. It
+  reports drift, links that are gone, and lookups GitHub could not answer
+  separately, and counts none of them as a pass; a failure on main or on the schedule opens a tracking issue.
+  It would have flagged NVIDIA/garak#1676 within a week of its withdrawal on
+  2026-08-04, instead of the ten weeks it stayed listed before #688. It cannot
+  flag an open proposal nobody answers, which is why the page calls that group
+  "Open proposals". The three corpus entries linked to ATR PRs #51, #52 and
+  #53, which do not contain the rules they named; they now link to the commits
+  that added ATR-2026-00452..00456, 00500..00505 and 00510..00517, the second
+  no longer names NeMo-Guardrails as a rule source, and every figure they and
+  the page's 2026-05-12 sprint section quote now comes from a measurement file
+  or a committed re-run record. HackAPrompt is quoted per lane on its pinned
+  4,780-prompt subset, followed by its ablation reference (the same prompts
+  without the rules whose YAML names HackAPrompt), read from
+  `breakdown.in_sample_ablation` of the measurement file and called what it is,
+  an approximation of out-of-sample recall rather than an out-of-sample result;
+  the vendor-suite entry is followed by its own. The sprint's 28.6% to 66.2%
+  becomes the re-measured 28.6% to 66.0%: 66.2% could not be reproduced at the
+  sprint commits `e9efefdd` and `92c0d0fe` (66.0% at best), and the 28.6% is
+  itself in-sample. The paper is described as listed under Best Paper Awards at
+  EMNLP 2023, on gpt-3.5-turbo, FlanT5-XXL and text-davinci-003 (not
+  GPT/Claude/PaLM). The 2026-05-12 import is described as 79 of 94 samples
+  occurring verbatim in the vendor file they name. The sprint added 71 rule
+  files, not 75 (the 2.2.0 entry also counted four earlier CVE rules), and the
+  claims that the sprint's and the 2026-06 mega-scan's rules all passed the
+  quality gate with 0 benign FP are replaced by the gate re-run on 2026-10-19
+  and again on 2026-10-22 (`data/gate-reruns/2026-10-19_red-team-rule-batches.json`):
+  at 92c0d0fe, 10 of the 71 failed (own true positives) and none flagged a benign
+  SKILL.md file; at main b9d16840 on 2026-10-22, 33 of 71 and 4 of 29 fail, and
+  26 and 3 flag at least one benign sample, none of them in the enforce lane,
+  the same as at 9d74fc50 on 2026-10-19 although nine of the recorded rules
+  changed in between. Each corpus entry links its
+  measurement file.
 
 ### Changed
+
+- **Three rules left the enforce lane.** ATR-2026-00080, -00436 and -01606
+  each matched benign samples in the grown corpus and were demoted from
+  maturity `stable` to `test` (#625). ATR-2026-00233, a duplicate of another
+  rule, is deprecated (#666).
+- **Six rules follow MITRE ATLAS v2026.07.** AML.T0019 and AML.T0104, retired
+  into AML.T0115 as sub-techniques, are replaced by AML.T0115.000 and
+  AML.T0115.002 in the rules' `references.mitre_atlas` (#543).
 
 - **A match a model decided is reported, not enforced, unless the integrator
   opts in.** Three engine paths turn a model's output into a match: a semantic
@@ -221,22 +1087,75 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
-- **The threat-actor pages show NousResearch hermes-agent #9809 as closed.**
-  The three /threats pages gave the campaign's disclosure issue the status
-  OPEN from the day they were added; NousResearch had closed it as completed
-  on 2026-04-15. Recorded as erratum e-2026-10-20-actor-report-status.
-  HANDOVER.md no longer calls PR #500 open; it was closed unmerged on
-  2026-10-06.
+- **`atr scan` scans an MCP config file instead of skipping it.** The file was
+  parsed, wrapped as one event without `content` and skipped, while the
+  summary counted it as scanned, so a config that sets `NODE_OPTIONS` to a
+  `require` payload came back as no threats. Each server in the document is
+  now its own event, `events_scanned` counts what reached the engine beside
+  `events_skipped`, and a file with nothing scannable exits non-zero (#581,
+  by @ciceroyang; issue #575, where directory scans and the Action's exit
+  handling remain open).
 
-- **The integrate page gives Cisco skill-scanner PR #79's real merge time.**
-  It said #79 merged in three days ("3 days, first PR to merge"), and from
-  2026-04-07 to 2026-05-23 it also said a Cisco engineer submitted #79 and ATR
-  reviewed it; the home page told the same account until 2026-06-14. ATR's
-  maintainer opened it on 2026-04-02, and the repository's maintainers merged
-  it 21 hours later. Recorded as erratum
-  e-2026-10-20-cisco-merge-time. Two strings in `website/lib/i18n.ts` that no
-  page renders today still told the reversed account; they now say what
-  happened.
+- **Rule conditions that took polynomial time on long input were
+  rewritten.** 86 conditions in 48 rules found by the extended ReDoS gate
+  (#704), eight conditions quadratic in a long run of one character (#723),
+  and ATR-2026-00063 and -00228 (#666). The rewrites keep the language of
+  each condition, except four deliberate changes in #704:
+  ATR-2026-00446 condition 0 widens, and ATR-2026-01005 condition 1 and
+  ATR-2026-01307 conditions 0 and 1 narrow. ATR-2026-02261 condition 0
+  narrows on purpose in #723 (its back-reference no longer ties two different
+  variables), and ATR-2026-00228 condition 1 in #666 (on JSON-encoded content
+  the two labels must be on one line). Conditions still over the gate's
+  budget stay listed in `data/redos-baseline.json`.
+- **Rule false positives.** ATR-2026-00012 matched 1,817 of 14,157 benign
+  samples and now matches 150, with every match of the new version also a
+  match of the old one (#683). ATR-2026-02010 no longer matches blank or
+  whitespace-only input (#704). ATR-2026-00013 also flags apex
+  loopback-wildcard domains (CVE-2026-55096) and its IPv6 condition matches
+  IPv4-mapped obfuscation only (#732, #733).
+- **`atr scan` scans an MCP `tools/list` document, one event per tool.** A file
+  holding `{"tools": [...]}`, or the JSON-RPC response `{"jsonrpc": "2.0",
+  "result": {"tools": [...]}}`, was wrapped as one event with no content,
+  skipped, and reported as "nothing was scanned", so the usual input for a
+  tool-poisoning check reached no rule. Each tool is now an `mcp_exchange`
+  event (`src/cli/mcp-tools-document.ts`): the content is the tool definition as
+  JSON, input schema and per-parameter descriptions included, and
+  `tool_name` / `tool_description` are set from the definition. A JSON array of
+  such responses is accepted too. A document that lists no tools fails with
+  "nothing was scanned" rather than reporting clean. `mcpServers` documents and
+  event files are read as before. Tests: `tests/cli-mcp-tools-list-scan.test.ts`.
+- **A tools/list scan does not run the rules written for a tool being called.**
+  A definition defines a tool and calls none, but an `mcp_exchange` event admits
+  every rule, so call rules (ATR-2026-00099 and others, which read the called
+  tool's name and arguments) flagged every definition named `delete_*`,
+  `*_reset` or `exec*`. New engine option `toolDefinitions` (`ATREngineConfig`,
+  default false), which `atr scan` sets only for a tools/list document: a rule
+  with `agent_source.type: tool_call` then runs only if one of its conditions
+  reads `tool_description` (the test is per rule: such a rule runs with all its
+  conditions), or if its subject is the tool's identity (`TOOL_IDENTITY_RULES`
+  in `src/tool-definition-scope.ts`: ATR-2026-00060, impersonation); every other
+  rule runs as before. No rule file changes; hooks, adapters, config documents
+  and event files are unaffected. `atr scan --json` reports
+  `tool_definition_scope`, `rules_evaluated` and `rules_skipped_by_scope` (SARIF:
+  run properties) and the `tool_name` of each result, so a rule that was not run
+  does not read as a clean result. An event that also carries a `tools` array
+  is still scanned as an event. Documented in `docs/ARCHITECTURE.md` §3.2,
+  `docs/schema-spec.md` (agent_source.type) and `docs/rule-writing-guide.md`.
+  On 710 benign tool definitions from 45 official and vendor MCP servers,
+  flagged definitions go from 58 to 6 (hunt) and 57 to 5 (alert); enforce is 0
+  before and after, which says nothing here, since none of the rules involved is
+  stable. The true positives of the rules that read `tool_description` give the
+  same result with and without the scope: of 41, 39 fire (35 description texts,
+  and 4 ATR-2026-00441 code snippets through its content conditions) and 2 do
+  not (ATR-2026-00441 tool calls given as JSON with arguments, which are not
+  definitions). The 6 remaining hunt-lane false positives come from rules this
+  change does not touch: ATR-2026-01987, -00225, -00217, -00161 and -00569 (over-
+  broad conditions) and a form match of ATR-2026-00579 (experimental); see
+  `data/measurements/mcp-tools-list-benign/README.md`. The scope also costs
+  detection: a poisoned definition that only a call rule catches (for example
+  ATR-2026-00114) is missed in a tools/list scan; no malicious tool-definition
+  corpus measures this yet. Tests:
+  `tests/tool-definition-scope.test.ts`, `tests/cli-mcp-tools-list-scan.test.ts`.
 
 - **On Claude Code, the guard scans what a tool returned on PostToolUse.**
   Claude Code sends a tool's output at the top level of the PostToolUse hook
@@ -288,6 +1207,45 @@ All notable changes to ATR will be documented in this file.
   PostToolUse. Claude Code cuts a failed call's error to about 10,000
   characters; 1,117 of the benign samples are longer and were sent whole. To
   use it, register the guard under `PostToolUseFailure` too.
+
+- **Flywheel shadow rules can match.** `ShadowEvaluator` compiled each
+  condition with `new RegExp(value, 'i')`. A value that starts with `(?i)` is
+  a SyntaxError in JavaScript, the error was swallowed, and the condition
+  never matched. `RuleScaffolder` starts every pattern it writes with `(?i)`,
+  so no rule the flywheel generated could match in shadow mode or reach
+  promotion. Shadow conditions now go through the engine's own
+  `compileRegexCondition()` (leading flag group removed per SPEC §6.4, `u`
+  when needed, ReDoS gate) and `safeRegexTest()` (the engine's input-length
+  limit), and a condition whose value is not a string is skipped instead of
+  throwing. Shadow evaluation still differs from `ATREngine` in field
+  resolution, operators, `condition: all`, Unicode normalisation and
+  `agent_source` routing; those differences are unchanged.
+- **Flywheel promotion needs a reviewed true positive, and promotes a rule
+  once.** `ShadowEvaluator.getPromotionCandidates()` divided confirmed false
+  positives by all matches, so a rule with no recorded feedback had an FP rate
+  of 0 and became a candidate after its first match. Once shadow rules could
+  match (above), `FlywheelManager.promoteReady()` would have handed such rules
+  to `onPromote` with status `stable`, and the same rule again on every call.
+  A rule is now a candidate only after at least `minReviewedMatches` (new
+  `FlywheelConfig` option, default 1) matches with recorded feedback including
+  a confirmed true positive; the FP rate is computed over reviewed matches; and
+  `promoteReady()` hands each rule to `onPromote` once. A promoted rule keeps
+  `maturity: draft`.
+- **`RuleScaffolder` no longer writes a pattern that misses its own example
+  payload.** An attack indicator is chosen by a broad test and writes a
+  narrower pattern: "Ignore all previous instructions", "please ignore the
+  rules above" and "disregard everything you were told" all selected the
+  instruction-override indicator, whose pattern did not match them. An
+  indicator now counts only when its pattern matches the payload, and the
+  exact payload is used if nothing else does. Keyword patterns are now tried
+  only at line starts, `(?:^|[\n\r\u2028\u2029])(?=[^\n\r\u2028\u2029]*word)...`,
+  and exact patterns are the escaped payload without a surrounding `.*`. Both
+  match the same inputs as before, but neither is quadratic on a long
+  single-line input any more (about 7-12 seconds per pattern on 100,000
+  characters before, about a millisecond now). An empty or whitespace-only
+  example payload, which produced a pattern that matched everything, is now
+  rejected. Output of `atr scaffold` and the `atr_submit_proposal` MCP tool
+  changes accordingly.
 
 - **SPEC §6.4 corrected: SPEC.md 1.0.1 [Compatible].** A `regex` pattern
   condition matches case-insensitively whether or not it begins with `(?i)`,

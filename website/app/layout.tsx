@@ -1,26 +1,17 @@
 import type { Metadata } from "next";
-import { Inter, Inter_Tight, JetBrains_Mono, Source_Serif_4, Noto_Serif_TC } from "next/font/google";
+import { Source_Serif_4, Noto_Serif_TC } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import { loadSiteStats } from "@/lib/stats";
+import { BASE_OPEN_GRAPH, SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 const stats = loadSiteStats();
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const interTight = Inter_Tight({
-  variable: "--font-inter-tight",
-  subsets: ["latin"],
-  weight: ["400", "600", "800", "900"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-});
+// Geist for interface and headings, Geist Mono for identifiers and metadata,
+// loaded from the geist package (local files, OFL) rather than Google Fonts:
+// Turbopack fails to resolve the multi-subset Google CSS for Geist Mono, and
+// local files keep the build independent of a font CDN.
 
 // Serif for spec body — gives W3C / IETF document feel.
 // Applied via `font-spec` utility on .spec-document wrappers.
@@ -46,38 +37,22 @@ export const metadata: Metadata = {
     template: "%s | ATR",
   },
   description:
-    `Open-source detection standard for AI agent security. ${stats.ruleCount} rules, ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild, RFC-001 quality standard. MIT Licensed.`,
-  metadataBase: new URL("https://agentthreatrule.org"),
-  alternates: {
-    canonical: "https://agentthreatrule.org",
-    languages: {
-      en: "https://agentthreatrule.org/en",
-      zh: "https://agentthreatrule.org/zh",
-    },
-  },
+    `Open-source detection standard for AI agent security. ${stats.ruleCount} effective rules, ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild, RFC-001 quality standard. MIT Licensed.`,
+  metadataBase: new URL(SITE_URL),
+  // No `alternates` here: a canonical set in a layout is inherited by every
+  // page that does not set its own. Each page sets it through lib/seo.ts.
   openGraph: {
+    ...BASE_OPEN_GRAPH,
     title: "ATR - Agent Threat Rules",
     description:
-      `The open detection standard for AI agent security. ${stats.ruleCount} rules. ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. MIT Licensed.`,
-    url: "https://agentthreatrule.org",
-    siteName: "ATR - Agent Threat Rules",
-    type: "website",
+      `The open detection standard for AI agent security. ${stats.ruleCount} effective rules. ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. MIT Licensed.`,
     locale: "en_US",
-    alternateLocale: "zh_TW",
-    images: [
-      {
-        url: "https://agentthreatrule.org/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "ATR - Agent Threat Rules: The open detection standard for AI agent security",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "ATR - Agent Threat Rules",
     description:
-      `The open detection standard for AI agent security. ${stats.ruleCount} rules. ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. MIT Licensed.`,
+      `The open detection standard for AI agent security. ${stats.ruleCount} effective rules. ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. MIT Licensed.`,
     images: ["https://agentthreatrule.org/og-image.png"],
   },
   keywords: [
@@ -122,7 +97,7 @@ const jsonLd = {
       "@type": "SoftwareSourceCode",
       name: "agent-threat-rules",
       description:
-        `Open-source detection standard for AI agent security. ${stats.ruleCount} rules, ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. By default the engine runs in process, with no network or model calls.`,
+        `Open-source detection standard for AI agent security. ${stats.ruleCount} effective rules, ${stats.megaScanTotal.toLocaleString()} agent skills scanned in the wild. By default the engine runs in process, with no network or model calls.`,
       codeRepository: "https://github.com/Agent-Threat-Rule/agent-threat-rules",
       programmingLanguage: ["YAML", "TypeScript"],
       license: "https://opensource.org/licenses/MIT",
@@ -147,7 +122,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${interTight.variable} ${jetbrainsMono.variable} ${sourceSerif.variable} ${notoSerifTC.variable} h-full`}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${sourceSerif.variable} ${notoSerifTC.variable} h-full`}
     >
       <body className="min-h-full flex flex-col antialiased">
         <script

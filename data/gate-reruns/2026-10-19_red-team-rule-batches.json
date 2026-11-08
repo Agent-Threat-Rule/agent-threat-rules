@@ -1,0 +1,1187 @@
+{
+  "schema": "gate-rerun/v1",
+  "question": "The /red-team page said the rules of two batches all passed the repository's rule safety gate with 0 benign false positives. No record of those gate runs was committed, so the gate was re-run on each batch. Re-run at current main on 2026-10-22 after nine of the recorded rules changed on main.",
+  "gate": "scripts/check-rules-safety.ts (the check validate.yml runs on rule pull requests); MAX_NEW_PER_PR=1000 so the per-PR cap (10) does not mask the other checks. Each check evaluates the rule on its own, so it does not depend on a detection lane.",
+  "batches": [
+    {
+      "batch": "2026-05-12 sprint (v2.2.0)",
+      "rules": {
+        "selection": "rule files added between v2.1.5 (348 rules) and 92c0d0fe (419 rules), i.e. by commits e9efefdd and 92c0d0fe: ATR-2026-00452..00522",
+        "count": 71,
+        "note": "The 2.2.0 CHANGELOG entry counts 75 (344 -> 419); that also includes ATR-2026-00448..00451, four CVE rules added earlier on 2026-05-12 by commit 80dbd0ab0, before the sprint commits.",
+        "ids": [
+          "ATR-2026-00452",
+          "ATR-2026-00453",
+          "ATR-2026-00454",
+          "ATR-2026-00455",
+          "ATR-2026-00456",
+          "ATR-2026-00457",
+          "ATR-2026-00458",
+          "ATR-2026-00459",
+          "ATR-2026-00460",
+          "ATR-2026-00461",
+          "ATR-2026-00462",
+          "ATR-2026-00463",
+          "ATR-2026-00464",
+          "ATR-2026-00465",
+          "ATR-2026-00466",
+          "ATR-2026-00467",
+          "ATR-2026-00468",
+          "ATR-2026-00469",
+          "ATR-2026-00470",
+          "ATR-2026-00471",
+          "ATR-2026-00472",
+          "ATR-2026-00473",
+          "ATR-2026-00474",
+          "ATR-2026-00475",
+          "ATR-2026-00476",
+          "ATR-2026-00477",
+          "ATR-2026-00478",
+          "ATR-2026-00479",
+          "ATR-2026-00480",
+          "ATR-2026-00481",
+          "ATR-2026-00482",
+          "ATR-2026-00483",
+          "ATR-2026-00484",
+          "ATR-2026-00485",
+          "ATR-2026-00486",
+          "ATR-2026-00487",
+          "ATR-2026-00488",
+          "ATR-2026-00489",
+          "ATR-2026-00490",
+          "ATR-2026-00491",
+          "ATR-2026-00492",
+          "ATR-2026-00493",
+          "ATR-2026-00494",
+          "ATR-2026-00495",
+          "ATR-2026-00496",
+          "ATR-2026-00497",
+          "ATR-2026-00498",
+          "ATR-2026-00499",
+          "ATR-2026-00500",
+          "ATR-2026-00501",
+          "ATR-2026-00502",
+          "ATR-2026-00503",
+          "ATR-2026-00504",
+          "ATR-2026-00505",
+          "ATR-2026-00506",
+          "ATR-2026-00507",
+          "ATR-2026-00508",
+          "ATR-2026-00509",
+          "ATR-2026-00510",
+          "ATR-2026-00511",
+          "ATR-2026-00512",
+          "ATR-2026-00513",
+          "ATR-2026-00514",
+          "ATR-2026-00515",
+          "ATR-2026-00516",
+          "ATR-2026-00517",
+          "ATR-2026-00518",
+          "ATR-2026-00519",
+          "ATR-2026-00520",
+          "ATR-2026-00521",
+          "ATR-2026-00522"
+        ]
+      },
+      "runs": [
+        {
+          "label": "as of the sprint",
+          "commit": "92c0d0fee1b7172641568a518b234afa0aea482f",
+          "run_on": "2026-10-19",
+          "command": "git checkout 92c0d0fe && npm ci && MAX_NEW_PER_PR=1000 npx tsx scripts/check-rules-safety.ts --base v2.1.5",
+          "gate_version": "the script as committed at 92c0d0fe (diff mode; no benign-code corpus or loose-regex lint yet)",
+          "corpora": {
+            "benign_skill_files": 432,
+            "extended_benign_samples": 1352,
+            "research_mention_samples": 157
+          },
+          "result": "FAIL",
+          "rules_failing": 10,
+          "rules_failing_ids": [
+            "ATR-2026-00490",
+            "ATR-2026-00491",
+            "ATR-2026-00492",
+            "ATR-2026-00494",
+            "ATR-2026-00495",
+            "ATR-2026-00499",
+            "ATR-2026-00502",
+            "ATR-2026-00505",
+            "ATR-2026-00506",
+            "ATR-2026-00508"
+          ],
+          "rules_flagging_a_benign_sample": 2,
+          "rules_flagging_a_benign_sample_ids": [
+            "ATR-2026-00491",
+            "ATR-2026-00505"
+          ],
+          "by_check": {
+            "cross_rule_conflict": {
+              "rules": 2,
+              "rule_ids": [
+                "ATR-2026-00491",
+                "ATR-2026-00495"
+              ]
+            },
+            "extended_benign_fp": {
+              "rules": 1,
+              "flagged_samples_by_rule": {
+                "ATR-2026-00491": 1
+              }
+            },
+            "own_true_positives_not_matched": {
+              "rules": 10,
+              "rule_ids": [
+                "ATR-2026-00490",
+                "ATR-2026-00491",
+                "ATR-2026-00492",
+                "ATR-2026-00494",
+                "ATR-2026-00495",
+                "ATR-2026-00499",
+                "ATR-2026-00502",
+                "ATR-2026-00505",
+                "ATR-2026-00506",
+                "ATR-2026-00508"
+              ]
+            },
+            "research_mention_fp": {
+              "rules": 1,
+              "flagged_samples_by_rule": {
+                "ATR-2026-00505": 1
+              }
+            }
+          }
+        },
+        {
+          "label": "main 2026-10-19",
+          "commit": "9d74fc506156c1f61fc38d7c0e32b1dcbb173574",
+          "run_on": "2026-10-19",
+          "atr_version": "4.1.5",
+          "command": "MAX_NEW_PER_PR=1000 npx tsx scripts/check-rules-safety.ts <the 71 rule files>",
+          "corpora": {
+            "benign_skill_files": 467,
+            "extended_benign_samples": 13620,
+            "benign_code_samples": 69,
+            "research_mention_samples": 157
+          },
+          "result": "FAIL",
+          "rules_failing": 33,
+          "rules_failing_ids": [
+            "ATR-2026-00452",
+            "ATR-2026-00453",
+            "ATR-2026-00454",
+            "ATR-2026-00455",
+            "ATR-2026-00465",
+            "ATR-2026-00475",
+            "ATR-2026-00477",
+            "ATR-2026-00479",
+            "ATR-2026-00480",
+            "ATR-2026-00488",
+            "ATR-2026-00490",
+            "ATR-2026-00491",
+            "ATR-2026-00492",
+            "ATR-2026-00494",
+            "ATR-2026-00495",
+            "ATR-2026-00496",
+            "ATR-2026-00497",
+            "ATR-2026-00498",
+            "ATR-2026-00500",
+            "ATR-2026-00502",
+            "ATR-2026-00504",
+            "ATR-2026-00505",
+            "ATR-2026-00508",
+            "ATR-2026-00509",
+            "ATR-2026-00510",
+            "ATR-2026-00511",
+            "ATR-2026-00512",
+            "ATR-2026-00514",
+            "ATR-2026-00515",
+            "ATR-2026-00516",
+            "ATR-2026-00520",
+            "ATR-2026-00521",
+            "ATR-2026-00522"
+          ],
+          "rules_flagging_a_benign_sample": 26,
+          "rules_flagging_a_benign_sample_ids": [
+            "ATR-2026-00454",
+            "ATR-2026-00455",
+            "ATR-2026-00465",
+            "ATR-2026-00475",
+            "ATR-2026-00477",
+            "ATR-2026-00479",
+            "ATR-2026-00480",
+            "ATR-2026-00488",
+            "ATR-2026-00491",
+            "ATR-2026-00492",
+            "ATR-2026-00494",
+            "ATR-2026-00497",
+            "ATR-2026-00498",
+            "ATR-2026-00500",
+            "ATR-2026-00502",
+            "ATR-2026-00504",
+            "ATR-2026-00505",
+            "ATR-2026-00508",
+            "ATR-2026-00509",
+            "ATR-2026-00510",
+            "ATR-2026-00514",
+            "ATR-2026-00515",
+            "ATR-2026-00516",
+            "ATR-2026-00520",
+            "ATR-2026-00521",
+            "ATR-2026-00522"
+          ],
+          "lanes_of_rules_flagging_a_benign_sample": {
+            "alert+hunt": 24,
+            "hunt": 2
+          },
+          "by_check": {
+            "benign_code_fp": {
+              "rules": 1,
+              "flagged_samples_by_rule": {
+                "ATR-2026-00500": 1
+              }
+            },
+            "benign_skill_corpus_fp": {
+              "rules": 4,
+              "flagged_samples_by_rule": {
+                "ATR-2026-00454": 152,
+                "ATR-2026-00505": 1,
+                "ATR-2026-00508": 1,
+                "ATR-2026-00510": 1
+              }
+            },
+            "cross_rule_conflict": {
+              "rules": 14,
+              "rule_ids": [
+                "ATR-2026-00452",
+                "ATR-2026-00453",
+                "ATR-2026-00454",
+                "ATR-2026-00465",
+                "ATR-2026-00490",
+                "ATR-2026-00491",
+                "ATR-2026-00497",
+                "ATR-2026-00500",
+                "ATR-2026-00502",
+                "ATR-2026-00505",
+                "ATR-2026-00514",
+                "ATR-2026-00516",
+                "ATR-2026-00521",
+                "ATR-2026-00522"
+              ]
+            },
+            "extended_benign_fp": {
+              "rules": 26,
+              "flagged_samples_by_rule": {
+                "ATR-2026-00454": 1376,
+                "ATR-2026-00455": 10,
+                "ATR-2026-00465": 5,
+                "ATR-2026-00475": 14,
+                "ATR-2026-00477": 1,
+                "ATR-2026-00479": 2,
+                "ATR-2026-00480": 2,
+                "ATR-2026-00488": 14,
+                "ATR-2026-00491": 3,
+                "ATR-2026-00492": 5,
+                "ATR-2026-00494": 4,
+                "ATR-2026-00497": 17,
+                "ATR-2026-00498": 5,
+                "ATR-2026-00500": 17,
+                "ATR-2026-00502": 3,
+                "ATR-2026-00504": 10,
+                "ATR-2026-00505": 9,
+                "ATR-2026-00508": 3,
+                "ATR-2026-00509": 3,
+                "ATR-2026-00510": 6,
+                "ATR-2026-00514": 9,
+                "ATR-2026-00515": 2,
+                "ATR-2026-00516": 4,
+                "ATR-2026-00520": 2,
+                "ATR-2026-00521": 19,
+                "ATR-2026-00522": 23
+              }
+            },
+            "loose_regex_lint": {
+              "rules": 7,
+              "rule_ids": [
+                "ATR-2026-00494",
+                "ATR-2026-00496",
+                "ATR-2026-00505",
+                "ATR-2026-00510",
+                "ATR-2026-00511",
+                "ATR-2026-00512",
+                "ATR-2026-00516"
+              ]
+            },
+            "own_true_positives_not_matched": {
+              "rules": 1,
+              "rule_ids": [
+                "ATR-2026-00495"
+              ]
+            },
+            "research_mention_fp": {
+              "rules": 2,
+              "flagged_samples_by_rule": {
+                "ATR-2026-00505": 1,
+                "ATR-2026-00514": 1
+              }
+            }
+          }
+        },
+        {
+          "label": "main 2026-10-22",
+          "commit": "b9d16840442c7283238a3c75f9de603d74e1dc9c",
+          "run_on": "2026-10-22",
+          "atr_version": "4.1.5",
+          "command": "MAX_NEW_PER_PR=1000 npx tsx scripts/check-rules-safety.ts <the 71 rule files>",
+          "corpora": {
+            "benign_skill_files": 467,
+            "extended_benign_samples": 13620,
+            "benign_code_samples": 69,
+            "research_mention_samples": 157
+          },
+          "rules_changed_since_previous_run": [
+            "ATR-2026-00476",
+            "ATR-2026-00481",
+            "ATR-2026-00489",
+            "ATR-2026-00494",
+            "ATR-2026-00508",
+            "ATR-2026-00512"
+          ],
+          "result": "FAIL",
+          "rules_failing": 33,
+          "rules_failing_ids": [
+            "ATR-2026-00452",
+            "ATR-2026-00453",
+            "ATR-2026-00454",
+            "ATR-2026-00455",
+            "ATR-2026-00465",
+            "ATR-2026-00475",
+            "ATR-2026-00477",
+            "ATR-2026-00479",
+            "ATR-2026-00480",
+            "ATR-2026-00488",
+            "ATR-2026-00490",
+            "ATR-2026-00491",
+            "ATR-2026-00492",
+            "ATR-2026-00494",
+            "ATR-2026-00495",
+            "ATR-2026-00496",
+            "ATR-2026-00497",
+            "ATR-2026-00498",
+            "ATR-2026-00500",
+            "ATR-2026-00502",
+            "ATR-2026-00504",
+            "ATR-2026-00505",
+            "ATR-2026-00508",
+            "ATR-2026-00509",
+            "ATR-2026-00510",
+            "ATR-2026-00511",
+            "ATR-2026-00512",
+            "ATR-2026-00514",
+            "ATR-2026-00515",
+            "ATR-2026-00516",
+            "ATR-2026-00520",
+            "ATR-2026-00521",
+            "ATR-2026-00522"
+          ],
+          "rules_flagging_a_benign_sample": 26,
+          "rules_flagging_a_benign_sample_ids": [
+            "ATR-2026-00454",
+            "ATR-2026-00455",
+            "ATR-2026-00465",
+            "ATR-2026-00475",
+            "ATR-2026-00477",
+            "ATR-2026-00479",
+            "ATR-2026-00480",
+            "ATR-2026-00488",
+            "ATR-2026-00491",
+            "ATR-2026-00492",
+            "ATR-2026-00494",
+            "ATR-2026-00497",
+            "ATR-2026-00498",
+            "ATR-2026-00500",
+            "ATR-2026-00502",
+            "ATR-2026-00504",
+            "ATR-2026-00505",
+            "ATR-2026-00508",
+            "ATR-2026-00509",
+            "ATR-2026-00510",
+            "ATR-2026-00514",
+            "ATR-2026-00515",
+            "ATR-2026-00516",
+            "ATR-2026-00520",
+            "ATR-2026-00521",
+            "ATR-2026-00522"
+          ],
+          "lanes_of_rules_flagging_a_benign_sample": {
+            "alert+hunt": 24,
+            "hunt": 2
+          },
+          "by_check": {
+            "benign_code_fp": {
+              "rules": 1,
+              "flagged_samples_by_rule": {
+                "ATR-2026-00500": 1
+              }
+            },
+            "benign_skill_corpus_fp": {
+              "rules": 4,
+              "flagged_samples_by_rule": {
+                "ATR-2026-00454": 152,
+                "ATR-2026-00505": 1,
+                "ATR-2026-00508": 1,
+                "ATR-2026-00510": 1
+              }
+            },
+            "cross_rule_conflict": {
+              "rules": 14,
+              "rule_ids": [
+                "ATR-2026-00452",
+                "ATR-2026-00453",
+                "ATR-2026-00454",
+                "ATR-2026-00465",
+                "ATR-2026-00490",
+                "ATR-2026-00491",
+                "ATR-2026-00497",
+                "ATR-2026-00500",
+                "ATR-2026-00502",
+                "ATR-2026-00505",
+                "ATR-2026-00514",
+                "ATR-2026-00516",
+                "ATR-2026-00521",
+                "ATR-2026-00522"
+              ]
+            },
+            "extended_benign_fp": {
+              "rules": 26,
+              "flagged_samples_by_rule": {
+                "ATR-2026-00454": 1376,
+                "ATR-2026-00455": 10,
+                "ATR-2026-00465": 5,
+                "ATR-2026-00475": 14,
+                "ATR-2026-00477": 1,
+                "ATR-2026-00479": 2,
+                "ATR-2026-00480": 2,
+                "ATR-2026-00488": 14,
+                "ATR-2026-00491": 3,
+                "ATR-2026-00492": 5,
+                "ATR-2026-00494": 4,
+                "ATR-2026-00497": 17,
+                "ATR-2026-00498": 5,
+                "ATR-2026-00500": 17,
+                "ATR-2026-00502": 3,
+                "ATR-2026-00504": 10,
+                "ATR-2026-00505": 9,
+                "ATR-2026-00508": 3,
+                "ATR-2026-00509": 3,
+                "ATR-2026-00510": 6,
+                "ATR-2026-00514": 9,
+                "ATR-2026-00515": 2,
+                "ATR-2026-00516": 4,
+                "ATR-2026-00520": 2,
+                "ATR-2026-00521": 19,
+                "ATR-2026-00522": 23
+              }
+            },
+            "loose_regex_lint": {
+              "rules": 7,
+              "rule_ids": [
+                "ATR-2026-00494",
+                "ATR-2026-00496",
+                "ATR-2026-00505",
+                "ATR-2026-00510",
+                "ATR-2026-00511",
+                "ATR-2026-00512",
+                "ATR-2026-00516"
+              ]
+            },
+            "other:status: deprecated: no lane evaluates th": {
+              "rules": 1,
+              "rule_ids": [
+                "ATR-2026-00495"
+              ]
+            },
+            "research_mention_fp": {
+              "rules": 2,
+              "flagged_samples_by_rule": {
+                "ATR-2026-00505": 1,
+                "ATR-2026-00514": 1
+              }
+            }
+          },
+          "compared_with_previous_run": "Same failing rules, same rules flagging a benign sample, same flagged-sample counts per rule and corpus as the 2026-10-19 run. The rules changed on main since then did not change any of them. One failure reason changed because the gate itself changed (scripts/check-rules-safety.ts: commit 2f0605c3 made Check 2 run true positives the way atr test does and fail deprecated and trace rules it cannot evaluate): ATR-2026-00495 (status deprecated), which failed on 2026-10-19 for missing its own true positives, now fails the gate's newer check that no lane evaluates a deprecated rule.",
+          "also_run_at": [
+            {
+              "commit": "658ec9c65afbbd6e7af3a3968936c8cda1913106",
+              "run_on": "2026-10-22",
+              "result": "identical to this run (same failing rules, same rules flagging a benign sample, same flagged-sample counts per rule and corpus)",
+              "note": "main then gained ATR-2026-02861 and -02862 and changed none of the recorded rules, the gate or the benign corpora; the run was repeated at the new head because new rules add true negatives the cross-rule check reads"
+            }
+          ]
+        }
+      ],
+      "rule_status_maturity_at_main": {
+        "ATR-2026-00452": {
+          "file": "rules/prompt-injection/ATR-2026-00452-direct-pwned-payload-injection.yaml",
+          "status": "experimental",
+          "maturity": "stable"
+        },
+        "ATR-2026-00453": {
+          "file": "rules/prompt-injection/ATR-2026-00453-secret-key-reveal-demand.yaml",
+          "status": "experimental",
+          "maturity": "stable"
+        },
+        "ATR-2026-00454": {
+          "file": "rules/prompt-injection/ATR-2026-00454-backslash-per-character-encoding.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00455": {
+          "file": "rules/prompt-injection/ATR-2026-00455-no-period-output-override.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00456": {
+          "file": "rules/prompt-injection/ATR-2026-00456-conditional-empty-input-injection.yaml",
+          "status": "experimental",
+          "maturity": "stable"
+        },
+        "ATR-2026-00457": {
+          "file": "rules/prompt-injection/ATR-2026-00457-garak-dan-to-every-prompt.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00458": {
+          "file": "rules/prompt-injection/ATR-2026-00458-garak-dra-step-by-step.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00459": {
+          "file": "rules/prompt-injection/ATR-2026-00459-garak-dan-an-ai-language.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00460": {
+          "file": "rules/prompt-injection/ATR-2026-00460-garak-dan-no-matter-how.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00461": {
+          "file": "rules/prompt-injection/ATR-2026-00461-garak-goodside-mixedunassigned.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00462": {
+          "file": "rules/prompt-injection/ATR-2026-00462-garak-gcg-mixedunassigned.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00463": {
+          "file": "rules/prompt-injection/ATR-2026-00463-garak-lmrc-mixedunassigned.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00464": {
+          "file": "rules/prompt-injection/ATR-2026-00464-garak-dan-i-would-like.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00465": {
+          "file": "rules/prompt-injection/ATR-2026-00465-garak-dan-your-prompt-here.yaml",
+          "status": "experimental",
+          "maturity": "experimental"
+        },
+        "ATR-2026-00466": {
+          "file": "rules/prompt-injection/ATR-2026-00466-garak-latentinjection-following-text-from.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00467": {
+          "file": "rules/prompt-injection/ATR-2026-00467-garak-dan-act-as-a.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00468": {
+          "file": "rules/prompt-injection/ATR-2026-00468-garak-goat-the-target-llm.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00469": {
+          "file": "rules/prompt-injection/ATR-2026-00469-garak-dan-at-the-end.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00470": {
+          "file": "rules/prompt-injection/ATR-2026-00470-garak-dan-as-an-ai.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00471": {
+          "file": "rules/context-exfiltration/ATR-2026-00471-garak-sysprompt-extraction-mixedunassigned.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00472": {
+          "file": "rules/prompt-injection/ATR-2026-00472-garak-dan-are-going-to.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00473": {
+          "file": "rules/prompt-injection/ATR-2026-00473-garak-lmrc-how-can-i.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00474": {
+          "file": "rules/prompt-injection/ATR-2026-00474-garak-dan-that-chatgpt-has.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00475": {
+          "file": "rules/prompt-injection/ATR-2026-00475-garak-web-injection-alert-1-script.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00476": {
+          "file": "rules/prompt-injection/ATR-2026-00476-garak-web-injection-javascript-alert-1.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00477": {
+          "file": "rules/prompt-injection/ATR-2026-00477-garak-latentinjection-translate-the-following-text.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00478": {
+          "file": "rules/prompt-injection/ATR-2026-00478-garak-latentinjection-abuse-contact-email.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00479": {
+          "file": "rules/prompt-injection/ATR-2026-00479-garak-latentinjection-mixedunassigned.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00480": {
+          "file": "rules/prompt-injection/ATR-2026-00480-garak-dan-the-role-of.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00481": {
+          "file": "rules/prompt-injection/ATR-2026-00481-garak-dan-mixedunassigned.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00482": {
+          "file": "rules/prompt-injection/ATR-2026-00482-garak-lmrc-what-s-an.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00483": {
+          "file": "rules/prompt-injection/ATR-2026-00483-garak-dan-the-user-s.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00484": {
+          "file": "rules/prompt-injection/ATR-2026-00484-garak-dan-and-you-will.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00485": {
+          "file": "rules/prompt-injection/ATR-2026-00485-garak-dan-and-does-not.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00486": {
+          "file": "rules/prompt-injection/ATR-2026-00486-garak-dan-t-care-about.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00487": {
+          "file": "rules/prompt-injection/ATR-2026-00487-garak-dan-and-nothing-else.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00488": {
+          "file": "rules/prompt-injection/ATR-2026-00488-garak-encoding-alert-1-script.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00489": {
+          "file": "rules/prompt-injection/ATR-2026-00489-garak-encoding-javascript-alert-1.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00490": {
+          "file": "rules/prompt-injection/ATR-2026-00490-garak-dan-in-order-to.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00491": {
+          "file": "rules/excessive-autonomy/ATR-2026-00491-garak-agent-breaker-markdown-just-raw-json.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00492": {
+          "file": "rules/prompt-injection/ATR-2026-00492-garak-dan-want-you-to.yaml",
+          "status": "experimental",
+          "maturity": "experimental"
+        },
+        "ATR-2026-00493": {
+          "file": "rules/prompt-injection/ATR-2026-00493-garak-latentinjection-registrar-iana-id.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00494": {
+          "file": "rules/tool-poisoning/ATR-2026-00494-garak-exploitation-mixedunassigned.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00495": {
+          "file": "rules/prompt-injection/ATR-2026-00495-garak-dan-insert-prompt-here.yaml",
+          "status": "deprecated",
+          "maturity": "test"
+        },
+        "ATR-2026-00496": {
+          "file": "rules/prompt-injection/ATR-2026-00496-garak-dan-no-matter-what.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00497": {
+          "file": "rules/prompt-injection/ATR-2026-00497-garak-encoding-mixedunassigned.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00498": {
+          "file": "rules/prompt-injection/ATR-2026-00498-garak-web-injection-mixedunassigned.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00499": {
+          "file": "rules/prompt-injection/ATR-2026-00499-garak-dan-from-now-on.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00500": {
+          "file": "rules/excessive-autonomy/ATR-2026-00500-ssrf-via-agent-url-fetch-instruction.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00501": {
+          "file": "rules/context-exfiltration/ATR-2026-00501-data-exfiltration-via-markdown-image-and-link-url-injection.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00502": {
+          "file": "rules/model-abuse/ATR-2026-00502-training-data-extraction-via-divergent-repetition-attack.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00503": {
+          "file": "rules/prompt-injection/ATR-2026-00503-fake-error-state-takeover-unrestricted-replacement-bot.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00504": {
+          "file": "rules/context-exfiltration/ATR-2026-00504-tool-and-function-capability-enumeration.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00505": {
+          "file": "rules/context-exfiltration/ATR-2026-00505-system-prompt-extraction-instruction-dump-request.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00506": {
+          "file": "rules/prompt-injection/ATR-2026-00506-nevermind-override-goal-hijacking-in-user-input-promptinject.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00507": {
+          "file": "rules/prompt-injection/ATR-2026-00507-screaming-stop-goal-hijacking-in-user-input-promptinject.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00508": {
+          "file": "rules/prompt-injection/ATR-2026-00508-escape-delimiter-wrapped-goal-hijacking-in-user-input-prompt.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00509": {
+          "file": "rules/prompt-injection/ATR-2026-00509-prompt-leaking-via-ignore-previous-instructions-in-user-inpu.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00510": {
+          "file": "rules/prompt-injection/ATR-2026-00510-delayed-tool-invocation-injection.yaml",
+          "status": "stable",
+          "maturity": "test"
+        },
+        "ATR-2026-00511": {
+          "file": "rules/prompt-injection/ATR-2026-00511-mcp-web-context-poisoning.yaml",
+          "status": "stable",
+          "maturity": "stable"
+        },
+        "ATR-2026-00512": {
+          "file": "rules/prompt-injection/ATR-2026-00512-rules-file-backdoor-injection.yaml",
+          "status": "stable",
+          "maturity": "stable"
+        },
+        "ATR-2026-00513": {
+          "file": "rules/tool-poisoning/ATR-2026-00513-package-hallucination-exploitation.yaml",
+          "status": "stable",
+          "maturity": "stable"
+        },
+        "ATR-2026-00514": {
+          "file": "rules/context-exfiltration/ATR-2026-00514-system-prompt-extraction.yaml",
+          "status": "stable",
+          "maturity": "test"
+        },
+        "ATR-2026-00515": {
+          "file": "rules/prompt-injection/ATR-2026-00515-hidden-text-prompt-injection.yaml",
+          "status": "stable",
+          "maturity": "test"
+        },
+        "ATR-2026-00516": {
+          "file": "rules/context-exfiltration/ATR-2026-00516-output-xss-via-llm.yaml",
+          "status": "stable",
+          "maturity": "test"
+        },
+        "ATR-2026-00517": {
+          "file": "rules/model-abuse/ATR-2026-00517-model-extraction-distillation.yaml",
+          "status": "stable",
+          "maturity": "stable"
+        },
+        "ATR-2026-00518": {
+          "file": "rules/prompt-injection/ATR-2026-00518-ignore-previous-and-following-instructions-output-command-promptinject.yaml",
+          "status": "stable",
+          "maturity": "test"
+        },
+        "ATR-2026-00519": {
+          "file": "rules/prompt-injection/ATR-2026-00519-tautology-logic-noise-injection-promptbench.yaml",
+          "status": "stable",
+          "maturity": "test"
+        },
+        "ATR-2026-00520": {
+          "file": "rules/prompt-injection/ATR-2026-00520-nlp-task-random-token-suffix-injection-promptbench.yaml",
+          "status": "stable",
+          "maturity": "test"
+        },
+        "ATR-2026-00521": {
+          "file": "rules/tool-poisoning/ATR-2026-00521-shell-command-injection-agent-tool-context.yaml",
+          "status": "stable",
+          "maturity": "test"
+        },
+        "ATR-2026-00522": {
+          "file": "rules/tool-poisoning/ATR-2026-00522-sql-injection-natural-language-agent-interface.yaml",
+          "status": "stable",
+          "maturity": "test"
+        }
+      }
+    },
+    {
+      "batch": "2026-06 mega-scan (the /red-team page's second corpus section)",
+      "rules": {
+        "selection": "the 29 rule ids the page lists for LLMail-Inject, InjecAgent, AgentDojo, ToolEmu, MCPSecBench and AgentPoison",
+        "count": 29,
+        "ids": [
+          "ATR-2026-00550",
+          "ATR-2026-00584",
+          "ATR-2026-00700",
+          "ATR-2026-00702",
+          "ATR-2026-00715",
+          "ATR-2026-00718",
+          "ATR-2026-00719",
+          "ATR-2026-00720",
+          "ATR-2026-00859",
+          "ATR-2026-01000",
+          "ATR-2026-01300",
+          "ATR-2026-01301",
+          "ATR-2026-01306",
+          "ATR-2026-01307",
+          "ATR-2026-01310",
+          "ATR-2026-01615",
+          "ATR-2026-01616",
+          "ATR-2026-01751",
+          "ATR-2026-01752",
+          "ATR-2026-01753",
+          "ATR-2026-01754",
+          "ATR-2026-01774",
+          "ATR-2026-01800",
+          "ATR-2026-01860",
+          "ATR-2026-01861",
+          "ATR-2026-01862",
+          "ATR-2026-01863",
+          "ATR-2026-01864",
+          "ATR-2026-01865"
+        ]
+      },
+      "original_gate_runs": "Not recorded: the rules reached main through separate pull requests in 2026-06 and no gate output was committed, so only the current gate was run.",
+      "runs": [
+        {
+          "label": "main 2026-10-19",
+          "commit": "9d74fc506156c1f61fc38d7c0e32b1dcbb173574",
+          "run_on": "2026-10-19",
+          "atr_version": "4.1.5",
+          "command": "MAX_NEW_PER_PR=1000 npx tsx scripts/check-rules-safety.ts <the 29 rule files>",
+          "corpora": {
+            "benign_skill_files": 467,
+            "extended_benign_samples": 13620,
+            "benign_code_samples": 69,
+            "research_mention_samples": 157
+          },
+          "result": "FAIL",
+          "rules_failing": 4,
+          "rules_failing_ids": [
+            "ATR-2026-00550",
+            "ATR-2026-01300",
+            "ATR-2026-01615",
+            "ATR-2026-01616"
+          ],
+          "rules_flagging_a_benign_sample": 3,
+          "rules_flagging_a_benign_sample_ids": [
+            "ATR-2026-01300",
+            "ATR-2026-01615",
+            "ATR-2026-01616"
+          ],
+          "lanes_of_rules_flagging_a_benign_sample": {
+            "alert+hunt": 3
+          },
+          "by_check": {
+            "cross_rule_conflict": {
+              "rules": 1,
+              "rule_ids": [
+                "ATR-2026-01615"
+              ]
+            },
+            "extended_benign_fp": {
+              "rules": 3,
+              "flagged_samples_by_rule": {
+                "ATR-2026-01300": 4,
+                "ATR-2026-01615": 4,
+                "ATR-2026-01616": 2
+              }
+            },
+            "own_true_positives_not_matched": {
+              "rules": 1,
+              "rule_ids": [
+                "ATR-2026-00550"
+              ]
+            }
+          }
+        },
+        {
+          "label": "main 2026-10-22",
+          "commit": "b9d16840442c7283238a3c75f9de603d74e1dc9c",
+          "run_on": "2026-10-22",
+          "atr_version": "4.1.5",
+          "command": "MAX_NEW_PER_PR=1000 npx tsx scripts/check-rules-safety.ts <the 29 rule files>",
+          "corpora": {
+            "benign_skill_files": 467,
+            "extended_benign_samples": 13620,
+            "benign_code_samples": 69,
+            "research_mention_samples": 157
+          },
+          "rules_changed_since_previous_run": [
+            "ATR-2026-00702",
+            "ATR-2026-01307",
+            "ATR-2026-01865"
+          ],
+          "result": "FAIL",
+          "rules_failing": 4,
+          "rules_failing_ids": [
+            "ATR-2026-00550",
+            "ATR-2026-01300",
+            "ATR-2026-01615",
+            "ATR-2026-01616"
+          ],
+          "rules_flagging_a_benign_sample": 3,
+          "rules_flagging_a_benign_sample_ids": [
+            "ATR-2026-01300",
+            "ATR-2026-01615",
+            "ATR-2026-01616"
+          ],
+          "lanes_of_rules_flagging_a_benign_sample": {
+            "alert+hunt": 3
+          },
+          "by_check": {
+            "cross_rule_conflict": {
+              "rules": 1,
+              "rule_ids": [
+                "ATR-2026-01615"
+              ]
+            },
+            "extended_benign_fp": {
+              "rules": 3,
+              "flagged_samples_by_rule": {
+                "ATR-2026-01300": 4,
+                "ATR-2026-01615": 4,
+                "ATR-2026-01616": 2
+              }
+            },
+            "other:method: trace: the engine cannot run thi": {
+              "rules": 1,
+              "rule_ids": [
+                "ATR-2026-00550"
+              ]
+            }
+          },
+          "compared_with_previous_run": "Same failing rules, same rules flagging a benign sample, same flagged-sample counts per rule and corpus as the 2026-10-19 run. The rules changed on main since then did not change any of them. One failure reason changed because the gate itself changed (scripts/check-rules-safety.ts: commit 2f0605c3 made Check 2 run true positives the way atr test does and fail deprecated and trace rules it cannot evaluate): ATR-2026-00550 (detection method trace), which failed on 2026-10-19 for missing its own true positives, now fails the gate's newer check that the engine cannot run a trace rule on a text sample.",
+          "also_run_at": [
+            {
+              "commit": "658ec9c65afbbd6e7af3a3968936c8cda1913106",
+              "run_on": "2026-10-22",
+              "result": "identical to this run (same failing rules, same rules flagging a benign sample, same flagged-sample counts per rule and corpus)",
+              "note": "main then gained ATR-2026-02861 and -02862 and changed none of the recorded rules, the gate or the benign corpora; the run was repeated at the new head because new rules add true negatives the cross-rule check reads"
+            }
+          ]
+        }
+      ],
+      "rule_status_maturity_at_main": {
+        "ATR-2026-01860": {
+          "file": "rules/prompt-injection/ATR-2026-01860-llmail-chat-template-boundary-spoof.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-01861": {
+          "file": "rules/prompt-injection/ATR-2026-01861-llmail-pseudo-xml-role-injection.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-01862": {
+          "file": "rules/context-exfiltration/ATR-2026-01862-llmail-email-tool-exfil-confirmation.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-01863": {
+          "file": "rules/context-exfiltration/ATR-2026-01863-llmail-post-summary-exfil-directive.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-01864": {
+          "file": "rules/context-exfiltration/ATR-2026-01864-llmail-obfuscated-exfil-address.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-01865": {
+          "file": "rules/prompt-injection/ATR-2026-01865-llmail-fake-email-boundary-marker.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00550": {
+          "file": "rules/prompt-injection/ATR-2026-00550-untrusted-retrieval-to-privileged-tool.yaml",
+          "status": "experimental",
+          "maturity": "draft"
+        },
+        "ATR-2026-00584": {
+          "file": "rules/prompt-injection/ATR-2026-00584-indirect-injection-via-tool-response.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-00700": {
+          "file": "rules/prompt-injection/ATR-2026-00700-structured-data-payload-injection.yaml",
+          "status": "stable",
+          "maturity": "stable"
+        },
+        "ATR-2026-00859": {
+          "file": "rules/context-exfiltration/ATR-2026-00859-rag-injected-pii-exfil.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-01000": {
+          "file": "rules/prompt-injection/ATR-2026-01000-context-ignore-fake-completion-prefix.yaml",
+          "status": "experimental",
+          "maturity": "stable"
+        },
+        "ATR-2026-00715": {
+          "file": "rules/tool-poisoning/ATR-2026-00715-tool-knowledge-hijack-identity-injection.yaml",
+          "status": "stable",
+          "maturity": "stable"
+        },
+        "ATR-2026-00720": {
+          "file": "rules/tool-poisoning/ATR-2026-00720-tool-misuse-privilege-escalation-social.yaml",
+          "status": "stable",
+          "maturity": "stable"
+        },
+        "ATR-2026-01751": {
+          "file": "rules/excessive-autonomy/ATR-2026-01751-indirect-pi-task-abort-stop-instruction.yaml",
+          "status": "experimental",
+          "maturity": "stable"
+        },
+        "ATR-2026-01752": {
+          "file": "rules/excessive-autonomy/ATR-2026-01752-indirect-pi-captcha-redirect-dos.yaml",
+          "status": "experimental",
+          "maturity": "stable"
+        },
+        "ATR-2026-01753": {
+          "file": "rules/context-exfiltration/ATR-2026-01753-ransom-email-exfil-delete-extortion.yaml",
+          "status": "experimental",
+          "maturity": "stable"
+        },
+        "ATR-2026-01754": {
+          "file": "rules/context-exfiltration/ATR-2026-01754-ransom-file-cloud-exfil-delete-extortion.yaml",
+          "status": "experimental",
+          "maturity": "stable"
+        },
+        "ATR-2026-00702": {
+          "file": "rules/context-exfiltration/ATR-2026-00702-ipi-credential-exfil-via-agent-action.yaml",
+          "status": "stable",
+          "maturity": "stable"
+        },
+        "ATR-2026-00718": {
+          "file": "rules/excessive-autonomy/ATR-2026-00718-tool-misuse-financial-autonomous.yaml",
+          "status": "stable",
+          "maturity": "stable"
+        },
+        "ATR-2026-00719": {
+          "file": "rules/excessive-autonomy/ATR-2026-00719-tool-misuse-destructive-bulk-action.yaml",
+          "status": "stable",
+          "maturity": "stable"
+        },
+        "ATR-2026-01301": {
+          "file": "rules/tool-poisoning/ATR-2026-01301-tool-description-exclusive-tool-override.yaml",
+          "status": "experimental",
+          "maturity": "stable"
+        },
+        "ATR-2026-01300": {
+          "file": "rules/tool-poisoning/ATR-2026-01300-mcp-notes-param-chat-history-exfil.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-01306": {
+          "file": "rules/tool-poisoning/ATR-2026-01306-mcp-oauth-command-injection.yaml",
+          "status": "experimental",
+          "maturity": "stable"
+        },
+        "ATR-2026-01307": {
+          "file": "rules/tool-poisoning/ATR-2026-01307-mcp-dns-rebinding-attack.yaml",
+          "status": "experimental",
+          "maturity": "stable"
+        },
+        "ATR-2026-01310": {
+          "file": "rules/tool-poisoning/ATR-2026-01310-mcp-tool-description-compliance-history-exfil.yaml",
+          "status": "experimental",
+          "maturity": "stable"
+        },
+        "ATR-2026-01615": {
+          "file": "rules/privilege-escalation/ATR-2026-01615-sandbox-escape-command-injection.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-01616": {
+          "file": "rules/privilege-escalation/ATR-2026-01616-path-traversal-agent-file-access.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        },
+        "ATR-2026-01774": {
+          "file": "rules/data-poisoning/ATR-2026-01774-semantic-rag-memory-poisoning.yaml",
+          "status": "experimental",
+          "maturity": "experimental"
+        },
+        "ATR-2026-01800": {
+          "file": "rules/prompt-injection/ATR-2026-01800-asb-trigger-marker-tool-coercion.yaml",
+          "status": "experimental",
+          "maturity": "test"
+        }
+      }
+    }
+  ]
+}

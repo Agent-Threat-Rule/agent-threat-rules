@@ -16,6 +16,7 @@
 // ── Core Detection Layer (stable API) ───────────────────────────
 export { ATREngine } from './engine.js';
 export type { ATREngineConfig, ATRReporter, ATRDetectionReport, ATRCleanReport } from './engine.js';
+export { appliesToToolDefinition, TOOL_IDENTITY_RULES } from './tool-definition-scope.js';
 export { createTCReporter } from './tc-reporter.js';
 export type { TCReporterConfig } from './tc-reporter.js';
 export { loadRuleFile, loadRulesFromDirectory, validateRule } from './loader.js';
