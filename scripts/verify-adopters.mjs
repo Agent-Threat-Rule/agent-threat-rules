@@ -13,7 +13,9 @@
  *   - any       + evidence issue -> issue must be OPEN (conversation alive)
  *   - any       + plain link     -> URL must resolve (HTTP < 400)
  * and a Still-present assertion ('<path> contains "<text>"') must hold on the
- * default branch of the repository the first PR or issue link names.
+ * default branch of the repository the first GitHub link names (a PR, an
+ * issue, a commit or a file). A github.com link written with http:// is read
+ * as the https:// link it redirects to.
  *
  * GitHub is asked through scripts/lib/github-link-state.mjs: a rate limit, a
  * 5xx or a network error is retried, and every request times out. A failed
@@ -130,6 +132,26 @@ async function checkReachable(url, { fetchImpl, sleep, retries }) {
   return observed;
 }
 
+const GITHUB_HTTP = /^http:\/\/(www\.)?github\.com\//i;
+
+/** A github.com link as https://, the form classifyLink reads; any other URL unchanged. */
+function asHttps(url) {
+  return url.replace(GITHUB_HTTP, 'https://github.com/');
+}
+
+/** { owner, repo } of a github.com link with any path, or null. */
+function githubRepo(url) {
+  let parsed;
+  try {
+    parsed = new URL(asHttps(url));
+  } catch {
+    return null;
+  }
+  if (parsed.protocol !== 'https:' || parsed.hostname.toLowerCase().replace(/^www\./, '') !== 'github.com') return null;
+  const [owner, repo] = parsed.pathname.split('/').filter(Boolean);
+  return owner && repo ? { owner, repo } : null;
+}
+
 /** The state a link must be in for the declared status, or null when none can hold. */
 function expectedState(kind, declared) {
   if (kind === 'pr') return { shipped: 'merged', 'in-review': 'open' }[declared] ?? null;
@@ -137,7 +159,7 @@ function expectedState(kind, declared) {
 }
 
 async function checkUrl(url, declared, opts) {
-  const link = classifyLink(url);
+  const link = classifyLink(asHttps(url));
   const kind = link.kind === 'pr' || link.kind === 'issue' ? link.kind : 'link';
   const observed = kind === 'link' ? await checkReachable(url, opts) : await fetchState(link, opts);
   return { url, kind, observed, expected: expectedState(kind, declared) };
@@ -153,11 +175,15 @@ function checkFailure(check) {
   return check.expected === null ? 'drift' : failureKind(check.observed);
 }
 
-/** 'present' | 'absent' | 'path-missing' | 'unparsable', or an error string when GitHub could not be asked. */
-async function checkStillPresent(link, spec, opts) {
+/**
+ * 'present' | 'absent' | 'path-missing' | 'unparsable' (not '<path> contains
+ * "<text>"', or a path that leaves the repository), or an error string when
+ * GitHub could not be asked.
+ */
+async function checkStillPresent(repo, spec, opts) {
   const m = /^(\S+)\s+contains\s+"(.+)"\s*$/.exec(spec.trim());
-  if (!m) return 'unparsable';
-  const { text, error } = await fetchFileText(link.owner, link.repo, m[1], opts);
+  if (!m || m[1].split('/').some((s) => s === '' || s === '.' || s === '..')) return 'unparsable';
+  const { text, error } = await fetchFileText(repo.owner, repo.repo, m[1], opts);
   if (error === 'api-404' || error === 'api-410' || error === 'not-a-file') return 'path-missing';
   if (error) return error;
   return text.includes(m[2]) ? 'present' : 'absent';
@@ -165,19 +191,24 @@ async function checkStillPresent(link, spec, opts) {
 
 function contentFailure(content) {
   if (content === null || content === 'present') return null;
-  return ['absent', 'path-missing', 'unparsable'].includes(content) ? 'drift' : 'unverified';
+  return ['absent', 'path-missing', 'unparsable', 'no-repository'].includes(content) ? 'drift' : 'unverified';
+}
+
+/** The check that decided an entry's failure (the first of that kind), else the first failing check, else the first. */
+function decisiveCheck(checks, failure) {
+  return checks.find((c) => failure !== null && checkFailure(c) === failure) ?? checks.find((c) => checkFailure(c) !== null) ?? checks[0];
 }
 
 async function verifyEntry(entry, opts) {
   let checks = [];
   for (const url of entry.evidenceUrls) checks = [...checks, await checkUrl(url, entry.status, opts)];
-  const repoLink = entry.evidenceUrls.map(classifyLink).find((l) => l.kind === 'pr' || l.kind === 'issue');
-  const content = entry.stillPresent && repoLink ? await checkStillPresent(repoLink, entry.stillPresent, opts) : null;
+  const repo = entry.evidenceUrls.map(githubRepo).find((r) => r !== null) ?? null;
+  const content = !entry.stillPresent ? null : repo === null ? 'no-repository' : await checkStillPresent(repo, entry.stillPresent, opts);
   const failures = [...checks.map(checkFailure), contentFailure(content)];
   // A definite finding (drift, then gone) outranks a question GitHub did not answer.
   const found = ['drift', 'gone', 'unverified'].find((kind) => failures.includes(kind)) ?? null;
   const failure = checks.length === 0 ? 'drift' : found;
-  const shown = checks.find((c) => checkFailure(c) !== null) ?? checks[0];
+  const shown = decisiveCheck(checks, failure);
   return {
     name: entry.name,
     tier: entry.tier,
@@ -221,7 +252,7 @@ export function summarize(results, today) {
       declared: r.declared,
       observed: r.observed,
       content: r.content,
-      evidence: (r.checks.find((c) => checkFailure(c) !== null) ?? r.checks[0])?.url ?? r.evidence,
+      evidence: decisiveCheck(r.checks, r.failure)?.url ?? r.evidence,
       failure: r.failure,
     })),
     results,
@@ -232,6 +263,18 @@ function reportLine(r) {
   const tag = { drift: '[DRIFT]', gone: '[GONE]', unverified: '[UNVERIFIED]' }[r.failure] ?? '[ok]';
   const content = r.content === null ? ' [no content assertion]' : ` [content ${r.content}]`;
   return `${tag.padEnd(12)} ${r.name} — declared ${r.declared}, observed ${r.observed} (${r.kind})${content}`;
+}
+
+function reportUnverified(unverified) {
+  console.error(`\n${unverified.length} entries could not be verified, so nothing was written:`);
+  for (const r of unverified) {
+    const check = r.checks.find((c) => checkFailure(c) === 'unverified');
+    console.error(`  ${r.name}: ${check ? check.observed : `content ${r.content}`}`);
+  }
+  console.error(
+    'A rate limit, a 5xx or a network error passes on a re-run (with GITHUB_TOKEN set; api-401 means the token was rejected). ' +
+      'A page that refuses automated requests (http-401, http-403) or a file GitHub will not inline (bad-response) will not pass on a re-run: point that entry at a link the check can read.',
+  );
 }
 
 /** options: adoptersPath, outPath, today (YYYY-MM-DD), and verifyAdopters' options. */
@@ -245,20 +288,18 @@ export async function main(options = {}) {
     console.error(`[adopters] cannot read ${adoptersPath}: ${err instanceof Error ? err.message : err}`);
     return 1;
   }
-  const results = await verifyAdopters(parseAdopters(raw), options);
+  const entries = parseAdopters(raw);
+  const results = await verifyAdopters(entries, options);
   for (const r of results) console.log(reportLine(r));
-  const unverified = results.filter((r) => r.failure === 'unverified').map((r) => r.name);
+  const unverified = results.filter((r) => r.failure === 'unverified');
   if (unverified.length > 0) {
-    console.error(
-      `\n${unverified.length} entries could not be verified (GitHub or the page did not answer): ${unverified.join(', ')}.` +
-        ` Nothing was written. Re-run with a valid GITHUB_TOKEN; api-401 means the token itself was rejected.`,
-    );
+    reportUnverified(unverified);
     return 1;
   }
   const out = summarize(results, options.today ?? new Date().toISOString().slice(0, 10));
   writeFileSync(outPath, `${JSON.stringify(out, null, 2)}\n`);
   console.log(`\nwrote ${outPath} — ${out.ok}/${out.total} verified, ${out.drift.length} drift`);
-  const unasserted = results.filter((r) => r.content === null).length;
+  const unasserted = entries.filter((e) => !e.stillPresent).length;
   if (unasserted > 0) {
     console.log(`${unasserted} entries have no Still-present assertion — a merged PR is all that backs them.`);
   }

@@ -18,6 +18,8 @@ on:
     paths:
       - 'ADOPTERS.md'
       - 'scripts/verify-adopters.mjs'
+      - 'scripts/lib/github-link-state.mjs'
+      - 'scripts/lib/adopters-evidence.mjs'
       - '.github/workflows/verify-adopters.yml'
 
 permissions:
@@ -136,12 +138,15 @@ jobs:
           set -euo pipefail
           title="ADOPTERS.md evidence no longer matches GitHub"
           if [ "$VERIFY_OUTCOME" != "success" ]; then
-            # Nothing was written, so the data file is the last committed one.
+            # Nothing was written, so the data file is the last committed one;
+            # what this run found is in its report.
             report="$(cat "$RUNNER_TEMP/verify-adopters.txt" 2>/dev/null || true)"
+            findings="$(printf '%s\n' "$report" | grep -E '^\[(DRIFT|GONE)\]' || true)"
             found="$(printf '%s\n' \
-              "none listed: the verification did not finish (${VERIFY_OUTCOME}), so nothing was written." \
-              "An UNVERIFIED entry is one GitHub or its page did not answer (a rate limit, a 5xx, the network):" \
-              "re-run the workflow before editing ADOPTERS.md." \
+              "${findings:-none among the entries this run could check.}" \
+              "" \
+              "The verification did not finish (${VERIFY_OUTCOME}), so nothing was written. The report names the" \
+              "entries GitHub or their page did not answer (UNVERIFIED) and says whether a re-run can help:" \
               "" \
               '```' \
               "$report" \

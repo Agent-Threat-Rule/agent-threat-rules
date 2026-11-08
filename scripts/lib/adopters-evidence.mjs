@@ -15,9 +15,12 @@ export function firstUrl(evidence) {
   return bare ? bare[0] : undefined;
 }
 
-/** Every URL in an Evidence value, in order, once: <angle> links, [markdown](links) and bare URLs. */
+/**
+ * Every URL in an Evidence value, in order, once: <angle> links, and bare URLs,
+ * which also covers a [markdown](link) target (the URL stops at the ")").
+ */
 export function evidenceUrls(evidence) {
-  const found = [...evidence.matchAll(/<(https?:\/\/[^>\s]+)>|\]\((https?:\/\/[^)\s]+)\)|(https?:\/\/[^\s>)\]]+)/g)]
-    .map((m) => (m[1] ?? m[2] ?? m[3]).replace(/[.,;:]+$/, ''));
+  const found = [...evidence.matchAll(/<(https?:\/\/[^>\s]+)>|(https?:\/\/[^\s>)\]]+)/g)]
+    .map((m) => (m[1] ?? m[2]).replace(/[.,;:]+$/, ''));
   return [...new Set(found)];
 }

@@ -102,11 +102,6 @@ async function getJson(path, { fetchImpl, sleep, retries, token }) {
   return { error };
 }
 
-/**
- * 'open' | 'closed' | 'merged', or an error string. An /issues/ link to a pull
- * request (GitHub redirects it) is read through the issues endpoint, which says
- * merged only in pull_request.merged_at.
- */
 /** fetchImpl, sleep, retries and token, defaulted; token from GITHUB_TOKEN unless given. */
 function resolveOptions(options) {
   return {
@@ -117,6 +112,11 @@ function resolveOptions(options) {
   };
 }
 
+/**
+ * 'open' | 'closed' | 'merged', or an error string. An /issues/ link to a pull
+ * request (GitHub redirects it) is read through the issues endpoint, which says
+ * merged only in pull_request.merged_at.
+ */
 export async function fetchState(link, options = {}) {
   if (link.kind !== 'pr' && link.kind !== 'issue') return 'unverifiable';
   const opts = resolveOptions(options);

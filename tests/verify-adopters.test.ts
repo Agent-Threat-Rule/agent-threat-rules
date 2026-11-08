@@ -14,21 +14,26 @@
  * Nothing here touches the network: GitHub is a fake fetch.
  */
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 // @ts-expect-error -- stdlib-only .mjs script, no type declarations (it runs in
 // CI without npm install, so it must not depend on the TypeScript toolchain).
-import { evidenceUrls, main, parseAdopters, verifyAdopters } from "../scripts/verify-adopters.mjs";
+import { evidenceUrls, main, parseAdopters, summarize, verifyAdopters } from "../scripts/verify-adopters.mjs";
+
+const REPO_ROOT = resolve(__dirname, "..");
 
 type Reply = { status: number; body?: unknown } | "network-error";
 
 /** GitHub's API by path, and any other URL by its full text; a list replies in turn, the last repeating. */
 function fakeWeb(routes: Record<string, Reply | Reply[]>) {
   const asked: string[] = [];
-  const impl = async (url: string) => {
+  const inits: { signal?: unknown }[] = [];
+  const impl = async (url: string, init: { signal?: unknown } = {}) => {
     const key = url.startsWith("https://api.github.com") ? url.slice("https://api.github.com".length) : url;
     asked.push(key);
+    inits.push(init);
     const route = routes[key];
     if (route === undefined) throw new Error(`unexpected request ${url}`);
     const queue = Array.isArray(route) ? route : [route];
@@ -36,7 +41,7 @@ function fakeWeb(routes: Record<string, Reply | Reply[]>) {
     if (reply === "network-error") throw new TypeError("fetch failed");
     return { ok: reply.status < 300, status: reply.status, json: async () => reply.body };
   };
-  return { impl, asked };
+  return { impl, asked, inits };
 }
 
 const NO_WAIT = { sleep: async () => undefined, token: "" };
@@ -125,10 +130,55 @@ describe("verifyAdopters", () => {
     expect(second.result).toMatchObject({ ok: false, failure: "drift", observed: "closed", evidence: "https://github.com/MISP/misp-taxonomies/pull/323" });
   });
 
-  it("reports a definite finding before an unanswered one", async () => {
+  it("reports a definite finding before an unanswered one, and shows the link that decided it", async () => {
     const text = entry("F", "<https://github.com/o/f/pull/6> and <https://github.com/o/g/pull/7>");
     const { result } = await one(text, { "/repos/o/f/pulls/6": { status: 500 }, "/repos/o/g/pulls/7": open });
+    expect(result).toMatchObject({ ok: false, failure: "drift", observed: "open" });
+    expect(summarize([result], "2026-11-08").drift[0]).toMatchObject({ failure: "drift", observed: "open", evidence: "https://github.com/o/g/pull/7" });
+  });
+
+  it("ranks drift over gone, and gone over unverified", async () => {
+    const goneAndDrift = entry("G1", "<https://github.com/o/f/pull/6> and <https://github.com/o/g/pull/7>");
+    const a = await one(goneAndDrift, { "/repos/o/f/pulls/6": { status: 404 }, "/repos/o/g/pulls/7": open });
+    expect(a.result).toMatchObject({ failure: "drift", observed: "open" });
+    const goneAndUnanswered = entry("G2", "<https://github.com/o/f/pull/6> and <https://github.com/o/g/pull/7>");
+    const b = await one(goneAndUnanswered, { "/repos/o/f/pulls/6": { status: 503 }, "/repos/o/g/pulls/7": { status: 404 } });
+    expect(b.result).toMatchObject({ failure: "gone", observed: "api-404" });
+  });
+
+  it("checks a GitHub pull request written with http:// as a pull request, not as a page", async () => {
+    // The page would answer 200 through GitHub's redirect whatever the PR's state.
+    const text = entry("P", "<http://github.com/o/r/pull/9>");
+    expect((await one(text, { "/repos/o/r/pulls/9": closed })).result).toMatchObject({ ok: false, failure: "drift", kind: "pr", observed: "closed" });
+  });
+
+  it("fails an Evidence field with no link in it", async () => {
+    const parsed = parseAdopters(adopters(entry("N", "see their documentation")));
+    const [result] = await verifyAdopters(parsed, { fetchImpl: fakeWeb({}).impl, ...NO_WAIT });
     expect(result).toMatchObject({ ok: false, failure: "drift" });
+  });
+
+  it("asserts a still-present file on an entry whose only GitHub link is a commit", async () => {
+    // xlabs-club/awesome-x-ops gives a commit; its Still-present line was never checked.
+    const commit = "https://github.com/x/y/commit/f80a9ee142b1f6698fb885c5d83bfb7e0afa43ff";
+    const text = entry("X", `<${commit}> (the commit message cites #220)`, ['- **Still-present**: README.md contains "agent-threat-rules"']);
+    const page = { [commit]: { status: 200 } };
+    expect((await one(text, { ...page, "/repos/x/y/contents/README.md": file("uses agent-threat-rules") })).result).toMatchObject({ ok: true, content: "present" });
+    expect((await one(text, { ...page, "/repos/x/y/contents/README.md": file("nothing") })).result).toMatchObject({ ok: false, failure: "drift", content: "absent" });
+  });
+
+  it("fails a Still-present line it cannot check: no GitHub repository, a path leaving it, or an unreadable form", async () => {
+    const url = "https://example.org/x";
+    const noRepo = entry("Q", `<${url}>`, ['- **Still-present**: README.md contains "ATR"']);
+    expect((await one(noRepo, { [url]: { status: 200 } })).result).toMatchObject({ ok: false, failure: "drift", content: "no-repository" });
+    const escape = entry("R", "<https://github.com/o/h/pull/8>", ['- **Still-present**: ../../users/x contains "ATR"']);
+    const escaped = await one(escape, { "/repos/o/h/pulls/8": merged });
+    expect(escaped.result).toMatchObject({ ok: false, failure: "drift", content: "unparsable" });
+    expect(escaped.asked).toEqual(["/repos/o/h/pulls/8"]);
+    const unreadable = entry("S", "<https://github.com/o/h/pull/8>", ["- **Still-present**: README.md has ATR in it"]);
+    expect((await one(unreadable, { "/repos/o/h/pulls/8": merged })).result).toMatchObject({ ok: false, failure: "drift", content: "unparsable" });
+    const directory = entry("T", "<https://github.com/o/h/pull/8>", ['- **Still-present**: src contains "ATR"']);
+    expect((await one(directory, { "/repos/o/h/pulls/8": merged, "/repos/o/h/contents/src": { status: 200, body: [{ name: "a.ts" }] } })).result).toMatchObject({ ok: false, failure: "drift", content: "path-missing" });
   });
 
   it("asserts a still-present file, and tells a missing file from an unanswered request", async () => {
@@ -148,6 +198,19 @@ describe("verifyAdopters", () => {
     expect((await one(text, { [url]: { status: 503 } })).result).toMatchObject({ ok: false, failure: "unverified" });
     expect((await one(text, { [url]: { status: 403 } })).result).toMatchObject({ ok: false, failure: "unverified" });
     expect((await one(text, { [url]: "network-error" })).result).toMatchObject({ ok: false, failure: "unverified" });
+  });
+
+  it("retries a plain link on a rate limit or a 5xx, with a timeout on every request", async () => {
+    const url = "https://example.org/adopters/atr";
+    const text = entry("H", `<${url}>`);
+    const limited = fakeWeb({ [url]: [{ status: 429 }, { status: 200 }] });
+    const [ok] = await verifyAdopters(parseAdopters(adopters(text)), { fetchImpl: limited.impl, ...NO_WAIT });
+    expect(ok).toMatchObject({ ok: true });
+    expect(limited.asked).toEqual([url, url]);
+    expect(limited.inits.every((init) => init.signal instanceof AbortSignal)).toBe(true);
+    const down = fakeWeb({ [url]: { status: 503 } });
+    await verifyAdopters(parseAdopters(adopters(text)), { fetchImpl: down.impl, ...NO_WAIT });
+    expect(down.asked).toHaveLength(3);
   });
 });
 
@@ -183,6 +246,42 @@ describe("main", () => {
     expect(out.drift).toEqual([{ name: "A", declared: "shipped", observed: "api-404", content: null, evidence: "https://github.com/o/a/pull/1", failure: "gone" }]);
   });
 
+  it("counts the entries that pass, as the site prints ok/total", async () => {
+    quiet();
+    const paths = setup([entry("A", "<https://github.com/o/a/pull/1>"), entry("B", "<https://github.com/o/b/pull/2>")].join("\n"));
+    const web = fakeWeb({ "/repos/o/a/pulls/1": merged, "/repos/o/b/pulls/2": open });
+    expect(await main({ ...paths, fetchImpl: web.impl, ...NO_WAIT, today: "2026-11-08" })).toBe(0);
+    const out = JSON.parse(readFileSync(paths.outPath, "utf8"));
+    expect(out).toMatchObject({ total: 2, ok: 1 });
+    expect(out.results.map((r: { name: string; ok: boolean }) => [r.name, r.ok])).toEqual([["A", true], ["B", false]]);
+  });
+
+  it("counts the entries without a Still-present line, not the ones it could not check", async () => {
+    const lines: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => void lines.push(a.join(" ")));
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const commit = "https://github.com/x/y/commit/abcdef1";
+    const paths = setup([entry("A", "<https://github.com/o/a/pull/1>"), entry("X", `<${commit}>`, ['- **Still-present**: README.md contains "ATR"'])].join("\n"));
+    const web = fakeWeb({ "/repos/o/a/pulls/1": merged, [commit]: { status: 200 }, "/repos/x/y/contents/README.md": file("ATR") });
+    expect(await main({ ...paths, fetchImpl: web.impl, ...NO_WAIT, today: "2026-11-08" })).toBe(0);
+    expect(lines.join("\n")).toMatch(/1 entries have no Still-present assertion/);
+  });
+
+  it("names each unverified entry and says whether a re-run can help", async () => {
+    const errors: string[] = [];
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => void errors.push(a.join(" ")));
+    const url = "https://vendor.example/docs/atr";
+    const paths = setup([entry("Vendor docs", `<${url}>`), entry("B", "<https://github.com/o/b/pull/2>")].join("\n"));
+    const web = fakeWeb({ [url]: { status: 403 }, "/repos/o/b/pulls/2": { status: 502 } });
+    expect(await main({ ...paths, fetchImpl: web.impl, ...NO_WAIT })).toBe(1);
+    const text = errors.join("\n");
+    expect(text).toMatch(/Vendor docs: http-403/);
+    expect(text).toMatch(/B: api-502/);
+    expect(text).toMatch(/re-run/);
+    expect(text).toMatch(/will not pass on a re-run/);
+  });
+
   it("writes nothing and exits 1 when GitHub could not be asked about an entry", async () => {
     quiet();
     const paths = setup([entry("A", "<https://github.com/o/a/pull/1>"), entry("B", "<https://github.com/o/b/pull/2>")].join("\n"));
@@ -198,5 +297,33 @@ describe("main", () => {
     const outPath = join(dir, "out.json");
     expect(await main({ adoptersPath: join(dir, "missing.md"), outPath, fetchImpl: fakeWeb({}).impl, ...NO_WAIT })).toBe(1);
     expect(existsSync(outPath)).toBe(false);
+  });
+});
+
+describe("running the script", () => {
+  /** The script and its libraries in a throwaway repository with no adopters: nothing to fetch. */
+  function sandboxRepo(): string {
+    const root = mkdtempSync(join(tmpdir(), "verify-adopters-run-"));
+    mkdirSync(join(root, "scripts", "lib"), { recursive: true });
+    mkdirSync(join(root, "data"));
+    copyFileSync(join(REPO_ROOT, "scripts", "verify-adopters.mjs"), join(root, "scripts", "verify-adopters.mjs"));
+    for (const lib of ["github-link-state.mjs", "adopters-evidence.mjs"]) {
+      copyFileSync(join(REPO_ROOT, "scripts", "lib", lib), join(root, "scripts", "lib", lib));
+    }
+    writeFileSync(join(root, "ADOPTERS.md"), "# ADOPTERS\n## Tier 1 — Production\n");
+    return root;
+  }
+
+  it("runs when invoked, directly or through a symlink, and writes its data file", () => {
+    const root = sandboxRepo();
+    const script = join(root, "scripts", "verify-adopters.mjs");
+    const direct = spawnSync(process.execPath, [script], { encoding: "utf8", env: { ...process.env, GITHUB_TOKEN: "" } });
+    expect(direct.status, direct.stderr).toBe(0);
+    expect(JSON.parse(readFileSync(join(root, "data", "adopters-verification.json"), "utf8"))).toMatchObject({ total: 0, ok: 0, drift: [] });
+    const link = join(mkdtempSync(join(tmpdir(), "verify-adopters-link-")), "verify.mjs");
+    symlinkSync(script, link);
+    const viaLink = spawnSync(process.execPath, [link], { encoding: "utf8", env: { ...process.env, GITHUB_TOKEN: "" } });
+    expect(viaLink.status, viaLink.stderr).toBe(0);
+    expect(viaLink.stdout).toMatch(/0\/0 verified/);
   });
 });

@@ -147,6 +147,11 @@ describe("verify-adopters.yml: runs and checkouts", () => {
   };
   const steps = doc.jobs[JOB].steps;
 
+  it("runs when the checker or a library it reads changes", () => {
+    const paths = (doc as unknown as { on: { push: { paths: string[] } } }).on.push.paths;
+    expect(paths).toEqual(expect.arrayContaining(["scripts/verify-adopters.mjs", "scripts/lib/github-link-state.mjs", "scripts/lib/adopters-evidence.mjs"]));
+  });
+
   it("runs one verification at a time per branch, so its own pushes cannot race", () => {
     expect(doc.concurrency?.group).toBe("verify-adopters-${{ github.ref }}");
     expect(doc.concurrency?.["cancel-in-progress"]).toBe(false);
@@ -199,14 +204,30 @@ describe.skipIf(!HAS_JQ)("verify-adopters.yml: failures are filed and closed", (
     // xlabs drift from 2026-10-12 to 10-19. The script writes nothing when
     // GitHub could not be asked, so the report is what the issue can show.
     const sb = sandbox("adopters-wf-", { [DATA]: drifted });
-    writeFileSync(join(sb.root, "verify-adopters.txt"), "[UNVERIFIED] Promptfoo — declared in-review, observed network-error (pr) [no content assertion]\n");
+    writeFileSync(
+      join(sb.root, "verify-adopters.txt"),
+      [
+        "[ok]         A — declared shipped, observed merged (pr) [no content assertion]",
+        "[DRIFT]      LiteLLM — declared in-review, observed merged (pr) [no content assertion]",
+        "[UNVERIFIED] Promptfoo — declared in-review, observed network-error (pr) [no content assertion]",
+      ].join("\n") + "\n",
+    );
     const res = runStep(sb, open, { GITHUB_EVENT_NAME: "push", RUN_URL: "u", VERIFY_OUTCOME: "failure" });
     expect(res.status, res.stderr).toBe(0);
     const calls = ghCalls(sb);
     expect(calls).toMatch(/issue create/);
-    expect(calls).toMatch(/the verification did not finish \(failure\), so nothing was written/);
+    // What the run did find is listed, not hidden behind the unanswered entry.
+    expect(calls).toMatch(/no longer supports:\n\[DRIFT\] +LiteLLM — declared in-review, observed merged/);
+    expect(calls).toMatch(/The verification did not finish \(failure\), so nothing was written/);
     expect(calls).toMatch(/\[UNVERIFIED\] Promptfoo — declared in-review, observed network-error/);
     expect(calls).not.toMatch(/xlabs-club/);
+  });
+
+  it("says when an unfinished run found nothing among the entries it checked", () => {
+    const sb = sandbox("adopters-wf-", { [DATA]: drifted });
+    writeFileSync(join(sb.root, "verify-adopters.txt"), "[UNVERIFIED] Promptfoo — declared in-review, observed network-error (pr)\n");
+    expect(runStep(sb, open, { GITHUB_EVENT_NAME: "push", RUN_URL: "u", VERIFY_OUTCOME: "failure" }).status).toBe(0);
+    expect(ghCalls(sb)).toMatch(/no longer supports:\nnone among the entries this run could check/);
   });
 
   it("rewrites the open issue instead of opening another", () => {

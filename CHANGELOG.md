@@ -40,12 +40,17 @@ All notable changes to ATR will be documented in this file.
   `scripts/lib/github-link-state.mjs` (retries, a timeout) and sorts each
   failure into drift, gone or unverified. When GitHub, or a linked page,
   could not be asked about an entry, it writes nothing and exits 1, so the
-  published data stays as it was and the tracking issue shows the report
-  rather than a drift list. Every evidence link of an entry is checked, not
-  only the first: MISP, AG2 and Tencent AI-Infra-Guard give two each. The
-  links are read by `scripts/lib/adopters-evidence.mjs`, shared with the
-  status-claims check, which now exempts every shipped pull request an entry
-  gives.
+  published data stays as it was; the tracking issue then lists the drift
+  the run did find and shows the report, which says whether a re-run can
+  help. Every evidence link of an entry is checked, not only the first:
+  MISP, AG2 and Tencent AI-Infra-Guard give two each. A github.com link
+  written with http:// is checked as the pull request or issue it is, not as
+  a page that answers through a redirect. A Still-present line is checked on
+  the repository of the entry's first GitHub link of any kind, so
+  xlabs-club/awesome-x-ops's (a commit link) is checked for the first time,
+  and a Still-present path that leaves the repository fails. The links are
+  read by `scripts/lib/adopters-evidence.mjs`, shared with the status-claims
+  check, which now exempts every shipped pull request an entry gives.
 - **The threat-actor pages show NousResearch hermes-agent #9809 as closed.**
   The three /threats pages gave the campaign's disclosure issue the status
   OPEN from the day they were added; NousResearch had closed it as completed
