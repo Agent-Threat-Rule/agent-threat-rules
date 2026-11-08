@@ -446,13 +446,23 @@ jobs:
           submissions that failed in the competition (correct=false) are not mined. Claude
           clusters the uncovered misses into candidate regexes. The misses are split by content
           hash: 70% are shown to the model and a candidate must recover 8 of them; 30% are never
-          shown and it must recover at least 2 of those too. Every candidate is gated against the
-          full benign corpus with the engine's own regex compile semantics and against benign
-          emails and web pages run through the engine as tool output (data/fn-mine-benign),
-          authored, self-tested on the real engine, and re-checked by
+          shown and it must recover at least 2 of those too. The held-out 30% comes from the same
+          corpus and generator, so it is not evidence the rule generalizes; for that, a candidate
+          must also recover at least one attack in a corpus it was not mined from (AgentDojo,
+          InjecAgent and the other attack corpora, data/fn-mine-oos and scripts/lib/fn-corpora.ts).
+          A candidate mined from tool output must carry an injection signal in its own matches
+          (scripts/lib/fn-mine-generalization.ts lists them) and must not fire on its own
+          recoveries with those signals removed, set in ordinary ticket, to-do and record text.
+          Every candidate is gated against the benign text corpus with the engine's own regex
+          compile semantics and against benign emails, web pages, enterprise records and
+          business-system tool outputs run through the engine as tool output
+          (data/fn-mine-benign), authored, self-tested on the real engine, and re-checked by
           scripts/check-rules-safety.ts, dropping (not force-fixing) anything that fails.
 
-          Per-rule recovers and held-out counts are in the fn-mine-report artifact of each workflow run.
+          No match on those benign corpora is not a false-positive rate in deployment: the
+          corpora are finite and do not cover every business system an agent reads.
+          Per-rule recovers, held-out and out-of-sample counts are in the fn-mine-report
+          artifact of each workflow run.
           Draft: nothing here is auto-merged; a human reviews and decides.
           EOF
           )"

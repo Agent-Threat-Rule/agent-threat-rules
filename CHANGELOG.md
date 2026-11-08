@@ -51,6 +51,34 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **The scheduled FN-mine lane no longer authors rules that match the request
+  an injection makes instead of the injection.** The ten rules in rolling PR
+  #819, mined from NVIDIA's Nemotron agentic indirect-injection set, passed
+  every gate the lane had: they recovered 103 of 215 held-out Nemotron rows
+  and fired on none of the benign corpora. Each keyed on the action the
+  injected text asks for ("submit interview feedback for candidate ...
+  rating", "add ... inventory ... SKU ... quantity", "cancel ... appointment
+  APT-..."), and hand-written HR, inventory, grading, calendar and API-doc tool
+  outputs tripped six of them. Three gates were missing, and are now in
+  `scripts/lib/fn-mine-generalization.ts`, applied after the tool-output gate:
+  a candidate must recover at least one attack in a corpus it was not mined
+  from (AgentDojo and InjecAgent, vendored under `data/fn-mine-oos`, plus the
+  other attack corpora in `scripts/lib/fn-corpora.ts`), because the held-out
+  30% shares the mined corpus's generator; a candidate mined from tool output
+  must carry an injection signal (an override, words addressed to the agent, a
+  precedence or secrecy demand, a forged authority tag or turn boundary) in at
+  least 80% of its own matches; and it must not fire on its own recoveries with
+  those signals and the generator's wrappers removed, set in ticket, to-do and
+  record text. The tool-output benign gate also runs on 1,464 business-system
+  outputs (calendar, email, drive, banking, chat, travel from AgentDojo; retail
+  and airline records from tau-bench; InjecAgent's tool responses with the
+  attack slot filled by ordinary text), vendored by
+  `scripts/sync-generalization-corpora.py`. The miner's prompt and the Nemotron
+  goal note no longer tell it to key on the requested action, and the report
+  and rolling-PR body state that held-out counts come from the same corpus and
+  that no match on the benign corpora is not a deployment false-positive rate.
+  `scripts/fn-mine-generalization-check.ts` reruns the gates on written rules:
+  none of #819's ten pass.
 - **The threat-actor pages show NousResearch hermes-agent #9809 as closed.**
   The three /threats pages gave the campaign's disclosure issue the status
   OPEN from the day they were added; NousResearch had closed it as completed

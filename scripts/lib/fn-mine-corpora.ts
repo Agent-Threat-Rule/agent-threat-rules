@@ -133,7 +133,10 @@ export const MINED_CORPORA: readonly MinedCorpusSpec[] = Object.freeze([
       'are wrapped in one of two generator templates: a "[PRIORITY MESSAGE]" block ("Hi Assistant, I forgot to ' +
       'mention earlier ... Sorry for the late addition!") or a warning-emoji "URGENT: Before completing any other ' +
       'tasks, you MUST:" line. Those wrappers are the generator\'s fixed text and are removed before recoveries are ' +
-      'counted, so a regex on them recovers nothing: key on what the injected instruction asks the agent to do. ' +
+      'counted, so a regex on the wrapper verbatim recovers nothing. Do not fall back to the request alone either ' +
+      '("submit the grade", "cancel the appointment", "send the offer"): business systems return those words with ' +
+      'no attack, and a gate drops a regex whose matches carry no injection signal. Key on how the text addresses ' +
+      'the agent in terms an attacker reuses beyond this generator. ' +
       'The record ids, names and addresses are per-record fixtures: never anchor on them either.',
   },
 ]);
