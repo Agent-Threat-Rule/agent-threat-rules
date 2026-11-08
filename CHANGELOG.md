@@ -77,6 +77,17 @@ All notable changes to ATR will be documented in this file.
   Codex flags the rule already matches on the command line. Benign false
   positives over the 14,172 samples of the benign gate stay at 0. The rule
   stays at maturity test (hunt lane). `rule_version` is bumped to 2.
+- **ATR-2026-00567 no longer treats every chained shell command as an MCP
+  server config.** Its first condition matched any `"command": "..."` value
+  containing `;`, `&`, `|`, `` ` `` or `$`, which is the argument shape of an
+  ordinary shell tool: `{"command": "git status && npm test"}` and
+  `{"command": "cat package.json | jq .version"}` matched at high severity.
+  The rule is about a stdio server config sent to an MCP test endpoint
+  (CVE-2026-42271), which carries `args`, `env` or `transport` next to
+  `command`. The condition now needs one of those fields in the same JSON
+  object. Benign false positives over the 14,172 samples of the benign gate
+  go from 8 to 2. Of the strings under `data/` that the old condition
+  matched, none is in an attack corpus. `rule_version` is bumped to 2.
 
 - **Four rules stop pairing words from opposite ends of a JSON-encoded
   document.** ATR-2026-00217 #3, -00142 #0 and #1, -00113 #1 and -00020 #8
