@@ -51,6 +51,11 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **35 rules and the tool-poisoning default in `scripts/backfill-metadata.ts`
+  use the current ATLAS name for AML.T0053.** MITRE ATLAS renamed the
+  technique from "LLM Plugin Compromise" to "AI Agent Tool Invocation"; #675
+  updated the rules it touched and left the rest. Only the `mitre_atlas`
+  reference line changes on each rule. (#812)
 - **The threat-actor pages show NousResearch hermes-agent #9809 as closed.**
   The three /threats pages gave the campaign's disclosure issue the status
   OPEN from the day they were added; NousResearch had closed it as completed

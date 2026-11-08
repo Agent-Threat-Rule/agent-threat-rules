@@ -45,7 +45,7 @@ const CATEGORY_DEFAULTS: Record<
     owasp_agentic: ["ASI01:2026"],
   },
   "tool-poisoning": {
-    mitre_atlas: ["AML.T0053 - LLM Plugin Compromise"],
+    mitre_atlas: ["AML.T0053 - AI Agent Tool Invocation"],
     owasp_llm: ["LLM06:2025"],
     owasp_agentic: ["ASI03:2026"],
   },
