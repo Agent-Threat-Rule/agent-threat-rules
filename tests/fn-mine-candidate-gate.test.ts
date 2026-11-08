@@ -121,9 +121,14 @@ describe('pickDistinct', () => {
     ]);
   });
 
-  it('keeps an overlapping survivor that still adds minRecovers new attacks', () => {
-    const { kept } = pickDistinct([survivor('a', 'a', keys(0, 20)), survivor('b', 'b', keys(12, 30))], 8);
-    expect(kept.map((k) => k.cluster)).toEqual(['a', 'b']);
+  it('keeps an overlapping survivor that adds exactly minRecovers new attacks, and not one fewer', () => {
+    expect(pickDistinct([survivor('a', 'a', keys(0, 20)), survivor('b', 'b', keys(12, 28))], 8).kept.map((k) => k.cluster)).toEqual(['a', 'b']);
+    expect(pickDistinct([survivor('a', 'a', keys(0, 20)), survivor('b', 'b', keys(13, 27))], 8).kept.map((k) => k.cluster)).toEqual(['a']);
+  });
+
+  it('keeps input order for survivors that recover as many', () => {
+    const { kept } = pickDistinct([survivor('x', 'x', keys(0, 10)), survivor('y', 'y', keys(20, 30))], 8);
+    expect(kept.map((k) => k.cluster)).toEqual(['x', 'y']);
   });
 
   it('counts overlap within a corpus only, and falls back to the exact regex without keys', () => {

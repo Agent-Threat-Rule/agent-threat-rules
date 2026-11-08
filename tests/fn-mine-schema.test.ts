@@ -25,6 +25,13 @@ describe('schemaProblem', () => {
     );
   });
 
+  // Review finding (#817): a crashed validator printed no verdict, and the rule passed.
+  it('fails closed when the validator gave the file no verdict', () => {
+    expect(schemaProblem('rules/excessive-autonomy/ATR-2026-02999-x.yaml', OUTPUT)).toMatch(/gave no verdict on excessive-autonomy\/ATR-2026-02999-x\.yaml/);
+    expect(schemaProblem('rules/a/b.yaml', '')).toMatch(/gave no verdict/);
+    expect(schemaProblem('rules/a/b.yaml', 'Error: Cannot find module tsx\n    at x')).toMatch(/Cannot find module tsx/);
+  });
+
   it('passes a file the validator passed, whatever else failed', () => {
     expect(schemaProblem('rules/excessive-autonomy/ATR-2026-02874-c.yaml', OUTPUT)).toBeNull();
     expect(schemaProblem('rules/excessive-autonomy/ATR-2026-02667-a.yaml', OUTPUT)).toBeNull();

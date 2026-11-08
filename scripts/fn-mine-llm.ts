@@ -700,7 +700,7 @@ async function main(): Promise<void> {
 
   if (isDryRun) {
     console.log('[fn-mine] --dry-run: stopping before authoring. Survivors:');
-    console.log(JSON.stringify(picked, null, 2));
+    console.log(JSON.stringify(picked.map(({ recoveryKeys: _keys, ...rest }) => rest), null, 2));
     console.log(`[fn-mine] NULL RESULT — --dry-run: ${picked.length} survivor(s) found, authoring skipped.`);
     console.log('::authored-files::');
     return;
