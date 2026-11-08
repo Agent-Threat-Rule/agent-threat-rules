@@ -30,6 +30,23 @@ All notable changes to ATR will be documented in this file.
   and the job is not a required check. The /red-team page's list is left to
   its own check (`scripts/verify-red-team-links.mjs`, #691).
 
+### Removed
+
+- **The `adoption` block of the root `stats.json`.** Nothing read it: no
+  script, workflow or page here (`scripts/sync-stats.ts` only declared its
+  type, now removed too), and the copy other projects sync is
+  `data/stats.json`, which never had it. It was written on 2026-05-16 and not
+  kept up since, and GitHub contradicts it in three places. It linked
+  precize/Agent-Security-Regression-Harness#74, which returns 404; that pull
+  request is OWASP/Agent-Security-Regression-Harness#74. It dated
+  MISP/misp-taxonomies#323 to 2026-04-12; it merged on 2026-05-10. It called
+  cisco-ai-defense/skill-scanner#99 a "344-rule pack (auto-syncs to 419)";
+  #99 took the pack from 34 to 314 rules, and later syncs came as pull
+  requests. Its counts (external organisations, pull requests, tier-1
+  institutions, standards bodies) were set by hand. Integrations are recorded
+  in ADOPTERS.md, which `scripts/verify-adopters.mjs` checks against GitHub
+  every week.
+
 ### Fixed
 
 - **The threat-actor pages show NousResearch hermes-agent #9809 as closed.**
