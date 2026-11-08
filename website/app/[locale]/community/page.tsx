@@ -45,7 +45,7 @@ const FIRST_STEPS: ReadonlyArray<{ time: { en: string; zh: string }; what: { en:
   },
   {
     time: { en: "30 min", zh: "30 分鐘" },
-    what: { en: "Read the open problems. Each says which files to touch and how to test. To take one, apply to join.", zh: "看公開的題目。每題都寫了要改哪些檔、怎麼測。想認領，先申請加入。" },
+    what: { en: "Pick an open problem. Each says which files to touch and how to test; open a pull request when it's ready.", zh: "挑一個公開的題目。每題都寫了要改哪些檔、怎麼測，做好就開 PR。" },
     href: `${REPO}/issues?q=${encodeURIComponent(GOOD_FIRST)}`,
   },
   {
@@ -127,8 +127,8 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
           </div>
           <p className="mt-4 text-[13px] text-stone max-w-[560px]">
             {zh
-              ? "題目公開，任何人都能看、了解可以怎麼解。想認領題目、成為貢獻者，先申請加入，Adam 看過後親自邀請。"
-              : "Anyone can read the problems and how they might be solved. To take one and become a contributor, apply to join; Adam reads every application and invites people personally."}
+              ? "下面是目前可以做的題目，任何人都可以直接開 issue 或 PR。做完的題目會自動從清單消失。想列在名錄裡，再申請加入。"
+              : "Below are problems you can work on now. Anyone can open an issue or a pull request. Solved problems drop off the list automatically. To be listed in the directory, apply to join."}
           </p>
           <p className="mt-3 text-[13px] text-stone max-w-[560px]">
             {zh ? "利益揭露：ATR 首席維護者林冠辛創辦並控制 PANGUARD AI, INC.，這家公司販售以 ATR 為基礎的 AI agent 資安產品。在這裡貢獻的成果以 MIT 授權釋出，任何人都能使用，包括這家公司。兩者如何區隔，寫在" : "Interests: ATR's lead maintainer, Adam Lin, founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR. Work contributed here is MIT-licensed and anyone may use it, including that company. How the two are kept apart is on the "}
@@ -153,8 +153,8 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
           title={zh ? "照你有的時間，挑第一件事" : "Pick a first thing for the time you have"}
           body={
             zh
-              ? "Discord 用來討論，決定和功勞記在 GitHub，不用 Discord 也能參與。回報誤判和交樣本任何人都能直接做；認領題目要先申請加入，由 Adam 指派，避免兩個人做同一件事。"
-              : "Discord is for talking; decisions and credit are recorded on GitHub, and you can take part without Discord. Anyone can report a false positive or submit a sample. Problems are assigned to invited members: apply to join to take one, so two people don't do the same work."
+              ? "Discord 用來討論，決定和功勞記在 GitHub，不用 Discord 也能參與。任何人都可以直接開 issue 或 PR；動手前在 issue 留言說一聲，避免兩個人做同一件事。"
+              : "Discord is for talking; decisions and credit are recorded on GitHub, and you can take part without Discord. Anyone can open an issue or a pull request; say so on the issue before you start, so two people don't do the same work."
           }
         />
         <dl className="border-t border-fog">
