@@ -17,8 +17,9 @@
  * 1. Held-out was the same generator. A regex that memorised Nemotron's
  *    templates recovered its held-out rows as easily as its shown ones.
  *    outOfSampleProblem: a candidate must also recover at least one attack in
- *    a corpus it was not mined from (data/fn-mine-oos, AgentDojo and
- *    InjecAgent, plus every other usable attack corpus in fn-corpora.ts).
+ *    a corpus it was not mined from (data/fn-mine-oos: AgentDojo, InjecAgent,
+ *    Spikee, ASB, BIPIA, GenTel, Gandalf, Mosscap, deepset and jailbreak
+ *    prompts; plus every other usable attack corpus in fn-corpora.ts).
  *
  * 2. Nothing required an injection signal. The goal note even told the miner
  *    to "key on what the injected instruction asks the agent to do", because
@@ -195,10 +196,24 @@ export function twinProblem(regex: string, recovered: readonly string[], corpus 
 // Out of sample
 // ---------------------------------------------------------------------------
 
-/** Attack corpora vendored for this gate only (scripts/sync-generalization-corpora.py). */
+/**
+ * Attack corpora vendored for this gate only: AgentDojo and InjecAgent
+ * (scripts/sync-generalization-corpora.py), and the rest from
+ * scripts/sync-oos-corpora.py, added because a rule keyed on a real technique
+ * (a forged chat-template boundary, a pseudo-XML role tag) found no second
+ * corpus carrying it. Each SOURCE.md names the pinned upstream and license.
+ */
 export const OOS_CORPORA: readonly { readonly id: string; readonly path: string }[] = Object.freeze([
   { id: 'agentdojo', path: 'data/fn-mine-oos/agentdojo/corpus.json' },
   { id: 'injecagent', path: 'data/fn-mine-oos/injecagent/corpus.json' },
+  { id: 'spikee', path: 'data/fn-mine-oos/spikee/corpus.json' },
+  { id: 'asb', path: 'data/fn-mine-oos/asb/corpus.json' },
+  { id: 'bipia', path: 'data/fn-mine-oos/bipia/corpus.json' },
+  { id: 'gentel', path: 'data/fn-mine-oos/gentel/corpus.json' },
+  { id: 'gandalf', path: 'data/fn-mine-oos/gandalf/corpus.json' },
+  { id: 'mosscap', path: 'data/fn-mine-oos/mosscap/corpus.json' },
+  { id: 'deepset', path: 'data/fn-mine-oos/deepset/corpus.json' },
+  { id: 'jailbreak-cls', path: 'data/fn-mine-oos/jailbreak-cls/corpus.json' },
 ]);
 
 /**
@@ -217,7 +232,10 @@ function readVendoredOos(root: string): { corpora: readonly OutOfSampleCorpus[] 
   const corpora: OutOfSampleCorpus[] = [];
   for (const c of OOS_CORPORA) {
     const file = join(root, c.path);
-    if (!existsSync(file)) return { problem: `${c.path} is missing (run scripts/sync-generalization-corpora.py --write)` };
+    if (!existsSync(file)) {
+      const sync = c.id === 'agentdojo' || c.id === 'injecagent' ? 'sync-generalization-corpora.py' : 'sync-oos-corpora.py';
+      return { problem: `${c.path} is missing (run scripts/${sync} --write)` };
+    }
     const doc = JSON.parse(readFileSync(file, 'utf8')) as { count?: unknown; samples?: { text?: unknown }[] };
     const texts = (doc.samples ?? []).map((s) => s.text).filter((t): t is string => typeof t === 'string' && t.length > 0);
     if (texts.length === 0 || doc.count !== texts.length) return { problem: `${c.path} declares ${String(doc.count)} samples but holds ${texts.length}` };

@@ -43,6 +43,20 @@ export const BENIGN_ENTERPRISE: Pick<BenignSource, 'id' | 'path'> = Object.freez
   id: 'enterprise-tool-outputs',
   path: 'data/fn-mine-benign/enterprise-tool-outputs/corpus.json',
 });
+
+/**
+ * Operation summaries and descriptions of public business APIs (education,
+ * HR, payroll, accounting, tickets, messaging, scheduling, e-signature), from
+ * the CC0 APIs-guru openapi-directory via scripts/sync-oos-corpora.py. The
+ * enterprise corpus above is mostly JSON records; this is the prose a docs or
+ * API-search tool returns ("Sends the specified message", "Creates a
+ * submission", "Cancels a meeting"), the wording a request-only regex keys on.
+ * Counted with the enterprise outputs.
+ */
+export const BENIGN_API_DOCS: Pick<BenignSource, 'id' | 'path'> = Object.freeze({
+  id: 'business-api-docs',
+  path: 'data/fn-mine-benign/business-api-docs/corpus.json',
+});
 import { compileEngineAccurate, type GatedCandidate } from './fn-mine-candidate-gate.js';
 import { matchExcerpt } from './fn-mine-recoveries.js';
 
@@ -63,7 +77,9 @@ function readBenignFile(root: string, source: Pick<BenignSource, 'id' | 'path'>)
   if (!existsSync(file)) {
     const sync = source.id === BENIGN_ENTERPRISE.id
       ? 'scripts/sync-generalization-corpora.py --write'
-      : `scripts/sync-agent-attack-corpora.ts --source ${source.id} --write`;
+      : source.id === BENIGN_API_DOCS.id
+        ? 'scripts/sync-oos-corpora.py --write'
+        : `scripts/sync-agent-attack-corpora.ts --source ${source.id} --write`;
     return { problem: `${source.path} is missing (run ${sync})` };
   }
   let doc: { count?: unknown; samples?: unknown };
@@ -91,8 +107,16 @@ export function readToolOutputBenign(root: string): { corpus: ToolOutputBenign }
   if ('problem' in tasks) return tasks;
   const enterprise = readBenignFile(root, BENIGN_ENTERPRISE);
   if ('problem' in enterprise) return enterprise;
+  const apiDocs = readBenignFile(root, BENIGN_API_DOCS);
+  if ('problem' in apiDocs) return apiDocs;
   return {
-    corpus: { emails: emails.texts, pages: pages.texts, records: records.texts, tasks: tasks.texts, enterprise: enterprise.texts },
+    corpus: {
+      emails: emails.texts,
+      pages: pages.texts,
+      records: records.texts,
+      tasks: tasks.texts,
+      enterprise: [...enterprise.texts, ...apiDocs.texts],
+    },
   };
 }
 
