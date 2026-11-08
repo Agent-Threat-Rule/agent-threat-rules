@@ -55,9 +55,9 @@ const ROWS: ReadonlyArray<{ label: B; expert: B; contributor: B }> = [
 ];
 
 const STEPS: ReadonlyArray<B> = [
-  { en: "You apply through the GitHub form, or by email if you would rather apply privately. If you want to take a listed problem, name it.", zh: "用 GitHub 表單申請；想私下申請就用 email。想認領列出的題目，在申請裡寫上題號。" },
+  { en: "You apply through the GitHub form, or by email if you would rather apply privately. You do not need to apply to contribute: anyone can open issues and pull requests.", zh: "用 GitHub 表單申請；想私下申請就用 email。貢獻不需要先申請，任何人都可以直接開 issue 和 pull request。" },
   { en: "Adam Lin, the maintainer, reads every application and invites people personally.", zh: "維護者 Adam Lin 會看每一份申請，親自邀請。" },
-  { en: "Once invited, the problem you named is assigned to you, and we draft your directory entry for you to confirm.", zh: "受邀後，你寫的題目會指派給你，名錄文字由我們草擬、你確認。" },
+  { en: "Once invited, we draft your directory entry for you to confirm.", zh: "受邀後，名錄文字由我們草擬、你確認。" },
   { en: "Your merged work is recorded in the public community ledger under your GitHub name, and your tier follows from it.", zh: "你被合併的貢獻會以 GitHub 名稱記進公開的社群帳本，階別依帳本計算。" },
 ];
 
