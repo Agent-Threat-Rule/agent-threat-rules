@@ -28,7 +28,11 @@
 # input, so rules that read `tool_args`, `tool_name` or `tool_response` see the
 # field they were written for.
 #
-#   pip install openai-agents pyatr
+# Every rule is scanned and every match recorded, but by default only rules in
+# ATR's enforce lane (maturity: stable) can block. `block_lane="hunt"` blocks
+# on every rule, at the cost of false positives.
+#
+#   pip install openai-agents "pyatr>=0.4.1"
 #
 # Usage:
 #   from agents import Agent, function_tool
@@ -56,6 +60,11 @@ from pyatr import ATREngine, AgentEvent, ATRMatch
 from pyatr.types import SEVERITY_ORDER
 
 try:
+    from pyatr import lane_allows as _lane_allows  # pyatr >= 0.4.1
+except ImportError:
+    _lane_allows = None
+
+try:
     from agents.guardrail import GuardrailFunctionOutput, InputGuardrail, OutputGuardrail
     from agents.tool_guardrails import (
         ToolGuardrailFunctionOutput,
@@ -72,6 +81,8 @@ __all__ = ["ATRGuard", "ATRDecision"]
 
 Severity = Literal["critical", "high", "medium", "low"]
 OnBlock = Literal["reject", "raise"]
+Lane = Literal["enforce", "alert", "hunt"]
+_LANES = ("enforce", "alert", "hunt")
 
 
 # ---------------------------------------------------------------------------
@@ -134,6 +145,19 @@ def _at_or_above(severity: str, floor: str) -> bool:
     return SEVERITY_ORDER.get(severity, 99) <= SEVERITY_ORDER.get(floor, 0)
 
 
+def _in_lane(match: ATRMatch, lane: str) -> bool:
+    """True if match may block in lane, by pyatr's own lane rule.
+
+    A match without maturity (pyatr older than 0.4.1) counts as not stable, so
+    it can block only in the hunt lane and the default never blocks by mistake.
+    """
+    if lane == "hunt":
+        return _lane_allows(match, lane) if _lane_allows and hasattr(match, "maturity") else True
+    if _lane_allows is None or not hasattr(match, "maturity"):
+        return False
+    return _lane_allows(match, lane)
+
+
 _CLIP_MARK = "\n[... ATR: middle of value not scanned ...]\n"
 
 
@@ -154,7 +178,8 @@ class ATRDecision:
     """Outcome of one ATR check.
 
     ``matches`` holds every rule that fired; ``blocking`` is the most severe
-    one at or above the guard's ``block_severity``, or ``None``. ``truncated``
+    one that is at or above the guard's ``block_severity`` and in its
+    ``block_lane``, or ``None``. ``truncated``
     is true when the value exceeded ``max_scan_chars`` and its middle was not
     scanned.
     """
@@ -187,9 +212,17 @@ class ATRDecision:
 class ATRGuard:
     """Enforce ATR rules over an OpenAI Agents SDK agent.
 
+    Every rule is scanned and every match is recorded. A match blocks only if
+    it passes both ``block_severity`` and ``block_lane``.
+
     Args:
         block_severity: Minimum severity that blocks. One of
             ``"critical" | "high" | "medium" | "low"``. Default ``"critical"``.
+        block_lane: ATR lane a rule must be in to block. ``"enforce"``
+            (default) blocks on ``maturity: stable`` rules only; ``"alert"``
+            adds ``test`` rules; ``"hunt"`` blocks on every rule, at the cost
+            of false positives. Rules marked ``confirm: embedding`` block in
+            the hunt lane only, since pyatr has no embedding check.
         on_block: What a blocked TOOL call does. ``"reject"`` (default) skips
             the tool and returns a short refusal to the model so the run
             continues; ``"raise"`` halts the run with
@@ -216,6 +249,7 @@ class ATRGuard:
         self,
         *,
         block_severity: Severity = "critical",
+        block_lane: Lane = "enforce",
         on_block: OnBlock = "reject",
         block_on_result: bool = False,
         on_flag: Callable[[dict], None] | None = None,
@@ -225,11 +259,14 @@ class ATRGuard:
     ) -> None:
         if block_severity not in SEVERITY_ORDER:
             raise ValueError(f"block_severity must be one of {sorted(SEVERITY_ORDER)}, got {block_severity!r}")
+        if block_lane not in _LANES:
+            raise ValueError(f"block_lane must be one of {_LANES}, got {block_lane!r}")
         if on_block not in ("reject", "raise"):
             raise ValueError(f"on_block must be 'reject' or 'raise', got {on_block!r}")
         if max_scan_chars is not None and max_scan_chars < 2:
             raise ValueError(f"max_scan_chars must be None or at least 2, got {max_scan_chars!r}")
         self.block_severity = block_severity
+        self.block_lane = block_lane
         self.on_block = on_block
         self.block_on_result = block_on_result
         self.on_flag = on_flag
@@ -269,7 +306,11 @@ class ATRGuard:
         blocking = None
         for match in matches:  # evaluate() returns most severe first
             self._record(where, tool_name, match)
-            if blocking is None and _at_or_above(match.severity, self.block_severity):
+            if (
+                blocking is None
+                and _at_or_above(match.severity, self.block_severity)
+                and _in_lane(match, self.block_lane)
+            ):
                 blocking = match
         return ATRDecision(where=where, matches=matches, blocking=blocking, truncated=truncated)
 
@@ -280,6 +321,7 @@ class ATRGuard:
             "rule": match.rule_id,
             "title": match.title,
             "severity": match.severity,
+            "maturity": getattr(match, "maturity", None),
         }
         self.audit_log.append(entry)
         if self.on_flag:

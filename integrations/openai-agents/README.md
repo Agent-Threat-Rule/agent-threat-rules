@@ -10,8 +10,12 @@ but for prompt injection, tool poisoning, MCP attacks and skill compromise.
 ## Install
 
 ```bash
-pip install openai-agents pyatr
+pip install openai-agents "pyatr>=0.4.1"
 ```
+
+pyatr 0.4.1 or later is required: it carries each rule's `maturity`, which
+the guard uses to decide what may block. (Skip 0.4.0, whose bundled rules
+lost `maturity` in packaging.)
 
 Then copy `openai_agents_atr.py` into your project, or install this directory:
 `pip install ./integrations/openai-agents`.
@@ -27,7 +31,7 @@ def fetch_url(url: str) -> str:
     """Fetch a web page."""
     ...
 
-guard = ATRGuard()   # blocks critical findings; records everything else
+guard = ATRGuard()   # blocks critical findings from stable rules; records everything
 guard.engine         # optional: load the rules now, not on the first tool call
 
 agent = Agent(
@@ -64,11 +68,35 @@ rule on all 181. Scanning the same text as user input fires it on 30.
 The refusal message names the rule and its title. It never repeats the matched
 text back into the model's context.
 
+## What blocks by default
+
+The guard scans every rule and records every match, but **by default only
+rules in ATR's enforce lane (`maturity: stable`) can block**, and only at
+`critical` severity. That mirrors the TypeScript engine, whose enforce lane is
+the one meant for automatic blocking. On 120 benign skills from
+`data/skill-benchmark/benign`, each checked as a tool result and as an agent
+input (240 checks), the default blocked none. Blocking on every rule
+(`block_lane="hunt"`) blocked 28.
+
+The cost is coverage: most critical rules are not yet stable, so their matches
+are recorded and reported in `output_info` but do not block.
+
+| `block_lane` | Rules that can block |
+|---|---|
+| `"enforce"` (default) | `maturity: stable` |
+| `"alert"` | `stable` and `test` |
+| `"hunt"` | every rule, at the cost of false positives |
+
+Rules marked `confirm: embedding` block in the hunt lane only, since pyatr has
+no embedding check. A match from a pyatr older than 0.4.1 carries no maturity
+and is treated as not stable, so it never blocks under the default.
+
 ## Options
 
 | Argument | Default | Meaning |
 |---|---|---|
 | `block_severity` | `"critical"` | Minimum severity that blocks: `critical`, `high`, `medium` or `low`. |
+| `block_lane` | `"enforce"` | ATR lane a rule must be in to block: `"enforce"`, `"alert"` or `"hunt"` (see above). |
 | `on_block` | `"reject"` | For tool calls: `"reject"` skips the tool and lets the run continue; `"raise"` halts the run. |
 | `block_on_result` | `False` | Also block, not just record, when a tool **result** is flagged. |
 | `on_flag` | `None` | Callback invoked with each finding's audit entry. During a run it is called from a worker thread. |
@@ -77,7 +105,7 @@ text back into the model's context.
 | `engine` | `None` | Share one loaded `pyatr.ATREngine` across several guards. |
 
 Every finding is appended to `guard.audit_log` as
-`{where, tool, rule, title, severity}`. The same summary is attached as each
+`{where, tool, rule, title, severity, maturity}`. The same summary is attached as each
 guardrail's `output_info`, so it appears in the SDK's traces.
 
 You can also call `check_tool_call`, `check_tool_output`, `check_input` and
@@ -102,16 +130,13 @@ You can also call `check_tool_call`, `check_tool_output`, `check_input` and
 - **The audit log grows without bound.** In a long-lived process, read and
   clear `guard.audit_log`, or use `on_flag` instead.
 - **Pattern matching.** pyatr is ATR's pattern engine. Detection is
-  deterministic and takes milliseconds per check, but it catches known phrasings
-  better than paraphrases. See [`LIMITATIONS.md`](../../LIMITATIONS.md).
-- **No lanes yet.** pyatr evaluates every non-draft rule, the equivalent of the
-  TypeScript engine's `hunt` lane. Raise `block_severity` if you only want to
-  block on the highest-confidence findings.
+  deterministic, but it catches known phrasings better than paraphrases. See
+  [`LIMITATIONS.md`](../../LIMITATIONS.md).
 
 ## Tests
 
 ```bash
-pip install pyatr openai-agents pytest
+pip install "pyatr>=0.4.1" openai-agents pytest pyyaml
 pytest integrations/openai-agents/tests
 ```
 

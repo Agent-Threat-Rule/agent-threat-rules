@@ -34,6 +34,9 @@ needs_sdk = pytest.mark.skipif(not _HAS_AGENTS_SDK, reason="openai-agents not in
 # ---------------------------------------------------------------------------
 
 
+MATURITY: dict[str, str] = {}  # rule id -> maturity, filled by _load_cases
+
+
 def _load_cases() -> tuple[list[tuple], list[tuple]]:
     """Collect tool-traffic test cases: (rule_id, severity, kind, name, payload)."""
     positives: list[tuple] = []
@@ -42,6 +45,7 @@ def _load_cases() -> tuple[list[tuple], list[tuple]]:
         rule = yaml.safe_load(path.read_text(encoding="utf-8"))
         if not isinstance(rule, dict) or rule.get("status") in ("draft", "deprecated"):
             continue
+        MATURITY[rule["id"]] = str(rule.get("maturity") or "experimental").strip()
         cases = rule.get("test_cases") or {}
         for bucket, out in (("true_positives", positives), ("true_negatives", negatives)):
             for case in cases.get(bucket) or []:
@@ -62,7 +66,7 @@ POSITIVES, NEGATIVES = _load_cases()
 
 @pytest.fixture(scope="module")
 def guard() -> ATRGuard:
-    return ATRGuard(rules_dir=RULES_DIR, block_severity="low")
+    return ATRGuard(rules_dir=RULES_DIR, block_severity="low", block_lane="hunt")
 
 
 def _check(guard: ATRGuard, kind: str, name: str, payload: Any) -> ATRDecision:
@@ -111,11 +115,49 @@ def test_empty_values_are_not_scanned(guard) -> None:
 def test_block_severity_threshold() -> None:
     rule_id, severity, kind, name, payload = next(c for c in POSITIVES if c[1] != "critical")
     engine = ATRGuard(rules_dir=RULES_DIR).engine
-    strict = _check(ATRGuard(engine=engine, block_severity="critical"), kind, name, payload)
-    loose = _check(ATRGuard(engine=engine, block_severity=severity), kind, name, payload)
+    strict = _check(ATRGuard(engine=engine, block_severity="critical", block_lane="hunt"), kind, name, payload)
+    loose = _check(ATRGuard(engine=engine, block_severity=severity, block_lane="hunt"), kind, name, payload)
     assert rule_id in [m.rule_id for m in strict.matches]
     assert strict.blocking is None or strict.blocking.severity == "critical"
     assert loose.blocked
+
+
+def test_default_records_but_does_not_block_non_stable_critical(guard) -> None:
+    # A critical fixture whose matches are all critical but none stable: the
+    # default (enforce lane) must record them and block nothing.
+    default = ATRGuard(engine=guard.engine)
+    for rule_id, severity, kind, name, payload in POSITIVES:
+        if severity != "critical" or MATURITY[rule_id] == "stable":
+            continue
+        decision = _check(default, kind, name, payload)
+        if any(m.maturity == "stable" for m in decision.matches):
+            continue  # another, stable rule also fires here; not this test's case
+        assert rule_id in [m.rule_id for m in decision.matches]
+        assert not decision.blocked
+        assert any(e["rule"] == rule_id and e["maturity"] == MATURITY[rule_id] for e in default.audit_log)
+        assert _check(ATRGuard(engine=guard.engine, block_lane="hunt"), kind, name, payload).blocked
+        return
+    pytest.fail("no non-stable critical tool-traffic fixture in the corpus")
+
+
+def test_default_blocks_stable_critical(guard) -> None:
+    default = ATRGuard(engine=guard.engine)
+    stable = [c for c in POSITIVES if c[1] == "critical" and MATURITY[c[0]] == "stable"]
+    assert stable, "expected stable critical tool-traffic fixtures"
+    for rule_id, _, kind, name, payload in stable:
+        decision = _check(default, kind, name, payload)
+        assert decision.blocked and decision.blocking.maturity == "stable"
+
+
+def test_lane_gate_without_maturity_never_blocks_by_default() -> None:
+    from types import SimpleNamespace
+
+    from openai_agents_atr import _in_lane
+
+    old_match = SimpleNamespace(rule_id="ATR-X", severity="critical")  # pyatr < 0.4.1 shape
+    assert not _in_lane(old_match, "enforce")
+    assert not _in_lane(old_match, "alert")
+    assert _in_lane(old_match, "hunt")
 
 
 def test_findings_are_recorded_and_reported() -> None:
@@ -124,7 +166,7 @@ def test_findings_are_recorded_and_reported() -> None:
     rule_id, _, kind, name, payload = _first("call")
     decision = _check(g, kind, name, payload)
     assert seen and seen == g.audit_log
-    assert {"where", "tool", "rule", "title", "severity"} <= set(seen[0])
+    assert {"where", "tool", "rule", "title", "severity", "maturity"} <= set(seen[0])
     info = decision.info()
     assert rule_id in info["rules"] and info["where"] == "tool_args"
     json.dumps(info)  # output_info must be serializable for tracing
@@ -161,6 +203,8 @@ def test_rejects_bad_options() -> None:
         ATRGuard(on_block="drop")  # type: ignore[arg-type]
     with pytest.raises(ValueError):
         ATRGuard(max_scan_chars=1)
+    with pytest.raises(ValueError):
+        ATRGuard(block_lane="strict")  # type: ignore[arg-type]
 
 
 def test_zero_rules_is_an_error(tmp_path) -> None:
@@ -188,7 +232,7 @@ def _tool_data(name: str, arguments: str, output: Any = None):
 @needs_sdk
 def test_tool_input_guardrail_rejects_without_echoing_payload() -> None:
     rule_id, severity, _, name, payload = _first("call")
-    g = ATRGuard(rules_dir=RULES_DIR, block_severity=severity)
+    g = ATRGuard(rules_dir=RULES_DIR, block_severity=severity, block_lane="hunt")
     result = asyncio.run(g.tool_input_guardrail.guardrail_function(_tool_data(name, payload)))
     assert result.behavior["type"] == "reject_content"
     assert rule_id in result.output_info["rules"]
@@ -201,7 +245,7 @@ def test_tool_input_guardrail_rejects_without_echoing_payload() -> None:
 @needs_sdk
 def test_tool_input_guardrail_can_halt_the_run() -> None:
     _, severity, _, name, payload = _first("call")
-    g = ATRGuard(rules_dir=RULES_DIR, block_severity=severity, on_block="raise")
+    g = ATRGuard(rules_dir=RULES_DIR, block_severity=severity, on_block="raise", block_lane="hunt")
     result = asyncio.run(g.tool_input_guardrail.guardrail_function(_tool_data(name, payload)))
     assert result.behavior["type"] == "raise_exception"
 
@@ -210,11 +254,11 @@ def test_tool_input_guardrail_can_halt_the_run() -> None:
 def test_tool_output_guardrail_records_by_default_and_blocks_when_asked() -> None:
     rule_id, severity, _, name, payload = _first("result")
     data = _tool_data(name, "{}", output=payload)
-    record = ATRGuard(rules_dir=RULES_DIR, block_severity=severity)
+    record = ATRGuard(rules_dir=RULES_DIR, block_severity=severity, block_lane="hunt")
     allowed = asyncio.run(record.tool_output_guardrail.guardrail_function(data))
     assert allowed.behavior["type"] == "allow"
     assert rule_id in allowed.output_info["rules"]
-    block = ATRGuard(rules_dir=RULES_DIR, block_severity=severity, block_on_result=True)
+    block = ATRGuard(rules_dir=RULES_DIR, block_severity=severity, block_on_result=True, block_lane="hunt")
     assert asyncio.run(block.tool_output_guardrail.guardrail_function(data)).behavior["type"] == "reject_content"
 
 
@@ -223,7 +267,7 @@ def test_agent_guardrails_trip_and_pass() -> None:
     from agents import Agent
 
     _, severity, _, _, payload = _first("result")
-    g = ATRGuard(rules_dir=RULES_DIR, block_severity=severity)
+    g = ATRGuard(rules_dir=RULES_DIR, block_severity=severity, block_lane="hunt")
     agent = Agent(name="test")
     assert asyncio.run(g.input_guardrail.guardrail_function(None, agent, "Plan a trip to Lisbon")).tripwire_triggered is False
     tripped = asyncio.run(g.output_guardrail.guardrail_function(None, agent, payload))
@@ -266,15 +310,17 @@ def test_end_to_end_runner_blocks_tool_call() -> None:
     from agents.usage import Usage
     from openai.types.responses import ResponseFunctionToolCall, ResponseOutputMessage, ResponseOutputText
 
-    probe = ATRGuard(rules_dir=RULES_DIR, block_severity="low")
+    g = ATRGuard(rules_dir=RULES_DIR)  # defaults: critical severity, enforce lane
     # The model sends the payload as JSON arguments to `run_command`; use a
-    # fixture that still fires in that shape.
-    rule_id, severity, payload = next(
-        (rid, sev, p)
-        for rid, sev, kind, _, p in POSITIVES
+    # fixture that the defaults still block in that shape.
+    rule_id, payload = next(
+        (rid, p)
+        for rid, _, kind, _, p in POSITIVES
         if kind == "call"
-        and rid in [m.rule_id for m in probe.check_tool_call("run_command", json.dumps({"command": p})).matches]
+        and (d := g.check_tool_call("run_command", json.dumps({"command": p}))).blocked
+        and d.blocking.rule_id == rid
     )
+    g.audit_log.clear()
     ran: list[str] = []
 
     @function_tool
@@ -304,7 +350,6 @@ def test_end_to_end_runner_blocks_tool_call() -> None:
         def stream_response(self, *args: Any, **kwargs: Any):  # pragma: no cover - not used
             raise NotImplementedError
 
-    g = ATRGuard(rules_dir=RULES_DIR, block_severity=severity)
     agent = Agent(name="test", model=ScriptedModel(), tools=g.protect(run_command))
     result = asyncio.run(Runner.run(agent, "go"))
     assert ran == [], "a blocked tool call must not execute"
