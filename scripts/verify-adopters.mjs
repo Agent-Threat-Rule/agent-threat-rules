@@ -272,8 +272,8 @@ function reportUnverified(unverified) {
     console.error(`  ${r.name}: ${check ? check.observed : `content ${r.content}`}`);
   }
   console.error(
-    'A rate limit, a 5xx or a network error passes on a re-run (with GITHUB_TOKEN set; api-401 means the token was rejected). ' +
-      'A page that refuses automated requests (http-401, http-403) or a file GitHub will not inline (bad-response) will not pass on a re-run: point that entry at a link the check can read.',
+    'A rate limit, a 5xx, a network error or an unreadable answer usually passes on a re-run (with GITHUB_TOKEN set; api-401 means the token was rejected). ' +
+      'A page that refuses automated requests (http-401, http-403) or a Still-present file over 1 MB (content bad-response) will not pass on a re-run: point that entry at a link the check can read.',
   );
 }
 

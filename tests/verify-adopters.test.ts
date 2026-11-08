@@ -159,7 +159,8 @@ describe("verifyAdopters", () => {
   });
 
   it("asserts a still-present file on an entry whose only GitHub link is a commit", async () => {
-    // xlabs-club/awesome-x-ops gives a commit; its Still-present line was never checked.
+    // xlabs-club/awesome-x-ops has given a commit since 2026-10-16, and its
+    // Still-present line went unchecked from then on.
     const commit = "https://github.com/x/y/commit/f80a9ee142b1f6698fb885c5d83bfb7e0afa43ff";
     const text = entry("X", `<${commit}> (the commit message cites #220)`, ['- **Still-present**: README.md contains "agent-threat-rules"']);
     const page = { [commit]: { status: 200 } };
@@ -265,6 +266,19 @@ describe("main", () => {
     const web = fakeWeb({ "/repos/o/a/pulls/1": merged, [commit]: { status: 200 }, "/repos/x/y/contents/README.md": file("ATR") });
     expect(await main({ ...paths, fetchImpl: web.impl, ...NO_WAIT, today: "2026-11-08" })).toBe(0);
     expect(lines.join("\n")).toMatch(/1 entries have no Still-present assertion/);
+  });
+
+  it("tags each line the way the workflow reads the report", async () => {
+    // verify-adopters.yml lists ^[DRIFT] and ^[GONE] lines as findings when a run does not finish.
+    const lines: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => void lines.push(a.join(" ")));
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const paths = setup([entry("Drifted", "<https://github.com/o/a/pull/1>"), entry("Gone", "<https://github.com/o/b/pull/2>"), entry("Fine", "<https://github.com/o/c/pull/3>")].join("\n"));
+    const web = fakeWeb({ "/repos/o/a/pulls/1": open, "/repos/o/b/pulls/2": { status: 404 }, "/repos/o/c/pulls/3": merged });
+    await main({ ...paths, fetchImpl: web.impl, ...NO_WAIT, today: "2026-11-08" });
+    expect(lines.find((l) => l.includes("Drifted"))).toMatch(/^\[DRIFT\] /);
+    expect(lines.find((l) => l.includes("Gone"))).toMatch(/^\[GONE\] /);
+    expect(lines.find((l) => l.includes("Fine"))).toMatch(/^\[ok\] /);
   });
 
   it("names each unverified entry and says whether a re-run can help", async () => {

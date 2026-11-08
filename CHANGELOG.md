@@ -43,12 +43,11 @@ All notable changes to ATR will be documented in this file.
   published data stays as it was; the tracking issue then lists the drift
   the run did find and shows the report, which says whether a re-run can
   help. Every evidence link of an entry is checked, not only the first:
-  MISP, AG2 and Tencent AI-Infra-Guard give two each. A github.com link
-  written with http:// is checked as the pull request or issue it is, not as
-  a page that answers through a redirect. A Still-present line is checked on
-  the repository of the entry's first GitHub link of any kind, so
-  xlabs-club/awesome-x-ops's (a commit link) is checked for the first time,
-  and a Still-present path that leaves the repository fails. The links are
+  MISP, AG2 and Tencent AI-Infra-Guard give two each. A Still-present line is
+  checked on the repository of the entry's first GitHub link of any kind, so
+  xlabs-club/awesome-x-ops's is checked again: it had gone unchecked since
+  its evidence became a commit link on 2026-10-16. A Still-present path that
+  leaves the repository fails. The links are
   read by `scripts/lib/adopters-evidence.mjs`, shared with the status-claims
   check, which now exempts every shipped pull request an entry gives.
 - **The threat-actor pages show NousResearch hermes-agent #9809 as closed.**
