@@ -685,7 +685,7 @@ async function main(): Promise<void> {
   // The workflow's ReDoS gate, on each regex alone; then rank by recovers, keep
   // each only for attacks no survivor above it recovers, cap.
   const fast = dropBacktracking(allSurvivors, (regex) => redosPrecheck(regex, REPO_ROOT));
-  const distinct = pickDistinct(fast, minRecovers);
+  const distinct = pickDistinct(fast.kept, minRecovers);
   for (const d of distinct.dropped) console.log(`[fn-mine]   overlap: drop ${d.candidate.cluster}: ${d.why}`);
   allSurvivors = [...distinct.kept];
   const picked = allSurvivors.slice(0, room);
@@ -695,7 +695,12 @@ async function main(): Promise<void> {
   if (picked.length === 0) {
     // A skipped corpus makes this a partial run, not an exhausted one.
     assertNullResultComplete([...skippedCorpora, ...failedCorpora]);
-    const note = describeNullResultByCorpus(perCorpus);
+    // Survivors the ReDoS precheck took all of are a null result too, and must
+    // say so: the per-corpus counts alone read as rules that survived.
+    const note =
+      fast.dropped > 0
+        ? `NULL RESULT — the ReDoS precheck dropped all ${fast.dropped} survivor(s) of the gate. ${describeNullResultByCorpus(perCorpus)}`
+        : describeNullResultByCorpus(perCorpus);
     console.log(`[fn-mine] ${note} Not an error.`);
     writeNullReport(note, selectedCorpora);
     console.log('::authored-files::');

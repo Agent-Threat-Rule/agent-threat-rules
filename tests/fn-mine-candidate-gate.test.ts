@@ -159,8 +159,20 @@ describe('dropBacktracking', () => {
     const kept = dropBacktracking([s('fast', 'f'), s('slow', 'z'), s('fast2', 'g')], (regex) =>
       regex === 'z' ? { kind: 'backtracks', detail: 'NEW ATR-2099-00001#0 0.85s' } : { kind: 'ok' },
     );
-    expect(kept.map((k) => k.cluster)).toEqual(['fast', 'fast2']);
+    expect(kept.kept.map((k) => k.cluster)).toEqual(['fast', 'fast2']);
+    expect(kept.dropped).toBe(1);
     expect(log.mock.calls.flat().join('\n')).toMatch(/drop slow: backtracks catastrophically/);
+  });
+
+  // Review of #818: a timeout on one regex used to abort the run and every survivor with it.
+  it('drops a regex whose precheck ran out of time, and keeps going', () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const r = dropBacktracking([s('slow', 'z'), s('fast', 'f')], (regex) =>
+      regex === 'z' ? { kind: 'unavailable', detail: 'spawnSync python3 ETIMEDOUT' } : { kind: 'ok' },
+    );
+    expect(r).toMatchObject({ dropped: 1 });
+    expect(r.kept.map((k) => k.cluster)).toEqual(['fast']);
+    expect(log.mock.calls.flat().join('\n')).toMatch(/drop slow: the ReDoS precheck ran out of time/);
   });
 
   it('throws when the precheck cannot run, rather than author regexes nobody timed', () => {

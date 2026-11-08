@@ -271,10 +271,6 @@ jobs:
       # these are the PR's rule checks, as promote-semantic.yml runs them, on
       # the tree about to be pushed. A failure fails the job before the push.
       # Keep them in sync with promote-semantic.yml and their source workflows.
-      - name: Install PyYAML for the ReDoS gate
-        if: steps.mine.outputs.files != ''
-        run: pip install PyYAML
-
       - name: Validate new rules
         if: steps.mine.outputs.files != ''
         run: npm run validate

@@ -139,22 +139,32 @@ export function gateCandidates(
  * verdict the workflow's ReDoS gate will give. Before 2026-11-08 the lane did
  * not run it: one slow regex (actions run 42447405455, ATR-2026-02880) failed
  * that gate for the whole batch of ten. Checked before pickDistinct, so a
- * dropped regex frees its place and does not displace an overlapping one. A
- * precheck that cannot run throws: authoring blind would sink the batch again.
+ * dropped regex frees its place and does not displace an overlapping one.
+ *
+ * A precheck that runs out of time drops that one regex: the script kills a
+ * single slow search in seconds, so a whole run out of time is the pattern,
+ * not the machine. A precheck that cannot run at all (no yaml, no python)
+ * throws: authoring blind would sink the batch again, for every regex alike.
  */
 export function dropBacktracking<T extends GatedCandidate>(
   survivors: readonly T[],
   precheck: (regex: string) => RedosVerdict,
-): T[] {
-  return survivors.filter((s) => {
+): { readonly kept: T[]; readonly dropped: number } {
+  let dropped = 0;
+  const kept = survivors.filter((s) => {
     const v = precheck(s.regex);
-    if (v.kind === 'unavailable') throw new Error(`ReDoS precheck could not run on ${s.cluster}: ${v.detail}`);
-    if (v.kind === 'backtracks') {
-      console.log(`[fn-mine]   drop ${s.cluster}: backtracks catastrophically under scripts/gate-redos.py`);
+    const timedOut = v.kind === 'unavailable' && /ETIMEDOUT/.test(v.detail);
+    if (v.kind === 'unavailable' && !timedOut) throw new Error(`ReDoS precheck could not run on ${s.cluster}: ${v.detail}`);
+    if (v.kind === 'backtracks' || timedOut) {
+      console.log(
+        `[fn-mine]   drop ${s.cluster}: ${timedOut ? 'the ReDoS precheck ran out of time on it' : 'backtracks catastrophically under scripts/gate-redos.py'}`,
+      );
+      dropped += 1;
       return false;
     }
     return true;
   });
+  return { kept, dropped };
 }
 
 /**
