@@ -149,23 +149,50 @@ describe("resume step", () => {
 function scheduledMineRun(sb: Sandbox): string {
   return (step(MINE).run ?? "")
     .replaceAll("${{ inputs.dry_run }}", "")
-    .replaceAll("${{ inputs.cap || '5' }}", "5")
     .replaceAll("/tmp/fn-mine.out", join(sb.root, "fn-mine.out"));
 }
+
+/** The step's env block as a scheduled run resolves it: cap falls back to 5, corpus is empty. */
+const SCHEDULED_INPUTS = { CAP_INPUT: "5", CORPUS_INPUT: "" };
 
 describe("mining step", () => {
   it("passes --dry-run when the resume step forced one", () => {
     const sb = sandbox("feature");
-    const res = runStep(sb, scheduledMineRun(sb), { FORCE_DRY_RUN: "true" });
+    const res = runStep(sb, scheduledMineRun(sb), { ...SCHEDULED_INPUTS, FORCE_DRY_RUN: "true" });
     expect(res.status, res.stderr).toBe(0);
     expect(res.stdout).toMatch(/npx-args: .*--dry-run/);
   });
 
   it("does not pass --dry-run on a normal scheduled run", () => {
     const sb = sandbox("main");
-    const res = runStep(sb, scheduledMineRun(sb));
+    const res = runStep(sb, scheduledMineRun(sb), SCHEDULED_INPUTS);
     expect(res.status, res.stderr).toBe(0);
     expect(res.stdout).not.toMatch(/--dry-run/);
+    expect(res.stdout).not.toMatch(/--corpus/);
+    expect(res.stdout).toMatch(/npx-args: .*--cap 5/);
+  });
+
+  it("passes a dispatched corpus through as --corpus", () => {
+    const sb = sandbox("main");
+    const res = runStep(sb, scheduledMineRun(sb), { ...SCHEDULED_INPUTS, CORPUS_INPUT: "nemotron-agentic-ipi,pint" });
+    expect(res.status, res.stderr).toBe(0);
+    expect(res.stdout).toMatch(/npx-args: .*--corpus nemotron-agentic-ipi,pint/);
+  });
+
+  // Dispatch inputs reach the script through env and are checked before use.
+  it("refuses a corpus or cap that is not a plain name list or integer", () => {
+    for (const bad of [{ CORPUS_INPUT: "pint; rm -rf ." }, { CORPUS_INPUT: "$(id)" }, { CAP_INPUT: "5 --dry-run" }, { CAP_INPUT: "" }]) {
+      const sb = sandbox("main");
+      const res = runStep(sb, scheduledMineRun(sb), { ...SCHEDULED_INPUTS, ...bad });
+      expect(res.status, JSON.stringify(bad)).not.toBe(0);
+      expect(res.stdout).not.toMatch(/npx-args/);
+    }
+  });
+
+  it("passes inputs through env, never interpolated into the script", () => {
+    const run = step(MINE).run ?? "";
+    expect(run).not.toMatch(/\$\{\{\s*inputs\.(cap|corpus)/);
+    expect(JSON.stringify(step(MINE).env ?? {})).toMatch(/CORPUS_INPUT.*CAP_INPUT/);
   });
 
   it("holds no GitHub token — it feeds attack payloads to a model CLI", () => {

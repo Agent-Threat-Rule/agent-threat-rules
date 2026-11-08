@@ -31,7 +31,14 @@
  * read fails the run instead: those are not empty weeks.
  *
  * Usage:
- *   npx tsx scripts/fn-mine-llm.ts [--dry-run] [--cap 5] [--min-recovers 8]
+ *   npx tsx scripts/fn-mine-llm.ts [--dry-run] [--cap 5] [--min-recovers 8] [--corpus a,b]
+ *
+ *   --corpus mines only the named MINED_CORPORA (comma-separated), for a
+ *   backfill on a newly vendored corpus without re-spending model calls on
+ *   the exhausted ones. An unknown name, or a value naming none, fails the run
+ *   before anything else (selectCorpora). The report's `corpora` lists what
+ *   this run was asked to mine, so a filtered null result is not read as the
+ *   whole lane's.
  *
  * Environment:
  *   CLAUDE_CODE_OAUTH_TOKEN (preferred) or ANTHROPIC_API_KEY — see scripts/lib/claude-client.ts
@@ -55,8 +62,8 @@ import {
   type CorpusStageCounts,
 } from './lib/fn-mine-input.js';
 import {
-  MINED_CORPORA,
   channelNote,
+  selectCorpora,
   falseNegatives,
   planChunks,
   unseenFirst,
@@ -354,9 +361,10 @@ function pendingNewRuleFiles(): number {
   return out.split('\n').filter((f) => /\.ya?ml$/.test(f)).length;
 }
 
-function writeNullReport(note: string): void {
+function writeNullReport(note: string, corpora: readonly MinedCorpusSpec[]): void {
   fs.mkdirSync(path.dirname(path.join(REPO_ROOT, REPORT_PATH)), { recursive: true });
-  fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify({ authored: [], note }, null, 2));
+  const report = { corpora: corpora.map((c) => c.name), authored: [], note };
+  fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify(report, null, 2));
 }
 
 /**
@@ -367,14 +375,14 @@ function writeNullReport(note: string): void {
  * makes a null result partial (assertNullResultComplete), not exhausted. Every
  * corpus unavailable fails the run.
  */
-function prepareCorpora(): {
+function prepareCorpora(selected: readonly MinedCorpusSpec[]): {
   readonly available: readonly MinedCorpusSpec[];
   readonly skipped: readonly string[];
 } {
   console.log('[fn-mine] regenerating FN reports against the current rule set...');
   const available: MinedCorpusSpec[] = [];
   const skipped: string[] = [];
-  for (const spec of MINED_CORPORA) {
+  for (const spec of selected) {
     try {
       if (spec.kind === 'vendored') {
         const problem = vendoredProblem(spec, REPO_ROOT);
@@ -406,7 +414,10 @@ function prepareCorpora(): {
 function readBenignGate(toolBenign: ToolOutputBenign): { benignTexts: readonly string[]; gateCorpus: GateCorpus } {
   const benignTexts = loadBenignTexts();
   console.log(`[fn-mine] benign gate corpus: ${benignTexts.length} records`);
-  console.log(`[fn-mine] benign tool-output corpus: ${toolBenign.emails.length} emails, ${toolBenign.pages.length} pages (every candidate, as tool_response)`);
+  console.log(
+    `[fn-mine] benign tool-output corpus: ${toolBenign.emails.length} emails, ${toolBenign.pages.length} pages, ` +
+      `${toolBenign.records.length} records (every candidate, as tool_response)`,
+  );
   const gateCorpus = prepareGateCorpus(loadBenignSamples(REPO_ROOT));
   if (gateCorpus.samples.length === 0) throw new Error('MEASUREMENT_CORPORA is empty: the visibility check would pass every candidate');
   return { benignTexts, gateCorpus };
@@ -416,7 +427,7 @@ function readBenignGate(toolBenign: ToolOutputBenign): { benignTexts: readonly s
 function gateReportNote(toolBenign: ToolOutputBenign): Record<string, unknown> {
   return {
     heldOut: { percent: HELD_OUT_PERCENT, minRecovers: MIN_HELD_OUT_RECOVERS },
-    toolOutputBenign: { emails: toolBenign.emails.length, pages: toolBenign.pages.length },
+    toolOutputBenign: { emails: toolBenign.emails.length, pages: toolBenign.pages.length, records: toolBenign.records.length },
   };
 }
 
@@ -425,7 +436,7 @@ interface MineSettings {
   readonly minRecovers: number;
   readonly benignTexts: readonly string[];
   readonly gateCorpus: GateCorpus;
-  /** Benign emails and pages every candidate is run against as tool output. */
+  /** Benign emails, pages and records every candidate is run against as tool output. */
   readonly toolBenign: ToolOutputBenign;
 }
 
@@ -560,14 +571,20 @@ async function main(): Promise<void> {
       cap: { type: 'string', default: '5' },
       'min-recovers': { type: 'string', default: '8' },
       model: { type: 'string', default: DEFAULT_MODEL },
+      corpus: { type: 'string', default: '' },
     },
   });
+  // Before anything else runs: an early return further down must not turn a typo green.
+  const selectedCorpora = selectCorpora(values.corpus as string);
   const cap = parseInt(values.cap as string, 10);
   const minRecovers = parseInt(values['min-recovers'] as string, 10);
   const model = values.model as string;
   const isDryRun = values['dry-run'] as boolean;
 
-  console.log(`[fn-mine] model=${model} cap=${cap} minRecovers=${minRecovers} dryRun=${isDryRun}`);
+  console.log(
+    `[fn-mine] model=${model} cap=${cap} minRecovers=${minRecovers} dryRun=${isDryRun}` +
+      (values.corpus ? ` corpora=${selectedCorpora.map((c) => c.name).join(',')}` : ''),
+  );
 
   // After the resume merged main in: a waiting rule whose id main took since
   // (another lane merged first) makes the rolling PR unmergeable. Say so here,
@@ -582,7 +599,7 @@ async function main(): Promise<void> {
       `NULL RESULT — this branch already adds ${pending} rule file(s) over main and the per-PR limit is ${perPrLimit}. ` +
       'Merge the rolling PR, or close it (the next run then starts fresh from main); nothing is mined until there is room.';
     console.log(`[fn-mine] ${note}`);
-    writeNullReport(note);
+    writeNullReport(note, selectedCorpora);
     console.log('::authored-files::');
     return;
   }
@@ -609,7 +626,7 @@ async function main(): Promise<void> {
   // Before any corpus is regenerated or any model credit spent: without these
   // no candidate can be gated, whichever corpus it comes from.
   const toolBenign = requireToolOutputBenign(REPO_ROOT);
-  const { available: availableCorpora, skipped: skippedCorpora } = prepareCorpora();
+  const { available: availableCorpora, skipped: skippedCorpora } = prepareCorpora(selectedCorpora);
   const { benignTexts, gateCorpus } = readBenignGate(toolBenign);
 
   const perCorpus: CorpusStageCounts[] = [];
@@ -660,7 +677,7 @@ async function main(): Promise<void> {
     assertNullResultComplete([...skippedCorpora, ...failedCorpora]);
     const note = describeNullResultByCorpus(perCorpus);
     console.log(`[fn-mine] ${note} Not an error.`);
-    writeNullReport(note);
+    writeNullReport(note, selectedCorpora);
     console.log('::authored-files::');
     return;
   }
@@ -733,7 +750,13 @@ async function main(): Promise<void> {
   }
 
   fs.mkdirSync(path.dirname(path.join(REPO_ROOT, REPORT_PATH)), { recursive: true });
-  const report = { authored: kept, deferred, notMined: [...skippedCorpora, ...failedCorpora], gate: gateReportNote(toolBenign) };
+  const report = {
+    corpora: selectedCorpora.map((c) => c.name),
+    authored: kept,
+    deferred,
+    notMined: [...skippedCorpora, ...failedCorpora],
+    gate: gateReportNote(toolBenign),
+  };
   fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify(report, null, 2));
   console.log(`[fn-mine] DONE — ${kept.length} rule(s) authored and gate-clean: ${kept.map((a) => a.id).join(', ')}`);
   console.log(`::authored-files::${kept.map((a) => a.file).join(',')}`);

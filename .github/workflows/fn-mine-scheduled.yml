@@ -2,7 +2,7 @@ name: Scheduled FN Mining (red-team false-negative sweep)
 
 # Weekly unattended counterpart to the interactive /fn-mine Claude Code
 # workflow. Regenerates fresh false-negative reports against the CURRENT
-# rule set for the corpora ATR has fixtures for (HackAPrompt, PINT), mines
+# rule set for the corpora in scripts/lib/fn-mine-corpora.ts, mines
 # generalizable candidates with Claude (scripts/fn-mine-llm.ts, through
 # scripts/lib/claude-client.ts), gates every
 # candidate against the full FN set + the full benign corpus with the exact
@@ -41,6 +41,10 @@ on:
         required: false
         default: false
         type: boolean
+      corpus:
+        description: 'Mine only these corpora, comma-separated (empty = all; for a backfill on a new corpus)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -191,11 +195,20 @@ jobs:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          # Through env, never interpolated into the script: dispatch inputs are caller text.
+          CORPUS_INPUT: ${{ inputs.corpus }}
+          CAP_INPUT: ${{ inputs.cap || '5' }}
         run: |
           set -eo pipefail
           DRY_RUN_FLAG=""
           if [ "${{ inputs.dry_run }}" = "true" ] || [ "${FORCE_DRY_RUN:-}" = "true" ]; then DRY_RUN_FLAG="--dry-run"; fi
-          npx tsx scripts/fn-mine-llm.ts $DRY_RUN_FLAG --cap "${{ inputs.cap || '5' }}" | tee /tmp/fn-mine.out
+          CORPUS_ARG=()
+          if [ -n "${CORPUS_INPUT:-}" ]; then
+            case "$CORPUS_INPUT" in *[!a-z0-9,-]*) echo "::error::corpus must be comma-separated corpus names"; exit 1 ;; esac
+            CORPUS_ARG=(--corpus "$CORPUS_INPUT")
+          fi
+          case "$CAP_INPUT" in ''|*[!0-9]*) echo "::error::cap must be a positive integer"; exit 1 ;; esac
+          npx tsx scripts/fn-mine-llm.ts $DRY_RUN_FLAG --cap "$CAP_INPUT" "${CORPUS_ARG[@]}" | tee /tmp/fn-mine.out
           FILES=$(grep "::authored-files::" /tmp/fn-mine.out | tail -1 | sed 's/::authored-files:://' || true)
           echo "files=$FILES" >> "$GITHUB_OUTPUT"
 

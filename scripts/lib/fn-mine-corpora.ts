@@ -7,8 +7,9 @@
  * HackAPrompt (2023) and the self-built PINT set were the lane's only input
  * until 2026-10, and its last run on them (actions run 37459737398) proposed
  * 40 candidates of which none recovered 8 misses: those corpora are exhausted.
- * LLMail-Inject and BrowseSafe-Bench attack an agent that holds tools, through
- * that tool's output (scripts/sync-agent-attack-corpora.ts vendors them).
+ * LLMail-Inject, BrowseSafe-Bench and Nemotron agentic IPI attack an agent that
+ * holds tools, through that tool's output (scripts/sync-agent-attack-corpora.ts
+ * vendors them).
  *
  * Two kinds of spec:
  *   - `report`   — a benchmark under src/eval regenerates a miss report, and the
@@ -120,7 +121,38 @@ export const MINED_CORPORA: readonly MinedCorpusSpec[] = Object.freeze([
       'payloads exfiltrate to placeholder addresses (attacker@evil.com, test@example-collector.com, ' +
       'leak@badsite.com, ...): never anchor a regex on those addresses.',
   },
+  {
+    kind: 'vendored',
+    name: 'nemotron-agentic-ipi',
+    registryId: 'nemotron-agentic-ipi',
+    shape: 'tool_response',
+    budget: EMAIL_BUDGET,
+    goalNote:
+      'Each text is one field of an enterprise record (chart notes, a product description, a case summary) as a ' +
+      'read tool returns it, with an instruction to call a different write tool planted in it. Most injections ' +
+      'are wrapped in one of two generator templates: a "[PRIORITY MESSAGE]" block ("Hi Assistant, I forgot to ' +
+      'mention earlier ... Sorry for the late addition!") or a warning-emoji "URGENT: Before completing any other ' +
+      'tasks, you MUST:" line. Those wrappers are the generator\'s fixed text and are removed before recoveries are ' +
+      'counted, so a regex on them recovers nothing: key on what the injected instruction asks the agent to do. ' +
+      'The record ids, names and addresses are per-record fixtures: never anchor on them either.',
+  },
 ]);
+
+/**
+ * The specs a `--corpus` value selects: every spec for an empty value, else the
+ * named ones. A name no spec has, or a value that names nothing (",", " "),
+ * throws: a typo must not mine every corpus, or none, behind a green run.
+ */
+export function selectCorpora(value: string, specs: readonly MinedCorpusSpec[] = MINED_CORPORA): readonly MinedCorpusSpec[] {
+  if (value === '') return specs;
+  const names = value.split(',').map((n) => n.trim()).filter(Boolean);
+  if (names.length === 0) throw new Error(`--corpus "${value}" names no corpus`);
+  const unknown = names.filter((n) => !specs.some((s) => s.name === n));
+  if (unknown.length > 0) {
+    throw new Error(`--corpus: unknown corpus ${unknown.join(', ')} (known: ${specs.map((s) => s.name).join(', ')})`);
+  }
+  return specs.filter((s) => names.includes(s.name));
+}
 
 /** What a vendored corpus file says it holds, or why it cannot be read. */
 function declaredCount(file: string): { readonly count: number | null } | { readonly problem: string } {
