@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 844
-- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 229
+- ATR rules total: 846
+- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 230
 - Distinct enterprise ATT&CK techniques referenced: 87
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 844
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 846
 - Distinct MITRE ATLAS techniques referenced: 62
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 844
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 846
 - ATR categories (distinct `tags.category` values): 10
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -108,7 +108,7 @@ against.
 | T1546.016 | Boot or Logon Autostart Execution: .pth Files | `ATR-2026-00544` | tool-poisoning |
 | T1547 | Boot or Logon Autostart Execution | `ATR-2026-00441`, `ATR-2026-02142` | privilege-escalation |
 | T1547.001 | Registry Run Keys / Startup Folder | `ATR-2026-00441` | privilege-escalation |
-| T1548 | Abuse Elevation Control Mechanism | `ATR-2026-00040`, `ATR-2026-02192`, `ATR-2026-02407` | privilege-escalation |
+| T1548 | Abuse Elevation Control Mechanism | `ATR-2026-00040`, `ATR-2026-02192`, `ATR-2026-02407`, `ATR-2026-02871` | privilege-escalation |
 | T1550 | Use Alternate Authentication Material | `ATR-2026-00074` | agent-manipulation |
 | T1550.001 | Application Access Token | `ATR-2026-02409` | excessive-autonomy |
 | T1552 | Unsecured Credentials | `ATR-2026-00212`, `ATR-2026-00431`, `ATR-2026-00524`, `ATR-2026-00534`, `ATR-2026-00546`, `ATR-2026-01931`, `ATR-2026-02002`, `ATR-2026-02007`, `ATR-2026-02017`, `ATR-2026-02146`, `ATR-2026-02570`, `ATR-2026-02867` | context-exfiltration, privilege-escalation, prompt-injection, tool-poisoning |
@@ -134,7 +134,7 @@ against.
 | T1598 | Phishing for Information | `ATR-2026-02847` | context-exfiltration |
 | T1611 | Escape to Host | `ATR-2026-00040`, `ATR-2026-00436`, `ATR-2026-00441`, `ATR-2026-00539`, `ATR-2026-01615`, `ATR-2026-02301`, `ATR-2026-02302`, `ATR-2026-02407` | privilege-escalation |
 | T1622 | Debugger Evasion | `ATR-2026-02005` | prompt-injection |
-| T1656 | Impersonation | `ATR-2026-02210` | prompt-injection |
+| T1656 | Impersonation | `ATR-2026-02210`, `ATR-2026-02871` | privilege-escalation, prompt-injection |
 | T1657 | Financial Theft | `ATR-2026-00860`, `ATR-2026-00861` | context-exfiltration |
 
 ## Crosswalk by ATR category
@@ -290,7 +290,7 @@ OWASP Agentic categories ATR adds: ASI04:2026, ASI05:2026
 
 ### privilege-escalation
 
-Rules in category: 79
+Rules in category: 80
 
 ATT&CK techniques (join key):
 
@@ -321,7 +321,7 @@ ATT&CK techniques (join key):
 | T1546.004 | Event Triggered Execution: Unix Shell Configuration Modification | `ATR-2026-02040` |
 | T1547 | Boot or Logon Autostart Execution | `ATR-2026-00441`, `ATR-2026-02142` |
 | T1547.001 | Registry Run Keys / Startup Folder | `ATR-2026-00441` |
-| T1548 | Abuse Elevation Control Mechanism | `ATR-2026-00040`, `ATR-2026-02192`, `ATR-2026-02407` |
+| T1548 | Abuse Elevation Control Mechanism | `ATR-2026-00040`, `ATR-2026-02192`, `ATR-2026-02407`, `ATR-2026-02871` |
 | T1552 | Unsecured Credentials | `ATR-2026-00546`, `ATR-2026-02146`, `ATR-2026-02867` |
 | T1552.005 | Cloud Instance Metadata API | `ATR-2026-00547` |
 | T1553 | Subvert Trust Controls | `ATR-2026-00539` |
@@ -329,6 +329,7 @@ ATT&CK techniques (join key):
 | T1562.001 | Disable or Modify Tools | `ATR-2026-02402`, `ATR-2026-02642` |
 | T1574.006 | Hijack Execution Flow: Dynamic Linker Hijacking | `ATR-2026-02195`, `ATR-2026-02300` |
 | T1611 | Escape to Host | `ATR-2026-00040`, `ATR-2026-00436`, `ATR-2026-00441`, `ATR-2026-00539`, `ATR-2026-01615`, `ATR-2026-02301`, `ATR-2026-02302`, `ATR-2026-02407` |
+| T1656 | Impersonation | `ATR-2026-02871` |
 
 ATLAS techniques ATR adds: AML.T0010, AML.T0011, AML.T0012, AML.T0024, AML.T0037, AML.T0040, AML.T0043, AML.T0047, AML.T0048, AML.T0049, AML.T0050, AML.T0051, AML.T0051.001, AML.T0053, AML.T0054, AML.T0055, AML.T0057, AML.T0080, AML.T0101, AML.T0105
 
@@ -336,7 +337,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### prompt-injection
 
-Rules in category: 254
+Rules in category: 255
 
 ATT&CK techniques (join key):
 
