@@ -1,8 +1,8 @@
 name: Scheduled FN Mining (red-team false-negative sweep)
 
-# Weekly unattended counterpart to the interactive /fn-mine Claude Code
+# Daily unattended counterpart to the interactive /fn-mine Claude Code
 # workflow. Regenerates fresh false-negative reports against the CURRENT
-# rule set for the corpora ATR has fixtures for (HackAPrompt, PINT), mines
+# rule set for the corpora in scripts/lib/fn-mine-corpora.ts, mines
 # generalizable candidates with Claude (scripts/fn-mine-llm.ts, through
 # scripts/lib/claude-client.ts), gates every
 # candidate against the full FN set + the full benign corpus with the exact
@@ -14,9 +14,9 @@ name: Scheduled FN Mining (red-team false-negative sweep)
 #   - Never auto-merges. Always opens a draft PR; a human decides.
 #   - A "null result" (nothing survived the gate) is a valid, quiet outcome —
 #     no PR is opened, no noise. See scripts/fn-mine-llm.ts's design notes:
-#     both corpora will naturally converge toward null results as their
-#     (finite, fixed-seed) reservoirs get mined out — that is expected, not
-#     a bug to chase.
+#     every corpus converges toward null results as its finite, fixed
+#     reservoir gets mined out — that is expected, not a bug to chase. The
+#     answer is a new corpus (scripts/sync-agent-attack-corpora.ts).
 #   - One rolling branch, fn-mine/rolling, and one open PR. Each run resumes the
 #     branch, so the rules already waiting in that PR are on disk and count as
 #     covering their clusters; a cluster is not mined twice while its rule waits.
@@ -27,9 +27,16 @@ name: Scheduled FN Mining (red-team false-negative sweep)
 
 on:
   schedule:
-    # Thursdays 09:00 UTC — matches the red-team cadence slot used by the
-    # interactive /fn-mine command.
+    # Every day at 09:00 UTC. Thursdays mine every corpus (the red-team cadence
+    # slot the interactive /fn-mine command uses); the other days mine only
+    # the corpora listed in the mining step's CORPUS_INPUT expression, the ones
+    # still yielding survivors, so a day's model
+    # calls are not spent re-proposing for corpora that are mined out. A day
+    # whose rolling PR already holds the per-PR limit of rules returns before
+    # any model call (authoringRoom), so daily runs never stack a second PR:
+    # merged or closed rolling PRs are what let the next run author.
     - cron: '0 9 * * 4'
+    - cron: '0 9 * * 0-3,5,6'
   workflow_dispatch:
     inputs:
       cap:
@@ -41,6 +48,10 @@ on:
         required: false
         default: false
         type: boolean
+      corpus:
+        description: 'Mine only these corpora, comma-separated (empty = all; for a backfill on a new corpus)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -191,11 +202,22 @@ jobs:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          # Through env, never interpolated into the script: dispatch inputs are caller text.
+          # The daily (non-Thursday) cron mines only the corpora named here.
+          # Edit the list when a corpus is added or mined out.
+          CORPUS_INPUT: ${{ github.event_name == 'schedule' && github.event.schedule == '0 9 * * 0-3,5,6' && 'nemotron-agentic-ipi' || inputs.corpus }}
+          CAP_INPUT: ${{ inputs.cap || '5' }}
         run: |
           set -eo pipefail
           DRY_RUN_FLAG=""
           if [ "${{ inputs.dry_run }}" = "true" ] || [ "${FORCE_DRY_RUN:-}" = "true" ]; then DRY_RUN_FLAG="--dry-run"; fi
-          npx tsx scripts/fn-mine-llm.ts $DRY_RUN_FLAG --cap "${{ inputs.cap || '5' }}" | tee /tmp/fn-mine.out
+          CORPUS_ARG=()
+          if [ -n "${CORPUS_INPUT:-}" ]; then
+            case "$CORPUS_INPUT" in *[!a-z0-9,-]*) echo "::error::corpus must be comma-separated corpus names"; exit 1 ;; esac
+            CORPUS_ARG=(--corpus "$CORPUS_INPUT")
+          fi
+          case "$CAP_INPUT" in ''|*[!0-9]*) echo "::error::cap must be a positive integer"; exit 1 ;; esac
+          npx tsx scripts/fn-mine-llm.ts $DRY_RUN_FLAG --cap "$CAP_INPUT" "${CORPUS_ARG[@]}" | tee /tmp/fn-mine.out
           FILES=$(grep "::authored-files::" /tmp/fn-mine.out | tail -1 | sed 's/::authored-files:://' || true)
           echo "files=$FILES" >> "$GITHUB_OUTPUT"
 
@@ -361,8 +383,8 @@ jobs:
           git commit -m "$(cat <<'EOF'
           feat(rules): scheduled FN-mine sweep
 
-          Unattended weekly red-team false-negative mining (HackAPrompt successful
-          submissions + PINT). Per-rule recovers and held-out counts are in the
+          Unattended daily red-team false-negative mining over the corpora in
+          scripts/lib/fn-mine-corpora.ts. Per-rule recovers and held-out counts are in the
           fn-mine-report artifact of the workflow run that pushed this commit.
           EOF
           )"
@@ -393,10 +415,11 @@ jobs:
             --label "auto-generated,fn-mine,needs-human-review" \
             --title "feat(rules): scheduled FN-mine sweep (rolling)" \
             --body "$(cat <<'EOF'
-          Unattended weekly false-negative mining (HackAPrompt successful submissions and
-          PINT), the scheduled counterpart to the interactive /fn-mine workflow.
+          Unattended daily false-negative mining over the corpora in
+          scripts/lib/fn-mine-corpora.ts (every corpus on Thursdays, the ones still yielding
+          on other days), the scheduled counterpart to the interactive /fn-mine workflow.
 
-          This is a rolling PR. Each Thursday run resumes fn-mine/rolling and adds the rules
+          This is a rolling PR. Each run resumes fn-mine/rolling and adds the rules
           it authored; clusters already covered by a rule on main or in this PR are skipped.
           Merge it when ready; the next run starts a new one.
 

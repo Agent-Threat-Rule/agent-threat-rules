@@ -2,7 +2,7 @@
  * scripts/lib/fn-mine-tool-benign.ts
  *
  * The FN-mine gate's tool-output check (scripts/fn-mine-llm.ts): a candidate
- * must fire on no benign email and no benign web page (the corpora in
+ * must fire on no benign email, web page or enterprise record (the corpora in
  * scripts/lib/tool-output-benign.ts), presented to the real engine as the text
  * a tool returned, the way coverageOf and liveMisses present LLMail and
  * BrowseSafe (tool_response, fn-mine-input.ts PRESENTATIONS).
@@ -25,13 +25,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import yaml from 'js-yaml';
 import { detectionsByRule } from './fn-mine-input.js';
-import { BENIGN_EMAILS, BENIGN_PAGES, type BenignSource } from './tool-output-benign.js';
+import { BENIGN_EMAILS, BENIGN_PAGES, BENIGN_RECORDS, type BenignSource } from './tool-output-benign.js';
 import { compileEngineAccurate, type GatedCandidate } from './fn-mine-candidate-gate.js';
 import { matchExcerpt } from './fn-mine-recoveries.js';
 
 export interface ToolOutputBenign {
   readonly emails: readonly string[];
   readonly pages: readonly string[];
+  /** Enterprise record fields (chart notes, product descriptions, case summaries) a read tool returns. */
+  readonly records: readonly string[];
 }
 
 /** The benign texts of one vendored corpus, or why they cannot be trusted. */
@@ -51,17 +53,19 @@ function readBenignFile(root: string, source: BenignSource): { texts: readonly s
   return { texts };
 }
 
-/** Both vendored corpora, or the first problem. */
+/** The three vendored corpora, or the first problem. */
 export function readToolOutputBenign(root: string): { corpus: ToolOutputBenign } | { problem: string } {
   const emails = readBenignFile(root, BENIGN_EMAILS);
   if ('problem' in emails) return emails;
   const pages = readBenignFile(root, BENIGN_PAGES);
   if ('problem' in pages) return pages;
-  return { corpus: { emails: emails.texts, pages: pages.texts } };
+  const records = readBenignFile(root, BENIGN_RECORDS);
+  if ('problem' in records) return records;
+  return { corpus: { emails: emails.texts, pages: pages.texts, records: records.texts } };
 }
 
 /**
- * Both vendored corpora, or an error that fails the run. Every candidate
+ * The vendored corpora, or an error that fails the run. Every candidate
  * needs them, whichever corpus it was mined from (see the module comment), so
  * without them the miner authors nothing rather than gate on prompts and code
  * alone and go green.
@@ -111,13 +115,19 @@ function hitSnippet(kind: string, text: string, regex: string): string {
   return `${kind}: ${excerpt.replace(/\s+/g, ' ').trim()}`;
 }
 
+/** Which corpus benign text `i` (in emails, pages, records order) came from. */
+function benignKind(i: number, benign: ToolOutputBenign): string {
+  if (i < benign.emails.length) return 'email';
+  return i < benign.emails.length + benign.pages.length ? 'page' : 'record';
+}
+
 /** Each candidate's verdict, in order, from one engine run over every benign text and every candidate's own texts. */
 export async function toolOutputVerdicts(
   candidates: readonly { readonly regex: string; readonly own: readonly string[] }[],
   benign: ToolOutputBenign,
 ): Promise<readonly ToolOutputVerdict[]> {
   if (candidates.length === 0) return [];
-  const benignTexts = [...benign.emails, ...benign.pages];
+  const benignTexts = [...benign.emails, ...benign.pages, ...benign.records];
   // Candidate i's own texts sit at [ownStart[i], ownStart[i] + own.length) after the benign texts.
   const ownStart: number[] = [];
   let next = benignTexts.length;
@@ -140,7 +150,7 @@ export async function toolOutputVerdicts(
         firesOnOwn: own,
         ...(first === undefined
           ? {}
-          : { firstHit: hitSnippet(first < benign.emails.length ? 'email' : 'page', benignTexts[first], c.regex) }),
+          : { firstHit: hitSnippet(benignKind(first, benign), benignTexts[first], c.regex) }),
       };
     });
   } finally {
