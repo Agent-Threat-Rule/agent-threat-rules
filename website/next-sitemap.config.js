@@ -7,7 +7,7 @@ module.exports = {
   outDir: "./out",
   generateIndexSitemap: false,
   // Privacy and Terms stay out of the sitemap while they are drafts (lib/legal.ts).
-  exclude: ["/icon.svg", "/favicon.ico", "/llms.txt", "/rules/index.json", "/rules/index.csv", "/en/privacy", "/zh/privacy", "/en/terms", "/zh/terms", "/en/community/membership", "/zh/community/membership", "/en/community/join", "/zh/community/join"],
+  exclude: ["/icon.svg", "/favicon.ico", "/llms.txt", "/rules/index.json", "/rules/index.csv", "/en/privacy", "/zh/privacy", "/en/terms", "/zh/terms", "/en/community/membership", "/zh/community/membership"],
   robotsTxtOptions: {
     policies: [
       { userAgent: "*", allow: "/" },
