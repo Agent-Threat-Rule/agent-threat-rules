@@ -4,7 +4,7 @@
  * requirement: recoveries on the texts the model was shown no longer suffice.
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { computeResidual, gateCandidates, type GateContext } from '../scripts/lib/fn-mine-candidate-gate.js';
+import { computeResidual, gateCandidates, pickDistinct, type GateContext, type GatedCandidate } from '../scripts/lib/fn-mine-candidate-gate.js';
 import { MIN_HELD_OUT_RECOVERS, seenLines, splitHeldOut } from '../scripts/lib/fn-mine-heldout.js';
 import { prepareGateCorpus } from '../scripts/lib/semantic-gate.js';
 import { VISIBILITY_FLOOR } from '../scripts/lib/visibility-scan.js';
@@ -91,5 +91,47 @@ describe('computeResidual', () => {
     const held = new Set(heldOut);
     expect(residual.some((t) => held.has(t))).toBe(false);
     expect(residual.every((t) => /unrelated/.test(t))).toBe(true);
+  });
+});
+
+describe('pickDistinct', () => {
+  const keys = (from: number, to: number): string[] => Array.from({ length: to - from }, (_, i) => `k${from + i}`);
+  const survivor = (cluster: string, regex: string, k: string[] | undefined, corpus = 'c'): GatedCandidate & { corpus: string } => ({
+    cluster,
+    regex,
+    category: 'prompt-injection',
+    rationale: 'test',
+    recovers: k?.length ?? 10,
+    heldOutRecovers: 2,
+    benignFP: 0,
+    exampleFNs: ['x'],
+    recoveryKeys: k,
+    corpus,
+  });
+
+  // The 2026-11-08 run authored two job-offer rules worded differently over the same attacks.
+  it('drops a survivor whose recoveries the survivors above it already cover', () => {
+    const { kept, dropped } = pickDistinct(
+      [survivor('offer-b', 'b', keys(0, 20)), survivor('offer-a', 'a', keys(0, 26)), survivor('notes', 'n', keys(40, 60))],
+      8,
+    );
+    expect(kept.map((k) => k.cluster)).toEqual(['offer-a', 'notes']);
+    expect(dropped.map((d) => [d.candidate.cluster, d.why])).toEqual([
+      ['offer-b', 'only 0 of its 20 recoveries are new beyond the survivors ranked above it (< 8)'],
+    ]);
+  });
+
+  it('keeps an overlapping survivor that still adds minRecovers new attacks', () => {
+    const { kept } = pickDistinct([survivor('a', 'a', keys(0, 20)), survivor('b', 'b', keys(12, 30))], 8);
+    expect(kept.map((k) => k.cluster)).toEqual(['a', 'b']);
+  });
+
+  it('counts overlap within a corpus only, and falls back to the exact regex without keys', () => {
+    const { kept, dropped } = pickDistinct(
+      [survivor('a', 'r', keys(0, 10), 'c1'), survivor('b', 'q', keys(0, 10), 'c2'), survivor('c', ' r ', undefined), survivor('d', 's', undefined)],
+      8,
+    );
+    expect(kept.map((k) => k.cluster)).toEqual(['a', 'b', 'd']);
+    expect(dropped.map((d) => d.candidate.cluster)).toEqual(['c']);
   });
 });

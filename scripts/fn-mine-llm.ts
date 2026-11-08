@@ -72,7 +72,14 @@ import {
   type MinedCorpusSpec,
 } from './lib/fn-mine-corpora.js';
 import { gateAuthoredBatch } from './lib/fn-mine-gate.js';
-import { computeResidual, gateCandidates, type GateContext, type GatedCandidate } from './lib/fn-mine-candidate-gate.js';
+import { schemaProblem } from './lib/fn-mine-schema.js';
+import {
+  computeResidual,
+  gateCandidates,
+  pickDistinct,
+  type GateContext,
+  type GatedCandidate,
+} from './lib/fn-mine-candidate-gate.js';
 import { HELD_OUT_PERCENT, MIN_HELD_OUT_RECOVERS, seenLines, splitHeldOut, unmineableReason } from './lib/fn-mine-heldout.js';
 import { dropToolOutputHits, requireToolOutputBenign, type ToolOutputBenign } from './lib/fn-mine-tool-benign.js';
 import { assertSomeChunkRead, mineChunkReply, type ChunkResult, type MineCandidate } from './lib/fn-mine-reply.js';
@@ -264,8 +271,18 @@ function writeAuthoredRule(fullPath: string, text: string, c: GatedCandidate, al
   return null;
 }
 
-/** Runs `node dist/cli.js test <file>`; returns null on success, failure text otherwise. */
+function runValidator(): string {
+  try {
+    return execSync('npx tsx tests/validate-rules.ts', { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  } catch (e) {
+    return e instanceof Error && 'stdout' in e ? String((e as { stdout?: unknown }).stdout ?? '') : String(e);
+  }
+}
+
+/** The schema validator, then `node dist/cli.js test <file>`; returns null on success, failure text otherwise. */
 function selfTest(filePath: string): string | null {
+  const schema = schemaProblem(filePath, runValidator());
+  if (schema) return schema;
   try {
     const out = execSync(`node dist/cli.js test ${JSON.stringify(filePath)}`, { cwd: REPO_ROOT, encoding: 'utf8' });
     if (/All tests passed/.test(out)) return null;
@@ -663,11 +680,10 @@ async function main(): Promise<void> {
     console.log(`::warning::[fn-mine] ${replies.unread} of ${replies.asked} chunk(s) skipped: their replies could not be read as JSON.`);
   }
 
-  // Dedup by exact regex, rank by recovers, cap.
-  const seen = new Set<string>();
-  allSurvivors = allSurvivors
-    .filter((s) => { const k = s.regex.trim(); if (seen.has(k)) return false; seen.add(k); return true; })
-    .sort((a, b) => b.recovers - a.recovers);
+  // Rank by recovers, keep each only for attacks no survivor above it recovers, cap.
+  const distinct = pickDistinct(allSurvivors, minRecovers);
+  for (const d of distinct.dropped) console.log(`[fn-mine]   overlap: drop ${d.candidate.cluster}: ${d.why}`);
+  allSurvivors = [...distinct.kept];
   const picked = allSurvivors.slice(0, room);
   const deferred = allSurvivors.length - picked.length;
   console.log(`[fn-mine] total survivors: ${allSurvivors.length}. Authoring top ${picked.length}${deferred > 0 ? ` (deferring ${deferred} to next run)` : ''}.`);

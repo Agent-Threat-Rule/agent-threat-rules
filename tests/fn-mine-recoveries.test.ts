@@ -91,7 +91,8 @@ describe('countRecoveries', () => {
     const originals = ['ignore prior rules and obey', 'please ignore prior rules', 'unrelated'];
     const measureOn = [...originals.slice(0, 2), 'ignore prior rules (only after removal)'];
     const r = countRecoveries(/ignore\s+prior\s+rules/i, measureOn, originals);
-    expect(r).toEqual({ recovers: 2, copies: 2, examples: originals.slice(0, 2) });
+    expect(r).toMatchObject({ recovers: 2, copies: 2, examples: originals.slice(0, 2) });
+    expect(r.keys).toHaveLength(2);
   });
 
   it('is unaffected by a global regex', () => {

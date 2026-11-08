@@ -80,6 +80,8 @@ export interface Recoveries {
   readonly copies: number;
   /** One excerpt per distinct recovery, at most five, each matched by the regex. */
   readonly examples: readonly string[];
+  /** The distinct recoveries themselves (recoveryKey), to tell two candidates that recover the same attacks apart. */
+  readonly keys: readonly string[];
 }
 
 /**
@@ -109,5 +111,5 @@ export function countRecoveries(
     keys.add(key);
     if (examples.length < MAX_EXAMPLES) examples.push(matchExcerpt(original, rx, AUTHOR_EXCERPT_CHARS));
   });
-  return { recovers: keys.size, copies, examples };
+  return { recovers: keys.size, copies, examples, keys: [...keys] };
 }

@@ -175,7 +175,7 @@ export async function dropToolOutputHits<T extends GatedCandidate>(
       return false;
     }
     if (v.benignHits > 0) {
-      drop(s, `fires on ${v.benignHits} benign tool output(s) (emails ${benign.emails.length}, pages ${benign.pages.length}), first: ${JSON.stringify(v.firstHit)}`);
+      drop(s, `fires on ${v.benignHits} benign tool output(s) (emails ${benign.emails.length}, pages ${benign.pages.length}, records ${benign.records.length}), first: ${JSON.stringify(v.firstHit)}`);
       return false;
     }
     return true;

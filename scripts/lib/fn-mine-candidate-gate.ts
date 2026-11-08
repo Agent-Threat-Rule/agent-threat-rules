@@ -42,6 +42,8 @@ export interface GatedCandidate extends MineCandidate {
   benignFP: number;
   /** Excerpts around the match, verbatim (countRecoveries): what the true positives are cut from. Minable texts only. */
   exampleFNs: readonly string[];
+  /** The distinct minable attacks it recovers (countRecoveries keys), for pickDistinct. */
+  recoveryKeys?: readonly string[];
 }
 
 export interface GateContext {
@@ -66,12 +68,12 @@ function minableRecoveries(
   minRecovers: number,
   gate: GateContext,
   drop: Drop,
-): { recovers: number; examples: readonly string[] } | null {
+): { recovers: number; examples: readonly string[]; keys: readonly string[] } | null {
   // Counted on measureOn, so a regex that only recovers a benchmark's scoring
   // strings recovers nothing, and as distinct attacks, so copies of one
   // template sentence count once. Examples are excerpts of the real texts.
-  const { recovers, copies, examples } = countRecoveries(re, gate.measureOn, fullFn);
-  if (recovers >= minRecovers) return examples.length > 0 ? { recovers, examples } : null;
+  const { recovers, copies, examples, keys } = countRecoveries(re, gate.measureOn, fullFn);
+  if (recovers >= minRecovers) return examples.length > 0 ? { recovers, examples, keys } : null;
   if (copies >= minRecovers) {
     drop(c, `recovers ${copies} texts but only ${recovers} distinct line(s) < ${minRecovers}: copies of one template`);
   } else if (gate.measureOn !== fullFn && fullFn.filter((t) => re.test(t)).length >= minRecovers) {
@@ -117,9 +119,53 @@ export function gateCandidates(
     const visibility = visibilityProblem(c.regex, gate.corpus);
     if (visibility) { drop(c, visibility); continue; }
     if (hitsBenign(re, benignTexts)) continue;
-    survivors.push({ ...c, recovers: minable.recovers, heldOutRecovers, benignFP: 0, exampleFNs: minable.examples });
+    survivors.push({
+      ...c,
+      recovers: minable.recovers,
+      heldOutRecovers,
+      benignFP: 0,
+      exampleFNs: minable.examples,
+      recoveryKeys: minable.keys,
+    });
   }
   return survivors;
+}
+
+/**
+ * Survivors worth authoring, best first: ranked by recoveries, each kept only
+ * when it recovers at least `minRecovers` attacks of its corpus that no
+ * survivor kept before it does. Round 1 and the residual round both propose
+ * for the same clusters, so two regexes worded differently can recover the
+ * same attacks; authoring both doubles a reviewer's work for no recall (the
+ * 2026-11-08 run wrote two job-offer, two appointment-cancellation and two
+ * referral rules). A survivor without keys falls back to the exact-regex
+ * check. `dropped` says why each one went.
+ */
+export function pickDistinct<T extends GatedCandidate & { readonly corpus: string }>(
+  survivors: readonly T[],
+  minRecovers: number,
+): { readonly kept: readonly T[]; readonly dropped: readonly { readonly candidate: T; readonly why: string }[] } {
+  const covered = new Map<string, Set<string>>();
+  const regexes = new Set<string>();
+  const kept: T[] = [];
+  const dropped: { candidate: T; why: string }[] = [];
+  for (const s of [...survivors].sort((a, b) => b.recovers - a.recovers)) {
+    const regex = s.regex.trim();
+    if (regexes.has(regex)) {
+      dropped.push({ candidate: s, why: 'same regex as a survivor ranked above it' });
+      continue;
+    }
+    const seen = covered.get(s.corpus) ?? new Set<string>();
+    const fresh = (s.recoveryKeys ?? []).filter((k) => !seen.has(k));
+    if (s.recoveryKeys && fresh.length < minRecovers) {
+      dropped.push({ candidate: s, why: `only ${fresh.length} of its ${s.recovers} recoveries are new beyond the survivors ranked above it (< ${minRecovers})` });
+      continue;
+    }
+    regexes.add(regex);
+    covered.set(s.corpus, new Set([...seen, ...fresh]));
+    kept.push(s);
+  }
+  return { kept, dropped };
 }
 
 /** The FN texts no survivor matches: what the residual round mines. */
