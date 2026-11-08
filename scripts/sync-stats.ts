@@ -35,11 +35,6 @@ interface Stats {
     owaspAgentic: { display: string };
     safeMcp: { covered: number; total: number; display: string; basis: string };
   };
-  adoption: {
-    externalOrgsMerged: number;
-    externalPRMergesTotal: number;
-    tier1Institutions: number;
-  };
   license: string;
 }
 
