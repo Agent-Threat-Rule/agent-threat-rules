@@ -19,6 +19,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { load } from "js-yaml";
+import { MINED_CORPORA } from "../scripts/lib/fn-mine-corpora.js";
 
 const WORKFLOW = resolve(__dirname, "..", ".github", "workflows", "fn-mine-scheduled.yml");
 const RESUME = "Resume the rolling branch";
@@ -187,6 +188,18 @@ describe("mining step", () => {
       expect(res.status, JSON.stringify(bad)).not.toBe(0);
       expect(res.stdout).not.toMatch(/npx-args/);
     }
+  });
+
+  // The daily cron names its corpora in an expression; a rename must not leave
+  // it mining a corpus that no longer exists (the run would fail every day).
+  it("runs every day, every corpus on Thursdays and only known corpora on the others", () => {
+    const wf = load(readFileSync(WORKFLOW, "utf8")) as { on: { schedule: { cron: string }[] } };
+    expect(wf.on.schedule.map((s) => s.cron)).toEqual(["0 9 * * 4", "0 9 * * 0-3,5,6"]);
+    const expr = String((step(MINE).env ?? {}).CORPUS_INPUT);
+    expect(expr).toContain("github.event.schedule == '0 9 * * 0-3,5,6'");
+    const fresh = /&& '([a-z0-9,-]+)' \|\| inputs\.corpus/.exec(expr)?.[1] ?? "";
+    expect(fresh).not.toBe("");
+    for (const name of fresh.split(",")) expect(MINED_CORPORA.map((c) => c.name)).toContain(name);
   });
 
   it("passes inputs through env, never interpolated into the script", () => {

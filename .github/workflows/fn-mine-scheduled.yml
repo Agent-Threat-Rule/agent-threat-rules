@@ -1,6 +1,6 @@
 name: Scheduled FN Mining (red-team false-negative sweep)
 
-# Weekly unattended counterpart to the interactive /fn-mine Claude Code
+# Daily unattended counterpart to the interactive /fn-mine Claude Code
 # workflow. Regenerates fresh false-negative reports against the CURRENT
 # rule set for the corpora in scripts/lib/fn-mine-corpora.ts, mines
 # generalizable candidates with Claude (scripts/fn-mine-llm.ts, through
@@ -27,9 +27,15 @@ name: Scheduled FN Mining (red-team false-negative sweep)
 
 on:
   schedule:
-    # Thursdays 09:00 UTC — matches the red-team cadence slot used by the
-    # interactive /fn-mine command.
+    # Every day at 09:00 UTC. Thursdays mine every corpus (the red-team cadence
+    # slot the interactive /fn-mine command uses); the other days mine only
+    # FRESH_CORPORA below, the ones still yielding survivors, so a day's model
+    # calls are not spent re-proposing for corpora that are mined out. A day
+    # whose rolling PR already holds the per-PR limit of rules returns before
+    # any model call (authoringRoom), so daily runs never stack a second PR:
+    # merged or closed rolling PRs are what let the next run author.
     - cron: '0 9 * * 4'
+    - cron: '0 9 * * 0-3,5,6'
   workflow_dispatch:
     inputs:
       cap:
@@ -196,7 +202,9 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           # Through env, never interpolated into the script: dispatch inputs are caller text.
-          CORPUS_INPUT: ${{ inputs.corpus }}
+          # FRESH_CORPORA: the daily (non-Thursday) cron mines these only.
+          # Edit the list when a corpus is added or mined out.
+          CORPUS_INPUT: ${{ github.event_name == 'schedule' && github.event.schedule == '0 9 * * 0-3,5,6' && 'nemotron-agentic-ipi' || inputs.corpus }}
           CAP_INPUT: ${{ inputs.cap || '5' }}
         run: |
           set -eo pipefail
@@ -374,8 +382,8 @@ jobs:
           git commit -m "$(cat <<'EOF'
           feat(rules): scheduled FN-mine sweep
 
-          Unattended weekly red-team false-negative mining (HackAPrompt successful
-          submissions + PINT). Per-rule recovers and held-out counts are in the
+          Unattended daily red-team false-negative mining over the corpora in
+          scripts/lib/fn-mine-corpora.ts. Per-rule recovers and held-out counts are in the
           fn-mine-report artifact of the workflow run that pushed this commit.
           EOF
           )"
@@ -406,10 +414,11 @@ jobs:
             --label "auto-generated,fn-mine,needs-human-review" \
             --title "feat(rules): scheduled FN-mine sweep (rolling)" \
             --body "$(cat <<'EOF'
-          Unattended weekly false-negative mining (HackAPrompt successful submissions and
-          PINT), the scheduled counterpart to the interactive /fn-mine workflow.
+          Unattended daily false-negative mining over the corpora in
+          scripts/lib/fn-mine-corpora.ts (every corpus on Thursdays, the ones still yielding
+          on other days), the scheduled counterpart to the interactive /fn-mine workflow.
 
-          This is a rolling PR. Each Thursday run resumes fn-mine/rolling and adds the rules
+          This is a rolling PR. Each run resumes fn-mine/rolling and adds the rules
           it authored; clusters already covered by a rule on main or in this PR are skipped.
           Merge it when ready; the next run starts a new one.
 
