@@ -25,14 +25,17 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import yaml from 'js-yaml';
 import { detectionsByRule } from './fn-mine-input.js';
-import { BENIGN_EMAILS, BENIGN_PAGES, BENIGN_RECORDS, type BenignSource } from './tool-output-benign.js';
+import { BENIGN_EMAILS, BENIGN_PAGES, BENIGN_RECORDS, BENIGN_TASKS, type BenignSource } from './tool-output-benign.js';
 import { compileEngineAccurate, type GatedCandidate } from './fn-mine-candidate-gate.js';
 import { matchExcerpt } from './fn-mine-recoveries.js';
 
 export interface ToolOutputBenign {
   readonly emails: readonly string[];
   readonly pages: readonly string[];
-  /** Enterprise record fields (chart notes, product descriptions, case summaries) a read tool returns. */
+  /**
+   * Enterprise record fields (chart notes, product descriptions, case summaries)
+   * and the benign task requests of the same records, as a read tool returns them.
+   */
   readonly records: readonly string[];
 }
 
@@ -53,7 +56,7 @@ function readBenignFile(root: string, source: BenignSource): { texts: readonly s
   return { texts };
 }
 
-/** The three vendored corpora, or the first problem. */
+/** The vendored corpora (emails, pages, records and tasks), or the first problem. */
 export function readToolOutputBenign(root: string): { corpus: ToolOutputBenign } | { problem: string } {
   const emails = readBenignFile(root, BENIGN_EMAILS);
   if ('problem' in emails) return emails;
@@ -61,7 +64,9 @@ export function readToolOutputBenign(root: string): { corpus: ToolOutputBenign }
   if ('problem' in pages) return pages;
   const records = readBenignFile(root, BENIGN_RECORDS);
   if ('problem' in records) return records;
-  return { corpus: { emails: emails.texts, pages: pages.texts, records: records.texts } };
+  const tasks = readBenignFile(root, BENIGN_TASKS);
+  if ('problem' in tasks) return tasks;
+  return { corpus: { emails: emails.texts, pages: pages.texts, records: [...records.texts, ...tasks.texts] } };
 }
 
 /**

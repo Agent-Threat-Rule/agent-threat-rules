@@ -62,6 +62,7 @@ import {
   type CorpusStageCounts,
 } from './lib/fn-mine-input.js';
 import {
+  MINED_CORPORA,
   channelNote,
   selectCorpora,
   falseNegatives,
@@ -260,7 +261,12 @@ function slugify(s: string): string {
  * conditions the model copied or altered. Returns why it could not, for the
  * corrective retry, or null once written.
  */
-function writeAuthoredRule(fullPath: string, text: string, c: GatedCandidate, allowlists: OwaspAllowlists): string | null {
+function writeAuthoredRule(
+  fullPath: string,
+  text: string,
+  c: GatedCandidate & { readonly corpus: string },
+  allowlists: OwaspAllowlists,
+): string | null {
   let doc: unknown;
   try {
     doc = yaml.load(text);
@@ -269,7 +275,10 @@ function writeAuthoredRule(fullPath: string, text: string, c: GatedCandidate, al
   }
   if (!doc || typeof doc !== 'object' || Array.isArray(doc)) return 'the output is not a single YAML mapping';
   const category = c.category as ATRCategory; // checked by isRuleCategory in the gate
-  fs.writeFileSync(fullPath, yaml.dump(finalizeAuthoredRule(doc as Record<string, unknown>, category, allowlists, c.regex), RULE_YAML_OPTIONS));
+  // A rule mined from a corpus that reaches the agent as tool output looks at tool output only.
+  const shape = MINED_CORPORA.find((spec) => spec.name === c.corpus)?.shape ?? 'llm_input';
+  const rule = finalizeAuthoredRule(doc as Record<string, unknown>, category, allowlists, c.regex, new Date(), shape);
+  fs.writeFileSync(fullPath, yaml.dump(rule, RULE_YAML_OPTIONS));
   return null;
 }
 

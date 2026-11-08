@@ -146,7 +146,8 @@ describe('readToolOutputBenign', () => {
     if ('corpus' in r) {
       expect(r.corpus.emails.length).toBeGreaterThan(500);
       expect(r.corpus.pages.length).toBeGreaterThan(500);
-      expect(r.corpus.records.length).toBeGreaterThan(1000);
+      // records: 3,000 record fields and 1,271 user tasks of the same records
+      expect(r.corpus.records.length).toBeGreaterThan(4000);
     }
   });
 

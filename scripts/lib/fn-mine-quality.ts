@@ -13,6 +13,7 @@
  * model say it, so a regex on it recovers the benchmark and detects nothing a
  * real attacker sends.
  */
+import type { DeliveryShape } from './fn-corpora.js';
 import { DEFAULT_OWASP_LLM_BY_CATEGORY, normalizeReferences, type OwaspAllowlists } from './normalize-references.js';
 import { fallbackVisibility, re2Findings, unportableEscapes, type GateCorpus } from './semantic-gate.js';
 import { VISIBILITY_FLOOR } from './visibility-scan.js';
@@ -184,12 +185,12 @@ function earnedResponse(doc: Doc): Doc | undefined {
  * description for the condition is kept, and the rest of the block
  * (false_positives) with it.
  */
-function gatedDetection(doc: Doc, regex: string): Doc {
+function gatedDetection(doc: Doc, regex: string, shape: DeliveryShape): Doc {
   const detection = doc.detection && typeof doc.detection === 'object' ? (doc.detection as Doc) : {};
   const written = Array.isArray(detection.conditions) ? (detection.conditions as Doc[]) : [];
   const described = written.find((c) => c && typeof c.description === 'string');
   const condition = {
-    field: 'content',
+    field: shape === 'tool_response' ? 'tool_response' : 'content',
     operator: 'regex',
     value: regex,
     ...(described ? { description: described.description } : {}),
@@ -219,12 +220,28 @@ export function authoredRuleDate(at: Date): string {
  * model's: the author prompt says to copy the reference rule, and ATR-2026-02851,
  * 02855 and 02861 shipped with its date, 2026/03/08.
  */
+/**
+ * Where a rule mined from a `tool_response` corpus looks: the tool's output
+ * only (agent_source mcp_exchange, field tool_response), as ATR-2026-02861 was
+ * scoped in #671. Authored as llm_io on content, such a rule also ran on what
+ * the user types, and an instruction an attacker plants in a record reads like
+ * the user's own request: the Nemotron sweep of 2026-11-08 fired on 13, 7 and
+ * 2 of 1,271 benign user tasks before review scoped it.
+ */
+function scopedToShape(doc: Doc, shape: DeliveryShape): Doc {
+  if (shape !== 'tool_response') return {};
+  const agentSource = doc.agent_source && typeof doc.agent_source === 'object' ? (doc.agent_source as Doc) : {};
+  const tags = doc.tags && typeof doc.tags === 'object' ? (doc.tags as Doc) : {};
+  return { tags: { ...tags, scan_target: 'mcp' }, agent_source: { ...agentSource, type: 'mcp_exchange' } };
+}
+
 export function finalizeAuthoredRule(
   doc: Doc,
   category: ATRCategory,
   allowlists: OwaspAllowlists,
   gatedRegex: string,
   authoredAt: Date = new Date(),
+  shape: DeliveryShape = 'llm_input',
 ): Record<string, unknown> {
   const { wild_fp_rate: _unmeasured, ...rest } = doc;
   const references = (doc.references && typeof doc.references === 'object' ? doc.references : {}) as Doc;
@@ -235,11 +252,12 @@ export function finalizeAuthoredRule(
   const response = earnedResponse(doc);
   return {
     ...rest,
+    ...scopedToShape(doc, shape),
     date: authoredRuleDate(authoredAt),
     status: 'experimental',
     maturity: AUTHORED_MATURITY,
     references: { ...references, ...owasp },
-    detection: gatedDetection(doc, gatedRegex),
+    detection: gatedDetection(doc, gatedRegex, shape),
     ...(response ? { response } : {}),
   };
 }

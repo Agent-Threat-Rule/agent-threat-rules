@@ -107,6 +107,16 @@ export const BENIGN_RECORDS: BenignSource = Object.freeze({
   licenseUrl: NEMOTRON_IPI.licenseUrl,
 });
 
+export const BENIGN_TASKS: BenignSource = Object.freeze({
+  id: 'nemotron-tasks',
+  repo: NEMOTRON_IPI.repo,
+  revision: NEMOTRON_IPI.revision,
+  license: 'cc-by-4.0',
+  path: 'data/fn-mine-benign/nemotron-tasks/corpus.json',
+  attribution: NEMOTRON_IPI.copyright,
+  licenseUrl: NEMOTRON_IPI.licenseUrl,
+});
+
 /** The Apache-2.0 text, vendored beside the emails (Apache-2.0 section 4(a)), and its sha256. */
 export const APACHE_2_0_URL = 'https://www.apache.org/licenses/LICENSE-2.0.txt';
 export const APACHE_2_0_SHA256 = 'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30';
@@ -306,6 +316,42 @@ export function nemotronBenignRows(raw: readonly NemotronRawRow[]): readonly Cor
   return [...seen.values()];
 }
 
+/** A Nemotron record's opening request, the user turn of responses_create_params.input. */
+interface NemotronRequest {
+  readonly responses_create_params?: { readonly input?: readonly { readonly role?: unknown; readonly content?: unknown }[] };
+}
+
+/** A Responses API turn's text: a string, or the `text` of each content part. */
+function turnText(content: unknown): string {
+  if (typeof content === 'string') return content.trim();
+  if (!Array.isArray(content)) return '';
+  return content
+    .map((part) => (part && typeof part === 'object' && typeof (part as { text?: unknown }).text === 'string' ? (part as { text: string }).text : ''))
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+}
+
+/**
+ * The benign request each Nemotron record starts from, as the user wrote it
+ * ("Check the interview schedule for candidate ... and, if the feedback is
+ * positive, send an offer email to ..."). An injection in the same records
+ * asks for the same actions in the same words, so these are its twins: a rule
+ * that fires on them fires on a ticket, task or assignment a tool returns.
+ * Family is the record's domain. One row per distinct text.
+ */
+export function nemotronTaskRows(raw: readonly (NemotronRawRow & NemotronRequest)[]): readonly CorpusRow[] {
+  const seen = new Map<string, CorpusRow>();
+  for (const row of raw) {
+    for (const turn of row.responses_create_params?.input ?? []) {
+      if (turn.role !== 'user') continue;
+      const text = turnText(turn.content);
+      if (text.length >= MIN_RECORD_CHARS && !seen.has(text)) seen.set(text, { text, family: row.domain ?? 'unknown' });
+    }
+  }
+  return [...seen.values()];
+}
+
 // ---------------------------------------------------------------------------
 // Output documents
 // ---------------------------------------------------------------------------
@@ -345,10 +391,18 @@ function licenseSection(source: BenignSource): readonly string[] {
       `The rows in corpus.json are adapted from ${source.repo} (${source.attribution}), licensed under CC BY 4.0`,
       `(${source.licenseUrl}).`,
       '',
-      "Changes: each row is one prose field of a record's environment, extracted from its record and trimmed; a",
-      "record's injection, and any field holding one, is removed; fields under 40 characters are dropped; rows are",
-      "deduplicated and reordered as the row filter says; a label (\"benign\") and a family (the record's domain) are",
-      'added to each row.',
+      ...(source.id === BENIGN_TASKS.id
+        ? [
+            "Changes: each row is the user turn of one record's request, extracted from its record and trimmed; the rest",
+            'of each record is dropped; rows are deduplicated and reordered as the row filter says; a label ("benign")',
+            "and a family (the record's domain) are added to each row.",
+          ]
+        : [
+            "Changes: each row is one prose field of a record's environment, extracted from its record and trimmed; a",
+            "record's injection, and any field holding one, is removed; fields under 40 characters are dropped; rows are",
+            'deduplicated and reordered as the row filter says; a label ("benign") and a family (the record\'s domain) are',
+            'added to each row.',
+          ]),
     ];
   }
   if (source.license === 'mit') {

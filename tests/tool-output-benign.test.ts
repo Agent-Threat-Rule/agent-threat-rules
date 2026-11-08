@@ -15,10 +15,12 @@ import {
   BENIGN_PAGES,
   BENIGN_EMAILS,
   BENIGN_RECORDS,
+  BENIGN_TASKS,
   MAX_BENIGN_PAGE_CHARS,
   benignDocument,
   benignSourceMarkdown,
   nemotronBenignRows,
+  nemotronTaskRows,
   benignPageRows,
   jsonObjects,
   panzaRow,
@@ -173,8 +175,24 @@ describe('nemotronBenignRows', () => {
   });
 });
 
+describe('nemotronTaskRows', () => {
+  const rec = (domain: string, user: unknown) => ({
+    domain,
+    responses_create_params: { input: [{ role: 'system', content: 'You are an HR assistant with tools.' }, { role: 'user', content: user }] },
+  });
+
+  it("keeps each record's user request once, under its domain, never the system turn", () => {
+    const ask = 'Check the interview schedule for candidate C-1 and, if positive, send an offer email to them.';
+    const rows = nemotronTaskRows([rec('hr', ask), rec('hr', ask), rec('legal', [{ type: 'input_text', text: 'Summarise case CIV-1 and add a note to the client file.' }])]);
+    expect(rows).toEqual([
+      { text: ask, family: 'hr' },
+      { text: 'Summarise case CIV-1 and add a note to the client file.', family: 'legal' },
+    ]);
+  });
+});
+
 describe('vendored tool-output benign corpora', () => {
-  for (const source of [BENIGN_EMAILS, BENIGN_PAGES, BENIGN_RECORDS]) {
+  for (const source of [BENIGN_EMAILS, BENIGN_PAGES, BENIGN_RECORDS, BENIGN_TASKS]) {
     describe(source.id, () => {
       const file = resolve(REPO_ROOT, source.path);
       const doc = JSON.parse(readFileSync(file, 'utf8')) as {
