@@ -160,10 +160,10 @@ async function callViaGrok(system: string, user: string): Promise<string> {
     "--no-subagents",
     "--disable-web-search",
     "--output-format", "plain",
-    // No tools and two turns: the call is a single answer, and an agent that
-    // decides to explore spends the whole timeout doing it.
+    // No tools: the call is a single answer, and an agent that decides to
+    // explore spends the whole timeout doing it. No --max-turns: with the
+    // miner's system prompt a cap of 2 ended every call "Max turns reached".
     "--tools", "",
-    "--max-turns", "2",
     "--cwd", dir,
   ];
   if (process.env.ATR_GROK_MODEL) args.push("--model", process.env.ATR_GROK_MODEL);
