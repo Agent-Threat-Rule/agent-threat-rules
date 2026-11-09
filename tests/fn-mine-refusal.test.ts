@@ -4,7 +4,7 @@
  * first chunk.
  */
 import { describe, it, expect } from 'vitest';
-import { isRefusal, mineRefusalSafe, refusalModels } from '../scripts/lib/fn-mine-refusal.js';
+import { isRefusal, isTimeout, mineRefusalSafe, refusalModels } from '../scripts/lib/fn-mine-refusal.js';
 import type { ChunkResult } from '../scripts/lib/fn-mine-reply.js';
 
 const REFUSED = new Error("claude CLI exited 1: API Error: Sonnet 5 can't help with this. Start a new session to continue.");
@@ -42,6 +42,12 @@ describe('mineRefusalSafe', () => {
     expect(r.dropped).toBe(4);
     expect(r.candidates.length).toBeGreaterThan(1);
     expect(r.read).toBe(true);
+  });
+
+  it('returns a chunk every model timed out on as unread, not as a failed corpus', async () => {
+    const r = await mineRefusalSafe(texts, async () => { throw new Error('claude CLI timed out after 600000ms'); }, ['a', 'b'], () => {});
+    expect(r).toMatchObject({ candidates: [], read: false, dropped: 0 });
+    expect(isTimeout(new Error('claude CLI timed out after 600000ms'))).toBe(true);
   });
 
   it('rethrows anything that is not a refusal', async () => {

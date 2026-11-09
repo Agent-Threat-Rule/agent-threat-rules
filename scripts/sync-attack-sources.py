@@ -334,7 +334,7 @@ SOURCES: list[dict] = [
      'about': 'Hand-written injections by category (instruction override, role-play, extraction, encoding) and benign prompts.'},
     {'id': 'k8s-resource-pi', 'kind': 'hf', 'repo': 'rgeada/k8s-resource-prompt-injection',
      'rev': '68de771d06a47f85f4383d07556321d4f3c1f99a', 'license': 'apache-2.0', 'files': ['k8s_injections_test.csv'],
-     'pick': label_pick('text', 'label'), 'shape': 'tool_response',
+     'pick': label_pick('text', 'label'), 'shape': 'tool_response', 'payload_key': 'injection',
      'about': 'Real Kubernetes manifests from public repositories as a cluster tool returns them, with injections planted in annotations and fields; the clean manifests as benign.'},
     {'id': 'agentshield-corpus', 'kind': 'gh', 'repo': 'doronp/agentshield-benchmark',
      'rev': '235b6e3acacee6f54824c797a628e027ea5620ca', 'license': 'Apache-2.0',
@@ -589,11 +589,23 @@ def keep(texts: Iterable[str], cap: int = CAP) -> list[str]:
 
 
 def build(src: dict) -> tuple[list[str], list[str]]:
+    """The source's attack and benign texts. With `payload_key`, one attack row per
+    distinct planted payload (its first 80 characters, case and whitespace
+    folded): a generator that tiles one payload into many
+    carriers would otherwise give a rule keyed on it dozens of "recoveries"
+    that are one attack."""
     attacks, benign = [], []
+    payloads: set[str] = set()
     for r in source_rows(src):
         if not isinstance(r, dict):
             continue
         for role, text in src['pick'](r):
+            if role == 'attack' and src.get('payload_key'):
+                # The opening of the payload: a tiled payload repeats itself to fill a field.
+                key = re.sub(r'\s+', ' ', str(r.get(src['payload_key']) or '')).strip().lower()[:80]
+                if key in payloads:
+                    continue
+                payloads.add(key)
             (attacks if role == 'attack' else benign).append(text)
     return keep(attacks), keep(benign)
 

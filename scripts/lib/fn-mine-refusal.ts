@@ -21,6 +21,11 @@ export function isRefusal(e: unknown): boolean {
   return REFUSAL.test(e instanceof Error ? e.message : String(e));
 }
 
+/** A call that ran out of time; run 42545372643 lost english-pi-3k whole to one. */
+export function isTimeout(e: unknown): boolean {
+  return /timed out after \d+ms/i.test(e instanceof Error ? e.message : String(e));
+}
+
 /** A refused piece no larger than this is dropped instead of split again. */
 export const MIN_SPLIT = 8;
 
@@ -45,16 +50,26 @@ export async function mineRefusalSafe(
 ): Promise<RefusalSafeResult> {
   if (models.length === 0) throw new Error('mineRefusalSafe needs at least one model');
   let refusals = 0;
+  let timeouts = 0;
   for (const model of models) {
     try {
       const r = await ask(texts, model);
       return { ...r, dropped: 0, refusals };
     } catch (e) {
+      if (isTimeout(e)) {
+        // A slow call is the chunk, not the corpus: try the next model, and
+        // if every model times out, return the chunk unread (assertSomeChunkRead
+        // still fails a run that read nothing).
+        timeouts += 1;
+        warn(`${model} timed out on ${texts.length} text(s)`);
+        continue;
+      }
       if (!isRefusal(e)) throw e;
       refusals += 1;
       warn(`${model} declined ${texts.length} text(s)`);
     }
   }
+  if (timeouts > 0 && refusals === 0) return { candidates: [], read: false, dropped: 0, refusals };
   if (texts.length <= minSplit) {
     warn(`dropping ${texts.length} text(s) every model declined`);
     return { candidates: [], read: true, dropped: texts.length, refusals };

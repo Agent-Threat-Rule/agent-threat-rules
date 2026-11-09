@@ -325,8 +325,30 @@ function sampleKey(text: string): string {
 }
 
 /**
- * Out-of-sample attacks `regex` recovers, by corpus, skipping `minedFrom` and
- * any sample elsewhere that `minedFrom` also holds (sampleKey).
+ * Corpora built from another corpus's attacks, so neither is out of sample for
+ * the other. sampleKey catches a republished text; these hold the same payload
+ * inside different text. k8s-resource-pi plants neuralchemy-pi's injections in
+ * Kubernetes manifests (its builder says so); garak-full's dan and inthewild
+ * probes are the TrustAIRLab jailbreak collection and its promptinject probe is
+ * PromptInject; deepset is half of multilingual-pi.
+ */
+const DERIVED_FROM: readonly (readonly string[])[] = Object.freeze([
+  ['k8s-resource-pi', 'neuralchemy-pi'],
+  ['garak-full', 'in-the-wild-jailbreak', 'jailbreak-cls', 'promptinject'],
+  ['deepset', 'multilingual-pi'],
+]);
+
+/** `minedFrom` and every corpus that shares its attacks by construction. */
+export function sameFamily(minedFrom: string): ReadonlySet<string> {
+  const out = new Set([minedFrom]);
+  for (const group of DERIVED_FROM) if (group.includes(minedFrom)) for (const id of group) out.add(id);
+  return out;
+}
+
+/**
+ * Out-of-sample attacks `regex` recovers, by corpus, skipping `minedFrom`, the
+ * corpora derived from it or it from them (sameFamily), and any sample
+ * elsewhere that `minedFrom` also holds (sampleKey).
  */
 export function outOfSampleRecoveries(
   regex: string,
@@ -336,9 +358,10 @@ export function outOfSampleRecoveries(
   const re = compileEngineAccurate(regex);
   if (!re) return {};
   const mined = new Set(corpora.find((c) => c.id === minedFrom)?.texts.map(sampleKey) ?? []);
+  const family = sameFamily(minedFrom);
   const out: Record<string, number> = {};
   for (const c of corpora) {
-    if (c.id === minedFrom) continue;
+    if (family.has(c.id)) continue;
     const n = c.texts.filter((t) => !mined.has(sampleKey(t)) && re.test(t)).length;
     if (n > 0) out[c.id] = n;
   }
@@ -353,7 +376,8 @@ export function outOfSampleProblem(regex: string, corpora: readonly OutOfSampleC
   const hits = outOfSampleRecoveries(regex, corpora, minedFrom);
   const total = Object.values(hits).reduce((a, b) => a + b, 0);
   if (total >= MIN_OUT_OF_SAMPLE) return null;
-  const names = corpora.filter((c) => c.id !== minedFrom).map((c) => c.id).join(', ');
+  const family = sameFamily(minedFrom);
+  const names = corpora.filter((c) => !family.has(c.id)).map((c) => c.id).join(', ');
   return `recovers no attack outside ${minedFrom} (checked: ${names}): its held-out recoveries share the mined corpus's generator`;
 }
 
