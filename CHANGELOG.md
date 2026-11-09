@@ -4,6 +4,17 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- `references.owasp_ast` on four rules named an OWASP Agentic Skills Top 10
+  control with a title that control does not have. Each now names the control
+  that matches the rule, with its published title: ATR-2026-00134 (fork-claim
+  impersonation) AST04 -> AST02 Supply Chain Compromise; ATR-2026-00126 (rug-pull
+  setup) AST06 -> AST07 Update Drift; ATR-2026-00127 (subcommand overflow)
+  AST02 -> AST03 Over-Privileged Skills; ATR-2026-02500 (prompt-layer
+  self-replication) AST02 -> AST05 Untrusted External Instructions. Metadata
+  only; detection is unchanged.
+
 ## [4.3.1] - 2026-11-08
 
 A patch release that narrows thirteen rules that matched ordinary code,
