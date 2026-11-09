@@ -53,7 +53,7 @@ import { join } from 'node:path';
 import { CORPORA } from './fn-corpora.js';
 import { compileEngineAccurate } from './fn-mine-candidate-gate.js';
 import { OOS_SOURCES, readOosTexts } from './fn-mine-oos.js';
-import { withoutBenchmarkArtifacts } from './fn-mine-quality.js';
+import { withoutBenchmarkArtifacts, withoutScoringStrings } from './fn-mine-quality.js';
 
 // ---------------------------------------------------------------------------
 // Injection signals
@@ -282,7 +282,7 @@ function readVendoredOos(root: string): { corpora: readonly OutOfSampleCorpus[] 
   for (const source of OOS_SOURCES) {
     const read = readOosTexts(root, source);
     if ('problem' in read) return { problem: read.problem };
-    corpora.push({ id: source.id, texts: read.texts });
+    corpora.push({ id: source.id, texts: read.texts.map((t) => withoutScoringStrings(source.id, t)) });
   }
   return { corpora };
 }
@@ -302,7 +302,10 @@ export function readOutOfSample(root: string): readonly OutOfSampleCorpus[] {
   const vendoredIds = new Set(vendored.corpora.map((c) => c.id));
   for (const def of CORPORA) {
     if (!def.usable || NOT_OUT_OF_SAMPLE.has(def.id) || vendoredIds.has(def.id) || !existsSync(join(root, def.path))) continue;
-    const texts = def.load(root).filter((s) => s.label === 'attack').map((s) => s.text);
+    const texts = def
+      .load(root)
+      .filter((s) => s.label === 'attack')
+      .map((s) => withoutScoringStrings(def.id, s.text));
     if (texts.length > 0) registry.push({ id: def.id, texts });
   }
   return [...vendored.corpora, ...registry];

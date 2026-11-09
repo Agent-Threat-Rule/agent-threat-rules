@@ -50,14 +50,19 @@ jobs:
         run: |
           set -eo pipefail
           python3 scripts/sync-attack-sources.py --write | grep -v '^skipped ' | tee "$RUNNER_TEMP/sync.txt"
-          sha256sum data/fn-mine-oos/*/corpus.json data/fn-mine-benign/hard-negatives/*/corpus.json > "$RUNNER_TEMP/hashes.txt"
-          if ! git diff --quiet -- data/fn-mine-oos data/fn-mine-benign/hard-negatives; then
-            git diff --stat -- data/fn-mine-oos data/fn-mine-benign/hard-negatives
+          # The corpora the two older sync scripts write (AgentDojo, InjecAgent,
+          # Spikee, ASB, BIPIA, GenTel, Gandalf, Mosscap, deepset, jailbreak-cls and
+          # the business tool-output benign sets) are held to the same check.
+          python3 scripts/sync-oos-corpora.py --write | grep -v '^skipped '
+          python3 scripts/sync-generalization-corpora.py --write | grep -v '^skipped '
+          sha256sum data/fn-mine-oos/*/corpus.json data/fn-mine-benign/*/corpus.json data/fn-mine-benign/hard-negatives/*/corpus.json > "$RUNNER_TEMP/hashes.txt"
+          if ! git diff --quiet -- data/fn-mine-oos data/fn-mine-benign; then
+            git diff --stat -- data/fn-mine-oos data/fn-mine-benign
             echo "::error::a pinned source no longer reproduces the committed corpus; re-pin it in a reviewed PR"
             exit 1
           fi
-          if [ -n "$(git status --porcelain -- data/fn-mine-oos data/fn-mine-benign/hard-negatives)" ]; then
-            git status --porcelain -- data/fn-mine-oos data/fn-mine-benign/hard-negatives
+          if [ -n "$(git status --porcelain -- data/fn-mine-oos data/fn-mine-benign)" ]; then
+            git status --porcelain -- data/fn-mine-oos data/fn-mine-benign
             echo "::error::the sync wrote a corpus that is not committed; vendor it in a reviewed PR"
             exit 1
           fi

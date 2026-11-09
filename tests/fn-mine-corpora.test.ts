@@ -73,13 +73,18 @@ describe('MINED_CORPORA', () => {
       ['llmail-inject', 'vendored', 'tool_response'],
       ['browsesafe-bench', 'vendored', 'tool_response'],
       ['nemotron-agentic-ipi', 'vendored', 'tool_response'],
+      ['garak-full', 'vendored', 'llm_input'],
+      ['promptinject', 'vendored', 'llm_input'],
+      ['llm-guard', 'vendored', 'llm_input'],
+      ['nemo-guardrails', 'vendored', 'llm_input'],
+      ['promptfoo', 'vendored', 'llm_input'],
     ]);
   });
 
-  it('mines every out-of-sample corpus with its registered shape, after the original five', () => {
+  it('mines every out-of-sample corpus with its registered shape, after the report and registry corpora', () => {
     const oos = MINED_CORPORA.filter((s) => s.kind === 'oos');
     expect(oos.map((s) => [s.name, s.shape])).toEqual(OOS_SOURCES.map((s) => [s.id, s.shape]));
-    expect(MINED_CORPORA.findIndex((s) => s.kind === 'oos')).toBe(5);
+    expect(MINED_CORPORA.findIndex((s) => s.kind === 'oos')).toBe(10);
     for (const spec of oos) expect(minedCorpusProblem(spec, REPO_ROOT), spec.name).toBeNull();
   });
 
@@ -87,7 +92,7 @@ describe('MINED_CORPORA', () => {
     for (const spec of MINED_CORPORA.filter((s): s is VendoredCorpusSpec => s.kind === 'vendored')) {
       const def = corpusById(spec.registryId);
       expect(def?.usable, spec.name).toBe(true);
-      expect(def?.eventShape, spec.name).toBe(spec.shape);
+      expect(def?.eventShape ?? 'llm_input', spec.name).toBe(spec.shape);
       expect(vendoredProblem(spec, REPO_ROOT), spec.name).toBeNull();
     }
   });

@@ -33,12 +33,13 @@ name: Scheduled FN Mining (red-team false-negative sweep)
 on:
   schedule:
     # Every day at 09:00 UTC. Each day mines its seventh of MINED_CORPORA
-    # (scripts/lib/fn-mine-rotation.ts deals them round-robin by weekday), so
-    # every attack corpus the repo vendors is mined once a week and a day's job
-    # stays well inside the six-hour limit. A corpus added to MINED_CORPORA joins
-    # the rotation with no edit here. A manual dispatch with an empty corpus
-    # list mines every corpus.
+    # (scripts/lib/fn-mine-rotation.ts deals them round-robin into fourteen
+    # slots, two runs a day), so every attack corpus the repo vendors is mined
+    # once a week and one run stays near two hours, well inside the six-hour
+    # limit. A corpus added to MINED_CORPORA joins the rotation with no edit
+    # here. A manual dispatch with an empty corpus list mines every corpus.
     - cron: '0 9 * * *'
+    - cron: '0 21 * * *'
   workflow_dispatch:
     inputs:
       cap:
@@ -238,14 +239,14 @@ jobs:
           npm install -g @anthropic-ai/claude-code
 
 
-      - name: Pick today's corpora (seven-day rotation)
+      - name: Pick this run's corpora (two slots a day, fourteen a week)
         id: rotation
         if: github.event_name == 'schedule'
         run: |
           set -euo pipefail
           CORPORA=$(npx tsx scripts/fn-mine-rotation.ts)
           if [ -z "$CORPORA" ]; then
-            echo "::error::today's rotation bucket is empty"
+            echo "::error::this run's rotation slot is empty"
             exit 1
           fi
           echo "Mining today: $CORPORA"
@@ -485,7 +486,7 @@ jobs:
             --title "feat(rules): scheduled FN-mine sweep (${BRANCH#fn-mine/})" \
             --body "$(cat <<'EOF'
           Unattended daily false-negative mining over the corpora in
-          scripts/lib/fn-mine-corpora.ts (each corpus once a week on a seven-day rotation,
+          scripts/lib/fn-mine-corpora.ts (each corpus once a week, two rotation slots a day,
           scripts/lib/fn-mine-rotation.ts), the scheduled counterpart to the interactive /fn-mine workflow.
 
           This is a rolling PR. Each run resumes its branch while it has room and adds the rules

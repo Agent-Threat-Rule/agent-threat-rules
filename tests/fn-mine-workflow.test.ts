@@ -192,9 +192,9 @@ describe("mining step", () => {
 
   // The daily cron mines that weekday's rotation bucket (scripts/fn-mine-rotation.ts),
   // so every mined corpus gets a slot each week with no corpus list in the workflow.
-  it("runs every day and mines the rotation bucket the rotation step picks", () => {
+  it("runs twice a day and mines the rotation slot the rotation step picks", () => {
     const wf = load(readFileSync(WORKFLOW, "utf8")) as { on: { schedule: { cron: string }[] } };
-    expect(wf.on.schedule.map((s) => s.cron)).toEqual(["0 9 * * *"]);
+    expect(wf.on.schedule.map((s) => s.cron)).toEqual(["0 9 * * *", "0 21 * * *"]);
     const expr = String((step(MINE).env ?? {}).CORPUS_INPUT);
     expect(expr).toContain("steps.rotation.outputs.corpora");
     expect(expr).not.toMatch(/&& '[a-z0-9,-]+' \|\|/);

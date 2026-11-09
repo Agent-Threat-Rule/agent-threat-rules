@@ -16,7 +16,7 @@ import { join, resolve } from 'node:path';
 import { OOS_SOURCES, readOosTexts } from '../scripts/lib/fn-mine-oos.js';
 import { MINED_CORPORA } from '../scripts/lib/fn-mine-corpora.js';
 import { outOfSampleRecoveries, readOutOfSample } from '../scripts/lib/fn-mine-generalization.js';
-import { ROTATION_DAYS, rotationFor, weeklyRotation } from '../scripts/lib/fn-mine-rotation.js';
+import { ROTATION_SLOTS, rotationFor, slotAt, weeklyRotation } from '../scripts/lib/fn-mine-rotation.js';
 import { addPendingRules } from '../scripts/lib/fn-mine-input.js';
 
 const REPO_ROOT = resolve(__dirname, '..');
@@ -52,7 +52,7 @@ describe('attack-source registry', () => {
     };
     for (const s of manifest.sources) {
       expect(s.rev, s.id).toMatch(/^[0-9a-f]{7,40}$/);
-      expect(['mit', 'apache-2.0', 'cc-by-4.0']).toContain(s.license.toLowerCase());
+      expect(['mit', 'apache-2.0', 'cc-by-4.0', 'odc-by']).toContain(s.license.toLowerCase());
       const dir = existsSync(join(OOS_DIR, s.id)) ? join(OOS_DIR, s.id) : join(HARD_NEGATIVES, s.id);
       expect(existsSync(join(dir, 'SOURCE.md')), s.id).toBe(true);
       expect(readdirSync(dir).some((f) => f.startsWith('LICENSE')), s.id).toBe(true);
@@ -88,17 +88,46 @@ describe('attack-source registry', () => {
   });
 });
 
+describe('scoring strings in the out-of-sample count', () => {
+  // A rule keyed on a benchmark's goal string would otherwise recover that
+  // string wherever another benchmark reuses it (k8s-resource-pi plants
+  // HackAPrompt's sentence; garak reuses PromptInject's rogue strings).
+  it.each([
+    ['HackAPrompt goal', '(?i)\\bI\\s+have\\s+been\\s+PWNED\\b'],
+    ['PromptInject rogue string', '(?i)\\bkill\\s+all\\s+humans\\b'],
+    ['garak marker', '(?i)AI\\s+Injection\\s+succeeded'],
+  ])('gives a rule keyed on the %s no out-of-sample recovery', (_name, regex) => {
+    const pool = readOutOfSample(REPO_ROOT);
+    expect(outOfSampleRecoveries(regex, pool, 'hackaprompt')).toEqual({});
+  });
+
+  it('mines garak-full without its non-injection probes', () => {
+    const garak = MINED_CORPORA.find((c) => c.name === 'garak-full');
+    expect(garak && 'sampleIdPrefixes' in garak ? garak.sampleIdPrefixes : undefined).toBeDefined();
+    const prefixes = (garak as { sampleIdPrefixes: readonly string[] }).sampleIdPrefixes;
+    for (const p of ['garak-snowball', 'garak-harmbench', 'garak-packagehallucination']) {
+      expect(prefixes.some((x) => p.startsWith(x))).toBe(false);
+    }
+  });
+});
+
 describe('weekly mining rotation', () => {
-  it('puts every mined corpus on exactly one weekday', () => {
+  it('puts every mined corpus in exactly one slot', () => {
     const week = weeklyRotation();
-    expect(week.length).toBe(ROTATION_DAYS);
+    expect(week.length).toBe(ROTATION_SLOTS);
     const all = week.flat();
     expect([...all].sort()).toEqual(MINED_CORPORA.map((c) => c.name).sort());
     for (const day of week) expect(day.length).toBeGreaterThan(0);
   });
 
   it('refuses a weekday outside 0..6', () => {
-    for (const bad of [-1, 7, 1.5, Number.NaN]) expect(() => rotationFor(bad)).toThrow();
+    for (const bad of [-1, ROTATION_SLOTS, 1.5, Number.NaN]) expect(() => rotationFor(bad)).toThrow();
+  });
+
+  it('maps the 09:00 and 21:00 UTC runs to consecutive slots', () => {
+    expect(slotAt(new Date('2026-11-08T09:00:00Z'))).toBe(0); // Sunday
+    expect(slotAt(new Date('2026-11-08T21:00:00Z'))).toBe(1);
+    expect(slotAt(new Date('2026-11-14T21:00:00Z'))).toBe(ROTATION_SLOTS - 1); // Saturday
   });
 });
 

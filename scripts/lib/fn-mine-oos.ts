@@ -91,6 +91,32 @@ export const OOS_SOURCES: readonly OosSource[] = Object.freeze([
   oos('k8s-resource-pi', 'tool_response', 'sync-attack-sources.py',
     'The planted payloads are HackAPrompt-style canaries ("I have been PWNED") inside real manifests; the manifest fields ' +
     'and repository names are fixtures: never anchor on the canary or on Kubernetes keys.'),
+  oos('agentshield-corpus', 'llm_input', 'sync-attack-sources.py'),
+  oos('turkish-conversation-pi', 'llm_input', 'sync-attack-sources.py'),
+  oos('turkish-pi-1k', 'llm_input', 'sync-attack-sources.py'),
+  oos('multilingual-pi-catalog', 'llm_input', 'sync-attack-sources.py'),
+  oos('turkish-pi-catalog', 'llm_input', 'sync-attack-sources.py'),
+  oos('pi-classification', 'llm_input', 'sync-attack-sources.py',
+    'Rows ask for a {SECRET} or {PASSWORD} placeholder: never anchor on the placeholder.'),
+  oos('cyberec-pi', 'llm_input', 'sync-attack-sources.py'),
+  oos('wallet-agent-pi', 'llm_input', 'sync-attack-sources.py',
+    'Rows carry the generator\'s placeholders (<TKN>, <ATTACKER_ADDRESS>, wallet names): never anchor on them; ' +
+    'key on how the text overrides the wallet agent.'),
+  oos('role-confusion-pi', 'llm_input', 'sync-attack-sources.py'),
+  oos('sandbox-claim-pi', 'llm_input', 'sync-attack-sources.py'),
+  oos('mirror-pi', 'llm_input', 'sync-attack-sources.py',
+    'Each attack has a benign mirror on the same topic (the FLUX persona, for one): never anchor on the topic or persona name.'),
+  oos('gptoss-synthetic-pi', 'llm_input', 'sync-attack-sources.py'),
+  oos('pi-benign-pairs-500', 'llm_input', 'sync-attack-sources.py'),
+  oos('vietnamese-pi', 'llm_input', 'sync-attack-sources.py'),
+  oos('german-pi-rewrites', 'llm_input', 'sync-attack-sources.py'),
+  oos('trustllm-jailbreak-triggers', 'llm_input', 'sync-attack-sources.py',
+    'Each trigger wraps a harmful question the benchmark supplies; key on the trigger (a forced opening, a refusal ban, ' +
+    'a format demand), never on the question.'),
+  oos('greek-jailbreak-templates', 'llm_input', 'sync-attack-sources.py'),
+  oos('guardrail-eval-pi', 'llm_input', 'sync-attack-sources.py'),
+  oos('role-play-jailbreak-tweets', 'llm_input', 'sync-attack-sources.py',
+    'Every row asks for a tweet about a disaster: never anchor on "tweet" or the disaster; key on the role-play pressure.'),
 ]);
 
 export function oosSource(id: string): OosSource | undefined {
