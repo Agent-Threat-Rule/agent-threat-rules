@@ -160,8 +160,10 @@ function syncQuickStart(s: Stats): SyncResult {
 // corpus count); body coverage counts ("12 rules across ...", "462-rule corpus")
 // and version strings are left untouched. The legacy v1.0.0 OWASP-MAPPING.md is
 // intentionally excluded — its 108-rule body is a frozen snapshot, not the live corpus.
+// OWASP-AST10-MAPPING.md is excluded too: scripts/generate-ast-crosswalk.py writes
+// it, and its first "N rules" is a per-control count, not the corpus total.
 const CROSSWALK_DOCS = [
-  'SAFE-MCP-MAPPING.md', 'FIVE-EYES-MAPPING.md', 'OWASP-AST10-MAPPING.md', 'NSA-MCP-MAPPING.md',
+  'SAFE-MCP-MAPPING.md', 'FIVE-EYES-MAPPING.md', 'NSA-MCP-MAPPING.md',
   'ETSI-TS-104223-MAPPING.md', 'FINOS-AI-GOVERNANCE-MAPPING.md', 'MCP-38-MAPPING.md',
   'MITRE-ATLAS-MAPPING.md', 'OWASP-AGENTIC-MAPPING.md', 'OWASP-AGENTIC-MATURITY-MAPPING.md',
   'OWASP-AISVS-MAPPING.md', 'OWASP-AIVSS-MAPPING.md',

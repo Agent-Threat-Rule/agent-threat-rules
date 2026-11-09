@@ -188,12 +188,12 @@ jobs:
           echo "ROLLING_RESUMED=1" >> "$GITHUB_ENV"
           git checkout -B "$BRANCH" "origin/$BRANCH"
           if ! git merge --no-edit origin/main; then
-            # The two count caches and the two crosswalk documents are generated from
+            # The two count caches and the three crosswalk documents are generated from
             # rules/, and main's rule PRs and reconcile-stats bot rewrite them, so they
-            # collide on most merges. Take main's copy to clear the markers; all four
+            # collide on most merges. Take main's copy to clear the markers; all five
             # are regenerated from the merged tree after authoring, before the tests.
             # A conflict anywhere else still needs a human.
-            DERIVED='stats\.json|data/stats\.json|docs/crosswalks/atr-(attack|ast)-crosswalk\.md'
+            DERIVED='stats\.json|data/stats\.json|docs/crosswalks/atr-(attack|ast)-crosswalk\.md|docs/OWASP-AST10-MAPPING\.md'
             CONFLICTED=$(git diff --name-only --diff-filter=U)
             OTHER=$(printf '%s\n' "$CONFLICTED" | grep -vxE "$DERIVED" || true)
             if [ -n "$OTHER" ]; then
@@ -523,7 +523,7 @@ jobs:
           AFTER=${{ steps.after.outputs.count }}
           NEW=$((AFTER - BEFORE))
 
-          git add rules/ stats.json data/stats.json docs/crosswalks/
+          git add rules/ stats.json data/stats.json docs/crosswalks/ docs/OWASP-AST10-MAPPING.md
           if git diff --cached --quiet -- rules/; then
             echo "No new semantic rules this run (every in-scope cluster already has a rule, or all drafts went to human review)."
             # A resumed branch can still have moved: main merged in, the derived files

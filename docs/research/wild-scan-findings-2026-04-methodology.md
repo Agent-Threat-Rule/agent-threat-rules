@@ -35,7 +35,7 @@ registries — not as a synthetic test.
 registry, file, publisher, rule_id, category, severity, detection, threat_actor_account
 
 `category` is resolved from current ATR rule metadata; `threat_actor_account` is
-`yes` for files under the three accounts above.
+`yes` for files under the two accounts above.
 
 ## Responsible disclosure
 No attack payload strings are included — only the rule id, category, and detection

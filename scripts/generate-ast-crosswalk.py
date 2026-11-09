@@ -6,7 +6,7 @@ so a project working from the AST checklist can see which AST controls ATR
 already produces executable detections for.
 
 Join keys (documented so the mapping cannot drift silently):
-  * PRIMARY: each rule's ``tags.category`` -- a closed 9-value enum. The
+  * PRIMARY: each rule's ``tags.category`` (the enum in spec/atr-schema.yaml). The
     category -> AST mapping is a curated, one-time editorial table (CATEGORY_TO_AST
     below), each entry carrying a short rationale. It is applied mechanically to
     every rule; the doc regenerates from metadata, so counts never drift even as
@@ -36,6 +36,25 @@ except ImportError:
     sys.exit("PyYAML required: pip install pyyaml")
 
 DOC_PATH = "docs/crosswalks/atr-ast-crosswalk.md"
+# The summary document the website's coverage page reads (website/lib/coverage.ts
+# parses its "| ASTxx: Title | Severity | N rules | STATUS |" rows). Generated
+# from the same join so the two documents cannot disagree.
+SUMMARY_PATH = "docs/OWASP-AST10-MAPPING.md"
+
+# Severity per AST control, as published by the OWASP project.
+AST_SEVERITY = {
+    "AST01": "CRITICAL", "AST02": "CRITICAL",
+    "AST03": "HIGH", "AST04": "HIGH", "AST05": "HIGH", "AST06": "HIGH",
+    "AST07": "MEDIUM", "AST08": "MEDIUM", "AST09": "MEDIUM", "AST10": "MEDIUM",
+}
+
+# Status thresholds, on enforce-lane rules (see lane_bucket). Rule counts alone
+# overstate coverage: most mapped rules are test or experimental maturity.
+STRONG_MIN_STABLE = 20
+MODERATE_MIN_STABLE = 5
+
+# Lane buckets reported per control, in column order.
+LANE_BUCKETS = ("stable", "test", "experimental", "draft")
 
 # AST01-AST10 titles, verbatim from OWASP/www-project-agentic-skills-top-10.
 AST_TITLES = {
@@ -103,6 +122,31 @@ def load_rules():
     return rules
 
 
+def lane_bucket(rule):
+    """Maturity bucket as the engine's lanes see it.
+
+    The enforce lane loads maturity=stable only and skips status draft or
+    deprecated (src/engine.ts); the alert lane adds maturity=test. A rule
+    whose status is draft or deprecated is counted as draft here whatever its
+    maturity, since no lane but hunt evaluates it.
+    """
+    if rule.get("status") in ("draft", "deprecated"):
+        return "draft"
+    maturity = rule.get("maturity")
+    return maturity if maturity in LANE_BUCKETS else "draft"
+
+
+def ast_status(ast, total, stable):
+    if total == 0:
+        # Controls ATR maps no rule to are lifecycle or process concerns.
+        return "GAP (process-level)"
+    if stable >= STRONG_MIN_STABLE:
+        return "STRONG"
+    if stable >= MODERATE_MIN_STABLE:
+        return "MODERATE"
+    return "PARTIAL"
+
+
 def asi_ids(rule):
     out = []
     for entry in (rule.get("references", {}) or {}).get("owasp_agentic", []) or []:
@@ -112,27 +156,53 @@ def asi_ids(rule):
     return out
 
 
-def build():
+def collect():
+    """Join every rule to its AST controls. Shared by both documents."""
     rules = load_rules()
-    total = len(rules)
 
-    # AST control -> set of rule ids, and supporting ASI counts.
-    ast_rules = defaultdict(set)
+    # AST control -> rule id -> rule, and supporting ASI counts.
+    ast_rules = defaultdict(dict)
     ast_asi = defaultdict(lambda: defaultdict(int))
     category_counts = defaultdict(int)
-    unmapped = 0
+    unmapped = defaultdict(int)
 
     for rule in rules:
         cat = (rule.get("tags", {}) or {}).get("category")
         category_counts[cat] += 1
         mappings = CATEGORY_TO_AST.get(cat)
         if not mappings:
-            unmapped += 1
+            unmapped[cat] += 1
             continue
         for ast, _rationale in mappings:
-            ast_rules[ast].add(rule["id"])
+            ast_rules[ast][rule["id"]] = rule
             for asi in asi_ids(rule):
                 ast_asi[ast][asi] += 1
+
+    ast_lanes = {}
+    for n in range(1, 11):
+        ast = f"AST{n:02d}"
+        counts = dict.fromkeys(LANE_BUCKETS, 0)
+        for rule in ast_rules[ast].values():
+            counts[lane_bucket(rule)] += 1
+        ast_lanes[ast] = counts
+
+    return {
+        "total": len(rules),
+        "ast_rules": ast_rules,
+        "ast_asi": ast_asi,
+        "ast_lanes": ast_lanes,
+        "category_counts": category_counts,
+        "unmapped": unmapped,
+    }
+
+
+def build(data):
+    total = data["total"]
+    ast_rules = data["ast_rules"]
+    ast_asi = data["ast_asi"]
+    ast_lanes = data["ast_lanes"]
+    category_counts = data["category_counts"]
+    unmapped = data["unmapped"]
 
     lines = []
     lines.append("# ATR -> OWASP Agentic Skills Top 10 (AST) Crosswalk")
@@ -152,7 +222,8 @@ def build():
     )
     lines.append("")
     lines.append(
-        "- **Primary join key:** each rule's `tags.category` (a closed 9-value enum). "
+        f"- **Primary join key:** each rule's `tags.category` ({len(category_counts)} values "
+        "in the current corpus; the enum is defined in `spec/atr-schema.yaml`). "
         "The `category -> AST` table is a one-time editorial mapping "
         "(`CATEGORY_TO_AST` in `scripts/generate-ast-crosswalk.py`), each entry "
         "carrying a short rationale reproduced below. It is applied mechanically to "
@@ -175,8 +246,19 @@ def build():
 
     lines.append("## Coverage by AST control")
     lines.append("")
-    lines.append("| AST | Title | ATR rules | Top supporting ASI (evidence) |")
-    lines.append("|-----|-------|-----------|-------------------------------|")
+    lines.append(
+        "Rule counts are split by maturity, because the lanes differ: the enforce "
+        "lane (the one meant to block) loads `maturity: stable` only, the alert lane "
+        "adds `test`, and `experimental` and `draft` rules run in the hunt lane only. "
+        "A rule mapped to a control is a detection for part of that control's "
+        "threat surface, not coverage of the control."
+    )
+    lines.append("")
+    lines.append(
+        "| AST | Title | ATR rules | stable | test | experimental | draft | "
+        "Top supporting ASI (evidence) |"
+    )
+    lines.append("|-----|-------|-----------|--------|------|--------------|-------|-------------------------------|")
     for n in range(1, 11):
         ast = f"AST{n:02d}"
         ids = ast_rules.get(ast, set())
@@ -184,7 +266,9 @@ def build():
         top = ", ".join(
             f"{k} ({v})" for k, v in sorted(asis.items(), key=lambda kv: (-kv[1], kv[0]))[:3]
         ) or "-"
-        lines.append(f"| {ast} | {AST_TITLES[ast]} | {len(ids)} | {top} |")
+        lane = ast_lanes[ast]
+        lane_cells = " | ".join(str(lane[b]) for b in LANE_BUCKETS)
+        lines.append(f"| {ast} | {AST_TITLES[ast]} | {len(ids)} | {lane_cells} | {top} |")
     lines.append("")
 
     lines.append("## Category -> AST mapping (the editorial join table)")
@@ -199,9 +283,10 @@ def build():
     lines.append("")
 
     if unmapped:
+        detail = ", ".join(f"`{cat}` ({n})" for cat, n in sorted(unmapped.items(), key=lambda kv: str(kv[0])))
         lines.append(
-            f"> {unmapped} rule(s) carry a category not in the mapping table and are "
-            "excluded rather than force-fit."
+            f"> {sum(unmapped.values())} rule(s) carry a category not in the mapping "
+            f"table and are excluded rather than force-fit: {detail}."
         )
         lines.append("")
 
@@ -221,25 +306,112 @@ def build():
     return "\n".join(lines) + "\n"
 
 
+def cell(text):
+    return str(text or "").replace("|", "\\|").replace("\n", " ").strip()
+
+
+def build_summary(data):
+    ast_rules = data["ast_rules"]
+    ast_lanes = data["ast_lanes"]
+
+    lines = []
+    lines.append("# ATR -> OWASP Agentic Skills Top 10 (AST10) Mapping")
+    lines.append("")
+    lines.append(
+        "> Generated by `scripts/generate-ast-crosswalk.py` from rule metadata; do not "
+        "edit by hand. The method, the category -> AST join table and its rationale "
+        "are in [crosswalks/atr-ast-crosswalk.md](crosswalks/atr-ast-crosswalk.md). "
+        "CI runs `--check`, so this file cannot fall behind the rules."
+    )
+    lines.append("")
+    lines.append(
+        "OWASP AST10 is a separate framework from the OWASP Top 10 for Agentic "
+        "Applications (ASI01-ASI10). ASI covers agent runtime threats; AST covers the "
+        "skill supply chain and lifecycle. Several AST controls are process "
+        "requirements that a detection rule cannot satisfy."
+    )
+    lines.append("")
+    lines.append(f"Rules in corpus at generation time: {data['total']}.")
+    lines.append("")
+    lines.append("## Coverage Summary")
+    lines.append("")
+    lines.append("| OWASP AST Category | Severity | ATR Rules | Status |")
+    lines.append("|---|---|---|---|")
+    for n in range(1, 11):
+        ast = f"AST{n:02d}"
+        count = len(ast_rules.get(ast, {}))
+        status = ast_status(ast, count, ast_lanes[ast]["stable"])
+        lines.append(f"| {ast}: {AST_TITLES[ast]} | {AST_SEVERITY[ast]} | {count} rules | {status} |")
+    lines.append("")
+    lines.append(
+        f"Status is set by enforce-lane (`maturity: stable`) rules: STRONG at "
+        f"{STRONG_MIN_STABLE} or more, MODERATE at {MODERATE_MIN_STABLE} or more, "
+        "PARTIAL below that, GAP when no rule maps to the control. It measures how "
+        "many blocking-grade detections exist for the control's threat surface, not "
+        "how much of the control is met, and no per-control precision has been "
+        "measured."
+    )
+    lines.append("")
+    lines.append("## Enforce-lane rules by control")
+    lines.append("")
+    for n in range(1, 11):
+        ast = f"AST{n:02d}"
+        rules = ast_rules.get(ast, {})
+        lane = ast_lanes[ast]
+        lines.append(f"### {ast}: {AST_TITLES[ast]} ({AST_SEVERITY[ast]})")
+        lines.append("")
+        if not rules:
+            lines.append("No ATR rule maps to this control.")
+            lines.append("")
+            continue
+        lines.append(
+            f"{len(rules)} rules: {lane['stable']} stable, {lane['test']} test, "
+            f"{lane['experimental']} experimental, {lane['draft']} draft or deprecated."
+        )
+        lines.append("")
+        stable = [r for r in rules.values() if lane_bucket(r) == "stable"]
+        if not stable:
+            lines.append("No stable rule maps to this control yet.")
+            lines.append("")
+            continue
+        lines.append("| ATR Rule | Title | Severity |")
+        lines.append("|---|---|---|")
+        for rule in sorted(stable, key=lambda r: r["id"]):
+            lines.append(f"| {rule['id']} | {cell(rule.get('title'))} | {cell(rule.get('severity')).upper()} |")
+        lines.append("")
+
+    return "\n".join(lines) + "\n"
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--check", action="store_true", help="verify the committed doc is current (CI mode)")
+    ap.add_argument("--check", action="store_true", help="verify the committed docs are current (CI mode)")
     args = ap.parse_args()
 
-    content = build()
+    data = collect()
+    outputs = ((DOC_PATH, build(data)), (SUMMARY_PATH, build_summary(data)))
     if args.check:
-        try:
-            with open(DOC_PATH) as fh:
-                current = fh.read()
-        except FileNotFoundError:
-            sys.exit(f"FAIL: {DOC_PATH} does not exist. Run scripts/generate-ast-crosswalk.py.")
-        if current != content:
-            sys.exit(f"FAIL: {DOC_PATH} is stale. Re-run scripts/generate-ast-crosswalk.py.")
-        print(f"OK: {DOC_PATH} matches the rule metadata.")
+        failed = False
+        for path, content in outputs:
+            try:
+                with open(path) as fh:
+                    current = fh.read()
+            except FileNotFoundError:
+                print(f"FAIL: {path} does not exist. Run scripts/generate-ast-crosswalk.py.")
+                failed = True
+                continue
+            if current != content:
+                print(f"FAIL: {path} is stale. Re-run scripts/generate-ast-crosswalk.py.")
+                failed = True
+            else:
+                print(f"OK: {path} matches the rule metadata.")
+        if failed:
+            sys.exit(1)
         return
-    with open(DOC_PATH, "w") as fh:
-        fh.write(content)
-    print(f"Wrote {DOC_PATH} ({len(content)} bytes)")
+    for path, content in outputs:
+        with open(path, "w") as fh:
+            fh.write(content)
+        print(f"Wrote {path} ({len(content)} bytes)")
 
 
 if __name__ == "__main__":

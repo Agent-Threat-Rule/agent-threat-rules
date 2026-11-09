@@ -203,7 +203,7 @@ jobs:
             python3 scripts/generate-attack-crosswalk.py
             python3 scripts/generate-ast-crosswalk.py
             node scripts/reconcile-rule-count.mjs
-            git add stats.json data/stats.json docs/crosswalks/atr-attack-crosswalk.md docs/crosswalks/atr-ast-crosswalk.md
+            git add stats.json data/stats.json docs/crosswalks/atr-attack-crosswalk.md docs/crosswalks/atr-ast-crosswalk.md docs/OWASP-AST10-MAPPING.md
             git commit --no-edit
           fi
 
@@ -444,7 +444,7 @@ jobs:
         run: |
           set -euo pipefail
           BRANCH="${ROLLING_BRANCH:-fn-mine/rolling}"
-          git add rules/ docs/crosswalks/ stats.json data/stats.json
+          git add rules/ docs/crosswalks/ docs/OWASP-AST10-MAPPING.md stats.json data/stats.json
           if git diff --cached --quiet -- rules/; then
             echo "::error::the miner reported authored files but none are staged under rules/."
             exit 1
