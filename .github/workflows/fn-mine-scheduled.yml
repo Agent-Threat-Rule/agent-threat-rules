@@ -66,6 +66,9 @@ concurrency:
 jobs:
   mine:
     runs-on: ubuntu-latest
+    # GitHub kills a job at 360 minutes. Mining stops starting corpora at
+    # FN_MINE_BUDGET_MINUTES so the pre-push checks and the push still run.
+    timeout-minutes: 350
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -260,6 +263,7 @@ jobs:
           # mines what it names, or every corpus when it names none.
           CORPUS_INPUT: ${{ github.event_name == 'schedule' && steps.rotation.outputs.corpora || inputs.corpus }}
           CAP_INPUT: ${{ inputs.cap || '5' }}
+          FN_MINE_BUDGET_MINUTES: '270'
         run: |
           set -eo pipefail
           DRY_RUN_FLAG=""
