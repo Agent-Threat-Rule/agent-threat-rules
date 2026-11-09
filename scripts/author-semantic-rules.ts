@@ -119,7 +119,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import yaml from "js-yaml";
 import { callClaude as sharedCallClaude, describeBackend, backendAvailable } from "./lib/claude-client.js";
 import { loadBenignSamples, loadCorpusTexts } from "./lib/benign-corpus.js";
@@ -780,7 +780,7 @@ export function classifyFailure(reason: string): "infrastructure" | "content" {
   return infra.some((needle) => r.includes(needle)) ? "infrastructure" : "content";
 }
 
-const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+const isMainModule = import.meta.url === pathToFileURL(process.argv[1] ?? '').href;
 if (isMainModule) {
   main().catch((e) => {
     console.error("fatal:", e);

@@ -26,9 +26,10 @@ import { toolsDocumentToEvents } from "../src/cli/mcp-tools-document.js";
 import { ATREngine } from "../src/engine.js";
 import { loadRuleFile } from "../src/loader.js";
 import { asTestedRule, buildEventFromTestCase, caseMatches } from "../src/testcase-event.js";
+import { fileURLToPath } from "node:url";
 
-const CLI = new URL("../src/cli.ts", import.meta.url).pathname;
-const RULES = new URL("../rules", import.meta.url).pathname;
+const CLI = fileURLToPath(new URL("../src/cli.ts", import.meta.url));
+const RULES = fileURLToPath(new URL("../rules", import.meta.url));
 
 /** The Invariant Labs tool-poisoning example: an <IMPORTANT> block in the description. */
 const POISONED_TOOL = {

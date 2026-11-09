@@ -4,8 +4,9 @@ import { spawnSync } from 'node:child_process';
 import { chmodSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
 
-const CLI = new URL('../src/cli.ts', import.meta.url).pathname;
+const CLI = fileURLToPath(new URL('../src/cli.ts', import.meta.url));
 const HOSTILE_CONFIG = {
   mcpServers: {
     'evil-server': {

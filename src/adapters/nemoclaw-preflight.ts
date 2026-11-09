@@ -41,6 +41,7 @@ import { existsSync, lstatSync, readFileSync, readdirSync, statSync } from 'node
 import { basename, join, relative } from 'node:path';
 import { ATREngine } from '../engine.js';
 import type { AgentEvent, ATRMatch } from '../types.js';
+import { pathToFileURL } from 'node:url';
 
 export type Decision = 'pass' | 'block' | 'incomplete';
 
@@ -341,7 +342,7 @@ async function main(argv: readonly string[]): Promise<number> {
   return exitCodeFor(result.decision);
 }
 
-const isDirectInvocation = Boolean(process.argv[1]) && import.meta.url === `file://${process.argv[1]}`;
+const isDirectInvocation = Boolean(process.argv[1]) && import.meta.url === pathToFileURL(process.argv[1] ?? '').href;
 if (isDirectInvocation) {
   main(process.argv.slice(2))
     .then((code) => process.exit(code))

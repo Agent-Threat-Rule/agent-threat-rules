@@ -26,8 +26,9 @@ import { toolDefinitionToEvent } from "../src/cli/mcp-tools-document.js";
 import { TOOL_IDENTITY_RULES, appliesToToolDefinition, fieldsReadBy } from "../src/tool-definition-scope.js";
 import { loadRulesFromDirectory } from "../src/loader.js";
 import type { AgentEvent, ATRRule } from "../src/types.js";
+import { fileURLToPath } from 'node:url';
 
-const RULES = new URL("../rules", import.meta.url).pathname;
+const RULES = fileURLToPath(new URL("../rules", import.meta.url));
 const TS = "2026-10-23T00:00:00.000Z";
 
 /** Rules the benign measurement found firing on definitions because they judge a call. */

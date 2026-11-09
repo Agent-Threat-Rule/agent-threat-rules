@@ -29,8 +29,9 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
 
-const CLI = new URL("../src/cli.ts", import.meta.url).pathname;
+const CLI = fileURLToPath(new URL("../src/cli.ts", import.meta.url));
 
 /** A rule that differs from the pattern case only in detection.method. */
 function ruleYaml(method: "behavioral" | "pattern"): string {

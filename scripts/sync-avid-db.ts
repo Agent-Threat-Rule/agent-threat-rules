@@ -27,7 +27,7 @@
 
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, mkdirSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import yaml from 'js-yaml';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -411,7 +411,7 @@ async function main() {
   console.log(`${WRITE ? 'written' : 'would-write'}: ${written}`);
 }
 
-const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+const isMainModule = import.meta.url === pathToFileURL(process.argv[1] ?? '').href;
 if (isMainModule) {
   main().catch((err) => {
     console.error(err);

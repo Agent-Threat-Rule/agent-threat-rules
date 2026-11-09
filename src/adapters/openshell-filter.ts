@@ -49,6 +49,7 @@
 import { createInterface } from 'node:readline';
 import { ATREngine } from '../engine.js';
 import type { AgentEvent, ATRMatch } from '../types.js';
+import { pathToFileURL } from 'node:url';
 
 /** L7 traffic direction, mirroring OpenShell #1272 `content_filters[].direction`. */
 export type Direction = 'request' | 'response';
@@ -278,7 +279,7 @@ async function main(argv: readonly string[]): Promise<number> {
   return argv.includes('--serve') ? runServe(filter) : runOneShot(filter, maxBodyBytes());
 }
 
-const isDirectInvocation = Boolean(process.argv[1]) && import.meta.url === `file://${process.argv[1]}`;
+const isDirectInvocation = Boolean(process.argv[1]) && import.meta.url === pathToFileURL(process.argv[1] ?? '').href;
 if (isDirectInvocation) {
   main(process.argv.slice(2))
     .then((code) => process.exit(code))

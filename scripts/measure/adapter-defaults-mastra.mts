@@ -1,6 +1,7 @@
 import { ATRProcessor } from '../../src/adapters/mastra.js';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 async function main() {
   const proc = new ATRProcessor();                       // 預設,就是整合者拿到的
@@ -18,7 +19,7 @@ async function main() {
   if (!ctl) { console.log('CONTROL FAILED — 攻擊沒被擋,結果作廢'); process.exit(3); }
   console.log('CONTROL ok — 攻擊被 abort');
 
-  const dir = new URL('../../data/skill-benchmark/benign', import.meta.url).pathname;
+  const dir = fileURLToPath(new URL('../../data/skill-benchmark/benign', import.meta.url));
   const files = readdirSync(dir).filter(f => f.endsWith('.md'));
   let blocked = 0;
   const hits: string[] = [];

@@ -42,10 +42,11 @@ import {
 import { HookHandler } from "../src/hook-handler.js";
 import { loadRulesFromDirectory } from "../src/loader.js";
 import type { AgentEvent, ATRRule, HookInput } from "../src/types.js";
+import { fileURLToPath } from "node:url";
 
-const RULES_DIR = new URL("../rules", import.meta.url).pathname;
-const SCHEMA = new URL("../spec/atr-schema.yaml", import.meta.url).pathname;
-const CLI = new URL("../src/cli.ts", import.meta.url).pathname;
+const RULES_DIR = fileURLToPath(new URL("../rules", import.meta.url));
+const SCHEMA = fileURLToPath(new URL("../spec/atr-schema.yaml", import.meta.url));
+const CLI = fileURLToPath(new URL("../src/cli.ts", import.meta.url));
 
 const EXTENDED_LLM = ["context_window"] as const;
 const EXTENDED_TOOL = ["skill_lifecycle", "skill_permission", "skill_chain"] as const;
