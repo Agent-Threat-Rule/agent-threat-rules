@@ -1,0 +1,94 @@
+# Public application form. The privacy notice is on
+# https://agentthreatrule.org/en/community/join (section "How your data is handled").
+name: Join the ATR community
+description: Apply to join as an expert or a contributor and be listed in the directory. You do not need to apply to contribute. This creates a public issue; apply by email to adam@agentthreatrule.org if you prefer privacy.
+title: "[Join] "
+labels: ["community-join"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for applying. Adam Lin, the maintainer, reads every application and invites people personally. Nothing is published on the community page until you confirm the exact text.
+        Do not put an email address or phone number in this issue: it is public.
+  - type: input
+    id: name
+    attributes:
+      label: Name as it should appear
+    validations:
+      required: true
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Role you are applying for
+      options:
+        - Expert (CISO, head of AI security, auditor, policy, insurance; advises on priorities and crosswalks)
+        - Contributor (detection engineer, red-teamer, researcher, developer; writes and reviews rules)
+    validations:
+      required: true
+  - type: input
+    id: title
+    attributes:
+      label: Title or role line
+      description: For example, "Security architect" or "Independent researcher".
+    validations:
+      required: true
+  - type: input
+    id: organization
+    attributes:
+      label: Organization (optional)
+      description: Listed only if you tick the permission box below. Listing is not an endorsement by your organization.
+  - type: input
+    id: country
+    attributes:
+      label: Country (ISO code, for example TW, US, DE)
+    validations:
+      required: true
+  - type: checkboxes
+    id: expertise
+    attributes:
+      label: Expertise
+      options:
+        - label: Detection rules
+        - label: Red team / evasion
+        - label: MCP and tool security
+        - label: Compliance and framework mapping
+        - label: Engines and integration
+        - label: Policy and governance
+  - type: checkboxes
+    id: projects
+    attributes:
+      label: Projects you are interested in
+      description: Shown on your card as "interested". "Working on" is filled in automatically from your public activity.
+      options:
+        - label: Rules
+        - label: Evaluation method (ATR Eval)
+        - label: Test questions (atomics) for an industry
+        - label: Law and framework mappings for a region
+        - label: National deployments
+        - label: Community infrastructure
+        - label: A new project (describe below)
+  - type: textarea
+    id: photo
+    attributes:
+      label: Photo (optional)
+      description: Drag an image into this box to upload it. This issue is public, so the image is public as soon as you submit. Leave empty to use your GitHub avatar.
+  - type: textarea
+    id: why
+    attributes:
+      label: What you would like to work on
+      description: A few lines are enough. Links to public work help.
+  - type: input
+    id: disclosure
+    attributes:
+      label: Conflict-of-interest disclosure (optional)
+      description: Employers or clients with a commercial interest in agent security, or a link to an existing disclosure.
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Permission
+      options:
+        - label: I agree to be listed on the community page with text I will confirm before it is published.
+          required: true
+        - label: My organization may be shown next to my name.
+        - label: My GitHub avatar may be used as my photo, shown in greyscale.
+        - label: If I uploaded a photo above, I have the right to publish it and agree to it being shown on the community page.

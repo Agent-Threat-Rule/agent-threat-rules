@@ -1,6 +1,6 @@
 title: "Agent Human-Approval Gate Programmatically Disabled at Runtime (YOLO / auto-approve)"
 id: ATR-2026-02400
-rule_version: 1
+rule_version: 2
 # status must not be `draft`: engine.ts skips draft/deprecated rules in every
 # lane, so a draft rule never fires at all. Hunt-lane-only containment is
 # expressed by `maturity: test` below (laneAllows('test','enforce') === false).
@@ -206,12 +206,13 @@ detection:
 
     # -- Layer 5: settings/config write that persists the bypass --
     # Keys taken verbatim from Claude Code settings, Gemini CLI settings,
-    # Hermes approvals config, OpenHands config.toml, .aider.conf.yml and
-    # Cline autoApprovalSettings.
+    # Hermes approvals config, OpenHands config.toml, .aider.conf.yml,
+    # Cline autoApprovalSettings, VS Code chat.tools.(global.)autoApprove and
+    # Codex config.toml (approval_policy, sandbox_mode).
     - field: content
       operator: regex
-      value: '(?i)(?:defaultMode(?:\\?["''])?\s*:\s*(?:\\?["''])?bypassPermissions|defaultApprovalMode(?:\\?["''])?\s*:\s*(?:\\?["''])?yolo|approvalMode(?:\\?["''])?\s*:\s*(?:\\?["''])?yolo|approvals?[\s\S]{0,40}mode(?:\\?["''])?\s*[:=]\s*(?:\\?["''])?off\b|confirmation_mode(?:\\?["''])?\s*[:=]\s*(?:\\?["''])?(?:false|0|no)\b|yes[-_]always(?:\\?["''])?\s*[:=]\s*(?:\\?["''])?(?:true|yes|1)\b|autoApprovalSettings[\s\S]{0,240}enabled(?:\\?["''])?\s*:\s*(?:\\?["''])?true|disableYoloMode(?:\\?["''])?\s*:\s*(?:\\?["''])?false|disableAlwaysAllow(?:\\?["''])?\s*:\s*(?:\\?["''])?false|(?:skills|memory)[._]write_approval(?:\\?["''])?\s*[:=]\s*(?:\\?["''])?false\b|mcpServers[\s\S]{0,300}(?:\\?["''])trust(?:\\?["''])\s*:\s*(?:\\?["''])?true|(?:\\?["''])(?:autoApprove|alwaysAllow)(?:\\?["''])\s*:\s*(?:\\?["''])?true)'
-      description: "Agent settings or config mutated so the approval gate stays off across restarts (defaultMode bypassPermissions, defaultApprovalMode yolo, approvals.mode off, confirmation_mode false, yes-always true, autoApprovalSettings enabled, mcpServers trust true)"
+      value: '(?i)(?:defaultMode(?:\\?["''])?\s*:\s*(?:\\?["''])?bypassPermissions|defaultApprovalMode(?:\\?["''])?\s*:\s*(?:\\?["''])?yolo|approvalMode(?:\\?["''])?\s*:\s*(?:\\?["''])?yolo|approvals?[\s\S]{0,40}mode(?:\\?["''])?\s*[:=]\s*(?:\\?["''])?off\b|confirmation_mode(?:\\?["''])?\s*[:=]\s*(?:\\?["''])?(?:false|0|no)\b|yes[-_]always(?:\\?["''])?\s*[:=]\s*(?:\\?["''])?(?:true|yes|1)\b|autoApprovalSettings[\s\S]{0,240}enabled(?:\\?["''])?\s*:\s*(?:\\?["''])?true|disableYoloMode(?:\\?["''])?\s*:\s*(?:\\?["''])?false|disableAlwaysAllow(?:\\?["''])?\s*:\s*(?:\\?["''])?false|(?:skills|memory)[._]write_approval(?:\\?["''])?\s*[:=]\s*(?:\\?["''])?false\b|mcpServers[\s\S]{0,300}(?:\\?["''])trust(?:\\?["''])\s*:\s*(?:\\?["''])?true|(?:\\?["''])(?:chat\.tools\.(?:global\.)?)?(?:autoApprove|alwaysAllow)(?:\\?["''])\s*:\s*(?:\\?["''])?true|\bapproval_policy(?:\\?["''])?\s*[:=]\s*(?:\\?["''])?never\b|\bsandbox_mode(?:\\?["''])?\s*[:=]\s*(?:\\?["''])?danger-full-access)'
+      description: "Agent settings or config mutated so the approval gate stays off across restarts (defaultMode bypassPermissions, defaultApprovalMode yolo, approvals.mode off, confirmation_mode false, yes-always true, autoApprovalSettings enabled, mcpServers trust true, VS Code chat.tools.autoApprove true, Codex approval_policy never or sandbox_mode danger-full-access)"
 
     # -- Layer 6: in-session toggle command --
     # Hermes /yolo, Goose /mode auto, Hermes /skills|/memory approval off,
@@ -296,7 +297,22 @@ test_cases:
     - input: 'RESULT=$(codex exec --dangerously-bypass-approvals-and-sandbox "id; cat /etc/shadow")'
       expected: triggered
       description: "Launch inside a command substitution so the operator captures the output — anchor must accept $( as a boundary"
+    - input: '{"name":"create_file","arguments":{"filePath":".vscode/settings.json.","content":"{\n  \"chat.tools.autoApprove\": true\n}"}}'
+      expected: triggered
+      description: "VS Code Copilot auto-approve written through a file tool; the trailing dot in the path is how the write slips past the protected-file check on Windows"
+    - input: '{"name":"Write","arguments":{"file_path":"/home/dev/.codex/config.toml","content":"approval_policy = \"never\"\nsandbox_mode = \"danger-full-access\""}}'
+      expected: triggered
+      description: "Codex config.toml rewritten so every later session runs without approvals and outside the sandbox"
+    - input: 'curl -s -X POST http://127.0.0.1:8765/api/session/config -d ''{"sandbox_mode":"danger-full-access"}'''
+      expected: triggered
+      description: "Sandboxed agent asking a harness control API on localhost to lift its own sandbox"
   true_negatives:
+    - input: '{"name":"create_file","arguments":{"filePath":".vscode/settings.json","content":"{\n  \"chat.tools.autoApprove\": false,\n  \"editor.formatOnSave\": true\n}"}}'
+      expected: not_triggered
+      description: "VS Code settings with Copilot auto-approve explicitly off"
+    - input: 'approval_policy = "on-request"\nsandbox_mode = "workspace-write"'
+      expected: not_triggered
+      description: "Codex config.toml with the default approval policy and a workspace-scoped sandbox"
     - input: '{"name":"Bash","arguments":{"command":"terraform apply -auto-approve -input=false"}}'
       expected: not_triggered
       description: "Terraform single-dash -auto-approve in a normal IaC pipeline — the most common auto-approve string in the wild and deliberately out of scope"

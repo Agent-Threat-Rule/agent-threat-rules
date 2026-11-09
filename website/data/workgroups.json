@@ -1,0 +1,254 @@
+{
+  "_about": "Areas of work and what is being done in each now. Project names only, no internal details. These are not the formal working groups in GOVERNANCE (none is formed yet); they are where work happens today. Read by the website community page and the Discord bridge bot. Update when work starts, finishes or needs help; keep it short and true.",
+  "updated": "2026-11-08",
+  "states": {
+    "in-progress": {
+      "en": "In progress",
+      "zh": "進行中"
+    },
+    "needs-help": {
+      "en": "Needs help",
+      "zh": "需要人手"
+    },
+    "planned": {
+      "en": "Planned",
+      "zh": "規劃中"
+    }
+  },
+  "groups": [
+    {
+      "id": "rules",
+      "name": {
+        "en": "Rules",
+        "zh": "規則"
+      },
+      "covers": {
+        "en": "Detection rules for attacks on AI agents: new rules, false positives, evasions and the quality gate.",
+        "zh": "偵測 AI agent 攻擊的規則：新規則、誤判、繞過，以及品質閘門。"
+      },
+      "discord": "rules",
+      "label": "wg/rules",
+      "repo": "agent-threat-rules",
+      "status": "active",
+      "now": [
+        {
+          "en": "Narrowing rules that flag ordinary text",
+          "zh": "收窄會誤判正常內容的規則",
+          "state": "in-progress"
+        },
+        {
+          "en": "Rules for newly published AI agent CVEs",
+          "zh": "替新公開的 AI agent CVE 寫規則",
+          "state": "needs-help"
+        },
+        {
+          "en": "Prompt-injection patterns in Chinese, Japanese and Korean",
+          "zh": "中日韓文的提示注入樣式",
+          "state": "needs-help"
+        },
+        {
+          "en": "Destructive shell commands in tool calls",
+          "zh": "工具呼叫裡的破壞性 shell 指令",
+          "state": "in-progress"
+        }
+      ]
+    },
+    {
+      "id": "engine",
+      "name": {
+        "en": "Engine and integrations",
+        "zh": "引擎與整合"
+      },
+      "covers": {
+        "en": "The TypeScript and Python engines, the conformance suite, and integrations with agent frameworks and security tools.",
+        "zh": "TypeScript 與 Python 引擎、一致性測試套件，以及和 agent 框架、資安工具的整合。"
+      },
+      "discord": "rules",
+      "label": "wg/engine",
+      "repo": "agent-threat-rules",
+      "status": "active",
+      "now": [
+        {
+          "en": "Python engine parity with the TypeScript engine",
+          "zh": "Python 引擎與 TypeScript 引擎結果一致",
+          "state": "in-progress"
+        },
+        {
+          "en": "Conformance test suite 1.1",
+          "zh": "一致性測試套件 1.1",
+          "state": "in-progress"
+        },
+        {
+          "en": "Matching very long inputs in windows",
+          "zh": "超長輸入分段比對",
+          "state": "in-progress"
+        },
+        {
+          "en": "OpenAI Agents SDK guardrails integration",
+          "zh": "OpenAI Agents SDK guardrails 整合",
+          "state": "in-progress"
+        },
+        {
+          "en": "GitHub Action for scanning in CI",
+          "zh": "在 CI 裡掃描的 GitHub Action",
+          "state": "needs-help"
+        }
+      ]
+    },
+    {
+      "id": "eval",
+      "name": {
+        "en": "ATR Eval method",
+        "zh": "ATR Eval 方法"
+      },
+      "covers": {
+        "en": "How ATR Eval tests whether an agent can be hijacked: the specification, scoring, signed records and the runners. The maintainer's company has a commercial interest in these results.",
+        "zh": "ATR Eval 怎麼測 agent 會不會被劫持：規格、計分、簽章紀錄與執行器。維護者的公司與這些結果有商業利益。"
+      },
+      "discord": "wg-method",
+      "label": "wg/eval",
+      "repo": "atr-eval",
+      "status": "active",
+      "now": [
+        {
+          "en": "Feedback on the first public draft",
+          "zh": "第一版公開草案的意見回饋",
+          "state": "in-progress"
+        },
+        {
+          "en": "Calibration against AgentDojo",
+          "zh": "與 AgentDojo 的校準",
+          "state": "in-progress"
+        },
+        {
+          "en": "Inspect integration",
+          "zh": "Inspect 整合",
+          "state": "in-progress"
+        },
+        {
+          "en": "Reruns by people other than the maintainer",
+          "zh": "由維護者以外的人重跑",
+          "state": "needs-help"
+        }
+      ]
+    },
+    {
+      "id": "atomics",
+      "name": {
+        "en": "Test cases",
+        "zh": "題庫"
+      },
+      "covers": {
+        "en": "The ATR Eval test cases: is the attack realistic, is the check correct, is the no-attack version fair. The maintainer's company has a commercial interest in these results.",
+        "zh": "ATR Eval 的測試題：攻擊是否真實、判定是否正確、沒有攻擊的對照版是否公平。維護者的公司與這些結果有商業利益。"
+      },
+      "discord": "wg-atomics",
+      "label": "wg/atomics",
+      "repo": "atr-eval",
+      "status": "active",
+      "now": [
+        {
+          "en": "Screening imported test cases on real agents",
+          "zh": "在真實 agent 上篩檢匯入的測試題",
+          "state": "in-progress"
+        },
+        {
+          "en": "Checking that agents can't tell they are being tested",
+          "zh": "確認 agent 察覺不到自己在被測",
+          "state": "in-progress"
+        },
+        {
+          "en": "Test cases for web pages, email and files as entry points",
+          "zh": "以網頁、email、檔案為入口的測試題",
+          "state": "needs-help"
+        }
+      ]
+    },
+    {
+      "id": "mappings",
+      "name": {
+        "en": "Laws and frameworks",
+        "zh": "法規與框架對照"
+      },
+      "covers": {
+        "en": "How ATR rules and ATR Eval relate to frameworks and laws such as the OWASP lists, NIST AI RMF, MITRE ATLAS, the EU AI Act and AIUC-1.",
+        "zh": "ATR 規則與 ATR Eval 和各框架、法規的對照，例如 OWASP 清單、NIST AI RMF、MITRE ATLAS、歐盟 AI 法與 AIUC-1。"
+      },
+      "discord": "wg-mappings",
+      "label": "wg/mappings",
+      "repo": "agent-threat-rules",
+      "status": "active",
+      "now": [
+        {
+          "en": "Correcting framework mappings",
+          "zh": "修正框架對照",
+          "state": "in-progress"
+        },
+        {
+          "en": "AIUC-1 and EU AI Act crosswalks",
+          "zh": "AIUC-1 與歐盟 AI 法對照",
+          "state": "in-progress"
+        },
+        {
+          "en": "Taiwan crosswalk",
+          "zh": "台灣法規對照",
+          "state": "needs-help"
+        }
+      ]
+    },
+    {
+      "id": "community",
+      "name": {
+        "en": "Community infrastructure",
+        "zh": "社群基礎建設"
+      },
+      "covers": {
+        "en": "The public record of contributions, the website's community pages and the Discord commands that link back to GitHub.",
+        "zh": "貢獻的公開紀錄、官網社群頁，以及把 Discord 接回 GitHub 的指令。"
+      },
+      "discord": "general",
+      "label": "wg/community",
+      "repo": "agent-threat-rules",
+      "status": "active",
+      "now": [
+        {
+          "en": "Public contribution ledger",
+          "zh": "公開貢獻帳本",
+          "state": "in-progress"
+        },
+        {
+          "en": "Website community page",
+          "zh": "官網社群頁",
+          "state": "in-progress"
+        },
+        {
+          "en": "Discord commands that point back to GitHub",
+          "zh": "把 Discord 接回 GitHub 的指令",
+          "state": "in-progress"
+        }
+      ]
+    },
+    {
+      "id": "nodes",
+      "name": {
+        "en": "National nodes",
+        "zh": "國家節點"
+      },
+      "covers": {
+        "en": "An open reference setup that a country or institution can run on its own network, with its own keys and records.",
+        "zh": "各國或機構可以在自己網路上運行的開放參考實作，金鑰與紀錄都在自己手上。"
+      },
+      "discord": "",
+      "label": "wg/nodes",
+      "repo": "",
+      "status": "planned",
+      "now": [
+        {
+          "en": "Reference design",
+          "zh": "參考設計",
+          "state": "planned"
+        }
+      ]
+    }
+  ]
+}

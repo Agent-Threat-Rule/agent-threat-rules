@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Locale } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
+import { Sign } from "@/components/Sign";
 
 const FORMATS = ["BibTeX", "APA", "IEEE", "Chicago"] as const;
 type Format = (typeof FORMATS)[number];
@@ -55,9 +56,9 @@ export function CitationBlock({ locale, meta }: CitationBlockProps) {
             aria-selected={tab === f}
             aria-controls={`cite-panel-${f}`}
             onClick={() => setTab(f)}
-            className={`font-data text-xs tracking-wide px-3 py-1.5 rounded-sm border transition-colors ${
+            className={`font-data text-xs tracking-wide px-3 py-1.5  border transition-colors ${
               tab === f
-                ? "bg-navy text-white border-navy"
+                ? "bg-ink text-white border-ink"
                 : "bg-paper text-stone border-fog hover:text-ink hover:border-stone"
             }`}
           >
@@ -69,7 +70,7 @@ export function CitationBlock({ locale, meta }: CitationBlockProps) {
         id={`cite-panel-${tab}`}
         role="tabpanel"
         aria-label={`${tab} citation`}
-        className="text-xs leading-relaxed bg-paper border border-fog rounded-sm p-4 overflow-x-auto"
+        className="text-xs leading-relaxed bg-paper border border-fog  p-4 overflow-x-auto"
         style={{ fontFamily: "var(--font-data)" }}
       >
         {citations[tab]}
@@ -82,7 +83,7 @@ export function CitationBlock({ locale, meta }: CitationBlockProps) {
           rel="noopener noreferrer"
           className="text-navy underline"
         >
-          {meta.doi} ↗
+          {meta.doi}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
         </a>
       </p>
     </div>

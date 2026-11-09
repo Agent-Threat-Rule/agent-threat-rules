@@ -9,6 +9,7 @@
  * The tool-output benign check, which needs the engine, runs after this one
  * (scripts/lib/fn-mine-tool-benign.ts).
  */
+import type { RedosVerdict } from './semantic-redos-precheck.js';
 import { needsUnicodeFlag } from '../../src/engine.js';
 import { heldOutRecoveries, MIN_HELD_OUT_RECOVERS, type SeenText } from './fn-mine-heldout.js';
 import { countRecoveries } from './fn-mine-recoveries.js';
@@ -42,6 +43,10 @@ export interface GatedCandidate extends MineCandidate {
   benignFP: number;
   /** Excerpts around the match, verbatim (countRecoveries): what the true positives are cut from. Minable texts only. */
   exampleFNs: readonly string[];
+  /** The distinct minable attacks it recovers (countRecoveries keys), for pickDistinct. */
+  recoveryKeys?: readonly string[];
+  /** Attacks it recovers in corpora it was not mined from, by corpus (fn-mine-generalization.ts). */
+  outOfSample?: Readonly<Record<string, number>>;
 }
 
 export interface GateContext {
@@ -66,12 +71,12 @@ function minableRecoveries(
   minRecovers: number,
   gate: GateContext,
   drop: Drop,
-): { recovers: number; examples: readonly string[] } | null {
+): { recovers: number; examples: readonly string[]; keys: readonly string[] } | null {
   // Counted on measureOn, so a regex that only recovers a benchmark's scoring
   // strings recovers nothing, and as distinct attacks, so copies of one
   // template sentence count once. Examples are excerpts of the real texts.
-  const { recovers, copies, examples } = countRecoveries(re, gate.measureOn, fullFn);
-  if (recovers >= minRecovers) return examples.length > 0 ? { recovers, examples } : null;
+  const { recovers, copies, examples, keys } = countRecoveries(re, gate.measureOn, fullFn);
+  if (recovers >= minRecovers) return examples.length > 0 ? { recovers, examples, keys } : null;
   if (copies >= minRecovers) {
     drop(c, `recovers ${copies} texts but only ${recovers} distinct line(s) < ${minRecovers}: copies of one template`);
   } else if (gate.measureOn !== fullFn && fullFn.filter((t) => re.test(t)).length >= minRecovers) {
@@ -117,9 +122,88 @@ export function gateCandidates(
     const visibility = visibilityProblem(c.regex, gate.corpus);
     if (visibility) { drop(c, visibility); continue; }
     if (hitsBenign(re, benignTexts)) continue;
-    survivors.push({ ...c, recovers: minable.recovers, heldOutRecovers, benignFP: 0, exampleFNs: minable.examples });
+    survivors.push({
+      ...c,
+      recovers: minable.recovers,
+      heldOutRecovers,
+      benignFP: 0,
+      exampleFNs: minable.examples,
+      recoveryKeys: minable.keys,
+    });
   }
   return survivors;
+}
+
+/**
+ * `survivors` whose regex passes scripts/gate-redos.py on its own
+ * (`precheck`, semantic-redos-precheck.ts in the lane). The authored rule's
+ * one condition is the candidate's regex (gatedDetection), so this is the
+ * verdict the workflow's ReDoS gate will give. Before 2026-11-08 the lane did
+ * not run it: one slow regex (actions run 42447405455, ATR-2026-02880) failed
+ * that gate for the whole batch of ten. Checked before pickDistinct, so a
+ * dropped regex frees its place and does not displace an overlapping one.
+ *
+ * A precheck that runs out of time drops that one regex: the script kills a
+ * single slow search in seconds, so a whole run out of time is the pattern,
+ * not the machine. A precheck that cannot run at all (no yaml, no python)
+ * throws: authoring blind would sink the batch again, for every regex alike.
+ */
+export function dropBacktracking<T extends GatedCandidate>(
+  survivors: readonly T[],
+  precheck: (regex: string) => RedosVerdict,
+): { readonly kept: T[]; readonly dropped: number } {
+  let dropped = 0;
+  const kept = survivors.filter((s) => {
+    const v = precheck(s.regex);
+    const timedOut = v.kind === 'unavailable' && /ETIMEDOUT/.test(v.detail);
+    if (v.kind === 'unavailable' && !timedOut) throw new Error(`ReDoS precheck could not run on ${s.cluster}: ${v.detail}`);
+    if (v.kind === 'backtracks' || timedOut) {
+      console.log(
+        `[fn-mine]   drop ${s.cluster}: ${timedOut ? 'the ReDoS precheck ran out of time on it' : 'backtracks catastrophically under scripts/gate-redos.py'}`,
+      );
+      dropped += 1;
+      return false;
+    }
+    return true;
+  });
+  return { kept, dropped };
+}
+
+/**
+ * Survivors worth authoring, best first: ranked by recoveries, each kept only
+ * when it recovers at least `minRecovers` attacks of its corpus that no
+ * survivor kept before it does. Round 1 and the residual round both propose
+ * for the same clusters, so two regexes worded differently can recover the
+ * same attacks; authoring both doubles a reviewer's work for no recall (the
+ * 2026-11-08 run wrote two job-offer, two appointment-cancellation and two
+ * referral rules). A survivor without keys falls back to the exact-regex
+ * check. `dropped` says why each one went.
+ */
+export function pickDistinct<T extends GatedCandidate & { readonly corpus: string }>(
+  survivors: readonly T[],
+  minRecovers: number,
+): { readonly kept: readonly T[]; readonly dropped: readonly { readonly candidate: T; readonly why: string }[] } {
+  const covered = new Map<string, Set<string>>();
+  const regexes = new Set<string>();
+  const kept: T[] = [];
+  const dropped: { candidate: T; why: string }[] = [];
+  for (const s of [...survivors].sort((a, b) => b.recovers - a.recovers)) {
+    const regex = s.regex.trim();
+    if (regexes.has(regex)) {
+      dropped.push({ candidate: s, why: 'same regex as a survivor ranked above it' });
+      continue;
+    }
+    const seen = covered.get(s.corpus) ?? new Set<string>();
+    const fresh = (s.recoveryKeys ?? []).filter((k) => !seen.has(k));
+    if (s.recoveryKeys && fresh.length < minRecovers) {
+      dropped.push({ candidate: s, why: `only ${fresh.length} of its ${s.recovers} recoveries are new beyond the survivors ranked above it (< ${minRecovers})` });
+      continue;
+    }
+    regexes.add(regex);
+    covered.set(s.corpus, new Set([...seen, ...fresh]));
+    kept.push(s);
+  }
+  return { kept, dropped };
 }
 
 /** The FN texts no survivor matches: what the residual round mines. */

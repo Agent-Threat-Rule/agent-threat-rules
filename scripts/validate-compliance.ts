@@ -13,6 +13,12 @@
  *   1. identifier (allowlist.idField) is present and in the allowlist
  *   2. `context` is a non-empty string (auditor-readable rationale)
  *   3. `strength`, if present, is one of the allowlist's strengthValues
+ *   4. `context` does not claim compliance. docs/COMPLIANCE-COVERAGE-POLICY.md
+ *      allows "provides detection evidence supporting Article X" and never
+ *      "satisfies" or "makes you compliant with": a detection rule supports
+ *      a control, it does not discharge a legal or framework requirement.
+ *      "Satisfy" describing an attack (a forged origin that satisfies a
+ *      localhost check) is not followed by a framework term and passes.
  *
  * The `references:` block is linted too, against the same allowlists but with
  * only check 1 — see validateReferences. It is an index rather than audit
@@ -45,9 +51,13 @@ interface Allowlist {
 interface Violation {
   readonly rule: string;
   readonly framework: string;
-  readonly kind: "unknown-id" | "missing-id" | "missing-context" | "bad-strength" | "not-a-list" | "embedded-title";
+  readonly kind: "unknown-id" | "missing-id" | "missing-context" | "bad-strength" | "not-a-list" | "embedded-title" | "compliance-claim";
   readonly detail: string;
 }
+
+// A claim that the rule meets a requirement, as opposed to supporting one.
+const COMPLIANCE_CLAIM =
+  /\b(?:satisf(?:y|ies|ied|ying)|fulfil{1,2}s?)\b(?=[^.;]{0,60}\b(?:Article|requirement|obligation|clause|(?:GV|MP|MS|MG)\.\d|(?:LLM|ASI)\d))|\b(?:makes?|renders?)\b[^.;]{0,40}\bcompliant\b|\bensures? compliance\b/i;
 
 function loadAllowlists(): Map<string, Allowlist> {
   const map = new Map<string, Allowlist>();
@@ -86,6 +96,11 @@ function validateItem(
   }
   if (typeof o.context !== "string" || o.context.trim() === "") {
     out.push({ rule: ruleId, framework, kind: "missing-context", detail: `${allow.idField}='${String(id)}' has no context prose` });
+  } else {
+    const claim = o.context.replace(/\s+/g, " ").match(COMPLIANCE_CLAIM);
+    if (claim) {
+      out.push({ rule: ruleId, framework, kind: "compliance-claim", detail: `${allow.idField}='${String(id)}' context claims compliance ("${claim[0]}"); write "provides detection evidence supporting …"` });
+    }
   }
   if (o.strength !== undefined && allow.strengthValues && !allow.strengthValues.includes(String(o.strength))) {
     out.push({ rule: ruleId, framework, kind: "bad-strength", detail: `strength='${String(o.strength)}' not in [${allow.strengthValues.join(", ")}]` });

@@ -1,0 +1,58 @@
+# Held, not live: ATR Eval is not public yet. To open, move this file to
+# .github/ISSUE_TEMPLATE/submit-receipt.yml once ATR Eval is published and the
+# receipt check (atr-eval verify --rescore) runs in CI.
+name: Submit an external receipt
+description: A signed ATR Eval receipt you ran with your own key. CI checks the signature and recomputes every verdict.
+title: "[Receipt] "
+labels: ["receipt-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A receipt counts in the community ledger only if CI verifies it with your published key and recomputes every verdict from its evidence.
+        A signature shows who signed and that nothing changed since. It does not make a run independent; your stated relationship below does that work.
+  - type: input
+    id: location
+    attributes:
+      label: Public link to the run folder or archive
+    validations:
+      required: true
+  - type: input
+    id: key
+    attributes:
+      label: Signing key fingerprint, and where you publish the public key
+      description: For example a URL on your organization's site or your GitHub profile. A key that only appears inside the run folder is not enough.
+    validations:
+      required: true
+  - type: input
+    id: operator
+    attributes:
+      label: Operator (name, and organization if any)
+    validations:
+      required: true
+  - type: dropdown
+    id: relationship
+    attributes:
+      label: Your relationship to the vendor of the agent under test
+      options:
+        - none
+        - I work for or own shares in the vendor
+        - I work for or own shares in a direct competitor
+        - the vendor paid for this run
+        - a competitor of the vendor paid for this run
+        - other (explain below)
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Agent, version and permission mode tested; anything else a reader should know
+    validations:
+      required: true
+  - type: checkboxes
+    id: vendor
+    attributes:
+      label: Vendor notice
+      options:
+        - label: Either no vendor is named, or the vendor has seen these results before this submission (SECURITY.md).
+          required: true

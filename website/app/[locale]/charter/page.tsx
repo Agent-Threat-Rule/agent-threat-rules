@@ -4,9 +4,12 @@
  */
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { locales, type Locale, t } from "@/lib/i18n";
 import { getSpecMeta } from "@/lib/spec-meta";
 import { DocumentStatus } from "@/components/spec/DocumentStatus";
+import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -18,13 +21,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "Charter — ATR",
+  return pageMetadata({
+    locale,
+    path: "/charter",
+    title: "Charter",
     description:
       locale === "zh"
         ? "ATR 章程:定義 ATR 是什麼、不是什麼、決策如何做成、以及技術指導委員會 (TSC) 如何就任。"
         : "The ATR charter defines what ATR is, what it is not, how decisions are made, and how the Technical Steering Committee is seated.",
-  };
+  });
 }
 
 const GOVERNANCE_URL =
@@ -66,21 +71,22 @@ export default async function CharterPage({
   const zh = locale === "zh";
 
   return (
+    <Phrased>
     <main
       id="main-content"
-      className="spec-document w-full max-w-7xl mx-auto px-5 md:px-8 pt-24 md:pt-28 pb-24"
+      className="spec-document w-full px-6 md:px-14 pt-24 md:pt-28 pb-24"
       lang={zh ? "zh-Hant" : "en"}
     >
       {/* Header */}
       <header className="mb-8 md:mb-10 max-w-3xl">
         <p
-          className="text-xs uppercase tracking-[0.18em] text-stone mb-3"
+          className="text-[13px] text-stone mb-3"
           style={{ fontFamily: "var(--font-data)" }}
         >
           {zh ? "章程 — Project Charter" : "Project Charter"}
         </p>
         <h1
-          className="text-3xl md:text-5xl font-bold text-navy-ink mb-4 leading-[1.1]"
+          className="text-[32px] md:text-[48px] font-bold text-navy-ink mb-4 leading-[1.1]"
           style={{
             fontFamily: "var(--font-display)",
             letterSpacing: "-0.02em",
@@ -103,7 +109,7 @@ export default async function CharterPage({
         <aside aria-label="Table of contents" className="lg:order-first">
           <nav className="spec-toc" aria-label={t(locale, "spec.toc_aria")}>
             <p
-              className="text-xs font-semibold uppercase tracking-wider text-stone mb-3"
+              className="text-[13px] text-stone mb-3"
               style={{ fontFamily: "var(--font-body)" }}
             >
               {t(locale, "spec.toc")}
@@ -148,7 +154,7 @@ export default async function CharterPage({
             </ol>
             <hr className="my-5 border-fog" />
             <p
-              className="text-xs uppercase tracking-wider text-stone mb-2"
+              className="text-[13px] text-stone mb-2"
               style={{ fontFamily: "var(--font-body)" }}
             >
               {zh ? "完整規格" : "Full Specification"}
@@ -158,7 +164,7 @@ export default async function CharterPage({
               className="text-sm text-navy underline decoration-navy/30 hover:decoration-navy"
               style={{ fontFamily: "var(--font-body)" }}
             >
-              {t(locale, "spec.read_full")} →
+              {t(locale, "spec.read_full")}<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
             </Link>
           </nav>
         </aside>
@@ -187,11 +193,11 @@ export default async function CharterPage({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-5 not-prose">
               {/* In scope */}
               <div
-                className="border-l-4 border-navy bg-paper rounded-sm p-5"
+                className="border-l-4 border-navy bg-paper  p-5"
                 style={{ borderColor: "#0b1d3a" }}
               >
                 <p
-                  className="text-xs uppercase tracking-wider text-navy-ink font-semibold mb-3"
+                  className="text-[13px] text-stone mb-3"
                   style={{ fontFamily: "var(--font-data)" }}
                 >
                   <span
@@ -211,9 +217,9 @@ export default async function CharterPage({
               </div>
 
               {/* Out of scope */}
-              <div className="border-l-4 border-stone bg-paper rounded-sm p-5">
+              <div className="border-l-4 border-stone bg-paper  p-5">
                 <p
-                  className="text-xs uppercase tracking-wider text-stone font-semibold mb-3"
+                  className="text-[13px] text-stone mb-3"
                   style={{ fontFamily: "var(--font-data)" }}
                 >
                   <span aria-hidden="true" className="inline-block mr-2">
@@ -254,7 +260,7 @@ export default async function CharterPage({
                 rel="noopener noreferrer"
                 className="text-navy underline"
               >
-                GOVERNANCE.md ↗
+                GOVERNANCE.md<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
               {zh ? "。" : "."}
             </p>
@@ -306,7 +312,7 @@ export default async function CharterPage({
                 rel="noopener noreferrer"
                 className="text-navy underline"
               >
-                GOVERNANCE.md ↗
+                GOVERNANCE.md<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
               </a>
               .
             </p>
@@ -372,5 +378,6 @@ export default async function CharterPage({
         </div>
       </div>
     </main>
+    </Phrased>
   );
 }

@@ -1,8 +1,9 @@
 import type { Locale } from "@/lib/i18n";
+import { Sign } from "@/components/Sign";
 
 const COPY: Record<Locale, string> = {
   en: 'The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.',
-  zh: '本文件中關鍵詞「MUST」、「MUST NOT」、「REQUIRED」、「SHALL」、「SHALL NOT」、「SHOULD」、「SHOULD NOT」、「RECOMMENDED」、「MAY」、「OPTIONAL」的詮釋方式依 RFC 2119 規範解讀(專有詞彙保留英文)。',
+  zh: '本文件中的關鍵詞「MUST」、「MUST NOT」、「REQUIRED」、「SHALL」、「SHALL NOT」、「SHOULD」、「SHOULD NOT」、「RECOMMENDED」、「MAY」、「OPTIONAL」，依 RFC 2119 的定義解讀（這些關鍵詞保留英文原文）。',
 };
 
 /**
@@ -19,7 +20,7 @@ export function RFC2119({ locale }: { locale: Locale }) {
         rel="noopener noreferrer"
         className="text-navy underline"
       >
-        IETF RFC 2119 ↗
+        IETF RFC 2119<Sign name="diple" size={10} className="ml-1.5 align-[-1px]" />
       </a>
     </aside>
   );

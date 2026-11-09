@@ -23,7 +23,7 @@
  * (DeliveryShape): a HackAPrompt or PINT prompt as user input, an LLMail email
  * or a BrowseSafe page as a tool's output.
  */
-import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runEval, type EvalEventShapeMode } from '../../src/eval/eval-harness.js';
@@ -86,6 +86,39 @@ function makeDraftsEvaluable(dir: string): number {
     count++;
   }
   return count;
+}
+
+/**
+ * Copy every rule file under `pendingDir` into the rules copy at `dir`, keeping
+ * its relative path; returns how many were copied. A file the copy already
+ * holds is left alone (the branch's own rule wins). An unset or missing
+ * directory copies nothing.
+ */
+export function addPendingRules(dir: string, pendingDir: string | undefined): number {
+  if (!pendingDir) return 0;
+  let added = 0;
+  const walk = (from: string, to: string): void => {
+    let entries: string[];
+    try {
+      entries = readdirSync(from);
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const src = join(from, entry);
+      const dst = join(to, entry);
+      if (statSync(src).isDirectory()) {
+        walk(src, dst);
+        continue;
+      }
+      if (!isRuleFile(entry) || existsSync(dst)) continue;
+      mkdirSync(to, { recursive: true });
+      cpSync(src, dst);
+      added++;
+    }
+  };
+  walk(pendingDir, dir);
+  return added;
 }
 
 export type { DeliveryShape };
@@ -189,7 +222,12 @@ export async function coverageOf(
       );
     }
 
-    const draftsEvaluated = makeDraftsEvaluable(copy);
+    // Rules waiting in a full rolling PR the run could not resume
+    // (fn-mine-scheduled.yml exports them to FN_MINE_PENDING_RULES_DIR): they
+    // are not on this branch, but a cluster one of them covers must not be
+    // mined again into a second PR.
+    const pendingAdded = addPendingRules(copy, process.env['FN_MINE_PENDING_RULES_DIR']);
+    const draftsEvaluated = makeDraftsEvaluable(copy) + pendingAdded;
     const missed = draftsEvaluated > 0 ? await missedIds(copy, texts, shape) : missedByLive;
     const uncovered = texts.filter((_, i) => missed.has(`fn-${i}`));
     return { uncovered, coveredCount: texts.length - uncovered.length, draftsEvaluated };

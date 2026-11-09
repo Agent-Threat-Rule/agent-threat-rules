@@ -1,10 +1,13 @@
+const SITE_URL = "https://agentthreatrule.org";
+
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: "https://agentthreatrule.org",
+  siteUrl: SITE_URL,
   generateRobotsTxt: true,
   outDir: "./out",
   generateIndexSitemap: false,
-  exclude: ["/icon.svg", "/favicon.ico"],
+  // Privacy and Terms stay out of the sitemap while they are drafts (lib/legal.ts).
+  exclude: ["/icon.svg", "/favicon.ico", "/llms.txt", "/rules/index.json", "/rules/index.csv", "/en/privacy", "/zh/privacy", "/en/terms", "/zh/terms", "/en/community/membership", "/zh/community/membership"],
   robotsTxtOptions: {
     policies: [
       { userAgent: "*", allow: "/" },
@@ -38,8 +41,21 @@ module.exports = {
     // Individual rule pages get 0.6 priority
     const isRulePage = /^\/(en|zh)\/rules\/ATR-/.test(path);
 
+    // hreflang: the same page in each locale, English as x-default (the
+    // <link rel="alternate"> tags on each page say the same; see lib/seo.ts).
+    const localized = /^\/(en|zh)(\/.*)?$/.exec(path);
+    const below = localized ? localized[2] ?? "" : "";
+    const alternateRefs = localized
+      ? [
+          { href: `${SITE_URL}/en${below}`, hreflang: "en", hrefIsAbsolute: true },
+          { href: `${SITE_URL}/zh${below}`, hreflang: "zh-Hant", hrefIsAbsolute: true },
+          { href: `${SITE_URL}/en${below}`, hreflang: "x-default", hrefIsAbsolute: true },
+        ]
+      : [];
+
     return {
       loc: path,
+      alternateRefs,
       changefreq: isRulePage ? "weekly" : path.includes("rules") ? "weekly" : "monthly",
       priority: priorities[path] ?? (isRulePage ? 0.6 : 0.5),
       lastmod: new Date().toISOString(),

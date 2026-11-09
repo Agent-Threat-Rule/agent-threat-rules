@@ -35,6 +35,25 @@ export interface TransformOptions {
    * Only set when reproducing that pack byte for byte.
    */
   readonly verbatimPatterns?: boolean;
+  /**
+   * Highest severity a signature may carry; rules above it are written at it.
+   * Skill Scanner fails a skill on any HIGH or CRITICAL finding by default, so
+   * a cap of `LOW` lets the pack report without changing that verdict.
+   */
+  readonly maxSeverity?: string;
+}
+
+/** Skill Scanner's severities, most severe first. */
+export const SEVERITIES: readonly string[] = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO'];
+
+/** `severity` lowered to `cap` when it is more severe; both upper-case. */
+export function capSeverity(severity: string, cap: string | undefined): string {
+  if (cap === undefined) return severity;
+  const capRank = SEVERITIES.indexOf(cap);
+  if (capRank === -1) throw new Error(`unknown severity cap: ${cap}`);
+  const rank = SEVERITIES.indexOf(severity);
+  if (rank === -1) throw new Error(`unknown severity: ${severity}`);
+  return rank < capRank ? cap : severity;
 }
 
 export const DEFAULT_REPO_URL = 'https://github.com/Agent-Threat-Rule/agent-threat-rules';
@@ -123,7 +142,7 @@ export function toSignature(loaded: LoadedRule, options: TransformOptions): Cisc
     atr_id: rule.id,
     atr_url: `${options.repoUrl}/blob/${options.ref}/rules/${category}/${fileName}`,
     category: toSignatureCategory(category),
-    severity: rule.severity.toUpperCase(),
+    severity: capSeverity(rule.severity.toUpperCase(), options.maxSeverity),
     ...(options.omitMaturity ? {} : { maturity: rule.maturity ?? 'experimental' }),
     patterns: options.verbatimPatterns
       ? extractPatterns(rule)

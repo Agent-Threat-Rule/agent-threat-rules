@@ -33,15 +33,26 @@
  *     test split the attack corpus is cut from, at the same revision, through
  *     the same text-unit extraction (pageUnits) and identifier masking.
  *
+ *   nvidia/Nemotron-RL-Agentic-Indirect-Prompt-Injection-v1 (CC-BY-4.0), the
+ *     same records the attack corpus is cut from: every prose field a read
+ *     tool returns (chart notes, product descriptions, case summaries, resume
+ *     text) with no injection in it, and each injected field with its
+ *     injection removed. Enterprise records were the gap: ATR-2026-02871 (#789)
+ *     passed the emails and pages and still fired on ordinary business text.
+ *
  * Evaluated and not vendored: see NOT_VENDORED_EMAIL below.
  */
 import {
   BROWSESAFE,
   MIT_PERMISSION_NOTICE,
+  NEMOTRON_IPI,
+  nemotronInjection,
   pageUnits,
   scrubIdentifiers,
+  stringsIn,
   type BrowsesafeRawRow,
   type CorpusRow,
+  type NemotronRawRow,
 } from './agent-attack-corpora.js';
 
 // ---------------------------------------------------------------------------
@@ -56,7 +67,7 @@ export interface BenignSource {
   /** The commit every row is read at. */
   readonly revision: string;
   /** The front-matter license id the dataset card must declare, or the sync refuses to vendor. */
-  readonly license: 'apache-2.0' | 'mit';
+  readonly license: 'apache-2.0' | 'mit' | 'cc-by-4.0';
   /** The vendored file, relative to the repo root. */
   readonly path: string;
   /** Who the rows are attributed to, as the upstream states it. */
@@ -84,6 +95,26 @@ export const BENIGN_PAGES: BenignSource = Object.freeze({
   path: 'data/fn-mine-benign/browsesafe-benign/corpus.json',
   attribution: BROWSESAFE.copyright,
   licenseUrl: BROWSESAFE.licenseUrl,
+});
+
+export const BENIGN_RECORDS: BenignSource = Object.freeze({
+  id: 'nemotron-records',
+  repo: NEMOTRON_IPI.repo,
+  revision: NEMOTRON_IPI.revision,
+  license: 'cc-by-4.0',
+  path: 'data/fn-mine-benign/nemotron-records/corpus.json',
+  attribution: NEMOTRON_IPI.copyright,
+  licenseUrl: NEMOTRON_IPI.licenseUrl,
+});
+
+export const BENIGN_TASKS: BenignSource = Object.freeze({
+  id: 'nemotron-tasks',
+  repo: NEMOTRON_IPI.repo,
+  revision: NEMOTRON_IPI.revision,
+  license: 'cc-by-4.0',
+  path: 'data/fn-mine-benign/nemotron-tasks/corpus.json',
+  attribution: NEMOTRON_IPI.copyright,
+  licenseUrl: NEMOTRON_IPI.licenseUrl,
 });
 
 /** The Apache-2.0 text, vendored beside the emails (Apache-2.0 section 4(a)), and its sha256. */
@@ -253,6 +284,75 @@ export function benignPageRows(rows: readonly BrowsesafeRawRow[], split: string)
 }
 
 // ---------------------------------------------------------------------------
+// Nemotron records
+// ---------------------------------------------------------------------------
+
+/** Shorter fields are ids, names, dates and statuses, not prose a rule could misfire on. */
+const MIN_RECORD_CHARS = 40;
+
+/**
+ * Every prose field the dataset's read tools return, with no injection in it:
+ * the fields of each record that carry none, and each injected field with its
+ * injection cut out. A field holding any record's injection is skipped whole,
+ * since the generator reuses environments across records. Family is the
+ * record's domain. One row per distinct text.
+ */
+export function nemotronBenignRows(raw: readonly NemotronRawRow[]): readonly CorpusRow[] {
+  const injections = raw.map(nemotronInjection).filter(Boolean);
+  const holdsInjection = (t: string): boolean => injections.some((inj) => t.includes(inj));
+  const seen = new Map<string, CorpusRow>();
+  const keep = (text: string, family: string): void => {
+    const t = text.trim();
+    if (t.length >= MIN_RECORD_CHARS && /\s/.test(t) && !holdsInjection(t) && !seen.has(t)) seen.set(t, { text: t, family });
+  };
+  for (const row of raw) {
+    const injection = nemotronInjection(row);
+    const family = row.domain ?? 'unknown';
+    for (const field of stringsIn(row.environment)) {
+      if (injection && field.includes(injection)) keep(field.split(injection).join(' '), family);
+      else keep(field, family);
+    }
+  }
+  return [...seen.values()];
+}
+
+/** A Nemotron record's opening request, the user turn of responses_create_params.input. */
+interface NemotronRequest {
+  readonly responses_create_params?: { readonly input?: readonly { readonly role?: unknown; readonly content?: unknown }[] };
+}
+
+/** A Responses API turn's text: a string, or the `text` of each content part. */
+function turnText(content: unknown): string {
+  if (typeof content === 'string') return content.trim();
+  if (!Array.isArray(content)) return '';
+  return content
+    .map((part) => (part && typeof part === 'object' && typeof (part as { text?: unknown }).text === 'string' ? (part as { text: string }).text : ''))
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+}
+
+/**
+ * The benign request each Nemotron record starts from, as the user wrote it
+ * ("Check the interview schedule for candidate ... and, if the feedback is
+ * positive, send an offer email to ..."). An injection in the same records
+ * asks for the same actions in the same words, so these are its twins: a rule
+ * that fires on them fires on a ticket, task or assignment a tool returns.
+ * Family is the record's domain. One row per distinct text.
+ */
+export function nemotronTaskRows(raw: readonly (NemotronRawRow & NemotronRequest)[]): readonly CorpusRow[] {
+  const seen = new Map<string, CorpusRow>();
+  for (const row of raw) {
+    for (const turn of row.responses_create_params?.input ?? []) {
+      if (turn.role !== 'user') continue;
+      const text = turnText(turn.content);
+      if (text.length >= MIN_RECORD_CHARS && !seen.has(text)) seen.set(text, { text, family: row.domain ?? 'unknown' });
+    }
+  }
+  return [...seen.values()];
+}
+
+// ---------------------------------------------------------------------------
 // Output documents
 // ---------------------------------------------------------------------------
 
@@ -274,7 +374,7 @@ export function benignDocument(rows: readonly CorpusRow[], meta: BenignDocMeta):
     source: source.id,
     source_url: `https://huggingface.co/datasets/${source.repo}`,
     revision: source.revision,
-    license: source.license === 'mit' ? 'MIT' : 'Apache-2.0',
+    license: { mit: 'MIT', 'apache-2.0': 'Apache-2.0', 'cc-by-4.0': 'CC-BY-4.0' }[source.license],
     attribution: source.attribution,
     extraction_date: meta.retrieved,
     row_filter: meta.filter,
@@ -285,6 +385,26 @@ export function benignDocument(rows: readonly CorpusRow[], meta: BenignDocMeta):
 }
 
 function licenseSection(source: BenignSource): readonly string[] {
+  if (source.license === 'cc-by-4.0') {
+    // CC BY 4.0 section 3(a): credit, a link to the license, and the changes made.
+    return [
+      `The rows in corpus.json are adapted from ${source.repo} (${source.attribution}), licensed under CC BY 4.0`,
+      `(${source.licenseUrl}).`,
+      '',
+      ...(source.id === BENIGN_TASKS.id
+        ? [
+            "Changes: each row is the user turn of one record's request, extracted from its record and trimmed; the rest",
+            'of each record is dropped; rows are deduplicated and reordered as the row filter says; a label ("benign")',
+            "and a family (the record's domain) are added to each row.",
+          ]
+        : [
+            "Changes: each row is one prose field of a record's environment, extracted from its record and trimmed; a",
+            "record's injection, and any field holding one, is removed; fields under 40 characters are dropped; rows are",
+            'deduplicated and reordered as the row filter says; a label ("benign") and a family (the record\'s domain) are',
+            'added to each row.',
+          ]),
+    ];
+  }
   if (source.license === 'mit') {
     return [
       `The rows in corpus.json are a portion of the upstream dataset, redistributed under its MIT license (${source.licenseUrl}):`,

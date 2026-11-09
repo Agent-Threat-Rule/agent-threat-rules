@@ -14,17 +14,21 @@ import { join, resolve } from 'node:path';
 import { CORPORA, corpusById } from '../scripts/lib/fn-corpora.js';
 import {
   MINED_CORPORA,
+  minedCorpusShape,
+  selectCorpora,
   channelNote,
   falseNegatives,
   planChunks,
   unseenFirst,
   vendoredProblem,
+  minedCorpusProblem,
   type VendoredCorpusSpec,
 } from '../scripts/lib/fn-mine-corpora.js';
 import { hasBenchmarkArtifacts } from '../scripts/lib/fn-mine-quality.js';
+import { OOS_SOURCES } from '../scripts/lib/fn-mine-oos.js';
 
 const REPO_ROOT = resolve(__dirname, '..');
-const AGENT_CORPORA = ['llmail-inject', 'browsesafe-bench'];
+const AGENT_CORPORA = ['llmail-inject', 'browsesafe-bench', 'nemotron-agentic-ipi'];
 
 describe('registry entries for the vendored agent corpora', () => {
   for (const id of AGENT_CORPORA) {
@@ -63,12 +67,20 @@ describe('registry entries for the vendored agent corpora', () => {
 
 describe('MINED_CORPORA', () => {
   it('mines HackAPrompt and PINT from their reports as user input, and the agent corpora as tool output', () => {
-    expect(MINED_CORPORA.map((s) => [s.name, s.kind, s.shape])).toEqual([
+    expect(MINED_CORPORA.filter((s) => s.kind !== 'oos').map((s) => [s.name, s.kind, s.shape])).toEqual([
       ['hackaprompt', 'report', 'llm_input'],
       ['pint', 'report', 'llm_input'],
       ['llmail-inject', 'vendored', 'tool_response'],
       ['browsesafe-bench', 'vendored', 'tool_response'],
+      ['nemotron-agentic-ipi', 'vendored', 'tool_response'],
     ]);
+  });
+
+  it('mines every out-of-sample corpus with its registered shape, after the original five', () => {
+    const oos = MINED_CORPORA.filter((s) => s.kind === 'oos');
+    expect(oos.map((s) => [s.name, s.shape])).toEqual(OOS_SOURCES.map((s) => [s.id, s.shape]));
+    expect(MINED_CORPORA.findIndex((s) => s.kind === 'oos')).toBe(5);
+    for (const spec of oos) expect(minedCorpusProblem(spec, REPO_ROOT), spec.name).toBeNull();
   });
 
   it('points each vendored spec at a usable registry entry with the same shape', () => {
@@ -94,6 +106,28 @@ describe('MINED_CORPORA', () => {
       expect(hasBenchmarkArtifacts(spec.name), spec.name).toBe(true);
       expect(spec.goalNote, spec.name).toBeTruthy();
     }
+  });
+});
+
+describe('minedCorpusShape', () => {
+  it('gives each mined corpus its delivery shape, and refuses a name it does not know', () => {
+    expect(minedCorpusShape('hackaprompt')).toBe('llm_input');
+    expect(minedCorpusShape('nemotron-agentic-ipi')).toBe('tool_response');
+    expect(minedCorpusShape('llmail-inject')).toBe('tool_response');
+    expect(() => minedCorpusShape('nemotron')).toThrow(/no mined corpus named "nemotron"/);
+  });
+});
+
+describe('selectCorpora', () => {
+  it('selects every corpus for an empty value, and only the named ones otherwise', () => {
+    expect(selectCorpora('')).toBe(MINED_CORPORA);
+    expect(selectCorpora('nemotron-agentic-ipi, pint').map((s) => s.name)).toEqual(['pint', 'nemotron-agentic-ipi']);
+  });
+
+  it('refuses an unknown name and a value that names nothing, rather than mine all or none', () => {
+    expect(() => selectCorpora('nemotron')).toThrow(/unknown corpus nemotron \(known: hackaprompt/);
+    expect(() => selectCorpora(',')).toThrow(/names no corpus/);
+    expect(() => selectCorpora(' ')).toThrow(/names no corpus/);
   });
 });
 

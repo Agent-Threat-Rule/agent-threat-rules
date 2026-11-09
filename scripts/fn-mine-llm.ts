@@ -31,7 +31,14 @@
  * read fails the run instead: those are not empty weeks.
  *
  * Usage:
- *   npx tsx scripts/fn-mine-llm.ts [--dry-run] [--cap 5] [--min-recovers 8]
+ *   npx tsx scripts/fn-mine-llm.ts [--dry-run] [--cap 5] [--min-recovers 8] [--corpus a,b]
+ *
+ *   --corpus mines only the named MINED_CORPORA (comma-separated), for a
+ *   backfill on a newly vendored corpus without re-spending model calls on
+ *   the exhausted ones. An unknown name, or a value naming none, fails the run
+ *   before anything else (selectCorpora). The report's `corpora` lists what
+ *   this run was asked to mine, so a filtered null result is not read as the
+ *   whole lane's.
  *
  * Environment:
  *   CLAUDE_CODE_OAUTH_TOKEN (preferred) or ANTHROPIC_API_KEY — see scripts/lib/claude-client.ts
@@ -55,19 +62,31 @@ import {
   type CorpusStageCounts,
 } from './lib/fn-mine-input.js';
 import {
-  MINED_CORPORA,
   channelNote,
+  minedCorpusShape,
+  selectCorpora,
   falseNegatives,
   planChunks,
   unseenFirst,
-  vendoredProblem,
+  minedCorpusProblem,
   type Chunk,
   type MinedCorpusSpec,
 } from './lib/fn-mine-corpora.js';
 import { gateAuthoredBatch } from './lib/fn-mine-gate.js';
-import { computeResidual, gateCandidates, type GateContext, type GatedCandidate } from './lib/fn-mine-candidate-gate.js';
+import { schemaProblem } from './lib/fn-mine-schema.js';
+import { redosPrecheck } from './lib/semantic-redos-precheck.js';
+import {
+  compileEngineAccurate,
+  computeResidual,
+  dropBacktracking,
+  gateCandidates,
+  pickDistinct,
+  type GateContext,
+  type GatedCandidate,
+} from './lib/fn-mine-candidate-gate.js';
 import { HELD_OUT_PERCENT, MIN_HELD_OUT_RECOVERS, seenLines, splitHeldOut, unmineableReason } from './lib/fn-mine-heldout.js';
 import { dropToolOutputHits, requireToolOutputBenign, type ToolOutputBenign } from './lib/fn-mine-tool-benign.js';
+import { generalizationVerdict, MIN_SIGNAL_SHARE, readOutOfSample, type OutOfSampleCorpus } from './lib/fn-mine-generalization.js';
 import { assertSomeChunkRead, mineChunkReply, type ChunkResult, type MineCandidate } from './lib/fn-mine-reply.js';
 import { finalizeAuthoredRule, hasBenchmarkArtifacts, withoutBenchmarkArtifacts } from './lib/fn-mine-quality.js';
 import { loadOwaspAllowlists, type OwaspAllowlists } from './lib/normalize-references.js';
@@ -131,6 +150,27 @@ function loadBenignTexts(): readonly string[] {
       }
     }
   }
+  out.push(...loadHardNegatives());
+  return out;
+}
+
+/**
+ * The benign hard negatives the attack datasets ship (a security question, the
+ * same request without the injection, a clean tool description), vendored by
+ * scripts/sync-attack-sources.py. Read here only: this gate is the one place a
+ * regex keyed on a request rather than an injection should be stopped by them,
+ * and no rule-wide measurement counts them.
+ */
+function loadHardNegatives(): readonly string[] {
+  const dir = path.join(REPO_ROOT, 'data/fn-mine-benign/hard-negatives');
+  if (!fs.existsSync(dir)) return [];
+  const out: string[] = [];
+  for (const id of fs.readdirSync(dir).sort()) {
+    const file = path.join(dir, id, 'corpus.json');
+    if (!fs.existsSync(file)) continue;
+    const doc = JSON.parse(fs.readFileSync(file, 'utf8')) as { samples?: { text?: unknown }[] };
+    for (const s of doc.samples ?? []) if (typeof s.text === 'string') out.push(s.text);
+  }
   return out;
 }
 
@@ -142,7 +182,7 @@ const MINE_SYSTEM_PROMPT = `You are a senior detection engineer mining false neg
 
 RIGOR — reject your own candidate if it violates these:
 - The regex must capture the attack CLASS (the injection technique/structure), NOT a literal payload. It must plausibly match unseen variants, not just the exact strings you were shown.
-- Encode the actual injection signal — never a bare benign verb alone.
+- Encode the actual injection signal — never a bare benign verb alone. For text a tool returns, the request itself is NOT the signal: business systems return "submit the grade", "cancel appointment APT-2041", "send the offer letter" every day. The regex must key on how the text addresses the agent: an override of its instructions, words addressed to the AI/assistant, a demand to hide it from the user, a forged [SYSTEM]/<INFORMATION> tag, a claim to come before the user's task. A gate rejects a candidate whose own matches lack such a signal, or that still fires on the same words with the signal removed.
 - Use (?i) as a leading inline flag for case-insensitivity (the engine strips this prefix and reapplies it as a real regex flag — this is the house convention).
 - For emoji/astral codepoints write the LITERAL character, not an escape. \\u{XXXX} is JavaScript-only and does not compile in the Python or Go channels; \\UXXXXXXXX is Python-only and a no-op in JS. The literal is the one spelling all three accept, and the engine adds the 'u' flag when it sees one.
 - NEVER an unbounded .* — use bounded [\\s\\S]{0,N} spans instead.
@@ -220,7 +260,7 @@ function buildAuthorUserPrompt(id: string, c: GatedCandidate): string {
 category: ${c.category}
 technique/cluster: ${c.cluster}
 rationale: ${c.rationale}
-GATED REGEX (engine-verified recovers=${c.recovers}, benignFP=0 — use EXACTLY as given): ${JSON.stringify(c.regex)}
+GATED REGEX (engine-verified recovers=${c.recovers}; no match on the lane's benign gate corpora — a finite set, not a deployment false-positive rate; use EXACTLY as given): ${JSON.stringify(c.regex)}
 
 Excerpts of real false-negative attack texts this rule must fire on, each containing the regex's match (use 2-3 as true_positives):
 ${c.exampleFNs.map((t, i) => `${i + 1}. ${JSON.stringify(t)}`).join('\n')}`;
@@ -244,7 +284,12 @@ function slugify(s: string): string {
  * conditions the model copied or altered. Returns why it could not, for the
  * corrective retry, or null once written.
  */
-function writeAuthoredRule(fullPath: string, text: string, c: GatedCandidate, allowlists: OwaspAllowlists): string | null {
+function writeAuthoredRule(
+  fullPath: string,
+  text: string,
+  c: GatedCandidate & { readonly corpus: string },
+  allowlists: OwaspAllowlists,
+): string | null {
   let doc: unknown;
   try {
     doc = yaml.load(text);
@@ -253,12 +298,25 @@ function writeAuthoredRule(fullPath: string, text: string, c: GatedCandidate, al
   }
   if (!doc || typeof doc !== 'object' || Array.isArray(doc)) return 'the output is not a single YAML mapping';
   const category = c.category as ATRCategory; // checked by isRuleCategory in the gate
-  fs.writeFileSync(fullPath, yaml.dump(finalizeAuthoredRule(doc as Record<string, unknown>, category, allowlists, c.regex), RULE_YAML_OPTIONS));
+  // A rule mined from a corpus that reaches the agent as tool output looks at tool output only.
+  const shape = minedCorpusShape(c.corpus);
+  const rule = finalizeAuthoredRule(doc as Record<string, unknown>, category, allowlists, c.regex, new Date(), shape);
+  fs.writeFileSync(fullPath, yaml.dump(rule, RULE_YAML_OPTIONS));
   return null;
 }
 
-/** Runs `node dist/cli.js test <file>`; returns null on success, failure text otherwise. */
+function runValidator(): string {
+  try {
+    return execSync('npx tsx tests/validate-rules.ts', { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  } catch (e) {
+    return e instanceof Error && 'stdout' in e ? String((e as { stdout?: unknown }).stdout ?? '') : String(e);
+  }
+}
+
+/** The schema validator, then `node dist/cli.js test <file>`; returns null on success, failure text otherwise. */
 function selfTest(filePath: string): string | null {
+  const schema = schemaProblem(filePath, runValidator());
+  if (schema) return schema;
   try {
     const out = execSync(`node dist/cli.js test ${JSON.stringify(filePath)}`, { cwd: REPO_ROOT, encoding: 'utf8' });
     if (/All tests passed/.test(out)) return null;
@@ -354,9 +412,10 @@ function pendingNewRuleFiles(): number {
   return out.split('\n').filter((f) => /\.ya?ml$/.test(f)).length;
 }
 
-function writeNullReport(note: string): void {
+function writeNullReport(note: string, corpora: readonly MinedCorpusSpec[]): void {
   fs.mkdirSync(path.dirname(path.join(REPO_ROOT, REPORT_PATH)), { recursive: true });
-  fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify({ authored: [], note }, null, 2));
+  const report = { corpora: corpora.map((c) => c.name), authored: [], note };
+  fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify(report, null, 2));
 }
 
 /**
@@ -367,17 +426,17 @@ function writeNullReport(note: string): void {
  * makes a null result partial (assertNullResultComplete), not exhausted. Every
  * corpus unavailable fails the run.
  */
-function prepareCorpora(): {
+function prepareCorpora(selected: readonly MinedCorpusSpec[]): {
   readonly available: readonly MinedCorpusSpec[];
   readonly skipped: readonly string[];
 } {
   console.log('[fn-mine] regenerating FN reports against the current rule set...');
   const available: MinedCorpusSpec[] = [];
   const skipped: string[] = [];
-  for (const spec of MINED_CORPORA) {
+  for (const spec of selected) {
     try {
-      if (spec.kind === 'vendored') {
-        const problem = vendoredProblem(spec, REPO_ROOT);
+      if (spec.kind === 'vendored' || spec.kind === 'oos') {
+        const problem = minedCorpusProblem(spec, REPO_ROOT);
         if (problem) throw new Error(problem);
       } else {
         for (const cmd of spec.regenerate) {
@@ -406,17 +465,47 @@ function prepareCorpora(): {
 function readBenignGate(toolBenign: ToolOutputBenign): { benignTexts: readonly string[]; gateCorpus: GateCorpus } {
   const benignTexts = loadBenignTexts();
   console.log(`[fn-mine] benign gate corpus: ${benignTexts.length} records`);
-  console.log(`[fn-mine] benign tool-output corpus: ${toolBenign.emails.length} emails, ${toolBenign.pages.length} pages (every candidate, as tool_response)`);
+  console.log(
+    `[fn-mine] benign tool-output corpus: ${toolBenign.emails.length} emails, ${toolBenign.pages.length} pages, ` +
+      `${toolBenign.records.length} records, ${toolBenign.tasks.length} tasks, ` +
+      `${toolBenign.enterprise.length} business-system outputs (every candidate, as tool_response)`,
+  );
   const gateCorpus = prepareGateCorpus(loadBenignSamples(REPO_ROOT));
   if (gateCorpus.samples.length === 0) throw new Error('MEASUREMENT_CORPORA is empty: the visibility check would pass every candidate');
   return { benignTexts, gateCorpus };
 }
 
 /** What the per-rule report records about the gate, so a reviewer reads the held-out counts against it. */
-function gateReportNote(toolBenign: ToolOutputBenign): Record<string, unknown> {
+function gateReportNote(toolBenign: ToolOutputBenign, oos: readonly OutOfSampleCorpus[]): Record<string, unknown> {
   return {
-    heldOut: { percent: HELD_OUT_PERCENT, minRecovers: MIN_HELD_OUT_RECOVERS },
-    toolOutputBenign: { emails: toolBenign.emails.length, pages: toolBenign.pages.length },
+    heldOut: {
+      percent: HELD_OUT_PERCENT,
+      minRecovers: MIN_HELD_OUT_RECOVERS,
+      note: 'held out from the same corpus, so the same generator: it shows the regex is not a list of shown lines, not that it generalizes',
+    },
+    outOfSample: {
+      corpora: oos.map((c) => ({ id: c.id, attacks: c.texts.length })),
+      minRecovers: 1,
+      note: 'attacks in corpora the rule was not mined from; per-rule counts are in authored[].outOfSample',
+    },
+    injectionSignal: {
+      appliesTo: 'rules mined from tool output',
+      minShareOfMatches: MIN_SIGNAL_SHARE,
+      list: 'scripts/lib/fn-mine-generalization.ts INJECTION_SIGNALS',
+    },
+    benignTwins:
+      'each tool-output rule must not fire on its own recoveries with the injection signals removed, in ticket, to-do and record frames',
+    toolOutputBenign: {
+      emails: toolBenign.emails.length,
+      pages: toolBenign.pages.length,
+      records: toolBenign.records.length,
+      tasks: toolBenign.tasks.length,
+      businessSystemOutputs: toolBenign.enterprise.length,
+      eventShape: 'tool_response',
+    },
+    whatZeroMeans:
+      'A rule that passed fired on none of the benign texts counted here, in the event shape stated. ' +
+      'That is not a false-positive rate in deployment: these corpora do not cover every business system an agent reads.',
   };
 }
 
@@ -425,8 +514,10 @@ interface MineSettings {
   readonly minRecovers: number;
   readonly benignTexts: readonly string[];
   readonly gateCorpus: GateCorpus;
-  /** Benign emails and pages every candidate is run against as tool output. */
+  /** Benign emails, pages, records, tasks and business outputs every candidate is run against as tool output. */
   readonly toolBenign: ToolOutputBenign;
+  /** Attack corpora for the out-of-sample gate; the mined corpus is skipped per candidate. */
+  readonly oos: readonly OutOfSampleCorpus[];
 }
 
 interface RoundResult {
@@ -436,6 +527,35 @@ interface RoundResult {
   readonly unread: number;
   /** The texts the round's chunks showed the model. */
   readonly shown: readonly string[];
+}
+
+/**
+ * `survivors` that pass the generalization gates (fn-mine-generalization.ts):
+ * an attack outside the mined corpus, and for a tool-output corpus an
+ * injection signal in its own matches and no hit on its benign twins. Each
+ * drop is logged with every failed gate's reason.
+ */
+function dropUngeneralized<T extends GatedCandidate>(
+  survivors: readonly T[],
+  fn: readonly string[],
+  spec: MinedCorpusSpec,
+  oos: readonly OutOfSampleCorpus[],
+): T[] {
+  const kept: T[] = [];
+  for (const s of survivors) {
+    const re = compileEngineAccurate(s.regex);
+    const recovered = re ? fn.filter((t) => re.test(t)) : [];
+    const v = generalizationVerdict(
+      { regex: s.regex, recovered, minedFrom: spec.name, toolOutput: spec.shape === 'tool_response' },
+      oos,
+    );
+    if (!v.pass) {
+      for (const [gate, why] of Object.entries(v.failures)) console.log(`[fn-mine]   drop ${s.cluster} (${gate}): ${why}`);
+      continue;
+    }
+    kept.push({ ...s, outOfSample: v.outOfSample });
+  }
+  return kept;
 }
 
 /** One round: each chunk the budget allows to the model, every candidate through the gate. */
@@ -461,9 +581,13 @@ async function mineRound(
     console.log(`[fn-mine]   ${label}: chunk cap ${spec.budget.maxChunksPerRound} reached; ${texts.length - shown.length} FN not shown this round`);
   }
   const gated = gateCandidates(candidates, fn, s.benignTexts, s.minRecovers, gate);
-  const survivors = await dropToolOutputHits(gated, s.toolBenign);
+  const benignClean = await dropToolOutputHits(gated, s.toolBenign);
+  const survivors = dropUngeneralized(benignClean, fn, spec, s.oos);
   for (const c of survivors) {
-    console.log(`[fn-mine]   keep ${c.cluster}: recovers ${c.recovers} shown FN, ${c.heldOutRecovers} of ${gate.heldOut.length} held out`);
+    console.log(
+      `[fn-mine]   keep ${c.cluster}: recovers ${c.recovers} shown FN, ${c.heldOutRecovers} of ${gate.heldOut.length} held out, ` +
+        `out of sample ${JSON.stringify(c.outOfSample ?? {})}`,
+    );
   }
   return { proposed: candidates.length, survivors, asked: chunks.length, unread, shown };
 }
@@ -549,8 +673,10 @@ interface AuthoredRule {
   file: string;
   cluster: string;
   recovers: number;
-  /** Distinct held-out FN texts the rule's regex recovers: texts the model never saw. */
+  /** Distinct held-out FN texts the rule's regex recovers: texts the model never saw, from the same corpus. */
   heldOutRecovers: number;
+  /** Attacks it recovers in corpora it was not mined from, by corpus. */
+  outOfSample: Readonly<Record<string, number>>;
 }
 
 async function main(): Promise<void> {
@@ -560,14 +686,20 @@ async function main(): Promise<void> {
       cap: { type: 'string', default: '5' },
       'min-recovers': { type: 'string', default: '8' },
       model: { type: 'string', default: DEFAULT_MODEL },
+      corpus: { type: 'string', default: '' },
     },
   });
+  // Before anything else runs: an early return further down must not turn a typo green.
+  const selectedCorpora = selectCorpora(values.corpus as string);
   const cap = parseInt(values.cap as string, 10);
   const minRecovers = parseInt(values['min-recovers'] as string, 10);
   const model = values.model as string;
   const isDryRun = values['dry-run'] as boolean;
 
-  console.log(`[fn-mine] model=${model} cap=${cap} minRecovers=${minRecovers} dryRun=${isDryRun}`);
+  console.log(
+    `[fn-mine] model=${model} cap=${cap} minRecovers=${minRecovers} dryRun=${isDryRun}` +
+      (values.corpus ? ` corpora=${selectedCorpora.map((c) => c.name).join(',')}` : ''),
+  );
 
   // After the resume merged main in: a waiting rule whose id main took since
   // (another lane merged first) makes the rolling PR unmergeable. Say so here,
@@ -582,7 +714,7 @@ async function main(): Promise<void> {
       `NULL RESULT — this branch already adds ${pending} rule file(s) over main and the per-PR limit is ${perPrLimit}. ` +
       'Merge the rolling PR, or close it (the next run then starts fresh from main); nothing is mined until there is room.';
     console.log(`[fn-mine] ${note}`);
-    writeNullReport(note);
+    writeNullReport(note, selectedCorpora);
     console.log('::authored-files::');
     return;
   }
@@ -609,7 +741,9 @@ async function main(): Promise<void> {
   // Before any corpus is regenerated or any model credit spent: without these
   // no candidate can be gated, whichever corpus it comes from.
   const toolBenign = requireToolOutputBenign(REPO_ROOT);
-  const { available: availableCorpora, skipped: skippedCorpora } = prepareCorpora();
+  const oos = readOutOfSample(REPO_ROOT);
+  console.log(`[fn-mine] out-of-sample corpora: ${oos.map((c) => `${c.id} ${c.texts.length}`).join(', ')}`);
+  const { available: availableCorpora, skipped: skippedCorpora } = prepareCorpora(selectedCorpora);
   const { benignTexts, gateCorpus } = readBenignGate(toolBenign);
 
   const perCorpus: CorpusStageCounts[] = [];
@@ -624,7 +758,7 @@ async function main(): Promise<void> {
   for (const spec of availableCorpora) {
     let run: CorpusRun;
     try {
-      run = await mineCorpus(spec, { model, minRecovers, benignTexts, gateCorpus, toolBenign });
+      run = await mineCorpus(spec, { model, minRecovers, benignTexts, gateCorpus, toolBenign, oos });
     } catch (e) {
       failedCorpora.push(spec.name);
       console.log(`::warning::[fn-mine] ${spec.name}: mining failed — skipping this corpus for this run.`);
@@ -646,11 +780,12 @@ async function main(): Promise<void> {
     console.log(`::warning::[fn-mine] ${replies.unread} of ${replies.asked} chunk(s) skipped: their replies could not be read as JSON.`);
   }
 
-  // Dedup by exact regex, rank by recovers, cap.
-  const seen = new Set<string>();
-  allSurvivors = allSurvivors
-    .filter((s) => { const k = s.regex.trim(); if (seen.has(k)) return false; seen.add(k); return true; })
-    .sort((a, b) => b.recovers - a.recovers);
+  // The workflow's ReDoS gate, on each regex alone; then rank by recovers, keep
+  // each only for attacks no survivor above it recovers, cap.
+  const fast = dropBacktracking(allSurvivors, (regex) => redosPrecheck(regex, REPO_ROOT));
+  const distinct = pickDistinct(fast.kept, minRecovers);
+  for (const d of distinct.dropped) console.log(`[fn-mine]   overlap: drop ${d.candidate.cluster}: ${d.why}`);
+  allSurvivors = [...distinct.kept];
   const picked = allSurvivors.slice(0, room);
   const deferred = allSurvivors.length - picked.length;
   console.log(`[fn-mine] total survivors: ${allSurvivors.length}. Authoring top ${picked.length}${deferred > 0 ? ` (deferring ${deferred} to next run)` : ''}.`);
@@ -658,16 +793,21 @@ async function main(): Promise<void> {
   if (picked.length === 0) {
     // A skipped corpus makes this a partial run, not an exhausted one.
     assertNullResultComplete([...skippedCorpora, ...failedCorpora]);
-    const note = describeNullResultByCorpus(perCorpus);
+    // Survivors the ReDoS precheck took all of are a null result too, and must
+    // say so: the per-corpus counts alone read as rules that survived.
+    const note =
+      fast.dropped > 0
+        ? `NULL RESULT — the ReDoS precheck dropped all ${fast.dropped} survivor(s) of the gate. ${describeNullResultByCorpus(perCorpus)}`
+        : describeNullResultByCorpus(perCorpus);
     console.log(`[fn-mine] ${note} Not an error.`);
-    writeNullReport(note);
+    writeNullReport(note, selectedCorpora);
     console.log('::authored-files::');
     return;
   }
 
   if (isDryRun) {
     console.log('[fn-mine] --dry-run: stopping before authoring. Survivors:');
-    console.log(JSON.stringify(picked, null, 2));
+    console.log(JSON.stringify(picked.map(({ recoveryKeys: _keys, ...rest }) => rest), null, 2));
     console.log(`[fn-mine] NULL RESULT — --dry-run: ${picked.length} survivor(s) found, authoring skipped.`);
     console.log('::authored-files::');
     return;
@@ -702,7 +842,14 @@ async function main(): Promise<void> {
       fs.rmSync(fullPath, { force: true });
       continue;
     }
-    authored.push({ id, file, cluster: c.cluster, recovers: c.recovers, heldOutRecovers: c.heldOutRecovers });
+    authored.push({
+      id,
+      file,
+      cluster: c.cluster,
+      recovers: c.recovers,
+      heldOutRecovers: c.heldOutRecovers,
+      outOfSample: c.outOfSample ?? {},
+    });
   }
 
   if (authored.length === 0) {
@@ -733,7 +880,13 @@ async function main(): Promise<void> {
   }
 
   fs.mkdirSync(path.dirname(path.join(REPO_ROOT, REPORT_PATH)), { recursive: true });
-  const report = { authored: kept, deferred, notMined: [...skippedCorpora, ...failedCorpora], gate: gateReportNote(toolBenign) };
+  const report = {
+    corpora: selectedCorpora.map((c) => c.name),
+    authored: kept,
+    deferred,
+    notMined: [...skippedCorpora, ...failedCorpora],
+    gate: gateReportNote(toolBenign, oos),
+  };
   fs.writeFileSync(path.join(REPO_ROOT, REPORT_PATH), JSON.stringify(report, null, 2));
   console.log(`[fn-mine] DONE — ${kept.length} rule(s) authored and gate-clean: ${kept.map((a) => a.id).join(', ')}`);
   console.log(`::authored-files::${kept.map((a) => a.file).join(',')}`);

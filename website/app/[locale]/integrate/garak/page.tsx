@@ -1,383 +1,142 @@
-import type { Metadata } from 'next';
-import { loadSiteStats } from '@/lib/stats';
-import {
-  GARAK_BOTH_CLOSED_BOOK,
-  LANES_EXPLAINED,
-  commonStamp,
-  count,
-  findBenchmark,
-  recallLanes,
-} from '@/lib/recall';
-import { locales, type Locale } from '@/lib/i18n';
+/* NVIDIA garak × ATR: what exists today (a public script that turns garak
+ * prompts ATR misses into rule proposals, and recall measured on two garak
+ * corpora) and what does not (an outside submission path; it is not open).
+ * Recall figures come from the stats loader, never typed in. */
+import Link from "next/link";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
+import { loadSiteStats } from "@/lib/stats";
+import { GARAK_BOTH_CLOSED_BOOK, LANES_EXPLAINED, commonStamp, count, findBenchmark, recallLanes, toFullWidth } from "@/lib/recall";
+import { locales, type Locale } from "@/lib/i18n";
+import { SheetRow } from "@/components/Sheet";
+import { ToolHero, ToolLimits } from "@/components/ToolPage";
+import Phrased from "@/components/Phrased";
+
+const SCRIPT_URL = "https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/scripts/garak-miss-to-proposals.ts";
+const GARAK_URL = "https://github.com/NVIDIA/garak";
+const GARAK_PR_URL = "https://github.com/NVIDIA/garak/pull/1676";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: 'NVIDIA garak × ATR — ATR',
-  description:
-    "A red-team tool feeds a detection standard. NVIDIA garak finds attacks; ATR has written detection rules from garak's probe corpus. garak does not ship ATR: garak PR #1676, which proposed ATR detectors for garak, was withdrawn by its ATR author on 2026-08-04 without being merged.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const zh = locale === "zh";
+  return pageMetadata({
+    locale,
+    path: "/integrate/garak",
+    title: "NVIDIA garak × ATR",
+    description: zh
+      ? "garak 找到攻擊，ATR 把它寫成規則。garak 沒有內建 ATR；讓外部團隊送 garak 報告進來的管道目前沒有開放。"
+      : "garak finds the attack and ATR writes the rule. garak does not ship ATR, and there is no open path yet for outside teams to submit garak reports.",
+  });
+}
 
-export default async function GarakIntegratePage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+const H2 = "text-[26px] md:text-[32px] leading-[1.2] tracking-[-0.02em] font-medium text-ink text-balance";
+const BODY = "text-[17px] leading-[1.8] text-graphite max-w-[620px]";
+const LINK = "text-ink underline underline-offset-4 decoration-fog hover:decoration-ink";
+
+export default async function GarakIntegratePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
-  const locale = (locales.includes(raw as Locale) ? raw : 'en') as Locale;
-  const zh = locale === 'zh';
+  const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
+  const zh = locale === "zh";
   const stats = loadSiteStats();
-  const garak = findBenchmark(stats, 'garak');
-  const full = findBenchmark(stats, 'garak-full');
-  const ruleCountStr = `${stats.ruleCount} rules today`.padEnd(25);
+  const garak = findBenchmark(stats, "garak");
+  const full = findBenchmark(stats, "garak-full");
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
-      <h1 className="text-3xl font-bold">NVIDIA garak × ATR</h1>
-      <p className="mt-2 text-neutral-400">
-        {zh
-          ? 'garak 是紅隊工具,ATR 是偵測標準。一個找到攻擊,另一個把它變成一條版本化、MIT 授權的偵測規則,ATR 因此不必另造一套攻擊語料——每個 probe 的來源都留在 author 欄位。'
-          : "garak is a red-teaming tool; ATR is a detection standard. One finds the attack, the other turns it into a versioned, MIT-licensed detection rule, so ATR does not have to build its own attack corpus — every probe's provenance stays on the author line."}
-      </p>
+    <Phrased>
+    <>
+      <SheetRow>
+        <ToolHero
+          zh={zh}
+          name="NVIDIA garak × ATR"
+          status={{ en: "Submissions not open", zh: "目前沒有開放提交" }}
+          title={{ en: "garak finds the attack. ATR writes the rule.", zh: "garak 找到攻擊，ATR 把它寫成規則。" }}
+          lead={{
+            en: "garak is NVIDIA's red-teaming tool. It looks for attacks at the model layer. ATR covers the agent layer: tool calls, skills, MCP. Some ATR rules were written from garak's probe corpus, and each one names its source on the author line. garak itself does not ship ATR.",
+            zh: "garak 是 NVIDIA 的紅隊工具，在模型這一層找攻擊。ATR 守的是 agent 這一層：工具呼叫、skill、MCP。有一部分 ATR 規則就是從 garak 的 probe 語料寫出來的，每一條都在 author 欄位寫明出處。garak 本身沒有內建 ATR。",
+          }}
+        />
+      </SheetRow>
 
-      <section className="mt-10 space-y-3">
-        <h2 className="text-xl font-semibold">{zh ? '概念' : 'The idea'}</h2>
-        <p>
-          <a className="underline" href="https://github.com/NVIDIA/garak">
-            garak
-          </a>{' '}
-          {zh ? (
-            <>
-              在 LLM 層找攻擊。ATR 在 agent 層防禦(tool calls、skills、MCP)。同一個攻擊
-              payload,兩個不同的偵測面——一個標準量它能不能突破模型,另一個標準量它能不能
-              在真實 agent 成品上被攔下來。橋接只是一支 Python 腳本:garak 報告進來,ATR 提案
-              出去,結晶 loop 起草規則,再由維護者審查。一條在這裡寫下的規則,下游每個消費 ATR 的引擎都收得到。
-            </>
-          ) : (
-            <>
-              finds attacks at the LLM layer. ATR defends at the agent layer (tool calls, skills,
-              MCP). One attack payload, two detection surfaces — one standard measures whether it
-              breaks the model, the other measures whether it can be caught on a real agent artifact.
-              The bridge is just a Python script: garak reports in, ATR proposals out, the
-              crystallisation loop drafts rules and a maintainer reviews them. A rule written here reaches every engine that
-              consumes ATR downstream.
-            </>
+      <SheetRow>
+        <div className="px-6 md:px-14 py-20 md:py-24 grid gap-14">
+          <div className="grid lg:grid-cols-[1fr_1.4fr] gap-4 lg:gap-20">
+            <h2 className={H2}>{zh ? "現在怎麼運作" : "How it works today"}</h2>
+            <div className={`${BODY} space-y-4`}>
+              <p>
+                {zh
+                  ? "公開 repo 裡有一支腳本，把 ATR 在完整 garak 語料上漏抓的 prompt，按攻擊家族分組，寫成規則提案，交給維護者審。"
+                  : "A script in the public repository takes the prompts ATR misses on the full garak corpus, groups them by attack family, and writes them up as rule proposals for a maintainer to review."}
+              </p>
+              <p>
+                {zh
+                  ? "它只收攻擊 agent 的家族，例如提示注入、越獄人設、編碼混淆。要模型產出有害內容的 probe，例如武器或毒品，不是 agent 威脅，不在 ATR 的範圍裡。"
+                  : "It keeps only the families that attack the agent, such as prompt injection, jailbreak personas and encoded injection. Probes that ask a model for harmful content, such as weapons or drugs, are not agent threats and are outside ATR's scope."}
+              </p>
+              <p>
+                <a className={`font-data text-[14px] ${LINK}`} href={SCRIPT_URL} target="_blank" rel="noopener noreferrer">scripts/garak-miss-to-proposals.ts</a>
+              </p>
+            </div>
+          </div>
+
+          {garak && full && (
+            <div className="grid lg:grid-cols-[1fr_1.4fr] gap-4 lg:gap-20">
+              <h2 className={H2}>{zh ? "量出來的結果" : "What it measures"}</h2>
+              <div className={`${BODY} space-y-4`}>
+                <p>
+                  {zh
+                    ? `在 garak 公開的 in-the-wild 越獄集（${count(garak.samples)} 筆）上，recall 是 ${recallLanes(garak)}。在完整的 garak 語料（${count(full.samples)} 筆，涵蓋所有 probe 家族）上，是 ${recallLanes(full)}。兩個數字都是 ${commonStamp([garak, full], true, true)}。`
+                    : `On garak's public in-the-wild jailbreak set (${count(garak.samples)} samples), recall is ${recallLanes(garak)}. On the full garak corpus (${count(full.samples)} samples, every probe family) it is ${recallLanes(full)}. Both figures: ${commonStamp([garak, full], false)}.`}
+                </p>
+                <p>{zh ? toFullWidth(LANES_EXPLAINED.zh) : LANES_EXPLAINED.en}</p>
+                <p>{zh ? toFullWidth(GARAK_BOTH_CLOSED_BOOK.zh) : GARAK_BOTH_CLOSED_BOOK.en}</p>
+                <p>
+                  {zh
+                    ? "兩份語料的落差，有一部分是刻意的。規則的比對層不去追某些家族，像純語意的越獄；硬追只會換來脆弱的比對條件和誤報。比較低的那個數字，一樣公開。"
+                    : "Part of the gap between the two corpora is deliberate. The pattern layer does not chase some families, such as purely semantic jailbreaks; forcing it would buy brittle patterns and false positives. The lower figure is published too."}
+                </p>
+              </div>
+            </div>
           )}
-        </p>
 
-        <pre className="overflow-x-auto rounded bg-neutral-900 p-4 text-sm">
-{`garak (red team)                    ATR (standard)           downstream consumers
-─────────────────                    ──────────────           ────────────────────
-Probes claude-3.7                    ${ruleCountStr}npm: agent-threat-rules
-Probes gpt-5                 ──▶     +auto-crystallised       PyPI: pyatr
-Probes gemini-2-pro                  from garak evidence      your CI pipeline
-Writes report.jsonl                  canary 24h
-                                     maintainer review
+          <div className="grid lg:grid-cols-[1fr_1.4fr] gap-4 lg:gap-20">
+            <h2 className={H2}>{zh ? "garak 裡沒有 ATR" : "ATR is not inside garak"}</h2>
+            <p className={BODY}>
+              {zh ? (
+                <>曾經有一個 PR 提議把 ATR 偵測器放進 garak（<a className={LINK} href={GARAK_PR_URL} target="_blank" rel="noopener noreferrer">garak #1676</a>）。提出它的 ATR 作者在 2026-08-04 撤回，沒有合併。</>
+              ) : (
+                <>A pull request once proposed ATR detectors inside garak (<a className={LINK} href={GARAK_PR_URL} target="_blank" rel="noopener noreferrer">garak #1676</a>). Its ATR author withdrew it on 2026-08-04, unmerged.</>
+              )}
+            </p>
+          </div>
+        </div>
+      </SheetRow>
 
-garak PR #1676 (ATR detectors inside garak): withdrawn by its ATR author on
-2026-08-04, not merged. garak does not ship ATR.`}
-        </pre>
-      </section>
-
-      <section className="mt-10 space-y-3">
-        <h2 className="text-xl font-semibold">{zh ? '一次性設定' : 'One-time setup'}</h2>
-        <ol className="list-decimal space-y-2 pl-6">
-          <li>
-            {zh ? '寄信到 ' : 'Email '}
-            <a className="underline" href="mailto:adam@agentthreatrule.org">
-              adam@agentthreatrule.org
-            </a>{' '}
-            {zh ? (
-              <>
-                附上你的組織名稱以取得 partner API key(早期夥伴階段手動發放,無費用,MIT 條款)。
-              </>
-            ) : (
-              <>
-                with your org name to receive a partner API key (manual issuance during
-                early-partner phase, no cost, MIT terms).
-              </>
-            )}
-          </li>
-          <li>
-            {zh
-              ? '橋接腳本 garak-to-tc.py 已於 2026-06-20 移出公開 repo,目前沒有公開提供。'
-              : 'The bridge script, garak-to-tc.py, was moved out of the public repository on 2026-06-20 and is not published at the moment.'}
-          </li>
-          <li>
-            {zh ? '在環境變數設定 key:' : 'Set the key in your environment:'}{' '}
-            <code className="rounded bg-neutral-800 px-1 break-all">export ATR_PARTNER_KEY=…</code>
-          </li>
-        </ol>
-      </section>
-
-      <section className="mt-10 space-y-3">
-        <h2 className="text-xl font-semibold">{zh ? '執行' : 'Run it'}</h2>
-
-        <p className="text-sm text-neutral-400">
-          {zh ? '跑完一次 garak eval session 後:' : 'After a garak eval session:'}
-        </p>
-        <pre className="overflow-x-auto rounded bg-neutral-900 p-4 text-sm">
-{`# Native garak JSONL report
-python3 garak-to-tc.py \\
-    --input ~/.local/share/garak/runs/2026-04-18-claude-3-7/report.jsonl \\
-    --partner-name  your-org \\
-    --target-model  claude-3-7-sonnet \\
-    --garak-version 0.14.1
-
-# Or ATR-style eval (from scripts/eval-garak.sh in this repo)
-python3 garak-to-tc.py \\
-    --input data/garak-benchmark/garak-eval-report.json \\
-    --partner-name  your-org \\
-    --dry-run   # inspect before submitting`}
-        </pre>
-      </section>
-
-      <section className="mt-10 space-y-3">
-        <h2 className="text-xl font-semibold">{zh ? '兩種模式' : 'Two modes'}</h2>
-        <p>
-          {zh ? (
-            <>
-              腳本有兩種提交模式。預設(<code>--mode drafter</code>)就是你要的。
-            </>
-          ) : (
-            <>
-              The script has two submission modes. The default (<code>--mode drafter</code>) is what
-              you want.
-            </>
-          )}
-        </p>
-        <ul className="list-disc pl-6">
-          <li>
-            {zh ? (
-              <>
-                <strong>drafter</strong>(預設)。把每個失敗的 probe POST 到{' '}
-                <code>/api/atr-proposals/from-payload</code>。Server 端跑 tool-use LLM drafter
-                (grep 既有規則做去重、抓 research 做佐證、寫含 3+ conditions / 5+ TP / 5+ TN / 3+
-                evasion tests 的 YAML),通過 RFC-001 品質閘門,自測自己的 regex,然後立案成
-                proposal。每次呼叫 30-60s。這個模式產出真正的 ATR 規則。
-              </>
-            ) : (
-              <>
-                <strong>drafter</strong> (default). POSTs each failed probe to{' '}
-                <code>/api/atr-proposals/from-payload</code>. Server-side runs a tool-use LLM drafter
-                (grep existing rules for dedup, fetch research for grounding, write YAML with 3+
-                conditions / 5+ TP / 5+ TN / 3+ evasion tests), passes RFC-001 quality gate,
-                self-tests its own regex, then files as a proposal. Each call takes 30-60s. This is
-                the mode that produces real ATR rules.
-              </>
-            )}
-          </li>
-          <li>
-            {zh ? (
-              <>
-                <strong>proposal</strong>(legacy)。POST client 端建好的字面草案。快,但 LLM reviewer
-                通常會以「太窄」(字面指紋 ≠ 偵測規則)退回。只有你上游自己有 YAML 產生步驟才用。
-              </>
-            ) : (
-              <>
-                <strong>proposal</strong> (legacy). POSTs a client-built literal draft. Fast but the
-                LLM reviewer typically rejects these as too narrow (literal fingerprint ≠ detection
-                rule). Only use if you have your own YAML-generation step upstream.
-              </>
-            )}
-          </li>
-        </ul>
-      </section>
-
-      <section className="mt-10 space-y-3">
-        <h2 className="text-xl font-semibold">
-          {zh ? '下游會發生什麼' : 'What happens downstream'}
-        </h2>
-        <ol className="list-decimal space-y-1 pl-6">
-          <li>
-            {zh ? (
-              <>
-                每個唯一的失敗 probe → <code>/api/atr-proposals</code> 下一條 proposal,內嵌完整 garak
-                來源。
-              </>
-            ) : (
-              <>
-                Each unique failed probe → one proposal in <code>/api/atr-proposals</code> with full
-                garak provenance embedded.
-              </>
-            )}
-          </li>
-          <li>
-            {zh
-              ? 'TC 結晶 LLM 讀攻擊 payload + garak metadata,起草一條一般化的偵測 regex。'
-              : 'TC crystallisation LLM reads the attack payload + garak metadata and drafts a generalised detection regex.'}
-          </li>
-          <li>
-            {zh
-              ? '規則在 Threat Cloud 上進入 24h canary。'
-              : 'Rule enters a 24h canary on Threat Cloud.'}
-          </li>
-          <li>
-            {zh ? (
-              <>
-                通過 canary → 安全閘門(良性 skill 語料 0 FP、test_cases 齊備、每個 PR ≤10 條規則;
-                語料以 <code>data/skill-benchmark/benign/</code> 為準,閘會遞迴讀取其下所有 .md)→
-                以 PR 送進 <code>agent-threat-rules</code> main,由維護者審查後手動 merge(repo 已關閉 auto-merge)→{' '}
-                隨下一個版本發布(CI 在 npm 上 stage,維護者以 2FA 核准)→ 每個下游消費者在下次安裝時升級。
-              </>
-            ) : (
-              <>
-                Survives canary → safety gate (0 FP on the benign skill corpus, test_cases present,
-                ≤ 10 rules per PR; the gate reads every <code>.md</code> file under{' '}
-                <code>data/skill-benchmark/benign/</code>, subdirectories included) → opened as a PR against <code>agent-threat-rules</code> main, which a maintainer reviews and merges by hand (the repository has auto-merge turned off) →
-                ships in the next release, which CI stages on npm and a maintainer approves with 2FA →
-                every downstream consumer upgrades on next install.
-              </>
-            )}
-          </li>
-          <li>
-            {zh ? (
-              <>
-                每條產出的規則都帶 <code>author: your-org (via garak vX.Y.Z)</code> 與{' '}
-                <code>metadata_provenance.garak_probe: &lt;probe-id&gt;</code>。歸屬永久且機器可讀。
-              </>
-            ) : (
-              <>
-                Every resulting rule carries{' '}
-                <code>author: your-org (via garak vX.Y.Z)</code> and{' '}
-                <code>metadata_provenance.garak_probe: &lt;probe-id&gt;</code>. Attribution is
-                permanent and machine-readable.
-              </>
-            )}
-          </li>
-        </ol>
-      </section>
-
-      <section className="mt-10 space-y-3">
-        <h2 className="text-xl font-semibold">
-          {zh ? '什麼算失敗的 probe' : 'What counts as a failed probe'}
-        </h2>
+      <ToolLimits zh={zh} title={{ en: "Not open yet", zh: "目前沒有開放" }}>
         <p>
           {zh
-            ? '腳本在以下任一情況把一個 garak attempt 當成規則候選:'
-            : 'The script treats a garak attempt as a rule candidate when either:'}
+            ? "讓外部團隊把自己的 garak 報告送進來、自動變成規則提案的管道，目前沒有開放，也不發放存取金鑰，開放時間還沒定。"
+            : "There is no open path yet for outside teams to send in their own garak reports and have them turned into rule proposals. No access keys are issued, and there is no date."}
         </p>
-        <ul className="list-disc pl-6">
-          <li>
-            {zh
-              ? '至少一個 garak detector 回傳分數高於 0.5(目標模型中招)。'
-              : 'At least one garak detector returned a score above 0.5 (the target model fell for the probe).'}
-          </li>
-          <li>
-            {zh ? (
-              <>
-                輸入是 ATR 風格的 eval report,且該 prompt 出現在{' '}
-                <code>missed_samples</code> — garak 標記它為惡意,而 ATR 尚無對應 pattern
-                (最高訊號的候選)。
-              </>
-            ) : (
-              <>
-                The input is an ATR-style eval report and the prompt appears in{' '}
-                <code>missed_samples</code> — garak flagged it malicious and ATR had no pattern for
-                it yet (highest-signal candidates).
-              </>
-            )}
-          </li>
-        </ul>
-      </section>
+        <p>
+          {zh ? (
+            <>現在要貢獻 garak 找到的攻擊，請走公開 repo 的流程：開 issue 或送 PR。做法寫在<Link className={LINK} href={`/${locale}/contribute`}>貢獻頁</Link>。</>
+          ) : (
+            <>To contribute an attack garak found today, use the public repository: open an issue or send a pull request. The <Link className={LINK} href={`/${locale}/contribute`}>contribute page</Link> shows how.</>
+          )}
+        </p>
+      </ToolLimits>
 
-      <section className="mt-10 space-y-3">
-        <h2 className="text-xl font-semibold">{zh ? '速率限制與安全' : 'Rate limits & safety'}</h2>
-        <ul className="list-disc pl-6">
-          <li>
-            {zh ? (
-              <>
-                每次 POST 之間預設 100ms 延遲,跑完約一分鐘。
-                {garak && full && (
-                  <>
-                    {`兩份語料、兩個 lane 的數字都公開:在 garak 公開 in-the-wild jailbreak 集(${count(garak.samples)} 筆)上,recall 是 ${recallLanes(garak)};在完整 garak 語料(${count(full.samples)} 筆,涵蓋全部 probe 家族)上是 ${recallLanes(full)}(${commonStamp([garak, full], true)})。`}
-                    {LANES_EXPLAINED.zh}
-                    {GARAK_BOTH_CLOSED_BOOK.zh}
-                    {"兩份語料之間的落差,一部分是刻意的——regex 偵測層不去打某些 probe 家族(例如純語意越獄),硬塞只會換來脆弱簽章與誤報;另一部分是 in-the-wild 的數字有不少靠的是從那份語料寫出來的規則。較低的數字也照樣列出,是因為一個標準的可信度,取決於它願不願意公開自己最差的數字。"}
-                  </>
-                )}
-              </>
-            ) : (
-              <>
-                Default 100ms delay between POSTs; a run takes about a minute.{' '}
-                {garak && full && (
-                  <>
-                    Both corpora are published, in both lanes. On the public garak in-the-wild
-                    jailbreak set ({count(garak.samples)} samples) recall is {recallLanes(garak)}; on the
-                    full garak corpus ({count(full.samples)} samples, every probe family) it is{' '}
-                    {recallLanes(full)} ({commonStamp([garak, full], false)}). {LANES_EXPLAINED.en}{' '}
-                    {GARAK_BOTH_CLOSED_BOOK.en}{' '}
-                    Part of the gap between the two corpora is deliberate — the regex detection layer does
-                    not chase some probe families (pure semantic jailbreaks, for instance); forcing it to
-                    would buy brittle signatures and false positives. Part of it is that the in-the-wild
-                    figure rests partly on rules written from that corpus. We report the lower figures too,
-                    because a standard earns trust by publishing its worst numbers, not hiding them.
-                  </>
-                )}
-              </>
-            )}
-          </li>
-          <li>
-            {zh ? (
-              <>
-                <code>patternHash</code> 是 prompt 的 sha256,所以對同一份 report 重跑是冪等的 — TC
-                辨識重複提交,只 bump 一個確認計數,絕不建立重複規則。
-              </>
-            ) : (
-              <>
-                <code>patternHash</code> is a sha256 of the prompt, so re-running on the same report
-                is idempotent — TC recognises duplicate submissions and just bumps a confirmation
-                counter, never creates duplicate rules.
-              </>
-            )}
-          </li>
-          <li>
-            {zh
-              ? '所有流量都用你的 partner key 認證。Key 外洩?寄信,我們撤銷並重發。'
-              : 'All traffic is authenticated with your partner key. Key compromise? Email and we revoke and re-issue.'}
-          </li>
-          <li>
-            {zh
-              ? '每個提交的 proposal 在進入 canary 前,都可透過 TC admin dashboard 審查與退回。'
-              : 'Every submitted proposal is reviewable and rejectable via the TC admin dashboard before it enters canary.'}
-          </li>
-        </ul>
-      </section>
-
-      <section className="mt-10 space-y-3">
-        <h2 className="text-xl font-semibold">{zh ? '相關' : 'Related'}</h2>
-        <ul className="list-disc pl-6">
-          <li>
-            <a className="underline" href={`/${locale}/integrate`}>
-              /integrate
-            </a>{' '}
-            {zh
-              ? '— 一般採用者(npm + PyPI),不需 partner key'
-              : '— general adopters (npm + PyPI), no partner key needed'}
-          </li>
-          <li>
-            <a className="underline" href={`/${locale}/partner-sync`}>
-              /partner-sync
-            </a>{' '}
-            {zh
-              ? '— 給下游消費 ATR 的平台用的即時規則拉取'
-              : '— live rule pull for platforms that consume ATR downstream'}
-          </li>
-          <li>
-            <a
-              className="underline"
-              href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/scripts/garak-miss-to-proposals.ts"
-            >
-              scripts/garak-miss-to-proposals.ts
-            </a>{' '}
-            {zh
-              ? '— 公開 repo 裡的管線:把 ATR 在 garak benchmark 上漏掉的 prompt 變成規則提案'
-              : '— the pipeline in the public repository that turns the prompts ATR misses on the garak benchmark into rule proposals'}
-          </li>
-        </ul>
-      </section>
-    </main>
+      <SheetRow>
+        <div className="px-6 md:px-14 py-12 flex flex-wrap gap-x-10 gap-y-3 text-[15px]">
+          <Link className={LINK} href={`/${locale}/integrate`}>{zh ? "其他整合方式" : "Other ways to integrate"}</Link>
+          <a className={LINK} href={GARAK_URL} target="_blank" rel="noopener noreferrer">NVIDIA garak</a>
+        </div>
+      </SheetRow>
+    </>
+    </Phrased>
   );
 }

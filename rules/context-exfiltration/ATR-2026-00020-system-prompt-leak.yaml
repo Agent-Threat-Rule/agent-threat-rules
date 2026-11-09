@@ -1,6 +1,6 @@
 title: "System Prompt and Internal Instruction Leakage"
 id: ATR-2026-00020
-rule_version: 1
+rule_version: 2
 status: "stable"
 description: |
   Detects when an agent's output reveals system prompt content, internal
@@ -45,7 +45,7 @@ compliance:
       context: "This rule is the primary detection implementation for LLM07:2025 System Prompt Leakage, covering direct quotation, instruction paraphrasing, guardrail revelation, and config exposure in agent output."
       strength: primary
     - id: LLM02:2025
-      context: "System prompt content constitutes sensitive operational information; its disclosure in agent output also satisfies the LLM02:2025 Sensitive Information Disclosure category."
+      context: "System prompt content constitutes sensitive operational information; its disclosure in agent output also falls under the LLM02:2025 Sensitive Information Disclosure category."
       strength: secondary
   eu_ai_act:
     - article: "13"
@@ -138,7 +138,7 @@ detection:
       description: "Agent revealing guardrail or content policy details"
     - field: agent_output
       operator: regex
-      value: "(?i)(?:do\\s+not|never|must\\s+not|cannot|should\\s+not).*(?:reveal|share|disclose|output|leak).*(?:system\\s+prompt|internal|instructions?|configuration)"
+      value: '(?i)(?:do\s+not|never|must\s+not|cannot|should\s+not)[^\n\\]{0,80}(?:reveal|share|disclose|output|leak)[^\n\\]{0,80}(?:system\s+prompt|internal|instructions?|configuration)'
       description: "Agent echoing its own non-disclosure rules"
     - field: agent_output
       operator: regex

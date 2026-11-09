@@ -37,10 +37,10 @@ compliance:
       strength: primary
   owasp_llm:
     - id: LLM01:2025
-      context: "Hidden instruction markers and role-override commands embedded in retrieved content deliver indirect prompt injection through the data layer, satisfying the LLM01:2025 Prompt Injection category via the RAG attack surface."
+      context: "Hidden instruction markers and role-override commands embedded in retrieved content deliver indirect prompt injection through the data layer, matching the LLM01:2025 Prompt Injection category via the RAG attack surface."
       strength: primary
     - id: LLM03:2025
-      context: "Poisoned knowledge base entries injected into the supply chain of training or retrieval data satisfy the LLM03:2025 Supply Chain Vulnerabilities category at the data tier."
+      context: "Poisoned knowledge base entries injected into the supply chain of training or retrieval data match the LLM03:2025 Supply Chain Vulnerabilities category at the data tier."
       strength: secondary
     - id: LLM08:2025
       context: "The patterns match hidden directives in tool output (the rule targets retrieved documents and knowledge-base entries): fake [SYSTEM] or <system> tags, ignore-previous-instructions overrides, retrieval-triggered phrases, BEGIN HIDDEN INSTRUCTIONS blocks, 'for internal use only' sections, concealment and stealth-action directives, mode switches, role-play and append-to-every-response directives, injected chat turns, prompt-template delimiters and exfiltration commands with a target address. LLM08:2025, which covers systems using Retrieval Augmented Generation, lists data poisoning from insiders, prompts, data seeding or unverified data providers, leading to manipulated model outputs; the patterns see a poisoned entry when it is returned but not whether it came from a vector store, so the fit is partial."

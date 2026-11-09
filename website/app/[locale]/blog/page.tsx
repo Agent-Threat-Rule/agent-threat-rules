@@ -3,16 +3,27 @@ import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { posts } from "@/lib/posts";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
+import Phrased from "@/components/Phrased";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  title: "Blog — ATR",
-  description:
-    "Timestamped notes from the Agent Threat Rules project: new detection rules, campaign analysis, and public bets on where agent security is heading — each dated and open to scrutiny.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return pageMetadata({
+    locale,
+    path: "/blog",
+    title: "Blog",
+    description:
+      "Dated notes from the Agent Threat Rules project: new detection rules, campaign analysis, and public calls on where agent security is heading. Each one is open to scrutiny.",
+  });
+}
 
 export default async function BlogIndexPage({
   params,
@@ -24,22 +35,23 @@ export default async function BlogIndexPage({
   const zh = locale === "zh";
 
   return (
-    <div className="pt-20 pb-20 px-5 md:px-6 max-w-[860px] mx-auto">
+    <Phrased>
+    <div className="pt-20 pb-20 px-6 md:px-14 max-w-[972px]">
       <Reveal>
-        <div className="font-data text-[11px] md:text-xs font-medium text-stone tracking-[1.5px] md:tracking-[3px] uppercase mb-3">
+        <div className="text-[13px] text-stone mb-3">
           Blog
         </div>
       </Reveal>
       <Reveal delay={0.05}>
-        <h1 className="font-display text-[clamp(32px,5vw,56px)] font-extrabold tracking-[-2px] md:tracking-[-3px] leading-[1.05] text-ink">
-          {zh ? "下注，留時間戳。" : "Bets, timestamped."}
+        <h1 className="text-[32px] md:text-[48px] leading-[1.06] tracking-[-0.01em] font-medium text-ink">
+          {zh ? "判斷，都留日期。" : "Calls, with dates."}
         </h1>
       </Reveal>
       <Reveal delay={0.1}>
         <p className="text-sm md:text-base text-graphite max-w-[640px] mt-5 md:mt-6 leading-[1.8]">
           {zh
-            ? "新規則、攻擊活動分析、對 agent 安全走向的公開判斷。每一篇寫下日期、附上證據，接受檢驗——下注就該留得下紀錄。"
-            : "New rules, campaign analysis, and public calls on where agent security is heading. Each one dated, evidenced, and open to scrutiny — a bet should leave a record."}
+            ? "新規則、攻擊活動分析，還有對 agent 安全走向的公開判斷。每一篇都標日期、附證據，隨時可以被檢驗。"
+            : "New rules, campaign analysis, and public calls on where agent security is heading. Each one is dated, backed by evidence, and open to scrutiny."}
         </p>
       </Reveal>
 
@@ -72,5 +84,6 @@ export default async function BlogIndexPage({
         ))}
       </div>
     </div>
+    </Phrased>
   );
 }

@@ -99,7 +99,7 @@ export const ACTORS: ThreatActor[] = [
     },
     geography: {
       en: "Unknown — no geolocation indicators recovered",
-      zh: "未知——未取得地理標示",
+      zh: "未知，沒有取得地理標示",
     },
     skillsPublished: 354,
     skillsMalicious: 354,
@@ -154,7 +154,7 @@ export const ACTORS: ThreatActor[] = [
         platform: "NousResearch/hermes-agent",
         id: "#9809",
         url: "https://github.com/NousResearch/hermes-agent/issues/9809",
-        status: "open",
+        status: "closed",
       },
     ],
     summary: {
@@ -175,7 +175,7 @@ export const ACTORS: ThreatActor[] = [
     },
     geography: {
       en: "C2 infrastructure at 91.92.242.30 — no attribution to specific region",
-      zh: "C2 基礎設施位於 91.92.242.30——無特定地區歸屬",
+      zh: "C2 基礎設施位於 91.92.242.30，沒有特定地區歸屬",
     },
     skillsPublished: 212,
     skillsMalicious: 198,
@@ -224,7 +224,7 @@ export const ACTORS: ThreatActor[] = [
         platform: "NousResearch/hermes-agent",
         id: "#9809",
         url: "https://github.com/NousResearch/hermes-agent/issues/9809",
-        status: "open",
+        status: "closed",
       },
     ],
     summary: {
@@ -288,7 +288,7 @@ export const ACTORS: ThreatActor[] = [
         platform: "NousResearch/hermes-agent",
         id: "#9809",
         url: "https://github.com/NousResearch/hermes-agent/issues/9809",
-        status: "open",
+        status: "closed",
       },
     ],
     summary: {

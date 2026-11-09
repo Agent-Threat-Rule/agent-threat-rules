@@ -20,6 +20,19 @@
  *   npx tsx scripts/export-cisco-pack.ts --out dist/cisco-pack \
  *       --diff-against /path/to/skill-scanner/skill_scanner/data/packs/atr
  *
+ * A pack meant for Skill Scanner is built twice: export, run the result
+ * inside Skill Scanner over benign skills, export again without the rules
+ * that fired there.
+ *   npx tsx scripts/export-cisco-pack.ts --out /tmp/stage1 ...
+ *   /path/to/skill-scanner/.venv/bin/python scripts/cisco-pack/benign-gate.py \
+ *       --scanner /path/to/skill-scanner --pack /tmp/stage1 \
+ *       --corpus data/skill-benchmark/benign --out /tmp/gate.json
+ *   npx tsx scripts/export-cisco-pack.ts --out dist/cisco-pack ... --benign-gate /tmp/gate.json
+ *
+ * Rules with a regex condition on a runtime-only field (tool_name,
+ * tool_args, tool_response, agent output, trace fields) are never exported;
+ * see STATIC_TEXT_FIELDS in scripts/cisco-pack/load-rules.ts.
+ *
  * Options:
  *   --rules <dir>          Rule source directory (default: rules)
  *   --out <dir>            Output pack directory (default: dist/cisco-pack)
@@ -33,6 +46,14 @@
  *                          scripts/cisco-pack/downstream-v2.ts.
  *   --taxonomy <id>=<code> Taxonomy code for one rule (repeatable); needed when
  *                          a new rule's scanner category has no default.
+ *   --max-severity <level> Highest severity a signature may carry (critical, high,
+ *                          medium, low, info); more severe rules are written at
+ *                          it. Skill Scanner fails a skill on any HIGH or
+ *                          CRITICAL finding by default, so `low` makes the pack
+ *                          report without changing that verdict.
+ *   --benign-gate <json>   Output of scripts/cisco-pack/benign-gate.py. Every
+ *                          rule it saw block a benign skill in Skill Scanner
+ *                          is left out of the pack, and listed as excluded.
  *   --reproduce-vendored   Reproduce the banner comments of the pack already
  *                          vendored downstream (generator name, and a per-file
  *                          rule count that counts files rather than emitted
@@ -40,6 +61,12 @@
  *                          the rules verbatim instead of writing them as
  *                          (?i) plus the pattern the engine compiles
  *                          (SPEC.md §6.4). Only for byte-for-byte verification.
+ *   --keep-slow            Keep the conditions data/redos-baseline.json lists as
+ *                          slow on a backtracking engine. By default they are
+ *                          left out (a rule that needs all its conditions is
+ *                          left out whole), because Skill Scanner compiles
+ *                          patterns with Python's re. See
+ *                          scripts/cisco-pack/slow-conditions.ts.
  *   --json                 Emit the run summary as JSON on stdout
  *
  * Exit codes: 0 on success, 1 on any failure (missing measurement file,
@@ -57,7 +84,9 @@ import {
   summariseByMaturity,
   summariseBySeverity,
 } from './cisco-pack/diff.js';
+import { readBenignGate } from './cisco-pack/benign-gate.js';
 import { loadRules } from './cisco-pack/load-rules.js';
+import { readSlowConditions } from './cisco-pack/slow-conditions.js';
 import { renderPackManifest, renderReadme, renderSignatureFile, type RenderContext } from './cisco-pack/render.js';
 import { buildSignatureFiles, DEFAULT_REPO_URL } from './cisco-pack/transform.js';
 import {
@@ -79,6 +108,9 @@ interface Args {
   readonly downstream?: string;
   readonly taxonomy: ReadonlyMap<string, string>;
   readonly reproduceVendored: boolean;
+  readonly benignGate?: string;
+  readonly maxSeverity?: string;
+  readonly keepSlow: boolean;
   readonly json: boolean;
 }
 
@@ -114,12 +146,15 @@ function parseArgs(argv: readonly string[]): Args {
     downstream: readFlag(argv, '--downstream'),
     taxonomy: new Map(readRepeatedFlag(argv, '--taxonomy').map(parseTaxonomyOverride)),
     reproduceVendored: argv.includes('--reproduce-vendored'),
+    benignGate: readFlag(argv, '--benign-gate'),
+    maxSeverity: readFlag(argv, '--max-severity')?.toUpperCase(),
+    keepSlow: argv.includes('--keep-slow'),
     json: argv.includes('--json'),
   };
 }
 
 function countOwaspAgenticCategories(rulesDir: string): number {
-  const { rules } = loadRules(rulesDir, { includeDeprecated: true });
+  const { rules } = loadRules(rulesDir, { includeDeprecated: true, includeRuntimeFields: true });
   const categories = new Set<string>();
   for (const { rule } of rules) {
     const refs = (rule as unknown as { references?: { owasp_agentic?: unknown[] } }).references
@@ -130,7 +165,21 @@ function countOwaspAgenticCategories(rulesDir: string): number {
 }
 
 function writePack(args: Args): { total: number; summary: Record<string, unknown> } {
-  const loaded = loadRules(args.rules, { includeDeprecated: args.reproduceVendored });
+  if (args.maxSeverity && args.reproduceVendored) {
+    throw new Error('--max-severity and --reproduce-vendored are mutually exclusive');
+  }
+  if (args.benignGate && args.reproduceVendored) {
+    throw new Error('--benign-gate and --reproduce-vendored are mutually exclusive');
+  }
+  const loaded = loadRules(args.rules, {
+    includeDeprecated: args.reproduceVendored,
+    includeRuntimeFields: args.reproduceVendored,
+    exclude: args.benignGate ? readBenignGate(resolve(args.benignGate)) : undefined,
+    slow:
+      args.keepSlow || args.reproduceVendored
+        ? undefined
+        : readSlowConditions(join(REPO_ROOT, 'data', 'redos-baseline.json')),
+  });
   if (loaded.rules.length === 0) throw new Error(`no rules found under ${args.rules}`);
 
   if (args.downstream && args.reproduceVendored) {
@@ -141,6 +190,7 @@ function writePack(args: Args): { total: number; summary: Record<string, unknown
     repoUrl: DEFAULT_REPO_URL,
     omitMaturity: args.reproduceVendored,
     verbatimPatterns: args.reproduceVendored,
+    maxSeverity: args.maxSeverity,
   });
   const downstream = args.downstream ? readDownstreamPack(resolve(args.downstream)) : undefined;
   const v2Rules = downstream ? resolveV2Rules(atrFiles, downstream, args.taxonomy) : undefined;
@@ -164,7 +214,7 @@ function writePack(args: Args): { total: number; summary: Record<string, unknown
       ? renderPackManifestV2(files, v2Rules, downstream, args.version)
       : renderPackManifest(files, context);
   writeFileSync(join(args.out, 'pack.yaml'), manifest, 'utf8');
-  writeFileSync(join(args.out, 'README.md'), renderReadme(files, context, loaded.excluded), 'utf8');
+  writeFileSync(join(args.out, 'README.md'), renderReadme(files, context, loaded.excluded, loaded.trimmed), 'utf8');
 
   const all = files.flatMap((file) => [...file.signatures]);
   const summary: Record<string, unknown> = {
@@ -172,6 +222,7 @@ function writePack(args: Args): { total: number; summary: Record<string, unknown
     ruleFilesOnDisk: Object.values(loaded.filesPerCategory).reduce((a, b) => a + b, 0),
     emitted: all.length,
     excluded: loaded.excluded,
+    trimmed: loaded.trimmed,
     patterns: all.reduce((sum, s) => sum + s.patterns.length, 0),
     byCategory: Object.fromEntries(summariseByCategory(all)),
     bySeverity: Object.fromEntries(summariseBySeverity(all)),

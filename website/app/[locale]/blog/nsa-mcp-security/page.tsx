@@ -3,6 +3,9 @@ import { Reveal } from "@/components/Reveal";
 import { locales, type Locale } from "@/lib/i18n";
 import { getPost } from "@/lib/posts";
 import type { Metadata } from "next";
+import { pageMetadata, toLocale } from "@/lib/seo";
+import Phrased from "@/components/Phrased";
+import { Sign } from "@/components/Sign";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -10,10 +13,20 @@ export function generateStaticParams() {
 
 const post = getPost("nsa-mcp-security")!;
 
-export const metadata: Metadata = {
-  title: `${post.title.en} — ATR`,
-  description: post.summary.en,
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const lang = toLocale(locale);
+  return pageMetadata({
+    locale,
+    path: "/blog/nsa-mcp-security",
+    title: post.title[lang],
+    description: post.summary[lang],
+  });
+}
 
 function Code({ children }: { children: React.ReactNode }) {
   return (
@@ -36,20 +49,21 @@ export default async function NsaMcpPostPage({
     "https://media.defense.gov/2026/Jun/02/2003943289/-1/-1/0/CSI_MCP_SECURITY.PDF";
 
   return (
-    <div className="pt-20 pb-20 px-5 md:px-6 max-w-[760px] mx-auto">
+    <Phrased>
+    <div className="pt-20 pb-20 px-6 md:px-14 max-w-[872px]">
       <Reveal>
         <Link
           href={`/${locale}/blog`}
           className="font-data text-xs text-stone hover:text-ink transition-colors"
         >
-          ← Blog
+          <Sign name="diple" size={10} className="mr-1.5 align-[-1px] -scale-x-100" />Blog
         </Link>
       </Reveal>
       <Reveal delay={0.05}>
         <div className="font-data text-xs text-mist mt-6 mb-3">{post.date}</div>
       </Reveal>
       <Reveal delay={0.1}>
-        <h1 className="font-display text-[clamp(26px,3.6vw,40px)] font-extrabold tracking-[-1.5px] leading-[1.15] text-ink mb-10">
+        <h1 className="text-[26px] md:text-[34px] leading-[1.18] tracking-[-0.01em] font-medium text-ink mb-10">
           {zh ? post.title.zh : post.title.en}
         </h1>
       </Reveal>
@@ -106,7 +120,7 @@ export default async function NsaMcpPostPage({
             >
               完整對映在這裡
             </a>
-            。
+            。這份對映是 ATR 自己做的，NSA 沒有審查，也沒有背書。
           </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">跑起來</h2>
@@ -206,7 +220,7 @@ export default async function NsaMcpPostPage({
             >
               The full mapping is here
             </a>
-            .
+            . The mapping is ATR&rsquo;s own work; the NSA has not reviewed or endorsed it.
           </p>
 
           <h2 className="font-display text-xl font-bold text-ink pt-4">Run it</h2>
@@ -244,5 +258,6 @@ export default async function NsaMcpPostPage({
         </article>
       )}
     </div>
+    </Phrased>
   );
 }

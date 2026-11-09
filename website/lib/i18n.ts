@@ -55,7 +55,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "proof.heading.pre": "Cisco AI Defense",
     "proof.heading.post": " merged\n34 ATR rules into its open-source skill-scanner.",
     "proof.body":
-      "Their engineer submitted a PR. We reviewed it. It merged in 3 days. 1,272 additions. Then they built a --rule-packs CLI specifically to consume ATR.",
+      "ATR's maintainer opened the pull request; the repository's maintainers merged it 21 hours later. 1,272 additions. They then added a --rule-packs CLI flag for packs such as ATR's.",
     "proof.link": "View PR #79 on GitHub",
 
     // Ecosystem
@@ -65,12 +65,6 @@ export const messages: Record<Locale, Record<string, string>> = {
       "ATR spreads through PRs, not sales calls. Open source, MIT licensed, zero lock-in.",
 
     // Future
-    "future.label": "The Future",
-    "future.heading": "ATR rules don't have to be written by hand.",
-    "future.sub":
-      "Threat Cloud crystallization turns new attacks into detection rules automatically.",
-    "future.note":
-      "Traditional rules are written by hand, on weekly cycles. Threat Cloud shrinks new rule turnaround from weeks to hours.",
 
     // CTA
     "cta.heading": "Add ATR to your platform.",
@@ -117,15 +111,15 @@ export const messages: Record<Locale, Record<string, string>> = {
       "Use Claude Code or Cursor with ATR's MCP server. The AI writes the YAML. You review it.",
 
     // Rules page
-    "rules.label": "Rule Explorer",
-    "rules.heading": "{count} detection rules. Browse, filter, inspect.",
+    "rules.label": "Rule explorer",
+    "rules.heading": "{count} effective rules. Search them, filter them, open any one.",
     "rules.sub":
-      "Every rule carries a stable ATR-YYYY-NNNNN identifier — CVE/CWE-style, permanent once published. Parsed from YAML at build time; click any rule to read its detection logic, test cases, and known limitations.",
-    "rules.search": "Search rules... (name, ID, CVE)",
+      "Each rule has an ID of the form ATR-YYYY-NNNNN. Once published, the ID never changes, the way a CVE or CWE number doesn't. Open a rule to see what it matches, the test cases it has to pass and where it is known to miss. The list is read from the YAML files when the site is built.",
+    "rules.search": "Search by name, ID or CVE",
     "rules.all_categories": "All categories",
     "rules.all_severities": "All severities",
-    "rules.showing": "Showing {filtered} of {total} rules",
-    "rules.no_match": "No rules match your filters.",
+    "rules.showing": "Showing {filtered} of {total} rule files",
+    "rules.no_match": "No rule matches these filters.",
     "rules.clear": "clear filters",
     "rules.col.id": "Rule ID",
     "rules.col.name": "Name",
@@ -133,12 +127,12 @@ export const messages: Record<Locale, Record<string, string>> = {
     "rules.col.severity": "Severity",
     "rules.col.cves": "CVEs",
     "rules.col.desc": "Description",
-    "rules.view_yaml": "View YAML on GitHub",
+    "rules.view_yaml": "Read the YAML on GitHub",
 
     // Integrate page
     "integrate.ready":
-      "{count} rules, written once, runnable anywhere. Wire the same ruleset into TypeScript, Python, CI, or a SIEM — the path Cisco, Microsoft, and MISP already walked.",
-    "integrate.schema.title": "Schema Stability Guarantee",
+      "The same {count} rules run in TypeScript, Python, a CI job or a SIEM. It is the route Cisco, Microsoft and MISP already took.",
+    "integrate.schema.title": "Will the format break?",
     "integrate.schema.intro":
       "If you depend on ATR as upstream, you need to know the format won't break. Here's our commitment:",
     "integrate.schema.v1.title": "ATR Schema v1.0 (current)",
@@ -151,83 +145,80 @@ export const messages: Record<Locale, Record<string, string>> = {
     "integrate.schema.freq.desc":
       "New rules added continuously (avg 2-5 per week). Every rule passes CI validation + precision test before merge.",
     "integrate.schema.sync.title": "Sync Methods",
-    "integrate.why.title": "Why ATR Instead of Writing Your Own?",
-    "integrate.license.title": "License & Legal",
-    "integrate.cisco.title": "Case Study: How Cisco Did It",
+    "integrate.why.title": "Why not write your own rules?",
+    "integrate.license.title": "License and legal",
+    "integrate.cisco.title": "Case study: how Cisco did it",
     "integrate.cisco.body":
-      "Cisco's AI Defense team integrated ATR rules as an upstream dependency. Their engineer submitted PR #79, we reviewed it, and it merged in 3 days. They then built a --rule-packs CLI feature (PR #80) specifically to consume ATR as a first-class rule source.",
+      "Cisco AI Defense's open-source skill-scanner took ATR rules as an upstream rule pack. ATR's maintainer opened PR #79, and the repository's maintainers merged it 21 hours later. They then added a --rule-packs CLI flag (PR #80) to load packs such as ATR's.",
 
     // Contribute page
-    "contribute.crystal.title": "Threat Cloud Crystallization",
-    "contribute.crystal.sub":
-      "Traditional rules take weeks to write, review, and ship. Threat Cloud targets hours.",
     "contribute.governance": "Governance",
     "contribute.governance.desc":
-      "Rule review process, maintainer roles, decision-making.",
+      "How a rule gets reviewed, what maintainers do, and who decides.",
     "contribute.contributors": "Contributors",
     "contribute.contributors.desc":
-      "Credit wall. Every confirmed evasion, FP report, and rule gets credited.",
-    "contribute.guide": "Rule Writing Guide",
+      "Every confirmed bypass, false-positive report and rule is credited to the person who sent it.",
+    "contribute.guide": "Rule writing guide",
     "contribute.guide.desc":
-      "Complete walkthrough with examples and schema reference.",
+      "A full walkthrough, with examples and the schema reference.",
 
     // Research page
     "research.paper": "Published Paper",
     "research.benchmarks": "Benchmarks",
     "research.benchmarks.sub":
-      "Tested against our own corpus and public adversarial datasets (deepset, Lakera Gandalf, HackAPrompt, garak).",
-    "research.pint": "PINT-format (self-built)",
-    "research.self": "Self-Test (Own Rules)",
+      "Measured on ATR's own corpus and on public attack datasets: deepset, Lakera Gandalf, HackAPrompt and garak.",
+    "research.pint": "PINT format, self-built corpus",
+    "research.self": "Self-test on ATR's own rules",
     "research.precision": "Precision",
     "research.recall": "Recall",
     "research.samples": "Samples",
     "research.gap_note":
-      "In the hunt lane, the gap between {precision} precision and {recall} recall is expected: regex catches known patterns but misses paraphrases and multilingual attacks. In the enforce lane, which loads only stable rules and is the one to run with blocking on, recall is {enforce}.",
+      "In the hunt lane, precision is {precision} and recall is {recall}. That gap is expected. Regex catches the patterns it knows and misses paraphrases and attacks in other languages. The enforce lane loads only stable rules, and it is the one to run with blocking on. Its recall is {enforce}.",
     "research.gap_note_hunt_only":
-      "In the hunt lane, the gap between {precision} precision and {recall} recall is expected: regex catches known patterns but misses paraphrases and multilingual attacks. This measurement records no enforce-lane figure.",
-    "research.scan": "Ecosystem Scan Data",
-    "research.scan.sub": "Real scans of real MCP skill registries.",
+      "In the hunt lane, precision is {precision} and recall is {recall}. That gap is expected. Regex catches the patterns it knows and misses paraphrases and attacks in other languages. This measurement has no enforce-lane figure.",
+    "research.scan": "Ecosystem scans",
+    "research.scan.sub": "The rules, run against real MCP skill registries.",
     "research.scan.mega": "Mega Scan (OpenClaw + Skills.sh)",
     "research.scan.clawhub": "ClawHub Registry Scan",
     "research.scan.scanned": "skills scanned",
     "research.scan.crawled": "skills crawled",
     "research.scan.source": "With source code",
-    "research.download.csv": "Download raw data (CSV)",
-    "research.download.json": "Download stats (JSON)",
-    "research.limits": "What ATR Cannot Detect",
+    "research.download.csv": "Download the raw data (CSV)",
+    "research.download.json": "Download the stats (JSON)",
+    "research.limits": "What ATR can't detect",
     "research.limits.sub":
-      "We publish this section because honest limitations build more trust than false confidence.",
-    "research.limits.full": "Full limitations document, with the evasion tests rules carry",
-    "research.limit.paraphrase": "Paraphrase Attacks",
+      "Before you rely on these rules, you should know where they miss.",
+    "research.limits.full": "The full limitations document, with the evasion tests the rules carry",
+    "research.limit.paraphrase": "Paraphrases",
     "research.limit.paraphrase.desc":
-      'Any regex rule can be bypassed by semantically equivalent rephrasing. "Ignore previous instructions" is detected; "please set aside the guidance you were given earlier" is not.',
-    "research.limit.multilang": "Multi-Language Attacks",
+      "Any regex rule can be dodged by saying the same thing another way. “Ignore previous instructions” is caught. “Please set aside the guidance you were given earlier” is not.",
+    "research.limit.multilang": "Other languages",
     "research.limit.multilang.desc":
-      "All patterns are English-only. Injection payloads in Spanish, Chinese, Arabic, or any other language bypass all rules completely.",
-    "research.limit.context": "Context-Dependent Attacks",
+      "Nearly every pattern is in English. A few rules also match phrasing in Chinese, Japanese, Korean, Russian or Arabic, and only for the attacks they were written for. An injection in any other language, or a new one in those, mostly gets through.",
+    "research.limit.context": "Attacks that depend on context",
     "research.limit.context.desc":
-      '"Delete all records" might be legitimate or malicious. Regex matches patterns without understanding authorization context.',
-    "research.limit.protocol": "Protocol-Level Attacks",
+      "“Delete all records” can be a normal request or an attack. Regex sees the words. It can't tell whether the agent was allowed to do it.",
+    "research.limit.protocol": "Protocol-level attacks",
     "research.limit.protocol.desc":
-      "ATR inspects content, not transport. Message replay, schema manipulation, MCP transport-level MITM are invisible.",
-    "research.limit.multiturn": "Multi-Turn Behavioral Patterns",
+      "ATR reads content, not the transport. Message replay, schema manipulation and a man-in-the-middle on the MCP transport never reach it.",
+    "research.limit.multiturn": "Attacks spread over many turns",
     "research.limit.multiturn.desc":
-      "Gradual trust escalation across 20 turns, where no single message is detectable, is not correlated. ATR evaluates events independently.",
-    "research.limit.novel": "Novel Attacks",
+      "Trust built up slowly over 20 turns, where no single message looks wrong, goes unnoticed. ATR judges each event on its own and doesn't connect them.",
+    "research.limit.novel": "New attacks",
     "research.limit.novel.desc":
-      "By definition, regex cannot detect attack patterns that don't exist yet. New techniques require new rules.",
+      "Regex can't match a pattern nobody has seen yet. A new technique needs a new rule.",
 
     // Subpages
-    "coverage.label": "Standards Coverage",
-    "coverage.heading": "The frameworks name the threat. ATR runs it.",
+    "coverage.label": "Standards coverage",
+    "coverage.heading": "The frameworks name the threats. ATR checks for them.",
     "coverage.sub":
-      "MITRE ATLAS, OWASP, NIST AI RMF, ISO 42001 — six frameworks classify what can go wrong. ATR is the executable layer underneath: detection that fires on a real agent artifact. Every rule carries mappings into all six frameworks, enforced in CI.",
+      "Six frameworks, among them MITRE ATLAS, OWASP, NIST AI RMF and ISO 42001, describe what can go wrong. ATR is the part you can run: a rule fires on a real agent artifact. Every rule carries mappings into all six frameworks, and CI enforces it.",
     "integrate.label": "Integrate",
-    "integrate.heading": "Four paths. Same destination.",
+    "integrate.heading": "Pick a way in. The rules are the same.",
     "research.label": "Research",
-    "research.heading": "Data, benchmarks, and honest limitations.",
+    "research.heading": "The numbers, and what ATR misses.",
     "research.sub":
-      "ATR publishes evasion tests openly. We tell you what we can't catch.",
+      "The evasion tests are public. So is the list of attacks the rules can't catch.",
     "contribute.label": "Contribute",
     "contribute.heading":
       "One rule, proposed once, defends everyone who reads the standard.",
@@ -241,15 +232,16 @@ export const messages: Record<Locale, Record<string, string>> = {
     // ── Standards site additions ───────────────────────────────
     // Document Status banner
     "spec.canonical": "canonical",
-    "spec.version": "version",
-    "spec.date": "updated",
+    "spec.version": "spec",
+    "spec.date": "dated",
+    "spec.generated": "page generated",
     "spec.editor": "editor",
     "spec.status_aria": "Document status",
-    "spec.toc": "Table of Contents",
-    "spec.toc_aria": "Specification table of contents",
+    "spec.toc": "Contents",
+    "spec.toc_aria": "Specification contents",
     "spec.read_full": "Read the full specification",
     "spec.implementer_report": "Implementer Report",
-    "cite.tablist_aria": "Citation format selector",
+    "cite.tablist_aria": "Citation format",
 
     // Nav additions (kept short)
     "nav.atd": "ATD",
@@ -286,21 +278,21 @@ export const messages: Record<Locale, Record<string, string>> = {
     // Spec page
     "spec.title": "ATR Specification",
     "spec.subtitle":
-      "The canonical, machine-readable rule format for detecting AI agent threats — what Sigma is to SIEM and YARA is to malware. A Working Draft maintained in the open by the ATR Community; the files in the repository, not this page, are authoritative.",
+      "The rule format for detecting threats to AI agents, written so machines can read it. It does for agents what Sigma does for SIEM and YARA does for malware. This is a Working Draft, maintained in public by the ATR community. Where this page and the files in the repository disagree, the files win.",
     "spec.abstract.h": "Abstract",
     "spec.status.h": "Status of This Document",
     "spec.status.body":
-      "This document is a Working Draft published by the ATR Community. Although the rule format has been shipping in production for over a year, the surrounding governance is still transitioning from a single-maintainer model (BDFL) to a Technical Steering Committee. Discussion of this document takes place on the public GitHub repository.",
+      "This document is a Working Draft published by the ATR Community. Although the rule format has been published on npm since March 2026, the surrounding governance is still transitioning from a lead-maintainer model (BDFL) to a Technical Steering Committee. Discussion of this document takes place on the public GitHub repository.",
 
     // Implementers page
-    "implementers.title": "Implementer Report",
+    "implementers.title": "Implementer report",
     "implementers.subtitle":
-      "A specification is only real when more than one engine implements it the same way. This report lists the organizations that run or reference ATR — each one independent evidence that the format can be implemented from the spec alone, the way W3C advances a standard on the strength of its implementations. Self-declared via pull request to the ADOPTERS.md registry.",
+      "A specification counts once more than one engine implements it the same way. W3C moves a standard forward on that kind of evidence. This report lists the organizations that run or reference ATR, and each entry is independent evidence that the format can be built from the spec alone. Entries are self-declared, by pull request to ADOPTERS.md.",
     "implementers.col.org": "Organization",
     "implementers.col.role": "Conformance",
-    "implementers.col.version": "Spec Version",
-    "implementers.col.date": "Integration Date",
-    "implementers.col.ref": "Public Reference",
+    "implementers.col.version": "Spec version",
+    "implementers.col.date": "Integrated",
+    "implementers.col.ref": "Public record",
     "implementers.tier.engine": "L1 Engine",
     "implementers.tier.publisher": "L2 Publisher",
     "implementers.tier.citation": "L1 Citation",
@@ -312,30 +304,30 @@ export const messages: Record<Locale, Record<string, string>> = {
     // Conformance page
     "conformance.title": "Conformance",
     "conformance.subtitle":
-      "Conformance is what lets a rule written in Taipei run unchanged on an engine in Seattle. Three levels define what it means to claim a system implements ATR — so that any conforming engine evaluates the same rule the same way. Each level has a test suite published as YAML fixtures in the repository; conformance is demonstrated, not asserted.",
-    "conformance.l1.title": "L1 Engine Conformance",
+      "A rule written in Taipei should run unchanged on an engine in Seattle. Conformance is what makes that true. Three levels spell out what a system has to do before it can say it implements ATR, so that every conforming engine gives the same rule the same verdict. Each level has a test suite, published as YAML fixtures in the repository. You show conformance by passing it, not by claiming it.",
+    "conformance.l1.title": "L1 engine conformance",
     "conformance.l1.body":
-      "An L1 engine is what makes the format portable. It MUST parse every rule that validates against spec/atr-schema.yaml, MUST evaluate detection.conditions with the semantics defined in §3.5, and MUST honor scan_target and status semantics — so that the same rule yields the same verdict regardless of who wrote the engine. L1 engines MAY refuse rules outside their declared scan_target.",
-    "conformance.l2.title": "L2 Publisher Conformance",
+      "The L1 engine is what makes the format portable. It MUST parse every rule that validates against spec/atr-schema.yaml. It MUST evaluate detection.conditions with the semantics in §3.5, and it MUST honor the scan_target and status semantics. That way a rule gets the same verdict no matter who wrote the engine. An L1 engine MAY refuse rules outside the scan_target it declares.",
+    "conformance.l2.title": "L2 publisher conformance",
     "conformance.l2.body":
-      "An L2 publisher publishes rules in a vendor-prefixed sub-range (e.g., ACME-YYYY-NNNNN) that follow all ATR semantics. L2 publishers MUST honor the deprecation policy in §3.7 and SHOULD include test_cases for every published rule.",
-    "conformance.l3.title": "L3 Sub-range Authority",
+      "An L2 publisher puts out rules in its own vendor-prefixed range, such as ACME-YYYY-NNNNN, and follows every ATR semantic. It MUST honor the deprecation policy in §3.7 and SHOULD include test_cases with every rule it publishes.",
+    "conformance.l3.title": "L3 sub-range authority",
     "conformance.l3.body":
-      "An L3 sub-range authority is a national or organizational body that mints rules under a sovereign prefix (e.g., ATR-TW-2026-NNNNN). Authority is granted following the procedure in /charter §5; the TSC grants it once seated — until then the lead maintainer (BDFL) acts in this role.",
-    "conformance.testsuite.h": "Test Suite",
+      "An L3 sub-range authority is a national or organizational body that issues rules under a sovereign prefix, such as ATR-TW-2026-NNNNN. Authority is granted through the procedure in /charter §5. Once the TSC is seated, it grants it. Until then the lead maintainer (BDFL) does.",
+    "conformance.testsuite.h": "Test suite",
     "conformance.testsuite.body":
-      "The L1 engine test suite consists of YAML fixtures stored under spec/conformance/ in the main repository. Each fixture pairs a rule with its expected evaluation outcome on a fixed event — the contract is in the fixture, not in any one implementation. An implementation passes if every fixture evaluates as declared. Two engines that both pass agree, by construction, on every rule the suite covers.",
-    "conformance.self.h": "Self-Certification",
+      "The L1 engine test suite is a set of YAML fixtures under spec/conformance/ in the main repository. Each fixture pairs a rule with the result it must give on a fixed event. The contract lives in the fixtures, not in any one implementation. An implementation passes when every fixture comes out as declared. Two engines that both pass agree, by construction, on every rule the suite covers.",
+    "conformance.self.h": "Self-certification",
     "conformance.self.body":
-      "Implementations self-certify by running the test suite locally and opening a pull request against ADOPTERS.md with the integration metadata. The maintainers (the TSC once seated) may verify a self-certification at any time by re-running the suite against a published artifact.",
+      "To self-certify, run the test suite locally, then open a pull request against ADOPTERS.md with your integration details. The maintainers can check any self-certification at any time by re-running the suite against a published artifact. Once the TSC is seated, it takes that on.",
 
     // Errata page
     "errata.title": "Errata",
     "errata.subtitle":
-      "A standing record of errors found in published versions of the ATR specification — kept in the open the way W3C and IETF specifications carry their errata. Every published version is permanent; the errors in it are corrected here, in public, with attribution. Each entry names the affected version, where the error sits, the corrective text, and the date the correction was published.",
+      "A standing record of errors found in published versions of the ATR specification, kept in public the way W3C and IETF specs keep theirs. A published version never changes. Its errors are corrected here, in the open, with credit to whoever found them. Each entry names the affected version, where the error is, the corrected text and the date the correction went out.",
     "errata.empty":
-      "No errata are on record for the current Working Draft. The absence of entries is not a claim of perfection — it means no error has yet been confirmed in a published version. If you find one, open an issue on the repository; a confirmed report is added here, not quietly patched.",
-    "errata.col.version": "Affected Version",
+      "No errata are on record for the current Working Draft. That isn't a claim that it has no errors. It means none has been confirmed in a published version yet. If you find one, open an issue in the repository. A confirmed report goes here instead of being patched quietly.",
+    "errata.col.version": "Affected version",
     "errata.col.section": "Section",
     "errata.col.summary": "Summary",
     "errata.col.date": "Published",
@@ -343,31 +335,31 @@ export const messages: Record<Locale, Record<string, string>> = {
     // Glossary
     "glossary.title": "Glossary",
     "glossary.subtitle":
-      "Definitions for key terms used throughout the specification. Where a term has a precise technical meaning that differs from common usage, the technical meaning takes precedence within the spec.",
+      "What the key terms in the specification mean. When a term's technical meaning differs from everyday use, the technical meaning applies inside the spec.",
 
     // Charter
-    "charter.title": "Project Charter",
+    "charter.title": "Project charter",
     "charter.subtitle":
-      "A standard outlives the people who start it only if its rules are written down. This charter sets out what ATR is, what it is not, how decisions are made, and how the Technical Steering Committee is seated — the commitments that hold regardless of who maintains the project.",
+      "A standard outlives the people who start it only if its rules are written down. This charter says what ATR is and isn't, how decisions get made and how the Technical Steering Committee is seated. These commitments hold no matter who maintains the project.",
     "charter.mission.h": "Mission",
     "charter.mission.body":
-      "ATR exists to give the AI-agent security community a single shared format for declaring, exchanging, and evaluating detection rules — so that a defender in one organization can build on a rule written by a defender in another, in another country, without anyone re-inventing the rule format. A shared format is infrastructure, not a product: it belongs to no vendor and answers to the community that maintains it.",
+      "ATR gives people who defend AI agents one shared format for writing, exchanging and evaluating detection rules. A defender in one organization can build on a rule written by a defender in another, even in another country, and nobody has to reinvent the format. A shared format is infrastructure, not a product. It belongs to no vendor and answers to the community that maintains it.",
     "charter.scope.h": "Scope",
     "charter.scope.in":
-      "In scope: the rule format, the reference engine, the rule schema, conformance levels, and the cross-framework mappings (OWASP, MITRE ATLAS, NIST AI RMF, SAFE-MCP).",
+      "In scope: the rule format, the reference engine, the rule schema, the conformance levels and the mappings to other frameworks (OWASP, MITRE ATLAS, NIST AI RMF, SAFE-MCP).",
     "charter.scope.out":
-      "Out of scope: vendor-specific tooling, commercial integrations, runtime enforcement policy, and incident response coordination. These are the work of downstream implementers, and the standard stays deliberately narrow so that any of them can build on it without inheriting someone else's product decisions.",
+      "Out of scope: vendor-specific tooling, commercial integrations, runtime enforcement policy and incident response coordination. Those belong to downstream implementers. The standard stays narrow on purpose, so any of them can build on it without inheriting someone else's product decisions.",
     "charter.governance.h": "Governance",
     "charter.governance.body":
-      "ATR is governed today by a single lead maintainer (BDFL), with a Technical Steering Committee being stood up to take that role. Concentrating authority in one maintainer is a phase, not the design: the transition criteria and the TSC seating process are written down in advance — in GOVERNANCE.md and docs/BDFL-charter.md — precisely so the move to shared governance happens by rule, not by accident.",
-    "charter.ip.h": "Intellectual Property",
+      "Today ATR is governed by one lead maintainer (BDFL). A Technical Steering Committee is being set up to take over that role. Authority sitting with one maintainer is a phase, not the design. The criteria for the handover and the TSC seating process were written down in advance, in GOVERNANCE.md and docs/BDFL-charter.md, so the move to shared governance happens by rule and not by accident.",
+    "charter.ip.h": "Intellectual property",
     "charter.ip.body":
-      "ATR is released under the MIT License — permanently, with no path to relicensing the published standard. All contributions are MIT-licensed by submission; there is no CLA to sign and no rights to assign. Anyone may adopt, extend, or fork the rules, including vendors who compete with one another. The DOI for citation is 10.5281/zenodo.19178002.",
+      "ATR is released under the MIT License, permanently. The published standard has no path to another license. Every contribution is MIT-licensed when it is submitted. There is no CLA to sign and no rights to assign. Anyone can adopt, extend or fork the rules, including vendors who compete with each other. The DOI for citation is 10.5281/zenodo.19178002.",
 
     // Citations
     "citations.title": "Citation",
     "citations.subtitle":
-      "A standard becomes infrastructure the day other people's work can point at it and not have it move. ATR is built to be cited — by a paper, a CVE record, a CI script — through identifiers that never change after publication and a DOI that outlives any URL. The formats below are how you reference it.",
+      "A standard becomes infrastructure once other people's work can point at it and trust it not to move. ATR is built to be cited, by a paper, a CVE record or a CI script. Its IDs never change after publication, and its DOI will outlast any URL. Use one of the formats below.",
 
     // Mission articulation (used on /, /about, /charter)
     "mission.title": "Mission",
@@ -382,384 +374,376 @@ export const messages: Record<Locale, Record<string, string>> = {
   },
   zh: {
     // Nav
-    "nav.rules": "\u898F\u5247",
-    "nav.threats": "\u5A01\u8105\u60C5\u5831",
-    "nav.coverage": "\u8986\u84CB\u7387",
-    "nav.integrate": "\u6574\u5408",
-    "nav.contribute": "\u8CA2\u737B",
-    "nav.wall": "\u8CA2\u737B\u7246",
-    "nav.ecosystem": "\u751F\u614B\u7CFB",
-    "nav.red-team": "\u7D05\u968A",
-    "nav.research": "\u7814\u7A76",
-    "nav.about": "\u95DC\u65BC",
-    "nav.changelog": "\u7248\u672C\u6B77\u7A0B",
+    "nav.rules": "規則",
+    "nav.threats": "威脅情報",
+    "nav.coverage": "覆蓋率",
+    "nav.integrate": "整合",
+    "nav.contribute": "貢獻",
+    "nav.wall": "貢獻牆",
+    "nav.ecosystem": "生態系",
+    "nav.red-team": "紅隊",
+    "nav.research": "研究",
+    "nav.about": "關於",
+    "nav.changelog": "版本歷程",
     "nav.blog": "Blog",
-    "nav.quality-standard": "\u54C1\u8CEA\u6A19\u6E96",
-    "nav.cta": "\u6574\u5408",
+    "nav.quality-standard": "品質標準",
+    "nav.cta": "整合",
 
     // Hero
-    "hero.past": "\u6211\u5011\u904E\u53BB\u4FDD\u8B77\u4EBA\u3002",
-    "hero.now": "\u73FE\u5728\u6211\u5011\u4FDD\u8B77 Agent\u3002",
+    "hero.past": "我們過去保護人。",
+    "hero.now": "現在我們保護 Agent。",
     "hero.sub":
-      "AI Agent \u5A01\u8105\u7684\u958B\u653E\u5075\u6E2C\u6A19\u6E96\u3002YAML \u898F\u5247\u3001MIT \u6388\u6B0A\u3001\u96F6\u9396\u5B9A\u3002",
-    "hero.cta.primary": "\u5C07 ATR \u52A0\u5165\u4F60\u7684\u5E73\u53F0",
-    "hero.cta.secondary": "\u700F\u89BD\u898F\u5247",
+      "AI Agent 威脅的開放偵測標準。YAML 規則、MIT 授權、零鎖定。",
+    "hero.cta.primary": "將 ATR 加入你的平台",
+    "hero.cta.secondary": "瀏覽規則",
     "hero.stat.rules": "Rules",
     "hero.stat.categories": "Categories",
     "hero.stat.precision": "Precision",
 
     // Threat
-    "threat.label": "MCP skills \u5A01\u8105\u6383\u63CF",
+    "threat.label": "MCP skills 威脅掃描",
     "threat.body":
-      "AI Agent \u73FE\u5728\u80FD\u700F\u89BD\u7DB2\u9801\u3001\u57F7\u884C\u7A0B\u5F0F\u78BC\u3001\u547C\u53EB\u5916\u90E8\u5DE5\u5177\u3002\u653B\u64CA\u8005\u5229\u7528\u5B83\u5011<strong>\u6D29\u6F0F\u6191\u8B49</strong>\u3001<strong>\u57F7\u884C\u60E1\u610F\u6307\u4EE4</strong>\u3001<strong>\u7E5E\u904E\u5B89\u5168\u908A\u754C</strong>\u3002\u653B\u64CA\u9762\u7684\u589E\u9577\u901F\u5EA6\u8D85\u904E\u4EFB\u4F55\u5718\u968A\u624B\u5BEB\u898F\u5247\u7684\u901F\u5EA6\u3002",
+      "AI Agent 現在能瀏覽網頁、執行程式碼、呼叫外部工具。攻擊者利用它們<strong>洩漏憑證</strong>、<strong>執行惡意指令</strong>、<strong>繞過安全邊界</strong>。攻擊面的增長速度超過任何團隊手寫規則的速度。",
 
     // Numbers
     "numbers.rules.desc":
-      "\u6A6B\u8DE8 {categories} \u500B\u5A01\u8105\u985E\u5225\u3002\u6BCF\u689D\u898F\u5247\u90FD\u5C0D\u61C9\u771F\u5BE6 CVE \u548C OWASP \u6A19\u6E96\u3002",
+      "橫跨 {categories} 個威脅類別。每條規則都對應真實 CVE 和 OWASP 標準。",
     "numbers.precision.desc":
-      "\u5728 {samples} \u500B\u5C0D\u6297\u6A23\u672C\u4E0A\u7684 Precision\u3002\u8A9E\u6599\u662F PINT \u683C\u5F0F\u7684\u81EA\u5EFA\u8A9E\u6599,\u4E0D\u662F Lakera \u5B98\u65B9 PINT benchmark\u3002",
+      "在 {samples} 個對抗樣本上的 Precision。語料是 PINT 格式的自建語料,不是 Lakera 官方 PINT benchmark。",
     "numbers.latency.desc":
-      "99% \u7684\u4E8B\u4EF6\u5728 Tier 0-2 \u89E3\u6C7A\u3002\u96F6 API \u6210\u672C\u3002",
+      "99% 的事件在 Tier 0-2 解決。零 API 成本。",
     "numbers.scan.desc":
-      "\u6383\u63CF OpenClaw + Skills.sh\u3002{critical} CRITICAL\u3001{high} HIGH\u3002",
-    "numbers.owasp.desc": "OWASP Agentic Top 10 \u5168\u90E8\u8986\u84CB\u3002",
+      "掃描 OpenClaw + Skills.sh。{critical} CRITICAL、{high} HIGH。",
+    "numbers.owasp.desc": "OWASP Agentic Top 10 全部覆蓋。",
     "numbers.safemcp.desc":
-      "\u81f3\u5c11\u6709\u4e00\u689d\u7d93\u5be9\u67e5 ATR \u898f\u5247\u5c0d\u61c9\u7684 SAF-MCP \u6280\u8853(\u5019\u9078\u5c0d\u7167)\u3002",
+      "至少有一條經審查 ATR 規則對應的 SAF-MCP 技術(候選對照)。",
 
     // Proof
-    "proof.label": "\u5DF2\u5408\u4F75\u81F3\u4E0A\u6E38",
+    "proof.label": "已合併至上游",
     "proof.heading.pre": "Cisco AI Defense",
     "proof.heading.post":
-      " \u628A 34 \u689D ATR \u898F\u5247\u5408\u4F75\u9032\u5B83\u7684\u958B\u6E90 skill-scanner\u3002",
+      " 把 34 條 ATR 規則合併進它的開源 skill-scanner。",
     "proof.body":
-      "\u4ED6\u5011\u7684\u5DE5\u7A0B\u5E2B\u63D0\u4E86 PR\u3002\u6211\u5011 review \u5B8C\u30023 \u5929\u5408\u4F75\u30021,272 \u884C\u65B0\u589E\u3002\u7136\u5F8C\u4ED6\u5011\u5EFA\u4E86 --rule-packs CLI \u5C08\u9580\u6D88\u8CBB ATR\u3002",
-    "proof.link": "\u5728 GitHub \u67E5\u770B PR #79",
+      "ATR 維護者提了 PR，該 repo 的維護者 21 小時後合併。1,272 行新增。之後他們加了 --rule-packs CLI 參數，用來載入 ATR 這類規則包。",
+    "proof.link": "在 GitHub 查看 PR #79",
 
     // Ecosystem
-    "ecosystem.label": "\u751F\u614B\u7CFB",
+    "ecosystem.label": "生態系",
     "ecosystem.heading":
-      "{merged} \u500B\u5DF2\u5408\u4F75\u3002{open} \u500B\u5F85\u5BE9\u3002\u5171 {total} \u500B PR\u3002",
+      "{merged} 個已合併。{open} 個待審。共 {total} 個 PR。",
     "ecosystem.sub":
-      "ATR \u900F\u904E PR \u64F4\u6563\uff0c\u4E0D\u662F\u900F\u904E\u92B7\u552E\u3002\u958B\u6E90\u3001MIT \u6388\u6B0A\u3001\u96F6\u9396\u5B9A\u3002",
+      "ATR 透過 PR 擴散，不是透過銷售。開源、MIT 授權、零鎖定。",
 
     // Future
-    "future.label": "\u672A\u4F86",
-    "future.heading": "ATR \u898F\u5247\u4E0D\u9700\u8981\u624B\u5BEB\u3002",
-    "future.sub":
-      "Threat Cloud \u7D50\u6676\u6A5F\u5236\u81EA\u52D5\u5C07\u65B0\u653B\u64CA\u8F49\u5316\u70BA\u5075\u6E2C\u898F\u5247\u3002",
-    "future.note":
-      "\u50B3\u7D71\u898F\u5247\u7531\u4EBA\u5DE5\u64B0\u5BEB\uff0c\u9031\u671F\u4EE5\u9031\u8A08\u3002Threat Cloud \u8B93\u65B0\u898F\u5247\u7684\u7522\u51FA\u5F9E\u6578\u9031\u7E2E\u77ED\u5230\u6578\u5C0F\u6642\u3002",
 
     // CTA
-    "cta.heading": "\u5C07 ATR \u52A0\u5165\u4F60\u7684\u5E73\u53F0\u3002",
+    "cta.heading": "將 ATR 加入你的平台。",
     "cta.sub":
-      "\u56DB\u689D\u8DEF\u5F91\u3002TypeScript\u3001Python\u3001\u539F\u59CB YAML\u3001\u6216 SIEM queries\u3002\n\u8DDF Cisco \u8D70\u7684\u540C\u4E00\u689D\u8DEF\u3002",
+      "四條路徑。TypeScript、Python、原始 YAML、或 SIEM queries。\n跟 Cisco 走的同一條路。",
     "cta.primary": "Integration Guide",
-    "cta.secondary": "\u700F\u89BD\u6240\u6709\u898F\u5247",
+    "cta.secondary": "瀏覽所有規則",
 
     // Compare
-    "compare.label": "\u70BA\u4EC0\u9EBC\u9078 ATR",
+    "compare.label": "為什麼選 ATR",
     "compare.heading":
-      "\u70BA\u4EC0\u9EBC\u4E0D\u81EA\u5DF1\u5BEB\u898F\u5247\uff1f",
+      "為什麼不自己寫規則？",
     "compare.sub":
-      "ATR vs \u66FF\u4EE3\u65B9\u6848\u3002\u8AA0\u5BE6\u7684\u6BD4\u8F03\u3002",
+      "ATR vs 替代方案。誠實的比較。",
 
     // Homepage data
-    "categories.label": "ATR \u5075\u6E2C\u4EC0\u9EBC",
+    "categories.label": "ATR 偵測什麼",
     "categories.heading":
-      "{categories} \u500B\u5A01\u8105\u985E\u5225\u3002{rules} \u689D\u898F\u5247\u3002\u771F\u5BE6 CVE\u3002",
+      "{categories} 個威脅類別。{rules} 條規則。真實 CVE。",
     "categories.sub":
-      "\u6BCF\u689D\u898F\u5247\u90FD\u9023\u7D50\u5230 OWASP\u3001MITRE ATLAS \u548C\u5DF2\u8A18\u9304\u7684\u6F0F\u6D1E\u3002",
-    "scan.label": "\u5373\u6642\u6383\u63CF\u6578\u64DA",
+      "每條規則都連結到 OWASP、MITRE ATLAS 和已記錄的漏洞。",
+    "scan.label": "即時掃描數據",
     "scan.mega": "Mega Scan",
-    "scan.threats": "\u767C\u73FE\u5A01\u8105",
-    "scan.sources": "\u6578\u64DA\u4F86\u6E90",
-    "scan.latency": "\u5E73\u5747\u5EF6\u9072",
-    "scan.skills_scanned": "skills \u5DF2\u6383\u63CF",
-    "scan.flagged": "\u5DF2\u6A19\u8A18",
-    "scan.per_skill": "\u6BCF skill \u6383\u63CF",
+    "scan.threats": "發現威脅",
+    "scan.sources": "數據來源",
+    "scan.latency": "平均延遲",
+    "scan.skills_scanned": "skills 已掃描",
+    "scan.flagged": "已標記",
+    "scan.per_skill": "每 skill 掃描",
     "crystal.1":
-      "\u5728\u91CE\u5916\u5075\u6E2C\u5230\u65B0\u653B\u64CA\u6A21\u5F0F",
-    "crystal.2": "LLM \u5206\u6790\u653B\u64CA\u7D50\u69CB + \u610F\u5716",
-    "crystal.3": "\u81EA\u52D5\u7522\u751F YAML \u898F\u5247\u63D0\u6848",
-    "crystal.4": "\u793E\u7FA4\u5BE9\u67E5 + precision \u6E2C\u8A66",
+      "在野外偵測到新攻擊模式",
+    "crystal.2": "LLM 分析攻擊結構 + 意圖",
+    "crystal.3": "自動產生 YAML 規則提案",
+    "crystal.4": "社群審查 + precision 測試",
     "crystal.5":
-      "\u5408\u4F75\u5230 ATR\u3002\u6240\u6709\u5F15\u64CE\u81EA\u52D5\u66F4\u65B0\u3002",
-    "path.01.title": "\u56DE\u5831\u7E5E\u904E\u65B9\u6CD5",
+      "合併到 ATR。所有引擎自動更新。",
+    "path.01.title": "回報繞過方法",
     "path.01.desc":
-      "\u627E\u5230\u4E86\u7E5E\u904E\u65B9\u6CD5\uff1F\u63D0\u4E00\u500B issue\u3002\u53EA\u8981 15 \u5206\u9418\u3002\u6700\u6709\u50F9\u503C\u7684\u8CA2\u737B\u3002",
-    "path.02.title": "\u56DE\u5831\u8AA4\u5224",
+      "找到了繞過方法？提一個 issue。只要 15 分鐘。最有價值的貢獻。",
+    "path.02.title": "回報誤判",
     "path.02.desc":
-      "\u898F\u5247\u5C0D\u5408\u6CD5\u5167\u5BB9\u89F8\u767C\u4E86\uff1F\u5E6B\u6211\u5011\u8ABF\u6574 precision\u300220 \u5206\u9418\u3002",
-    "path.03.title": "\u63D0\u4EA4\u65B0\u898F\u5247",
+      "規則對合法內容觸發了？幫我們調整 precision。20 分鐘。",
+    "path.03.title": "提交新規則",
     "path.03.desc":
-      "\u7528 ATR schema \u5BEB\u4E00\u689D\u5075\u6E2C\u898F\u5247\u3002\u6709\u5B8C\u6574\u6559\u5B78\u30021-2 \u5C0F\u6642\u3002",
-    "path.04.title": "AI \u539F\u751F\u8CA2\u737B",
+      "用 ATR schema 寫一條偵測規則。有完整教學。1-2 小時。",
+    "path.04.title": "AI 原生貢獻",
     "path.04.desc":
-      "\u7528 Claude Code \u6216 Cursor \u914D\u5408 ATR \u7684 MCP server\u3002AI \u5BEB YAML\uff0C\u4F60\u5BE9\u67E5\u3002",
+      "用 Claude Code 或 Cursor 配合 ATR 的 MCP server。AI 寫 YAML，你審查。",
 
     // Rules page
-    "rules.label": "Rule Explorer",
+    "rules.label": "規則總覽",
     "rules.heading":
-      "{count} \u689D\u5075\u6E2C\u898F\u5247\u3002\u700F\u89BD\u3001\u904E\u6FFE\u3001\u6AA2\u67E5\u3002",
+      "{count} 條生效規則。可以搜尋、篩選，點開任何一條細看。",
     "rules.sub":
-      "\u6BCF\u689D\u898F\u5247\u90FD\u6709\u7A69\u5B9A\u7684 ATR-YYYY-NNNNN \u8B58\u5225\u78BC\u2014\u2014CVE/CWE \u9AD4\u88C1\uFF0C\u4E00\u7D93\u767C\u5E03\u6C38\u4E0D\u66F4\u6539\u3002\u898F\u5247\u5728 build time \u5F9E YAML \u89E3\u6790\uFF1B\u9EDE\u64CA\u4EFB\u4F55\u898F\u5247\uFF0C\u67E5\u770B\u5B83\u7684\u5075\u6E2C\u908F\u8F2F\u3001\u6E2C\u8A66\u6848\u4F8B\u8207\u5DF2\u77E5\u9650\u5236\u3002",
+      "每條規則都有一個 ATR-YYYY-NNNNN 編號，發布之後就不會再改，跟 CVE、CWE 編號一樣。點開一條，可以看到它比對什麼、要通過哪些測試案例，以及已知會漏掉什麼。這份清單在網站建置時，直接從 YAML 檔讀出來。",
     "rules.search":
-      "\u641C\u7D22\u898F\u5247\u2026\uff08\u540D\u7A31\u3001ID\u3001CVE\uff09",
-    "rules.all_categories": "\u6240\u6709\u985E\u5225",
-    "rules.all_severities": "\u6240\u6709\u56B4\u91CD\u7B49\u7D1A",
-    "rules.showing": "\u986F\u793A {filtered} / {total} \u689D\u898F\u5247",
+      "用名稱、編號或 CVE 搜尋",
+    "rules.all_categories": "全部類別",
+    "rules.all_severities": "全部嚴重度",
+    "rules.showing": "共 {total} 個規則檔，顯示 {filtered} 個",
     "rules.no_match":
-      "\u6C92\u6709\u898F\u5247\u7B26\u5408\u4F60\u7684\u904E\u6FFE\u689D\u4EF6\u3002",
-    "rules.clear": "\u6E05\u9664\u904E\u6FFE",
-    "rules.col.id": "Rule ID",
-    "rules.col.name": "\u540D\u7A31",
-    "rules.col.category": "\u985E\u5225",
-    "rules.col.severity": "\u56B4\u91CD\u7B49\u7D1A",
-    "rules.col.cves": "CVEs",
-    "rules.col.desc": "\u63CF\u8FF0",
-    "rules.view_yaml": "\u5728 GitHub \u67E5\u770B YAML",
+      "沒有符合條件的規則。",
+    "rules.clear": "清除篩選",
+    "rules.col.id": "規則編號",
+    "rules.col.name": "名稱",
+    "rules.col.category": "類別",
+    "rules.col.severity": "嚴重度",
+    "rules.col.cves": "CVE",
+    "rules.col.desc": "說明",
+    "rules.view_yaml": "到 GitHub 看 YAML",
 
     // Integrate page
     "integrate.ready":
-      "{count} \u689D\u898F\u5247\uFF0C\u5BEB\u4E00\u6B21\uFF0C\u4EFB\u4F55\u5730\u65B9\u90FD\u80FD\u8DD1\u3002\u540C\u4E00\u4EFD\u898F\u5247\u96C6\uFF0C\u63A5\u9032 TypeScript\u3001Python\u3001CI \u6216 SIEM\u2014\u2014Cisco\u3001Microsoft\u3001MISP \u5DF2\u7D93\u8D70\u904E\u7684\u8DEF\u3002",
-    "integrate.schema.title": "Schema \u7A69\u5B9A\u6027\u4FDD\u8B49",
+      "同一套 {count} 條規則，可以接進 TypeScript、Python、CI 或 SIEM。Cisco、Microsoft、MISP 走的就是這條路。",
+    "integrate.schema.title": "格式會不會改壞？",
     "integrate.schema.intro":
-      "\u5982\u679C\u4F60\u4F9D\u8CF4 ATR \u4F5C\u70BA\u4E0A\u6E38\uff0C\u4F60\u9700\u8981\u77E5\u9053\u683C\u5F0F\u4E0D\u6703\u58DE\u6389\u3002\u9019\u662F\u6211\u5011\u7684\u627F\u8AFE\uff1A",
+      "如果你依賴 ATR 作為上游，你需要知道格式不會壞掉。這是我們的承諾：",
     "integrate.schema.v1.title":
-      "ATR Schema v1.0\uff08\u7576\u524D\u7248\u672C\uff09",
+      "ATR Schema v1.0（當前版本）",
     "integrate.schema.v1.desc":
-      "\u5DF2\u767C\u5E03\u4E14\u7A69\u5B9A\u3002\u6240\u6709\u65B0\u6B04\u4F4D\u90FD\u662F\u53EF\u9078\u7684\u3002\u73FE\u6709\u6B04\u4F4D\u4E0D\u6703\u5728\u6C92\u6709 major version \u8B8A\u66F4\u7684\u60C5\u6CC1\u4E0B\u79FB\u9664\u6216\u91CD\u65B0\u547D\u540D\u3002",
-    "integrate.schema.compat.title": "\u5411\u5F8C\u76F8\u5BB9\u6027",
+      "已發布且穩定。所有新欄位都是可選的。現有欄位不會在沒有 major version 變更的情況下移除或重新命名。",
+    "integrate.schema.compat.title": "向後相容性",
     "integrate.schema.compat.desc":
-      "\u7834\u58DE\u6027\u8B8A\u66F4\u53EA\u5728 major version \u8F49\u63DB\u6642\u767C\u751F\uff08v1 \u2192 v2\uff09\u3002\u63D0\u4F9B\u9077\u79FB\u6307\u5357\u548C\u81F3\u5C11 6 \u500B\u6708\u7684\u91CD\u758A\u652F\u63F4\u671F\u3002",
-    "integrate.schema.freq.title": "\u66F4\u65B0\u983B\u7387",
+      "破壞性變更只在 major version 轉換時發生（v1 → v2）。提供遷移指南和至少 6 個月的重疊支援期。",
+    "integrate.schema.freq.title": "更新頻率",
     "integrate.schema.freq.desc":
-      "\u65B0\u898F\u5247\u6301\u7E8C\u65B0\u589E\uff08\u5E73\u5747\u6BCF\u9031 2-5 \u689D\uff09\u3002\u6BCF\u689D\u898F\u5247\u90FD\u901A\u904E CI \u9A57\u8B49 + precision \u6E2C\u8A66\u624D\u80FD merge\u3002",
-    "integrate.schema.sync.title": "\u540C\u6B65\u65B9\u6CD5",
+      "新規則持續新增（平均每週 2-5 條）。每條規則都通過 CI 驗證 + precision 測試才能 merge。",
+    "integrate.schema.sync.title": "同步方法",
     "integrate.why.title":
-      "\u70BA\u4EC0\u9EBC\u7528 ATR \u800C\u4E0D\u662F\u81EA\u5DF1\u5BEB\uff1F",
-    "integrate.license.title": "\u6388\u6B0A\u8207\u6CD5\u5F8B",
-    "integrate.cisco.title": "\u6848\u4F8B\uff1ACisco \u600E\u9EBC\u505A\u7684",
+      "為什麼不自己寫規則？",
+    "integrate.license.title": "授權與法律",
+    "integrate.cisco.title": "實例：Cisco 怎麼接",
     "integrate.cisco.body":
-      "Cisco \u7684 AI Defense \u5718\u968A\u5C07 ATR rules \u4F5C\u70BA\u4E0A\u6E38\u4F9D\u8CF4\u6574\u5408\u3002\u4ED6\u5011\u7684\u5DE5\u7A0B\u5E2B\u63D0\u4EA4\u4E86 PR #79\uff0C\u6211\u5011 review \u5B8C\uff0C3 \u5929\u5408\u4F75\u3002\u7136\u5F8C\u4ED6\u5011\u5EFA\u4E86 --rule-packs CLI\uff08PR #80\uff09\u5C08\u9580\u6D88\u8CBB ATR\u3002",
+      "Cisco AI Defense 的開源 skill-scanner 把 ATR 規則納為上游規則包。ATR 維護者提了 PR #79，該 repo 的維護者 21 小時後合併。之後他們加了 --rule-packs CLI 參數（PR #80），用來載入 ATR 這類規則包。",
 
     // Contribute page
-    "contribute.crystal.title": "Threat Cloud \u7D50\u6676\u6A5F\u5236",
-    "contribute.crystal.sub":
-      "\u50B3\u7D71\u898F\u5247\u9700\u8981\u6578\u9031\u64B0\u5BEB\u3001\u5BE9\u67E5\u3001\u767C\u5E03\u3002Threat Cloud \u76EE\u6A19\u6578\u5C0F\u6642\u3002",
-    "contribute.governance": "\u6CBB\u7406",
+    "contribute.governance": "治理",
     "contribute.governance.desc":
-      "\u898F\u5247\u5BE9\u67E5\u6D41\u7A0B\u3001\u7DAD\u8B77\u8005\u89D2\u8272\u3001\u6C7A\u7B56\u6A5F\u5236\u3002",
-    "contribute.contributors": "\u8CA2\u737B\u8005",
+      "規則怎麼審、維護者做什麼，最後由誰拍板。",
+    "contribute.contributors": "貢獻者",
     "contribute.contributors.desc":
-      "\u69AE\u8B7D\u724C\u3002\u6BCF\u500B\u78BA\u8A8D\u7684\u7E5E\u904E\u3001\u8AA4\u5224\u56DE\u5831\u548C\u898F\u5247\u90FD\u6703\u88AB\u8A18\u529F\u3002",
-    "contribute.guide": "\u898F\u5247\u64B0\u5BEB\u6307\u5357",
+      "確認過的繞過、誤判回報、規則，每一筆都會記在送出的人名下。",
+    "contribute.guide": "規則撰寫指南",
     "contribute.guide.desc":
-      "\u5B8C\u6574\u6559\u5B78\uff0C\u9644\u7BC4\u4F8B\u548C schema \u53C3\u8003\u3002",
+      "從頭帶一遍，附範例和 schema 說明。",
 
     // Research page
-    "research.paper": "\u5DF2\u767C\u5E03\u8AD6\u6587",
-    "research.benchmarks": "Benchmarks",
+    "research.paper": "已發布論文",
+    "research.benchmarks": "基準測試",
     "research.benchmarks.sub":
-      "\u7528\u6211\u5011\u81EA\u5DF1\u7684\u8A9E\u6599\u5EAB,\u4EE5\u53CA\u516C\u958B\u5C0D\u6297\u8CC7\u6599\u96C6(deepset\u3001Lakera Gandalf\u3001HackAPrompt\u3001garak)\u6E2C\u8A66\u3002",
-    "research.pint": "PINT \u683C\u5F0F\uff08\u81EA\u5EFA\u8A9E\u6599\uff09",
-    "research.self": "Self-Test\uff08\u81EA\u6709\u898F\u5247\uff09",
+      "在 ATR 自己的語料上量，也在幾份公開的攻擊資料集上量：deepset、Lakera Gandalf、HackAPrompt、garak。",
+    "research.pint": "PINT 格式，自建語料",
+    "research.self": "用 ATR 自己的規則自測",
     "research.precision": "Precision",
     "research.recall": "Recall",
-    "research.samples": "\u6A23\u672C\u6578",
+    "research.samples": "樣本數",
     "research.gap_note":
-      "\u5728 hunt lane\uFF0C{precision} precision \u548C {recall} recall \u4E4B\u9593\u7684\u5DEE\u8DDD\u662F\u9810\u671F\u7684\uFF1ARegex \u80FD\u6293\u5230\u5DF2\u77E5\u6A21\u5F0F\uFF0C\u4F46\u6703\u6F0F\u6389\u91CD\u8FF0\u548C\u591A\u8A9E\u8A00\u653B\u64CA\u3002enforce lane \u53EA\u8F09\u5165 stable \u898F\u5247\uFF0C\u662F\u958B\u555F\u5C01\u9396\u6642\u8981\u7528\u7684 lane\uFF0C\u5B83\u7684 recall \u662F {enforce}\u3002",
+      "在 hunt 車道，precision 是 {precision}，recall 是 {recall}。差這麼多是預料中的事。regex 抓得到它認得的寫法，換個說法、換種語言就漏掉。enforce 車道只載入 stable 規則，要開封鎖就用這條，它的 recall 是 {enforce}。",
     "research.gap_note_hunt_only":
-      "\u5728 hunt lane\uFF0C{precision} precision \u548C {recall} recall \u4E4B\u9593\u7684\u5DEE\u8DDD\u662F\u9810\u671F\u7684\uFF1ARegex \u80FD\u6293\u5230\u5DF2\u77E5\u6A21\u5F0F\uFF0C\u4F46\u6703\u6F0F\u6389\u91CD\u8FF0\u548C\u591A\u8A9E\u8A00\u653B\u64CA\u3002\u9019\u6B21\u91CF\u6E2C\u6C92\u6709\u8A18\u9304 enforce lane \u7684\u6578\u5B57\u3002",
-    "research.scan": "\u751F\u614B\u7CFB\u6383\u63CF\u6578\u64DA",
+      "在 hunt 車道，precision 是 {precision}，recall 是 {recall}。差這麼多是預料中的事。regex 抓得到它認得的寫法，換個說法、換種語言就漏掉。這次量測沒有 enforce 車道的數字。",
+    "research.scan": "生態系掃描",
     "research.scan.sub":
-      "\u771F\u5BE6\u6383\u63CF\u771F\u5BE6\u7684 MCP skill \u8A3B\u518A\u8868\u3002",
-    "research.scan.mega": "Mega Scan\uff08OpenClaw + Skills.sh\uff09",
-    "research.scan.clawhub": "ClawHub \u8A3B\u518A\u8868\u6383\u63CF",
-    "research.scan.scanned": "skills \u5DF2\u6383\u63CF",
-    "research.scan.crawled": "skills \u5DF2\u722C\u53D6",
-    "research.scan.source": "\u6709\u6E90\u78BC",
-    "research.download.csv": "\u4E0B\u8F09\u539F\u59CB\u6578\u64DA (CSV)",
-    "research.download.json": "\u4E0B\u8F09\u7D71\u8A08 (JSON)",
-    "research.limits": "ATR \u7121\u6CD5\u5075\u6E2C\u4EC0\u9EBC",
+      "把規則拿去掃真實的 MCP skill 註冊表。",
+    "research.scan.mega": "Mega Scan（OpenClaw + Skills.sh）",
+    "research.scan.clawhub": "ClawHub 註冊表掃描",
+    "research.scan.scanned": "skills 已掃描",
+    "research.scan.crawled": "skills 已爬取",
+    "research.scan.source": "有源碼",
+    "research.download.csv": "下載原始資料（CSV）",
+    "research.download.json": "下載統計數字（JSON）",
+    "research.limits": "ATR 偵測不到的東西",
     "research.limits.sub":
-      "\u6211\u5011\u767C\u5E03\u9019\u500B\u7AE0\u7BC0\uff0C\u56E0\u70BA\u8AA0\u5BE6\u7684\u9650\u5236\u6BD4\u865B\u5047\u7684\u81EA\u4FE1\u66F4\u80FD\u5EFA\u7ACB\u4FE1\u4EFB\u3002",
+      "要靠這些規則之前，你該先知道它們會漏掉什麼。",
     "research.limits.full":
-      "\u5B8C\u6574\u9650\u5236\u6587\u4EF6\uff0C\u4EE5\u53CA\u898F\u5247\u9644\u5E36\u7684 evasion test",
-    "research.limit.paraphrase": "\u91CD\u8FF0\u653B\u64CA",
+      "完整的限制文件，和規則附帶的繞過測試",
+    "research.limit.paraphrase": "換句話說",
     "research.limit.paraphrase.desc":
-      "\u4EFB\u4F55 regex \u898F\u5247\u90FD\u53EF\u4EE5\u88AB\u8A9E\u7FA9\u7B49\u50F9\u7684\u91CD\u8FF0\u7E5E\u904E\u3002\u300CIgnore previous instructions\u300D\u6703\u88AB\u5075\u6E2C\uff1B\u300Cplease set aside the guidance you were given earlier\u300D\u4E0D\u6703\u3002",
-    "research.limit.multilang": "\u591A\u8A9E\u8A00\u653B\u64CA",
+      "任何 regex 規則，都能用意思一樣、說法不同的句子繞過。「Ignore previous instructions」會被抓到，「please set aside the guidance you were given earlier」不會。",
+    "research.limit.multilang": "其他語言",
     "research.limit.multilang.desc":
-      "\u6240\u6709\u6A21\u5F0F\u90FD\u662F\u82F1\u6587\u7684\u3002\u7528\u897F\u73ED\u7259\u8A9E\u3001\u4E2D\u6587\u3001\u963F\u62C9\u4F2F\u8A9E\u6216\u4EFB\u4F55\u5176\u4ED6\u8A9E\u8A00\u5BEB\u7684\u6CE8\u5165\u653B\u64CA\u6703\u5B8C\u5168\u7E5E\u904E\u3002",
-    "research.limit.context": "\u4E0A\u4E0B\u6587\u76F8\u95DC\u653B\u64CA",
+      "比對條件幾乎都是英文。只有少數規則另外收了中文、日文、韓文、俄文或阿拉伯文的寫法，而且只針對它們原本要抓的那一招。用其他語言寫的注入，或用這幾種語言寫的新招，大多會漏掉。",
+    "research.limit.context": "要看情境的攻擊",
     "research.limit.context.desc":
-      "\u300CDelete all records\u300D\u53EF\u80FD\u662F\u5408\u6CD5\u6216\u60E1\u610F\u7684\u3002Regex \u5339\u914D\u6A21\u5F0F\u4F46\u4E0D\u7406\u89E3\u6388\u6B0A\u4E0A\u4E0B\u6587\u3002",
-    "research.limit.protocol": "\u5354\u8B70\u5C64\u653B\u64CA",
+      "「Delete all records」可能是正常指令，也可能是攻擊。regex 只看字面，看不出 agent 有沒有被授權做這件事。",
+    "research.limit.protocol": "協定層攻擊",
     "research.limit.protocol.desc":
-      "ATR \u6AA2\u67E5\u5167\u5BB9\uff0C\u4E0D\u6AA2\u67E5\u50B3\u8F38\u3002Message replay\u3001schema manipulation\u3001MCP \u50B3\u8F38\u5C64 MITM \u662F\u4E0D\u53EF\u898B\u7684\u3002",
-    "research.limit.multiturn": "\u591A\u8F2A\u884C\u70BA\u6A21\u5F0F",
+      "ATR 檢查的是內容，不是傳輸。訊息重放、schema 竄改、MCP 傳輸層的中間人攻擊，它都看不到。",
+    "research.limit.multiturn": "拆成很多輪的攻擊",
     "research.limit.multiturn.desc":
-      "20 \u8F2A\u5C0D\u8A71\u4E2D\u7684\u6F38\u9032\u5F0F\u4FE1\u4EFB\u5347\u7D1A\uff0C\u55AE\u4E00\u8A0A\u606F\u7121\u6CD5\u5075\u6E2C\uff0CATR \u4E0D\u6703\u95DC\u806F\u3002ATR \u7368\u7ACB\u8A55\u4F30\u6BCF\u500B\u4E8B\u4EF6\u3002",
-    "research.limit.novel": "\u65B0\u578B\u653B\u64CA",
+      "花 20 輪慢慢把信任拉高，每一則訊息單獨看都沒問題。ATR 不會把它們串起來看，每個事件都分開判斷。",
+    "research.limit.novel": "新型攻擊",
     "research.limit.novel.desc":
-      "\u6839\u64DA\u5B9A\u7FA9\uff0Cregex \u7121\u6CD5\u5075\u6E2C\u9084\u4E0D\u5B58\u5728\u7684\u653B\u64CA\u6A21\u5F0F\u3002\u65B0\u6280\u8853\u9700\u8981\u65B0\u898F\u5247\u3002",
+      "還沒出現過的攻擊，regex 不可能比對得到。新手法要有新規則。",
 
     // Subpages
-    "coverage.label": "\u6A19\u6E96\u8986\u84CB",
+    "coverage.label": "標準對照",
     "coverage.heading":
-      "\u6846\u67B6\u5B9A\u7FA9\u5A01\u8105\uff0CATR \u8B93\u5B83\u8DD1\u8D77\u4F86\u3002",
+      "框架替威脅取名字，ATR 負責把它抓出來。",
     "coverage.sub":
-      "MITRE ATLAS\u3001OWASP\u3001NIST AI RMF\u3001ISO 42001\u2014\u2014\u516D\u500B\u6846\u67B6\u5206\u985E\u300C\u4EC0\u9EBC\u6703\u51FA\u932F\u300D\u3002ATR \u662F\u5176\u4E0B\u53EF\u57F7\u884C\u7684\u90A3\u4E00\u5C64\uFF1A\u80FD\u5728\u771F\u5BE6 agent \u6210\u54C1\u4E0A\u958B\u706B\u7684\u5075\u6E2C\u3002\u6BCF\u4E00\u689D\u898F\u5247\u90FD\u5E36\u6709\u9019\u516D\u500B\u6846\u67B6\u7684\u5C0D\u61C9\uff0C\u4E26\u7531 CI \u5F37\u5236\u3002",
-    "integrate.label": "Integrate",
+      "MITRE ATLAS、OWASP、NIST AI RMF、ISO 42001 等六份框架，說明的是什麼可能出錯。ATR 是能實際執行的那一層：規則會在真實的 agent 檔案上觸發。每條規則都附有對這六份框架的對照，由 CI 強制檢查。",
+    "integrate.label": "整合",
     "integrate.heading":
-      "\u56DB\u689D\u8DEF\u5F91\u3002\u540C\u4E00\u500B\u7D42\u9EDE\u3002",
-    "research.label": "\u7814\u7A76",
+      "接法不只一種，規則都是同一套。",
+    "research.label": "研究",
     "research.heading":
-      "\u6578\u64DA\u3001Benchmark \u548C\u8AA0\u5BE6\u7684\u9650\u5236\u3002",
+      "數字，還有 ATR 抓不到的東西。",
     "research.sub":
-      "ATR \u516C\u958B\u767C\u5E03 evasion test\u3002\u6211\u5011\u544A\u8A34\u4F60\u6211\u5011\u6293\u4E0D\u5230\u4EC0\u9EBC\u3002",
-    "contribute.label": "\u8CA2\u737B",
+      "繞過測試是公開的。規則抓不到哪些攻擊，也一樣攤開來。",
+    "contribute.label": "貢獻",
     "contribute.heading":
-      "\u4E00\u689D\u898F\u5247\uFF0C\u63D0\u4E00\u6B21\uFF0C\u4FDD\u8B77\u6BCF\u4E00\u500B\u8B80\u9019\u500B\u6A19\u6E96\u7684\u4EBA\u3002",
+      "一條規則，提一次，保護每一個讀這個標準的人。",
     "contribute.sub":
-      "ATR \u662F MIT \u6388\u6B0A\u3001\u793E\u7FA4\u7DAD\u8B77\u3002\u8CA2\u737B\u53EA\u9700\u8981\u4E00\u500B\u6587\u5B57\u7DE8\u8F2F\u5668\u548C\u4E00\u500B YAML \u6A94\u6848\u2014\u2014\u96F6\u5C08\u6709\u5DE5\u5177\u3001\u96F6\u9059\u6E2C\u3001\u96F6 CLA\u3002",
+      "ATR 是 MIT 授權、社群維護。貢獻只需要一個文字編輯器和一個 YAML 檔案——零專有工具、零遙測、零 CLA。",
 
     // Footer
     "footer.note":
-      "ATR \u662F\u793E\u7FA4\u7DAD\u8B77\u7684\u958B\u653E\u6A19\u6E96\u3002MIT \u6388\u6B0A\u3002\u4E0D\u96B8\u5C6C\u65BC\u4EFB\u4F55\u5EE0\u5546\u3002",
+      "ATR 是社群維護的開放標準。MIT 授權。不隸屬於任何廠商。",
 
-    // \u2500\u2500 Standards site additions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-    "spec.canonical": "\u6B63\u5F0F\u7DB2\u5740",
-    "spec.version": "\u7248\u672C",
-    "spec.date": "\u66F4\u65B0\u65BC",
-    "spec.editor": "\u7DE8\u8F2F",
-    "spec.status_aria": "\u6587\u4EF6\u72C0\u614B",
-    "spec.toc": "\u76EE\u9304",
-    "spec.toc_aria": "\u898F\u683C\u76EE\u9304",
-    "spec.read_full": "\u95B1\u8B80\u5B8C\u6574\u898F\u683C",
-    "spec.implementer_report": "\u5BE6\u4F5C\u8005\u5831\u544A (Implementer Report)",
-    "cite.tablist_aria": "\u5F15\u7528\u683C\u5F0F\u9078\u64C7\u5668",
+    // ── Standards site additions ───────────────────────────────
+    "spec.canonical": "正式網址",
+    "spec.version": "規格版本",
+    "spec.date": "日期",
+    "spec.generated": "頁面產生於",
+    "spec.editor": "編者",
+    "spec.status_aria": "文件狀態",
+    "spec.toc": "目錄",
+    "spec.toc_aria": "規格目錄",
+    "spec.read_full": "看完整規格",
+    "spec.implementer_report": "實作者報告 (Implementer Report)",
+    "cite.tablist_aria": "引用格式",
 
     "nav.atd": "ATD",
-    "nav.spec": "\u898F\u683C (Specification)",
-    "nav.implementers": "\u5BE6\u4F5C\u8005 (Implementers)",
-    "nav.conformance": "\u7B26\u898F (Conformance)",
-    "nav.governance": "\u6CBB\u7406 (Governance)",
-    "nav.community": "\u793E\u7FA4 (Community)",
-    "nav.charter": "\u7AE0\u7A0B (Charter)",
-    "nav.glossary": "\u8A5E\u5F59 (Glossary)",
-    "nav.errata": "\u52D8\u8AA4 (Errata)",
-    "nav.citations": "\u5F15\u7528 (Cite)",
+    "nav.spec": "規格 (Specification)",
+    "nav.implementers": "實作者 (Implementers)",
+    "nav.conformance": "符規 (Conformance)",
+    "nav.governance": "治理 (Governance)",
+    "nav.community": "社群 (Community)",
+    "nav.charter": "章程 (Charter)",
+    "nav.glossary": "詞彙 (Glossary)",
+    "nav.errata": "勘誤 (Errata)",
+    "nav.citations": "引用 (Cite)",
 
-    "home.title": "ATR \u2014 Agent Threat Rules",
+    "home.title": "ATR — Agent Threat Rules",
     "home.subtitle":
-      "AI Agent \u5B89\u5168\u5A01\u8105\u7684\u958B\u653E\u5075\u6E2C\u898F\u5247\u683C\u5F0F \u2500\u2500 \u5EE0\u5546\u4E2D\u7ACB\u3001\u6A5F\u5668\u53EF\u8B80\u3001\u53EF\u540C\u5115\u5BE9\u67E5 (peer-reviewable)\u3002",
+      "AI Agent 安全威脅的開放偵測規則格式 ── 廠商中立、機器可讀、可同儕審查 (peer-reviewable)。",
     "home.abstract":
-      "Agent Threat Rules (ATR) \u662F AI Agent \u5B89\u5168\u5A01\u8105\u7684\u958B\u653E\u5075\u6E2C\u898F\u5247\u683C\u5F0F\u3002\u898F\u5247\u4EE5 YAML \u64B0\u5BEB,\u9075\u5FAA\u7248\u672C\u5316 schema,\u4F7F\u7528\u516C\u958B\u7684 ATR-YYYY-NNNNN \u8B58\u5225\u78BC\u65B9\u6848,\u53EF\u7531\u4EFB\u4F55\u7B26\u898F\u5F15\u64CE\u8A55\u4F30\u3002ATR \u4E4B\u65BC AI Agent \u5A01\u8105\u5075\u6E2C,\u5982\u540C Sigma \u4E4B\u65BC SIEM \u5075\u6E2C\u3001YARA \u4E4B\u65BC\u60E1\u610F\u7A0B\u5F0F\u7C3D\u7AE0 \u2500\u2500 \u4E00\u500B\u5EE0\u5546\u4E2D\u7ACB\u3001\u6A5F\u5668\u53EF\u8B80\u3001\u53EF\u540C\u5115\u5BE9\u67E5\u7684\u898F\u5247\u683C\u5F0F\u3002",
-    "home.cta.spec": "\u95B1\u8B80\u898F\u683C (\u00A73)",
-    "home.cta.schema": "\u67E5\u770B JSON Schema",
-    "home.cta.implementers": "\u67E5\u770B\u5BE6\u4F5C\u8005\u5217\u8868",
+      "Agent Threat Rules (ATR) 是 AI Agent 安全威脅的開放偵測規則格式。規則以 YAML 撰寫,遵循版本化 schema,使用公開的 ATR-YYYY-NNNNN 識別碼方案,可由任何符規引擎評估。ATR 之於 AI Agent 威脅偵測,如同 Sigma 之於 SIEM 偵測、YARA 之於惡意程式簽章 ── 一個廠商中立、機器可讀、可同儕審查的規則格式。",
+    "home.cta.spec": "閱讀規格 (§3)",
+    "home.cta.schema": "查看 JSON Schema",
+    "home.cta.implementers": "查看實作者列表",
     "home.section.overview": "Overview",
-    "home.section.adoption": "Production \u63A1\u7528",
-    "home.section.get": "\u53D6\u5F97\u898F\u683C",
+    "home.section.adoption": "Production 採用",
+    "home.section.get": "取得規格",
     "home.adoption.intro":
-      "ATR \u5DF2\u5408\u4F75\u9032\u4E0B\u8868\u5217\u51FA\u7684\u7D44\u7E54\u81EA\u5BB6\u7684\u516C\u958B repository\u3002\u6BCF\u4E00\u5217\u9023\u7D50\u5230\u69CB\u6210\u516C\u958B\u63A1\u7528\u7D00\u9304\u7684\u5408\u4F75 pull request \u6216\u6574\u5408 commit;\u5DF2\u5408\u4F75\u7684 PR \u4E0D\u7B49\u65BC\u5C0D\u4EFB\u4F55\u5EE0\u5546\u5546\u696D\u7522\u54C1\u7684\u9673\u8FF0\u3002",
+      "ATR 已合併進下表列出的組織自家的公開 repository。每一列連結到構成公開採用紀錄的合併 pull request 或整合 commit;已合併的 PR 不等於對任何廠商商業產品的陳述。",
     "home.get.intro":
-      "\u898F\u683C\u4EE5\u4E09\u7A2E\u5F62\u5F0F\u767C\u5E03\u3002Markdown \u6E32\u67D3\u70BA\u6B63\u672C (canonical);JSON Schema \u8207\u5F15\u7528 (citation) \u70BA\u884D\u751F\u7522\u7269 (derived artifact)\u3002",
-    "home.get.markdown": "Markdown \u2014 \u6B63\u672C",
-    "home.get.schema": "JSON Schema \u2014 \u6A5F\u5668\u53EF\u8B80",
-    "home.get.cite": "\u5F15\u7528 \u2014 BibTeX / DOI",
+      "規格以三種形式發布。Markdown 渲染為正本 (canonical);JSON Schema 與引用 (citation) 為衍生產物 (derived artifact)。",
+    "home.get.markdown": "Markdown — 正本",
+    "home.get.schema": "JSON Schema — 機器可讀",
+    "home.get.cite": "引用 — BibTeX / DOI",
 
-    "spec.title": "ATR \u898F\u683C (Specification)",
+    "spec.title": "ATR 規格",
     "spec.subtitle":
-      "AI agent \u5A01\u8105\u5075\u6E2C\u7684\u6B63\u672C\u3001\u6A5F\u5668\u53EF\u8B80\u898F\u5247\u683C\u5F0F \u2500\u2500 \u4E00\u5982 Sigma \u4E4B\u65BC SIEM\u3001YARA \u4E4B\u65BC malware\u3002\u7531 ATR \u793E\u7FA4\u65BC\u516C\u958B\u8655\u7DAD\u8B77\u7684 Working Draft;\u4EE5 repository \u4E2D\u7684\u6A94\u6848\u70BA\u6E96,\u800C\u975E\u672C\u9801\u3002",
-    "spec.abstract.h": "\u6458\u8981 (Abstract)",
-    "spec.status.h": "\u672C\u6587\u4EF6\u72C0\u614B (Status of This Document)",
+      "偵測 AI agent 威脅用的規則格式，寫成機器讀得懂的樣子。它對 agent 的意義，就像 Sigma 之於 SIEM、YARA 之於惡意程式。目前是 Working Draft，由 ATR 社群公開維護。這一頁和 repository 裡的檔案說法不一致時，以檔案為準。",
+    "spec.abstract.h": "摘要 (Abstract)",
+    "spec.status.h": "本文件狀態 (Status of This Document)",
     "spec.status.body":
-      "\u672C\u6587\u4EF6\u70BA ATR \u793E\u7FA4\u767C\u5E03\u7684 Working Draft\u3002\u5118\u7BA1\u898F\u5247\u683C\u5F0F\u5DF2\u5728\u751F\u7522\u74B0\u5883\u904B\u884C\u8D85\u904E\u4E00\u5E74,\u5468\u908A\u6CBB\u7406\u4ECD\u8655\u65BC\u5F9E\u55AE\u4E00\u7DAD\u8B77\u8005\u6A21\u578B (BDFL) \u904E\u6E21\u5230\u6280\u8853\u6307\u5C0E\u59D4\u54E1\u6703 (TSC) \u7684\u968E\u6BB5\u3002\u672C\u6587\u4EF6\u7684\u8A0E\u8AD6\u65BC\u516C\u958B GitHub repository \u9032\u884C\u3002",
+      "本文件為 ATR 社群發布的 Working Draft。規則格式自 2026 年 3 月起已在 npm 公開發布，但周邊治理仍處於從首席維護者模型 (BDFL) 過渡到技術指導委員會 (TSC) 的階段。本文件的討論於公開 GitHub repository 進行。",
 
-    "implementers.title": "Implementer Report",
+    "implementers.title": "實作者報告",
     "implementers.subtitle":
-      "\u4E00\u500B\u898F\u683C\u8981\u5230\u6709\u4E0D\u53EA\u4E00\u500B\u5F15\u64CE\u80FD\u7528\u540C\u4E00\u7A2E\u65B9\u5F0F\u5BE6\u4F5C\u5B83\u6642,\u624D\u7B97\u771F\u5BE6\u3002\u672C\u5831\u544A\u5217\u51FA\u57F7\u884C\u6216\u5F15\u7528 ATR \u7684\u7D44\u7E54\u2014\u2014\u6BCF\u4E00\u500B\u90FD\u662F\u4E00\u500B\u7368\u7ACB\u8B49\u64DA:\u8B49\u660E\u9019\u500B\u683C\u5F0F\u53EF\u4EE5\u53EA\u6191\u898F\u683C\u5C31\u88AB\u5BE6\u4F5C\u51FA\u4F86\u2014\u2014\u9019\u6B63\u662F W3C \u9760\u5BE6\u4F5C\u6578\u91CF\u63A8\u9032\u6A19\u6E96\u7684\u65B9\u5F0F\u3002\u900F\u904E pull request \u5C0D ADOPTERS.md registry \u81EA\u6211\u5BA3\u544A (self-declaration)\u3002",
-    "implementers.col.org": "\u7D44\u7E54",
-    "implementers.col.role": "\u7B26\u898F\u7B49\u7D1A",
-    "implementers.col.version": "\u898F\u683C\u7248\u672C",
-    "implementers.col.date": "\u6574\u5408\u65E5\u671F",
-    "implementers.col.ref": "\u516C\u958B\u6191\u64DA",
+      "一份規格，要有不只一個引擎用同樣的方式實作出來，才算數。W3C 推進標準，看的也是這種證據。這份報告列出執行或引用 ATR 的組織，每一筆都是獨立的證據，說明這個格式光靠規格就做得出來。名單由各組織自己對 ADOPTERS.md 開 pull request 登記。",
+    "implementers.col.org": "組織",
+    "implementers.col.role": "符規等級",
+    "implementers.col.version": "規格版本",
+    "implementers.col.date": "整合日期",
+    "implementers.col.ref": "公開紀錄",
     "implementers.tier.engine": "L1 Engine",
     "implementers.tier.publisher": "L2 Publisher",
     "implementers.tier.citation": "L1 Citation",
     "implementers.tier.galaxy": "L1 Galaxy",
     "implementers.tier.accepted": "Submission in review",
     "implementers.empty":
-      "\u76EE\u524D\u7121\u7D00\u9304\u3002\u5C0D ADOPTERS.md \u958B PR \u5373\u53EF\u52A0\u5165\u4F60\u7684\u7D44\u7E54\u3002",
+      "目前無紀錄。對 ADOPTERS.md 開 PR 即可加入你的組織。",
 
-    "conformance.title": "\u7B26\u898F (Conformance)",
+    "conformance.title": "符規",
     "conformance.subtitle":
-      "\u7B26\u898F,\u6B63\u662F\u8B93\u4E00\u689D\u5728\u53F0\u5317\u5BEB\u7684\u898F\u5247,\u80FD\u539F\u5C01\u4E0D\u52D5\u8DD1\u5728\u897F\u96C5\u5716\u7684\u5F15\u64CE\u4E0A\u3002\u4E09\u500B\u7B49\u7D1A\u5B9A\u7FA9\u300C\u5BE6\u4F5C ATR\u300D\u4EE3\u8868\u7684\u610F\u6DB5\u2014\u2014\u4EFB\u4F55\u7B26\u898F\u7684\u5F15\u64CE,\u5C0D\u540C\u4E00\u689D\u898F\u5247\u90FD\u8A55\u4F30\u51FA\u540C\u4E00\u500B\u7D50\u679C\u3002\u6BCF\u4E00\u7B49\u7D1A\u5728 repository \u4E2D\u4EE5 YAML fixture \u5F62\u5F0F\u767C\u5E03\u5C0D\u61C9\u7684\u6E2C\u8A66\u5957\u4EF6 (test suite);\u7B26\u898F\u9760\u8DD1\u51FA\u4F86,\u4E0D\u9760\u5BA3\u7A31\u3002",
-    "conformance.l1.title": "L1 Engine Conformance",
+      "在台北寫的規則，要能原封不動跑在西雅圖的引擎上。靠的就是符規。三個等級講清楚，一個系統要做到什麼，才能說自己實作了 ATR，讓每個符規的引擎對同一條規則給出同樣的判定。每個等級都有測試套件，以 YAML fixture 的形式放在 repository 裡。符規要跑過測試才算，不是自己說了算。",
+    "conformance.l1.title": "L1 引擎符規",
     "conformance.l1.body":
-      "L1 engine \u662F\u8B93\u683C\u5F0F\u53EF\u651C\u7684\u90A3\u4E00\u5C64\u3002\u5B83 MUST \u80FD\u89E3\u6790\u4EFB\u4F55\u901A\u904E spec/atr-schema.yaml \u9A57\u8B49\u7684\u898F\u5247,MUST \u4EE5 \u00A73.5 \u5B9A\u7FA9\u7684\u8A9E\u610F\u8A55\u4F30 detection.conditions,\u4E26 MUST \u9075\u5B88 scan_target \u8207 status \u7684\u8A9E\u610F\u2014\u2014\u597D\u8B93\u540C\u4E00\u689D\u898F\u5247,\u7121\u8AD6\u5F15\u64CE\u51FA\u81EA\u8AB0\u624B,\u90FD\u5F97\u51FA\u540C\u4E00\u500B\u5224\u5B9A\u3002L1 engine MAY \u62D2\u7D55\u843D\u5728\u5176\u5BA3\u544A scan_target \u7BC4\u570D\u5916\u7684\u898F\u5247\u3002",
-    "conformance.l2.title": "L2 Publisher Conformance",
+      "格式能不能帶著走，看的是 L1 引擎。它 MUST 能解析每一條通過 spec/atr-schema.yaml 驗證的規則，MUST 依 §3.5 定義的語意評估 detection.conditions，也 MUST 遵守 scan_target 與 status 的語意。這樣同一條規則，不管引擎是誰寫的，判定都一樣。L1 引擎 MAY 拒絕超出自己宣告 scan_target 的規則。",
+    "conformance.l2.title": "L2 發布者符規",
     "conformance.l2.body":
-      "L2 publisher \u5728\u5EE0\u5546\u524D\u7DB4 (vendor-prefixed) \u7684\u5B50\u7BC4\u570D (\u4F8B\u5982 ACME-YYYY-NNNNN) \u5167\u767C\u5E03\u7B26\u5408 ATR \u8A9E\u610F\u7684\u898F\u5247\u3002L2 publisher MUST \u9075\u5B88 \u00A73.7 \u7684\u5EE2\u68C4\u653F\u7B56,SHOULD \u70BA\u6BCF\u4E00\u689D\u767C\u5E03\u898F\u5247\u9644\u4E0A test_cases\u3002",
-    "conformance.l3.title": "L3 Sub-range Authority",
+      "L2 發布者在自己的廠商前綴範圍裡發布規則，例如 ACME-YYYY-NNNNN，語意完全照 ATR 走。它 MUST 遵守 §3.7 的棄用政策，SHOULD 為每一條發布的規則附上 test_cases。",
+    "conformance.l3.title": "L3 子範圍管理單位",
     "conformance.l3.body":
-      "L3 sub-range authority \u662F\u570B\u5BB6\u7D1A\u6216\u7D44\u7E54\u7D1A\u7684\u4E3B\u9AD4,\u5728\u4E3B\u6B0A (sovereign) \u524D\u7DB4\u4E0B\u9444\u9020\u898F\u5247 (\u4F8B\u5982 ATR-TW-2026-NNNNN)\u3002\u6388\u6B0A\u4F9D /charter \u00A75 \u7A0B\u5E8F\u6838\u767C;TSC \u6210\u7ACB\u5F8C\u7531\u5176\u6838\u767C,\u5728\u6B64\u4E4B\u524D\u7531\u4E3B\u7406\u4EBA (BDFL) \u66AB\u4EE3\u3002",
-    "conformance.testsuite.h": "\u6E2C\u8A66\u5957\u4EF6 (Test Suite)",
+      "L3 子範圍管理單位，是在主權前綴下發布規則的國家或組織，例如 ATR-TW-2026-NNNNN。授權依 /charter §5 的程序核發。TSC 成立後由 TSC 核發，在那之前由首席維護者（BDFL）代行。",
+    "conformance.testsuite.h": "測試套件",
     "conformance.testsuite.body":
-      "L1 engine \u6E2C\u8A66\u5957\u4EF6\u7531\u4E3B repository \u4E2D spec/conformance/ \u4E0B\u7684 YAML fixture \u7D44\u6210\u3002\u6BCF\u500B fixture \u914D\u5C0D\u4E00\u689D\u898F\u5247\u8207\u5176\u5728\u56FA\u5B9A\u4E8B\u4EF6 (event) \u4E0A\u7684\u9810\u671F\u8A55\u4F30\u7D50\u679C\u2014\u2014\u5951\u7D04\u5BEB\u5728 fixture \u88E1,\u4E0D\u5BEB\u5728\u4EFB\u4F55\u55AE\u4E00\u5BE6\u4F5C\u88E1\u3002\u5BE6\u4F5C\u901A\u904E\u7684\u689D\u4EF6\u662F:\u6BCF\u500B fixture \u90FD\u5982\u5BA3\u544A\u822C\u8A55\u4F30\u3002\u5169\u500B\u90FD\u901A\u904E\u7684\u5F15\u64CE,\u5728\u6E2C\u8A66\u5957\u4EF6\u6DB5\u84CB\u7684\u6BCF\u4E00\u689D\u898F\u5247\u4E0A,\u7531\u69CB\u9020\u4FDD\u8B49\u5F7C\u6B64\u4E00\u81F4\u3002",
-    "conformance.self.h": "\u81EA\u6211\u8A8D\u8B49 (Self-Certification)",
+      "L1 引擎的測試套件，是主 repository 裡 spec/conformance/ 底下的 YAML fixture。每個 fixture 把一條規則，和它在某個固定事件上應該得出的結果配成一對。規範寫在 fixture 裡，不在任何一個實作裡。每個 fixture 都跑出宣告的結果，就算通過。兩個都通過的引擎，在套件涵蓋的每一條規則上，結果一定一致。",
+    "conformance.self.h": "自我認證",
     "conformance.self.body":
-      "\u5BE6\u4F5C\u8005\u5728\u672C\u5730\u57F7\u884C\u6E2C\u8A66\u5957\u4EF6,\u4E26\u5C0D ADOPTERS.md \u958B\u7ACB pull request \u52A0\u5165\u6574\u5408 metadata,\u5373\u53EF\u81EA\u6211\u8A8D\u8B49 (self-certify)\u3002\u7DAD\u8B77\u8005(TSC \u6210\u7ACB\u5F8C)\u53EF\u96A8\u6642\u5C0D\u4EFB\u4E00\u5DF2\u767C\u5E03\u7522\u7269\u91CD\u8DD1\u6E2C\u8A66\u5957\u4EF6\u4EE5\u9A57\u8B49\u81EA\u6211\u8A8D\u8B49\u3002",
+      "自我認證的做法：在本機跑測試套件，再對 ADOPTERS.md 開 pull request，附上整合資訊。維護者隨時可以拿已發布的產物重跑套件，查核你的認證。TSC 成立後，改由 TSC 負責。",
 
-    "errata.title": "\u52D8\u8AA4 (Errata)",
+    "errata.title": "勘誤",
     "errata.subtitle":
-      "ATR \u898F\u683C\u5DF2\u767C\u5E03\u7248\u672C\u4E2D\u767C\u73FE\u4E4B\u932F\u8AA4\u7684\u5E38\u8A2D\u7D00\u9304\u2014\u2014\u5C31\u50CF W3C \u8207 IETF \u898F\u683C\u90A3\u6A23\u516C\u958B\u4FDD\u7559\u52D8\u8AA4\u3002\u6BCF\u4E00\u500B\u5DF2\u767C\u5E03\u7248\u672C\u90FD\u662F\u6C38\u4E45\u7684;\u88E1\u9762\u7684\u932F\u8AA4\u5728\u9019\u88E1\u516C\u958B\u66F4\u6B63\u3001\u4E26\u6A19\u660E\u4F86\u6E90\u3002\u6BCF\u4E00\u7B46\u7D00\u9304\u6A19\u793A\u53D7\u5F71\u97FF\u7248\u672C\u3001\u932F\u8AA4\u6240\u5728\u4F4D\u7F6E\u3001\u66F4\u6B63\u6587\u5B57\u3001\u4EE5\u53CA\u66F4\u6B63\u767C\u5E03\u65E5\u671F\u3002",
+      "這裡記錄 ATR 規格各個已發布版本裡找到的錯誤，像 W3C、IETF 的規格一樣公開保存。已發布的版本不會再改，裡面的錯就在這裡公開更正，並註明是誰發現的。每一筆都寫明受影響的版本、錯在哪裡、更正後的文字，以及更正發布的日期。",
     "errata.empty":
-      "\u76EE\u524D Working Draft \u5C1A\u7121\u52D8\u8AA4\u7D00\u9304\u3002\u6C92\u6709\u7D00\u9304\u4E26\u975E\u5BA3\u7A31\u5B8C\u7F8E\u2014\u2014\u53EA\u662F\u5C1A\u672A\u6709\u4EFB\u4F55\u5DF2\u767C\u5E03\u7248\u672C\u7684\u932F\u8AA4\u7D93\u78BA\u8A8D\u3002\u82E5\u4F60\u767C\u73FE\u4E00\u500B,\u8ACB\u65BC repository \u958B issue;\u7D93\u78BA\u8A8D\u7684\u56DE\u5831\u6703\u88AB\u52A0\u9032\u9019\u88E1,\u800C\u975E\u975C\u9ED8\u4FEE\u88DC\u3002",
-    "errata.col.version": "\u53D7\u5F71\u97FF\u7248\u672C",
-    "errata.col.section": "\u7AE0\u7BC0",
-    "errata.col.summary": "\u6458\u8981",
-    "errata.col.date": "\u767C\u5E03\u65E5\u671F",
+      "目前的 Working Draft 還沒有勘誤紀錄。這不代表沒有錯，只是已發布的版本裡，還沒有任何錯誤被確認。發現了請到 repository 開 issue。確認的回報會記在這裡，不會私下悄悄修掉。",
+    "errata.col.version": "受影響版本",
+    "errata.col.section": "章節",
+    "errata.col.summary": "摘要",
+    "errata.col.date": "發布日期",
 
-    "glossary.title": "\u8A5E\u5F59\u8868 (Glossary)",
+    "glossary.title": "詞彙表",
     "glossary.subtitle":
-      "\u898F\u683C\u4E2D\u95DC\u9375\u8853\u8A9E\u7684\u5B9A\u7FA9\u3002\u7576\u8853\u8A9E\u5728 spec \u4E2D\u7684\u7CBE\u78BA\u6280\u8853\u610F\u6DB5\u8207\u4E00\u822C\u7528\u6CD5\u4E0D\u540C\u6642,\u4EE5 spec \u4E2D\u7684\u6280\u8853\u610F\u6DB5\u70BA\u6E96\u3002",
+      "規格裡重要術語的定義。如果某個術語的技術意思跟一般用法不同，在規格裡以技術意思為準。",
 
-    "charter.title": "\u5C08\u6848\u7AE0\u7A0B (Project Charter)",
+    "charter.title": "專案章程",
     "charter.subtitle":
-      "\u6A19\u6E96\u80FD\u5426\u6BD4\u555F\u52D5\u5B83\u7684\u4EBA\u6D3B\u5F97\u66F4\u4E45,\u53D6\u6C7A\u65BC\u5B83\u7684\u898F\u5247\u6709\u6C92\u6709\u88AB\u767D\u7D19\u9ED1\u5B57\u5BEB\u4E0B\u4F86\u3002\u672C\u7AE0\u7A0B\u8F09\u660E ATR \u662F\u4EC0\u9EBC\u3001\u4E0D\u662F\u4EC0\u9EBC\u3001\u6C7A\u7B56\u5982\u4F55\u505A\u6210\u3001\u4EE5\u53CA\u6280\u8853\u6307\u5C0E\u59D4\u54E1\u6703 (TSC) \u5982\u4F55\u5C31\u4EFB \u2014\u2014 \u9019\u4E9B\u627F\u8AFE\u7121\u8AD6\u7531\u8AB0\u7DAD\u8B77\u7686\u6210\u7ACB\u3002",
-    "charter.mission.h": "\u4F7F\u547D",
+      "一個標準要比發起它的人活得久，規矩就得白紙黑字寫下來。這份章程寫明 ATR 是什麼、不是什麼、事情怎麼決定，以及技術指導委員會（TSC）怎麼成立。不管之後由誰維護，這些承諾都不變。",
+    "charter.mission.h": "使命",
     "charter.mission.body":
-      "ATR \u70BA AI Agent \u5B89\u5168\u793E\u7FA4\u63D0\u4F9B\u4E00\u500B\u5171\u540C\u7684\u5075\u6E2C\u898F\u5247\u683C\u5F0F \u2500\u2500 \u8B93\u67D0\u500B\u7D44\u7E54\u7684\u9632\u79A6\u8005,\u80FD\u76F4\u63A5\u6CBF\u7528\u53E6\u4E00\u500B\u7D44\u7E54\u3001\u751A\u81F3\u53E6\u4E00\u500B\u570B\u5BB6\u7684\u9632\u79A6\u8005\u6240\u5BEB\u7684\u898F\u5247,\u800C\u4E0D\u5FC5\u6709\u4EBA\u91CD\u65B0\u767C\u660E\u898F\u5247\u683C\u5F0F\u3002\u5171\u540C\u683C\u5F0F\u662F\u57FA\u790E\u5EFA\u8A2D,\u4E0D\u662F\u7522\u54C1:\u5B83\u4E0D\u5C6C\u65BC\u4EFB\u4F55\u5EE0\u5546,\u53EA\u5C0D\u7DAD\u8B77\u5B83\u7684\u793E\u7FA4\u8CA0\u8CAC\u3002",
-    "charter.scope.h": "\u7BC4\u570D (Scope)",
+      "ATR 給守護 AI agent 的人一個共用的偵測規則格式，用來寫規則、交換規則、評估規則。一個組織的防守者，可以直接接著用另一個組織、甚至另一個國家的人寫的規則，不必有人重新發明格式。共用格式是基礎建設，不是產品。它不屬於任何廠商，只對維護它的社群負責。",
+    "charter.scope.h": "範圍",
     "charter.scope.in":
-      "\u7BC4\u570D\u5167:\u898F\u5247\u683C\u5F0F\u3001reference engine\u3001rule schema\u3001\u7B26\u898F\u7B49\u7D1A\u3001\u8DE8\u6846\u67B6\u5C0D\u61C9 (OWASP\u3001MITRE ATLAS\u3001NIST AI RMF\u3001SAFE-MCP)\u3002",
+      "範圍內：規則格式、參考引擎、規則 schema、符規等級，以及對其他框架的對照（OWASP、MITRE ATLAS、NIST AI RMF、SAFE-MCP）。",
     "charter.scope.out":
-      "\u7BC4\u570D\u5916:\u5EE0\u5546\u5C08\u5C6C\u5DE5\u5177\u3001\u5546\u696D\u6574\u5408\u3001runtime enforcement \u653F\u7B56\u3001\u4E8B\u4EF6\u56DE\u61C9\u5354\u8ABF\u3002\u9019\u4E9B\u662F\u4E0B\u6E38\u5BE6\u4F5C\u8005\u7684\u5DE5\u4F5C;\u6A19\u6E96\u523B\u610F\u4FDD\u6301\u72F9\u7A84,\u597D\u8B93\u4EFB\u4F55\u5BE6\u4F5C\u8005\u90FD\u80FD\u5728\u5176\u4E0A\u5EFA\u69CB,\u800C\u4E0D\u5FC5\u627F\u63A5\u5225\u4EBA\u7684\u7522\u54C1\u6C7A\u7B56\u3002",
-    "charter.governance.h": "\u6CBB\u7406 (Governance)",
+      "範圍外：廠商專屬工具、商業整合、runtime 執行政策、事件應變協調。這些是下游實作者的事。標準刻意保持窄，讓誰都能在上面蓋東西，又不必承接別人的產品決定。",
+    "charter.governance.h": "治理",
     "charter.governance.body":
-      "ATR \u73FE\u7531\u55AE\u4E00\u9996\u5E2D\u7DAD\u8B77\u8005\u6CBB\u7406 (BDFL),\u6280\u8853\u6307\u5C0E\u59D4\u54E1\u6703 (TSC) \u6B63\u5728\u7C4C\u7D44\u4EE5\u627F\u63A5\u6B64\u89D2\u8272\u3002\u6B0A\u529B\u96C6\u4E2D\u65BC\u55AE\u4E00\u7DAD\u8B77\u8005\u662F\u904E\u6E21\u968E\u6BB5,\u4E0D\u662F\u8A2D\u8A08\u672C\u8EAB:\u904E\u6E21\u689D\u4EF6\u8207 TSC \u5C31\u4EFB\u7A0B\u5E8F\u4E8B\u5148\u5BEB\u5B9A\u65BC GOVERNANCE.md \u8207 docs/BDFL-charter.md \u2014\u2014 \u6B63\u662F\u70BA\u4E86\u8B93\u8D70\u5411\u5171\u4EAB\u6CBB\u7406\u4E00\u4E8B\u4F9D\u898F\u5247\u767C\u751F,\u800C\u975E\u5076\u7136\u767C\u751F\u3002",
-    "charter.ip.h": "\u667A\u6167\u8CA1\u7522 (Intellectual Property)",
+      "ATR 目前由一位首席維護者（BDFL）治理，技術指導委員會（TSC）正在籌組，之後會接手這個角色。權力集中在一位維護者身上是過渡期，不是設計。交接條件和 TSC 的成立程序，事先就寫在 GOVERNANCE.md 和 docs/BDFL-charter.md 裡，讓走向共同治理照規則發生，不是碰運氣。",
+    "charter.ip.h": "智慧財產",
     "charter.ip.body":
-      "ATR \u63A1 MIT License \u6C38\u4E45\u767C\u5E03,\u5DF2\u767C\u5E03\u7684\u6A19\u6E96\u6C92\u6709\u4EFB\u4F55\u91CD\u65B0\u6388\u6B0A\u7684\u8DEF\u5F91\u3002\u6240\u6709\u8CA2\u737B\u7686\u4EE5 MIT License \u63D0\u4EA4:\u7121 CLA \u9700\u7C3D\u7F72,\u4EA6\u7121\u6B0A\u5229\u9700\u8B93\u6E21\u3002\u4EFB\u4F55\u4EBA \u2014\u2014 \u5305\u542B\u5F7C\u6B64\u7AF6\u722D\u7684\u5EE0\u5546 \u2014\u2014 \u7686\u5F97\u63A1\u7528\u3001\u64F4\u5145\u6216 fork \u9019\u4E9B\u898F\u5247\u3002\u5F15\u7528 DOI \u70BA 10.5281/zenodo.19178002\u3002",
+      "ATR 以 MIT License 發布，而且是永久的，已發布的標準沒有改用其他授權的路。所有貢獻在送出時就以 MIT 授權，不用簽 CLA，也不用讓渡任何權利。任何人都可以採用、擴充或 fork 這些規則，彼此競爭的廠商也一樣。引用用的 DOI 是 10.5281/zenodo.19178002。",
 
-    "citations.title": "\u5F15\u7528 (Citation)",
+    "citations.title": "引用",
     "citations.subtitle":
-      "\u4E00\u500B\u6A19\u6E96\u6210\u70BA\u57FA\u790E\u5EFA\u8A2D\u7684\u90A3\u4E00\u5929,\u662F\u5225\u4EBA\u7684\u5DE5\u4F5C\u80FD\u6307\u5411\u5B83\u3001\u800C\u5B83\u4E0D\u518D\u79FB\u52D5\u7684\u90A3\u4E00\u5929\u3002ATR \u751F\u4F86\u5C31\u662F\u8981\u88AB\u5F15\u7528\u7684 \u2014\u2014 \u88AB\u4E00\u7BC7\u8AD6\u6587\u3001\u4E00\u7B46 CVE \u7D00\u9304\u3001\u4E00\u652F CI \u8173\u672C\u5F15\u7528 \u2014\u2014 \u9760\u7684\u662F\u767C\u5E03\u5F8C\u6C38\u4E0D\u6539\u52D5\u7684\u8B58\u5225\u78BC,\u4EE5\u53CA\u4E00\u500B\u6BD4\u4EFB\u4F55\u7DB2\u5740\u90FD\u9577\u58FD\u7684 DOI\u3002\u4E0B\u5217\u683C\u5F0F,\u5C31\u662F\u5F15\u7528\u5B83\u7684\u65B9\u5F0F\u3002",
+      "別人的論文、CVE 紀錄、CI 腳本可以指向它，而它不會跑掉，一個標準才算成了基礎建設。ATR 本來就是做來給人引用的。編號發布後就不再改，DOI 也比任何網址都長命。引用時用下面任一種格式。",
 
-    "mission.title": "\u4F7F\u547D",
+    "mission.title": "使命",
     "mission.body":
-      "\u9632\u79A6\u8005\u5728\u4E0D\u540C\u7D44\u7E54\u3001\u4E0D\u540C\u570B\u5BB6\u5DE5\u4F5C,\u9762\u5C0D\u540C\u4E00 AI Agent \u653B\u64CA\u9762\u3002ATR \u5B58\u5728\u7684\u7406\u7531,\u662F\u8B93\u5DE5\u4F5C\u80FD\u5F7C\u6B64\u7D44\u5408 \u2500\u2500 \u8B93\u53F0\u5317\u5BEB\u7684\u4E00\u689D\u898F\u5247\u80FD\u5075\u6E2C\u9996\u5148\u5728\u897F\u96C5\u5716\u88AB\u901A\u5831\u7684\u653B\u64CA,\u800C\u4E0D\u5FC5\u6709\u4EBA\u91CD\u65B0\u5BE6\u4F5C\u898F\u5247\u683C\u5F0F\u3002",
+      "防禦者在不同組織、不同國家工作,面對同一 AI Agent 攻擊面。ATR 存在的理由,是讓工作能彼此組合 ── 讓台北寫的一條規則能偵測首先在西雅圖被通報的攻擊,而不必有人重新實作規則格式。",
     "mission.tagline":
-      "\u4E00\u500B\u958B\u653E\u683C\u5F0F\u3002\u4E00\u500B\u53EF\u540C\u5115\u5BE9\u67E5\u7684 schema\u3002\u4E00\u500B\u6B63\u5F0F\u7DB2\u5740 (canonical URL)\u3002",
+      "一個開放格式。一個可同儕審查的 schema。一個正式網址 (canonical URL)。",
 
-    "vision.title": "\u9577\u671F\u9858\u666F",
+    "vision.title": "長期願景",
     "vision.body":
-      "AI Agent \u5B89\u5168\u4F5C\u70BA\u4E00\u500B\u5B78\u79D1,\u5176\u6210\u719F\u5EA6\u53D7\u5236\u65BC\u7F3A\u4E4F\u5171\u540C\u7684\u898F\u5247\u683C\u5F0F\u3002ATR \u63D0\u4F9B\u9019\u500B\u683C\u5F0F\u3002\u6211\u5011\u7684\u76EE\u6A19\u662F\u8B93 ATR \u5728 AI Agent runtime \u7684\u67B6\u69CB\u4F4D\u7F6E\u4E2D,\u4F54\u64DA Sigma \u5728 SIEM \u5075\u6E2C\u3001YARA \u5728\u60E1\u610F\u7A0B\u5F0F\u7C3D\u7AE0\u4E2D\u7684\u540C\u7B49\u4F4D\u7F6E \u2500\u2500 \u4E2D\u7ACB\u3001\u53EF\u540C\u5115\u5BE9\u67E5\u3001\u4EFB\u4F55\u55AE\u4F4D\u7686\u53EF\u81EA\u7531\u5BE6\u4F5C\u3001\u5EF6\u4F38\u6216\u5F15\u7528\u3002",
+      "AI Agent 安全作為一個學科,其成熟度受制於缺乏共同的規則格式。ATR 提供這個格式。我們的目標是讓 ATR 在 AI Agent runtime 的架構位置中,佔據 Sigma 在 SIEM 偵測、YARA 在惡意程式簽章中的同等位置 ── 中立、可同儕審查、任何單位皆可自由實作、延伸或引用。",
   },
 };
 

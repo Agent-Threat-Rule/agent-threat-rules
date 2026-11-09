@@ -55,6 +55,23 @@ export const BROWSESAFE: UpstreamDataset = Object.freeze({
     'https://huggingface.co/datasets/perplexity-ai/browsesafe-bench/blob/b506fb5bc7fd4472c8738055a67a0ef6406afdc9/LICENSE',
 });
 
+/**
+ * NVIDIA's agentic indirect-injection RL set. Each record is an enterprise
+ * agent task whose read tool returns data with an injection planted in one
+ * field; an attacker model rewrote each injection until a defender model
+ * followed it. CC-BY-4.0, not MIT: attribution and a note of the changes made
+ * travel with the rows instead of a permission notice (sourceMarkdown).
+ */
+export const NEMOTRON_IPI: UpstreamDataset = Object.freeze({
+  id: 'nemotron-agentic-ipi',
+  repo: 'nvidia/Nemotron-RL-Agentic-Indirect-Prompt-Injection-v1',
+  revision: 'd738d4f361cc38bb4d7a42b9066776dade5332f5',
+  license: 'cc-by-4.0',
+  // The card states an owner, not a copyright line; this is its wording.
+  copyright: 'Dataset Owner(s): NVIDIA Corporation',
+  licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+});
+
 /** The MIT permission notice, as both upstream LICENSE files carry it. */
 export const MIT_PERMISSION_NOTICE = [
   'Permission is hereby granted, free of charge, to any person obtaining a copy',
@@ -319,6 +336,61 @@ export function browsesafeRows(rows: readonly BrowsesafeRawRow[], split: string)
 }
 
 // ---------------------------------------------------------------------------
+// Nemotron agentic IPI
+// ---------------------------------------------------------------------------
+
+export interface NemotronRawRow {
+  readonly domain?: string | null;
+  readonly attack_category?: string | null;
+  readonly environment?: unknown;
+  readonly injection?: { readonly injection_text?: unknown; readonly vector?: unknown } | null;
+}
+
+/** The record's injection text, trimmed, or '' when it has none (or a non-string one). */
+export function nemotronInjection(row: NemotronRawRow): string {
+  const t = row.injection?.injection_text;
+  return typeof t === 'string' ? t.trim() : '';
+}
+
+/** Every string in a JSON value, depth first. */
+export function stringsIn(v: unknown): readonly string[] {
+  if (typeof v === 'string') return [v];
+  if (Array.isArray(v)) return v.flatMap(stringsIn);
+  if (v && typeof v === 'object') return Object.values(v).flatMap(stringsIn);
+  return [];
+}
+
+/**
+ * The environment field the read tool returns with the injection planted in
+ * it (chart notes, a product description, a case summary), as the agent sees
+ * it: the record's own content around the injected instruction. The bare
+ * injection_text would hand the miner text no tool ever returns.
+ */
+export function nemotronRow(row: NemotronRawRow): CorpusRow | null {
+  const injection = nemotronInjection(row);
+  if (!injection) return null;
+  const field = stringsIn(row.environment).find((s) => s.includes(injection));
+  if (!field) return null;
+  return { text: field.trim(), family: row.attack_category ?? 'unknown' };
+}
+
+/**
+ * One row per distinct injection, the first field it was planted in. The
+ * generator plants one instruction in many records (one case note in 88), so
+ * rows deduplicated on the field alone put the same injection on both sides of
+ * the FN-mine held-out split, and memorising it would pass as generalising.
+ */
+export function nemotronRows(raw: Iterable<NemotronRawRow>): readonly CorpusRow[] {
+  const seen = new Map<string, CorpusRow>();
+  for (const row of raw) {
+    const r = nemotronRow(row);
+    const key = nemotronInjection(row).toLowerCase().replace(/\s+/g, ' ');
+    if (r && !seen.has(key)) seen.set(key, r);
+  }
+  return [...seen.values()];
+}
+
+// ---------------------------------------------------------------------------
 // Output documents
 // ---------------------------------------------------------------------------
 
@@ -347,11 +419,12 @@ export function corpusDocument(rows: readonly CorpusRow[], meta: CorpusDocMeta):
 
 /**
  * SOURCE.md: where the rows came from, which rows, and the upstream copyright
- * and MIT permission notice the rows are redistributed under.
+ * and license terms the rows are redistributed under (MIT permission notice,
+ * or CC BY 4.0 attribution and changes).
  */
 export function sourceMarkdown(meta: CorpusDocMeta, licenseLine: string, files: readonly string[], count: number): string {
   const { dataset } = meta;
-  return [
+  const header = [
     `# ${dataset.id}`,
     '',
     `- Upstream: https://huggingface.co/datasets/${dataset.repo}`,
@@ -367,6 +440,24 @@ export function sourceMarkdown(meta: CorpusDocMeta, licenseLine: string, files: 
     '',
     '## License',
     '',
+  ];
+  if (dataset.license === 'cc-by-4.0') {
+    // CC BY 4.0 section 3(a): credit the creator, link the license, and say
+    // the material was modified.
+    return [
+      ...header,
+      `The rows in corpus.json are adapted from ${dataset.repo} (${dataset.copyright}), ` +
+        `licensed under CC BY 4.0 (${dataset.licenseUrl}).`,
+      '',
+      `Changes: each row is the one environment field that holds the record's injection, extracted from its ` +
+        `record and trimmed of surrounding whitespace; the rest of each record is dropped; rows are deduplicated ` +
+        `and reordered as the row filter says; a label ("attack") and a family (the record's attack_category) are ` +
+        `added to each row.`,
+      '',
+    ].join('\n');
+  }
+  return [
+    ...header,
     `The rows in corpus.json are a portion of the upstream dataset, redistributed under its MIT license (${dataset.licenseUrl}):`,
     '',
     '```',

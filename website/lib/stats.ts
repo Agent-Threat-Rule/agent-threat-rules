@@ -2,8 +2,32 @@ import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { loadAllRules } from "./rules";
 import { loadAdopters, adopterLogoUrl, type Adopter, type AdopterTier } from "./adopters";
+import { countLanes, type LaneCounts } from "./lanes";
+import { loadCoverageData } from "./coverage";
 
 const DATA_DIR = join(process.cwd(), "..", "data");
+const DOCS_DIR = join(process.cwd(), "..", "docs");
+
+/** Shown in place of a coverage figure whose source file could not be read. */
+const NO_FIGURE = "—";
+
+/** "covered/total" from parsed mapping rows: a row counts as covered when it names at least one rule. */
+function coveredOf(rows: ReadonlyArray<{ ruleCount: number }>): string {
+  if (rows.length === 0) return NO_FIGURE;
+  return `${rows.filter((r) => r.ruleCount > 0).length}/${rows.length}`;
+}
+
+/** "covered/active" from the Summary block of the generated docs/SAFE-MCP-MAPPING.md. */
+function safMcpCoverage(): string {
+  try {
+    const md = readFileSync(join(DOCS_DIR, "SAFE-MCP-MAPPING.md"), "utf-8");
+    const active = /^- Active techniques in the framework model: (\d+)$/m.exec(md);
+    const covered = /^- Techniques with at least one reviewed ATR rule \(partial or adjacent\): (\d+)$/m.exec(md);
+    return active && covered ? `${covered[1]}/${active[1]}` : NO_FIGURE;
+  } catch {
+    return NO_FIGURE;
+  }
+}
 const MEASUREMENTS_DIR = join(DATA_DIR, "measurements");
 
 function readJson<T>(path: string): T | null {
@@ -69,8 +93,16 @@ interface SkillScanReport {
 }
 
 export interface SiteStats {
-  // Rules
+  // Rules. Three counts, never one bare "rules" figure (see sync-stats.ts):
+  // ruleFileCount = rule files on main; ruleCount = effective, the files the
+  // engine loads in at least one lane; ruleInertCount = files in no lane
+  // (status draft or deprecated). ruleCount is the one to quote by default,
+  // and it must be labelled "effective" wherever it appears.
   ruleCount: number;
+  ruleFileCount: number;
+  ruleInertCount: number;
+  /** Rules each lane loads (enforce = maturity stable, alert = stable + test, hunt = all effective). */
+  laneCounts: LaneCounts["byLane"];
   categoryCount: number;
 
   // Standard heartbeat — YYYY-MM-DD the canonical stats.json was last
@@ -366,7 +398,17 @@ function ecosystemFromAdopters(): EcosystemIntegration[] {
     }));
 }
 
+// Cached per build worker for the same reason as loadAllRules (lib/rules.ts).
+let siteStatsCache: SiteStats | null = null;
+
 export function loadSiteStats(): SiteStats {
+  if (siteStatsCache && process.env.NODE_ENV === "production") return siteStatsCache;
+  siteStatsCache = computeSiteStats();
+  return siteStatsCache;
+}
+
+function computeSiteStats(): SiteStats {
+  const coverage = loadCoverageData();
   const clawhub = readJson<ClawHubStats>(
     join(DATA_DIR, "clawhub-scan", "ecosystem-stats.json"),
   );
@@ -386,19 +428,27 @@ export function loadSiteStats(): SiteStats {
   // lastUpdated is the freshest honest "standard heartbeat". data/stats.json
   // generatedAt only moves when the measurement pipeline reruns — keep it as
   // the fallback.
-  const rootStatsJson = readJson<{ lastUpdated?: string }>(
-    join(process.cwd(), "..", "stats.json"),
-  );
+  const rootStatsJson = readJson<{
+    lastUpdated?: string;
+    ruleCount?: { total?: number; effective?: number; inert?: number };
+  }>(join(process.cwd(), "..", "stats.json"));
 
   const rules = loadAllRules();
 
   // The engine skips status: draft | deprecated before the lane gate, so those
   // rules fire in no lane at all; the raw file count overstates what runs. Cite
   // the effective count on user-facing surfaces (same rule as sync-stats.ts).
-  const effectiveRuleCount = rules.filter(
-    (r: { status?: string }) =>
-      r.status !== "draft" && r.status !== "deprecated",
-  ).length;
+  const lanes = countLanes(rules);
+  const published = rootStatsJson?.ruleCount;
+  if (
+    published &&
+    (published.total !== lanes.files || published.effective !== lanes.effective || published.inert !== lanes.inert)
+  ) {
+    console.warn(
+      `stats.json ruleCount (${published.total} files / ${published.effective} effective / ${published.inert} inert) ` +
+        `disagrees with rules/ (${lanes.files} / ${lanes.effective} / ${lanes.inert}); the site shows the rules/ counts.`,
+    );
+  }
 
   const categories = new Set(
     rules.map((r: { category: string }) => r.category),
@@ -414,7 +464,10 @@ export function loadSiteStats(): SiteStats {
   }
 
   return {
-    ruleCount: effectiveRuleCount,
+    ruleCount: lanes.effective,
+    ruleFileCount: lanes.files,
+    ruleInertCount: lanes.inert,
+    laneCounts: lanes.byLane,
     categoryCount: categories.size,
     lastRegenerated:
       rootStatsJson?.lastUpdated ?? statsJson?.generatedAt?.slice(0, 10) ?? "",
@@ -452,9 +505,11 @@ export function loadSiteStats(): SiteStats {
 
     ecosystemIntegrations: ecosystemFromAdopters(),
 
-    owaspAgentic: "10/10",
-    safeMcp: "55/78",
-    owaspAst10: "7/10",
+    // Computed from the mapping documents, never typed in: docs/OWASP-MAPPING.md,
+    // docs/OWASP-AST10-MAPPING.md (via lib/coverage.ts) and docs/SAFE-MCP-MAPPING.md.
+    owaspAgentic: coveredOf(coverage.owaspAgentic),
+    safeMcp: safMcpCoverage(),
+    owaspAst10: coveredOf(coverage.owaspAst10),
 
     benchmarks: loadBenchmarkMeasurements(),
   };

@@ -16,42 +16,42 @@ const STEPS: Step[] = [
   {
     label: "Detect",
     labelZh: "偵測",
-    actor: "Global Sensors",
-    actorZh: "全球感測器",
-    detail: "Endpoints report suspicious patterns via ATR Reporter",
-    detailZh: "端點透過 ATR Reporter 回報可疑模式",
+    actor: "Sensors worldwide",
+    actorZh: "各地的感測端",
+    detail: "Endpoints send in suspicious patterns through ATR Reporter.",
+    detailZh: "端點透過 ATR Reporter 回報看起來可疑的寫法。",
   },
   {
     label: "Analyze",
     labelZh: "分析",
-    actor: "Threat Cloud LLM",
-    actorZh: "Threat Cloud LLM",
-    detail: "In the rule-authoring pipeline (not per-scan), the LLM analyzes attack structure, intent, and evasion techniques",
-    detailZh: "在規則撰寫管線中(非每次掃描),LLM 分析攻擊結構、意圖、和繞過技術",
+    actor: "LLM drafter",
+    actorZh: "LLM 起草",
+    detail: "The LLM takes the attack apart: how it is built, what it wants and how it slips past detection. This happens while a rule is being written, not on every scan.",
+    detailZh: "LLM 拆解這個攻擊：怎麼組成、想做什麼、怎麼躲過偵測。這發生在寫規則的階段，不是每次掃描都跑。",
   },
   {
     label: "Crystallize",
     labelZh: "結晶",
-    actor: "Auto-gen Engine",
+    actor: "Auto-generation engine",
     actorZh: "自動生成引擎",
-    detail: "Generates YAML rule + test cases from attack analysis",
-    detailZh: "從攻擊分析中生成 YAML 規則 + 測試案例",
+    detail: "Turns the analysis into a YAML rule with test cases.",
+    detailZh: "把分析結果寫成一條 YAML 規則，附上測試案例。",
   },
   {
     label: "Review",
     labelZh: "審查",
     actor: "Community",
     actorZh: "社群",
-    detail: "Contributors review, precision gates must pass",
-    detailZh: "貢獻者審查，精準度關卡必須通過",
+    detail: "Contributors review it, and it has to pass the precision gates.",
+    detailZh: "貢獻者審過，還得通過精準度關卡。",
   },
   {
     label: "Deploy",
     labelZh: "部署",
-    actor: "All Platforms",
+    actor: "Every platform",
     actorZh: "所有平台",
-    detail: "Merged into ATR, downstream auto-updates via npm",
-    detailZh: "合併到 ATR，下游透過 npm 自動更新",
+    detail: "Merged into ATR. Downstream installs update automatically through npm.",
+    detailZh: "合併進 ATR，下游透過 npm 自動更新。",
   },
 ];
 
@@ -98,18 +98,18 @@ export function Flywheel({ locale = "en" }: { locale?: string }) {
               {/* Node */}
               <button
                 onClick={() => handleClick(i)}
-                className={`relative shrink-0 w-10 h-10 rounded-sm flex items-center justify-center font-data text-xs font-bold transition-all duration-500 cursor-pointer ${
+                className={`relative shrink-0 w-10 h-10  flex items-center justify-center font-data text-xs font-bold transition-all duration-500 cursor-pointer ${
                   isActive
-                    ? "bg-blue text-white"
+                    ? "bg-ink text-white"
                     : isPast
-                    ? "bg-blue/10 text-blue"
+                    ? "bg-ink/10 text-blue"
                     : "bg-ash text-stone border border-fog"
                 }`}
               >
                 {i + 1}
                 {isActive && (
                   <motion.div
-                    className="absolute inset-0 rounded-sm border-2 border-blue"
+                    className="absolute inset-0  border-2 border-blue"
                     layoutId="flywheel-ring"
                     transition={{ duration: 0.4, ease: EASE }}
                   />
@@ -120,7 +120,7 @@ export function Flywheel({ locale = "en" }: { locale?: string }) {
                 <div className="flex-1 h-px mx-1 relative overflow-hidden">
                   <div className="absolute inset-0 bg-fog" />
                   <motion.div
-                    className="absolute top-0 left-0 h-full bg-blue origin-left"
+                    className="absolute top-0 left-0 h-full bg-ink origin-left"
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: isPast || isActive ? 1 : 0 }}
                     transition={{ duration: 0.5, ease: EASE }}
@@ -150,7 +150,7 @@ export function Flywheel({ locale = "en" }: { locale?: string }) {
           className="border border-fog p-6 md:p-8"
         >
           <div className="flex items-baseline gap-3 mb-2">
-            <span className="font-data text-xs text-blue tracking-[2px] uppercase font-bold">
+            <span className="text-[13px] text-stone">
               {zh ? STEPS[active].labelZh : STEPS[active].label}
             </span>
             <span className="text-xs text-mist">
@@ -169,8 +169,8 @@ export function Flywheel({ locale = "en" }: { locale?: string }) {
       {/* Loop annotation */}
       <div className="mt-4 md:flex md:items-center md:gap-2">
         <div className="h-px flex-1 bg-fog hidden md:block" />
-        <span className="font-data text-[10px] md:text-xs text-mist tracking-[1px] uppercase block text-center">
-          {zh ? "更多端點 = 更多資料 = 更強規則" : "More endpoints = more data = stronger rules"}
+        <span className="text-[13px] text-stone block text-center">
+          {zh ? "回報的端點越多，規則就越好" : "The more endpoints report in, the better the rules get"}
         </span>
         <div className="h-px flex-1 bg-fog hidden md:block" />
       </div>

@@ -143,7 +143,13 @@ describe("committed files", () => {
       coverage: { safeMcp: { covered: number; total: number; display: string } };
     };
     expect(stats.coverage.safeMcp).toMatchObject({ covered, total, display: `${covered}/${total}` });
-    expect(readFileSync(join(ROOT, "website/lib/stats.ts"), "utf8")).toContain(`safeMcp: "${covered}/${total}"`);
+    // The website reads the figure from the rendered mapping at build time
+    // (website/lib/stats.ts safMcpCoverage), so the two lines it parses must
+    // carry the mapping file's counts.
+    expect(readFileSync(join(ROOT, "website/lib/stats.ts"), "utf8")).toContain("safeMcp: safMcpCoverage()");
+    const md = readFileSync(join(ROOT, "docs/SAFE-MCP-MAPPING.md"), "utf8");
+    expect(md).toMatch(new RegExp(`^- Active techniques in the framework model: ${total}$`, "m"));
+    expect(md).toMatch(new RegExp(`^- Techniques with at least one reviewed ATR rule \\(partial or adjacent\\): ${covered}$`, "m"));
     expect(readFileSync(join(ROOT, "README.md"), "utf8")).toContain(`${covered} of ${total} active techniques`);
     const compliance = readFileSync(join(ROOT, "website/app/[locale]/compliance/page.tsx"), "utf8");
     expect(compliance).toContain(`coverage: "${covered}/${total} techniques"`);

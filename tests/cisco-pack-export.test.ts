@@ -18,9 +18,11 @@ import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { describe, expect, it } from 'vitest';
 import { regexConditionSpec } from '../src/engine.js';
+import { benignGateExclusions, parseBenignGate } from '../scripts/cisco-pack/benign-gate.js';
 import { loadRules, extractPatterns, type AtrRule } from '../scripts/cisco-pack/load-rules.js';
 import {
   buildSignatureFiles,
+  capSeverity,
   toScannerPattern,
   toSignature,
   toSignatureId,
@@ -142,6 +144,16 @@ describe('toSignature', () => {
     expect(signature.atr_url).toBe(
       `${DEFAULT_REPO_URL}/blob/main/rules/tool-poisoning/ATR-2026-00001-example.yaml`,
     );
+  });
+
+  it('lowers severity to --max-severity and leaves less severe rules alone', () => {
+    expect(toSignature(loaded, { ...OPTIONS, maxSeverity: 'LOW' }).severity).toBe('LOW');
+    const low = { ...loaded, rule: rule({ id: 'ATR-2026-00002', severity: 'low' }) };
+    expect(toSignature(low, { ...OPTIONS, maxSeverity: 'MEDIUM' }).severity).toBe('LOW');
+    expect(capSeverity('HIGH', 'MEDIUM')).toBe('MEDIUM');
+    expect(capSeverity('MEDIUM', 'MEDIUM')).toBe('MEDIUM');
+    expect(capSeverity('INFO', 'LOW')).toBe('INFO');
+    expect(() => capSeverity('HIGH', 'SEVERE')).toThrow(/severity cap/);
   });
 
   it('takes the category from the directory, not from tags.category', () => {
@@ -329,6 +341,67 @@ describe('loadRules', () => {
       { dir: 'prompt-injection', name: 'broken.yaml', body: { severity: 'high' } },
     ]);
     expect(() => loadRules(root)).toThrow(/missing rule id/);
+  });
+
+  function fieldRule(id: string, fields: readonly string[]) {
+    return {
+      dir: 'excessive-autonomy',
+      name: `${id}-x.yaml`,
+      body: {
+        id,
+        severity: 'high',
+        description: 'x',
+        detection: { conditions: fields.map((field) => ({ field, operator: 'regex', value: 'delete' })) },
+      },
+    };
+  }
+
+  it('leaves out a rule with a condition on a runtime-only field, and says which', () => {
+    const root = writeRuleTree([
+      fieldRule('ATR-2026-00099', ['tool_name', 'tool_args']),
+      fieldRule('ATR-2026-00100', ['content', 'user_input', 'tool_description']),
+      // One static and one runtime condition: dropping only the runtime one
+      // would broaden a condition: all rule, so the whole rule goes.
+      fieldRule('ATR-2026-00101', ['content', 'tool_response']),
+    ]);
+    const loaded = loadRules(root);
+    expect(loaded.rules.map((r) => r.rule.id)).toEqual(['ATR-2026-00100']);
+    expect(loaded.excluded).toEqual([
+      { id: 'ATR-2026-00099', reason: 'runtime-only field: tool_args, tool_name' },
+      { id: 'ATR-2026-00101', reason: 'runtime-only field: tool_response' },
+    ]);
+    expect(loadRules(root, { includeRuntimeFields: true }).rules).toHaveLength(3);
+  });
+
+  it('leaves out the rules it is told to, with the given reason', () => {
+    const root = writeRuleTree([
+      fieldRule('ATR-2026-00100', ['content']),
+      fieldRule('ATR-2026-00102', ['content']),
+    ]);
+    const loaded = loadRules(root, { exclude: new Map([['ATR-2026-00102', 'benign gate: x']]) });
+    expect(loaded.rules.map((r) => r.rule.id)).toEqual(['ATR-2026-00100']);
+    expect(loaded.excluded).toEqual([{ id: 'ATR-2026-00102', reason: 'benign gate: x' }]);
+  });
+});
+
+describe('benign gate result', () => {
+  const gate = {
+    scanner: { repo: 'cisco-ai-defense/skill-scanner', commit: 'a'.repeat(40) },
+    corpus: { path: 'data/skill-benchmark/benign', records: 432, sha256: 'b'.repeat(64) },
+    hits: { 'ATR-2026-00111': 27, 'ATR-2026-00001': 2 },
+  };
+
+  it('turns every rule that fired into an exclusion with its count', () => {
+    expect([...benignGateExclusions(parseBenignGate(JSON.stringify(gate)))]).toEqual([
+      ['ATR-2026-00001', 'benign gate: fires on 2 of 432 benign skills in Skill Scanner'],
+      ['ATR-2026-00111', 'benign gate: fires on 27 of 432 benign skills in Skill Scanner'],
+    ]);
+  });
+
+  it('rejects a result it cannot trust', () => {
+    expect(() => parseBenignGate(JSON.stringify({ ...gate, hits: { ATR_2026_00111: 1 } }))).toThrow(/rule id/);
+    expect(() => parseBenignGate(JSON.stringify({ ...gate, hits: { 'ATR-2026-00111': 0 } }))).toThrow(/count/);
+    expect(() => parseBenignGate(JSON.stringify({ ...gate, corpus: { records: 0 } }))).toThrow(/records/);
   });
 });
 
@@ -546,4 +619,51 @@ describe('export-cisco-pack.ts', () => {
     expect(exportedPatterns([])).toEqual(['(?i)abc', '(?i)^abc']);
     expect(exportedPatterns(['--reproduce-vendored'])).toEqual(['abc', '(?im)^abc']);
   }, 60_000);
+});
+
+describe('withoutSlowConditions', () => {
+  const conditions = [
+    { field: 'content', operator: 'regex', value: 'fast one' },
+    { field: 'content', operator: 'contains', value: 'not a regex' },
+    { field: 'content', operator: 'regex', value: 'slow one' },
+  ];
+
+  it('leaves a rule with no slow condition as it is', async () => {
+    const { withoutSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const r = rule({ id: 'ATR-2026-09001', detection: { conditions } });
+    expect(withoutSlowConditions(r, new Set(['ATR-2026-09999#0']))).toEqual({ kind: 'unchanged', rule: r });
+  });
+
+  it('drops only the slow condition of an any-rule, counting non-regex conditions in the index', async () => {
+    const { withoutSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const r = rule({ id: 'ATR-2026-09001', detection: { conditions } });
+    const result = withoutSlowConditions(r, new Set(['ATR-2026-09001#2']));
+    expect(result.kind).toBe('trimmed');
+    if (result.kind !== 'trimmed') return;
+    expect(result.dropped).toEqual([2]);
+    expect(extractPatterns(result.rule)).toEqual(['fast one']);
+    expect(r.detection?.conditions).toHaveLength(3);
+  });
+
+  it('leaves out an all-rule whole rather than broaden it', async () => {
+    const { withoutSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const r = rule({ id: 'ATR-2026-09001', detection: { condition: 'all', conditions } });
+    const result = withoutSlowConditions(r, new Set(['ATR-2026-09001#2']));
+    expect(result).toEqual({ kind: 'excluded', reason: 'slow on a backtracking regex engine: condition #2' });
+  });
+
+  it('leaves out an any-rule whose every regex condition is slow', async () => {
+    const { withoutSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const r = rule({ id: 'ATR-2026-09001', detection: { conditions } });
+    const result = withoutSlowConditions(r, new Set(['ATR-2026-09001#0', 'ATR-2026-09001#2']));
+    expect(result.kind).toBe('excluded');
+  });
+
+  it('reads the slow conditions from the repository baseline', async () => {
+    const { readSlowConditions } = await import('../scripts/cisco-pack/slow-conditions.js');
+    const here = dirname(fileURLToPath(import.meta.url));
+    const slow = readSlowConditions(join(here, '..', 'data', 'redos-baseline.json'));
+    expect(slow.size).toBeGreaterThan(0);
+    for (const key of slow) expect(key).toMatch(/^ATR-\d{4}-\d{5}#\d+$/);
+  });
 });

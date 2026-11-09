@@ -49,7 +49,7 @@ export function TypedTerminal({ command = "npm install agent-threat-rules" }: { 
   return (
     <div
       ref={ref}
-      className="font-data text-sm bg-[#0B0B0F] text-[#4ade80] px-6 py-4 border border-[#2A2A35] inline-block rounded-sm"
+      className="font-data text-sm bg-[#0B0B0F] text-[#4ade80] px-6 py-4 border border-[#2A2A35] inline-block "
     >
       <span className="text-[#6B6B76]">$</span>{" "}
       <span>{displayed}</span>

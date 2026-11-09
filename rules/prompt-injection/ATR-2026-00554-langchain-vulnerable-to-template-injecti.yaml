@@ -1,6 +1,6 @@
 title: LangChain Vulnerable to Template Injection via Attribute Access in Prompt Templates
 id: ATR-2026-00554
-rule_version: 1
+rule_version: 2
 status: experimental
 description: 'GitHub Security Advisory GHSA-6qv9-48xg-fc7f (CVE-2025-65106). LangChain Vulnerable to Template Injection via Attribute Access in Prompt Templates
 
@@ -75,7 +75,7 @@ detection:
   conditions:
   - field: content
     operator: regex
-    value: (?i)\{\{?[^{}]*\b__(?:class|globals|import|builtins|subclasses|init|mro|base|dict|reduce|getattribute|subclasshook)__[^{}]*\}?\}
+    value: (?i)\{\{?[^{}]*(?:\.__(?:class|globals|import|builtins|subclasses|init|mro|base|dict|reduce|getattribute|subclasshook)__|\b__(?:import|builtins|globals|subclasses)__)[^{}]*\}?\}
     description: Server-side template injection via Python dunder/builtins traversal
 response:
   actions:

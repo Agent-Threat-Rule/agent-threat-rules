@@ -4,7 +4,14 @@
  * requirement: recoveries on the texts the model was shown no longer suffice.
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { computeResidual, gateCandidates, type GateContext } from '../scripts/lib/fn-mine-candidate-gate.js';
+import {
+  computeResidual,
+  dropBacktracking,
+  gateCandidates,
+  pickDistinct,
+  type GateContext,
+  type GatedCandidate,
+} from '../scripts/lib/fn-mine-candidate-gate.js';
 import { MIN_HELD_OUT_RECOVERS, seenLines, splitHeldOut } from '../scripts/lib/fn-mine-heldout.js';
 import { prepareGateCorpus } from '../scripts/lib/semantic-gate.js';
 import { VISIBILITY_FLOOR } from '../scripts/lib/visibility-scan.js';
@@ -91,5 +98,86 @@ describe('computeResidual', () => {
     const held = new Set(heldOut);
     expect(residual.some((t) => held.has(t))).toBe(false);
     expect(residual.every((t) => /unrelated/.test(t))).toBe(true);
+  });
+});
+
+describe('pickDistinct', () => {
+  const keys = (from: number, to: number): string[] => Array.from({ length: to - from }, (_, i) => `k${from + i}`);
+  const survivor = (cluster: string, regex: string, k: string[] | undefined, corpus = 'c'): GatedCandidate & { corpus: string } => ({
+    cluster,
+    regex,
+    category: 'prompt-injection',
+    rationale: 'test',
+    recovers: k?.length ?? 10,
+    heldOutRecovers: 2,
+    benignFP: 0,
+    exampleFNs: ['x'],
+    recoveryKeys: k,
+    corpus,
+  });
+
+  // The 2026-11-08 run authored two job-offer rules worded differently over the same attacks.
+  it('drops a survivor whose recoveries the survivors above it already cover', () => {
+    const { kept, dropped } = pickDistinct(
+      [survivor('offer-b', 'b', keys(0, 20)), survivor('offer-a', 'a', keys(0, 26)), survivor('notes', 'n', keys(40, 60))],
+      8,
+    );
+    expect(kept.map((k) => k.cluster)).toEqual(['offer-a', 'notes']);
+    expect(dropped.map((d) => [d.candidate.cluster, d.why])).toEqual([
+      ['offer-b', 'only 0 of its 20 recoveries are new beyond the survivors ranked above it (< 8)'],
+    ]);
+  });
+
+  it('keeps an overlapping survivor that adds exactly minRecovers new attacks, and not one fewer', () => {
+    expect(pickDistinct([survivor('a', 'a', keys(0, 20)), survivor('b', 'b', keys(12, 28))], 8).kept.map((k) => k.cluster)).toEqual(['a', 'b']);
+    expect(pickDistinct([survivor('a', 'a', keys(0, 20)), survivor('b', 'b', keys(13, 27))], 8).kept.map((k) => k.cluster)).toEqual(['a']);
+  });
+
+  it('keeps input order for survivors that recover as many', () => {
+    const { kept } = pickDistinct([survivor('x', 'x', keys(0, 10)), survivor('y', 'y', keys(20, 30))], 8);
+    expect(kept.map((k) => k.cluster)).toEqual(['x', 'y']);
+  });
+
+  it('counts overlap within a corpus only, and falls back to the exact regex without keys', () => {
+    const { kept, dropped } = pickDistinct(
+      [survivor('a', 'r', keys(0, 10), 'c1'), survivor('b', 'q', keys(0, 10), 'c2'), survivor('c', ' r ', undefined), survivor('d', 's', undefined)],
+      8,
+    );
+    expect(kept.map((k) => k.cluster)).toEqual(['a', 'b', 'd']);
+    expect(dropped.map((d) => d.candidate.cluster)).toEqual(['c']);
+  });
+});
+
+describe('dropBacktracking', () => {
+  const s = (cluster: string, regex: string): GatedCandidate => ({
+    cluster, regex, category: 'prompt-injection', rationale: 'test', recovers: 10, heldOutRecovers: 2, benignFP: 0, exampleFNs: ['x'],
+  });
+
+  // Actions run 42447405455: one slow regex failed the workflow's ReDoS gate for all ten rules.
+  it('drops a regex the ReDoS gate flags and keeps the rest, saying why', () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const kept = dropBacktracking([s('fast', 'f'), s('slow', 'z'), s('fast2', 'g')], (regex) =>
+      regex === 'z' ? { kind: 'backtracks', detail: 'NEW ATR-2099-00001#0 0.85s' } : { kind: 'ok' },
+    );
+    expect(kept.kept.map((k) => k.cluster)).toEqual(['fast', 'fast2']);
+    expect(kept.dropped).toBe(1);
+    expect(log.mock.calls.flat().join('\n')).toMatch(/drop slow: backtracks catastrophically/);
+  });
+
+  // Review of #818: a timeout on one regex used to abort the run and every survivor with it.
+  it('drops a regex whose precheck ran out of time, and keeps going', () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const r = dropBacktracking([s('slow', 'z'), s('fast', 'f')], (regex) =>
+      regex === 'z' ? { kind: 'unavailable', detail: 'spawnSync python3 ETIMEDOUT' } : { kind: 'ok' },
+    );
+    expect(r).toMatchObject({ dropped: 1 });
+    expect(r.kept.map((k) => k.cluster)).toEqual(['fast']);
+    expect(log.mock.calls.flat().join('\n')).toMatch(/drop slow: the ReDoS precheck ran out of time/);
+  });
+
+  it('throws when the precheck cannot run, rather than author regexes nobody timed', () => {
+    expect(() => dropBacktracking([s('a', 'a')], () => ({ kind: 'unavailable', detail: 'No module named yaml' }))).toThrow(
+      /ReDoS precheck could not run on a: No module named yaml/,
+    );
   });
 });
