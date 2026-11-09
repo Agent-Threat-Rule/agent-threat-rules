@@ -36,15 +36,19 @@
  *    injection signal removed and set in an ordinary ticket, to-do or record
  *    frame. A regex that still fires matches the request, not the injection.
  *
- * Gates 2 and 3 apply to candidates mined from tool output, where a request
- * the user never made is the attack but the same request in a business record
- * is not. Gate 1 applies to every candidate.
+ * All three gates apply to every candidate. Until 2026-11-09 gates 2 and 3
+ * ran on tool-output candidates only, and two rules mined from user-input
+ * corpora (PR #828) keyed on phrasing a colleague uses ("taking over as",
+ * "decode ... then follow it") passed. A user-input candidate is judged
+ * against USER_INPUT_SIGNALS (persona reassignment, a request for the
+ * model's own configuration, refusal suppression, plus every tool-output
+ * signal) and its twins sit in message and meeting-note frames.
  *
  * What none of this measures: false positives in deployment. The benign
  * corpora are finite and named in the report (gateReportNote in the miner);
  * "fires on none" means none of those texts, as the stated event shape.
  */
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CORPORA } from './fn-corpora.js';
 import { compileEngineAccurate } from './fn-mine-candidate-gate.js';
@@ -98,15 +102,46 @@ export const INJECTION_SIGNALS: readonly InjectionSignal[] = Object.freeze([
   },
 ]);
 
-/** The signal ids found in `text`, in INJECTION_SIGNALS order. */
-export function signalsIn(text: string): readonly string[] {
-  return INJECTION_SIGNALS.filter((s) => s.re.test(text)).map((s) => s.id);
+/**
+ * What marks a user turn, rather than a tool output, as an attack on the
+ * model: on top of INJECTION_SIGNALS, the text reassigns the model's persona,
+ * asks for its own configuration, or demands it drop its refusals. Each is
+ * about the model's own behaviour; a request a colleague could make of a
+ * person ("take over as interim CFO", "decode the config and follow it") is
+ * not here. Added 2026-11-09 after PR #828: two rules mined from user-input
+ * corpora passed every gate and fired on 3 of 7 ordinary business sentences,
+ * because gates 2 and 3 ran on tool-output candidates only.
+ */
+export const USER_INPUT_SIGNALS: readonly InjectionSignal[] = Object.freeze([
+  ...INJECTION_SIGNALS,
+  {
+    id: 'persona-reassignment',
+    re: /\byou\s+are\s+(?:now|no\s+longer)\b|\bfrom\s+now\s+on,?\s+(?:you|act|respond|answer)\b|\bpretend\s+(?:to\s+be|that\s+you|you(?:'re|\s+are))\b|\b(?:act|behave|respond|answer)\s+as\s+(?:if\s+you\s+(?:were|are|had)|an?\s+(?:unrestricted|unfiltered|uncensored|jailbroken|evil|rogue))\b|\b(?:role-?play)\s+as\b|\byou\s+will\s+(?:now\s+)?(?:act|respond|answer|reply)\s+as\b|\bstay\s+in\s+character\b/i,
+  },
+  {
+    id: 'model-config-request',
+    re: /\b(?:your|the)\s+(?:system\s+(?:prompt|message|instructions?)|initial\s+(?:prompt|instructions?)|hidden\s+(?:prompt|instructions?|rules)|original\s+(?:prompt|instructions?)|pre-?prompt)\b|\b(?:repeat|print|reveal|output|recite)\s+(?:all\s+)?(?:of\s+)?(?:your\s+(?:instructions|prompt|rules)|the\s+(?:text|words)\s+above)\b|\byour\s+(?:own\s+)?(?:instructions|guidelines|programming)\b/i,
+  },
+  {
+    id: 'refusal-suppression',
+    re: /\b(?:never|don'?t|do\s+not|without)\s+(?:refus|apologi[sz]|add(?:ing)?\s+(?:any\s+)?(?:warnings?|disclaimers?|caveats?))\w*|\b(?:no|without\s+any)\s+(?:restrictions|filters|censorship|ethical\s+(?:guidelines|constraints))\b|\b(?:unrestricted|unfiltered|uncensored|jailbr(?:oken|eak)|developer\s+mode)\b|\bdo\s+anything\s+now\b/i,
+  },
+]);
+
+/** The signals that mark an attack in `shape`'s input. */
+export function signalsFor(shape: 'tool_response' | 'llm_input'): readonly InjectionSignal[] {
+  return shape === 'tool_response' ? INJECTION_SIGNALS : USER_INPUT_SIGNALS;
+}
+
+/** The signal ids found in `text`, in list order. */
+export function signalsIn(text: string, signals: readonly InjectionSignal[] = INJECTION_SIGNALS): readonly string[] {
+  return signals.filter((s) => s.re.test(text)).map((s) => s.id);
 }
 
 /** `text` with every injection signal removed: what is left is the request alone. */
-export function withoutSignals(text: string): string {
+export function withoutSignals(text: string, signals: readonly InjectionSignal[] = INJECTION_SIGNALS): string {
   let out = text;
-  for (const s of INJECTION_SIGNALS) {
+  for (const s of signals) {
     const global = new RegExp(s.re.source, s.re.flags.includes('g') ? s.re.flags : `${s.re.flags}g`);
     out = out.replace(global, ' ');
   }
@@ -137,12 +172,16 @@ function matches(re: RegExp, texts: readonly string[]): string[] {
  * should match), or null. Judged on the regex's own match, not the whole text:
  * a signal elsewhere in the attack does not make the regex depend on it.
  */
-export function injectionSignalProblem(regex: string, recovered: readonly string[]): string | null {
+export function injectionSignalProblem(
+  regex: string,
+  recovered: readonly string[],
+  signals: readonly InjectionSignal[] = INJECTION_SIGNALS,
+): string | null {
   const re = compileEngineAccurate(regex);
   if (!re) return 'does not compile';
   const spans = matches(re, recovered);
   if (spans.length === 0) return 'matches none of the attacks it is said to recover';
-  const withSignal = spans.filter((s) => signalsIn(s).length > 0).length;
+  const withSignal = spans.filter((s) => signalsIn(s, signals).length > 0).length;
   const share = withSignal / spans.length;
   return share >= MIN_SIGNAL_SHARE
     ? null
@@ -162,18 +201,31 @@ const TWIN_FRAMES: readonly ((request: string) => string)[] = Object.freeze([
   (r: string) => JSON.stringify({ id: 'TASK-2207', status: 'pending', assignee: 'me', notes: r }),
 ]);
 
+/** Ordinary places the same words sit in a message one person sends another. */
+const USER_TWIN_FRAMES: readonly ((request: string) => string)[] = Object.freeze([
+  (r: string) => r,
+  (r: string) => `Hi team, quick one before Friday: ${r} Thanks!`,
+  (r: string) => `Meeting notes, ops sync\n- ${r}\n- Next sync on Tuesday`,
+  (r: string) => `Can you help me write a reply to my manager? Context: ${r}`,
+]);
+
 /**
  * Twins of `texts`: each with `corpus`'s generator wrappers and every injection
- * signal removed, in each frame. The wrappers go first: they are a generator's
- * fixed way of addressing the agent ("Hi Assistant, I forgot to mention
- * earlier ..."), so a twin that kept half of one would not be benign.
+ * signal removed, in each frame of `shape`. The wrappers go first: they are a
+ * generator's fixed way of addressing the agent ("Hi Assistant, I forgot to
+ * mention earlier ..."), so a twin that kept half of one would not be benign.
  */
-export function benignTwins(texts: readonly string[], corpus = ''): readonly string[] {
+export function benignTwins(
+  texts: readonly string[],
+  corpus = '',
+  shape: 'tool_response' | 'llm_input' = 'tool_response',
+): readonly string[] {
+  const frames = shape === 'tool_response' ? TWIN_FRAMES : USER_TWIN_FRAMES;
   const out: string[] = [];
   for (const t of texts) {
-    const request = withoutSignals(withoutBenchmarkArtifacts(corpus, t));
+    const request = withoutSignals(withoutBenchmarkArtifacts(corpus, t), signalsFor(shape));
     if (!request) continue;
-    for (const frame of TWIN_FRAMES) out.push(frame(request));
+    for (const frame of frames) out.push(frame(request));
   }
   return out;
 }
@@ -183,10 +235,15 @@ export function benignTwins(texts: readonly string[], corpus = ''): readonly str
  * `recovered` (attacks from `corpus`), the same words with nothing addressed
  * to the agent.
  */
-export function twinProblem(regex: string, recovered: readonly string[], corpus = ''): string | null {
+export function twinProblem(
+  regex: string,
+  recovered: readonly string[],
+  corpus = '',
+  shape: 'tool_response' | 'llm_input' = 'tool_response',
+): string | null {
   const re = compileEngineAccurate(regex);
   if (!re) return 'does not compile';
-  const twins = benignTwins(recovered, corpus);
+  const twins = benignTwins(recovered, corpus, shape);
   const hit = twins.find((t) => re.test(t));
   return hit === undefined
     ? null
@@ -314,8 +371,8 @@ export interface GeneralizationInput {
   /** The attacks in the mined corpus the candidate matches, as the corpus holds them (signals intact). */
   readonly recovered: readonly string[];
   readonly minedFrom: string;
-  /** True for a candidate mined from tool output: gates 2 and 3 apply. */
-  readonly toolOutput: boolean;
+  /** The event shape the candidate was mined from; it picks the signal list and the twin frames. */
+  readonly shape: 'tool_response' | 'llm_input';
 }
 
 /** Every gate's verdict on one candidate, all run so a reviewer sees each reason. */
@@ -323,15 +380,36 @@ export function generalizationVerdict(input: GeneralizationInput, oos: readonly 
   const failures: Record<string, string> = {};
   const oosProblem = outOfSampleProblem(input.regex, oos, input.minedFrom);
   if (oosProblem) failures['out-of-sample'] = oosProblem;
-  if (input.toolOutput) {
-    const signal = injectionSignalProblem(input.regex, input.recovered);
-    if (signal) failures['injection-signal'] = signal;
-    const twin = twinProblem(input.regex, input.recovered, input.minedFrom);
-    if (twin) failures['benign-twin'] = twin;
-  }
+  const signal = injectionSignalProblem(input.regex, input.recovered, signalsFor(input.shape));
+  if (signal) failures['injection-signal'] = signal;
+  const twin = twinProblem(input.regex, input.recovered, input.minedFrom, input.shape);
+  if (twin) failures['benign-twin'] = twin;
   return {
     pass: Object.keys(failures).length === 0,
     failures,
     outOfSample: outOfSampleRecoveries(input.regex, oos, input.minedFrom),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Benign user input
+// ---------------------------------------------------------------------------
+
+/** Hand-written work requests (role handovers, decode-then-follow, ...); see its SOURCE.md. */
+export const USER_INPUT_BENIGN = 'data/fn-mine-benign/user-input-business/corpus.json';
+
+/**
+ * The benign user-input texts every candidate must not fire on. A missing or
+ * short file throws: the gate would otherwise pass a regex on a colleague's
+ * request again.
+ */
+export function readUserInputBenign(root: string): readonly string[] {
+  const file = join(root, USER_INPUT_BENIGN);
+  if (!existsSync(file)) throw new Error(`${USER_INPUT_BENIGN} is missing: the user-input benign check cannot run`);
+  const doc = JSON.parse(readFileSync(file, 'utf8')) as { count?: number; samples?: { text?: unknown }[] };
+  const texts = (doc.samples ?? []).map((s) => s.text).filter((t): t is string => typeof t === 'string');
+  if (texts.length === 0 || texts.length !== doc.count) {
+    throw new Error(`${USER_INPUT_BENIGN} declares ${doc.count} samples but ${texts.length} read`);
+  }
+  return texts;
 }

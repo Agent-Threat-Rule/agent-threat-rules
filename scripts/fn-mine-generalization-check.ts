@@ -17,7 +17,8 @@ import { parseArgs } from 'node:util';
 import yaml from 'js-yaml';
 import { CORPORA } from './lib/fn-corpora.js';
 import { compileEngineAccurate } from './lib/fn-mine-candidate-gate.js';
-import { generalizationVerdict, readOutOfSample } from './lib/fn-mine-generalization.js';
+import { generalizationVerdict, readOutOfSample, readUserInputBenign } from './lib/fn-mine-generalization.js';
+import { oosSource, readOosTexts } from './lib/fn-mine-oos.js';
 import { requireToolOutputBenign, toolOutputVerdicts } from './lib/fn-mine-tool-benign.js';
 import { MINED_CORPORA } from './lib/fn-mine-corpora.js';
 
@@ -37,6 +38,17 @@ function ruleRegexes(file: string): RuleRegex[] {
     .map((c) => ({ file, id: String(doc.id), regex: c.value as string }));
 }
 
+/** The attacks of a registry corpus or of a vendored out-of-sample corpus. */
+function corpusAttacks(root: string, corpusId: string): readonly string[] {
+  const def = CORPORA.find((c) => c.id === corpusId);
+  if (def) return def.load(root).filter((s) => s.label === 'attack').map((s) => s.text);
+  const source = oosSource(corpusId);
+  if (!source) throw new Error(`unknown corpus ${corpusId}`);
+  const read = readOosTexts(root, source);
+  if ('problem' in read) throw new Error(read.problem);
+  return read.texts;
+}
+
 async function main(): Promise<void> {
   const { values, positionals } = parseArgs({ allowPositionals: true, options: { corpus: { type: 'string' } } });
   const corpusId = values.corpus;
@@ -44,10 +56,9 @@ async function main(): Promise<void> {
     throw new Error('usage: fn-mine-generalization-check.ts --corpus <mined corpus id> <rule.yaml> [...]');
   }
   const root = process.cwd();
-  const def = CORPORA.find((c) => c.id === corpusId);
-  if (!def) throw new Error(`unknown corpus ${corpusId}`);
-  const attacks = def.load(root).filter((s) => s.label === 'attack').map((s) => s.text);
-  const toolOutput = MINED_CORPORA.find((c) => c.name === corpusId)?.shape === 'tool_response';
+  const attacks = corpusAttacks(root, corpusId);
+  const shape = MINED_CORPORA.find((c) => c.name === corpusId)?.shape ?? 'llm_input';
+  const userBenign = shape === 'llm_input' ? readUserInputBenign(root) : [];
   const oos = readOutOfSample(root);
   const benign = requireToolOutputBenign(root);
   const regexes = positionals.flatMap(ruleRegexes);
@@ -63,10 +74,14 @@ async function main(): Promise<void> {
   regexes.forEach((r, i) => {
     const re = compileEngineAccurate(r.regex);
     const recovered = re ? attacks.filter((t) => re.test(t)) : [];
-    const v = generalizationVerdict({ regex: r.regex, recovered, minedFrom: corpusId, toolOutput }, oos);
+    const v = generalizationVerdict({ regex: r.regex, recovered, minedFrom: corpusId, shape }, oos);
     const b = benignVerdicts[i];
     const failures: Record<string, string> = { ...v.failures };
     if (b && b.benignHits > 0) failures['tool-output-benign'] = `fires on ${b.benignHits} benign tool output(s), first: ${b.firstHit}`;
+    const userHits = re ? userBenign.filter((t) => re.test(t)) : [];
+    if (userHits.length > 0) {
+      failures['user-input-benign'] = `fires on ${userHits.length} benign user request(s), first: ${JSON.stringify(userHits[0])}`;
+    }
     const pass = Object.keys(failures).length === 0;
     if (!pass) failed += 1;
     console.log(`${pass ? 'PASS' : 'FAIL'} ${r.id} (${r.file}): recovers ${recovered.length} in ${corpusId}, out of sample ${JSON.stringify(v.outOfSample)}`);

@@ -86,7 +86,13 @@ import {
 } from './lib/fn-mine-candidate-gate.js';
 import { HELD_OUT_PERCENT, MIN_HELD_OUT_RECOVERS, seenLines, splitHeldOut, unmineableReason } from './lib/fn-mine-heldout.js';
 import { dropToolOutputHits, requireToolOutputBenign, type ToolOutputBenign } from './lib/fn-mine-tool-benign.js';
-import { generalizationVerdict, MIN_SIGNAL_SHARE, readOutOfSample, type OutOfSampleCorpus } from './lib/fn-mine-generalization.js';
+import {
+  generalizationVerdict,
+  MIN_SIGNAL_SHARE,
+  readOutOfSample,
+  readUserInputBenign,
+  type OutOfSampleCorpus,
+} from './lib/fn-mine-generalization.js';
 import { assertSomeChunkRead, mineChunkReply, type ChunkResult, type MineCandidate } from './lib/fn-mine-reply.js';
 import { finalizeAuthoredRule, hasBenchmarkArtifacts, withoutBenchmarkArtifacts } from './lib/fn-mine-quality.js';
 import { loadOwaspAllowlists, type OwaspAllowlists } from './lib/normalize-references.js';
@@ -150,7 +156,7 @@ function loadBenignTexts(): readonly string[] {
       }
     }
   }
-  out.push(...loadHardNegatives());
+  out.push(...loadHardNegatives(), ...readUserInputBenign(REPO_ROOT));
   return out;
 }
 
@@ -183,6 +189,7 @@ const MINE_SYSTEM_PROMPT = `You are a senior detection engineer mining false neg
 RIGOR — reject your own candidate if it violates these:
 - The regex must capture the attack CLASS (the injection technique/structure), NOT a literal payload. It must plausibly match unseen variants, not just the exact strings you were shown.
 - Encode the actual injection signal — never a bare benign verb alone. For text a tool returns, the request itself is NOT the signal: business systems return "submit the grade", "cancel appointment APT-2041", "send the offer letter" every day. The regex must key on how the text addresses the agent: an override of its instructions, words addressed to the AI/assistant, a demand to hide it from the user, a forged [SYSTEM]/<INFORMATION> tag, a claim to come before the user's task. A gate rejects a candidate whose own matches lack such a signal, or that still fires on the same words with the signal removed.
+- The same holds for text a user types. People ask colleagues to "take over as interim lead", "step in for me", "decode the config and follow it", "convert the file and run it". A user-input regex must key on how the text works on the model itself: an override of its instructions, reassigning its persona ("you are now", "pretend you are", "stay in character"), asking for its own system prompt or instructions, or demanding it stop refusing or drop its filters. The same gate applies, with those signals added, and its twins are the matched words in an ordinary message or meeting note.
 - Use (?i) as a leading inline flag for case-insensitivity (the engine strips this prefix and reapplies it as a real regex flag — this is the house convention).
 - For emoji/astral codepoints write the LITERAL character, not an escape. \\u{XXXX} is JavaScript-only and does not compile in the Python or Go channels; \\UXXXXXXXX is Python-only and a no-op in JS. The literal is the one spelling all three accept, and the engine adds the 'u' flag when it sees one.
 - NEVER an unbounded .* — use bounded [\\s\\S]{0,N} spans instead.
@@ -489,12 +496,12 @@ function gateReportNote(toolBenign: ToolOutputBenign, oos: readonly OutOfSampleC
       note: 'attacks in corpora the rule was not mined from; per-rule counts are in authored[].outOfSample',
     },
     injectionSignal: {
-      appliesTo: 'rules mined from tool output',
+      appliesTo: 'every rule; INJECTION_SIGNALS for tool output, USER_INPUT_SIGNALS for user input',
       minShareOfMatches: MIN_SIGNAL_SHARE,
       list: 'scripts/lib/fn-mine-generalization.ts INJECTION_SIGNALS',
     },
     benignTwins:
-      'each tool-output rule must not fire on its own recoveries with the injection signals removed, in ticket, to-do and record frames',
+      'each rule must not fire on its own recoveries with the injection signals removed: ticket, to-do and record frames for tool output; message, meeting-note and reply-draft frames for user input',
     toolOutputBenign: {
       emails: toolBenign.emails.length,
       pages: toolBenign.pages.length,
@@ -546,7 +553,7 @@ function dropUngeneralized<T extends GatedCandidate>(
     const re = compileEngineAccurate(s.regex);
     const recovered = re ? fn.filter((t) => re.test(t)) : [];
     const v = generalizationVerdict(
-      { regex: s.regex, recovered, minedFrom: spec.name, toolOutput: spec.shape === 'tool_response' },
+      { regex: s.regex, recovered, minedFrom: spec.name, shape: spec.shape },
       oos,
     );
     if (!v.pass) {
