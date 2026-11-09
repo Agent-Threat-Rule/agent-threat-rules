@@ -23,7 +23,6 @@ export default defineConfig({
         'src/modules/semantic.ts',
         'src/modules/session.ts',
         'src/modules/index.ts',
-        'src/adapters/stdio-adapter.ts',
       ],
       thresholds: {
         statements: 60,
