@@ -160,6 +160,10 @@ async function callViaGrok(system: string, user: string): Promise<string> {
     "--no-subagents",
     "--disable-web-search",
     "--output-format", "plain",
+    // No tools and two turns: the call is a single answer, and an agent that
+    // decides to explore spends the whole timeout doing it.
+    "--tools", "",
+    "--max-turns", "2",
     "--cwd", dir,
   ];
   if (process.env.ATR_GROK_MODEL) args.push("--model", process.env.ATR_GROK_MODEL);

@@ -47,7 +47,9 @@
  *     ATR_GROK_BIN) for a corpus the Claude models decline. The CLI does not run on
  *     Actions. Its candidates go through every gate unchanged; say in the PR which
  *     rules it proposed. Example:
- *       ATR_LLM_BACKEND=grok npx tsx scripts/fn-mine-llm.ts --dry-run --corpus k8s-resource-pi
+ *       ATR_LLM_BACKEND=grok ATR_FNMINE_MAX_CHUNK=80 ATR_LLM_TIMEOUT_MS=1500000 \
+ *         npx tsx scripts/fn-mine-llm.ts --dry-run --corpus k8s-resource-pi
+ *     (smaller chunks and a longer timeout: the CLI is slower per text)
  *   FN_MINE_OPEN_PR_FILES optional: a file listing the paths open PRs touch, one
  *     per line (the workflow writes it, so this step needs no GitHub token).
  *     Unset, the miner asks `gh pr list` itself.
@@ -231,6 +233,19 @@ Cluster these by shared attack STRUCTURE (the injection mechanism/technique), no
 
 FALSE-NEGATIVE TEXTS:
 ${numbered}`;
+}
+
+/**
+ * The chunk budget, capped at ATR_FNMINE_MAX_CHUNK texts per call when set,
+ * with as many more chunks as keep the texts shown per round the same. For a
+ * slower local backend: the Grok CLI took 338 s on 100 texts, so a 300-text
+ * chunk ran past the call timeout every time.
+ */
+function localChunkBudget(budget: MinedCorpusSpec['budget']): MinedCorpusSpec['budget'] {
+  const cap = Number(process.env['ATR_FNMINE_MAX_CHUNK'] ?? 0);
+  if (!Number.isInteger(cap) || cap <= 0 || cap >= budget.chunkSize) return budget;
+  const shown = budget.chunkSize * budget.maxChunksPerRound;
+  return { ...budget, chunkSize: cap, maxChunksPerRound: Math.ceil(shown / cap) };
 }
 
 /**
@@ -594,7 +609,7 @@ async function mineRound(
 ): Promise<RoundResult> {
   const candidates: MineCandidate[] = [];
   let unread = 0;
-  const chunks = planChunks(label, texts, spec.budget);
+  const chunks = planChunks(label, texts, localChunkBudget(spec.budget));
   for (const chunk of chunks) {
     console.log(`[fn-mine]   mining ${chunk.label}...`);
     const reply = await mineChunk(chunk, spec, s.model);
