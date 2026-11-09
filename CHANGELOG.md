@@ -4,6 +4,31 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+## [4.3.1] - 2026-11-08
+
+A patch release that narrows thirteen rules that matched ordinary code,
+documentation, shell commands and JSON-encoded tool output, widens three rules
+that missed real attack shapes, and removes slow backtracking from two more.
+No rule in the enforce lane (`maturity: stable`) changes, and the engine, rule
+format and Match output format (SPEC §7) are unchanged. The Cisco Skill Scanner
+pack change below is in the repository's exporter, not in this npm package.
+
+Default behaviour that changes:
+
+- The alert and hunt lanes match less. Thirteen `test` rules stop matching the
+  benign shapes described under Fixed: ATR-2026-00020, -00040, -00062,
+  -00063, -00066, -00113, -00133, -00142, -00161, -00217, -00547, -00554 and
+  -00567. On the 14,172 samples of the benign gate, their false positives go
+  from 4,926 to 1,599, and the total over all rules from 14,696 to 11,369.
+  Each narrowed condition matches a subset of what it matched before.
+- The alert and hunt lanes match more in three places. ATR-2026-00523 catches
+  SessionStart hooks on any matcher; ATR-2026-02261 catches a script that
+  sends the whole environment and now runs on skill content as well as MCP
+  traffic; ATR-2026-02400 catches the VS Code and Codex settings that turn
+  approvals off. None adds a false positive on the benign gate.
+- ATR-2026-01614 and -02372 match the same text as before, without the slow
+  backtracking on long whitespace.
+
 ### Added
 
 - **Hand-written pull request and issue states are checked against GitHub.**
