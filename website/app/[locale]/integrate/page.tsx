@@ -181,6 +181,8 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
   const stats = loadSiteStats();
   const labels = await loadVersionLabels();
   const paths = buildPaths(stats, labels, locale === "zh");
+  // Shipped entries in ADOPTERS.md, the same count /ecosystem shows.
+  const shippedCount = stats.ecosystemIntegrations.filter((e) => e.type === "merged").length;
 
   return (
     <Phrased>
@@ -220,7 +222,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
                 title: locale === "zh" ? "嵌入" : "Embed",
                 who: locale === "zh" ? "平台方（IDE、agent 框架）" : "Platforms (IDEs, agent frameworks)",
                 how: locale === "zh" ? "npm install，再呼叫 ATR engine" : "npm install, then call the ATR engine",
-                what: locale === "zh" ? `用戶什麼都不用做，就有 ${stats.ruleCount} 條規則在保護` : `Your users are covered by ${stats.ruleCount} rules and set up nothing`,
+                what: locale === "zh" ? `用戶不用另外設定。預設的 hunt 車道載入全部 ${stats.ruleCount} 條生效規則，只偵測、不封鎖；要封鎖，得由你明確開啟` : `Your users set nothing up. The default hunt lane loads all ${stats.ruleCount} effective rules and detects without blocking; blocking is something you turn on explicitly`,
                 update: locale === "zh" ? "npm update，或 lockfile 搭配 CI" : "npm update, or a lockfile plus CI",
               },
             ].map((tier, i) => (
@@ -359,8 +361,8 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
               </p>
               <p className="text-xs text-mist mt-2 leading-[1.7]">
                 {locale === "zh"
-                  ? "採用不只 GitHub Action 一種。Cisco AI Defense 的開源 skill-scanner（PR #79 PoC，後來的 PR #99）透過 rule-packs CLI 載入規則集。Microsoft AGT（PR #2308、PR #3025）的範例目錄示範匯入 ATR 規則，交給 ACS annotator 執行；早期 PR #908、#1277 的規則包 YAML 已經不在 repo 裡。Gen Digital Sage（PR #33）把整套規則包進它的 agentic-AI 風險評分層。這三筆算上游採用，每一筆都是公開 repo 裡已合併的 PR，不算在 Action 的使用統計裡。"
-                  : "The Action isn't the only way in. Cisco AI Defense's open-source skill-scanner (PR #79 PoC, then PR #99) loads the rule pack through a rule-packs CLI. Microsoft AGT (PR #2308 and PR #3025) has example directories that import ATR rules and run them through an ACS annotator. The rule-pack YAML from its earlier PRs #908 and #1277 is no longer in the repo. Gen Digital Sage (PR #33) ships the rule pack inside its agentic-AI risk-scoring layer. These three count as upstream adoption. Each one is a merged pull request in a public repository, and none is counted as Action usage."}
+                  ? "採用不只 GitHub Action 一種。Cisco AI Defense 的開源 skill-scanner（PR #79 PoC，後來的 PR #99）透過 rule-packs CLI 載入規則集。Microsoft AGT（PR #2308、PR #3025）的範例目錄示範匯入 ATR 規則，交給 ACS annotator 執行；早期 PR #908、#1277 的規則包 YAML 已經不在 repo 裡。Gen Digital Sage（PR #33）把改寫自 ATR 的 agent 層威脅 pattern 收進它的 agentic-AI 風險評分層。這三筆是公開 repo 裡已合併的 PR，不算在 Action 的使用統計裡。完整的整合名單在生態系頁。"
+                  : "The Action isn't the only way in. Cisco AI Defense's open-source skill-scanner (PR #79 PoC, then PR #99) loads the rule pack through a rule-packs CLI. Microsoft AGT (PR #2308 and PR #3025) has example directories that import ATR rules and run them through an ACS annotator. The rule-pack YAML from its earlier PRs #908 and #1277 is no longer in the repo. Gen Digital Sage (PR #33) took agent-layer threat patterns derived from ATR into its agentic-AI risk-scoring layer. These three are merged pull requests in public repositories, and none is counted as Action usage. The full list of integrations is on the ecosystem page."}
               </p>
             </div>
           </div>
@@ -440,7 +442,7 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
                 { label: locale === "zh" ? "繞過測試" : "Evasion testing", atr: locale === "zh" ? "附 evasion_tests、記下已知繞過手法的規則，不到一半" : "Fewer than half the rules carry evasion tests that record known bypasses", own: locale === "zh" ? "要另外花時間建" : "Takes dedicated time to build" },
                 { label: locale === "zh" ? "OWASP / MITRE 對應" : "OWASP / MITRE mapping", atr: locale === "zh" ? "內建。Agentic 10/10，每條規則也都對到 MITRE ATLAS" : "Built in. Agentic 10/10, and every rule maps to MITRE ATLAS", own: locale === "zh" ? "要手動對上好幾個小時" : "Hours of mapping by hand" },
                 { label: locale === "zh" ? "維護成本" : "Maintenance", atr: locale === "zh" ? "由維護者公開維護，誰都能貢獻。MIT 授權，不用錢。" : "Maintained in public by its maintainers, with contributions from anyone. MIT. Free.", own: locale === "zh" ? "要一直有人顧" : "Needs engineering time, indefinitely" },
-                { label: locale === "zh" ? "誰在用" : "Ecosystem", atr: locale === "zh" ? "Cisco、Microsoft、MISP 的開源專案都已合併" : "Merged into open-source projects at Cisco, Microsoft and MISP", own: locale === "zh" ? "各自維護，規則不共用" : "Kept on its own, shared with no one" },
+                { label: locale === "zh" ? "誰在用" : "Ecosystem", atr: locale === "zh" ? `ADOPTERS.md 記錄 ${shippedCount} 個已上線的整合，名單在生態系頁` : `ADOPTERS.md records ${shippedCount} shipped integrations, listed on the ecosystem page`, own: locale === "zh" ? "各自維護，規則不共用" : "Kept on its own, shared with no one" },
               ].map((row) => (
                 <div key={row.label} className="text-sm border-b border-fog">
                   {/* Desktop: 3-column */}
@@ -492,14 +494,13 @@ export default async function IntegratePage({ params }: { params: Promise<{ loca
       <Reveal>
         <div className="mt-12 mb-px">
           <div className="text-[13px] text-stone mb-5">
-            {locale === "zh" ? "整合進了哪裡" : "Integrated by"}
+            {locale === "zh" ? "專案現況" : "The project at a glance"}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 border-t border-fog">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 border-t border-fog">
             {[
-              { label: "Cisco AI Defense", detail: locale === "zh" ? "ATR 規則包 · 開源 skill-scanner repo（PR #99）" : "ATR rule pack · open-source skill-scanner repo (PR #99)" },
               { label: locale === "zh" ? `${stats.ruleCount} 條偵測規則` : `${stats.ruleCount} detection rules`, detail: locale === "zh" ? `${stats.categoryCount} 個威脅類別` : `${stats.categoryCount} threat categories` },
-              { label: locale === "zh" ? `掃過 ${stats.megaScanTotal.toLocaleString()} 個` : `${stats.megaScanTotal.toLocaleString()} scanned`, detail: locale === "zh" ? `5 個 registry · 標記 ${stats.megaScanFlagged.toLocaleString()} 個（${stats.megaScanDate}）` : `5 registries · ${stats.megaScanFlagged.toLocaleString()} flagged (${stats.megaScanDate})` },
-              { label: locale === "zh" ? `${stats.ecosystemIntegrations.length} 個生態整合` : `${stats.ecosystemIntegrations.length} ecosystem integrations`, detail: locale === "zh" ? `已合併 ${stats.ecosystemIntegrations.filter(e => e.type === "merged").length} · 審查中 ${stats.ecosystemIntegrations.filter(e => e.type === "open").length}` : `${stats.ecosystemIntegrations.filter(e => e.type === "merged").length} merged · ${stats.ecosystemIntegrations.filter(e => e.type === "open").length} under review` },
+              { label: locale === "zh" ? `掃過 ${stats.megaScanTotal.toLocaleString()} 個` : `${stats.megaScanTotal.toLocaleString()} scanned`, detail: locale === "zh" ? `5 個 registry · 標記 ${stats.megaScanFlagged.toLocaleString()} 個（engine v2.0.0，${stats.megaScanDate}）` : `5 registries · ${stats.megaScanFlagged.toLocaleString()} flagged (engine v2.0.0, ${stats.megaScanDate})` },
+              { label: locale === "zh" ? `${stats.ecosystemIntegrations.length} 個生態整合` : `${stats.ecosystemIntegrations.length} ecosystem integrations`, detail: locale === "zh" ? `已上線 ${shippedCount} · 審查中 ${stats.ecosystemIntegrations.filter(e => e.type === "open").length}` : `${shippedCount} shipped · ${stats.ecosystemIntegrations.filter(e => e.type === "open").length} under review` },
             ].map((item) => (
               <div key={item.label} className="py-5 border-b border-fog md:border-b-0">
                 <div className="font-display text-sm font-semibold text-ink">{item.label}</div>

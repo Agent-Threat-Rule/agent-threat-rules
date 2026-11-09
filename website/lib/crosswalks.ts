@@ -38,7 +38,7 @@ export const CROSSWALK_DOCS: ReadonlyArray<CrosswalkDoc> = [
 export interface LoadedCrosswalk extends CrosswalkDoc {
   /** False when the document's header marks it as an internal draft or not published. */
   published: boolean;
-  /** The document's own "Last updated:" or "Version:" line, if any. */
+  /** The document's own "Last updated:" or "Version:" line, if any, without a trailing parenthetical. */
   declared: string | null;
   /** Date of the last commit touching the file. */
   committed: string | null;
@@ -72,7 +72,10 @@ export function loadCrosswalks(): LoadedCrosswalk[] {
       body = "";
     }
     const head = body.split("\n").slice(0, 20).join("\n");
-    const declared = /^(?:Last updated|Version):\s*(.+)$/im.exec(head)?.[0] ?? null;
+    // Keep the date or version only. A parenthetical note after it can wrap
+    // onto the next line of the document (MCP-38), and one line of it would
+    // render as a sentence cut off mid-way.
+    const declared = /^(?:Last updated|Version):\s*(.+)$/im.exec(head)?.[0].replace(/\s*\(.*$/, "") ?? null;
     return { ...doc, published: body !== "" && !UNPUBLISHED.test(head), declared, committed: lastCommit(doc.file), body };
   });
   return cache;

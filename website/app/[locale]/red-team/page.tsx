@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/Reveal";
 import { loadSiteStats, type SiteStats } from "@/lib/stats";
+import { loadAdopters } from "@/lib/adopters";
 import { NO_ENFORCE_RECORD, REPO_BLOB_URL, commonStamp, count, currentRecallSentence, figureMeasurements, findBenchmark, measuredStamp, recallLanes, toFullWidth } from "@/lib/recall";
 import { locales, type Locale } from "@/lib/i18n";
 import { RED_TEAM_TOOLS, type RedTeamTool } from "@/lib/red-team-tools";
@@ -35,6 +36,10 @@ interface AttributionStat {
   labelZh: string;
   detail: string;
   detailZh: string;
+  /** Site path (without locale) the card links to, if any. */
+  href?: string;
+  hrefLabel?: string;
+  hrefLabelZh?: string;
 }
 
 /*
@@ -63,13 +68,16 @@ const ATTRIBUTION_STATS: AttributionStat[] = [
       "Microsoft Security wrote up Semantic Kernel CVE-2026-26030 on its blog on 2026-05-07. The CVE record itself had been public since 2026-02-19, so counted from the record it took 80 days. On 2026-05-10 the ATR maintainer filed AGT#1937, mapping the CVE to ATR rules. An AGT maintainer assigned that issue to Microsoft's Copilot SWE Agent, and at 06:07 UTC on 2026-05-11 it opened a regression-test PR that assumed ATR already covered the CVE. The paired rules merged into ATR at 08:22 UTC, 2h 16m after that PR opened. v2.1.2 was on npm at 08:24.",
   },
   {
-    number: "5",
-    label: "Projects whose maintainers merged ATR pull requests",
-    labelZh: "維護者合併過 ATR pull request 的專案",
+    number: "SHIPPED",
+    label: "Integrations recorded as shipped in ADOPTERS.md",
+    labelZh: "ADOPTERS.md 記錄為已上線的整合",
+    href: "/ecosystem",
+    hrefLabel: "Full list and evidence on the ecosystem page",
+    hrefLabelZh: "完整名單和每筆證據在生態系頁",
     detailZh:
-      "這些 pull request 由 ATR 維護者開出，各專案自己的維護者審過、合併。唯一的例外是 Cisco 的 rule-packs CLI（#80），那是 Cisco 的維護者寫的。Microsoft Agent Governance Toolkit 收進來的是範例目錄。Cisco AI Defense 在 skill-scanner 收了一個規則包。2026-11-02，Cisco 的一位維護者寫道，因為誤報率太高，他們很可能會移除 ATR；一個只告警的規則包（#289）在 2026-11-05 被關閉，沒有合併。CIRCL/MISP 合併了一份 taxonomy 和一份 galaxy。OWASP Agent Security Regression Harness 合併了四個從 ATR 規則衍生的情境，檔案裡沒有寫 ATR 的名字。Gen Digital Sage 合併了 agent 層的威脅 pattern。",
+      "完整名單在生態系頁。以下幾個專案，是 ATR 維護者開 pull request、各專案自己的維護者審過後合併的例子。唯一的例外是 Cisco 的 rule-packs CLI（#80），那是 Cisco 的維護者寫的。Microsoft Agent Governance Toolkit 收進來的是範例目錄。Cisco AI Defense 在 skill-scanner 收了一個規則包。2026-11-02，Cisco 的一位維護者寫道，因為誤報率太高，他們很可能會移除 ATR；一個只告警的規則包（#289）在 2026-11-05 被關閉，沒有合併。CIRCL/MISP 合併了一份 taxonomy 和一份 galaxy。OWASP Agent Security Regression Harness 合併了四個從 ATR 規則衍生的情境，檔案裡沒有寫 ATR 的名字。Gen Digital Sage 合併了 agent 層的威脅 pattern。",
     detail:
-      "The ATR maintainer opened these pull requests, and each project's own maintainers reviewed and merged them. The one exception is Cisco's rule-packs CLI (#80), which a Cisco maintainer wrote. Microsoft Agent Governance Toolkit took them as example directories. Cisco AI Defense took a rule pack in skill-scanner. On 2026-11-02 a Cisco maintainer wrote that they will likely remove ATR because the false-positive rate is too high, and a report-only pack (#289) was closed unmerged on 2026-11-05. CIRCL/MISP merged a taxonomy and a galaxy. The OWASP Agent Security Regression Harness merged four scenarios derived from ATR rules, and the files do not name ATR. Gen Digital Sage merged agent-layer threat patterns.",
+      "The full list is on the ecosystem page. The projects below are examples where the ATR maintainer opened a pull request and the project's own maintainers reviewed and merged it. The one exception is Cisco's rule-packs CLI (#80), which a Cisco maintainer wrote. Microsoft Agent Governance Toolkit took them as example directories. Cisco AI Defense took a rule pack in skill-scanner. On 2026-11-02 a Cisco maintainer wrote that they will likely remove ATR because the false-positive rate is too high, and a report-only pack (#289) was closed unmerged on 2026-11-05. CIRCL/MISP merged a taxonomy and a galaxy. The OWASP Agent Security Regression Harness merged four scenarios derived from ATR rules, and the files do not name ATR. Gen Digital Sage merged agent-layer threat patterns.",
   },
   {
     number: "RULECOUNT",
@@ -247,6 +255,11 @@ export default async function RedTeamPage({
   const locale = (locales.includes(raw as Locale) ? raw : "en") as Locale;
   const zh = locale === "zh";
   const stats = loadSiteStats();
+  const adopters = loadAdopters();
+  // Same count as /ecosystem: every ADOPTERS.md entry with status "shipped".
+  const shippedCount = [
+    ...adopters.tierS, ...adopters.tier1, ...adopters.tier2, ...adopters.tier3, ...adopters.tier4,
+  ].filter((a) => a.status === "shipped").length;
   const garak = findBenchmark(stats, "garak");
   const vendorSuites = findBenchmark(stats, "vendor-guardrail-suites");
   const vendorAblation = vendorSuites ? ablationLanes(vendorSuites) : null;
@@ -439,11 +452,16 @@ export default async function RedTeamPage({
           {ATTRIBUTION_STATS.map((s, i) => (
             <div key={i} className="grid md:grid-cols-[200px_minmax(0,1fr)] gap-x-8 gap-y-2 py-6 border-b border-fog">
               <dt className="font-title text-[26px] md:text-[30px] leading-none text-ink tabular-nums whitespace-nowrap">
-                {s.number === "RULECOUNT" ? stats.ruleCount : zh && s.numberZh ? s.numberZh : s.number}
+                {s.number === "RULECOUNT" ? stats.ruleCount : s.number === "SHIPPED" ? shippedCount : zh && s.numberZh ? s.numberZh : s.number}
               </dt>
               <dd className="max-w-[720px]">
                 <div className="text-[16px] text-ink mb-2">{zh ? s.labelZh : s.label}</div>
                 <p className={BODY}>{zh ? s.detailZh : s.detail}</p>
+                {s.href ? (
+                  <a href={`/${locale}${s.href}`} className={`${SMALL_LINK} inline-block mt-2`}>
+                    {zh ? s.hrefLabelZh : s.hrefLabel}<Diple />
+                  </a>
+                ) : null}
               </dd>
             </div>
           ))}

@@ -64,8 +64,8 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
     {
       q: zh ? "lane 是什麼？" : "What is a lane?",
       a: zh
-        ? <>lane 決定哪些成熟度的規則可以觸發。enforce 只跑 maturity 為 stable 的規則，要開阻擋就用這條。alert 跑 stable 和 test。hunt 跑全部生效的規則，也是預設。引擎和 Claude Code hook 的阻擋預設是關的；Mastra、OpenShell、NemoClaw 轉接器則預設會擋 high 和 critical 的命中。</>
-        : <>A lane decides which rule maturities may fire. Enforce runs maturity stable only, and it is the lane to run with blocking on. Alert runs stable and test. Hunt runs every effective rule and is the default. Blocking is off by default in the engine and the Claude Code hook; the Mastra, OpenShell and NemoClaw adapters block high and critical matches by default.</>,
+        ? <><p>lane 決定哪些成熟度的規則可以觸發。enforce 只跑 maturity 為 stable 的規則，要開阻擋就用這條。alert 跑 stable 和 test。hunt 跑全部生效的規則，也是預設。</p><p className="mt-3">引擎和 Claude Code hook 的阻擋預設是關的。Mastra、OpenShell、NemoClaw 轉接器則預設會擋 high 和 critical 的命中。</p></>
+        : <><p>A lane decides which rule maturities may fire. Enforce runs maturity stable only, and it is the lane to run with blocking on. Alert runs stable and test. Hunt runs every effective rule and is the default.</p><p className="mt-3">Blocking is off by default in the engine and the Claude Code hook. The Mastra, OpenShell and NemoClaw adapters block high and critical matches by default.</p></>,
     },
     {
       q: zh ? "為什麼有三個規則數？" : "Why are there three rule counts?",

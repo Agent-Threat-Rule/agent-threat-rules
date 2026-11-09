@@ -163,12 +163,20 @@ export default async function WallPage({ params }: { params: Promise<{ locale: s
               <div className="text-xs text-stone mt-1">{zh ? "偵測規則" : "detection rules"}</div>
             </div>
             <div>
-              <div className="font-data text-2xl md:text-3xl font-bold text-ink">{Math.round(stats.megaScanTotal / 1000)}K+</div>
-              <div className="text-xs text-stone mt-1">{zh ? "skills 已掃描" : "skills scanned"}</div>
+              <div className="font-data text-2xl md:text-3xl font-bold text-ink">{stats.megaScanTotal.toLocaleString()}</div>
+              <div className="text-xs text-stone mt-1">
+                {zh
+                  ? `個 skill 與 MCP 定義已掃描（engine v2.0.0，${stats.megaScanDate}）`
+                  : `skills and MCP definitions scanned (engine v2.0.0, ${stats.megaScanDate})`}
+              </div>
             </div>
             <div>
               <div className="font-data text-2xl md:text-3xl font-bold text-ink">{stats.owaspAgentic}</div>
-              <div className="text-xs text-stone mt-1">OWASP Agentic</div>
+              <div className="text-xs text-stone mt-1">
+                {zh
+                  ? "OWASP Agentic 類別，每一類至少有一條會觸發的規則"
+                  : "OWASP Agentic categories, each with at least one rule that fires"}
+              </div>
             </div>
             <div>
               <div className="font-data text-2xl md:text-3xl font-bold text-ink">{stats.ecosystemIntegrations.filter((e) => e.type === "merged").length}</div>

@@ -11,7 +11,12 @@ type Format = (typeof FORMATS)[number];
 // Server-supplied subset of SpecMeta. The full SpecMeta lives in
 // lib/spec-meta.ts which uses node:fs and so cannot be imported here.
 export interface CitationMeta {
-  version: string;
+  /** Version of the written specification (SPEC.md header). */
+  specVersion: string;
+  /** Latest agent-threat-rules release on npm, the reference implementation. */
+  packageVersion: string;
+  /** Where packageVersion was read: "npm", or "package.json" when the registry was not checked at build time. */
+  packageSource: string;
   lastModified: string;
   canonicalUrl: string;
   doi: string;
@@ -30,20 +35,23 @@ export function CitationBlock({ locale, meta }: CitationBlockProps) {
   void meta.editorName; // editor surfaced via author block, mark referenced
   const title =
     "ATR: Agent Threat Rules — Open Detection Standard for AI Agent Threats";
+  // The specification and the npm package are versioned separately; each
+  // citation names both, labelled, so one is never read as the other.
+  const versions = `Specification ${meta.specVersion}; agent-threat-rules ${meta.packageVersion} (${meta.packageSource})`;
 
   const citations: Record<Format, string> = {
     BibTeX: `@misc{atr${year},
   title  = {${title}},
   author = {Lin, Kuan-Hsin and {ATR Community}},
   year   = {${year}},
-  version = {${meta.version}},
+  version = {${meta.specVersion}},
   doi    = {${meta.doi}},
   url    = {${meta.canonicalUrl}},
-  note   = {MIT license}
+  note   = {Specification version ${meta.specVersion}. Reference implementation: agent-threat-rules ${meta.packageVersion} (${meta.packageSource}). MIT license}
 }`,
-    APA: `Lin, K.-H., & ATR Community. (${year}). ${title} (Version ${meta.version}) [Computer software]. ${meta.canonicalUrl}. https://doi.org/${meta.doi}`,
-    IEEE: `K.-H. Lin and ATR Community, "${title}," version ${meta.version}, ${year}. [Online]. Available: ${meta.canonicalUrl}. DOI: ${meta.doi}.`,
-    Chicago: `Lin, Kuan-Hsin, and ATR Community. ${year}. "${title}." Version ${meta.version}. Accessed via ${meta.canonicalUrl}. https://doi.org/${meta.doi}.`,
+    APA: `Lin, K.-H., & ATR Community. (${year}). ${title} (${versions}) [Computer software]. ${meta.canonicalUrl}. https://doi.org/${meta.doi}`,
+    IEEE: `K.-H. Lin and ATR Community, "${title}," ${versions}, ${year}. [Online]. Available: ${meta.canonicalUrl}. DOI: ${meta.doi}.`,
+    Chicago: `Lin, Kuan-Hsin, and ATR Community. ${year}. "${title}." ${versions}. Accessed via ${meta.canonicalUrl}. https://doi.org/${meta.doi}.`,
   };
 
   return (

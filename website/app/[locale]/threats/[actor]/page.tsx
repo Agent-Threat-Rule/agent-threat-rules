@@ -54,7 +54,7 @@ export default async function ActorPage({
   if (!actor) notFound();
 
   const statusLabel: Record<typeof actor.status, { en: string; zh: string }> = {
-    active: { en: "Active", zh: "活躍中" },
+    active: { en: "Active at 2026-04 scan", zh: "2026-04 掃描時活躍" },
     dormant: { en: "Dormant", zh: "休眠" },
     takedown: { en: "Taken down", zh: "已下架" },
   };

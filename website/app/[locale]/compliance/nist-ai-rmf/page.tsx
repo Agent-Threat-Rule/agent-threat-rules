@@ -91,7 +91,7 @@ export default async function NistAiRmfPage({
       {/* Header eyebrow */}
       <Reveal>
         <div className="text-[13px] text-stone mb-5">
-          {zh ? "合規 · NIST AI RMF · v0.2 · 2026 年 5 月" : "Compliance · NIST AI RMF · v0.2 · May 2026"}
+          {zh ? "合規 · NIST AI RMF" : "Compliance · NIST AI RMF"}
         </div>
       </Reveal>
 
@@ -160,7 +160,7 @@ export default async function NistAiRmfPage({
           </p>
           <div className="bg-ash/40 border border-fog p-4 text-sm text-stone leading-[1.7]">
             <span className="text-[13px] text-stone block mb-2">
-              {zh ? "這不是什麼" : "What this is NOT"}
+              {zh ? "不代表什麼" : "What this is NOT"}
             </span>
             {zh
               ? "這不是 NIST 官方背書，不是 NIST AI RMF 合規認證，也不是 NIST 發出的任何「接受層級」。ATR 是 MIT 授權的獨立開放標準。NIST 那邊若有任何正式採用，以 NIST 自己的公告為準，不以這一頁為準。"
@@ -207,17 +207,6 @@ export default async function NistAiRmfPage({
           ) : (
             <>
               The NIST AI Risk Management Framework (AI RMF 1.0 plus the GenAI Profile) is NIST&apos;s framework for managing AI risk, meant for voluntary use. It splits AI risk management into four functions: GOVERN, MAP, MEASURE and MANAGE. That is the language of governance. It tells you what to manage, not how to catch the risk inside one SKILL.md file or one MCP tool description.
-            </>
-          )}
-        </p>
-        <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
-          {zh ? (
-            <>
-              多數 AI 資安產品，偏偏在這個缺口上做得最草率。它們說自己「對應 NIST AI RMF」，拿出來的通常是一份不公開的文件、一句行銷話，或只對單一框架的對照表。沒有可以逐條稽核的規則層級對應。框架被引用了，底下卻沒接上任何能在真實成品上觸發的東西。
-            </>
-          ) : (
-            <>
-              This gap is where most AI security products are sloppiest. They claim &ldquo;NIST AI RMF alignment,&rdquo; but the alignment is usually a closed document, a line of marketing, or a crosswalk to a single framework. There are no per-rule mappings anyone can audit. The framework gets cited, and nothing that fires on a real artifact is wired beneath it.
             </>
           )}
         </p>
@@ -340,12 +329,12 @@ export default async function NistAiRmfPage({
           </li>
           <li className="grid grid-cols-[130px_1fr] gap-5 max-md:grid-cols-1 max-md:gap-1.5">
             <span className="text-[13px] text-stone pt-[3px]">
-              {zh ? "成本與時間" : "Cost & time"}
+              {zh ? "規模" : "Scale"}
             </span>
             <span>
               {zh
-                ? "USD 24.98（原本估 USD 34）· 實際耗時約 52 分鐘 · 261 條新對應疊在 v0.1 原有的 69 條上，當時 v2.1.0 的 330 條規則因此全部有對應。"
-                : "USD 24.98 (estimated USD 34) · about 52 minutes wall-clock · 261 new mappings on top of v0.1's 69, covering all 330 rules then in the v2.1.0 corpus."}
+                ? "261 條新對應疊在原有的 69 條上，當時 v2.1.0 的 330 條規則因此全部有對應。"
+                : "261 new mappings on top of the 69 that already existed, covering all 330 rules then in the v2.1.0 corpus."}
             </span>
           </li>
           <li className="grid grid-cols-[130px_1fr] gap-5 max-md:grid-cols-1 max-md:gap-1.5">

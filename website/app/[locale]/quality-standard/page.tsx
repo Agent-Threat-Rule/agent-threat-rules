@@ -68,7 +68,7 @@ const FORMULA_COMPONENTS = [
 ];
 
 const SCORE_BANDS = [
-  { range: "90–100", band: "Very High", bandZh: "很高", use: "Safe to block in production", useZh: "可在生產環境封鎖" },
+  { range: "90–100", band: "Very High", bandZh: "很高", use: "Blocking candidate; verify on your own traffic first", useZh: "可列為封鎖候選，先在自己的流量上驗證" },
   { range: "60–79", band: "Medium", bandZh: "中", use: "Alert-only with monitoring", useZh: "僅告警、持續監控" },
   { range: "<40", band: "Draft", bandZh: "草稿", use: "Do not deploy", useZh: "不得部署" },
 ];

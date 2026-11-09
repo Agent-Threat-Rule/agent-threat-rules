@@ -43,8 +43,8 @@ const SECTIONS: ReadonlyArray<{ h: B; body: B }> = [
   {
     h: { en: "Applications to join", zh: "加入社群的申請" },
     body: {
-      en: `An application through the GitHub form is a public issue on GitHub. An application by email is used only to reply and to draft your directory entry, and nothing is published until you confirm it. To have an application deleted or a listing removed, write to ${CONTACTS.general}.`,
-      zh: `透過 GitHub 表單的申請，會是 GitHub 上的一則公開 issue。透過 email 的申請只用來回覆你、草擬你的名錄文字；你確認之前不會公開任何內容。要刪除申請或移除列名，請寫信到 ${CONTACTS.general}。`,
+      en: `Applications to join are paused until this notice is final. Once they open, an application through the GitHub form is a public issue on GitHub. An application by email is used only to reply and to draft your directory entry, and nothing is published until you confirm it. To have an application deleted or a listing removed, write to ${CONTACTS.general}.`,
+      zh: `加入申請目前暫停受理，等這份隱私說明定稿後才開放。開放之後，透過 GitHub 表單的申請，會是 GitHub 上的一則公開 issue。透過 email 的申請只用來回覆你、草擬你的名錄文字；你確認之前不會公開任何內容。要刪除申請或移除列名，請寫信到 ${CONTACTS.general}。`,
     },
   },
   {
