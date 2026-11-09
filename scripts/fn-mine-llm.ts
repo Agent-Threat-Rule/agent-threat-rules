@@ -43,6 +43,11 @@
  * Environment:
  *   CLAUDE_CODE_OAUTH_TOKEN (preferred) or ANTHROPIC_API_KEY — see scripts/lib/claude-client.ts
  *   ATR_FNMINE_MODEL optional (default: claude-sonnet-5)
+ *   ATR_LLM_BACKEND=grok, local only: mine with the Grok CLI (~/.grok/bin/grok or
+ *     ATR_GROK_BIN) for a corpus the Claude models decline. The CLI does not run on
+ *     Actions. Its candidates go through every gate unchanged; say in the PR which
+ *     rules it proposed. Example:
+ *       ATR_LLM_BACKEND=grok npx tsx scripts/fn-mine-llm.ts --dry-run --corpus k8s-resource-pi
  *   FN_MINE_OPEN_PR_FILES optional: a file listing the paths open PRs touch, one
  *     per line (the workflow writes it, so this step needs no GitHub token).
  *     Unset, the miner asks `gh pr list` itself.

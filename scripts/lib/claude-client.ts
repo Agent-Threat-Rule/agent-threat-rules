@@ -26,14 +26,23 @@
  *   api  — @anthropic-ai/sdk against ANTHROPIC_API_KEY. Metered credit.
  *          Kept as a fallback, and for anyone running this without the CLI.
  *
- * Selection is automatic; ATR_LLM_BACKEND=cli|api forces one. The chosen
+ *   grok — spawn the local Grok CLI (~/.grok/bin/grok, or ATR_GROK_BIN) headless
+ *          in plan mode from an empty temporary directory, prompt in a file.
+ *          Local only: the CLI does not run on Actions. Never selected
+ *          automatically. Used for corpora the Claude models decline; every
+ *          candidate it proposes goes through the same gates.
+ *
+ * Selection is automatic; ATR_LLM_BACKEND=cli|api|grok forces one. The chosen
  * backend is logged on first use, because "which meter did this run spend"
  * is exactly the question that was unanswerable before.
  */
 import { spawn } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
+import { join } from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 
-export type Backend = "cli" | "api";
+export type Backend = "cli" | "api" | "grok";
 
 /** Thrown when no backend is usable. Distinct from a call that ran and failed. */
 export class NoBackendError extends Error {
@@ -53,7 +62,7 @@ let announced = false;
 function announce(backend: Backend, reason: string): void {
   if (announced) return;
   announced = true;
-  const meter = backend === "cli" ? "subscription" : "metered API credit";
+  const meter = backend === "cli" ? "subscription" : backend === "grok" ? "local Grok CLI" : "metered API credit";
   console.log(`[claude-client] backend=${backend} (${meter}) — ${reason}`);
 }
 
@@ -69,8 +78,9 @@ export function selectBackend(): { backend: Backend; reason: string } {
   const forced = process.env.ATR_LLM_BACKEND;
   if (forced === "cli") return { backend: "cli", reason: "ATR_LLM_BACKEND=cli" };
   if (forced === "api") return { backend: "api", reason: "ATR_LLM_BACKEND=api" };
+  if (forced === "grok") return { backend: "grok", reason: "ATR_LLM_BACKEND=grok (local Grok CLI)" };
   if (forced && forced !== "cli" && forced !== "api") {
-    throw new NoBackendError(`ATR_LLM_BACKEND must be "cli" or "api", got "${forced}"`);
+    throw new NoBackendError(`ATR_LLM_BACKEND must be "cli", "api" or "grok", got "${forced}"`);
   }
   if (hasCli()) return { backend: "cli", reason: "CLAUDE_CODE_OAUTH_TOKEN present" };
   if (process.env.ANTHROPIC_API_KEY) {
@@ -133,6 +143,52 @@ async function callViaCli(system: string, user: string, model: string): Promise<
   });
 }
 
+/**
+ * One headless Grok CLI call. The prompt goes in a file, not argv (corpus text
+ * can be long and holds attack payloads); the CLI runs read-only (plan mode, no
+ * subagents, no web) in an empty temporary directory so it cannot touch the
+ * repository. The file and directory are removed afterwards.
+ */
+async function callViaGrok(system: string, user: string): Promise<string> {
+  const bin = process.env.ATR_GROK_BIN || join(homedir(), ".grok", "bin", "grok");
+  const dir = mkdtempSync(join(tmpdir(), "atr-grok-"));
+  const promptFile = join(dir, "prompt.txt");
+  writeFileSync(promptFile, `${system ? `${system}\n\n---\n\n` : ""}${user}`);
+  const args = [
+    "--prompt-file", promptFile,
+    "--permission-mode", "plan",
+    "--no-subagents",
+    "--disable-web-search",
+    "--output-format", "plain",
+    "--cwd", dir,
+  ];
+  if (process.env.ATR_GROK_MODEL) args.push("--model", process.env.ATR_GROK_MODEL);
+  try {
+    return await new Promise<string>((resolve, reject) => {
+      const child = spawn(bin, args, { cwd: dir, stdio: ["ignore", "pipe", "pipe"] });
+      let out = "";
+      let err = "";
+      const timer = setTimeout(() => {
+        child.kill("SIGKILL");
+        reject(new Error(`grok CLI timed out after ${CLI_TIMEOUT_MS}ms`));
+      }, CLI_TIMEOUT_MS);
+      child.stdout.on("data", (d) => (out += String(d)));
+      child.stderr.on("data", (d) => (err += String(d)));
+      child.on("error", (e) => {
+        clearTimeout(timer);
+        reject(new Error(`grok CLI could not be spawned (${e.message}); set ATR_GROK_BIN`));
+      });
+      child.on("close", (code) => {
+        clearTimeout(timer);
+        if (code === 0) return resolve(out.trim());
+        reject(new Error(`grok CLI exited ${code}: ${(err || out).trim().slice(0, 600)}`));
+      });
+    });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 async function callViaApi(system: string, user: string, model: string, maxTokens: number): Promise<string> {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const resp = await client.messages.create({
@@ -163,6 +219,7 @@ export async function callClaude(
 ): Promise<string> {
   const { backend, reason } = selectBackend();
   announce(backend, reason);
+  if (backend === "grok") return callViaGrok(system, user);
   return backend === "cli" ? callViaCli(system, user, model) : callViaApi(system, user, model, maxTokens);
 }
 
@@ -180,7 +237,8 @@ export function backendAvailable(): boolean {
 export function describeBackend(): string {
   try {
     const { backend, reason } = selectBackend();
-    return `${backend} (${backend === "cli" ? "subscription" : "metered API credit"}) — ${reason}`;
+    const meter = backend === "cli" ? "subscription" : backend === "grok" ? "local Grok CLI" : "metered API credit";
+    return `${backend} (${meter}) — ${reason}`;
   } catch (e) {
     return `none — ${e instanceof Error ? e.message : String(e)}`;
   }
