@@ -30,70 +30,67 @@ interface FrameworkItem {
   readonly name: string;
   readonly categories: readonly ATRCategory[];
   readonly recommendedMin: number;
-  /** If true, there are no direct ATR rule categories for this risk */
-  readonly noDirectRules?: boolean;
 }
 
 const OWASP_AGENTIC_TOP_10: readonly FrameworkItem[] = [
   {
     id: 'ASI01',
-    name: 'Prompt Injection',
-    categories: ['prompt-injection'],
+    name: 'Agent Goal Hijack',
+    categories: ['prompt-injection', 'agent-manipulation'],
     recommendedMin: 3,
   },
   {
     id: 'ASI02',
-    name: 'Tool/Skill Poisoning',
-    categories: ['tool-poisoning'],
+    name: 'Tool Misuse and Exploitation',
+    categories: ['tool-poisoning', 'excessive-autonomy'],
     recommendedMin: 2,
   },
   {
     id: 'ASI03',
-    name: 'Insecure Output Handling',
-    categories: ['context-exfiltration'],
+    name: 'Identity and Privilege Abuse',
+    categories: ['privilege-escalation', 'agent-manipulation'],
     recommendedMin: 2,
   },
   {
     id: 'ASI04',
-    name: 'Privilege Escalation',
-    categories: ['privilege-escalation'],
+    name: 'Agentic Supply Chain Vulnerabilities',
+    categories: ['skill-compromise', 'tool-poisoning', 'model-security'],
     recommendedMin: 2,
   },
   {
     id: 'ASI05',
-    name: 'Data Poisoning',
-    categories: ['data-poisoning'],
+    name: 'Unexpected Code Execution',
+    categories: ['tool-poisoning', 'skill-compromise', 'model-security'],
     recommendedMin: 2,
   },
   {
     id: 'ASI06',
-    name: 'Excessive Autonomy',
-    categories: ['excessive-autonomy'],
+    name: 'Memory & Context Poisoning',
+    categories: ['data-poisoning', 'context-exfiltration'],
     recommendedMin: 2,
   },
   {
     id: 'ASI07',
-    name: 'Multi-Agent Manipulation',
+    name: 'Insecure Inter-Agent Communication',
     categories: ['agent-manipulation'],
     recommendedMin: 2,
   },
   {
     id: 'ASI08',
-    name: 'Model Abuse',
-    categories: ['model-abuse'],
+    name: 'Cascading Failures',
+    categories: ['excessive-autonomy'],
     recommendedMin: 2,
   },
   {
     id: 'ASI09',
-    name: 'Insufficient Logging',
-    categories: [],
+    name: 'Human-Agent Trust Exploitation',
+    categories: ['model-abuse'],
     recommendedMin: 1,
-    noDirectRules: true,
   },
   {
     id: 'ASI10',
-    name: 'Supply Chain Compromise',
-    categories: ['skill-compromise'],
+    name: 'Rogue Agents',
+    categories: ['excessive-autonomy', 'model-abuse'],
     recommendedMin: 2,
   },
 ];
@@ -220,7 +217,7 @@ const MITRE_ATLAS_TECHNIQUES: readonly FrameworkItem[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// All 9 ATR categories
+// All ATR categories
 // ---------------------------------------------------------------------------
 
 const ALL_ATR_CATEGORIES: readonly ATRCategory[] = [
@@ -232,6 +229,7 @@ const ALL_ATR_CATEGORIES: readonly ATRCategory[] = [
   'excessive-autonomy',
   'data-poisoning',
   'model-abuse',
+  'model-security',
   'skill-compromise',
 ];
 
@@ -301,10 +299,6 @@ export class CoverageAnalyzer {
     activeRules: readonly ATRRule[],
     item: FrameworkItem,
   ): number {
-    if (item.noDirectRules) {
-      return 0;
-    }
-
     const covering = new Set<string>();
 
     for (const rule of activeRules) {
@@ -384,13 +378,12 @@ export class CoverageAnalyzer {
       );
     }
 
-    // ASI09 (Insufficient Logging) always appears as a gap since no direct rules exist
+    // ASI09 needs rules that detect deceptive behavior aimed at human trust.
     const asi09Gap = gaps.find((g) => g.riskId === 'ASI09');
     if (asi09Gap) {
       suggestions.push(
-        `ASI09 (Insufficient Logging) has no direct ATR rule category. ` +
-        `Consider implementing logging validation at the agent framework level ` +
-        `rather than through detection rules.`,
+        `ASI09 (Human-Agent Trust Exploitation) coverage is below the recommended minimum. ` +
+        `Add model-abuse rules for deceptive rationales or other attempts to manipulate human trust.`,
       );
     }
 
