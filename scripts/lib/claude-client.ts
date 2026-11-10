@@ -37,10 +37,11 @@
  * is exactly the question that was unanswerable before.
  */
 import { spawn } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
+import { extractBalancedJson } from "./fn-mine-reply.js";
 
 export type Backend = "cli" | "api" | "grok";
 
@@ -143,17 +144,30 @@ async function callViaCli(system: string, user: string, model: string): Promise<
   });
 }
 
+/** Seconds of silence after a complete JSON object before a Grok call counts as done. */
+const GROK_IDLE_AFTER_JSON_MS = 20_000;
+
+/** Last line of every Grok prompt: the CLI otherwise narrates before or after the answer. */
+const GROK_JSON_ONLY =
+  "\n\n---\nReply with only one JSON object, exactly the schema above. No prose before or after it, no markdown fences, no tool use.";
+
 /**
  * One headless Grok CLI call. The prompt goes in a file, not argv (corpus text
  * can be long and holds attack payloads); the CLI runs read-only (plan mode, no
  * subagents, no web) in an empty temporary directory so it cannot touch the
  * repository. The file and directory are removed afterwards.
+ *
+ * The CLI sometimes writes its whole answer and never exits (a review batch sat
+ * 16 hours that way). So the call runs under coreutils `timeout` when it is
+ * installed, and once stdout holds a complete JSON object and has been quiet
+ * for GROK_IDLE_AFTER_JSON_MS, the process is stopped and the answer used.
  */
 async function callViaGrok(system: string, user: string): Promise<string> {
-  const bin = process.env.ATR_GROK_BIN || join(homedir(), ".grok", "bin", "grok");
+  const grok = process.env.ATR_GROK_BIN || join(homedir(), ".grok", "bin", "grok");
+  const timeoutBin = ["/opt/homebrew/bin/timeout", "/usr/local/bin/timeout", "/usr/bin/timeout"].find((p) => existsSync(p));
   const dir = mkdtempSync(join(tmpdir(), "atr-grok-"));
   const promptFile = join(dir, "prompt.txt");
-  writeFileSync(promptFile, `${system ? `${system}\n\n---\n\n` : ""}${user}`);
+  writeFileSync(promptFile, `${system ? `${system}\n\n---\n\n` : ""}${user}${GROK_JSON_ONLY}`);
   const args = [
     "--prompt-file", promptFile,
     "--permission-mode", "plan",
@@ -161,35 +175,70 @@ async function callViaGrok(system: string, user: string): Promise<string> {
     "--disable-web-search",
     "--output-format", "plain",
     // No tools: the call is a single answer, and an agent that decides to
-    // explore spends the whole timeout doing it. No --max-turns: with the
-    // miner's system prompt a cap of 2 ended every call "Max turns reached".
+    // explore spends the whole timeout doing it. A cap of 2 turns ended every
+    // call "Max turns reached"; 8 leaves room for the CLI's own planning turns.
     "--tools", "",
+    "--max-turns", "8",
     "--cwd", dir,
   ];
   if (process.env.ATR_GROK_MODEL) args.push("--model", process.env.ATR_GROK_MODEL);
+  const [bin, argv] = timeoutBin
+    ? [timeoutBin, ["-k", "30", String(Math.ceil(CLI_TIMEOUT_MS / 1000)), grok, ...args]]
+    : [grok, args];
   try {
     return await new Promise<string>((resolve, reject) => {
-      const child = spawn(bin, args, { cwd: dir, stdio: ["ignore", "pipe", "pipe"] });
+      const child = spawn(bin, argv, { cwd: dir, stdio: ["ignore", "pipe", "pipe"] });
       let out = "";
       let err = "";
+      let settled = false;
+      let idle: NodeJS.Timeout | undefined;
+      const finish = (fn: () => void) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (idle) clearTimeout(idle);
+        fn();
+      };
       const timer = setTimeout(() => {
         child.kill("SIGKILL");
-        reject(new Error(`grok CLI timed out after ${CLI_TIMEOUT_MS}ms`));
+        const json = firstJsonObject(out);
+        finish(() => (json ? resolve(json) : reject(new Error(`grok CLI timed out after ${CLI_TIMEOUT_MS}ms`))));
       }, CLI_TIMEOUT_MS);
-      child.stdout.on("data", (d) => (out += String(d)));
+      child.stdout.on("data", (d) => {
+        out += String(d);
+        if (idle) clearTimeout(idle);
+        const json = firstJsonObject(out);
+        if (json) {
+          idle = setTimeout(() => {
+            child.kill("SIGKILL");
+            finish(() => resolve(json));
+          }, GROK_IDLE_AFTER_JSON_MS);
+        }
+      });
       child.stderr.on("data", (d) => (err += String(d)));
       child.on("error", (e) => {
-        clearTimeout(timer);
-        reject(new Error(`grok CLI could not be spawned (${e.message}); set ATR_GROK_BIN`));
+        finish(() => reject(new Error(`grok CLI could not be spawned (${e.message}); set ATR_GROK_BIN`)));
       });
       child.on("close", (code) => {
-        clearTimeout(timer);
-        if (code === 0) return resolve(out.trim());
-        reject(new Error(`grok CLI exited ${code}: ${(err || out).trim().slice(0, 600)}`));
+        const json = firstJsonObject(out);
+        if (code === 0) return finish(() => resolve(json ?? out.trim()));
+        if (json) return finish(() => resolve(json));
+        finish(() => reject(new Error(`grok CLI exited ${code}: ${(err || out).trim().slice(0, 600)}`)));
       });
     });
   } finally {
     rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+/** The first balanced top-level JSON object in `text`, or null. */
+function firstJsonObject(text: string): string | null {
+  try {
+    const json = extractBalancedJson(text);
+    JSON.parse(json);
+    return json;
+  } catch {
+    return null;
   }
 }
 
