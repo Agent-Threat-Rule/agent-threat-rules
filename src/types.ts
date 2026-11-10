@@ -21,6 +21,7 @@ export type ATRCategory =
   | "excessive-autonomy"
   | "data-poisoning"
   | "model-abuse"
+  | "model-security"
   | "skill-compromise";
 
 /**

@@ -65,6 +65,7 @@ export interface NormalizedOwaspReferences {
  *   data-poisoning        ASI06 (4/10)            LLM01 (9/10)
  *   excessive-autonomy    ASI03 (19/40)           LLM01 (21/40; LLM06 20)
  *   model-abuse           ASI01 (35/43)           LLM01 (27/43; LLM02 27)
+ *   model-security        ASI04 (1/1)              LLM03 (1/1)
  *   privilege-escalation  ASI03 (34/78)           LLM06 (35/78)
  *   skill-compromise      ASI04 (18/48)           LLM01 (17/48)
  *   tool-poisoning        ASI05 (47/118)          LLM06 (70/118)
@@ -80,6 +81,7 @@ export const DEFAULT_OWASP_AGENTIC_BY_CATEGORY: Readonly<Record<ATRCategory, str
   "data-poisoning": "ASI06:2026",
   "excessive-autonomy": "ASI03:2026",
   "model-abuse": "ASI01:2026",
+  "model-security": "ASI04:2026",
   "privilege-escalation": "ASI03:2026",
   "skill-compromise": "ASI04:2026",
   "tool-poisoning": "ASI05:2026",
@@ -92,6 +94,7 @@ export const DEFAULT_OWASP_LLM_BY_CATEGORY: Readonly<Record<ATRCategory, string>
   "data-poisoning": "LLM01:2025",
   "excessive-autonomy": "LLM01:2025",
   "model-abuse": "LLM01:2025",
+  "model-security": "LLM03:2025",
   "privilege-escalation": "LLM06:2025",
   "skill-compromise": "LLM01:2025",
   "tool-poisoning": "LLM06:2025",
