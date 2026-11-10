@@ -20,6 +20,7 @@
 import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync, existsSync } from 'node:fs';
 import { join, basename, extname } from 'node:path';
 import yaml from 'js-yaml';
+import { pathToFileURL } from 'node:url';
 
 const COMPILER_VERSION = '1.0.0';
 
@@ -297,5 +298,5 @@ Capability declaration: atr/compiler/yara@${COMPILER_VERSION} (atr-method-v1.1.m
 }
 
 // Run if invoked as a script (not when imported as a module for tests)
-const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+const isMainModule = import.meta.url === pathToFileURL(process.argv[1] ?? '').href;
 if (isMainModule) main();

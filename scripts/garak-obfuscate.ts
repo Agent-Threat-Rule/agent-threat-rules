@@ -33,7 +33,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   GARAK_TRANSFORMS,
   UNPORTED_TRANSFORMS,
@@ -245,4 +245,4 @@ function main(): void {
   console.log(`[obfuscate] wrote ${outPath}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) main();

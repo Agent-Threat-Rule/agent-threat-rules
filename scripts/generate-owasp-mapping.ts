@@ -26,8 +26,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import yaml from "js-yaml";
+import { fileURLToPath } from "node:url";
 
-const REPO_ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(new URL(import.meta.url))), "..");
 const RULES_DIR = path.join(REPO_ROOT, "rules");
 const DOCS_DIR = path.join(REPO_ROOT, "docs");
 const OUTPUT_MD = path.join(DOCS_DIR, "OWASP-AGENTIC-MAPPING.md");

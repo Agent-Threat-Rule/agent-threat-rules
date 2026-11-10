@@ -14,6 +14,7 @@ import yaml from "js-yaml";
 import { ATREngine } from "../src/engine.js";
 // @ts-expect-error -- plain .mjs script, no type declarations
 import { PRUNED_KEYS, prunedRule, pruneRulesDir, ruleFiles } from "../scripts/prune-published-rules.mjs";
+import { fileURLToPath } from "node:url";
 
 const RULES = resolve(__dirname, "..", "rules");
 
@@ -109,7 +110,7 @@ describe("atr test on pruned rules", () => {
       const src = ruleFiles(RULES).find((f: string) => f.includes("ATR-2026-02600"));
       cpSync(src, join(dir, "rule.yaml"));
       pruneRulesDir(dir);
-      const cli = new URL("../src/cli.ts", import.meta.url).pathname;
+      const cli = fileURLToPath(new URL("../src/cli.ts", import.meta.url));
       const r = spawnSync("npx", ["tsx", cli, "test", join(dir, "rule.yaml")], { encoding: "utf8" });
       expect(r.status).toBe(1);
       expect(`${r.stdout}${r.stderr}`).toMatch(/No test cases to run/);

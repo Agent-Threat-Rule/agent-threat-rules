@@ -6,7 +6,7 @@
 
 [![Document](https://img.shields.io/badge/document-Brand_Reference-blue?style=flat-square)](#)
 [![Audience](https://img.shields.io/badge/audience-Contributors-lightgrey?style=flat-square)](#)
-[![Version](https://img.shields.io/badge/version-1.0.0-brightgreen?style=flat-square)](#)
+[![Version](https://img.shields.io/badge/version-1.1.0-brightgreen?style=flat-square)](#)
 
 </div>
 
@@ -29,11 +29,16 @@ The project's primary mark lives at:
 - `assets/logo-light.png` — 800 × 339 PNG, transparent background, for
   light backgrounds. This is the default. Repository, web site, and
   governance documents use this variant.
+- `assets/logo-reversed.png` — 800 × 212 PNG, white mark on a
+  transparent background, for dark backgrounds. Use it only on Ink
+  (`#1a1a1a`) or a similarly dark surface. It is the same drawing as the
+  ink logo used on the web site, with the color changed to white.
 
 ### 1.1 Usage rules
 
 - MUST be presented unmodified. No recoloring, no rotation, no
-  drop-shadow, no added text adjacent to the mark.
+  drop-shadow, no added text adjacent to the mark. The two published
+  colorways (ink on light, white on dark) are the only permitted colors.
 - MUST be presented with at minimum 24 px of clear space on all
   sides at the rendered size.
 - MUST NOT be presented at less than 120 px width.
@@ -49,9 +54,9 @@ The project's primary mark lives at:
 | Sub-directory documents (two levels deep) | 240 px | `<div align="center"><img alt="..." src="../../assets/logo-light.png" width="240" /></div>` |
 | Web site | per design system | n/a |
 
-A dark-variant logo is intentionally not yet shipped. When the project
-publishes documents for dark-background surfaces, a dark variant will
-be added to `assets/` and this section will be updated.
+Use `assets/logo-reversed.png` on dark surfaces such as slide covers,
+event materials, and community server artwork. Repository documents keep
+`assets/logo-light.png`.
 
 ## 2. Color
 
@@ -239,6 +244,7 @@ For diagrams that are programmatically generated, prefer source-and-build
 | Version | Date | Editor | Summary |
 |---------|------|--------|---------|
 | 1.0 | 2026-05-16 | Adam Lin (BDFL) | Initial brand reference |
+| 1.1 | 2026-11-08 | Adam Lin (BDFL) | Add reversed logo for dark backgrounds |
 
 ---
 

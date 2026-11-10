@@ -23,8 +23,9 @@ import { ATREngine } from "../src/engine.js";
 import { ActionExecutor } from "../src/action-executor.js";
 import { DefaultAdapter } from "../src/adapters/default-adapter.js";
 import type { ATRRule, HookInput } from "../src/types.js";
+import { fileURLToPath } from "node:url";
 
-const CLI = new URL("../src/cli.ts", import.meta.url).pathname;
+const CLI = fileURLToPath(new URL("../src/cli.ts", import.meta.url));
 const ATTACK = "a zebracorn attack";
 
 function rule(id: string, source: string, field: string, value: string): ATRRule {

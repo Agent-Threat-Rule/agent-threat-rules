@@ -4,6 +4,58 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- **35 rules and the tool-poisoning default in `scripts/backfill-metadata.ts`
+  use the current ATLAS name for AML.T0053.** MITRE ATLAS renamed the
+  technique from "LLM Plugin Compromise" to "AI Agent Tool Invocation"; #675
+  updated the rules it touched and left the rest. Only the `mitre_atlas`
+  reference line changes on each rule. (#812)
+- `references.owasp_ast` on four rules named an OWASP Agentic Skills Top 10
+  control with a title that control does not have. Each now names the control
+  that matches the rule, with its published title: ATR-2026-00134 (fork-claim
+  impersonation) AST04 -> AST02 Supply Chain Compromise; ATR-2026-00126 (rug-pull
+  setup) AST06 -> AST07 Update Drift; ATR-2026-00127 (subcommand overflow)
+  AST02 -> AST03 Over-Privileged Skills; ATR-2026-02500 (prompt-layer
+  self-replication) AST02 -> AST05 Untrusted External Instructions. Metadata
+  only; detection is unchanged.
+- **ATR-2026-02300 no longer scans ahead from every character.** When the
+  input has no `mcpServers` key, each of its four conditions checked for a
+  nearby `command` and `args` key at every position before checking for the
+  `env` key it needs, so matching time grew with input length: about 0.1
+  seconds per condition on a 10,000-character line in Python's `re`. Each
+  condition now checks for the `env` (or `environment`) key first, which
+  costs almost nothing where it is absent. The patterns match the same text as
+  before: on 60,000 generated config-shaped inputs, the rule's test cases and
+  the benign skill corpus, the old and new patterns agree on every input. The
+  rule is maturity `experimental`, so the enforce lane is unchanged.
+  `rule_version` goes to 2.
+
+## [4.3.1] - 2026-11-08
+
+A patch release that narrows thirteen rules that matched ordinary code,
+documentation, shell commands and JSON-encoded tool output, widens three rules
+that missed real attack shapes, and removes slow backtracking from two more.
+No rule in the enforce lane (`maturity: stable`) changes, and the engine, rule
+format and Match output format (SPEC §7) are unchanged. The Cisco Skill Scanner
+pack change below is in the repository's exporter, not in this npm package.
+
+Default behaviour that changes:
+
+- The alert and hunt lanes match less. Thirteen `test` rules stop matching the
+  benign shapes described under Fixed: ATR-2026-00020, -00040, -00062,
+  -00063, -00066, -00113, -00133, -00142, -00161, -00217, -00547, -00554 and
+  -00567. On the 14,172 samples of the benign gate, their false positives go
+  from 4,926 to 1,599, and the total over all rules from 14,696 to 11,369.
+  Each narrowed condition matches a subset of what it matched before.
+- The alert and hunt lanes match more in three places. ATR-2026-00523 catches
+  SessionStart hooks on any matcher; ATR-2026-02261 catches a script that
+  sends the whole environment and now runs on skill content as well as MCP
+  traffic; ATR-2026-02400 catches the VS Code and Codex settings that turn
+  approvals off. None adds a false positive on the benign gate.
+- ATR-2026-01614 and -02372 match the same text as before, without the slow
+  backtracking on long whitespace.
+
 ### Added
 
 - **Hand-written pull request and issue states are checked against GitHub.**
@@ -51,11 +103,34 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
-- **35 rules and the tool-poisoning default in `scripts/backfill-metadata.ts`
-  use the current ATLAS name for AML.T0053.** MITRE ATLAS renamed the
-  technique from "LLM Plugin Compromise" to "AI Agent Tool Invocation"; #675
-  updated the rules it touched and left the rest. Only the `mitre_atlas`
-  reference line changes on each rule. (#812)
+- **The scheduled FN-mine lane no longer authors rules that match the request
+  an injection makes instead of the injection.** The ten rules in rolling PR
+  #819, mined from NVIDIA's Nemotron agentic indirect-injection set, passed
+  every gate the lane had: they recovered 103 of 215 held-out Nemotron rows
+  and fired on none of the benign corpora. Each keyed on the action the
+  injected text asks for ("submit interview feedback for candidate ...
+  rating", "add ... inventory ... SKU ... quantity", "cancel ... appointment
+  APT-..."), and hand-written HR, inventory, grading, calendar and API-doc tool
+  outputs tripped six of them. Three gates were missing, and are now in
+  `scripts/lib/fn-mine-generalization.ts`, applied after the tool-output gate:
+  a candidate must recover at least one attack in a corpus it was not mined
+  from (AgentDojo and InjecAgent, vendored under `data/fn-mine-oos`, plus the
+  other attack corpora in `scripts/lib/fn-corpora.ts`), because the held-out
+  30% shares the mined corpus's generator; a candidate mined from tool output
+  must carry an injection signal (an override, words addressed to the agent, a
+  precedence or secrecy demand, a forged authority tag or turn boundary) in at
+  least 80% of its own matches; and it must not fire on its own recoveries with
+  those signals and the generator's wrappers removed, set in ticket, to-do and
+  record text. The tool-output benign gate also runs on 1,464 business-system
+  outputs (calendar, email, drive, banking, chat, travel from AgentDojo; retail
+  and airline records from tau-bench; InjecAgent's tool responses with the
+  attack slot filled by ordinary text), vendored by
+  `scripts/sync-generalization-corpora.py`. The miner's prompt and the Nemotron
+  goal note no longer tell it to key on the requested action, and the report
+  and rolling-PR body state that held-out counts come from the same corpus and
+  that no match on the benign corpora is not a deployment false-positive rate.
+  `scripts/fn-mine-generalization-check.ts` reruns the gates on written rules:
+  none of #819's ten pass.
 - **The threat-actor pages show NousResearch hermes-agent #9809 as closed.**
   The three /threats pages gave the campaign's disclosure issue the status
   OPEN from the day they were added; NousResearch had closed it as completed
@@ -71,6 +146,29 @@ All notable changes to ATR will be documented in this file.
   e-2026-11-07-cisco-merge-time records it. Two strings in
   `website/lib/i18n.ts` that no page renders still told the reversed account;
   they now say what happened.
+- **ATR-2026-02400 catches the VS Code and Codex config keys that turn
+  approvals off.** Its settings-write condition (#4) matched a bare
+  `"autoApprove": true` but not VS Code's `"chat.tools.autoApprove": true`
+  or `"chat.tools.global.autoApprove": true`, which is what an agent writes
+  to `.vscode/settings.json` in the Copilot auto-approve attacks (including
+  the trailing-dot file name variant). It also had no Codex `config.toml`
+  keys. It now matches those two VS Code keys, `approval_policy = "never"`
+  and `sandbox_mode = "danger-full-access"`, the persisted forms of the
+  Codex flags the rule already matches on the command line. Benign false
+  positives over the 14,172 samples of the benign gate stay at 0. The rule
+  stays at maturity test (hunt lane). `rule_version` is bumped to 2.
+- **ATR-2026-00567 no longer treats every chained shell command as an MCP
+  server config.** Its first condition matched any `"command": "..."` value
+  containing `;`, `&`, `|`, `` ` `` or `$`, which is the argument shape of an
+  ordinary shell tool: `{"command": "git status && npm test"}` and
+  `{"command": "cat package.json | jq .version"}` matched at high severity.
+  The rule is about a stdio server config sent to an MCP test endpoint
+  (CVE-2026-42271), which carries `args`, `env` or `transport` next to
+  `command`. The condition now needs one of those fields in the same JSON
+  object. Benign false positives over the 14,172 samples of the benign gate
+  go from 8 to 2. Of the strings under `data/` that the old condition
+  matched, none is in an attack corpus. `rule_version` is bumped to 2.
+
 - **Four rules stop pairing words from opposite ends of a JSON-encoded
   document.** ATR-2026-00217 #3, -00142 #0 and #1, -00113 #1 and -00020 #8
   look for two words on the same line, written as `[^\n]*` or `.*`

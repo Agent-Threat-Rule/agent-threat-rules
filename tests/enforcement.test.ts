@@ -74,8 +74,9 @@ import type {
   HookOutput,
   PlatformAdapter,
 } from '../src/types.js';
+import { fileURLToPath } from 'node:url';
 
-const CLI = new URL('../src/cli.ts', import.meta.url).pathname;
+const CLI = fileURLToPath(new URL('../src/cli.ts', import.meta.url));
 
 // --- helpers ---------------------------------------------------------------
 
@@ -950,7 +951,7 @@ describe('action.yml lane input', () => {
   // (b) checks the input is actually threaded into the `atr scan` invocation.
   // Without this, deleting the `lane:` input left 1027 tests green.
   const actionYml = readFileSync(
-    new URL('../action.yml', import.meta.url).pathname,
+    fileURLToPath(new URL('../action.yml', import.meta.url)),
     'utf8'
   );
 

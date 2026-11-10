@@ -19,6 +19,7 @@
  */
 import { writeFileSync } from "node:fs";
 import { clustersAuthoredInHistory, formatExcludeList } from "./lib/semantic-exclusions.js";
+import { pathToFileURL } from "node:url";
 
 interface Args {
   out: string;
@@ -52,7 +53,7 @@ function main(): void {
   console.log(`[semantic-history] ${clusters.size} cluster(s) already authored by this lane -> ${out}`);
 }
 
-const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+const isMainModule = import.meta.url === pathToFileURL(process.argv[1] ?? '').href;
 if (isMainModule) {
   try {
     main();

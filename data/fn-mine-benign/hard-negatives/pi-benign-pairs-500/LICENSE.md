@@ -1,0 +1,2 @@
+darkknight25/Prompt_Injection_Benign_Prompt_Dataset is published under mit as declared on its dataset card at revision a0fc54fb563468a7fd64a9412718ce7cdb366666:
+https://huggingface.co/datasets/darkknight25/Prompt_Injection_Benign_Prompt_Dataset/blob/a0fc54fb563468a7fd64a9412718ce7cdb366666/README.md

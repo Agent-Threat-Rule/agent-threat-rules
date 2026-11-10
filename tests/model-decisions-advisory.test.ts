@@ -27,6 +27,7 @@ import { ActionExecutor } from "../src/action-executor.js";
 import { buildBlacklistMatch } from "../src/tier1-blacklist.js";
 import { runSemanticLayer } from "../src/layer-integration.js";
 import type { ATRMatch, ATRRule, ATRSemanticJudge, AgentEvent } from "../src/types.js";
+import { fileURLToPath } from "node:url";
 
 const NO_RULES_DIR = join(tmpdir(), "atr-model-decisions-no-rules");
 
@@ -424,7 +425,7 @@ describe("the settings people type", () => {
 });
 
 describe("atr scan --semantic --fail-on", () => {
-  const CLI = new URL("../src/cli.ts", import.meta.url).pathname;
+  const CLI = fileURLToPath(new URL("../src/cli.ts", import.meta.url));
 
   function yamlRule(id: string, extra: string[]): string {
     return [

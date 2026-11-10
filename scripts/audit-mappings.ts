@@ -30,10 +30,10 @@ const DOCS_DIR = join(import.meta.dirname, "..", "docs");
 const PRIORITY_COMPLIANCE = ["eu_ai_act", "nist_ai_rmf", "iso_42001"] as const;
 
 // Crosswalk docs that hardcode a rule count in their header — flag when stale.
+// OWASP-AST10-MAPPING.md is generated (scripts/generate-ast-crosswalk.py --check).
 const CROSSWALK_DOCS = [
   "SAFE-MCP-MAPPING.md",
   "FIVE-EYES-MAPPING.md",
-  "OWASP-AST10-MAPPING.md",
   "NSA-MCP-MAPPING.md",
   "ETSI-TS-104223-MAPPING.md",
   "FINOS-AI-GOVERNANCE-MAPPING.md",

@@ -138,13 +138,14 @@ function staleLaneRule(n: number, source = "promptinject"): string {
   return `id: ATR-2026-0${9000 + n}\n_semantic_authored:\n  source_cluster: proposals/${source}-clusters/C${n}.proposal.yaml\n`;
 }
 
-/** Rewrite the four derived files from the rule count, like reconcile + the crosswalk generators. */
+/** Rewrite the five derived files from the rule count, like reconcile + the crosswalk generators. */
 function regenerate(dir: string): void {
   const count = git(dir, "ls-files", "--others", "--cached", "--exclude-standard", "rules/").split("\n").filter(Boolean).length;
   put(dir, "stats.json", `{"rules":{"total":${count}}}\n`);
   put(dir, "data/stats.json", `{"rules":{"total":${count}}}\n`);
   put(dir, "docs/crosswalks/atr-attack-crosswalk.md", `rules: ${count}\n`);
   put(dir, "docs/crosswalks/atr-ast-crosswalk.md", `rules: ${count}\n`);
+  put(dir, "docs/OWASP-AST10-MAPPING.md", `rules: ${count}\n`);
 }
 
 /**

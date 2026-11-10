@@ -45,6 +45,8 @@ export interface GatedCandidate extends MineCandidate {
   exampleFNs: readonly string[];
   /** The distinct minable attacks it recovers (countRecoveries keys), for pickDistinct. */
   recoveryKeys?: readonly string[];
+  /** Attacks it recovers in corpora it was not mined from, by corpus (fn-mine-generalization.ts). */
+  outOfSample?: Readonly<Record<string, number>>;
 }
 
 export interface GateContext {
