@@ -328,12 +328,13 @@ function sampleKey(text: string): string {
  * Corpora built from another corpus's attacks, so neither is out of sample for
  * the other. sampleKey catches a republished text; these hold the same payload
  * inside different text. k8s-resource-pi plants neuralchemy-pi's injections in
- * Kubernetes manifests (its builder says so); garak-full's dan and inthewild
+ * Kubernetes manifests (its builder says so), cyberec-pi is a copy of
+ * neuralchemy-pi, and neuralchemy-pi carries HackAPrompt submissions; garak-full's dan and inthewild
  * probes are the TrustAIRLab jailbreak collection and its promptinject probe is
  * PromptInject; deepset is half of multilingual-pi.
  */
 const DERIVED_FROM: readonly (readonly string[])[] = Object.freeze([
-  ['k8s-resource-pi', 'neuralchemy-pi'],
+  ['k8s-resource-pi', 'neuralchemy-pi', 'cyberec-pi', 'hackaprompt'],
   ['garak-full', 'in-the-wild-jailbreak', 'jailbreak-cls', 'promptinject'],
   ['deepset', 'multilingual-pi'],
 ]);

@@ -117,6 +117,14 @@ export const OOS_SOURCES: readonly OosSource[] = Object.freeze([
   oos('guardrail-eval-pi', 'llm_input', 'sync-attack-sources.py'),
   oos('role-play-jailbreak-tweets', 'llm_input', 'sync-attack-sources.py',
     'Every row asks for a tweet about a disaster: never anchor on "tweet" or the disaster; key on the role-play pressure.'),
+  oos('jailbroken-wrappers', 'llm_input', 'sync-attack-sources.py',
+    'Each wrapper carries a harmful question the dataset supplies; key on the wrapper (forced opening, refusal ban), never the question.'),
+  oos('persona-adversarial-rewrites', 'llm_input', 'sync-attack-sources.py',
+    'Rows are written in generated personas (names, towns, jobs): never anchor on persona details.'),
+  oos('embedded-override-prompts', 'llm_input', 'sync-attack-sources.py',
+    'Rows wrap the injection in a fixed "[System: ...] User: ..." scaffold: never anchor on the scaffold.'),
+  oos('pi-eval-74', 'llm_input', 'sync-attack-sources.py'),
+  oos('pi-patterns-extended', 'llm_input', 'sync-attack-sources.py'),
 ]);
 
 export function oosSource(id: string): OosSource | undefined {

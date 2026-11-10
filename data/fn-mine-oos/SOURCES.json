@@ -98,7 +98,7 @@
    "shape": "llm_input",
    "attacks": 1500,
    "benign": 1500,
-   "about": "Labelled injections across categories, with security-adjacent hard negatives."
+   "about": "Labelled injections across categories, with security-adjacent hard negatives (research-licensed WildGuard rows and HarmBench goals left out)."
   },
   {
    "id": "s-labs-pi",
@@ -328,7 +328,7 @@
    "shape": "llm_input",
    "attacks": 1500,
    "benign": 1500,
-   "about": "Injections by category and severity with benign security questions (the un-augmented core split)."
+   "about": "A copy of neuralchemy/Prompt-injection-dataset (same rows); kept so the vendored file has a source, filtered the same way, and treated as the same family out of sample."
   },
   {
    "id": "wallet-agent-pi",
@@ -451,6 +451,56 @@
    "about": "Role-play jailbreaks that push a model to write panic-inducing posts."
   },
   {
+   "id": "jailbroken-wrappers",
+   "repo": "sevdeawesome/jailbreak_success",
+   "rev": "12bad235ee184287bc5f41ec2341489501a30049",
+   "license": "mit",
+   "shape": "llm_input",
+   "attacks": 33,
+   "benign": 0,
+   "about": "Jailbreak wrappers by name (prefix injection, refusal suppression, combinations), one row per wrapper."
+  },
+  {
+   "id": "persona-adversarial-rewrites",
+   "repo": "antoniopelusi/redteaming",
+   "rev": "75345c1693a9f1d8599fd65957671c81e64ec64c",
+   "license": "apache-2.0",
+   "shape": "llm_input",
+   "attacks": 1500,
+   "benign": 0,
+   "about": "Adversarial rewrites of a request by strategy (typos, output encoding, role-play), written in a generated persona."
+  },
+  {
+   "id": "embedded-override-prompts",
+   "repo": "stindardlogic/prompt-injection-defense-dpo-3k",
+   "rev": "c76036d292901f7e0d4b6a8137c33185a3a96227",
+   "license": "apache-2.0",
+   "shape": "llm_input",
+   "attacks": 11,
+   "benign": 0,
+   "about": "A system prompt and user request with an injection embedded in the user content ([SYSTEM OVERRIDE], \"Actual instruction:\")."
+  },
+  {
+   "id": "pi-eval-74",
+   "repo": "mukunda1729/prompt-injection-eval",
+   "rev": "1b709002907d3b9a4097ff332d9d5ab4fee499cd",
+   "license": "mit",
+   "shape": "llm_input",
+   "attacks": 48,
+   "benign": 24,
+   "about": "Injections by category (system impersonation, override, exfiltration) with clean factual sentences."
+  },
+  {
+   "id": "pi-patterns-extended",
+   "repo": "mukunda1729/prompt-injection-patterns-extended",
+   "rev": "818f58cfa4fbeac35faba3789fd47075dcdba28c",
+   "license": "mit",
+   "shape": "llm_input",
+   "attacks": 29,
+   "benign": 0,
+   "about": "Hand-written injections by category, including agent exfiltration through tool URLs."
+  },
+  {
    "id": "ogma-benign-prompts",
    "repo": "axiotic/ogma-prompt-injection-benign",
    "rev": "089327b0977e1296e4992d9b83a5248d1616edd4",
@@ -487,7 +537,6 @@
   "jcanode/safeguard-prompt-injection": "synthetic injections spliced into Alpaca prompts, labelled by a teacher model",
   "grasla3/agent-attack-range": "an attack harness over AgentDojo suites, which are vendored",
   "walledai/TDC23-RedTeaming": "harmful requests or goals, not injection or jailbreak techniques",
-  "sevdeawesome/jailbreak_success": "harmful requests or goals, not injection or jailbreak techniques",
   "darkknight25/Multilingual_Jailbreak_Dataset": "harmful requests or goals, not injection or jailbreak techniques",
   "YoojongChoi/multi_jailbreak_augmented": "harmful requests or goals, not injection or jailbreak techniques",
   "rl-actors/Jailbreak-dataset": "harmful requests or goals, not injection or jailbreak techniques",
@@ -496,7 +545,6 @@
   "harpreetsahota/red-team-prompts-questions": "harmful requests or goals, not injection or jailbreak techniques",
   "sutro/gpt-oss-red-teaming": "harmful requests or goals, not injection or jailbreak techniques",
   "sutro/gpt-oss-red-teaming-high-success-tagged": "harmful requests or goals, not injection or jailbreak techniques",
-  "antoniopelusi/redteaming": "harmful requests or goals, not injection or jailbreak techniques",
   "Nitinsaini077/RedTeaming": "harmful requests or goals, not injection or jailbreak techniques",
   "RayNene/AI-Redteaming-and-Safety-DS": "harmful requests or goals, not injection or jailbreak techniques",
   "JZPeterPan/DAS-Mediacal-Red-Teaming-Data": "harmful requests or goals, not injection or jailbreak techniques",
@@ -585,7 +633,6 @@
   "karanxa/llama-2-jailbreak-dataset": "training-format chats or preference pairs; the attack turn is not separable from the training scaffold",
   "r1char9/prompt-2-prompt-injection-v1-dataset": "training-format chats or preference pairs; the attack turn is not separable from the training scaffold",
   "hlyn-labs/prompt-injection-judge-dataset-v1": "training-format chats or preference pairs; the attack turn is not separable from the training scaffold",
-  "stindardlogic/prompt-injection-defense-dpo-3k": "training-format chats or preference pairs; the attack turn is not separable from the training scaffold",
   "sumitguha13/ai-agent-security-sft-dpo": "training-format chats or preference pairs; the attack turn is not separable from the training scaffold",
   "shehrozrafaqat/dataset_with_prompt_injection": "training-format chats or preference pairs; the attack turn is not separable from the training scaffold",
   "jinnovation/generative-ai-red-teaming": "training-format chats or preference pairs; the attack turn is not separable from the training scaffold",
@@ -597,12 +644,10 @@
   "emgena/prompt_injection_indirect_rag_poisoning_guard_teaser": "too small or a commercial teaser (under 60 rows)",
   "itsVentie/llm-red-teaming-corpus": "too small or a commercial teaser (under 60 rows)",
   "Ercin/synthetic-llm-red-teaming-findings-banking": "too small or a commercial teaser (under 60 rows)",
-  "mukunda1729/prompt-injection-patterns-extended": "too small or a commercial teaser (under 60 rows)",
-  "mukunda1729/prompt-injection-eval": "too small or a commercial teaser (under 60 rows)",
   "liu00222/Open-Prompt-Injection": "injections generated at run time from task datasets; no stored attack text",
   "sleeepeer/PIArena": "injections generated at run time from task datasets; no stored attack text",
   "DaoyuanLi2816/RepoGuardBench": "injections generated at run time from task datasets; no stored attack text",
-  "Bravansky/compact-jailbreaks": "machine-compressed rewrites of harmful goals (HarmBench); the goal, not a technique, dominates each row",
+  "Bravansky/compact-jailbreaks": "the attack file is 452 MB; the small splits repackage WildTeaming/WildJailbreak, whose own license differs from the MIT card",
   "jc-detoxio/ReNeLLM-Jailbreak": "one 350 MB JSON file; nested rewrites of AdvBench goals",
   "rishitchugh/successful_adversarial_prompts": "optimiser suffixes (PEZ, GBDA, GCG): token noise with no structure a regex can hold",
   "AiActivity/All-Prompt-Jailbreak": "mostly benign role-play prompts with model-judge labels that disagree",
@@ -615,12 +660,12 @@
   "Antijection/prompt-injection-dataset-v1": "no readable rows (viewer and files empty at the reviewed revision)",
   "DavidTKeane/ai-prompt-ai-injection-dataset": "112 identity and capability questions with expected PASS/FAIL, few injections",
   "itsVentie/rag-prompt-injection-bench": "no readable rows at the reviewed revision",
-  "Sanraj/jailbreaking-prompt-response": "no readable rows at the reviewed revision",
   "Sanraj/jailbreaking-prompt-response-reasoning": "no readable rows at the reviewed revision",
+  "groupfairnessllm/r1-1776-jailbreak": "36 rows; its jailbroken_prompt column yields no text at the reviewed revision",
+  "Sanraj/jailbreaking-prompt-response": "persona jailbreaks of the in-the-wild kind, but the JSONL does not parse at the reviewed revision (multi-line records)",
   "Lshafii/Jailbreak-PromptBank": "no readable rows at the reviewed revision",
   "SEACrowd/xl_jailbreak": "loader script only; the data is fetched from elsewhere at load time",
-  "groupfairnessllm/r1-1776-jailbreak": "no readable rows at the reviewed revision",
-  "avalonsec/Prompt_engineering_Assistant_Alice_jailbreak": "no readable rows at the reviewed revision",
+  "avalonsec/Prompt_engineering_Assistant_Alice_jailbreak": "eight hand-written system prompts (CTF personas), not an attack corpus",
   "dinruz/edu-red-teaming-prompts": "no readable rows at the reviewed revision",
   "Umesh1212/security-datasets-CAI-agent-tools": "no readable rows at the reviewed revision",
   "WaliyaKhan882/dataset_with_prompt_injection": "no readable rows at the reviewed revision",

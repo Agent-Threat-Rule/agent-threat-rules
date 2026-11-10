@@ -1,6 +1,6 @@
 # Source
 
-Labelled injections across categories, with security-adjacent hard negatives.
+Labelled injections across categories, with security-adjacent hard negatives (research-licensed WildGuard rows and HarmBench goals left out).
 
 Upstream (pinned):
 

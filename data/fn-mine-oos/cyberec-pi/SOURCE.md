@@ -1,6 +1,6 @@
 # Source
 
-Injections by category and severity with benign security questions (the un-augmented core split).
+A copy of neuralchemy/Prompt-injection-dataset (same rows); kept so the vendored file has a source, filtered the same way, and treated as the same family out of sample.
 
 Upstream (pinned):
 
