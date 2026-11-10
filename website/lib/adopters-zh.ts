@@ -31,7 +31,7 @@ export const ADOPTER_INTEGRATION_ZH: Readonly<Record<string, string>> = {
 
   // Tier 1
   "Cisco AI Defense":
-    "ATR 規則包已合併進開源的 cisco-ai-defense/skill-scanner repository。這裡說的是那個 repository，不是任何 Cisco 產品。",
+    "ATR 規則包已合併進開源的 cisco-ai-defense/skill-scanner repository。這裡說的是那個 repository，不是任何 Cisco 產品。維護者在 2026-11-02 表示，因誤報率過高，很可能會移除這個規則包（skill-scanner PR #289，2026-11-05 關閉）；截至 2026-11-10，規則包仍在 main 上。",
   "Gen Digital Sage":
     "改寫自 ATR 的 agent 層威脅模式，貢獻給 Sage 的 agentic AI 風險評分層。",
   "NVIDIA NeMo Agent Toolkit":
@@ -47,7 +47,7 @@ export const ADOPTER_INTEGRATION_ZH: Readonly<Record<string, string>> = {
   SigmaHQ:
     "列入 Sigma 工具目錄；agent-threat-rules 被列為同類的偵測規則格式。",
   "Microsoft PyRIT":
-    "ATR 對抗 payload 資料集載入器已合併進 PyRIT（PR #1715，維護者 Roman Lutz 於 2026-05-27 合併）。後續的 AgentThreatRulesScorer（PR #1893）在 2026-08-17 合併，2026-08-18 被 PR #2410 撤回；目前隨 PyRIT 釋出的只有資料集載入器。",
+    "ATR 對抗 payload 資料集載入器已合併進 PyRIT（PR #1715，維護者 Roman Lutz 於 2026-05-27 合併）。資料集載入器已在正式版中（最新為 v1.1.0）。AgentThreatRulesScorer 先在 PR #1893（2026-08-17）合併，隔天被 PR #2410 撤回；不新增依賴的版本已由 PR #2624（2026-09-24）合併進 main，尚未進入正式版。",
   "Microsoft Agent Framework":
     "範例程式：在 Microsoft Agent Framework 裡把 ATR 當成確定性的動作邊界驗證器。",
   "Microsoft Agent Governance Toolkit":
