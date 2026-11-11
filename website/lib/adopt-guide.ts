@@ -46,7 +46,7 @@ export const AUDIENCES: ReadonlyArray<Audience> = [
     key: "assure",
     who: { en: "You have to answer for it", zh: "要負責交代的人" },
     need: { en: "Auditors, regulators and insurers won't take your word for it. They want something they can check themselves.", zh: "稽核、主管機關、保險公司，不會因為你說安全就相信。他們要自己查得了的東西。" },
-    how: { en: "The rules run fully offline and map to the EU AI Act, NIST AI RMF and ISO/IEC 42001. ATR Eval, still in development, is meant to measure how a given agent release holds up against hijacking.", zh: "規則可以完全離線執行，也對應到 EU AI Act、NIST AI RMF 和 ISO/IEC 42001。ATR Eval 還在開發中，之後可以用來量測某一版 agent 面對劫持的表現。" },
+    how: { en: "The rules run fully offline and map to the EU AI Act, NIST AI RMF and ISO/IEC 42001. ATR Eval, public as source but not yet released, is meant to measure how a given agent release holds up against hijacking.", zh: "規則可以完全離線執行，也對應到 EU AI Act、NIST AI RMF 和 ISO/IEC 42001。ATR Eval 的程式碼已公開、尚未發版，之後可以用來量測某一版 agent 面對劫持的表現。" },
     where: { en: "Offline · OSCAL · SARIF", zh: "離線 · OSCAL · SARIF" },
     first: { label: { en: "Auditor kit", zh: "稽核工具包" }, href: "/docs/auditor-kit" },
   },
@@ -62,7 +62,7 @@ export const AUDIENCES: ReadonlyArray<Audience> = [
 
 export type ToolKey = "rules" | "router" | "eval";
 
-export const TOOLS: Record<ToolKey, { name: string; line: B; body: B; href: string; released: boolean }> = {
+export const TOOLS: Record<ToolKey, { name: string; line: B; body: B; href: string; released: boolean; state?: B }> = {
   rules: {
     name: "ATR Rules",
     line: { en: "Spot the attack.", zh: "認出攻擊。" },
@@ -83,5 +83,6 @@ export const TOOLS: Record<ToolKey, { name: string; line: B; body: B; href: stri
     body: { en: "Each attack runs many times. The result is signed, and anyone can recompute it.", zh: "每一題跑很多次，結果簽名，誰都能拿去重算。" },
     href: "/eval",
     released: false,
+    state: { en: "Source public · no release yet", zh: "程式碼已公開 · 尚未發版" },
   },
 };

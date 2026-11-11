@@ -1,9 +1,10 @@
 /**
  * Privacy and Terms are legal documents, and only the maintainer can adopt
- * them. Until he does, both pages carry a draft banner and ask search engines
- * not to index them. Flip this to false when the text is approved.
+ * them. While this is true, both pages carry a draft banner and ask search
+ * engines not to index them. Adopted on LEGAL_ADOPTED.
  */
-export const LEGAL_DRAFT = true;
+export const LEGAL_DRAFT = false;
+export const LEGAL_ADOPTED = "2026-11-11";
 
 export const CONTACTS = {
   general: "contact@agentthreatrule.org",

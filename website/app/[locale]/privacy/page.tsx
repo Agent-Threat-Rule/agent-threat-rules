@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { locales, type Locale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
 import { loadVersionLabels } from "@/lib/versions";
-import { CONTACTS, LEGAL_DRAFT } from "@/lib/legal";
+import { CONTACTS, LEGAL_ADOPTED, LEGAL_DRAFT } from "@/lib/legal";
 import { DocsShell, Callout } from "@/components/DocsShell";
 import Phrased from "@/components/Phrased";
 
@@ -26,6 +26,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 type B = { en: string; zh: string };
 
 const SECTIONS: ReadonlyArray<{ h: B; body: B }> = [
+  {
+    h: { en: "Who is responsible", zh: "誰負責" },
+    body: {
+      en: `Adam Lin, the maintainer of ATR, is responsible for this site and for the data described here. The ATR Project is not a legal entity, so he is responsible personally. Contact: ${CONTACTS.general}.`,
+      zh: `這個網站和這裡提到的資料，由 ATR 維護者 Adam Lin 負責。ATR Project 不是法人，所以由他個人負責。聯絡：${CONTACTS.general}。`,
+    },
+  },
   {
     h: { en: "What the site itself collects", zh: "網站本身收集什麼" },
     body: {
@@ -74,6 +81,9 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
         <Callout label={zh ? "草稿" : "Draft"}>
           {zh ? "這份說明是草稿，待維護者核准後才生效。" : "This notice is a draft and takes effect only when the maintainers approve it."}
         </Callout>
+      )}
+      {!LEGAL_DRAFT && (
+        <p className="mt-6 font-data text-[11.5px] text-stone">{zh ? `生效日 ${LEGAL_ADOPTED}` : `In effect from ${LEGAL_ADOPTED}`}</p>
       )}
       <div className="mt-8 max-w-[720px]">
         {SECTIONS.map((s) => (

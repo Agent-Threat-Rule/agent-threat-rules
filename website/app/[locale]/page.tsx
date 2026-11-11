@@ -314,7 +314,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   <span className="font-title text-[30px] md:text-[44px] leading-none text-ink mb-5 md:mb-8" aria-hidden="true">{ROMAN[i]}</span>
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="text-[17px] text-ink group-hover:underline underline-offset-4">{tool.name}</span>
-                    <span className="text-[11.5px] text-stone">{tool.released ? (zh ? "已發布" : "Released") : zh ? "尚未公開" : "Not yet public"}</span>
+                    <span className="text-[11.5px] text-stone">{tool.state ? (zh ? tool.state.zh : tool.state.en) : tool.released ? (zh ? "已發布" : "Released") : zh ? "尚未公開" : "Not yet public"}</span>
                   </div>
                   <p className="mt-2 text-[15px] text-ink">{pick(tool.line)}</p>
                   <p className="mt-1.5 text-[14px] leading-[1.65] text-graphite flex-1">{pick(tool.body)}</p>

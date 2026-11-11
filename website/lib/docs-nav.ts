@@ -119,8 +119,8 @@ export const DOCS_SECTIONS: ReadonlyArray<DocsSection> = [
     links: [
       { path: "/faq", label: { en: "FAQ", zh: "常見問題" } },
       { path: "/contact", label: { en: "Contact", zh: "聯絡" } },
-      { path: "/privacy", label: { en: "Privacy notice (draft)", zh: "隱私說明（草稿）" } },
-      { path: "/terms", label: { en: "Terms of use (draft)", zh: "使用條款（草稿）" } },
+      { path: "/privacy", label: { en: "Privacy notice", zh: "隱私說明" } },
+      { path: "/terms", label: { en: "Terms of use", zh: "使用條款" } },
     ],
   },
 ];

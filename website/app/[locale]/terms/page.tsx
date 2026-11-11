@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { locales, type Locale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
 import { loadVersionLabels } from "@/lib/versions";
-import { CONTACTS, LEGAL_DRAFT, REPO_URL } from "@/lib/legal";
+import { CONTACTS, LEGAL_ADOPTED, LEGAL_DRAFT, REPO_URL } from "@/lib/legal";
 import { DocsShell, Callout } from "@/components/DocsShell";
 import Phrased from "@/components/Phrased";
 import { Sign } from "@/components/Sign";
@@ -77,6 +77,9 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
         <Callout label={zh ? "草稿" : "Draft"}>
           {zh ? "這份條款是草稿，待維護者核准後才生效。" : "These terms are a draft and take effect only when the maintainers approve them."}
         </Callout>
+      )}
+      {!LEGAL_DRAFT && (
+        <p className="mt-6 font-data text-[11.5px] text-stone">{zh ? `生效日 ${LEGAL_ADOPTED}` : `In effect from ${LEGAL_ADOPTED}`}</p>
       )}
       <div className="mt-8 max-w-[720px]">
         {SECTIONS.map((s) => (

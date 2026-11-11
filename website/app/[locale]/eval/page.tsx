@@ -21,8 +21,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     path: "/eval",
     title: "ATR Eval",
     description: zh
-      ? "測你的 agent 讀到的內容能不能把它拐走。每題重跑多次，結果簽名，誰都能重算。尚未公開。"
-      : "Tests whether what your agent reads can hijack it. Every test runs many times, and the signed result can be recomputed by anyone. Not yet public.",
+      ? "測你的 agent 讀到的內容能不能把它拐走。每題重跑多次，結果簽名，誰都能重算。程式碼已公開，尚未發版。"
+      : "Tests whether what your agent reads can hijack it. Every test runs many times, and the signed result can be recomputed by anyone. The source is public; there is no release yet.",
   });
 }
 
@@ -69,7 +69,7 @@ export default async function EvalPage({ params }: { params: Promise<{ locale: s
         <ToolHero
           zh={zh}
           name="ATR Eval"
-          status={{ en: "Not yet public", zh: "尚未公開" }}
+          status={{ en: "Source public · no release yet", zh: "程式碼已公開 · 尚未發版" }}
           title={{ en: "Once is luck. Ten times is evidence.", zh: "跑一次是運氣，跑十次才算數。" }}
           lead={{
             en: "ATR Eval tests whether what your agent reads can steer it into leaking data, running code, changing records or spending money. Each test runs at least ten times, each time in a fresh environment. A fixed check decides the outcome, and the result is signed.",
@@ -97,7 +97,11 @@ export default async function EvalPage({ params }: { params: Promise<{ locale: s
             ? "利益揭露：維護者創辦並控制 PANGUARD AI, INC.，這家公司販售以 ATR 為基礎的 agent 資安產品。維護者自己跑出的結果，不算獨立評估。"
             : "Interests: the maintainer founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR. Results the maintainer produces are not independent."}
         </p>
-        <p>{zh ? "ATR Eval 還沒公開，發布時間還沒定。" : "ATR Eval is not public yet, and there is no release date."}</p>
+        <p>
+          {zh ? "程式碼在 " : "The source is at "}
+          <a href="https://github.com/Agent-Threat-Rule/atr-eval" className="text-blue hover:underline underline-offset-4">github.com/Agent-Threat-Rule/atr-eval</a>
+          {zh ? "。還沒有正式發版，也還沒上 PyPI；發版時間還沒定。" : ". There is no tagged release and no PyPI package yet, and no release date."}
+        </p>
       </ToolLimits>
 
       <ToolNext href={`/${locale}/router`} label={zh ? "要測哪幾題，由 ATR Router 決定" : "Which tests to run is ATR Router's job"} />

@@ -54,7 +54,7 @@ export const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     path: "/router",
     links: [
       { path: "/router", label: { en: "ATR Router (not public yet)", zh: "ATR Router（尚未公開）" } },
-      { path: "/eval", label: { en: "ATR Eval (not public yet)", zh: "ATR Eval（尚未公開）" } },
+      { path: "/eval", label: { en: "ATR Eval (no release yet)", zh: "ATR Eval（尚未發版）" } },
     ],
   },
   {
@@ -102,8 +102,8 @@ export const FOOTER_EXTRA: ReadonlyArray<NavLink> = [
   { path: "/sovereign-ai-defense", label: { en: "Sovereign AI", zh: "主權 AI" } },
   { path: "/partner-sync", label: { en: "Partner live sync", zh: "夥伴即時同步" } },
   { path: "/integrate/garak", label: { en: "garak and ATR", zh: "garak 與 ATR" } },
-  { path: "/privacy", label: { en: "Privacy (draft)", zh: "隱私（草稿）" } },
-  { path: "/terms", label: { en: "Terms (draft)", zh: "條款（草稿）" } },
+  { path: "/privacy", label: { en: "Privacy", zh: "隱私" } },
+  { path: "/terms", label: { en: "Terms", zh: "條款" } },
 ];
 
 export function pick(text: Bilingual, locale: string): string {

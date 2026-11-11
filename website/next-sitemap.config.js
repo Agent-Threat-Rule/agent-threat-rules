@@ -6,8 +6,8 @@ module.exports = {
   generateRobotsTxt: true,
   outDir: "./out",
   generateIndexSitemap: false,
-  // Privacy and Terms stay out of the sitemap while they are drafts (lib/legal.ts).
-  exclude: ["/icon.svg", "/favicon.ico", "/llms.txt", "/rules/index.json", "/rules/index.csv", "/en/privacy", "/zh/privacy", "/en/terms", "/zh/terms", "/en/community/membership", "/zh/community/membership"],
+  // The membership page stays out of the sitemap until it is opened.
+  exclude: ["/icon.svg", "/favicon.ico", "/llms.txt", "/rules/index.json", "/rules/index.csv", "/en/community/membership", "/zh/community/membership"],
   robotsTxtOptions: {
     policies: [
       { userAgent: "*", allow: "/" },
