@@ -183,13 +183,15 @@ Merged rules are:
 
 ## Roadmap
 
-### v1.1 — Technical Steering Committee, Founding Three (not yet seated)
+### v1.1 — Technical Steering Committee, Founding Three (external seats not filled)
 
-Status on 2026-11-11: the original target was Q3 2026 and it was missed.
-No seat other than the maintainer seat has been filled, no TSC meeting has
-been held, and [TSC-CHARTER.md](TSC-CHARTER.md) is still a draft. Until
-the TSC is seated, every decision listed in this document is made by one
-person. See [Continuity](#continuity).
+Status on 2026-11-11: the TSC has two members, both ATR maintainers. The
+Industry seat and the Community seat defined in
+[TSC-CHARTER.md](TSC-CHARTER.md) are not filled; the original target for
+seating all three was Q3 2026 and it was missed. TSC-CHARTER.md is still a
+draft. Until an external seat is filled, the final call on every decision
+listed in this document rests with the lead maintainer. See
+[Continuity](#continuity).
 
 Single-maintainer governance is the project's primary structural risk. The
 Founding Three TSC composition is meant to resolve bus-factor=1. Seating a
@@ -244,13 +246,18 @@ relying on ATR can plan for it.
 
 As of 2026-11-11:
 
-- One maintainer, Adam Lin, holds release rights, assigns rule IDs and
-  receives security reports. No second person holds any of these.
-- The TSC described in the Roadmap is not seated.
+- ATR has three maintainers: Adam Lin, the lead maintainer, and two
+  others with write access to the repository. Two of the three hold
+  administrator rights on the repository, which includes reading private
+  security reports.
+- Publishing a release depends on one person: only the lead maintainer
+  can publish the packages. Security reports are addressed to him.
+- The TSC has two members, both maintainers. Its two external seats are
+  not filled (see Roadmap).
 - ATR is not a legal entity. Funds are held by its fiscal host, Open
   Source Collective.
 
-If the maintainer becomes unavailable:
+If the lead maintainer becomes unavailable:
 
 - Everything published stays usable. The rules, engine, specifications
   and test definitions are MIT-licensed and public, and published package
@@ -259,15 +266,15 @@ If the maintainer becomes unavailable:
   cannot do"). Organizations that depend on ATR are encouraged to keep
   their own complete copy of the repository and of any test bank and
   verification keys they rely on.
-- There is currently no named successor and no written procedure for
-  transferring release rights, the repository organization, the package
+- The other maintainers can keep reviewing and merging in the
+  repository. There is currently no named successor as lead maintainer
+  and no written procedure for transferring release rights, the package
   name or the security contact. [HANDOVER.md](HANDOVER.md) records the
   operational knowledge a successor would need.
 
-What closes this gap, in order: a second maintainer with release rights
-and access to security reports; a first TSC seat held by someone
-independent of the maintainer; a written transfer procedure agreed with
-the fiscal host. None of these is done. This section will be updated when
+What closes this gap, in order: release rights held by a second
+maintainer; a first external TSC seat filled; a written transfer
+procedure agreed with the fiscal host. None of these is done. This section will be updated when
 one is.
 
 ---

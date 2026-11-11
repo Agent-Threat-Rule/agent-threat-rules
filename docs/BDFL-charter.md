@@ -6,7 +6,7 @@ Version 1.0 · Effective 2026-04-22 · Amended 2026-11-11
 > this charter used that name in the title and in the membership section.
 > ATR is a project, not a legal entity, and is fiscally hosted by Open
 > Source Collective. The 2026-11-11 amendment corrects the name, records
-> that the TSC is not yet seated, and withdraws the paid membership
+> that the TSC's external seats are not filled, and withdraws the paid membership
 > program that carried a governance vote. See
 > [GOVERNANCE.md](../GOVERNANCE.md) sections "Continuity" and
 > "Organizational membership".
@@ -67,11 +67,12 @@ The BDFL may NOT:
 
 ---
 
-## Technical Steering Committee (TSC) — Founding Three (not yet seated)
+## Technical Steering Committee (TSC) — Founding Three (external seats not filled)
 
-Status on 2026-11-11: the Q3 2026 target was missed and no seat other than
-the maintainer seat is filled. The BDFL holds all authority described below
-until the TSC is seated.
+Status on 2026-11-11: the TSC has two members, both ATR maintainers. The
+Industry and Community seats are not filled; the Q3 2026 target for seating
+all three was missed. The BDFL keeps the final call described below until
+an external seat is filled.
 
 The TSC replaces the single-maintainer authority model. The detailed
 charter for the TSC, including voting thresholds, term length, public
