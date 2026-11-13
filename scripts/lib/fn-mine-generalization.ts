@@ -319,8 +319,8 @@ export function readOutOfSample(root: string): readonly OutOfSampleCorpus[] {
  * question at its end. A sample whose opening matches one in the mined corpus
  * is the mined sample again, not out-of-sample evidence.
  */
-const SAMPLE_KEY_CHARS = 200;
-function sampleKey(text: string): string {
+export const SAMPLE_KEY_CHARS = 200;
+export function sampleKey(text: string): string {
   return text.toLowerCase().replace(/\s+/g, ' ').trim().slice(0, SAMPLE_KEY_CHARS);
 }
 
@@ -336,6 +336,11 @@ const DERIVED_FROM: readonly (readonly string[])[] = Object.freeze([
   ['garak-full', 'in-the-wild-jailbreak', 'jailbreak-cls', 'promptinject'],
   ['deepset', 'multilingual-pi'],
 ]);
+
+/** The family a corpus belongs to: its DERIVED_FROM group's first member, else itself. */
+export function familyOf(corpus: string): string {
+  return DERIVED_FROM.find((group) => group.includes(corpus))?.[0] ?? corpus;
+}
 
 /** `minedFrom` and every corpus that shares its attacks by construction. */
 export function sameFamily(minedFrom: string): ReadonlySet<string> {
