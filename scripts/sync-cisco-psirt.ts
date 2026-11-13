@@ -87,7 +87,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import yaml from "js-yaml";
 
 // Reuse the battle-tested agent-relevance gate from sync-ghsa (single source of
@@ -863,7 +863,7 @@ async function main(): Promise<void> {
 }
 
 // Run only when invoked directly (not when imported for tests).
-const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+const isMainModule = import.meta.url === pathToFileURL(process.argv[1] ?? '').href;
 if (isMainModule) {
   main().catch((e) => {
     console.error("fatal:", e);

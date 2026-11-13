@@ -16,8 +16,8 @@ export const START_ROUTES: ReadonlyArray<StartRoute> = [
     key: "integrate",
     title: { en: "I want to integrate ATR", zh: "我要整合 ATR" },
     body: {
-      en: "Load the rules into your scanner, gateway or SIEM. Then pick a lane by how much you want blocked.",
-      zh: "把規則放進你的掃描器、閘道或 SIEM。想擋多少，就選哪一條車道。",
+      en: "Load the rules into your scanner, gateway or SIEM. The lane decides which maturity of rules runs: enforce runs stable rules only and is the one used for blocking, alert adds test rules, and hunt, the default, runs every effective rule.",
+      zh: "把規則放進你的掃描器、閘道或 SIEM。車道決定跑哪些成熟度的規則：enforce 只跑 stable 規則，用來攔截；alert 再加上 test 規則；hunt 跑全部生效規則，是預設車道。",
     },
     links: [
       { href: "/integrate", label: { en: "Integration paths", zh: "整合方式" } },

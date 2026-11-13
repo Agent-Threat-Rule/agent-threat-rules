@@ -132,8 +132,8 @@ export default async function GovernancePage({
             {
               gate: zh ? "3 · 良性語料 0 FP" : "3 · Benign corpus 0 FP",
               desc: zh
-                ? "每個 PR 都會跑良性語料閘，新規則在上面必須是 0 誤報。這是合併時的最低門檻。發布之後，誤報率會在更大的良性語料上逐車道量測、公開，不會被單一數字蓋過去。"
-                : "A new rule must record zero false positives on the benign corpus gate that runs on every PR. That is the floor at merge time. After release, false-positive rates are measured lane by lane on a larger benign corpus and published, never hidden behind a single figure.",
+                ? "每個 PR 都會跑良性語料閘，新規則在上面必須是 0 誤報。這是合併時的最低門檻。發布之後，誤報率要在更大的良性語料上逐車道量測，不用單一數字概括。先前公布的各車道誤報率已在 2026-09-19 撤回，正在等重新量測。"
+                : "A new rule must record zero false positives on the benign corpus gate that runs on every PR. That is the floor at merge time. After release, false-positive rates are to be measured lane by lane on a larger benign corpus, never as a single figure. The per-lane rates published earlier were withdrawn on 2026-09-19 and are pending re-measurement.",
             },
             {
               gate: zh ? "4 · 跨規則衝突檢查" : "4 · Cross-rule conflict check",

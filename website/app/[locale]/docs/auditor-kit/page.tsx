@@ -18,8 +18,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: locale === "zh" ? "稽核員工具包" : "Auditor kit",
     description:
       locale === "zh"
-        ? "稽核員怎麼確認一個組織真的在跑 ATR：七個問題，每題要索取什麼、怎麼驗。"
-        : "How an auditor checks that an organization really runs ATR: seven questions, what to ask for on each, and how to verify it.",
+        ? "稽核員怎麼確認一個組織真的在跑 ATR：八個問題，每題要索取什麼、怎麼驗。"
+        : "How an auditor checks that an organization really runs ATR: eight questions, what to ask for on each, and how to verify it.",
   });
 }
 
@@ -61,6 +61,12 @@ const QUESTIONS: ReadonlyArray<{ q: B; request: B; verify: B; ev: string }> = [
     request: { en: "The measurement files the organization cites, with the lane.", zh: "組織引用的量測檔，和對應的 lane。" },
     verify: { en: "A figure without its lane, version and caveat can't be compared. Several corpora are partly the same ones the rules were written from.", zh: "沒標 lane、版本和注意事項的數字，沒辦法比較。有幾個語料，其中一部分就是寫規則時用的。" },
     ev: "EV-06",
+  },
+  {
+    q: { en: "Does detection data leave the machine?", zh: "偵測資料會不會送出去？" },
+    request: { en: "The deployment configuration and command lines, including any --report-to-cloud, --tc-url or ATR_TC_URL setting.", zh: "部署設定和執行指令，包括有沒有設 --report-to-cloud、--tc-url 或 ATR_TC_URL。" },
+    verify: { en: "Reporting is off by default. Turning it on with --report-to-cloud requires an endpoint set with --tc-url or ATR_TC_URL, because ATR builds none in. If either is set, record which endpoint the reports go to and who runs it. The --semantic option also sends input text to the judge API the operator configures; if it is on, record that endpoint too.", zh: "回報預設是關的。用 --report-to-cloud 打開時，一定要用 --tc-url 或 ATR_TC_URL 指定端點，ATR 沒有內建端點。只要有設，就記下報告送到哪個端點、由誰營運。另外，--semantic 選項會把輸入內容送到營運者設定的 judge API；有開的話，那個端點也要記下。" },
+    ev: "EV-07",
   },
   {
     q: { en: "What is known not to work?", zh: "有哪些已知做不到？" },

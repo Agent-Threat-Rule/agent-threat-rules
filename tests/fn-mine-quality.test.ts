@@ -189,6 +189,19 @@ describe('finalizeAuthoredRule', () => {
     ]);
   });
 
+  // Review of the 2026-11-08 Nemotron sweep: rules mined from tool output, authored
+  // llm_io on content, fired on the user's own requests (#819).
+  it('scopes a rule mined from a tool_response corpus to tool output, and leaves a prompt corpus rule alone', () => {
+    const scoped = finalizeAuthoredRule(PR639_RULE, 'prompt-injection', ALLOW, GATED, new Date('2026-11-08'), 'tool_response');
+    expect(scoped.agent_source).toMatchObject({ type: 'mcp_exchange' });
+    expect(scoped.tags).toMatchObject({ scan_target: 'mcp', category: (PR639_RULE.tags as Record<string, unknown>).category });
+    expect((scoped.detection as { conditions: { field: string; value: string }[] }).conditions).toEqual([
+      expect.objectContaining({ field: 'tool_response', operator: 'regex', value: GATED }),
+    ]);
+    expect(fixed.agent_source).toEqual(PR639_RULE.agent_source);
+    expect((fixed.detection as { conditions: { field: string }[] }).conditions[0].field).toBe('content');
+  });
+
   it('sets status experimental, which the engine evaluates (gate-rule-status), at maturity test', () => {
     expect(fixed.status).toBe('experimental');
     expect(fixed.maturity).toBe('test');

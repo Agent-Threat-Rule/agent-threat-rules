@@ -40,6 +40,7 @@ import {
 import { join, dirname, basename, extname } from 'node:path';
 import yaml from 'js-yaml';
 import { regexConditionSpec } from '../src/engine.js';
+import { pathToFileURL } from 'node:url';
 
 const COMPILER_VERSION = '1.0.1';
 
@@ -437,5 +438,5 @@ Capability declaration: atr/compiler/pipelock@${COMPILER_VERSION}`);
   }
 }
 
-const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+const isMainModule = import.meta.url === pathToFileURL(process.argv[1] ?? '').href;
 if (isMainModule) main();

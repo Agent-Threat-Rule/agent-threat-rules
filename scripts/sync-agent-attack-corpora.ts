@@ -47,7 +47,8 @@
  *     as the attack pages, in content-hash order until the 5 MB budget.
  *
  *   nvidia/Nemotron-RL-Agentic-Indirect-Prompt-Injection-v1 (CC-BY-4.0), the
- *     same records' prose fields with every injection removed.
+ *     same records' prose fields with every injection removed, and each
+ *     record's benign user request (nemotron-tasks).
  *
  * Usage:
  *   npx tsx scripts/sync-agent-attack-corpora.ts                      # dry-run
@@ -101,12 +102,14 @@ import {
   EMAIL_SET_LIMITS,
   BENIGN_PAGES,
   BENIGN_RECORDS,
+  BENIGN_TASKS,
   MAX_BENIGN_PAGE_CHARS,
   benignDocument,
   benignPageRows,
   benignSourceMarkdown,
   jsonObjects,
   nemotronBenignRows,
+  nemotronTaskRows,
   panzaRows,
   type BenignDocMeta,
   type BenignSource,
@@ -251,6 +254,10 @@ async function collectNemotronBenign(): Promise<readonly CorpusRow[]> {
   return nemotronBenignRows(await nemotronRaw());
 }
 
+async function collectNemotronTasks(): Promise<readonly CorpusRow[]> {
+  return nemotronTaskRows(await nemotronRaw());
+}
+
 const PANZA_FILES = ['david', 'isabel', 'marcus'].flatMap((who) => [`${who}/train.jsonl`, `${who}/test.jsonl`]);
 
 /** Every Panza email, read at the pinned revision; family is donor/split. */
@@ -369,6 +376,19 @@ const BENIGN_SOURCES: readonly BenignPlan[] = [
         'content with every injection removed, the enterprise record text the email and page sets lack.',
     ],
     collect: collectNemotronBenign,
+  },
+  {
+    source: BENIGN_TASKS,
+    files: ['train.jsonl'],
+    filter:
+      "every record's user turn in responses_create_params.input, 40+ characters; deduplicated; stratified by " +
+      `domain in sha256 order; at most ${MAX_ROWS} and ${MAX_CORPUS_BYTES} bytes`,
+    notes: [
+      'Same records and revision as data/test-corpora/nemotron-agentic-ipi. The benign request each record starts ' +
+        'from: it asks for the actions the record\'s injection asks for, in the same words, so a rule that fires ' +
+        'on it fires on a task or ticket a tool returns.',
+    ],
+    collect: collectNemotronTasks,
   },
 ];
 

@@ -190,16 +190,19 @@ describe("mining step", () => {
     }
   });
 
-  // The daily cron names its corpora in an expression; a rename must not leave
-  // it mining a corpus that no longer exists (the run would fail every day).
-  it("runs every day, every corpus on Thursdays and only known corpora on the others", () => {
+  // The daily cron mines that weekday's rotation bucket (scripts/fn-mine-rotation.ts),
+  // so every mined corpus gets a slot each week with no corpus list in the workflow.
+  it("runs twice a day and mines the rotation slot the rotation step picks", () => {
     const wf = load(readFileSync(WORKFLOW, "utf8")) as { on: { schedule: { cron: string }[] } };
-    expect(wf.on.schedule.map((s) => s.cron)).toEqual(["0 9 * * 4", "0 9 * * 0-3,5,6"]);
+    expect(wf.on.schedule.map((s) => s.cron)).toEqual(["0 9 * * *", "0 21 * * *"]);
     const expr = String((step(MINE).env ?? {}).CORPUS_INPUT);
-    expect(expr).toContain("github.event.schedule == '0 9 * * 0-3,5,6'");
-    const fresh = /&& '([a-z0-9,-]+)' \|\| inputs\.corpus/.exec(expr)?.[1] ?? "";
-    expect(fresh).not.toBe("");
-    for (const name of fresh.split(",")) expect(MINED_CORPORA.map((c) => c.name)).toContain(name);
+    expect(expr).toContain("steps.rotation.outputs.corpora");
+    expect(expr).not.toMatch(/&& '[a-z0-9,-]+' \|\|/);
+    const rotation = steps().find((s) => s.id === "rotation");
+    expect(rotation?.run).toContain("scripts/fn-mine-rotation.ts");
+    const names = steps().map((s) => s.name);
+    expect(names.indexOf(rotation?.name ?? "")).toBeLessThan(names.indexOf(MINE));
+    expect(MINED_CORPORA.length).toBeGreaterThan(0);
   });
 
   it("passes inputs through env, never interpolated into the script", () => {

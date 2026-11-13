@@ -2,7 +2,15 @@
 
 ATR is an MIT-licensed open standard for detecting AI agent attacks — think Snort rules but for LLMs and MCP tools. Detection rules span 10 categories; the canonical rule count and the version-pinned benchmark table live in [`data/stats.json`](data/stats.json) and the README, which are the numbers to quote (the count moves daily, so this page does not carry one). Note that the per-lane false-positive rates once published in the README are **withdrawn and not citable** — see the lanes section there. ATR rules have been merged into open-source repos maintained by Microsoft, Cisco, MISP, and OWASP-community projects. When you contribute a detection rule, it ships to every downstream consumer of the npm package on their next update.
 
+Interests: the lead maintainer founded and controls PANGUARD AI, INC., which sells AI agent security products built on ATR. See [GOVERNANCE.md](GOVERNANCE.md).
+
 No CLA. No proprietary tooling. No telemetry by default — the CLI sends nothing unless you pass `--report-to-cloud` (see the Telemetry section of the README).
+
+## Find where to help
+
+The [community page](https://agentthreatrule.org/en/community) lists the areas where work happens now (rules, engine and integrations, ATR Eval, test cases, laws and frameworks), what is in progress in each, and where help is needed. Issues labelled `good first issue` carry an area label (`wg/rules`, `wg/engine`, `wg/mappings`, `wg/community`) and say which files to touch and how to test. Issues for ATR Eval and its test cases open when the ATR Eval repository is published. Anyone can open an issue or a pull request; comment "I'd like to take this" on an issue before you start, so two people don't do the same work. Solved problems drop off the list automatically. To be listed in the community directory, [apply to join](https://agentthreatrule.org/en/community/join).
+
+Questions are welcome on the [ATR Discord](https://discord.gg/qX76Gb4Nzk). You never need Discord to contribute: everything can be done in issues and pull requests here.
 
 ---
 
@@ -153,7 +161,6 @@ Every rule that ships from your probe or PR carries your attribution in two plac
 Your name also appears in:
 
 - [CONTRIBUTORS.md](./CONTRIBUTORS.md)
-- Release notes for each version that includes your rule
 - Downstream — every consumer of the npm package, including the open-source
   repos under the Microsoft, Cisco, OWASP-community and MISP orgs that vendor
   ATR, gets the YAML with your name in it

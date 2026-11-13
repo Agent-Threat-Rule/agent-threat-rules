@@ -382,8 +382,8 @@ export function tierDescription(tier: AdopterTier, locale: "en" | "zh"): string 
       zh: "其本身就是公共財互操作性產出的採用者:由中立機構發佈的分類、規範對應、schema。",
     },
     "1": {
-      en: "Adopters who ship ATR in a publicly-available customer-facing product.",
-      zh: "在公開、面向客戶的產品中部署 ATR 的採用者。",
+      en: "Adopters who ship ATR in a publicly available customer-facing product or in internal-but-public tooling, listed once the adopter has confirmed it publicly (merged PR, public docs, conference talk).",
+      zh: "在公開、面向客戶的產品，或內部使用但公開的工具裡帶有 ATR 的採用者。要等採用方公開確認（已合併的 PR、公開文件、研討會演講等）才列入。",
     },
     "2": {
       en: "Open-source developer tools, frameworks, and SDKs that integrate ATR.",

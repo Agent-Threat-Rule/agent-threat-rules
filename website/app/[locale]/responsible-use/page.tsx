@@ -84,8 +84,8 @@ export default async function ResponsibleUsePage({
             {
               title: zh ? "標準映射與合規文件" : "Standards mapping and compliance documentation",
               desc: zh
-                ? "每條 ATR 規則都對應到 OWASP、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001 的條目。這些對應可以當成可執行的覆蓋證據，向稽核或採購說明，哪些框架要求已經有對應的偵測。這些對應是 ATR 自己做的，框架方沒有審查或背書。"
-                : "Every ATR rule carries crosswalks to OWASP, MITRE ATLAS, NIST AI RMF, EU AI Act and ISO 42001. Use those mappings as executable coverage evidence, to show auditors or procurement which framework requirements have a matching detection. ATR wrote these mappings; the framework owners have not reviewed or endorsed them.",
+                ? "每條 ATR 規則都對應到 OWASP、MITRE ATLAS、NIST AI RMF、EU AI Act、ISO 42001 的條目。規則命中時，就是支持它所對到那幾項要求的偵測證據，可以拿給稽核或採購看。這不代表規則滿足了那項要求。這些對應是 ATR 自己做的，框架方沒有審查或背書。"
+                : "Every ATR rule carries crosswalks to OWASP, MITRE ATLAS, NIST AI RMF, EU AI Act and ISO 42001. When a rule fires, it provides detection evidence supporting the requirements it maps to, which you can show to auditors or procurement. It does not mean the rule satisfies those requirements. ATR wrote these mappings; the framework owners have not reviewed or endorsed them.",
             },
             {
               title: zh ? "研究與學術引用" : "Research and academic citation",
@@ -195,8 +195,8 @@ export default async function ResponsibleUsePage({
           </ul>
           <p className="mt-4">
             {zh
-              ? "資料來源也有界線。PyRIT 的 Pliny L1B3RT4S 資料集沒有導入，因為 Anthropic 的使用政策不允許 subagent 讀取它。AdvBench、HarmBench、JailbreakBench 歸在測試語料（data/test-corpora/），不當規則來源。這些資料集描述的是目標行為，不是包裝好的攻擊 payload。"
-              : "The data sources have limits too. PyRIT's Pliny L1B3RT4S dataset was not imported, because Anthropic's usage policy does not allow the subagents used in this work to consume it. AdvBench, HarmBench and JailbreakBench are classified as test corpora (data/test-corpora/), not rule sources. Those datasets describe target behaviors, not wrapped attack payloads."}
+              ? "資料來源也有界線。AdvBench、HarmBench、JailbreakBench 歸在測試語料（data/test-corpora/），不當規則來源。這些資料集描述的是目標行為，不是包裝好的攻擊 payload。"
+              : "The data sources have limits too. AdvBench, HarmBench and JailbreakBench are classified as test corpora (data/test-corpora/), not rule sources. Those datasets describe target behaviors, not wrapped attack payloads."}
           </p>
           <p className="mt-4">
             {zh

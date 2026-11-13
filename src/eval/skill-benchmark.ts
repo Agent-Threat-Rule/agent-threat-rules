@@ -23,6 +23,7 @@ import { enforceLaneRecall, rulesInLane } from '../measurement/enforce-lane.js';
 import { ENFORCE_LANE_BREAKDOWN_KEY } from '../measurement/schema.js';
 import { writeMeasurement, type MeasurementInput } from '../measurement/write.js';
 import type { Lane } from '../quality/rule-contract.js';
+import { pathToFileURL } from 'node:url';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -397,7 +398,7 @@ export function printReport(report: SkillBenchmarkReport): void {
 // Direct execution
 // ---------------------------------------------------------------------------
 
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('skill-benchmark.ts')) {
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href || process.argv[1]?.endsWith('skill-benchmark.ts')) {
   runSkillBenchmark().then(async (report) => {
     printReport(report);
     console.log(`Report saved to: data/skill-benchmark/benchmark-report.json`);

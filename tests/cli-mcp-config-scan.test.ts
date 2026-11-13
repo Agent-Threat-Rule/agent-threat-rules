@@ -21,8 +21,9 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
 
-const CLI = new URL("../src/cli.ts", import.meta.url).pathname;
+const CLI = fileURLToPath(new URL("../src/cli.ts", import.meta.url));
 
 /** The payload from the report: env injection through NODE_OPTIONS in a server config. */
 const HOSTILE_CONFIG = {

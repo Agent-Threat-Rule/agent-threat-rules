@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/Reveal";
 import { loadSiteStats } from "@/lib/stats";
+import { loadAdopters } from "@/lib/adopters";
 import { locales, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
@@ -53,8 +54,8 @@ const MILESTONES: Milestone[] = [
       zh: "Cisco AI Defense 合併 34 條規則（PR #79）",
     },
     detail: {
-      en: "First enterprise adoption. 1,272 lines added, merged the day after it was submitted.",
-      zh: "第一個企業採用。新增 1,272 行，送出隔天就合併。",
+      en: "1,272 lines added, merged the day after it was submitted.",
+      zh: "新增 1,272 行，送出隔天就合併。",
     },
   },
   {
@@ -200,6 +201,10 @@ export default async function AboutPage({
   const locale = (locales.includes(rawLocale as Locale) ? rawLocale : "en") as Locale;
   const zh = locale === "zh";
   const ruleCount = loadSiteStats().ruleCount;
+  const adopters = loadAdopters();
+  const allAdopters = [...adopters.tierS, ...adopters.tier1, ...adopters.tier2, ...adopters.tier3, ...adopters.tier4];
+  const shippedCount = allAdopters.filter((a) => a.status === "shipped").length;
+  const inReviewCount = allAdopters.filter((a) => a.status === "in-review").length;
 
   return (
     <Phrased>
@@ -244,8 +249,8 @@ export default async function AboutPage({
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "比規則數量更要緊的，是把精確度老實交代清楚。v3.5.0 加入了偵測車道：每條規則都標明成熟度，用的人自己決定要信到什麼程度。enforce 車道只讓最成熟的規則觸發。預設的 hunt 車道會跑全部規則，結果只當建議。ATR 的誤報率一條車道一條車道公布，從不拿一個好看的數字概括。目前各車道的誤報率已經撤回，等重新量測。原因是後來發現，量測用的良性語料裡混進了真實的越獄樣本。"
-            : "The rule count matters less than being honest about precision. The v3.5.0 release introduced detection lanes: every rule declares a maturity, and whoever runs the rules decides how far to trust them. The enforce lane fires only the most mature rules. The default hunt lane runs everything, as advisory. ATR reports false-positive rates lane by lane, never as one flattering number. The current per-lane figures are withdrawn pending re-measurement, because the benign corpus they were measured on turned out to contain real jailbreak samples."}
+            ? "比規則數量更要緊的，是把精確度老實交代清楚。v3.5.0 加入了偵測車道：每條規則都標明成熟度，用的人自己決定要信到什麼程度。enforce 車道只讓最成熟的規則觸發。預設的 hunt 車道會跑全部生效規則，結果只當建議。ATR 的誤報率一條車道一條車道公布，從不拿一個好看的數字概括。目前各車道的誤報率已經撤回，等重新量測。原因是後來發現，量測用的良性語料裡混進了真實的越獄樣本。"
+            : "The rule count matters less than being honest about precision. The v3.5.0 release introduced detection lanes: every rule declares a maturity, and whoever runs the rules decides how far to trust them. The enforce lane fires only the most mature rules. The default hunt lane runs every effective rule, as advisory. ATR reports false-positive rates lane by lane, never as one flattering number. The current per-lane figures are withdrawn pending re-measurement, because the benign corpus they were measured on turned out to contain real jailbreak samples."}
         </p>
       </Section>
 
@@ -310,8 +315,8 @@ export default async function AboutPage({
         </p>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-4">
           {zh
-            ? "到目前為止的外部採用：三個已合併的上游整合，每一個都有公開 repo 裡已合併的 PR 為憑。分別是 Cisco AI Defense 開源 skill-scanner 裡的 ATR 規則集、Microsoft AGT 的 ATR 範例目錄，以及 Gen Digital 已合併的 Sage 規則包。MISP 收下了 ATR 的 taxonomy（#323）和 galaxy（#1207），由 CIRCL 的維護者合併。OWASP Agent Security Regression Harness 合併了四個從 ATR 改寫的回歸情境（#74），檔案裡沒有標註 ATR。另有兩個提案還開著，尚未合併。一個是送到 NIST OSCAL 內容庫的 usnistgov/oscal-content#338，提供 AI RMF profile 範例，正在等 NIST 審查，不是 NIST 背書。另一個是 OpenTelemetry GenAI SIG 的 PR #165，定義 agent.threat.detection.* 語意慣例。這些整合都是用 pull request 進來的，沒有私下 fork。"
-            : "External adoption so far: three merged upstream integrations, each backed by a merged pull request in a public repository. They are the ATR rule pack in Cisco AI Defense's open-source skill-scanner, ATR example directories in Microsoft AGT, and Gen Digital's merged Sage pack. MISP took in an ATR taxonomy (#323) and galaxy (#1207), merged by a CIRCL maintainer. The OWASP Agent Security Regression Harness merged four regression scenarios derived from ATR (#74); the files do not credit ATR. Two proposals are still open and unmerged. One is usnistgov/oscal-content#338, which offers AI RMF profile examples to NIST's OSCAL content repository and is awaiting NIST review; it is not a NIST endorsement. The other is PR #165 in OpenTelemetry's GenAI SIG, for the agent.threat.detection.* semantic conventions. These enterprises integrated through pull requests, not private forks. That is the kind of adoption ATR is built for."}
+            ? <>外部採用都記在 repo 根目錄的 ADOPTERS.md：目前 {shippedCount} 筆已上線，{inReviewCount} 筆還在審查中，每一筆都附公開查得到的證據連結。完整清單和證據，請看<Link href={`/${locale}/ecosystem`} className="text-blue hover:underline">生態系頁</Link>。另有一個提案還開著：送到 NIST OSCAL 內容庫的 usnistgov/oscal-content#338，提供 AI RMF profile 範例，正在等 NIST 審查，不是 NIST 背書。</>
+            : <>External adoption is recorded in ADOPTERS.md at the repository root: {shippedCount} entries have shipped and {inReviewCount} are in review, each with a public evidence link anyone can check. The full list and its evidence are on the <Link href={`/${locale}/ecosystem`} className="text-blue hover:underline">ecosystem page</Link>. One proposal is still open: usnistgov/oscal-content#338 offers AI RMF profile examples to NIST&apos;s OSCAL content repository and is awaiting NIST review; it is not a NIST endorsement.</>}
         </p>
         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
           <a

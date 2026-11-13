@@ -2,8 +2,9 @@
  * scripts/lib/fn-mine-tool-benign.ts
  *
  * The FN-mine gate's tool-output check (scripts/fn-mine-llm.ts): a candidate
- * must fire on no benign email, web page or enterprise record (the corpora in
- * scripts/lib/tool-output-benign.ts), presented to the real engine as the text
+ * must fire on no benign email, web page, enterprise record or business-system
+ * tool output (the corpora in scripts/lib/tool-output-benign.ts and
+ * BENIGN_ENTERPRISE below), presented to the real engine as the text
  * a tool returned, the way coverageOf and liveMisses present LLMail and
  * BrowseSafe (tool_response, fn-mine-input.ts PRESENTATIONS).
  *
@@ -16,16 +17,46 @@
  * corpora the run fails (requireToolOutputBenign).
  *
  * Applied to every candidate, not only those mined from tool_response corpora:
- * the lane authors llm_io rules, and the engine runs llm_io rules on
- * tool_response events (src/engine.ts llmIoOverToolResponse), so a rule mined
- * from HackAPrompt scans the same emails and pages.
+ * a rule mined from a prompt corpus is authored llm_io, and the engine runs
+ * llm_io rules on tool_response events (src/engine.ts llmIoOverToolResponse),
+ * so a rule mined from HackAPrompt scans the same emails and pages. A rule
+ * from a tool-output corpus ships as mcp_exchange on field tool_response
+ * (finalizeAuthoredRule); under this presentation the text is both the event
+ * content and fields.tool_response, so the llm_io candidate here gets the
+ * verdict the shipped rule would.
  */
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import yaml from 'js-yaml';
 import { detectionsByRule } from './fn-mine-input.js';
-import { BENIGN_EMAILS, BENIGN_PAGES, BENIGN_RECORDS, type BenignSource } from './tool-output-benign.js';
+import { BENIGN_EMAILS, BENIGN_PAGES, BENIGN_RECORDS, BENIGN_TASKS, type BenignSource } from './tool-output-benign.js';
+
+/**
+ * Business-system tool outputs (calendar, email, drive, banking, chat, travel,
+ * retail, airline), vendored by scripts/sync-generalization-corpora.py from
+ * AgentDojo, tau-bench and InjecAgent. Added 2026-11-08 after PR #819: its
+ * Nemotron rules fired on HR, inventory, grading and calendar text the other
+ * corpora did not hold.
+ */
+export const BENIGN_ENTERPRISE: Pick<BenignSource, 'id' | 'path'> = Object.freeze({
+  id: 'enterprise-tool-outputs',
+  path: 'data/fn-mine-benign/enterprise-tool-outputs/corpus.json',
+});
+
+/**
+ * Operation summaries and descriptions of public business APIs (education,
+ * HR, payroll, accounting, tickets, messaging, scheduling, e-signature), from
+ * the CC0 APIs-guru openapi-directory via scripts/sync-oos-corpora.py. The
+ * enterprise corpus above is mostly JSON records; this is the prose a docs or
+ * API-search tool returns ("Sends the specified message", "Creates a
+ * submission", "Cancels a meeting"), the wording a request-only regex keys on.
+ * Counted with the enterprise outputs.
+ */
+export const BENIGN_API_DOCS: Pick<BenignSource, 'id' | 'path'> = Object.freeze({
+  id: 'business-api-docs',
+  path: 'data/fn-mine-benign/business-api-docs/corpus.json',
+});
 import { compileEngineAccurate, type GatedCandidate } from './fn-mine-candidate-gate.js';
 import { matchExcerpt } from './fn-mine-recoveries.js';
 
@@ -34,12 +65,23 @@ export interface ToolOutputBenign {
   readonly pages: readonly string[];
   /** Enterprise record fields (chart notes, product descriptions, case summaries) a read tool returns. */
   readonly records: readonly string[];
+  /** The benign requests the same records start from: an injection's twins, as a task or ticket a tool returns. */
+  readonly tasks: readonly string[];
+  /** Business-system tool outputs from other benchmarks (BENIGN_ENTERPRISE). */
+  readonly enterprise: readonly string[];
 }
 
 /** The benign texts of one vendored corpus, or why they cannot be trusted. */
-function readBenignFile(root: string, source: BenignSource): { texts: readonly string[] } | { problem: string } {
+function readBenignFile(root: string, source: Pick<BenignSource, 'id' | 'path'>): { texts: readonly string[] } | { problem: string } {
   const file = join(root, source.path);
-  if (!existsSync(file)) return { problem: `${source.path} is missing (run scripts/sync-agent-attack-corpora.ts --source ${source.id} --write)` };
+  if (!existsSync(file)) {
+    const sync = source.id === BENIGN_ENTERPRISE.id
+      ? 'scripts/sync-generalization-corpora.py --write'
+      : source.id === BENIGN_API_DOCS.id
+        ? 'scripts/sync-oos-corpora.py --write'
+        : `scripts/sync-agent-attack-corpora.ts --source ${source.id} --write`;
+    return { problem: `${source.path} is missing (run ${sync})` };
+  }
   let doc: { count?: unknown; samples?: unknown };
   try {
     doc = JSON.parse(readFileSync(file, 'utf8')) as typeof doc;
@@ -53,7 +95,7 @@ function readBenignFile(root: string, source: BenignSource): { texts: readonly s
   return { texts };
 }
 
-/** The three vendored corpora, or the first problem. */
+/** The vendored corpora (emails, pages, records, tasks and enterprise outputs), or the first problem. */
 export function readToolOutputBenign(root: string): { corpus: ToolOutputBenign } | { problem: string } {
   const emails = readBenignFile(root, BENIGN_EMAILS);
   if ('problem' in emails) return emails;
@@ -61,7 +103,21 @@ export function readToolOutputBenign(root: string): { corpus: ToolOutputBenign }
   if ('problem' in pages) return pages;
   const records = readBenignFile(root, BENIGN_RECORDS);
   if ('problem' in records) return records;
-  return { corpus: { emails: emails.texts, pages: pages.texts, records: records.texts } };
+  const tasks = readBenignFile(root, BENIGN_TASKS);
+  if ('problem' in tasks) return tasks;
+  const enterprise = readBenignFile(root, BENIGN_ENTERPRISE);
+  if ('problem' in enterprise) return enterprise;
+  const apiDocs = readBenignFile(root, BENIGN_API_DOCS);
+  if ('problem' in apiDocs) return apiDocs;
+  return {
+    corpus: {
+      emails: emails.texts,
+      pages: pages.texts,
+      records: records.texts,
+      tasks: tasks.texts,
+      enterprise: [...enterprise.texts, ...apiDocs.texts],
+    },
+  };
 }
 
 /**
@@ -115,10 +171,25 @@ function hitSnippet(kind: string, text: string, regex: string): string {
   return `${kind}: ${excerpt.replace(/\s+/g, ' ').trim()}`;
 }
 
-/** Which corpus benign text `i` (in emails, pages, records order) came from. */
+/** Which corpus benign text `i` (in benignTextsOf order) came from. */
 function benignKind(i: number, benign: ToolOutputBenign): string {
-  if (i < benign.emails.length) return 'email';
-  return i < benign.emails.length + benign.pages.length ? 'page' : 'record';
+  const bounds: [string, number][] = [
+    ['email', benign.emails.length],
+    ['page', benign.pages.length],
+    ['record', benign.records.length],
+    ['task', benign.tasks.length],
+  ];
+  let end = 0;
+  for (const [kind, n] of bounds) {
+    end += n;
+    if (i < end) return kind;
+  }
+  return 'business tool output';
+}
+
+/** Every benign tool-output text, in the order benignKind counts them. */
+function benignTextsOf(benign: ToolOutputBenign): readonly string[] {
+  return [...benign.emails, ...benign.pages, ...benign.records, ...benign.tasks, ...benign.enterprise];
 }
 
 /** Each candidate's verdict, in order, from one engine run over every benign text and every candidate's own texts. */
@@ -127,7 +198,7 @@ export async function toolOutputVerdicts(
   benign: ToolOutputBenign,
 ): Promise<readonly ToolOutputVerdict[]> {
   if (candidates.length === 0) return [];
-  const benignTexts = [...benign.emails, ...benign.pages, ...benign.records];
+  const benignTexts = benignTextsOf(benign);
   // Candidate i's own texts sit at [ownStart[i], ownStart[i] + own.length) after the benign texts.
   const ownStart: number[] = [];
   let next = benignTexts.length;
@@ -175,7 +246,12 @@ export async function dropToolOutputHits<T extends GatedCandidate>(
       return false;
     }
     if (v.benignHits > 0) {
-      drop(s, `fires on ${v.benignHits} benign tool output(s) (emails ${benign.emails.length}, pages ${benign.pages.length}), first: ${JSON.stringify(v.firstHit)}`);
+      drop(
+        s,
+        `fires on ${v.benignHits} benign tool output(s) (emails ${benign.emails.length}, pages ${benign.pages.length}, ` +
+          `records ${benign.records.length}, tasks ${benign.tasks.length}, business ${benign.enterprise.length}), ` +
+          `first: ${JSON.stringify(v.firstHit)}`,
+      );
       return false;
     }
     return true;

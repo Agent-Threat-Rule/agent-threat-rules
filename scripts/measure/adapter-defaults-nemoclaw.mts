@@ -2,6 +2,7 @@ import { NemoClawPreflight } from '../../src/adapters/nemoclaw-preflight.js';
 import { readdirSync, mkdtempSync, copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
 
 async function main() {
   const pf = new NemoClawPreflight({ minSeverity: 'high' } as never);   // 預設:minSeverity 未指定 → DEFAULT high
@@ -14,7 +15,7 @@ async function main() {
   if (ctl.decision !== 'block') { console.log(`CONTROL FAILED — 惡意 bundle 得到 ${ctl.decision}`); process.exit(3); }
   console.log(`CONTROL ok — 惡意 bundle → ${ctl.decision}`);
 
-  const dir = new URL('../../data/skill-benchmark/benign', import.meta.url).pathname;
+  const dir = fileURLToPath(new URL('../../data/skill-benchmark/benign', import.meta.url));
   const files = readdirSync(dir).filter(f => f.endsWith('.md'));
   let blocked = 0; const hits: string[] = [];
   for (const f of files) {

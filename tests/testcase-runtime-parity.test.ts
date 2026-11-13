@@ -40,8 +40,9 @@ import {
   caseMatchesAtRuntime,
 } from "../src/testcase-event.js";
 import type { ATRRule } from "../src/types.js";
+import { fileURLToPath } from "node:url";
 
-const CLI = new URL("../src/cli.ts", import.meta.url).pathname;
+const CLI = fileURLToPath(new URL("../src/cli.ts", import.meta.url));
 
 interface Condition {
   readonly field: string;

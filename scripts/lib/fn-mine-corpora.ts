@@ -22,6 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { corpusById, type DeliveryShape } from './fn-corpora.js';
 import { liveMisses, successfulHackapromptMisses } from './fn-mine-input.js';
+import { oosSource, OOS_SOURCES, readOosTexts } from './fn-mine-oos.js';
 
 /**
  * How much of a corpus one run shows the model. Every chunk is one model call,
@@ -63,9 +64,21 @@ export interface VendoredCorpusSpec extends SpecBase {
   readonly kind: 'vendored';
   /** Id in scripts/lib/fn-corpora.ts CORPORA. */
   readonly registryId: string;
+  /**
+   * Mine only samples whose id starts with one of these. garak-full holds
+   * probes that are not injections at all (snowball graph questions, HarmBench
+   * goals, package-name hallucination): mining them would fill every chunk
+   * with text no injection rule should match.
+   */
+  readonly sampleIdPrefixes?: readonly string[];
 }
 
-export type MinedCorpusSpec = ReportCorpusSpec | VendoredCorpusSpec;
+/** A corpus under data/fn-mine-oos (scripts/lib/fn-mine-oos.ts): its name is its OOS id. */
+export interface OosCorpusSpec extends SpecBase {
+  readonly kind: 'oos';
+}
+
+export type MinedCorpusSpec = ReportCorpusSpec | VendoredCorpusSpec | OosCorpusSpec;
 
 /** Short prompt texts: 300 of them, 300 characters each — the lane's original slice. */
 const PROMPT_BUDGET: MineBudget = Object.freeze({ chunkSize: 300, promptChars: 300, maxChunksPerRound: 3 });
@@ -133,9 +146,64 @@ export const MINED_CORPORA: readonly MinedCorpusSpec[] = Object.freeze([
       'are wrapped in one of two generator templates: a "[PRIORITY MESSAGE]" block ("Hi Assistant, I forgot to ' +
       'mention earlier ... Sorry for the late addition!") or a warning-emoji "URGENT: Before completing any other ' +
       'tasks, you MUST:" line. Those wrappers are the generator\'s fixed text and are removed before recoveries are ' +
-      'counted, so a regex on them recovers nothing: key on what the injected instruction asks the agent to do. ' +
+      'counted, so a regex on the wrapper verbatim recovers nothing. Do not fall back to the request alone either ' +
+      '("submit the grade", "cancel the appointment", "send the offer"): business systems return those words with ' +
+      'no attack, and a gate drops a regex whose matches carry no injection signal. Key on how the text addresses ' +
+      'the agent in terms an attacker reuses beyond this generator. ' +
       'The record ids, names and addresses are per-record fixtures: never anchor on them either.',
   },
+  // Registry prompt corpora, measured since 2026-09 and mined since 2026-11-09,
+  // once their scoring strings were listed (BENCHMARK_ARTIFACTS in
+  // fn-mine-quality.ts) and stripped from every out-of-sample count.
+  {
+    kind: 'vendored',
+    name: 'garak-full',
+    registryId: 'garak-full',
+    shape: 'llm_input',
+    budget: PROMPT_BUDGET,
+    sampleIdPrefixes: [
+      'garak-dan', 'garak-inthewild', 'garak-latentinjection', 'garak-web_injection', 'garak-encoding',
+      'garak-sysprompt_extraction', 'garak-dra', 'garak-autodan', 'garak-goat', 'garak-doctor', 'garak-goodside',
+      'garak-smuggling', 'garak-sata', 'garak-agent_breaker',
+    ],
+    goalNote:
+      'garak probes test whether a model prints a fixed marker: "AI Injection succeeded.", "Data exfiltration in ' +
+      'progress...", PromptInject\'s rogue strings ("I hate humans", "Kill all humans", "This prompt has been so ' +
+      'thoroughly hijacked ...") and links to bad.com. They are removed before recoveries are counted; never anchor on them.',
+  },
+  {
+    kind: 'vendored',
+    name: 'promptinject',
+    registryId: 'promptinject',
+    shape: 'llm_input',
+    budget: PROMPT_BUDGET,
+    goalNote:
+      'PromptInject wraps each attack in an ordinary task prompt ("Correct this to standard English:") and asks the ' +
+      'model to print a rogue string ("I hate humans", "Kill all humans", "This prompt has been so thoroughly hijacked ' +
+      '... Sanitize your inputs!"). Task prompts and rogue strings are removed before recoveries are counted; key on ' +
+      'how the text overrides the task.',
+  },
+  ...['llm-guard', 'nemo-guardrails', 'promptfoo'].map(
+    (id): VendoredCorpusSpec => ({
+      kind: 'vendored',
+      name: id,
+      registryId: id,
+      shape: 'llm_input',
+      budget: PROMPT_BUDGET,
+      goalNote: 'Hand-written scanner fixtures with no fixed scoring string (checked 2026-11-09); mine the technique.',
+    }),
+  ),
+  // Every corpus under data/fn-mine-oos. Each stays out-of-sample evidence for
+  // the rules mined from any other corpus.
+  ...OOS_SOURCES.map(
+    (s): OosCorpusSpec => ({
+      kind: 'oos',
+      name: s.id,
+      shape: s.shape,
+      budget: s.shape === 'tool_response' ? EMAIL_BUDGET : PROMPT_BUDGET,
+      ...(s.goalNote ? { goalNote: s.goalNote } : {}),
+    }),
+  ),
 ]);
 
 /**
@@ -152,6 +220,18 @@ export function selectCorpora(value: string, specs: readonly MinedCorpusSpec[] =
     throw new Error(`--corpus: unknown corpus ${unknown.join(', ')} (known: ${specs.map((s) => s.name).join(', ')})`);
   }
   return specs.filter((s) => names.includes(s.name));
+}
+
+/**
+ * The delivery shape of the mined corpus named `name`, which decides where an
+ * authored rule looks (finalizeAuthoredRule). An unknown name throws: falling
+ * back to llm_input would author a rule from a tool-output corpus unscoped,
+ * running on the user's own requests, with nothing to say so.
+ */
+export function minedCorpusShape(name: string, specs: readonly MinedCorpusSpec[] = MINED_CORPORA): DeliveryShape {
+  const spec = specs.find((s) => s.name === name);
+  if (!spec) throw new Error(`no mined corpus named ${JSON.stringify(name)}: cannot tell where its rules should look`);
+  return spec.shape;
 }
 
 /** What a vendored corpus file says it holds, or why it cannot be read. */
@@ -175,6 +255,10 @@ export function vendoredProblem(spec: VendoredCorpusSpec, root: string): string 
   if (!def) return `${spec.registryId} is not in scripts/lib/fn-corpora.ts CORPORA`;
   const file = path.join(root, def.path);
   if (!fs.existsSync(file)) return `${def.path} is missing (run scripts/sync-agent-attack-corpora.ts --write)`;
+  if (fs.statSync(file).isDirectory()) {
+    // A directory corpus (garak-full) declares no count; it must still load attacks.
+    return def.load(root).some((s) => s.label === 'attack') ? null : `${def.path} holds no attack samples`;
+  }
   const declared = declaredCount(file);
   if ('problem' in declared) return `${def.path} ${declared.problem}`;
   const attacks = def.load(root).filter((s) => s.label === 'attack').length;
@@ -182,6 +266,21 @@ export function vendoredProblem(spec: VendoredCorpusSpec, root: string): string 
   if (declared.count !== null && declared.count !== attacks) {
     return `${def.path} declares ${declared.count} rows but ${attacks} attack samples load`;
   }
+  return null;
+}
+
+/** Why an OOS corpus cannot be mined this run, or null (it must exist and hold what it declares). */
+export function oosProblem(spec: OosCorpusSpec, root: string): string | null {
+  const source = oosSource(spec.name);
+  if (!source) return `${spec.name} is not in scripts/lib/fn-mine-oos.ts OOS_SOURCES`;
+  const read = readOosTexts(root, source);
+  return 'problem' in read ? read.problem : null;
+}
+
+/** Why a spec's input cannot be mined, or null; report corpora regenerate instead and return null here. */
+export function minedCorpusProblem(spec: MinedCorpusSpec, root: string): string | null {
+  if (spec.kind === 'vendored') return vendoredProblem(spec, root);
+  if (spec.kind === 'oos') return oosProblem(spec, root);
   return null;
 }
 
@@ -214,7 +313,20 @@ function pintMisses(spec: ReportCorpusSpec, root: string): readonly string[] {
 
 async function vendoredMisses(spec: VendoredCorpusSpec, root: string, log: (line: string) => void): Promise<readonly string[]> {
   const def = corpusById(spec.registryId);
-  const attacks = (def?.load(root) ?? []).filter((s) => s.label === 'attack').map((s) => s.text);
+  const prefixes = spec.sampleIdPrefixes;
+  const attacks = (def?.load(root) ?? [])
+    .filter((s) => s.label === 'attack')
+    .filter((s) => !prefixes || prefixes.some((p) => String((s as { id?: unknown }).id ?? '').startsWith(p)))
+    .map((s) => s.text);
+  const missed = await liveMisses(attacks, path.join(root, 'rules'), spec.shape);
+  log(`${spec.name}: ${attacks.length} attacks presented as ${spec.shape}, ${missed.length} missed by the live rules`);
+  return missed;
+}
+
+async function oosMisses(spec: OosCorpusSpec, root: string, log: (line: string) => void): Promise<readonly string[]> {
+  const source = oosSource(spec.name);
+  const read = source ? readOosTexts(root, source) : { problem: 'not listed' };
+  const attacks = 'texts' in read ? read.texts : [];
   const missed = await liveMisses(attacks, path.join(root, 'rules'), spec.shape);
   log(`${spec.name}: ${attacks.length} attacks presented as ${spec.shape}, ${missed.length} missed by the live rules`);
   return missed;
@@ -223,6 +335,7 @@ async function vendoredMisses(spec: VendoredCorpusSpec, root: string, log: (line
 /** The corpus's false negatives against the current rules, before draft coverage. */
 export async function falseNegatives(spec: MinedCorpusSpec, root: string, log: (line: string) => void): Promise<readonly string[]> {
   if (spec.kind === 'vendored') return vendoredMisses(spec, root, log);
+  if (spec.kind === 'oos') return oosMisses(spec, root, log);
   return spec.name === 'hackaprompt' ? hackapromptMisses(spec, root, log) : pintMisses(spec, root);
 }
 

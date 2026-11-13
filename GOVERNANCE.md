@@ -75,17 +75,21 @@ adoption grows (see Roadmap below).
   alerts, Cisco AI Defense logs, and any downstream consumer. A security
   analyst can always trace an alert back to the canonical rule YAML.
 
-### Why this cannot be forked
+### What a fork can and cannot do
 
-A fork of the ATR repository can duplicate the rule files, but it
-**cannot assign new IDs that the ecosystem recognizes**. If a fork
-publishes `ATR-2026-99999`, no ATR-compatible scanner, no Cisco
-integration, and no Threat Cloud instance will accept that ID as
-official. The numbering authority is the social contract, not the code.
+ATR is MIT-licensed. Anyone may copy the rules, the engine and the
+specifications, change them, and publish the result, including under a
+different name and with their own identifiers (see
+[TRADEMARK.md](TRADEMARK.md) for the name). Nothing in this document
+limits that.
 
-This is the same mechanism that makes CVE numbers meaningful: MITRE is
-the numbering authority, and a self-assigned "CVE" from an unrecognized
-source has no standing.
+What a fork does not get automatically is recognition of new IDs it
+assigns in the `ATR-YYYY-NNNNN` series. Uniqueness only holds if one
+party assigns the numbers, and consumers decide which party they follow.
+The numbering authority is therefore a convention that lasts as long as
+consumers find it useful, not a technical or legal lock. If this project
+stops assigning IDs, a successor or a fork can take over the series, and
+consumers can follow it.
 
 ---
 
@@ -179,11 +183,21 @@ Merged rules are:
 
 ## Roadmap
 
-### v1.1 — Technical Steering Committee, Founding Three (Target: Q3 2026)
+### v1.1 — Technical Steering Committee, Founding Three (external seats not filled)
+
+Status on 2026-11-11: the TSC has two members, both ATR maintainers. The
+Industry seat and the Community seat defined in
+[TSC-CHARTER.md](TSC-CHARTER.md) are not filled; the original target for
+seating all three was Q3 2026 and it was missed. TSC-CHARTER.md is still a
+draft. Until an external seat is filled, the final call on every decision
+listed in this document rests with the lead maintainer. See
+[Continuity](#continuity).
 
 Single-maintainer governance is the project's primary structural risk. The
-Founding Three TSC composition resolves bus-factor=1 and converts ATR from
-a project into a standards body.
+Founding Three TSC composition is meant to resolve bus-factor=1. Seating a
+TSC does not make ATR a standards body: ATR is a project-maintained rule
+corpus and set of draft specifications, and it has not been through a
+consensus process run by a standards organization.
 
 Target seat composition (candidates will be invited and must confirm in
 writing before any name is published here):
@@ -198,7 +212,6 @@ Authority of the Founding Three (once seated):
 - Numbering Authority: ID assignment by 2-of-3 majority vote.
 - Spec amendments: 2-of-3 majority + 14-day public comment.
 - New category admission: 2-of-3 majority + Spec PR.
-- Enterprise Member admissions: 2-of-3 majority.
 
 Seat-3 succession on resignation: TSC supermajority (3-of-3) selects the
 replacement; no veto by any single seat.
@@ -226,10 +239,50 @@ Expand to 5 seats by adding:
 
 ---
 
+## Continuity
+
+This section states what depends on one person today, so that anyone
+relying on ATR can plan for it.
+
+As of 2026-11-11:
+
+- ATR has three maintainers: Adam Lin, the lead maintainer, and two
+  others with write access to the repository. Two of the three hold
+  administrator rights on the repository, which includes reading private
+  security reports.
+- Publishing a release depends on one person: only the lead maintainer
+  can publish the packages. Security reports are addressed to him.
+- The TSC has two members, both maintainers. Its two external seats are
+  not filled (see Roadmap).
+- ATR is not a legal entity. Funds are held by its fiscal host, Open
+  Source Collective.
+
+If the lead maintainer becomes unavailable:
+
+- Everything published stays usable. The rules, engine, specifications
+  and test definitions are MIT-licensed and public, and published package
+  versions remain installable.
+- Anyone may continue the work from a fork (see "What a fork can and
+  cannot do"). Organizations that depend on ATR are encouraged to keep
+  their own complete copy of the repository and of any test bank and
+  verification keys they rely on.
+- The other maintainers can keep reviewing and merging in the
+  repository. There is currently no named successor as lead maintainer
+  and no written procedure for transferring release rights, the package
+  name or the security contact. [HANDOVER.md](HANDOVER.md) records the
+  operational knowledge a successor would need.
+
+What closes this gap, in order: release rights held by a second
+maintainer; a first external TSC seat filled; a written transfer
+procedure agreed with the fiscal host. None of these is done. This section will be updated when
+one is.
+
+---
+
 ## ATR Standards Membership
 
 ATR provides two community programs that define the project's relationship with
-the broader security industry. Both are governed by [docs/BDFL-charter.md](docs/BDFL-charter.md).
+the broader security industry. See also [docs/BDFL-charter.md](docs/BDFL-charter.md).
 
 ### ATR Certified Skill — Free
 
@@ -245,25 +298,24 @@ reviewed against the current ATR rule corpus and passes with zero critical findi
 The ATR Numbering Authority does not charge for, influence, or gatekeep skill
 certification outcomes. The CI output is the authoritative source.
 
-### ATR Enterprise Member — $10,000 / year
+### Organizational membership — not open
 
-Enterprise Membership is a governance relationship for organizations that build on
-or depend on ATR. Modeled on the Apache Software Foundation Platinum Sponsor model.
+Earlier versions of this document described an "Enterprise Member"
+program at $10,000 per year that included a governance vote. That program
+was never opened: no organization has applied, no fee has been collected,
+and no vote has been granted. It is withdrawn as written.
 
-- Cost: $10,000 / year per organization.
-- Benefits: governance vote (post-TSC), early RFC draft access, 7-day priority PR
-  review SLA, logo display in README and website, private coordination channel.
-- Eligibility: any organization demonstrably using ATR in a security product,
-  research project, or internal tooling.
-- Application: open a GitHub Issue with label `enterprise-member-application`.
+Two things are settled:
 
-Enterprise Membership grants governance participation rights. It does NOT grant:
-- Any influence over individual rule acceptance or rejection
-- Any ability to accelerate or block specific rule IDs
-- Any access to non-public data from other organizations' Threat Cloud sensors
+- **No paid seat and no paid vote.** Payment of any kind, including
+  sponsorship or a future membership fee, does not carry a vote on
+  technical or governance decisions, on rule acceptance, or on ID
+  assignment. TSC seats are held by individuals selected under
+  [TSC-CHARTER.md](TSC-CHARTER.md).
+- **ATR is not a legal entity.** It is a project fiscally hosted by Open
+  Source Collective. Any fee would be received by the fiscal host under
+  its terms and reported publicly.
 
-Decisions about rule quality are made solely by the CI quality gate and human
-reviewers following the standard review process. Enterprise Membership purchases
-governance access, not detection quality outcomes.
-
-Full program details: [docs/BDFL-charter.md §Enterprise Member Program](docs/BDFL-charter.md#atr-enterprise-member-program----10000--year).
+Whether to offer organizational membership at all, at what price and with
+which non-governance benefits, is undecided. It will be proposed in a
+public pull request to this file before anything is offered.

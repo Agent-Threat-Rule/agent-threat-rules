@@ -74,8 +74,8 @@ export default async function DocsOverviewPage({ params }: { params: Promise<{ l
       <div className="mt-8 flex flex-col gap-3">
         <Callout label={zh ? "狀態" : "Status"}>
           {zh
-            ? "參考引擎是 TypeScript 版，發布在 npm。Python 和 Go 引擎目前只有骨架和介面契約，還沒通過符規測試。"
-            : "The reference engine is the TypeScript one on npm. The Python and Go engines are only a skeleton and an interface contract. Neither has passed the conformance suite yet."}
+            ? "參考引擎是 TypeScript 版，發布在 npm。Python 引擎 pyatr 0.5.0 在 2026-11-04 發布，有 enforce、alert、hunt 三條車道。Go 引擎目前只有骨架和介面契約。還沒有任何引擎宣告符規。"
+            : "The reference engine is the TypeScript one on npm. The Python engine, pyatr 0.5.0, was released on 2026-11-04 with the enforce, alert and hunt lanes. The Go engine is still only a skeleton and an interface contract. No engine has declared conformance yet."}
         </Callout>
         <Callout label={zh ? "狀態" : "Status"}>
           {zh

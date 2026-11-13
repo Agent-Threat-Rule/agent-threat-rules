@@ -12,8 +12,6 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  // Joining is paused until the privacy notice is final: the page is not
-  // linked, not indexed, and takes no applications.
   return {
     ...pageMetadata({
       locale,
@@ -24,11 +22,12 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
           ? "以專家或貢獻者的身分加入 ATR 社群：誰適合、要做什麼、怎麼申請，以及你的資料怎麼處理。"
           : "Join the ATR community as an expert or a contributor: who it is for, what you do, how to apply, and how your data is handled.",
     }),
-    robots: { index: false, follow: false },
   };
 }
 
-const CONTACT = "contact@agentthreatrule.org";
+const CONTACT = "adam@agentthreatrule.org";
+const APPLY_GITHUB = "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=join-community.yml";
+const PRIVACY_UPDATED = "2026-11-08";
 
 type B = { en: string; zh: string };
 
@@ -46,7 +45,7 @@ const ROWS: ReadonlyArray<{ label: B; expert: B; contributor: B }> = [
   {
     label: { en: "Rights", zh: "權利" },
     expert: { en: "Open issues and pull requests like anyone. Merging is limited to maintainers with repository permission.", zh: "跟所有人一樣，可以提 issue 和 pull request。只有握有 repo 權限的維護者能合併。" },
-    contributor: { en: "The same. Contributors are nominated as maintainers through sustained review work.", zh: "一樣。長期投入審查的貢獻者，會被提名為維護者。" },
+    contributor: { en: "Open issues and pull requests, as experts do. Contributors are nominated as maintainers through sustained review work.", zh: "跟專家一樣，可以提 issue 和 pull request。長期投入審查的貢獻者，會被提名為維護者。" },
   },
   {
     label: { en: "Intake", zh: "收件" },
@@ -56,18 +55,62 @@ const ROWS: ReadonlyArray<{ label: B; expert: B; contributor: B }> = [
 ];
 
 const STEPS: ReadonlyArray<B> = [
-  { en: "You apply through the GitHub form, or by email if you do not use GitHub.", zh: "用 GitHub 表單申請；不用 GitHub 的人用 email。" },
-  { en: "A maintainer reviews the application and drafts your directory entry.", zh: "維護者審閱申請，並草擬你在名錄上的文字。" },
-  { en: "You confirm the exact text, photo and organization line, or change them.", zh: "你確認名錄上的文字、照片、所屬單位，或要求修改。" },
-  { en: "The entry is merged by pull request and appears on the community page.", zh: "名錄條目以 pull request 合併，之後就會出現在社群頁。" },
+  { en: "You apply through the GitHub form, or by email if you would rather apply privately. You do not need to apply to contribute: anyone can open issues and pull requests.", zh: "用 GitHub 表單申請；想私下申請就用 email。貢獻不需要先申請，任何人都可以直接開 issue 和 pull request。" },
+  { en: "Adam Lin, the maintainer, reads every application and invites people personally.", zh: "維護者 Adam Lin 會看每一份申請，親自邀請。" },
+  { en: "Once invited, we draft your directory entry for you to confirm.", zh: "受邀後，名錄文字由我們草擬、你確認。" },
+  { en: "Your merged work is recorded in the public community ledger under your GitHub name, and your tier follows from it.", zh: "你被合併的貢獻會以 GitHub 名稱記進公開的社群帳本，階別依帳本計算。" },
 ];
 
-const PRIVACY: ReadonlyArray<B> = [
-  { en: "Your email address is used to reply to you and is never published.", zh: "你的 email 只用來回覆你，絕不公開。" },
-  { en: "Nothing is listed until you confirm the exact text. Your organization appears only if you allow it, and listing it is not an endorsement by it.", zh: "你確認文字之前，什麼都不會公開。所屬單位只有你同意才列，而且列名不代表該單位背書。" },
-  { en: "A photo is optional and shown in grayscale. Without one, your GitHub avatar is used.", zh: "照片可以不給。有的話，網頁上以灰階顯示；沒有，就用你的 GitHub 頭像。" },
-  { en: `To be removed or to have an unsuccessful application deleted, write to ${CONTACT}. No reason needed.`, zh: `要從名錄移除，或要刪掉沒有通過的申請，寫信到 ${CONTACT}。不需要說明理由。` },
-  { en: "A GitHub application is a public issue. Use email if you would rather apply privately.", zh: "用 GitHub 申請會是一則公開的 issue。想私下申請，請用 email。" },
+const PRIVACY: ReadonlyArray<{ head: B; body: B }> = [
+  {
+    head: { en: "Who is responsible", zh: "誰負責" },
+    body: {
+      en: `Adam Lin, the maintainer of ATR, is responsible for the data you send with an application. The ATR Project is not a legal entity, so he is responsible personally. Contact: ${CONTACT}.`,
+      zh: `你隨申請送出的資料，由 ATR 維護者 Adam Lin 負責。ATR Project 不是法人，所以由他個人負責。聯絡：${CONTACT}。`,
+    },
+  },
+  {
+    head: { en: "What is collected", zh: "收集什麼" },
+    body: {
+      en: "What you put in the application: your name, title, country, optional organization, GitHub or ORCID name, areas and problems you are interested in, your conflict-of-interest disclosure, your consent choices, and an optional photo. Email applications also include your email address.",
+      zh: "你在申請裡填的內容：名字、職稱、國家、所屬單位（選填）、GitHub 或 ORCID 名稱、有興趣的領域與題目、利益揭露、你勾選的同意項目、照片（選填）。用 email 申請的，還有你的 email 地址。",
+    },
+  },
+  {
+    head: { en: "Why", zh: "用途" },
+    body: {
+      en: "To review your application, reply to you, assign work, list you in the directory if you agree, and record your contributions. Nothing else.",
+      zh: "審閱申請、回覆你、指派工作、在你同意時列入名錄、記錄你的貢獻。不做別的用途。",
+    },
+  },
+  {
+    head: { en: "Where it is kept and who sees it", zh: "存在哪裡、誰看得到" },
+    body: {
+      en: "A GitHub application is a public issue. Email applications and member records are kept privately by the maintainer, not in any public repository. Only the maintainer, and maintainers he names to review applications, can see them. They are never sold and never shared with any company, including PANGUARD AI, INC., the maintainer's company.",
+      zh: "用 GitHub 申請是一則公開的 issue。email 申請與成員資料由維護者私下保存，不放在任何公開的 repository。只有維護者，以及他指定審閱申請的維護者看得到。絕不出售，也不提供給任何公司，包括維護者的公司 PANGUARD AI, INC.。",
+    },
+  },
+  {
+    head: { en: "How long", zh: "保存多久" },
+    body: {
+      en: "Applications that are not accepted are deleted within six months. Member records are kept while you are a member and deleted when you ask.",
+      zh: "沒有通過的申請，六個月內刪除。成員資料在你是成員期間保存，你要求就刪除。",
+    },
+  },
+  {
+    head: { en: "Your choices", zh: "你可以要求" },
+    body: {
+      en: `Write to ${CONTACT} to see what we hold about you, correct it, have it deleted, or be removed from the directory. No reason needed; we reply within 30 days. Your organization is listed only if you allow it, and a listing is not an endorsement by your organization.`,
+      zh: `寫信到 ${CONTACT}，可以查看我們保存了你哪些資料、更正、刪除，或從名錄移除。不需要說明理由，我們 30 天內回覆。所屬單位只有你同意才列，列名不代表該單位背書。`,
+    },
+  },
+  {
+    head: { en: "What stays public", zh: "哪些會一直公開" },
+    body: {
+      en: "Issues, pull requests and commits on GitHub are public and stay in the project's history, and the community ledger records them under your GitHub name. Leaving the directory does not remove that history.",
+      zh: "GitHub 上的 issue、pull request 與 commit 是公開的，會留在專案歷史裡；社群帳本也以你的 GitHub 名稱記錄它們。從名錄移除，不會刪掉這些歷史。",
+    },
+  },
 ];
 
 export default async function JoinPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -115,8 +158,19 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
         </p>
       </section>
 
-      <section className="mt-14 border-t border-ink pt-6">
-        <p className="text-[16px] text-ink">{zh ? "入會暫停受理，隱私說明定稿後開放。" : "Joining is paused until the privacy notice is final."}</p>
+      <section className="mt-14 border-t border-ink pt-6" aria-labelledby="apply-heading">
+        <h2 id="apply-heading" className="font-data text-[11px] uppercase tracking-[0.1em] text-stone mb-4">{zh ? "申請" : "Apply"}</h2>
+        <div className="flex flex-wrap gap-3">
+          <a href={APPLY_GITHUB} className="inline-flex items-center px-5 py-2.5 bg-ink text-paper text-[14px] hover:opacity-90">
+            {zh ? "用 GitHub 申請（公開）" : "Apply on GitHub (public)"}
+          </a>
+          <span className="inline-flex items-center px-5 py-2.5 border border-fog text-[14px] text-ink select-all">
+            {CONTACT}
+          </span>
+        </div>
+        <p className="mt-3 text-[13px] text-stone">
+          {zh ? "想私下申請，寄信到上面的地址，內容照 GitHub 表單的欄位寫即可。申請前請先看下面「你的資料怎麼處理」。" : "To apply privately, email the address above with the same fields as the GitHub form. Please read how your data is handled, below, before you apply."}
+        </p>
       </section>
 
       <section className="mt-14">
@@ -133,11 +187,15 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
 
       <section className="mt-14">
         <SectionHead mark="§2" label={zh ? "你的資料" : "Your data"} title={zh ? "你的資料怎麼處理" : "How your data is handled"} />
-        <ul className="border-t border-fog">
+        <dl className="border-t border-fog">
           {PRIVACY.map((p) => (
-            <li key={p.en} className="py-3 border-b border-fog text-[14px] leading-[1.6] text-graphite">{pick(p)}</li>
+            <div key={p.head.en} className="grid md:grid-cols-[200px_1fr] gap-2 md:gap-6 py-4 border-b border-fog">
+              <dt className="text-[14px] text-ink">{pick(p.head)}</dt>
+              <dd className="text-[14px] leading-[1.6] text-graphite">{pick(p.body)}</dd>
+            </div>
           ))}
-        </ul>
+        </dl>
+        <p className="mt-3 font-data text-[11.5px] text-stone">{zh ? `最後更新 ${PRIVACY_UPDATED}` : `Last updated ${PRIVACY_UPDATED}`}</p>
       </section>
       </div>
       </SheetRow>

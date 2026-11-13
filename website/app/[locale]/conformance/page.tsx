@@ -209,8 +209,8 @@ export default async function ConformancePage({
             <p>{t(locale, "conformance.l3.body")}</p>
             <p className="text-sm text-stone mt-3" style={{ maxWidth: "42em" }}>
               {zh
-                ? "TSC 還沒就任。授權要等 TSC 就任後才會核發。在那之前，由首席維護者（BDFL）擔任這個角色。"
-                : "The TSC is not yet seated. Authority is granted once it is. Until then the lead maintainer (BDFL) acts in this role."}
+                ? "TSC 還沒就任。L3 授權要等 TSC 就任後才會核發，§5 的自我宣告驗證也要等 TSC 就任後由 TSC 負責。在那之前，這兩件事都由首席維護者（BDFL）來做。"
+                : "The TSC is not yet seated. L3 authority is granted once it is, and the TSC then also does the self-certification check in §5. Until then the lead maintainer (BDFL) does both."}
             </p>
           </section>
 
@@ -289,9 +289,9 @@ spec/conformance/        (${zh ? "未批准" : "not ratified"})
             </h2>
             <p>{t(locale, "conformance.self.body")}</p>
             <p className="text-sm text-stone mt-3" style={{ maxWidth: "42em" }}>
-              {zh
-                ? "TSC 還沒就任。上面這項驗證，等 TSC 就任後由 TSC 負責。在那之前，由首席維護者（BDFL）來做。"
-                : "The TSC is not yet seated. Once it is, the TSC does this verification. Until then the lead maintainer (BDFL) does it."}
+              {zh ? "這項驗證由誰負責，見 " : "Who does this check: see "}
+              <a href="#l3" className="text-blue hover:underline">§3</a>
+              {zh ? "。" : "."}
             </p>
             <p>
               {zh

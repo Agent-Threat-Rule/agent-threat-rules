@@ -56,6 +56,10 @@ export default async function SovereignAIDefensePage({
   const ENC_URL = zh ? ENCODED_URL_ZH : ENCODED_URL_EN;
   const stats = loadSiteStats();
   const ruleCount = stats.ruleCount;
+  const ruleFileCount = stats.ruleFileCount;
+  const ruleInertCount = stats.ruleInertCount;
+  // Shipped adopters, derived from ADOPTERS.md via lib/stats (never hand-typed).
+  const shippedAdopterCount = stats.ecosystemIntegrations.filter((e) => e.type === "merged").length;
   const specVersion = getSpecMeta().specVersion;
   const garak = findBenchmark(stats, "garak");
 
@@ -115,14 +119,14 @@ export default async function SovereignAIDefensePage({
             <>
               ATR 是這個語境裡的<strong className="text-ink">中立基礎建設</strong>:MIT 授權、{ruleCount} 條機器可讀的偵測規則、
               社群維護。任何國家或組織都能採用、稽核、擴充或 fork，不必依賴單一廠商。
-              目前的外部採用包括：Cisco AI Defense 的開源 skill-scanner 與 Gen Digital Sage 已合併的規則集，Microsoft AGT 已合併的 ATR 範例目錄，以及 MISP、OWASP 的引用。每一筆都有公開 repo 裡已合併的 PR 為憑。
+              目前的外部採用包括：合併進 Cisco AI Defense 開源 repo skill-scanner 的 ATR 規則集、貢獻給 Gen Digital Sage 風險評分層的 ATR 衍生威脅模式、Microsoft AGT 已合併的 ATR 範例目錄，以及 MISP、OWASP 的引用。每一筆都有公開 repo 裡已合併的 PR 為憑。
             </>
           ) : (
             <>
               ATR is the <strong className="text-ink">neutral infrastructure</strong> for that context: MIT-licensed,
               {" "}{ruleCount} machine-readable detection rules, community-maintained — adoptable, auditable, extensible, or forkable
               by any country or organization, dependent on no single vendor.
-              Adoption to date includes rule packs merged into Cisco AI Defense&apos;s open-source skill-scanner and Gen Digital Sage, ATR example directories merged into Microsoft AGT, plus references from MISP and OWASP — each evidenced by a merged pull request in a public repository.
+              Adoption to date includes an ATR rule pack merged into Cisco AI Defense&apos;s open-source skill-scanner repository, ATR-derived threat patterns contributed to Gen Digital Sage&apos;s risk-scoring layer, ATR example directories merged into Microsoft AGT, plus references from MISP and OWASP — each evidenced by a merged pull request in a public repository.
             </>
           )}
         </p>
@@ -135,7 +139,11 @@ export default async function SovereignAIDefensePage({
             label="RULES"
             value={String(ruleCount)}
             unit={zh ? " 條" : ""}
-            note={zh ? "MIT 授權 · 規則數即時讀自 rules/" : "MIT licensed · count read live from rules/"}
+            note={
+              zh
+                ? `MIT 授權 · 生效規則數（rules/ 共 ${ruleFileCount} 個規則檔，${ruleInertCount} 條未生效）`
+                : `MIT licensed · effective rules (of ${ruleFileCount} rule files in rules/; ${ruleInertCount} inert)`
+            }
           />
           {garak && (
             <StatCell
@@ -170,52 +178,19 @@ export default async function SovereignAIDefensePage({
             <>
               許多國家已把 AI 視為<strong className="text-ink">必須自主掌握的國家能力</strong>,
               並大規模投資於自己語言、自己資料、自己算力上的模型，以避免關鍵系統依賴外國平台。
-              這股投資橫跨多個地區：
             </>
           ) : (
             <>
               Many countries now treat AI as a <strong className="text-ink">national capability they must control themselves</strong>,
               investing heavily in models built on their own language, data, and compute so that critical systems
-              do not depend on foreign platforms. That investment spans many regions:
+              do not depend on foreign platforms.
             </>
           )}
         </p>
-        <div className="border-t border-fog mt-6">
-          <DealRow
-            country="India"
-            desc={zh ? "Tata + Reliance · 印地語 / 馬拉地語 LLMs" : "Tata + Reliance · Hindi / Marathi LLMs"}
-            scale="$ multi-billion"
-          />
-          <DealRow
-            country="Japan"
-            desc={zh ? "SoftBank + KDDI · 日語 LLMs · 災害韌性 AI" : "SoftBank + KDDI · Japanese LLMs · disaster resilience AI"}
-            scale="$ multi-billion"
-          />
-          <DealRow
-            country="United Kingdom"
-            desc={zh ? "NVIDIA AI 基礎設施合約" : "NVIDIA AI infrastructure commitment"}
-            scale="£1B (≈ $1.3B)"
-          />
-          <DealRow
-            country="France"
-            desc={zh ? "Mistral AI + 18,000 顆 Grace Blackwell" : "Mistral AI + 18,000 Grace Blackwell"}
-            scale="$ multi-billion"
-          />
-          <DealRow
-            country="Saudi / UAE / Korea"
-            desc={zh ? "2025 US-Saudi Investment Forum 等" : "2025 US-Saudi Investment Forum and others"}
-            scale="$ multi-billion"
-          />
-          <DealRow
-            country="Taiwan"
-            desc={zh ? "Foxconn + TSMC + 政府 AI 超級電腦 · Constellation HQ" : "Foxconn + TSMC + gov AI supercomputer · Constellation HQ"}
-            scale="NT$ 40B+"
-          />
-        </div>
         <p className="text-sm md:text-base text-graphite leading-[1.8] mt-7">
           {zh
-            ? "驅動力是主權焦慮，各國不希望關鍵資料與智慧跑到美國雲端，也不願在關鍵時刻被外國平台關閉或審查。光是亞太的主權 AI 基礎建設市場，2026 年估計就有 90–140 億美元，並預計在 2030 年達到 230–470 億美元。"
-            : "The driver is sovereignty anxiety — no country wants its critical data and intelligence running in US clouds, nor wants to be shut off or censored by foreign platforms at critical moments. The Asia-Pacific sovereign-AI infrastructure market alone is estimated at $9–14B in 2026, projected to reach $23–47B by 2030."}
+            ? "驅動力是主權焦慮，各國不希望關鍵資料與智慧跑到美國雲端，也不願在關鍵時刻被外國平台關閉或審查。"
+            : "The driver is sovereignty anxiety — no country wants its critical data and intelligence running in US clouds, nor wants to be shut off or censored by foreign platforms at critical moments."}
         </p>
         <Callout borderColor="blue">
           {zh ? (
@@ -281,8 +256,7 @@ export default async function SovereignAIDefensePage({
           ) : (
             <>
               Most available detection rule sets are closed-source and concentrated in private vendors within a few countries.
-              In a 2026 survey, 94% of IT leaders said they fear AI vendor lock-in — and for detection knowledge the lock-in is sharper:
-              a country can control its model yet still defend it through proprietary, unauditable rule sets it cannot inspect.
+              A country can control its model yet still defend it through proprietary, unauditable rule sets it cannot inspect.
               <strong className="text-ink"> Defense knowledge that cannot be opened, inspected, or forked is incomplete sovereignty.</strong>
             </>
           )}
@@ -298,22 +272,6 @@ export default async function SovereignAIDefensePage({
             NIST · {zh ? "2026-01-12 新聞稿：CAISI 發布 AI agent 系統安全 RFI" : "News release, 2026-01-12: CAISI's RFI on securing AI agent systems"}
           </a>
         </Callout>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-[2px] bg-fog border border-fog mt-7">
-          <StatCell
-            label={zh ? "擔憂" : "CONCERNED"}
-            value="87"
-            unit="%"
-            note={zh ? "組織擔憂 AI Agent 安全 · 但只有 11% 已準備" : "but only 11% report being prepared · CSA 2026"}
-            valueColor="critical"
-          />
-          <StatCell
-            label="MYTHOS"
-            value="83.1"
-            unit="%"
-            note={zh ? "自動漏洞挖掘成功率 · 攻擊能力快速演進，簽章式偵測難跟上" : "automated vuln discovery · attack capability evolving faster than signature detection"}
-            valueColor="critical"
-          />
-        </div>
       </Section>
 
       {/* 03 · Why a neutral standard fits */}
@@ -408,14 +366,14 @@ atr convert splunk --output ./atr-rules.spl`}</code>
       {/* 04 · Ecosystem */}
       <Section label={zh ? "04 · 生態系" : "04 · ECOSYSTEM"} delay={0.05}>
         <h2 className="font-display text-2xl md:text-[28px] font-bold tracking-[-0.01em] text-ink mb-5">
-          {zh ? "已被多個主要資安堆疊採用" : "Already adopted across major security stacks"}
+          {zh ? "已合併進公開 repo 的整合" : "Integrations merged into public repositories"}
         </h2>
         <div className="border-t border-fog">
           <TractionRow
             org="Cisco AI Defense"
             status={zh ? "已合併" : "Merged"}
             statusClass="text-ink"
-            desc={zh ? "PR #99 已合併（2026-04-22）· ATR 規則集進入開源 repo cisco-ai-defense/skill-scanner" : "PR #99 merged (2026-04-22) · ATR rule pack in the open-source repo cisco-ai-defense/skill-scanner"}
+            desc={zh ? "PR #99 已合併（2026-04-22）· ATR 規則集進入開源 repo cisco-ai-defense/skill-scanner；這是指該開源 repo，不是任何 Cisco 產品" : "PR #99 merged (2026-04-22) · ATR rule pack in the open-source repo cisco-ai-defense/skill-scanner. This describes that repository, not any Cisco product"}
           />
           <TractionRow
             org="Microsoft"
@@ -427,13 +385,17 @@ atr convert splunk --output ./atr-rules.spl`}</code>
             org="Gen Digital Sage"
             status={zh ? "已合併" : "Merged"}
             statusClass="text-ink"
-            desc={zh ? "PR #33 已合併（2026-05-11）· 完整 ATR 規則集於 Norton/Avast/LifeLock 母集團的 Sage 風險評分層" : "PR #33 merged (2026-05-11) · Full ATR rule pack in the Sage risk-scoring layer under the Norton/Avast/LifeLock parent"}
+            desc={zh ? "PR #33 已合併（2026-05-11）· 改寫自 ATR 的 agent 層威脅模式，貢獻給 Sage 的 agentic AI 風險評分層（Gen Digital 為 Norton/Avast/LifeLock 母集團）" : "PR #33 merged (2026-05-11) · ATR-derived agent-layer threat patterns contributed to the Sage agentic-AI risk-scoring layer (Gen Digital is the Norton/Avast/LifeLock parent)"}
           />
         </div>
         <p className="text-xs md:text-sm text-stone mt-5">
           {zh
-            ? `0 → ${ruleCount} 條規則 · 三筆已合併的上游整合（Cisco 開源 skill-scanner、Gen Digital Sage、Microsoft AGT 範例目錄）· 標準同儕引用 · 完整採用者清單見 ADOPTERS.md · MIT 永久授權 · `
-            : `0 → ${ruleCount} rules · three merged upstream integrations (Cisco's open-source skill-scanner, Gen Digital Sage, Microsoft AGT example directories) · peer-standard references · full adopter list in ADOPTERS.md · MIT licensed · `}
+            ? `0 → ${ruleCount} 條規則 · ADOPTERS.md 目前列出 ${shippedAdopterCount} 筆已上線的採用，上面三筆只是其中一部分 · `
+            : `0 → ${ruleCount} rules · ADOPTERS.md currently lists ${shippedAdopterCount} shipped adoptions; the three above are only part of that list · `}
+          <a href={`/${locale}/ecosystem`} className="text-blue hover:underline">
+            {zh ? "完整清單見生態系頁" : "full list on the ecosystem page"}
+          </a>
+          {zh ? " · MIT 永久授權 · " : " · MIT licensed · "}
           <a href="https://doi.org/10.5281/zenodo.19178002" className="text-blue hover:underline">
             DOI 10.5281/zenodo.19178002
           </a>
@@ -758,16 +720,6 @@ function StatCell({
         <span className="text-[15px] md:text-lg">{unit}</span>
       </div>
       <div className="text-[11.5px] text-stone mt-1.5 leading-[1.4]">{note}</div>
-    </div>
-  );
-}
-
-function DealRow({ country, desc, scale }: { country: string; desc: string; scale: string }) {
-  return (
-    <div className="grid grid-cols-[140px_1fr_140px] gap-5 py-3 border-b border-fog text-sm items-baseline max-md:grid-cols-1 max-md:gap-1">
-      <div className="font-display font-semibold text-ink">{country}</div>
-      <div className="text-graphite text-[13px]">{desc}</div>
-      <div className="font-data text-xs text-blue md:text-right">{scale}</div>
     </div>
   );
 }

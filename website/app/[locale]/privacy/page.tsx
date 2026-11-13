@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { locales, type Locale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
 import { loadVersionLabels } from "@/lib/versions";
-import { CONTACTS, LEGAL_DRAFT } from "@/lib/legal";
+import { CONTACTS, LEGAL_ADOPTED, LEGAL_DRAFT } from "@/lib/legal";
 import { DocsShell, Callout } from "@/components/DocsShell";
 import Phrased from "@/components/Phrased";
 
@@ -27,6 +27,13 @@ type B = { en: string; zh: string };
 
 const SECTIONS: ReadonlyArray<{ h: B; body: B }> = [
   {
+    h: { en: "Who is responsible", zh: "誰負責" },
+    body: {
+      en: `Adam Lin, the maintainer of ATR, is responsible for this site and for the data described here. The ATR Project is not a legal entity, so he is responsible personally. Contact: ${CONTACTS.general}.`,
+      zh: `這個網站和這裡提到的資料，由 ATR 維護者 Adam Lin 負責。ATR Project 不是法人，所以由他個人負責。聯絡：${CONTACTS.general}。`,
+    },
+  },
+  {
     h: { en: "What the site itself collects", zh: "網站本身收集什麼" },
     body: {
       en: "The site is static. Its own code loads no analytics or advertising scripts and sets no cookies. It is served by Cloudflare Pages, which processes request data, such as IP addresses, to deliver the pages, under Cloudflare's own privacy policy.",
@@ -43,8 +50,8 @@ const SECTIONS: ReadonlyArray<{ h: B; body: B }> = [
   {
     h: { en: "Applications to join", zh: "加入社群的申請" },
     body: {
-      en: `An application through the GitHub form is a public issue on GitHub. An application by email is used only to reply and to draft your directory entry, and nothing is published until you confirm it. To have an application deleted or a listing removed, write to ${CONTACTS.general}.`,
-      zh: `透過 GitHub 表單的申請，會是 GitHub 上的一則公開 issue。透過 email 的申請只用來回覆你、草擬你的名錄文字；你確認之前不會公開任何內容。要刪除申請或移除列名，請寫信到 ${CONTACTS.general}。`,
+      en: `How applicant data is handled is set out on the join page, under "How your data is handled" (last updated 2026-11-08); that notice governs applications. In short: an application through the GitHub form is a public issue on GitHub. An application by email is used only to reply and to draft your directory entry, and nothing is published until you confirm it. To have an application deleted or a listing removed, write to ${CONTACTS.general}.`,
+      zh: `申請資料怎麼處理，以入會頁「你的資料怎麼處理」那一節為準（最後更新 2026-11-08）。簡單說：透過 GitHub 表單的申請，會是 GitHub 上的一則公開 issue。透過 email 的申請只用來回覆你、草擬你的名錄文字；你確認之前不會公開任何內容。要刪除申請或移除列名，請寫信到 ${CONTACTS.general}。`,
     },
   },
   {
@@ -74,6 +81,9 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
         <Callout label={zh ? "草稿" : "Draft"}>
           {zh ? "這份說明是草稿，待維護者核准後才生效。" : "This notice is a draft and takes effect only when the maintainers approve it."}
         </Callout>
+      )}
+      {!LEGAL_DRAFT && (
+        <p className="mt-6 font-data text-[11.5px] text-stone">{zh ? `生效日 ${LEGAL_ADOPTED}` : `In effect from ${LEGAL_ADOPTED}`}</p>
       )}
       <div className="mt-8 max-w-[720px]">
         {SECTIONS.map((s) => (

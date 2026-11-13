@@ -29,8 +29,9 @@ import { describe, it, expect } from "vitest";
 import { ATREngine, WITHHELD_SOURCE_TYPES } from "../src/engine.js";
 import { loadRulesFromDirectory } from "../src/loader.js";
 import { asTestedRule, caseLabel, caseMatches, caseMatchesAtRuntime } from "../src/testcase-event.js";
+import { fileURLToPath } from 'node:url';
 
-const RULES_DIR = new URL("../rules", import.meta.url).pathname;
+const RULES_DIR = fileURLToPath(new URL("../rules", import.meta.url));
 
 describe("the true positives of the rules in rules/", () => {
   it("all match on an event a producer could build, not only through the test event's copies", () => {

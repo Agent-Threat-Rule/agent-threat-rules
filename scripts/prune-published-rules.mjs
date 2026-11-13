@@ -24,6 +24,7 @@
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import yaml from "js-yaml";
+import { pathToFileURL } from "node:url";
 
 export const PRUNED_KEYS = Object.freeze(["test_cases", "evasion_tests"]);
 
@@ -61,7 +62,7 @@ export function pruneRulesDir(dir) {
   return changed;
 }
 
-const isMain = process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href;
+const isMain = process.argv[1] && import.meta.url === new URL(pathToFileURL(process.argv[1] ?? '').href).href;
 if (isMain) {
   const dir = process.argv[2] ?? "rules";
   const changed = pruneRulesDir(dir);

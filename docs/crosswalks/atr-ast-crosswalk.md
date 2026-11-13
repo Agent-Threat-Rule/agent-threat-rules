@@ -6,7 +6,7 @@ This document maps Agent Threat Rules (ATR) detection rules to the OWASP Agentic
 
 This is a **curated thematic mapping**, not an id-equality join. ATR carries no native AST id in its metadata, so the crosswalk is generated as follows:
 
-- **Primary join key:** each rule's `tags.category` (a closed 9-value enum). The `category -> AST` table is a one-time editorial mapping (`CATEGORY_TO_AST` in `scripts/generate-ast-crosswalk.py`), each entry carrying a short rationale reproduced below. It is applied mechanically to every rule, so per-control counts regenerate from metadata and cannot drift.
+- **Primary join key:** each rule's `tags.category` (10 values in the current corpus; the enum is defined in `spec/atr-schema.yaml`). The `category -> AST` table is a one-time editorial mapping (`CATEGORY_TO_AST` in `scripts/generate-ast-crosswalk.py`), each entry carrying a short rationale reproduced below. It is applied mechanically to every rule, so per-control counts regenerate from metadata and cannot drift.
 - **Secondary evidence (not a join):** each rule's `references.owasp_agentic` (ASIxx -- the OWASP Agentic Security Initiative Top 10, a *different* taxonomy from AST). Surfaced per row as supporting context, never as the mapping basis.
 
 Regenerate with `python3 scripts/generate-ast-crosswalk.py`. CI runs `--check` so a stale copy fails the build.
@@ -15,18 +15,20 @@ Rules in corpus at generation time: **844**.
 
 ## Coverage by AST control
 
-| AST | Title | ATR rules | Top supporting ASI (evidence) |
-|-----|-------|-----------|-------------------------------|
-| AST01 | Malicious Skills | 214 | ASI05 (78), ASI04 (68), ASI01 (61) |
-| AST02 | Supply Chain Compromise | 58 | ASI04 (31), ASI05 (15), ASI01 (12) |
-| AST03 | Over-Privileged Skills | 257 | ASI03 (95), ASI01 (90), ASI02 (74) |
-| AST04 | Insecure Metadata | 123 | ASI05 (63), ASI02 (44), ASI04 (38) |
-| AST05 | Untrusted External Instructions | 362 | ASI01 (341), ASI04 (15), ASI06 (15) |
-| AST06 | Weak Isolation | 138 | ASI01 (73), ASI03 (46), ASI02 (31) |
-| AST07 | Update Drift | 0 | - |
-| AST08 | Poor Scanning | 0 | - |
-| AST09 | No Governance | 40 | ASI02 (16), ASI01 (15), ASI03 (13) |
-| AST10 | Cross-Platform Reuse | 0 | - |
+Rule counts are split by maturity, because the lanes differ: the enforce lane (the one meant to block) loads `maturity: stable` only, the alert lane adds `test`, and `experimental` and `draft` rules run in the hunt lane only. A rule mapped to a control is a detection for part of that control's threat surface, not coverage of the control.
+
+| AST | Title | ATR rules | stable | test | experimental | draft | Top supporting ASI (evidence) |
+|-----|-------|-----------|--------|------|--------------|-------|-------------------------------|
+| AST01 | Malicious Skills | 214 | 21 | 164 | 19 | 10 | ASI05 (78), ASI04 (68), ASI01 (61) |
+| AST02 | Supply Chain Compromise | 58 | 1 | 53 | 4 | 0 | ASI04 (31), ASI05 (15), ASI01 (12) |
+| AST03 | Over-Privileged Skills | 257 | 44 | 179 | 30 | 4 | ASI03 (95), ASI01 (90), ASI02 (74) |
+| AST04 | Insecure Metadata | 123 | 12 | 84 | 17 | 10 | ASI05 (63), ASI02 (44), ASI04 (38) |
+| AST05 | Untrusted External Instructions | 362 | 38 | 304 | 13 | 7 | ASI01 (341), ASI04 (15), ASI06 (15) |
+| AST06 | Weak Isolation | 138 | 30 | 97 | 10 | 1 | ASI01 (73), ASI03 (46), ASI02 (31) |
+| AST07 | Update Drift | 0 | 0 | 0 | 0 | 0 | - |
+| AST08 | Poor Scanning | 0 | 0 | 0 | 0 | 0 | - |
+| AST09 | No Governance | 40 | 11 | 26 | 2 | 1 | ASI02 (16), ASI01 (15), ASI03 (13) |
+| AST10 | Cross-Platform Reuse | 0 | 0 | 0 | 0 | 0 | - |
 
 ## Category -> AST mapping (the editorial join table)
 
@@ -46,7 +48,7 @@ Rules in corpus at generation time: **844**.
 |  |  | AST09 No Governance | Autonomy without checks is the AST09 governance gap. |
 | data-poisoning (10) | 10 | AST02 Supply Chain Compromise | Poisoned training/reference data enters through the supply chain. |
 
-> 1 rule(s) carry a category not in the mapping table and are excluded rather than force-fit.
+> 1 rule(s) carry a category not in the mapping table and are excluded rather than force-fit: `model-security` (1).
 
 ## What ATR does not cover
 

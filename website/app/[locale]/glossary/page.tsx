@@ -81,8 +81,8 @@ const ENTRIES: GlossaryEntry[] = [
   },
   {
     term: "detection lane",
-    en: "A consumer-selected gate that decides which rule maturities are allowed to fire, traded against false-positive tolerance. Three lanes are defined. enforce fires stable rules only — the auto-block lane, lowest false-positive rate. alert fires stable and test rules — the analyst / correlation lane. hunt fires every non-deprecated rule as advisory signal — the default, and the eval lane. Deprecated rules fire in no lane. The lane is chosen by the engine consumer, not declared on the rule: the same rule corpus yields a different firing set per lane, which is why ATR reports false-positive rates lane by lane rather than as a single figure.",
-    zh: "由消費者選定的閘,決定哪些成熟度的規則允許開火,以此換取對誤報的容忍度。共定義三條車道。enforce 只讓 stable 規則開火——自動封鎖車道,誤報率最低。alert 讓 stable 與 test 規則開火——分析師 / 關聯車道。hunt 讓所有未廢棄的規則以建議性訊號開火——預設車道,也是評估車道。deprecated 規則在任何車道皆不開火。車道由引擎消費者選擇,而非宣告於規則上:同一份規則語料在不同車道下產出不同的開火集合,這也是 ATR 逐車道揭露誤報率、而非用單一數字概括的原因。",
+    en: "A consumer-selected gate that decides which rule maturities are allowed to fire, traded against false-positive tolerance. Three lanes are defined. enforce fires stable rules only — the auto-block lane. alert fires stable and test rules — the analyst / correlation lane. hunt fires every non-deprecated rule as advisory signal — the default, and the eval lane. Deprecated rules fire in no lane. The lane is chosen by the engine consumer, not declared on the rule: the same rule corpus yields a different firing set per lane, so false-positive rates have to be measured lane by lane rather than as a single figure. The per-lane rates ATR published were withdrawn on 2026-09-19 and are pending re-measurement.",
+    zh: "由消費者選定的閘,決定哪些成熟度的規則允許開火,以此換取對誤報的容忍度。共定義三條車道。enforce 只讓 stable 規則開火——自動封鎖車道。alert 讓 stable 與 test 規則開火——分析師 / 關聯車道。hunt 讓所有未廢棄的規則以建議性訊號開火——預設車道,也是評估車道。deprecated 規則在任何車道皆不開火。車道由引擎消費者選擇,而非宣告於規則上:同一份規則語料在不同車道下產出不同的開火集合,所以誤報率必須逐車道量測,不能用單一數字概括。ATR 先前公布的各車道誤報率已於 2026-09-19 撤回,等待重新量測。",
   },
   {
     term: "fixture",

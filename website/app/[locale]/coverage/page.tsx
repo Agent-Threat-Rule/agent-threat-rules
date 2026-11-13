@@ -55,6 +55,8 @@ function statusColor(status: string): string {
   return STATUS_COLORS[status.split(" ")[0]] ?? "";
 }
 
+const EN_LIST = new Intl.ListFormat("en", { type: "conjunction" });
+
 /** AST10 rows with no rule, and the ones the mapping marks as process or meta-level concerns. */
 function ast10Gaps(rows: ReadonlyArray<{ id: string; ruleCount: number; status: string }>) {
   const none = rows.filter((m) => m.ruleCount === 0);
@@ -169,8 +171,9 @@ export default async function CoveragePage({ params }: { params: Promise<{ local
         <h2 className="font-display text-2xl font-medium tracking-[-1px] mb-1 mt-12">OWASP Agentic Skills Top 10 (AST10)</h2>
         <p className="text-sm text-stone mb-6">
           {stats.owaspAst10} {locale === "zh" ? "個類別有規則覆蓋。" : "categories with rule coverage."}
-          {gaps.none.length > 0 && (locale === "zh" ? `${gaps.none.join("、")} 沒有規則。` : ` ${gaps.none.join(" and ")} have no rule.`)}
-          {gaps.notPattern.length > 0 && (locale === "zh" ? `對應表把 ${gaps.notPattern.join("、")} 列為流程或後設層面的問題，沒辦法用 pattern 偵測。` : ` The mapping lists ${gaps.notPattern.join(" and ")} as process or meta-level concerns, which pattern matching cannot detect.`)}
+          {gaps.none.length > 0 && (locale === "zh" ? `${gaps.none.join("、")} 沒有規則。` : ` ${EN_LIST.format(gaps.none)} have no rule.`)}
+          {gaps.notPattern.length > 0 && (locale === "zh" ? `對應表把 ${gaps.notPattern.join("、")} 列為流程或後設層面的問題，沒辦法用 pattern 偵測。` : ` The mapping lists ${EN_LIST.format(gaps.notPattern)} as process or meta-level concerns, which pattern matching cannot detect.`)}
+          {locale === "zh" ? "狀態只看 stable（enforce 車道）規則的數量，不代表該項控制已經做到。" : " Status counts stable (enforce-lane) rules only; it does not mean the control is met."}
         </p>
       </Reveal>
       <Reveal delay={0.1}>

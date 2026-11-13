@@ -36,8 +36,8 @@ export const posts: BlogPost[] = [
       zh: "我們拿 ATR 跑了兩個中立的 agent 安全 benchmark。這是誠實的結果。",
     },
     summary: {
-      en: "Self-published numbers are the easiest to game, so we ran ATR through two open benchmarks we didn't build. On OpenGuardrails (runtime traffic) ATR placed first of seven reference detectors with zero false positives. On OASB (static skill artifacts) it had the lowest false-positive rate on the board — zero across 3,881 benign skills — but low recall, because ATR is a runtime detector, not a package scanner. We publish the numbers we got, including where ATR is weak.",
-      zh: "自己發布的數字最容易灌水,所以我們拿 ATR 去跑兩個不是我們做的開放 benchmark。在 OpenGuardrails(runtime 流量)ATR 在七個參考偵測器裡排第一、零誤報;在 OASB(靜態 skill 工件)它是全榜誤報率最低的——3,881 個良性 skill 零誤報——但 recall 低,因為 ATR 是 runtime 偵測器,不是套件掃描器。我們公開跑到的數字,包括 ATR 表現差的地方。",
+      en: "Self-published numbers are the easiest to game, so we ran ATR through two open benchmarks we didn't build. On OpenGuardrails (runtime traffic) ATR placed first of seven reference detectors with zero false positives. On OASB (static skill artifacts) it had the lowest false-positive rate on the board — zero across 3,881 benign skills — but low recall, because ATR is a runtime detector, not a package scanner. We publish the numbers we got, including where ATR is weak. Note (2026-10-16): both runs were one-off, are not recorded in data/measurements/ and have no detection lane on record, so these results cannot be reproduced from the repository.",
+      zh: "自己發布的數字最容易灌水,所以我們拿 ATR 去跑兩個不是我們做的開放 benchmark。在 OpenGuardrails(runtime 流量)ATR 在七個參考偵測器裡排第一、零誤報;在 OASB(靜態 skill 工件)它是全榜誤報率最低的——3,881 個良性 skill 零誤報——但 recall 低,因為 ATR 是 runtime 偵測器,不是套件掃描器。我們公開跑到的數字,包括 ATR 表現差的地方。附註（2026-10-16）：這兩次都是一次性的執行，沒有記錄在 data/measurements/ 裡，也沒有偵測 lane 的紀錄，所以這些結果無法從 repo 重現。",
     },
     atrRules: [],
   },
