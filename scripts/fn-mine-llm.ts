@@ -48,7 +48,7 @@
  *     Actions. Its candidates go through every gate unchanged; say in the PR which
  *     rules it proposed. Example:
  *       ATR_LLM_BACKEND=grok ATR_FNMINE_MAX_CHUNK=80 ATR_LLM_TIMEOUT_MS=1500000 \
- *         npx tsx scripts/fn-mine-llm.ts --dry-run --corpus k8s-resource-pi
+ *         npx tsx scripts/fn-mine-llm.ts --dry-run --corpus cyberseceval-pi
  *     (smaller chunks and a longer timeout: the CLI is slower per text)
  *   FN_MINE_OPEN_PR_FILES optional: a file listing the paths open PRs touch, one
  *     per line (the workflow writes it, so this step needs no GitHub token).

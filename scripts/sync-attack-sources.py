@@ -345,10 +345,6 @@ SOURCES: list[dict] = [
      'rev': 'dc0072ad6af8d1be049cdb60959e3ff51df4bcae', 'license': 'mit', 'files': ['data.csv'],
      'pick': label_pick('text', 'label'), 'shape': 'llm_input',
      'about': 'Hand-written injections by category (instruction override, role-play, extraction, encoding) and benign prompts.'},
-    {'id': 'k8s-resource-pi', 'kind': 'hf', 'repo': 'rgeada/k8s-resource-prompt-injection',
-     'rev': '68de771d06a47f85f4383d07556321d4f3c1f99a', 'license': 'apache-2.0', 'files': ['k8s_injections_test.csv'],
-     'pick': label_pick('text', 'label'), 'shape': 'tool_response', 'payload_key': 'injection',
-     'about': 'Real Kubernetes manifests from public repositories as a cluster tool returns them, with injections planted in annotations and fields; the clean manifests as benign.'},
     {'id': 'agentshield-corpus', 'kind': 'gh', 'repo': 'doronp/agentshield-benchmark',
      'rev': '235b6e3acacee6f54824c797a628e027ea5620ca', 'license': 'Apache-2.0',
      'files': ['corpus/prompt-injection/tests.jsonl', 'corpus/jailbreak/tests.jsonl', 'corpus/data-exfiltration/tests.jsonl',
@@ -377,11 +373,6 @@ SOURCES: list[dict] = [
      'rev': '26fe7a9a346c6eb47c620386e45bb64a814e758e', 'license': 'cc-by-4.0', 'files': ['data.jsonl'],
      'pick': label_pick('text', 'label'), 'shape': 'llm_input',
      'about': 'Injections and benign prompts for a classifier, including placeholder-secret extraction.'},
-    {'id': 'cyberec-pi', 'kind': 'hf', 'repo': 'cyberec/Prompt-injection-dataset',
-     'rev': 'cfe0ce4a4d5eb9528ffaca55cf0db27ac609b8b1', 'license': 'apache-2.0',
-     'files': ['core/train-00000-of-00001.parquet', 'core/validation-00000-of-00001.parquet', 'core/test-00000-of-00001.parquet'],
-     'pick': neuralchemy, 'shape': 'llm_input',
-     'about': 'A copy of neuralchemy/Prompt-injection-dataset (same rows); kept so the vendored file has a source, filtered the same way, and treated as the same family out of sample.'},
     {'id': 'wallet-agent-pi', 'kind': 'hf', 'repo': 'aaronbassett/wallet-prompt-injection',
      'rev': 'eba3c6f941d9ab11566f74314857ca20c4562189', 'license': 'mit', 'files': ['validation.jsonl', 'test.jsonl'],
      'pick': label_pick('text', 'label'), 'shape': 'llm_input',
@@ -558,6 +549,9 @@ SKIPPED = {
     'WaliyaKhan882/dataset_with_prompt_injection': 'no readable rows at the reviewed revision',
     'Impel/Jailbreak_Benchmark': 'multiple-choice questions about jailbreaks, not jailbreak text',
     'cyberec/llm-prompt-injection-attacks': 'a copy of Smooth-3/llm-prompt-injection-attacks (garbled machine-generated rows)',
+    'cyberec/Prompt-injection-dataset': 'a row-for-row copy of neuralchemy/Prompt-injection-dataset, which is vendored (withdrawn 2026-11-13)',
+    'rgeada/k8s-resource-prompt-injection': 'withdrawn 2026-11-13: its payloads are drawn from neuralchemy/Prompt-injection-dataset, '
+                                            'which includes rows under a research licence, so the planted text may not be redistributable',
 }
 
 

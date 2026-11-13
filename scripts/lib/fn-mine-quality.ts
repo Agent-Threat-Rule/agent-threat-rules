@@ -140,7 +140,7 @@ export const BENCHMARK_ARTIFACTS: Readonly<Record<string, readonly RegExp[]>> = 
 /**
  * Scoring strings more than one benchmark uses: HackAPrompt's goal sentence,
  * PromptInject's rogue strings and garak's markers turn up in other corpora
- * (k8s-resource-pi plants "I have been PWNED"; garak reuses PromptInject). A
+ * (neuralchemy-pi carries HackAPrompt submissions; garak reuses PromptInject). A
  * rule keyed on one would recover them anywhere, so every out-of-sample text
  * has them removed before it is counted.
  */
