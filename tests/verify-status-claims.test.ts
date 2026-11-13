@@ -278,7 +278,7 @@ describe("verify-status-claims.yml", () => {
   const step = (pattern: RegExp) => steps.find((s) => pattern.test(s.name ?? ""));
 
   it("runs when the list or the checker changes, weekly, and on demand", () => {
-    const watched = ["website/data/status-claims.json", "scripts/verify-status-claims.mjs", "scripts/lib/status-claims.mjs", "scripts/lib/github-link-state.mjs", ".github/workflows/verify-status-claims.yml"];
+    const watched = ["website/data/status-claims.json", "scripts/verify-status-claims.mjs", "scripts/lib/status-claims.mjs", "scripts/lib/github-link-state.mjs", "scripts/lib/adopters-evidence.mjs", ".github/workflows/verify-status-claims.yml"];
     for (const trigger of ["pull_request", "push"]) {
       expect((doc.on[trigger] as { paths: string[] }).paths, trigger).toEqual(expect.arrayContaining(watched));
     }

@@ -6,6 +6,24 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **verify-adopters no longer reports an API problem as drift.**
+  `scripts/verify-adopters.mjs` asked GitHub with no retry, no timeout and no
+  error handling: a rate limit or a 5xx was recorded as drift, and a network
+  error crashed the run. Since #724 such a failure on main filed a tracking
+  issue saying the evidence no longer matched. The script now asks through
+  `scripts/lib/github-link-state.mjs` (retries, a timeout) and sorts each
+  failure into drift, gone or unverified. When GitHub, or a linked page,
+  could not be asked about an entry, it writes nothing and exits 1, so the
+  published data stays as it was; the tracking issue then lists the drift
+  the run did find and shows the report, which says whether a re-run can
+  help. Every evidence link of an entry is checked, not only the first:
+  MISP, AG2 and Tencent AI-Infra-Guard give two each. A Still-present line is
+  checked on the repository of the entry's first GitHub link of any kind, so
+  xlabs-club/awesome-x-ops's is checked again: it had gone unchecked since
+  its evidence became a commit link on 2026-10-16. A Still-present path that
+  leaves the repository fails. The links are
+  read by `scripts/lib/adopters-evidence.mjs`, shared with the status-claims
+  check, which now exempts every shipped pull request an entry gives.
 - `references.owasp_ast` on four rules named an OWASP Agentic Skills Top 10
   control with a title that control does not have. Each now names the control
   that matches the rule, with its published title: ATR-2026-00134 (fork-claim

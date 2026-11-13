@@ -179,6 +179,8 @@ describe("adoptersShippedKeys", () => {
     "### Shipped issue",
     "- **Evidence**: <https://github.com/a/issue/issues/5>",
     "- **Status**: shipped",
+    "### Two pull requests",
+    "- **Evidence**: <https://github.com/a/first/pull/7> and <https://github.com/a/second/pull/8>",
     "## Tier 5 — not a tier verify-adopters reads",
     "### Unread",
     "- **Evidence**: <https://github.com/a/unread/pull/6>",
@@ -193,7 +195,8 @@ describe("adoptersShippedKeys", () => {
     // example, removed entries and a tier verify-adopters does not read are
     // not checked there, so they exempt nothing here; nor does an issue, which
     // verify-adopters holds to OPEN, a state that can change.
-    expect([...adoptersShippedKeys(adopters)].sort()).toEqual(["a/default#3", "a/shipped#1"]);
+    // Every evidence link of an entry, as verify-adopters checks them all.
+    expect([...adoptersShippedKeys(adopters)].sort()).toEqual(["a/default#3", "a/first#7", "a/second#8", "a/shipped#1"]);
   });
 });
 
