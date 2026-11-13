@@ -32,17 +32,12 @@ All notable changes to ATR will be documented in this file.
   AST02 -> AST03 Over-Privileged Skills; ATR-2026-02500 (prompt-layer
   self-replication) AST02 -> AST05 Untrusted External Instructions. Metadata
   only; detection is unchanged.
-- **ATR-2026-02300 no longer scans ahead from every character.** When the
-  input has no `mcpServers` key, each of its four conditions checked for a
-  nearby `command` and `args` key at every position before checking for the
-  `env` key it needs, so matching time grew with input length: about 0.1
-  seconds per condition on a 10,000-character line in Python's `re`. Each
-  condition now checks for the `env` (or `environment`) key first, which
-  costs almost nothing where it is absent. The patterns match the same text as
-  before: on 60,000 generated config-shaped inputs, the rule's test cases and
-  the benign skill corpus, the old and new patterns agree on every input. The
-  rule is maturity `experimental`, so the enforce lane is unchanged.
-  `rule_version` goes to 2.
+- **ATR-2026-02300 checks for the env key first.** Each of its four
+  conditions now looks for the `env` (or `environment`) key before the rest of
+  the pattern. The patterns match the same text as before: on 60,000
+  generated config-shaped inputs, the rule's test cases and the benign skill
+  corpus, the old and new patterns agree on every input. The rule is maturity
+  `experimental`, so the enforce lane is unchanged. `rule_version` goes to 2.
 
 ## [4.3.1] - 2026-11-08
 
