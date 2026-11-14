@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "openai-agents-atr"
+version = "0.1.0"
+description = "ATR (Agent Threat Rules) guardrails for the OpenAI Agents SDK — scans tool calls, tool results, run input and output against an open MIT detection standard."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Agent Threat Rules" }]
+keywords = ["openai-agents", "agent", "security", "guardrail", "atr", "detection", "prompt-injection"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Security",
+    "Intended Audience :: Developers",
+]
+dependencies = [
+    "openai-agents>=0.4",
+    "pyatr>=0.4.1",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "pyyaml>=6"]
+
+[project.urls]
+Homepage = "https://github.com/Agent-Threat-Rule/agent-threat-rules"
+Source = "https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/integrations/openai-agents"
+Standard = "https://agentthreatrule.org"
+
+[tool.hatch.build.targets.wheel]
+include = ["openai_agents_atr.py"]
+
+[tool.hatch.build.targets.sdist]
+include = ["openai_agents_atr.py", "README.md", "tests/"]
