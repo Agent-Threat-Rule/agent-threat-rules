@@ -95,6 +95,9 @@ def rows_of(name: str, data: bytes) -> list[Row]:
     if name.endswith(('.yaml', '.yml')):
         import yaml
         return [yaml.safe_load(text)]
+    if name.endswith(('.md', '.jinja', '.txt')):
+        # A document read whole; doc_chunks splits it.
+        return [{'text': text, 'file': name}]
     raise SystemExit(f'no reader for {name}')
 
 
@@ -135,6 +138,28 @@ def neuralchemy(r: Row) -> Iterable[tuple[str, str]]:
     if str(r.get('source')) in NEURALCHEMY_EXCLUDED_SOURCES:
         return
     yield from label_pick('text', 'label')(r)
+
+
+DOC_CHUNK_CHARS = 1200
+
+
+def doc_chunks(r: Row) -> Iterable[tuple[str, str]]:
+    """A benign document cut at blank lines into pieces of at most DOC_CHUNK_CHARS,
+    as a fetch or file-read tool returns part of a page or file."""
+    text = r.get('text')
+    if not isinstance(text, str):
+        return
+    piece = ''
+    for block in re.split(r'\n\s*\n', text):
+        if piece and len(piece) + len(block) + 2 > DOC_CHUNK_CHARS:
+            yield ('benign', piece)
+            piece = ''
+        piece = f'{piece}\n\n{block}' if piece else block
+        while len(piece) > DOC_CHUNK_CHARS:
+            yield ('benign', piece[:DOC_CHUNK_CHARS])
+            piece = piece[DOC_CHUNK_CHARS:]
+    if piece.strip():
+        yield ('benign', piece)
 
 
 def hse_pairs(r: Row) -> Iterable[tuple[str, str]]:
@@ -445,6 +470,31 @@ SOURCES: list[dict] = [
      'rev': '818f58cfa4fbeac35faba3789fd47075dcdba28c', 'license': 'mit', 'files': ['data.jsonl'],
      'pick': attack_pick('text'), 'shape': 'llm_input',
      'about': 'Hand-written injections by category, including agent exfiltration through tool URLs.'},
+    # Benign only: real content that legitimately carries chat-template control
+    # tokens (role markers, turn delimiters), as a fetch or file tool returns it.
+    # For measuring structural rules on forged template tokens (#848).
+    {'id': 'template-docs-transformers', 'kind': 'gh', 'repo': 'huggingface/transformers',
+     'rev': '0d7a6219179b24586089ae81b45cf725078e681f', 'license': 'Apache-2.0',
+     'files': ['docs/source/en/chat_templating.md', 'docs/source/en/chat_templating_writing.md',
+               'docs/source/en/chat_templating_multimodal.md', 'docs/source/en/chat_extras.md',
+               'docs/source/en/chat_content_patterns.md', 'docs/source/en/chat_response_parsing.md'],
+     'pick': doc_chunks, 'shape': 'tool_response',
+     'about': 'Benign only: Hugging Face documentation on writing and applying chat templates, in pieces as a fetch tool returns them.'},
+    {'id': 'template-files-vllm', 'kind': 'gh', 'repo': 'vllm-project/vllm',
+     'rev': '3d091b6f05f5ab3e688ce4bbe0c453de0646a069', 'license': 'Apache-2.0',
+     'files': ["examples/template_alpaca.jinja", "examples/template_chatglm.jinja", "examples/template_chatglm2.jinja", "examples/template_chatml.jinja", "examples/template_falcon.jinja", "examples/template_falcon_180b.jinja", "examples/template_inkbot.jinja", "examples/template_teleflm.jinja", "examples/tool_chat_template_apertus.jinja", "examples/tool_chat_template_deepseekr1.jinja", "examples/tool_chat_template_deepseekv3.jinja", "examples/tool_chat_template_deepseekv31.jinja", "examples/tool_chat_template_functiongemma.jinja", "examples/tool_chat_template_gemma3_pythonic.jinja", "examples/tool_chat_template_gemma4.jinja", "examples/tool_chat_template_glm4.jinja", "examples/tool_chat_template_granite.jinja", "examples/tool_chat_template_granite_20b_fc.jinja", "examples/tool_chat_template_hermes.jinja", "examples/tool_chat_template_hunyuan_a13b.jinja", "examples/tool_chat_template_internlm2_tool.jinja", "examples/tool_chat_template_llama3.1_json.jinja", "examples/tool_chat_template_llama3.2_json.jinja", "examples/tool_chat_template_llama3.2_pythonic.jinja", "examples/tool_chat_template_llama4_json.jinja", "examples/tool_chat_template_llama4_pythonic.jinja", "examples/tool_chat_template_mistral.jinja", "examples/tool_chat_template_mistral3.jinja", "examples/tool_chat_template_mistral_parallel.jinja", "examples/tool_chat_template_muse_glimmer.jinja", "examples/tool_chat_template_phi4_mini.jinja", "examples/tool_chat_template_qwen3coder.jinja", "examples/tool_chat_template_toolace.jinja", "examples/tool_chat_template_xlam_llama.jinja", "examples/tool_chat_template_xlam_qwen.jinja"],
+     'pick': doc_chunks, 'shape': 'tool_response',
+     'about': 'Benign only: the Jinja chat and tool-calling templates vLLM ships, as a file-read tool returns them.'},
+    {'id': 'template-files-collection', 'kind': 'gh', 'repo': 'chujiezheng/chat_templates',
+     'rev': '11c495621569969f264ee70b5c8bb49ba7a1a410', 'license': 'MIT',
+     'files': ["chat_templates/alpaca.jinja", "chat_templates/amberchat.jinja", "chat_templates/chatml.jinja", "chat_templates/chatqa.jinja", "chat_templates/falcon-instruct.jinja", "chat_templates/gemma-it.jinja", "chat_templates/granite-3.0-instruct.jinja", "chat_templates/llama-2-chat.jinja", "chat_templates/llama-3-instruct.jinja", "chat_templates/mistral-instruct.jinja", "chat_templates/openchat-3.5.jinja", "chat_templates/phi-3-small.jinja", "chat_templates/phi-3.jinja", "chat_templates/qwen2.5-instruct.jinja", "chat_templates/saiga.jinja", "chat_templates/solar-instruct.jinja", "chat_templates/vicuna.jinja", "chat_templates/zephyr.jinja", "README.md"],
+     'pick': doc_chunks, 'shape': 'tool_response',
+     'about': 'Benign only: a collection of chat templates for open models (ChatML, Llama 2 and 3, Gemma, Mistral, Phi) and its README.'},
+    {'id': 'template-docs-llamacpp', 'kind': 'gh', 'repo': 'ggml-org/llama.cpp',
+     'rev': 'ded522f8304554317e7ff8f88698dbbbca5425aa', 'license': 'MIT',
+     'files': ['docs/function-calling.md', 'tools/server/README.md'],
+     'pick': doc_chunks, 'shape': 'tool_response',
+     'about': 'Benign only: llama.cpp documentation on function calling and the server, including chat-template formats.'},
     {'id': 'ogma-benign-prompts', 'kind': 'hf', 'repo': 'axiotic/ogma-prompt-injection-benign',
      'rev': '089327b0977e1296e4992d9b83a5248d1616edd4', 'license': 'apache-2.0', 'files': ['data/train-00000-of-00001.parquet'],
      'pick': label_pick('text', 'label'), 'shape': 'llm_input',
