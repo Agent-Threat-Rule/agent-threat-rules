@@ -24,6 +24,11 @@ All notable changes to ATR will be documented in this file.
   leaves the repository fails. The links are
   read by `scripts/lib/adopters-evidence.mjs`, shared with the status-claims
   check, which now exempts every shipped pull request an entry gives.
+- **35 rules and the tool-poisoning default in `scripts/backfill-metadata.ts`
+  use the current ATLAS name for AML.T0053.** MITRE ATLAS renamed the
+  technique from "LLM Plugin Compromise" to "AI Agent Tool Invocation"; #675
+  updated the rules it touched and left the rest. Only the `mitre_atlas`
+  reference line changes on each rule. (#812)
 - `references.owasp_ast` on four rules named an OWASP Agentic Skills Top 10
   control with a title that control does not have. Each now names the control
   that matches the rule, with its published title: ATR-2026-00134 (fork-claim
