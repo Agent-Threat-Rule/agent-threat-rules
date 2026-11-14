@@ -33,5 +33,5 @@ Scenario #2: An attacker uses three individually benign skills in sequence: (1) 
 1. [ATR-2026-00060: Skill Impersonation](https://github.com/Agent-Threat-Rule/agent-threat-rules): Typosquatting detection for major tool ecosystems (filesystem, GitHub, OpenAI, Anthropic, Slack).
 2. [CVE-2026-28363: ClawJacked](https://nvd.nist.gov/vuln/detail/CVE-2026-28363): OpenClaw WebSocket brute-force hijack (CVSS 9.9).
 3. [CVE-2026-25253](https://nvd.nist.gov/vuln/detail/CVE-2026-25253): OpenClaw RCE via auth token exfiltration (CVSS 8.8).
-4. [Snyk ToxicSkills Report](https://snyk.io/blog/toxicskills/): 3,984 MCP skills scanned, 76 confirmed malicious (36.82% had flaws).
-5. [Aikido Slopsquatting Research](https://www.aikido.dev/blog/slopsquatting): 19.7% of LLM-hallucinated package names are squattable.
+4. [Snyk ToxicSkills Report](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/): 3,984 MCP skills scanned, 76 confirmed malicious (36.82% had flaws).
+5. [Aikido Slopsquatting Research](https://www.aikido.dev/blog/slopsquatting-ai-package-hallucination-attacks): 19.7% of LLM-hallucinated package names are squattable.

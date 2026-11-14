@@ -34,4 +34,4 @@ Scenario #2: An agent is tasked with generating a sales report. During execution
 2. [ATR-2026-00113: Credential Theft](https://github.com/Agent-Threat-Rule/agent-threat-rules): Detects access to host credential files and OS credential managers.
 3. [ATR-2026-00115: Environment Variable Harvesting](https://github.com/Agent-Threat-Rule/agent-threat-rules): Detects bulk env var extraction and exfiltration patterns.
 4. [CVE-2025-59536](https://nvd.nist.gov/vuln/detail/CVE-2025-59536): OpenClaw silent API key exfiltration (CVSS 8.7).
-5. [Snyk ToxicSkills Report](https://snyk.io/blog/toxicskills/): 280+ over-permissioned MCP skills identified with credential access.
+5. [Snyk ToxicSkills Report](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/): 280+ over-permissioned MCP skills identified with credential access.
