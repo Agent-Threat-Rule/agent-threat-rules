@@ -82,7 +82,7 @@ export function MemberDirectory({ members, locale }: { members: Member[]; locale
               ? zh ? "沒有符合的成員。" : "No member matches that search."
               : zh ? "這一組還沒有人列名。" : "No one is listed in this group yet."}
           </p>
-          <p className="mt-3 text-[13px] text-stone">{zh ? "入會暫停受理，隱私說明定稿後開放。" : "Joining is paused until the privacy notice is final."}</p>
+          <p className="mt-3 text-[13px] text-stone"><a href={`/${locale}/community/join`} className="text-blue hover:underline underline-offset-4">{zh ? "申請加入名錄" : "Apply to be listed"}</a></p>
         </div>
       ) : (
         <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 border-l border-fog bg-white/40">

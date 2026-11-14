@@ -222,17 +222,22 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
               <div>
                 <div className="font-data text-lg font-bold text-critical"><CountUp target={stats.megaScanCritical} useComma liveKey="megaScanCritical" /></div>
-                <div className="text-xs text-stone">CRITICAL</div>
+                <div className="text-xs text-stone">{zh ? "CRITICAL 偵測結果" : "CRITICAL findings"}</div>
               </div>
               <div>
                 <div className="font-data text-lg font-bold text-high"><CountUp target={stats.megaScanHigh} useComma liveKey="megaScanHigh" /></div>
-                <div className="text-xs text-stone">HIGH</div>
+                <div className="text-xs text-stone">{zh ? "HIGH 偵測結果" : "HIGH findings"}</div>
               </div>
               <div>
                 <div className="font-data text-lg font-bold text-ink"><CountUp target={stats.megaScanFlagged} useComma liveKey="megaScanFlagged" /></div>
-                <div className="text-xs text-stone">{locale === "zh" ? "總標記數" : "Total flagged"}</div>
+                <div className="text-xs text-stone">{locale === "zh" ? "被標記的項目" : "Items flagged"}</div>
               </div>
             </div>
+            <p className="text-xs text-stone leading-[1.6] mt-3">
+              {zh
+                ? `CRITICAL 和 HIGH 算的是偵測結果：被標記的 ${stats.megaScanFlagged.toLocaleString()} 個項目一共產生 ${stats.megaScanFindings.toLocaleString()} 筆，一個項目可能有好幾筆。`
+                : `CRITICAL and HIGH count findings: the ${stats.megaScanFlagged.toLocaleString()} flagged items produced ${stats.megaScanFindings.toLocaleString()} findings, and one item can have several.`}
+            </p>
           </div>
           <div className="bg-paper p-6">
             <div className="text-[13px] text-stone mb-3">{zh ? "ClawHub registry 掃描" : "ClawHub registry scan"}</div>
@@ -241,11 +246,11 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
               <div>
                 <div className="font-data text-lg font-bold text-critical"><CountUp target={stats.clawHubCritical} /></div>
-                <div className="text-xs text-stone">CRITICAL</div>
+                <div className="text-xs text-stone">{zh ? "評為 CRITICAL 的 skill" : "Skills rated CRITICAL"}</div>
               </div>
               <div>
                 <div className="font-data text-lg font-bold text-high"><CountUp target={stats.clawHubHigh} useComma /></div>
-                <div className="text-xs text-stone">HIGH</div>
+                <div className="text-xs text-stone">{zh ? "評為 HIGH 的 skill" : "Skills rated HIGH"}</div>
               </div>
               <div>
                 <div className="font-data text-lg font-bold text-ink"><CountUp target={stats.clawHubScanned} useComma /></div>
@@ -443,13 +448,13 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
                 {locale === "zh" ? "轉成 Sigma / YARA" : "Sigma / YARA output"}
               </div>
               <span className="font-data text-[10px] text-stone bg-stone/10 px-2 py-0.5  uppercase tracking-wide">
-                {locale === "zh" ? "規劃中" : "Planned"}
+                {locale === "zh" ? "部分可用" : "Partly available"}
               </span>
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {locale === "zh"
-                ? "把 ATR 規則編譯成 SIEM 用的 Sigma 和掃檔案用的 YARA。agent 的威脅偵測就能直接放進現有的資安管線，不用重建。"
-                : "Compile ATR rules to Sigma for the SIEM and YARA for files. Agent threat detection then runs in the security pipelines people already have, with nothing rebuilt."}
+                ? "Sigma：repo 裡有一支轉換腳本（scripts/generate-sigma.py），把 ATR 規則轉成 Sigma YAML。agent 流量還沒有正式的 Sigma logsource，所以它用自訂的 ai_agent logsource，接進 SIEM 時要自己對欄位。ATR 也列在 SigmaHQ 的工具目錄裡。YARA：ATR 沒有官方的編譯器；第三方的 atr-to-yaral 可以把 ATR 規則轉成 Google SecOps 用的 YARA-L 2.0。"
+                : "Sigma: the repo has a converter script (scripts/generate-sigma.py) that turns ATR rules into Sigma YAML. There is no ratified Sigma logsource for agent traffic yet, so it uses a custom ai_agent logsource, and you map the fields yourself when wiring it into a SIEM. ATR is also listed in the SigmaHQ tools directory. YARA: ATR has no official compiler; the third-party atr-to-yaral converts ATR rules into YARA-L 2.0 for Google SecOps."}
             </p>
           </div>
           <div className="bg-paper p-5 md:p-6">
@@ -463,8 +468,8 @@ export default async function ResearchPage({ params }: { params: Promise<{ local
             </div>
             <p className="text-sm text-graphite leading-[1.7]">
               {locale === "zh"
-                ? "ATR 只偵測 runtime 的攻擊。訓練時就埋進模型的後門，到了推論階段，從架構上就看不到。要補上這個斷層，得有新技術，把供應鏈來源（model card、訓練資料稽核）和 runtime 的行為指紋接起來。"
-                : "ATR detects runtime attacks. A backdoor planted in a model during training is invisible, by design, at inference time. Closing that gap needs new techniques that tie supply-chain provenance (model cards, training data audits) to runtime behavioral fingerprints."}
+                ? "ATR 比對的是文字：skill、工具說明這類靜態檔案（上面的生態系掃描就是），以及 runtime 的輸入、輸出和工具呼叫。訓練時埋進模型權重的後門不在這些文字裡，所以從架構上就看不到。要補上這個斷層，得有新技術，把供應鏈來源（model card、訓練資料稽核）和 runtime 的行為指紋接起來。"
+                : "ATR matches text: static artifacts such as skills and tool descriptions (the ecosystem scan above is one), and runtime inputs, outputs and tool calls. A backdoor planted in a model's weights during training is not in any of that text, so it is invisible to ATR by design. Closing that gap needs new techniques that tie supply-chain provenance (model cards, training data audits) to runtime behavioral fingerprints."}
             </p>
           </div>
         </div>

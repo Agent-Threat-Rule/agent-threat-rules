@@ -75,6 +75,8 @@ interface WildScanReport {
   engine: { version: string; rules: number };
   total_scanned: number;
   total_flagged: number;
+  /** Findings (rule matches) across the flagged items; severity counts sum to this. */
+  total_threats: number;
   severity: { critical: number; high: number; medium: number };
 }
 
@@ -122,6 +124,8 @@ export interface SiteStats {
   megaScanFlagged: number;
   megaScanCritical: number;
   megaScanHigh: number;
+  /** Findings the severity counts are drawn from (not the flagged-item count). */
+  megaScanFindings: number;
   megaScanSources: { openclaw: number; skillsSh: number };
   megaScanDate: string;
 
@@ -485,6 +489,7 @@ function computeSiteStats(): SiteStats {
     megaScanFlagged: wild?.total_flagged ?? 1434,
     megaScanCritical: wild?.severity?.critical ?? 1210,
     megaScanHigh: wild?.severity?.high ?? 282,
+    megaScanFindings: wild?.total_threats ?? 1507,
     megaScanSources: {
       openclaw: mega?.sources?.openclaw ?? 56480,
       skillsSh: mega?.sources?.skills_sh ?? 3115,

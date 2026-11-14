@@ -319,25 +319,28 @@ export function readOutOfSample(root: string): readonly OutOfSampleCorpus[] {
  * question at its end. A sample whose opening matches one in the mined corpus
  * is the mined sample again, not out-of-sample evidence.
  */
-const SAMPLE_KEY_CHARS = 200;
-function sampleKey(text: string): string {
+export const SAMPLE_KEY_CHARS = 200;
+export function sampleKey(text: string): string {
   return text.toLowerCase().replace(/\s+/g, ' ').trim().slice(0, SAMPLE_KEY_CHARS);
 }
 
 /**
  * Corpora built from another corpus's attacks, so neither is out of sample for
  * the other. sampleKey catches a republished text; these hold the same payload
- * inside different text. k8s-resource-pi plants neuralchemy-pi's injections in
- * Kubernetes manifests (its builder says so), cyberec-pi is a copy of
- * neuralchemy-pi, and neuralchemy-pi carries HackAPrompt submissions; garak-full's dan and inthewild
+ * inside different text. neuralchemy-pi carries HackAPrompt submissions; garak-full's dan and inthewild
  * probes are the TrustAIRLab jailbreak collection and its promptinject probe is
  * PromptInject; deepset is half of multilingual-pi.
  */
 const DERIVED_FROM: readonly (readonly string[])[] = Object.freeze([
-  ['k8s-resource-pi', 'neuralchemy-pi', 'cyberec-pi', 'hackaprompt'],
+  ['neuralchemy-pi', 'hackaprompt'],
   ['garak-full', 'in-the-wild-jailbreak', 'jailbreak-cls', 'promptinject'],
   ['deepset', 'multilingual-pi'],
 ]);
+
+/** The family a corpus belongs to: its DERIVED_FROM group's first member, else itself. */
+export function familyOf(corpus: string): string {
+  return DERIVED_FROM.find((group) => group.includes(corpus))?.[0] ?? corpus;
+}
 
 /** `minedFrom` and every corpus that shares its attacks by construction. */
 export function sameFamily(minedFrom: string): ReadonlySet<string> {

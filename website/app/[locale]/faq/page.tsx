@@ -64,8 +64,8 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
     {
       q: zh ? "lane 是什麼？" : "What is a lane?",
       a: zh
-        ? <>lane 決定哪些成熟度的規則可以觸發。enforce 只跑 maturity 為 stable 的規則，要開阻擋就用這條。alert 跑 stable 和 test。hunt 跑全部生效的規則，也是預設。引擎和 Claude Code hook 的阻擋預設是關的；Mastra、OpenShell、NemoClaw 轉接器則預設會擋 high 和 critical 的命中。</>
-        : <>A lane decides which rule maturities may fire. Enforce runs maturity stable only, and it is the lane to run with blocking on. Alert runs stable and test. Hunt runs every effective rule and is the default. Blocking is off by default in the engine and the Claude Code hook; the Mastra, OpenShell and NemoClaw adapters block high and critical matches by default.</>,
+        ? <><p>lane 決定哪些成熟度的規則可以觸發。enforce 只跑 maturity 為 stable 的規則，要開阻擋就用這條。alert 跑 stable 和 test。hunt 跑全部生效的規則，也是預設。</p><p className="mt-3">引擎和 Claude Code hook 的阻擋預設是關的。Mastra、OpenShell、NemoClaw 轉接器則預設會擋 high 和 critical 的命中。</p></>
+        : <><p>A lane decides which rule maturities may fire. Enforce runs maturity stable only, and it is the lane to run with blocking on. Alert runs stable and test. Hunt runs every effective rule and is the default.</p><p className="mt-3">Blocking is off by default in the engine and the Claude Code hook. The Mastra, OpenShell and NemoClaw adapters block high and critical matches by default.</p></>,
     },
     {
       q: zh ? "為什麼有三個規則數？" : "Why are there three rule counts?",
@@ -100,14 +100,14 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
     {
       q: zh ? "誤判或繞過怎麼回報？" : "How do I report a false positive or a bypass?",
       a: zh
-        ? <>用 GitHub 的 <a href={`${REPO_URL}/issues/new?template=false-positive.yml`} className={a}>誤判表單</a>或<a href={`${REPO_URL}/issues/new?template=evasion-report.yml`} className={a}>繞過表單</a>。被採納的回報會在版本說明裡列名。</>
-        : <>With the GitHub <a href={`${REPO_URL}/issues/new?template=false-positive.yml`} className={a}>false-positive form</a> or the <a href={`${REPO_URL}/issues/new?template=evasion-report.yml`} className={a}>evasion form</a>. Accepted reports are credited in the release notes.</>,
+        ? <>用 GitHub 的 <a href={`${REPO_URL}/issues/new?template=false-positive.yml`} className={a}>誤判表單</a>或<a href={`${REPO_URL}/issues/new?template=evasion-report.yml`} className={a}>繞過表單</a>。</>
+        : <>With the GitHub <a href={`${REPO_URL}/issues/new?template=false-positive.yml`} className={a}>false-positive form</a> or the <a href={`${REPO_URL}/issues/new?template=evasion-report.yml`} className={a}>evasion form</a>.</>,
     },
     {
       q: zh ? "怎麼加入？" : "How do I join?",
       a: zh
-        ? <>入會暫停受理，隱私說明定稿後開放。開放後加入免費，名錄只列本人同意公開的人。</>
-        : <>Joining is paused until the privacy notice is final. Once it opens, joining is free, and the directory lists only people who agreed to be listed.</>,
+        ? <>到<a href={`/${locale}/community/join`} className={a}>入會頁</a>申請，加入免費。名錄只列本人同意公開的人。貢獻不用先申請：誰都可以開 issue 和 pull request。</>
+        : <>Apply on the <a href={`/${locale}/community/join`} className={a}>join page</a>. Joining is free, and the directory lists only people who agreed to be listed. You do not need to apply to contribute: anyone can open issues and pull requests.</>,
     },
   ];
 

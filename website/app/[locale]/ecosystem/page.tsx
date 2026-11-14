@@ -70,6 +70,15 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
   // Total reflects only merged adopters shown on the wall.
   const shippedCount =
     sections.reduce((n, s) => n + s.entries.length, 0) + commercial.length;
+  // In-review entries are tracked in ADOPTERS.md (and re-verified) but not shown
+  // on this page; the header says so, so the verification total adds up.
+  const inReviewCount = [
+    ...adopters.tierS,
+    ...adopters.tier1,
+    ...adopters.tier2,
+    ...adopters.tier3,
+    ...adopters.tier4,
+  ].filter((a) => a.status === "in-review").length;
 
   return (
     <Phrased>
@@ -88,8 +97,8 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
       <Reveal delay={0.2}>
         <p className="text-base text-stone font-light mb-3 max-w-[640px]">
           {zh
-            ? "標準好不好，看有沒有人採用，不看它自己怎麼說。這一頁列出把 ATR 規則放進公開、可驗證成品裡的專案，有標準機構、資安廠商，也有開源工具。每一筆都有公開 repo 裡已合併的 pull request 為證，不是廠商的產品宣稱。採用的方式也值得看：企業走 pull request 整合，沒有私下 fork。"
-            : "A standard is measured by adoption, not by what it says about itself. This page lists projects that ship ATR rules in public, verifiable work: standards bodies, security vendors and open-source tools. Each entry is backed by a merged pull request in a public repository, not by a vendor's product claim. How they adopted it matters too. Enterprises integrate through pull requests, not private forks."}
+            ? "標準好不好，看有沒有人採用，不看它自己怎麼說。這一頁列出把 ATR 規則放進公開、可驗證成品裡的專案，有標準機構、資安廠商，也有開源工具。每一筆都附公開可查的證據連結，多半是公開 repo 裡已合併的 pull request，也有 README、文件檔或 commit，不是廠商的產品宣稱。採用的方式也值得看：企業走 pull request 整合，沒有私下 fork。"
+            : "A standard is measured by adoption, not by what it says about itself. This page lists projects that ship ATR rules in public, verifiable work: standards bodies, security vendors and open-source tools. Each entry links to public evidence, usually a merged pull request in a public repository, sometimes a README, a docs file or a commit, not a vendor's product claim. How they adopted it matters too. Enterprises integrate through pull requests, not private forks."}
         </p>
       </Reveal>
       <Reveal delay={0.22}>
@@ -101,7 +110,15 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
       </Reveal>
       <Reveal delay={0.25}>
         <p className="font-data text-xs text-stone tracking-wide mb-5">
-          {zh ? "共計" : "Total"}: <span className="text-ink font-bold">{shippedCount}</span> {zh ? "個採用者" : "adopters"}
+          {zh ? "已上線" : "Shipped"}: <span className="text-ink font-bold">{shippedCount}</span> {zh ? "個採用者，列在下方" : "adopters, listed below"}
+          {inReviewCount > 0 && (
+            <>
+              {" · "}
+              {zh
+                ? `另有 ${inReviewCount} 筆審查中，只記在 ADOPTERS.md，不列在這頁`
+                : `${inReviewCount} more in review, tracked in ADOPTERS.md but not listed here`}
+            </>
+          )}
           {" · "}
           <a
             href="https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/ADOPTERS.md"
@@ -126,8 +143,8 @@ export default async function EcosystemPage({ params }: { params: Promise<{ loca
                 }
               >
                 {zh
-                  ? `${verification.verifiedAt} 對 GitHub 重驗證據連結，${verification.ok}/${verification.total} 通過`
-                  : `evidence re-verified against GitHub ${verification.verifiedAt}: ${verification.ok}/${verification.total}`}
+                  ? `${verification.verifiedAt} 對 GitHub 重驗兩者共 ${verification.total} 筆的證據連結，${verification.ok}/${verification.total} 通過`
+                  : `evidence for all ${verification.total} entries, shipped and in review, re-verified against GitHub ${verification.verifiedAt}: ${verification.ok}/${verification.total}`}
               </a>
             </>
           )}

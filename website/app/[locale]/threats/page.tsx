@@ -171,7 +171,7 @@ export default async function ThreatsPage({ params }: { params: Promise<{ locale
                     {a.name}
                   </div>
                   <span className="font-data text-[10px] text-critical bg-critical/10 px-2 py-0.5 rounded-[2px] uppercase tracking-wide">
-                    {zh ? "活躍中" : "Active"}
+                    {zh ? "2026-04 掃描時活躍" : "Active at 2026-04 scan"}
                   </span>
                 </div>
                 <div className="font-data text-[clamp(28px,4vw,40px)] font-bold text-ink mt-3 leading-none">

@@ -74,7 +74,7 @@ const EVIDENCE: ReadonlyArray<Evidence> = [
   {
     id: "EV-06", type: "Measurement",
     title: { en: "Published measurements", zh: "公開量測" },
-    shows: { en: "Recall and false-positive figures for each lane, tied to the ATR version that was measured, with their caveats.", zh: "每個 lane 的召回率和誤報數字，綁定量測時的 ATR 版本，附上注意事項。" },
+    shows: { en: "Recall and false-positive figures for each lane, tied to the ATR version that was measured, with their caveats. The per-lane false-positive rates were withdrawn on 2026-09-19 and are pending re-measurement.", zh: "每個 lane 的召回率和誤報數字，綁定量測時的 ATR 版本，附上注意事項。各 lane 的誤報率已在 2026-09-19 撤回，等重新量測。" },
     produce: "data/measurements/<source>/latest.json",
     location: { en: "ATR repository", zh: "ATR repository" },
   },

@@ -88,9 +88,6 @@ export const OOS_SOURCES: readonly OosSource[] = Object.freeze([
   oos('english-pi-3k', 'llm_input', 'sync-attack-sources.py'),
   oos('multilingual-extraction-pi', 'llm_input', 'sync-attack-sources.py'),
   oos('pi-benchmark-categories', 'llm_input', 'sync-attack-sources.py'),
-  oos('k8s-resource-pi', 'tool_response', 'sync-attack-sources.py',
-    'The planted payloads are HackAPrompt-style canaries ("I have been PWNED") inside real manifests; the manifest fields ' +
-    'and repository names are fixtures: never anchor on the canary or on Kubernetes keys.'),
   oos('agentshield-corpus', 'llm_input', 'sync-attack-sources.py'),
   oos('turkish-conversation-pi', 'llm_input', 'sync-attack-sources.py'),
   oos('turkish-pi-1k', 'llm_input', 'sync-attack-sources.py'),
@@ -98,7 +95,6 @@ export const OOS_SOURCES: readonly OosSource[] = Object.freeze([
   oos('turkish-pi-catalog', 'llm_input', 'sync-attack-sources.py'),
   oos('pi-classification', 'llm_input', 'sync-attack-sources.py',
     'Rows ask for a {SECRET} or {PASSWORD} placeholder: never anchor on the placeholder.'),
-  oos('cyberec-pi', 'llm_input', 'sync-attack-sources.py'),
   oos('wallet-agent-pi', 'llm_input', 'sync-attack-sources.py',
     'Rows carry the generator\'s placeholders (<TKN>, <ATTACKER_ADDRESS>, wallet names): never anchor on them; ' +
     'key on how the text overrides the wallet agent.'),

@@ -45,7 +45,7 @@ const ROWS: ReadonlyArray<{ label: B; expert: B; contributor: B }> = [
   {
     label: { en: "Rights", zh: "權利" },
     expert: { en: "Open issues and pull requests like anyone. Merging is limited to maintainers with repository permission.", zh: "跟所有人一樣，可以提 issue 和 pull request。只有握有 repo 權限的維護者能合併。" },
-    contributor: { en: "The same. Contributors are nominated as maintainers through sustained review work.", zh: "一樣。長期投入審查的貢獻者，會被提名為維護者。" },
+    contributor: { en: "Open issues and pull requests, as experts do. Contributors are nominated as maintainers through sustained review work.", zh: "跟專家一樣，可以提 issue 和 pull request。長期投入審查的貢獻者，會被提名為維護者。" },
   },
   {
     label: { en: "Intake", zh: "收件" },

@@ -1,6 +1,15 @@
-# ATR Foundation — BDFL Charter
+# ATR Project — BDFL Charter
 
-Version 1.0 · Effective 2026-04-22
+Version 1.0 · Effective 2026-04-22 · Amended 2026-11-11
+
+> There is no legal entity called "ATR Foundation". Earlier versions of
+> this charter used that name in the title and in the membership section.
+> ATR is a project, not a legal entity, and is fiscally hosted by Open
+> Source Collective. The 2026-11-11 amendment corrects the name, records
+> that the TSC's external seats are not filled, and withdraws the paid membership
+> program that carried a governance vote. See
+> [GOVERNANCE.md](../GOVERNANCE.md) sections "Continuity" and
+> "Organizational membership".
 
 ---
 
@@ -8,14 +17,12 @@ Version 1.0 · Effective 2026-04-22
 
 The Agent Threat Rules (ATR) project operates as an open standard for AI agent security
 detection. This document formalizes the project's leadership structure, governance
-obligations, conflict-of-interest rules, and the two community programs that define
-ATR's relationship with the broader security industry: the ATR Certified Skill program
-and the ATR Enterprise Member program.
+obligations, conflict-of-interest rules, and the ATR Certified Skill program.
 
 ATR is governed in the tradition of open-source projects that separate technical
 authority from commercial relationship. Quality decisions are made by the community
-and enforced by CI. Commercial relationships (Enterprise Membership) carry no
-influence over detection quality or rule acceptance.
+and enforced by CI. Commercial relationships carry no influence over detection
+quality, rule acceptance or governance decisions.
 
 ---
 
@@ -29,7 +36,6 @@ capacity. The BDFL holds final decision authority over:
 - RFC amendments (schema, quality standard, governance)
 - Tag membership admissions
 - Category structure changes
-- Enterprise Member admissions
 
 The BDFL is not a commercial role. The BDFL does not approve or reject Enterprise
 Members based on commercial considerations — membership is open to any organization
@@ -50,7 +56,7 @@ The BDFL may:
 - Assign permanent ATR-YYYY-NNNNN IDs
 - Approve, reject, or request changes to any rule PR
 - Amend the quality standard RFC with public comment period (minimum 14 days)
-- Invite organizations to TAG or Enterprise Membership
+- Invite organizations to the TAG
 
 The BDFL may NOT:
 - Change the MIT License to any other license (irrevocable — see Section 7)
@@ -61,7 +67,12 @@ The BDFL may NOT:
 
 ---
 
-## Technical Steering Committee (TSC) — Target: Q3 2026 (Founding Three)
+## Technical Steering Committee (TSC) — Founding Three (external seats not filled)
+
+Status on 2026-11-11: the TSC has two members, both ATR maintainers. The
+Industry and Community seats are not filled; the Q3 2026 target for seating
+all three was missed. The BDFL keeps the final call described below until
+an external seat is filled.
 
 The TSC replaces the single-maintainer authority model. The detailed
 charter for the TSC, including voting thresholds, term length, public
@@ -161,66 +172,24 @@ findings against the latest ATR release, the skill is certified. No exceptions.
 
 ---
 
-## ATR Enterprise Member Program — $10,000 / year
+## Organizational membership — withdrawn as written
 
-Enterprise Membership is modeled on the Apache Software Foundation Platinum Sponsor
-model. It is a governance relationship, not a commercial license. The MIT License
-grants all commercial rights to everyone at zero cost.
+The "Enterprise Member" program previously described here ($10,000 per
+year, with one governance vote per organization) was never opened. No
+organization applied, no fee was collected and no vote was granted. It is
+withdrawn.
 
-### What Enterprise Membership is
-
-- Formal recognition as a supporter of the ATR standards project
-- Governance participation rights (see below)
-- Access benefits for enterprise security teams
-
-### What Enterprise Membership is NOT
-
-- Not a commercial license (MIT License is free for all uses)
-- Not influence over rule acceptance or rejection decisions
-- Not priority treatment in the numbering queue
-- Not a certification or endorsement of any product
-
-### Benefits
-
-| Benefit | Detail |
-|---------|--------|
-| Governance vote | One vote per organization in TSC-level decisions after TSC formation |
-| Early draft access | New RFC drafts shared 14 days before public comment period opens |
-| Priority PR review | PRs from Enterprise Members tagged `priority-review` are reviewed within 7 days (vs 14-day standard SLA) |
-| Logo display | Organization logo in ATR repository README and website under "Enterprise Members" |
-| Direct contact | Access to a private mailing list for coordinating vendor-pack rule contributions |
-
-### Eligibility
-
-Any organization may apply, subject to:
-- Demonstrated use of ATR in a security product, research project, or internal tooling
-- Willingness to have the membership publicly listed (no anonymous members)
-- Payment of the annual $10,000 fee to the ATR Foundation treasury
-
-### Limitations on Enterprise Member influence
-
-Enterprise Member status grants governance voting rights on structural decisions
-(RFC amendments, TSC composition, roadmap priorities). It does NOT grant:
-- Any vote on individual rule acceptance or rejection
-- Any ability to accelerate or block specific rule IDs
-- Any access to non-public scan data from other organizations' Threat Cloud sensors
-
-Decisions about individual rule quality are made solely by the quality gate CI and
-human reviewers following the standard review process in REVIEWER-GUIDE.md.
-
-### Current fee: $10,000 / year
-
-This fee supports project infrastructure (CI, npm hosting, Zenodo DOI, website). The
-annual accounts are published publicly each December. If the TSC determines the fee
-creates a barrier to adoption by important community organizations, it may create a
-scholarship track for non-commercial and academic members.
+Payment of any kind does not carry a vote on technical or governance
+decisions. Whether to offer organizational membership at all is undecided
+and will be proposed publicly first. The current statement is in
+[GOVERNANCE.md](../GOVERNANCE.md), "Organizational membership".
 
 ---
 
 ## License Commitment — Irrevocable
 
 ATR is licensed under the MIT License. This is irrevocable. The BDFL, TSC, and
-Enterprise Members collectively cannot change the license to any source-available,
+Sponsors or members of any kind cannot change the license to any source-available,
 commercial, or proprietary license.
 
 This is not a policy — it is a structural commitment. ATR's value as a community

@@ -69,7 +69,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     // CTA
     "cta.heading": "Add ATR to your platform.",
     "cta.sub":
-      "Four paths. TypeScript, Python, raw YAML, or SIEM queries.\nThe same path Cisco walked.",
+      "Four paths. TypeScript, Python, raw YAML, or SIEM queries.",
     "cta.primary": "Integration Guide",
     "cta.secondary": "Explore All Rules",
 
@@ -131,7 +131,7 @@ export const messages: Record<Locale, Record<string, string>> = {
 
     // Integrate page
     "integrate.ready":
-      "The same {count} rules run in TypeScript, Python, a CI job or a SIEM. It is the route Cisco, Microsoft and MISP already took.",
+      "The same {count} rules run in TypeScript, Python, a CI job or a SIEM. Who has integrated them so far, and how, is listed on the ecosystem page.",
     "integrate.schema.title": "Will the format break?",
     "integrate.schema.intro":
       "If you depend on ATR as upstream, you need to know the format won't break. Here's our commitment:",
@@ -439,7 +439,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     // CTA
     "cta.heading": "將 ATR 加入你的平台。",
     "cta.sub":
-      "四條路徑。TypeScript、Python、原始 YAML、或 SIEM queries。\n跟 Cisco 走的同一條路。",
+      "四條路徑。TypeScript、Python、原始 YAML、或 SIEM 查詢。",
     "cta.primary": "Integration Guide",
     "cta.secondary": "瀏覽所有規則",
 
@@ -508,7 +508,7 @@ export const messages: Record<Locale, Record<string, string>> = {
 
     // Integrate page
     "integrate.ready":
-      "同一套 {count} 條規則，可以接進 TypeScript、Python、CI 或 SIEM。Cisco、Microsoft、MISP 走的就是這條路。",
+      "同一套 {count} 條規則，可以接進 TypeScript、Python、CI 或 SIEM。目前有誰接了、怎麼接的，列在生態系頁。",
     "integrate.schema.title": "格式會不會改壞？",
     "integrate.schema.intro":
       "如果你依賴 ATR 作為上游，你需要知道格式不會壞掉。這是我們的承諾：",

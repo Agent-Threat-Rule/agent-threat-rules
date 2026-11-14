@@ -6,6 +6,24 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **verify-adopters no longer reports an API problem as drift.**
+  `scripts/verify-adopters.mjs` asked GitHub with no retry, no timeout and no
+  error handling: a rate limit or a 5xx was recorded as drift, and a network
+  error crashed the run. Since #724 such a failure on main filed a tracking
+  issue saying the evidence no longer matched. The script now asks through
+  `scripts/lib/github-link-state.mjs` (retries, a timeout) and sorts each
+  failure into drift, gone or unverified. When GitHub, or a linked page,
+  could not be asked about an entry, it writes nothing and exits 1, so the
+  published data stays as it was; the tracking issue then lists the drift
+  the run did find and shows the report, which says whether a re-run can
+  help. Every evidence link of an entry is checked, not only the first:
+  MISP, AG2 and Tencent AI-Infra-Guard give two each. A Still-present line is
+  checked on the repository of the entry's first GitHub link of any kind, so
+  xlabs-club/awesome-x-ops's is checked again: it had gone unchecked since
+  its evidence became a commit link on 2026-10-16. A Still-present path that
+  leaves the repository fails. The links are
+  read by `scripts/lib/adopters-evidence.mjs`, shared with the status-claims
+  check, which now exempts every shipped pull request an entry gives.
 - **35 rules and the tool-poisoning default in `scripts/backfill-metadata.ts`
   use the current ATLAS name for AML.T0053.** MITRE ATLAS renamed the
   technique from "LLM Plugin Compromise" to "AI Agent Tool Invocation"; #675
@@ -19,17 +37,12 @@ All notable changes to ATR will be documented in this file.
   AST02 -> AST03 Over-Privileged Skills; ATR-2026-02500 (prompt-layer
   self-replication) AST02 -> AST05 Untrusted External Instructions. Metadata
   only; detection is unchanged.
-- **ATR-2026-02300 no longer scans ahead from every character.** When the
-  input has no `mcpServers` key, each of its four conditions checked for a
-  nearby `command` and `args` key at every position before checking for the
-  `env` key it needs, so matching time grew with input length: about 0.1
-  seconds per condition on a 10,000-character line in Python's `re`. Each
-  condition now checks for the `env` (or `environment`) key first, which
-  costs almost nothing where it is absent. The patterns match the same text as
-  before: on 60,000 generated config-shaped inputs, the rule's test cases and
-  the benign skill corpus, the old and new patterns agree on every input. The
-  rule is maturity `experimental`, so the enforce lane is unchanged.
-  `rule_version` goes to 2.
+- **ATR-2026-02300 checks for the env key first.** Each of its four
+  conditions now looks for the `env` (or `environment`) key before the rest of
+  the pattern. The patterns match the same text as before: on 60,000
+  generated config-shaped inputs, the rule's test cases and the benign skill
+  corpus, the old and new patterns agree on every input. The rule is maturity
+  `experimental`, so the enforce lane is unchanged. `rule_version` goes to 2.
 
 ## [4.3.1] - 2026-11-08
 

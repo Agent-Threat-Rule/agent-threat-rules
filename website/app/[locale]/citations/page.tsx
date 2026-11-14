@@ -202,9 +202,11 @@ export default async function CitationsPage({
             <CitationBlock
               locale={locale}
               meta={{
-                // Cited as software ([Computer software] in APA), so the
-                // version is the npm release, not the written spec's.
-                version: versions.npm,
+                // The written spec and the npm release move apart, so the
+                // citation names each with its own label.
+                specVersion: meta.specVersion,
+                packageVersion: versions.npm,
+                packageSource: versions.npmVerified ? "npm" : "package.json",
                 lastModified: meta.lastModified,
                 canonicalUrl: meta.canonicalUrl,
                 doi: meta.doi,

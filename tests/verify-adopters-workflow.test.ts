@@ -41,7 +41,7 @@ const BOT_SUBJECT = "chore(adopters): auto re-verify evidence links";
 
 afterEach(cleanSandboxes);
 
-function verification(date: string, drift: { name: string; declared: string; observed: string }[] = []): string {
+function verification(date: string, drift: { name: string; declared: string; observed: string; failure?: string; evidence?: string }[] = []): string {
   return `${JSON.stringify({ verified_at: date, total: 3, ok: 3 - drift.length, drift, results: [] }, null, 2)}\n`;
 }
 
@@ -147,6 +147,11 @@ describe("verify-adopters.yml: runs and checkouts", () => {
   };
   const steps = doc.jobs[JOB].steps;
 
+  it("runs when the checker or a library it reads changes", () => {
+    const paths = (doc as unknown as { on: { push: { paths: string[] } } }).on.push.paths;
+    expect(paths).toEqual(expect.arrayContaining(["scripts/verify-adopters.mjs", "scripts/lib/github-link-state.mjs", "scripts/lib/adopters-evidence.mjs"]));
+  });
+
   it("runs one verification at a time per branch, so its own pushes cannot race", () => {
     expect(doc.concurrency?.group).toBe("verify-adopters-${{ github.ref }}");
     expect(doc.concurrency?.["cancel-in-progress"]).toBe(false);
@@ -170,8 +175,11 @@ describe("verify-adopters.yml: runs and checkouts", () => {
     for (const name of [OPEN_ISSUE, CLOSE_ISSUE]) expect(steps.find((s) => s.name === name)?.run, name).toContain(lookup);
   });
 
-  it("tells the issue step whether the verification itself finished", () => {
-    expect(steps.find((s) => s.id === "verify")?.name).toBe("Re-verify every evidence link");
+  it("keeps the checker's report and exit code, and tells the issue step whether it finished", () => {
+    const verify = steps.find((s) => s.id === "verify");
+    expect(verify?.name).toBe("Re-verify every evidence link");
+    expect(verify?.run).toMatch(/set -o pipefail/);
+    expect(verify?.run).toContain('node scripts/verify-adopters.mjs 2>&1 | tee "$RUNNER_TEMP/verify-adopters.txt"');
     expect(steps.find((s) => s.name === OPEN_ISSUE)?.env?.VERIFY_OUTCOME).toBe("${{ steps.verify.outcome }}");
   });
 });
@@ -179,7 +187,7 @@ describe("verify-adopters.yml: runs and checkouts", () => {
 describe.skipIf(!HAS_JQ)("verify-adopters.yml: failures are filed and closed", () => {
   const open = runBlock(WORKFLOW, JOB, OPEN_ISSUE);
   const close = runBlock(WORKFLOW, JOB, CLOSE_ISSUE);
-  const drifted = verification("2026-10-19", [{ name: "xlabs-club/awesome-x-ops", declared: "shipped", observed: "api-404" }]);
+  const drifted = verification("2026-10-19", [{ name: "xlabs-club/awesome-x-ops", declared: "shipped", observed: "api-404", failure: "gone", evidence: "https://github.com/xlabs-club/awesome-x-ops/pull/220" }]);
 
   it("opens an issue naming the drifted entries when none is open", () => {
     const sb = sandbox("adopters-wf-", { [DATA]: verification("2026-10-12") });
@@ -188,19 +196,38 @@ describe.skipIf(!HAS_JQ)("verify-adopters.yml: failures are filed and closed", (
     expect(res.status, res.stderr).toBe(0);
     const calls = ghCalls(sb);
     expect(calls).toMatch(/issue create --title ADOPTERS\.md evidence no longer matches GitHub[\s\S]*--label auto-generated/);
-    expect(calls).toMatch(/xlabs-club\/awesome-x-ops: declared shipped, observed api-404/);
+    expect(calls).toMatch(/xlabs-club\/awesome-x-ops: declared shipped, observed api-404 \(gone\) https:\/\/github\.com\/xlabs-club\/awesome-x-ops\/pull\/220/);
   });
 
-  it("does not list drift from a verification that did not finish", () => {
+  it("does not list drift from a verification that did not finish, and shows its report instead", () => {
     // The data file is then the last committed one; on main it carried the
-    // xlabs drift from 2026-10-12 to 10-19.
+    // xlabs drift from 2026-10-12 to 10-19. The script writes nothing when
+    // GitHub could not be asked, so the report is what the issue can show.
     const sb = sandbox("adopters-wf-", { [DATA]: drifted });
+    writeFileSync(
+      join(sb.root, "verify-adopters.txt"),
+      [
+        "[ok]         A — declared shipped, observed merged (pr) [no content assertion]",
+        "[DRIFT]      LiteLLM — declared in-review, observed merged (pr) [no content assertion]",
+        "[UNVERIFIED] Promptfoo — declared in-review, observed network-error (pr) [no content assertion]",
+      ].join("\n") + "\n",
+    );
     const res = runStep(sb, open, { GITHUB_EVENT_NAME: "push", RUN_URL: "u", VERIFY_OUTCOME: "failure" });
     expect(res.status, res.stderr).toBe(0);
     const calls = ghCalls(sb);
     expect(calls).toMatch(/issue create/);
-    expect(calls).toMatch(/the verification itself did not finish \(failure\)/);
+    // What the run did find is listed, not hidden behind the unanswered entry.
+    expect(calls).toMatch(/no longer supports:\n\[DRIFT\] +LiteLLM — declared in-review, observed merged/);
+    expect(calls).toMatch(/The verification did not finish \(failure\), so nothing was written/);
+    expect(calls).toMatch(/\[UNVERIFIED\] Promptfoo — declared in-review, observed network-error/);
     expect(calls).not.toMatch(/xlabs-club/);
+  });
+
+  it("says when an unfinished run found nothing among the entries it checked", () => {
+    const sb = sandbox("adopters-wf-", { [DATA]: drifted });
+    writeFileSync(join(sb.root, "verify-adopters.txt"), "[UNVERIFIED] Promptfoo — declared in-review, observed network-error (pr)\n");
+    expect(runStep(sb, open, { GITHUB_EVENT_NAME: "push", RUN_URL: "u", VERIFY_OUTCOME: "failure" }).status).toBe(0);
+    expect(ghCalls(sb)).toMatch(/no longer supports:\nnone among the entries this run could check/);
   });
 
   it("rewrites the open issue instead of opening another", () => {

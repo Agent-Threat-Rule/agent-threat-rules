@@ -122,10 +122,10 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
               cta: zh ? "開一個 issue" : "Open an issue",
             },
             {
-              title: zh ? "提交紅隊 probe（納入 benchmark）" : "Submit a red-team probe (joins the benchmark)",
+              title: zh ? "提交紅隊 probe" : "Submit a red-team probe",
               desc: zh
-                ? "手上有攻擊 payload，也有長得像但無害的對照樣本？維護者審過後會轉成提案。合併之後，你的 probe 會自動納入下一輪 benchmark。recall 數字裡看得到你的貢獻。"
-                : "Have an attack payload and benign look-alikes? A maintainer reviews it and turns it into a proposal. Once merged, your probe joins the next benchmark run, and your work shows up in the recall numbers.",
+                ? "手上有攻擊 payload，也有長得像但無害的對照樣本？維護者審過、接受之後，會把它轉成提案 PR。之後的量測可能會用到你的 payload，但不保證會進 benchmark 語料。"
+                : "Have an attack payload and benign look-alikes? If a maintainer reviews and accepts it, they turn it into a proposal PR. Later measurement runs may use your payload, but it is not guaranteed to join a benchmark corpus.",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=red-team-probe.yml",
               cta: zh ? "送一個 probe" : "Submit a probe",
             },
@@ -140,8 +140,8 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
             {
               title: zh ? "回報誤判" : "Report a false positive",
               desc: zh
-                ? "規則把正常內容當成攻擊？每一筆誤判回報，都讓 ATR 公布的逐車道精確度更接近真實。"
-                : "A rule fired on legitimate content? Every false-positive report sharpens the per-lane precision ATR publishes.",
+                ? "規則把正常內容當成攻擊？回報誤判，規則才修得準。各車道的誤報率已在 2026-09-19 撤回，正在等重新量測。"
+                : "A rule fired on legitimate content? Report it so the rule can be fixed. The per-lane false-positive rates were withdrawn on 2026-09-19 and are pending re-measurement.",
               href: "https://github.com/Agent-Threat-Rule/agent-threat-rules/issues/new?template=false-positive.yml",
               cta: zh ? "開一個 issue" : "Open an issue",
             },
@@ -204,8 +204,8 @@ export default async function ContributePage({ params }: { params: Promise<{ loc
             </li>
             <li>
               {zh
-                ? "下一次量測時，你的 payload 會進到 benchmark 語料。"
-                : "On the next measurement run, your payload joins the benchmark corpus."}
+                ? "之後的量測可能會用到你的 payload，但不保證會進 benchmark 語料。"
+                : "Later measurement runs may use your payload, but it is not guaranteed to join a benchmark corpus."}
               {" "}
               <a
                 href="https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/data/measurements"
