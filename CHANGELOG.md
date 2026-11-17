@@ -6,6 +6,10 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- ATR-2026-00097 now recognizes Chinese authority claims with a short qualifier,
+  `以…身份` framing, and English-Chinese code-switched instruction overrides.
+  Six attack lines now match while five similar benign lines remain clean;
+  `rule_version` is 2.
 - **verify-adopters no longer reports an API problem as drift.**
   `scripts/verify-adopters.mjs` asked GitHub with no retry, no timeout and no
   error handling: a rate limit or a 5xx was recorded as drift, and a network
