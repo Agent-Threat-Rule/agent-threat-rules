@@ -4,6 +4,17 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **ATR-2026-02875 (draft PR, pilot #848): forged chat-template role token in
+  tool output.** Hand-written from the published template formats (ChatML,
+  Llama 2 and 3, Gemma, Phi, Mistral). Measured with
+  scripts/measure-technique-rule.ts; it does not meet the pilot bar, and the
+  PR stays a draft for review.
+- **Benign chat-template content for the FN-mine benign check:** documentation
+  and template files from Hugging Face transformers, vLLM, llama.cpp and a
+  template collection (418 pieces), read as tool output.
+
 ### Fixed
 
 - **verify-adopters no longer reports an API problem as drift.**
