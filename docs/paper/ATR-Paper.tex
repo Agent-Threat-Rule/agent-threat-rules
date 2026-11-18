@@ -187,7 +187,7 @@ HIGH & 353 & 0.37\% \\
 MEDIUM & 7 & $<$0.01\% \\
 Clean & 94,794 & 98.65\% \\
 \textbf{Confirmed malware} & \textbf{751} & \textbf{0.78\%} \\
-Threat Cloud blacklist entries & 554 & --- \\
+Community Feed blacklist entries & 554 & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -200,7 +200,7 @@ The scan uncovered the largest documented malware campaign targeting AI agent ec
 \item \textbf{52yuanchangxing}: 137 skills (72\% malicious). Chinese-language tools targeting developer workflows.
 \end{itemize}
 
-The dominant attack vector is \textbf{tool description poisoning}: embedding hidden instructions in a skill's metadata that the AI agent processes as trusted input. A single detection rule for credential access via tool descriptions triggered 686 times, accounting for 53\% of all flagged skills. All 751 skills were reported to NousResearch (hermes-agent\#9809) and blacklisted in Threat Cloud (554 entries). Full details are in the companion research report \cite{atrscanmega}.
+The dominant attack vector is \textbf{tool description poisoning}: embedding hidden instructions in a skill's metadata that the AI agent processes as trusted input. A single detection rule for credential access via tool descriptions triggered 686 times, accounting for 53\% of all flagged skills. All 751 skills were reported to NousResearch (hermes-agent\#9809) and blacklisted in Community Feed (554 entries). Full details are in the companion research report \cite{atrscanmega}.
 
 \textbf{No existing security tool detected these 751 malware skills.} Not npm audit. Not the registry's own review process. Not the AI agents that installed and executed them. The skills passed every check because there was no check designed to look for what they were doing. The rest of this paper explains why---and what a detection architecture that can find them looks like.
 
@@ -791,7 +791,7 @@ The threat crystallization mechanism described in Section~\ref{sec:requirements}
 Crystallization flywheel (April 2026):
 
   Ecosystem scan: 96,096 skills scanned, 751 malware discovered
-      --> 926 threat reports submitted to Threat Cloud
+      --> 926 threat reports submitted to Community Feed
       --> 42 crystallization proposals generated
       --> Community review + LLM quality gate
       --> New rules merged into ATR core

@@ -4,7 +4,7 @@
  * Hash/name-based lookup for known-bad skills.
  * O(1) lookup, zero false positives, zero latency.
  *
- * Sources: Threat Cloud skill_blacklist, CVE advisories, community reports.
+ * Sources: Community Feed skill_blacklist, CVE advisories, community reports.
  *
  * @module agent-threat-rules/tier1-blacklist
  */

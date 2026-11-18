@@ -13,7 +13,10 @@ function computeContentHash(content) {
 }
 
 const RULES_DIR = resolve('rules');
-const TC_URL = 'https://tc.panguard.ai';
+// No built-in endpoint; set TC_URL to the Community Feed you operate. Without it the scan still runs
+// locally and every upload below is skipped by its own error handling.
+const TC_URL = process.env.TC_URL ?? '';
+if (!TC_URL) console.error('TC_URL is not set: scanning locally, uploads will fail and be skipped.');
 const MAX_FILE_SIZE = 500_000; // 500KB
 
 // Collect all SKILL.md files

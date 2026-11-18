@@ -407,7 +407,7 @@ shown must carry its ATR version and measurement date, as the README table does
 
 **Scene 7 — The Future (AI-Native Contribution + Crystallization):**
 "ATR rules don't have to be written by hand."
-Explain: Threat Cloud crystallization — LLM analyzes new attacks, proposes rule YAML, community reviews.
+Explain: Community Feed crystallization — LLM analyzes new attacks, proposes rule YAML, community reviews.
 Four contribution paths: report evasion, report FP, submit rule, AI-native via MCP server.
 This is the key differentiator — no other detection standard has automated rule generation.
 
@@ -437,7 +437,7 @@ adopted ATR, with PR evidence), or the README evaluation table. Counts marked
 | Zenodo paper | /research | DOI 10.5281/zenodo.19178002 |
 | CVE mappings | /rules | live — count from the rules' `references.cve` fields |
 | Ecosystem PRs | /contribute or footer | live — `ADOPTERS.md` is the source of truth; a merged PR is not proof the integration is still present, so re-verify before publishing |
-| Threat Cloud crystallization | Scene 7 + /contribute | LLM auto-generates rule proposals from new attacks |
+| Community Feed crystallization | Scene 7 + /contribute | LLM auto-generates rule proposals from new attacks |
 | Five-tier architecture | /research | Tier 0-2 shipped, Tier 2.5-4 roadmap |
 
 ### Example Component Prompts
@@ -455,4 +455,4 @@ adopted ATR, with PR evidence), or the README evaluation table. Counts marked
 "Full-viewport section, centered. Small monospace label 'MERGED UPSTREAM' in JetBrains Mono 12px Stone, 3px letter-spacing, uppercase. Main statement: 'ATR rules ship inside Cisco's open-source skill scanner.' in Inter Tight 48px weight 800 Ink Black, with 'open-source skill scanner' in Signal Blue. (Wording is deliberate: the merge is into the `cisco-ai-defense/skill-scanner` repo, not the Cisco AI Defense product — see the copy boundary in Scene 5.) Below: story paragraph in Inter 16px Graphite. Below: 'View the PR on GitHub' link in JetBrains Mono 13px Signal Blue with underline on hover."
 
 **Crystallization Scene:**
-"Full-viewport section. Label: 'THE FUTURE' in monospace uppercase Stone. Heading: 'ATR rules don't have to be written by hand.' in Inter Tight 48px weight 800 Ink Black. Left column: explanation of Threat Cloud crystallization — LLM analyzes new attack patterns, proposes YAML rules, community reviews and merges. Right column: four contribution paths stacked vertically, each with monospace numbering and description. Background Paper White."
+"Full-viewport section. Label: 'THE FUTURE' in monospace uppercase Stone. Heading: 'ATR rules don't have to be written by hand.' in Inter Tight 48px weight 800 Ink Black. Left column: explanation of Community Feed crystallization — LLM analyzes new attack patterns, proposes YAML rules, community reviews and merges. Right column: four contribution paths stacked vertically, each with monospace numbering and description. Background Paper White."

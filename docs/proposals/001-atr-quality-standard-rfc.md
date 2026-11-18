@@ -608,7 +608,7 @@ RFC-003 will define:
 - Feed distribution (public community feed vs private enterprise feed)
 - Privacy guarantees (what data leaves the device, what stays local)
 
-This formalizes the Threat Cloud flywheel as a vendor-neutral protocol any
+This formalizes the Community Feed flywheel as a vendor-neutral protocol any
 scanner can participate in.
 
 ### RFC-004: Enterprise Deployment Guidance

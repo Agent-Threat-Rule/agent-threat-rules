@@ -1,5 +1,5 @@
 /**
- * Standardized Threat Cloud pipeline commands.
+ * Standardized Community Feed pipeline commands.
  *
  *   atr tc sync        Push repo rules → TC (updates metrics + website)
  *   atr tc pull        Pull confirmed TC rules → repo (validate + write)
@@ -38,7 +38,7 @@ function getConfig(options: Record<string, string | undefined>): TCConfig {
   const tcUrl = options['tc-url'] ?? process.env['TC_URL'];
   if (!tcUrl || !tcUrl.trim()) {
     console.error(
-      `${RED}Error: no Threat Cloud endpoint. Pass --tc-url <url> or set TC_URL. ` +
+      `${RED}Error: no Community Feed endpoint. Pass --tc-url <url> or set TC_URL. ` +
         `ATR ships no default endpoint.${RESET}`,
     );
     process.exit(1);
@@ -62,7 +62,7 @@ function authHeaders(adminKey: string): Record<string, string> {
 export async function cmdTCSync(options: Record<string, string | undefined>): Promise<void> {
   const cfg = getConfig(options);
   console.log(`\n${BOLD}ATR TC Sync${RESET}`);
-  console.log(`${DIM}Push repo rules → Threat Cloud${RESET}\n`);
+  console.log(`${DIM}Push repo rules → Community Feed${RESET}\n`);
 
   const rules: Array<{ ruleId: string; ruleContent: string; source: string }> = [];
   for (const cat of readdirSync(cfg.rulesDir)) {
@@ -143,7 +143,7 @@ function describeValue(value: unknown): string {
 }
 
 /**
- * Decide where a rule fetched from Threat Cloud may be written. The endpoint's
+ * Decide where a rule fetched from Community Feed may be written. The endpoint's
  * response is untrusted, and the id and category become a file name and a
  * directory, so both must have a form a real rule can have. Fields are read
  * from the parsed YAML: a regex over the text picks up `subcategory:` keys in
@@ -383,7 +383,7 @@ export async function cmdTCCrystallize(options: Record<string, string | undefine
 export async function cmdTCStatus(options: Record<string, string | undefined>): Promise<void> {
   const cfg = getConfig(options);
 
-  console.log(`\n${BOLD}ATR Threat Cloud Status${RESET}`);
+  console.log(`\n${BOLD}ATR Community Feed Status${RESET}`);
   console.log(`${DIM}${cfg.tcUrl}${RESET}\n`);
 
   const [stats, metrics] = await Promise.all([

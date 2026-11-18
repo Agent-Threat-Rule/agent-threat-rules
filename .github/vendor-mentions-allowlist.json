@@ -1,0 +1,89 @@
+{
+  "$comment": "Exceptions for scripts/check-vendor-mentions.mjs. Every entry needs path, a substring of the offending line (contains), a reason and an expiry (YYYY-MM-DD). Expired entries and entries that match nothing fail the check. Disclosures that use exactly 'PANGUARD AI, INC.' need no entry.",
+  "entries": [
+    {
+      "path": ".vercelignore",
+      "contains": "panguard-fp-test/",
+      "reason": "Deploy ignore pattern for a local test directory; never rendered.",
+      "expires": "2027-05-18"
+    },
+    {
+      "path": ".vercelignore",
+      "contains": "panguard-test-skills/",
+      "reason": "Deploy ignore pattern for a local test directory; never rendered.",
+      "expires": "2027-05-18"
+    },
+    {
+      "path": ".vercelignore",
+      "contains": "panguard-test/",
+      "reason": "Deploy ignore pattern for a local test directory; never rendered.",
+      "expires": "2027-05-18"
+    },
+    {
+      "path": "data/benign-corpus-extended/agent-ops.jsonl",
+      "contains": "docker build -t panguard/tc",
+      "reason": "Verbatim benign command sample; editing it shifts the false-positive baseline.",
+      "expires": "2027-05-18"
+    },
+    {
+      "path": "data/benign-corpus-extended/agent-ops.jsonl",
+      "contains": "docker run -p 8080:8080 -e PORT=8080 panguard/tc",
+      "reason": "Verbatim benign command sample; editing it shifts the false-positive baseline.",
+      "expires": "2027-05-18"
+    },
+    {
+      "path": "scripts/fn-mine-llm.ts",
+      "contains": "NEVER mention PanGuard",
+      "reason": "This line is the ban itself, in the rule-drafting prompt.",
+      "expires": "2027-05-18"
+    },
+    {
+      "path": "docs/paper/ATR-Paper.tex",
+      "contains": "Panguard AI, Inc.",
+      "reason": "Kept by maintainer decision (2026-11-18): author affiliation follows academic and IETF convention.",
+      "expires": "2027-11-18"
+    },
+    {
+      "path": "spec/internet-drafts/draft-lin-atr-core-00.md",
+      "contains": "Panguard AI, Inc.",
+      "reason": "Kept by maintainer decision (2026-11-18): author affiliation follows academic and IETF convention.",
+      "expires": "2027-11-18"
+    },
+    {
+      "path": "spec/internet-drafts/draft-lin-atr-core-00.txt",
+      "contains": "Panguard AI, Inc.",
+      "reason": "Kept by maintainer decision (2026-11-18): author affiliation follows academic and IETF convention.",
+      "expires": "2027-11-18"
+    },
+    {
+      "path": "spec/internet-drafts/draft-lin-atr-core-00.html",
+      "contains": "Panguard AI, Inc.",
+      "reason": "Kept by maintainer decision (2026-11-18): author affiliation follows academic and IETF convention.",
+      "expires": "2027-11-18"
+    },
+    {
+      "path": "spec/internet-drafts/draft-lin-atr-core-00.xml",
+      "contains": "Panguard AI, Inc.",
+      "reason": "Kept by maintainer decision (2026-11-18): author affiliation follows academic and IETF convention.",
+      "expires": "2027-11-18"
+    },
+    {
+      "path": "governance/CHARTER.md",
+      "contains": "anguard",
+      "reason": "Kept by maintainer decision (2026-11-18): conflict-of-interest and recusal clauses name the company.",
+      "expires": "2027-11-18"
+    },
+    {
+      "path": "HANDOVER.md",
+      "contains": "crystallized rules from Threat Cloud",
+      "reason": "Quotes the literal text of historical bot commit messages; the grep it documents stops working if reworded.",
+      "expires": "2027-11-18"
+    },
+    {
+      "path": "data/skills-sh/skills/useai-pro/skill-auditor.md",
+      "contains": "# Skill Auditor",
+      "reason": "Third-party skill sample (useai-pro), not the vendor product.",
+      "expires": "2027-11-18"
+    }
+  ]
+}

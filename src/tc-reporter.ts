@@ -1,5 +1,5 @@
 /**
- * Threat Cloud Reporter — turns any ATR integration into a global sensor endpoint.
+ * Community Feed Reporter — turns any ATR integration into a global sensor endpoint.
  *
  * Usage:
  *   import { ATREngine, createTCReporter } from 'agent-threat-rules';
@@ -48,7 +48,7 @@ const MAX_BUFFER = 1000;
 export class NoTcEndpointError extends Error {
   constructor() {
     super(
-      'Threat Cloud reporting was requested but no endpoint was given. ' +
+      'Community Feed reporting was requested but no endpoint was given. ' +
         'Set one with --tc-url <url> or the ATR_TC_URL environment variable. ' +
         'ATR ships no default endpoint: you choose who receives your detections.',
     );
@@ -63,7 +63,7 @@ export function resolveTcUrl(explicit?: string): string {
 }
 
 export interface TCReporterConfig {
-  /** Threat Cloud endpoint. Falls back to ATR_TC_URL. No built-in default — one of the two is required. */
+  /** Community Feed endpoint. Falls back to ATR_TC_URL. No built-in default — one of the two is required. */
   readonly tcUrl?: string;
   /** Optional API key for authenticated reporting. Default: env TC_API_KEY */
   readonly apiKey?: string;
@@ -89,7 +89,7 @@ interface ThreatEvent {
 
 /**
  * Create an ATRReporter that buffers detection events and POSTs them
- * to ATR Threat Cloud in batches. Each reporter instance = one sensor endpoint.
+ * to ATR Community Feed in batches. Each reporter instance = one sensor endpoint.
  */
 export function createTCReporter(config?: TCReporterConfig): ATRReporter & {
   flush(): Promise<void>;
@@ -104,7 +104,7 @@ export function createTCReporter(config?: TCReporterConfig): ATRReporter & {
 
   // Enforce HTTPS for non-localhost
   if (tcUrl.startsWith('http://') && !isLocalhost(tcUrl)) {
-    throw new Error('HTTPS required for Threat Cloud endpoint (use https://)');
+    throw new Error('HTTPS required for Community Feed endpoint (use https://)');
   }
 
   let buffer: ThreatEvent[] = [];
@@ -148,10 +148,6 @@ export function createTCReporter(config?: TCReporterConfig): ATRReporter & {
         headers: {
           'Content-Type': 'application/json',
           'X-ATR-Client-Id': clientId,
-          // Legacy alias. The header was named after one collector before this
-          // package stopped shipping a default endpoint; existing collectors
-          // still key off it, so both go out until they read X-ATR-Client-Id.
-          'X-Panguard-Client-Id': clientId,
           ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {}),
         },
         body: JSON.stringify({ events: tcEvents }),

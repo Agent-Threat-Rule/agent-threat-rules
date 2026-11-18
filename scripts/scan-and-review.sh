@@ -11,7 +11,7 @@
 #   # Continue scanning new packages (next 2000)
 #   ./scripts/scan-and-review.sh --count 2000
 #
-#   # Scan and push to Threat Cloud
+#   # Scan and push to Community Feed
 #   ./scripts/scan-and-review.sh --count 500 --push-tc
 #
 #   # Preview

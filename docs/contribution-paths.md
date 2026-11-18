@@ -5,7 +5,7 @@ global sensor network: you get rules, and your scan results (anonymized) help ge
 better rules for everyone.
 
 ```
-Your scanner ──── detects threat ────→ ATR Threat Cloud
+Your scanner ──── detects threat ────→ ATR Community Feed
                                            │
                               LLM crystallizes new rule
                                            │
@@ -47,7 +47,7 @@ atr scan my-mcp-config.json
 # Scan SKILL.md files
 atr scan ./skills/
 
-# Opt-in: report detections to Threat Cloud
+# Opt-in: report detections to Community Feed
 atr scan ./skills/ --report-to-cloud
 ```
 
@@ -71,7 +71,7 @@ npm install agent-threat-rules
 import { ATREngine } from 'agent-threat-rules';
 import type { ATRReporter } from 'agent-threat-rules';
 
-// Optional: report detections to Threat Cloud
+// Optional: report detections to Community Feed
 const reporter: ATRReporter = {
   onDetection: (report) => {
     // report contains: ruleId, severity, category, confidence, contentHash
@@ -190,7 +190,7 @@ For platforms that want to be part of the ATR governance and rule lifecycle.
 - **Custom format converter**: We write the code to convert ATR YAML to your platform's native format
 - **Integration PR**: We submit the PR to your repo, matching your code style and test patterns
 - **Co-maintenance**: When ATR rules update, the integration updates automatically
-- **Threat Cloud data exchange**: Your platform's detections feed TC, TC's crystallized rules feed your platform
+- **Community Feed data exchange**: Your platform's detections feed TC, TC's crystallized rules feed your platform
 
 ### What we ask
 

@@ -97,7 +97,7 @@ Manual triage confirmed \textbf{751 skills (0.78\%) as genuine malware},
 including three coordinated threat actor campaigns responsible for over
 700 malicious packages targeting cryptocurrency wallets, cloud
 credentials, and developer toolchains.  554 entries were added to the
-Threat Cloud blacklist.  Tool description poisoning accounted for 52.7\%
+Community Feed blacklist.  Tool description poisoning accounted for 52.7\%
 of all detections.  False positive rate on a verified clean corpus was
 0\%.  Median per-skill scan latency was 5.39\,ms.  We analyze the
 dominant attack patterns---tool description poisoning, credential
@@ -325,7 +325,7 @@ The pipeline consists of four stages:
     skill.  Record rule ID, matched text span, severity, and confidence
     for each match.
   \item \textbf{Report.}  Aggregate findings.  Submit individual threat
-    reports to the ATR Threat Cloud community triage service.
+    reports to the ATR Community Feed community triage service.
 \end{enumerate}
 
 The pipeline is implemented in Node.js and available in the ATR
@@ -416,7 +416,7 @@ Medium   &   7 &  0.5\% \\
 The concentration at critical severity reflects the dominance of tool
 description poisoning, which is classified as critical because successful
 exploitation grants full control over agent actions.  554 of the
-confirmed malware entries were added to the ATR Threat Cloud blacklist
+confirmed malware entries were added to the ATR Community Feed blacklist
 for real-time blocking.
 
 \subsection{Source Comparison}
@@ -481,11 +481,11 @@ confirming that tool description poisoning remains the dominant attack
 vector, though its relative share has decreased as the expanded scan
 surfaced a broader distribution of attack types.
 
-\subsection{Threat Cloud Submissions}
+\subsection{Community Feed Submissions}
 
-All 1,302 flagged skills were submitted to the ATR Threat Cloud for
+All 1,302 flagged skills were submitted to the ATR Community Feed for
 community triage.  554 confirmed malware entries were added to the
-Threat Cloud blacklist for real-time blocking by downstream consumers.
+Community Feed blacklist for real-time blocking by downstream consumers.
 
 % FIGURE PLACEHOLDER: Bar chart of detection counts by ATR category.
 % X-axis: TP, CC, CT, RP, RA, SC, PE, DE, EV.
@@ -645,7 +645,7 @@ exfiltrate environment variables on each invocation.
 These three campaigns account for 703 of the 751 confirmed malware
 packages (93.6\%).  All findings were reported to NousResearch
 (hermes-agent \#9809) and to the respective registry operators through
-the ATR Threat Cloud disclosure workflow.
+the ATR Community Feed disclosure workflow.
 
 % Tool description poisoning: 52.7%, Credential harvesting: 8.6%,
 % Cross-tool exfil: 6.7%, Supply chain: 4.8%, Delayed activation: 3.2%,
@@ -848,11 +848,11 @@ endpoint.  All analysis was performed on static metadata retrieved from
 public APIs.
 
 \textbf{Disclosure process.}  All 1,302 flagged skills were reported
-through the ATR Threat Cloud, which implements a structured disclosure
+through the ATR Community Feed, which implements a structured disclosure
 workflow:
 
 \begin{enumerate}[leftmargin=*,nosep]
-  \item Flagged skills are submitted to Threat Cloud with full detection
+  \item Flagged skills are submitted to Community Feed with full detection
     context.
   \item Registry operators are notified with affected package
     identifiers.
@@ -914,7 +914,7 @@ negligible.  The barrier is organizational: registries must choose to
 deploy it.
 
 \textbf{Coordinated defense is emerging but incomplete.}  1,302 threats
-in our scan, 1,184 in Antiy CERT's, and 554 entries in the Threat Cloud
+in our scan, 1,184 in Antiy CERT's, and 554 entries in the Community Feed
 blacklist represent a growing shared intelligence resource.  But
 standards for threat sharing, severity classification, and coordinated
 response across registries remain urgently needed.
@@ -927,7 +927,7 @@ source at \url{https://github.com/Agent-Threat-Rule/agent-threat-rules}.
 
 The ATR rule set (113 rules, YAML) and detection engine are MIT-licensed.
 Aggregate scan statistics are published in the ATR repository.
-Individual threat reports are accessible through the Threat Cloud API
+Individual threat reports are accessible through the Community Feed API
 with appropriate access controls.  The PINT and SKILL.md benchmark
 datasets are available from their respective maintainers.
 

@@ -11,7 +11,7 @@ This file is the working document for public disclosure and ATR rule development
 
 | Stage | Action | Timeline |
 |-------|--------|----------|
-| 1. Discovery | Skill Auditor scan + manual verification | Day 0 |
+| 1. Discovery | ATR engine scan + manual verification | Day 0 |
 | 2. Private notification | Contact author via GitHub issue (private if possible) | Day 0-7 |
 | 3. Waiting period | Author has time to fix | 90 days |
 | 4. Public disclosure | Add to this tracker, publish report | Day 90 (or after fix) |
@@ -127,6 +127,6 @@ When a finding reaches RESOLVED or UNPATCHED status:
 
 **Both formats include:**
 - What the issue is (technical, but accessible)
-- How we found it (ATR Skill Auditor)
+- How we found it (ATR engine scan)
 - How users can check their own skills (`npx agent-threat-rules init`)
 - Link to the ATR rule (if applicable)

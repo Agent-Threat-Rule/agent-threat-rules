@@ -158,7 +158,7 @@ once-weekly 30-minute office-hour slot to walk through any of the
 following on request:
 
 - Conformance Suite internals
-- Threat Cloud ingestion pipeline
+- Community Feed ingestion pipeline
 - Rule authoring conventions and the quality gate
 - Standards-body submission status (IETF, IANA, NIST OSCAL)
 - Trademark policy enforcement workflow

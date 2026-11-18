@@ -56,7 +56,7 @@ adoption grows (see Roadmap below).
    a rule with `id: ATR-YYYY-DRAFT-<hex>` (draft ID). On merge, the
    maintainer assigns the next available `ATR-YYYY-NNNNN` number.
 
-2. **Threat Cloud crystallization**: the automated pipeline generates
+2. **Community Feed crystallization**: the automated pipeline generates
    rules with `id: ATR-YYYY-DRAFT-<hex>`. On promotion through the
    canary gate and PR-back to the main repo, the maintainer assigns a
    permanent number.
@@ -71,7 +71,7 @@ adoption grows (see Roadmap below).
 - **Immutability**: once assigned, the ID is never reused, even if the
   rule is deprecated. Deprecated rules carry `status: deprecated` and a
   `replaced_by` field pointing to the successor.
-- **Traceability**: the ID appears in scan output, SARIF reports, Guard
+- **Traceability**: the ID appears in scan output, SARIF reports, runtime guard
   alerts, Cisco AI Defense logs, and any downstream consumer. A security
   analyst can always trace an alert back to the canonical rule YAML.
 
@@ -102,7 +102,7 @@ The quality gate is enforced by:
 
 - **CI**: the `ATR Rule Quality` GitHub Actions check runs
   `validateRuleMeetsStandard()` on every PR.
-- **Threat Cloud v2**: the crystallization pipeline runs the same function
+- **Community Feed v2**: the crystallization pipeline runs the same function
   plus self-test (L1) and tool-use deduplication before inserting a
   proposal into the database.
 - **Reference implementation**: `src/quality/quality-gate.ts` is the
@@ -152,7 +152,7 @@ Merged rules are:
 - Included in the next release of `agent-threat-rules`, which CI stages on npm
   and a maintainer approves with 2FA (CONTRIBUTING.md, "How a release reaches
   npm")
-- Synced to Threat Cloud for distribution to Guard daemons
+- Synced to the Community Feed for distribution to runtime guards that subscribe to it
 - Reflected on the ATR website
 
 ---
@@ -162,9 +162,9 @@ Merged rules are:
 | Path | Who | Flow |
 |------|-----|------|
 | **Pull request** | Anyone | Fork → write rule → open PR → CI validates → maintainer reviews → merge |
-| **Threat Cloud v2** | Guard users | Guard detects → TC aggregates → LLM crystallizes (with tool use: dedup + research grounding) → canary 24h → auto-PR → maintainer reviews → merge |
+| **Community Feed v2** | Runtime guard operators | A runtime guard detects → the feed aggregates → LLM crystallizes (with tool use: dedup + research grounding) → canary 24h → auto-PR → maintainer reviews → merge |
 | **Vendor pack** | Cisco, Microsoft, etc. | Vendor writes rules in own format → adapter converts to ATR YAML → vendor opens PR → CI validates → maintainer reviews → merge |
-| **Autoresearch** | ATR pipeline | Adversarial generator creates attack samples → TC crystallizes → same as Threat Cloud path |
+| **Autoresearch** | ATR pipeline | Adversarial generator creates attack samples → the feed crystallizes → same as Community Feed path |
 
 ---
 
@@ -230,7 +230,7 @@ Expand to 5 seats by adding:
 - [ ] Submit ATR Spec v1.0 to a standards body as an Internet-Draft
       (IETF SECEVENT WG candidate) and/or as an OASIS Technical Committee
       contribution; track IANA media-type registration in parallel.
-- [ ] Federated Threat Cloud: multiple TC instances sync rules through
+- [ ] Federated Community Feed: multiple TC instances sync rules through
       a shared protocol.
 - [x] ATR Engine Conformance Test Suite v1.0 in `conformance/` (Spec §12);
       "ATR-Compatible L1/L2/L3" badge program live (suite skeleton shipped

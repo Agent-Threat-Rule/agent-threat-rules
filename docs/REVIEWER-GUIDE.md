@@ -118,7 +118,7 @@ a PR solely for missing compliance metadata.
 | Standard community PR | 5 business days | 14 days |
 | Enterprise Member PR (tagged `priority-review`) | 2 business days | 7 days |
 | Security-critical (CVE rule, severity: critical) | 2 business days | 5 days |
-| Autoresearch / Threat Cloud PR | Automated CI | BDFL reviews during weekly batch |
+| Autoresearch / Community Feed PR | Automated CI | BDFL reviews during weekly batch |
 
 SLA clock starts when CI passes. A PR that has been waiting longer than its SLA with
 no review comment should be nudged via a comment tagging the BDFL or a TAG member.
@@ -189,9 +189,9 @@ When a community member opens a false positive report (issue with `false-positiv
 
 ---
 
-## Batch Review (Threat Cloud / Autoresearch PRs)
+## Batch Review (Community Feed / Autoresearch PRs)
 
-The Threat Cloud crystallization pipeline opens automated PRs tagged
+The Community Feed crystallization pipeline opens automated PRs tagged
 `source: threat-cloud`. These are batched for weekly review.
 
 For batch PRs, apply a simplified checklist:

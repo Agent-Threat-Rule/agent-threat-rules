@@ -71,7 +71,7 @@ ${BOLD}Usage:${RESET}
   atr badge <package> [--data <audit.json>] [--svg] [--json]
                                            Generate ATR Scanned badge for a package
 
-${BOLD}Threat Cloud Pipeline:${RESET}
+${BOLD}Community Feed Pipeline:${RESET}
   atr tc status                            Show TC state (rules, proposals, threats)
   atr tc sync [--tc-key <key>]             Push repo rules → TC (updates metrics + website)
   atr tc pull [--since <ISO>]              Pull confirmed TC rules → repo (validate + write)
@@ -89,11 +89,11 @@ ${BOLD}Options:${RESET}
   --semantic-model <model>       Judge model (or ATR_SEMANTIC_MODEL / LLM_MODEL)
   --semantic-timeout <ms>        Judge request timeout (or ATR_SEMANTIC_TIMEOUT_MS)
   --semantic-no-json-mode        Do not send OpenAI JSON-mode response_format
-  --report-to-cloud  Send anonymous detection reports to a Threat Cloud endpoint.
+  --report-to-cloud  Send anonymous detection reports to a Community Feed endpoint.
                      OFF BY DEFAULT: nothing leaves your machine without it.
                      (--no-report is accepted and is a no-op, kept for compatibility.)
   --fail-on <sev>    Exit non-zero if matches at/above this severity are found (for CI / pre-commit gates)
-  --tc-url <url>     Threat Cloud endpoint base URL. Also read from ATR_TC_URL.
+  --tc-url <url>     Community Feed endpoint base URL. Also read from ATR_TC_URL.
                      REQUIRED with --report-to-cloud: ATR ships no default
                      endpoint, so you choose who receives your detections.
   --lane <lane>    Detection lane: enforce (stable rules only) | alert

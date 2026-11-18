@@ -76,7 +76,7 @@ The TSC does NOT govern:
 - Commercial products built on top of ATR (e.g., Panguard AI Inc.'s
   Enterprise tier). Commercial offerings are governed by their respective
   vendors. The TSC's role is to ensure the standard remains vendor-neutral.
-- Operational delivery of the cloud-hosted Threat Cloud (TC) instance run
+- Operational delivery of the cloud-hosted Community Feed (TC) instance run
   by Panguard AI Inc. TC's *protocol* for syncing rules back to the open
   corpus is in scope; TC's hosting, SLAs, and pricing are not.
 - Individual contributors' employment, compensation, or fiscal-sponsor

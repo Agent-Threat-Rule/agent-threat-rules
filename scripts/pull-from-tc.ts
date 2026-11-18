@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 /**
- * Pull confirmed rules from Threat Cloud → write to repo → validate + test.
+ * Pull confirmed rules from Community Feed → write to repo → validate + test.
  *
  * Flow:
  *   1. GET /api/atr-rules?since=<last_sync> → fetch new confirmed rules
@@ -20,7 +20,12 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSy
 import { resolve, join } from 'node:path';
 import { execSync } from 'node:child_process';
 
-const TC_URL = process.env.TC_URL ?? 'https://tc.panguard.ai';
+// No built-in endpoint: the engine's reporter works the same way (src/tc-reporter.ts).
+const TC_URL = process.env.TC_URL ?? '';
+if (!TC_URL) {
+  console.error('TC_URL is not set. Point it at the Community Feed endpoint you operate, e.g. TC_URL=https://tc.example.org');
+  process.exit(1);
+}
 const TC_API_KEY = process.env.TC_API_KEY ?? '';
 const DRY_RUN = process.argv.includes('--dry-run');
 const SINCE_FLAG = process.argv.find((_, i, a) => a[i - 1] === '--since') ?? '';

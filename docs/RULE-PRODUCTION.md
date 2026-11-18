@@ -26,7 +26,7 @@ in §10, and the boundary cases are named there too):
 | --- | ---: |
 | names an attack corpus (garak, AgentHarm, Tensor Trust, PromptInject, LLMail-Inject, vendor corpus imports) | 288 |
 | names a vulnerability feed (CVE sweep, vulnerablemcp, NVD/GHSA/JVN sync) | 64 |
-| generic `ATR Community`, Threat Cloud crystallization, or no source named | 432 |
+| generic `ATR Community`, Community Feed crystallization, or no source named | 432 |
 
 Meanwhile `proposals/` holds **11,765** YAML files and **17** of them carry a
 `detection.conditions` block that is not a comment — 0.14%. The proposal queue

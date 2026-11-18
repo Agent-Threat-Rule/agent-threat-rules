@@ -136,7 +136,8 @@ describe('createTCReporter', () => {
 
     const headers = fetchSpy.mock.calls[0][1]!.headers as Record<string, string>;
     expect(headers['Authorization']).toBe('Bearer test-key-123');
-    expect(headers['X-Panguard-Client-Id']).toBeDefined();
+    // One client-id header, vendor-neutral. The legacy alias was dropped.
+    expect(Object.keys(headers).filter((h) => /client-id/i.test(h))).toEqual(['X-ATR-Client-Id']);
     expect(headers['Content-Type']).toBe('application/json');
 
     await reporter.destroy();

@@ -193,7 +193,7 @@ interface ATREngineConfig {
   /** Optional Layer 3: Semantic LLM-as-judge analysis (requires API key) */
   semanticModule?: SemanticLayerConfig;
 
-  /** Optional: detection reporter for feeding results to ATR Threat Cloud */
+  /** Optional: detection reporter for feeding results to ATR Community Feed */
   reporter?: ATRReporter;
 }
 ```
@@ -356,7 +356,7 @@ Hook handler is engine-adjacent, not part of the core conformance surface.
 
 ---
 
-## Reporter (Threat Cloud feed)
+## Reporter (Community Feed feed)
 
 ```typescript
 import { createTCReporter, ATRReporter } from 'agent-threat-rules';

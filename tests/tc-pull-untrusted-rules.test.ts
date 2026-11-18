@@ -1,5 +1,5 @@
 /**
- * `atr tc pull` writes rules fetched from a Threat Cloud endpoint the user
+ * `atr tc pull` writes rules fetched from a Community Feed endpoint the user
  * names. That endpoint's response is untrusted input: it may be compromised,
  * hostile, or rewritten in transit over plain http. A rule's id becomes part of
  * a file name and its category becomes a directory, so both are checked before
@@ -58,7 +58,7 @@ const HOSTILE_RULES = [
 ];
 const EXISTING_RULE = ruleYaml('ATR-2026-00042', 'prompt-injection');
 
-describe('atr tc pull with a hostile Threat Cloud response', () => {
+describe('atr tc pull with a hostile Community Feed response', () => {
   let server: Server;
   let url = '';
   let work = '';

@@ -5,7 +5,7 @@
  * 1. Tier 4 (LLM) detects novel threat → auto-scaffold rule
  * 2. Rule enters shadow mode → ShadowEvaluator tracks FP rate
  * 3. FP < threshold after N evaluations → auto-promote to stable
- * 4. Promoted rule distributes to all users via Threat Cloud
+ * 4. Promoted rule distributes to all users via Community Feed
  *
  * Machine speed, not human speed. No manual proposals or voting required.
  *

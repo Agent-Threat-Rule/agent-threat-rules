@@ -29,3 +29,8 @@ jobs:
           fi
       - name: Check for private-path leaks
         run: node scripts/check-no-private-leak.mjs --base "${{ steps.base.outputs.ref }}"
+      # Whole-tree scan, not the diff: the company may be named only in a
+      # disclosure that uses the exact legal name. Exceptions need a reason and
+      # an expiry in .github/vendor-mentions-allowlist.json.
+      - name: Check for vendor mentions outside disclosures
+        run: node scripts/check-vendor-mentions.mjs

@@ -6,20 +6,20 @@ This file tracks real-world usage to validate rule effectiveness, surface false 
 
 ---
 
-## 1. Guard Integration (Self-Dogfood)
+## 1. Runtime Guard Integration (maintainer's company, self-use)
 
 | Field | Value |
 |-------|-------|
-| **Deployer** | ATR Community |
-| **Framework** | Node.js Guard v0.2.x |
-| **Integration method** | npm library (`agent-threat-rules` via custom `GuardATREngine` wrapper) |
+| **Deployer** | PANGUARD AI, INC. (founded and controlled by the lead maintainer; see Interests in README.md) |
+| **Framework** | Node.js runtime guard v0.2.x |
+| **Integration method** | npm library (`agent-threat-rules` via a custom engine wrapper) |
 | **Rules loaded** | 61 rules (44 experimental + 17 draft) across 9 categories |
 | **Since** | v0.2.0 |
 | **Status** | Active |
 
 ### Integration Architecture
 
-The Guard wraps the ATR engine in a `GuardATREngine` class that bridges ATR with a four-stage detection pipeline:
+The runtime guard wraps the ATR engine in a class that bridges ATR with a four-stage detection pipeline:
 
 ```
 SecurityEvent
@@ -27,7 +27,7 @@ SecurityEvent
   -> DetectAgent (merge ATR matches with Sigma/YARA detections)
   -> AnalyzeAgent (LLM triage for complex cases; skipped for whitelisted skills)
   -> RespondAgent (action execution: block_tool, kill_agent, quarantine_session, revoke_skill, reduce_permissions)
-  -> ReportAgent (notification, Threat Cloud sync, dashboard)
+  -> ReportAgent (notification, Community Feed sync, dashboard)
 ```
 
 ### Rule Loading
@@ -71,7 +71,7 @@ Five ATR response actions are implemented:
 | Field | Value |
 |-------|-------|
 | **Deployer** | ATR Community |
-| **Framework** | ATR Skill Auditor (Node.js, batch mode) |
+| **Framework** | ATR engine batch scan (Node.js) |
 | **Integration method** | Direct ATR engine evaluation |
 | **Rules loaded** | 61 rules |
 | **Date** | 2026-03-14 |
@@ -190,7 +190,7 @@ If you are using ATR rules in your project, we welcome deployment reports. They 
 
 | # | Project | Method | Rules | Status |
 |---|---------|--------|-------|--------|
-| 1 | Guard Integration | npm (`agent-threat-rules`) | 61 | Active |
+| 1 | Runtime guard integration (maintainer's company) | npm (`agent-threat-rules`) | 61 | Active |
 | 2 | Batch Skill Audit | Direct engine | 61 | Completed |
 | 3 | Cisco AI Defense skill-scanner | First-party rule pack | ATR community pack | Merged 2026-04-03 |
 | 4 | Microsoft Agent Governance Toolkit | Example directories | None shipped | Examples merged 2026-04-13 onward |

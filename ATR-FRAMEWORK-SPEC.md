@@ -144,7 +144,7 @@ Novel attack encountered
 Tier 4 (LLM) catches it first     <-- slow but accurate
     |
     v
-Report to Threat Cloud
+Report to Community Feed
     |
     v
 TC aggregates: 3+ reports = confirmed
@@ -413,12 +413,12 @@ atr:
 
 ---
 
-## 6. Threat Cloud Integration
+## 6. Community Feed Integration
 
 ### 6.1 What Flows Where
 
 ```
-                         THREAT CLOUD
+                         COMMUNITY FEED
                     +-------------------+
                     |                   |
    User scans  --> | Skill threats     | --> Blacklist (Tier 1)

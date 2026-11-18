@@ -4,6 +4,33 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- **The community reporting pipeline is now called the ATR Community Feed.**
+  Its old name was a vendor product name. Docs, CLI help and messages, the
+  specification, the papers, and the `author` field of 31 crystallized rules
+  use the new name; detection logic is untouched. CLI flags and settings keep
+  their spelling: `--report-to-cloud`, `--tc-url`, `atr tc …`, `TC_URL` and
+  `ATR_TC_URL` all work as before. `DEPLOYMENTS.md` and the first deployment
+  report now name the operator of the runtime-guard deployment instead of
+  listing it as "ATR Community".
+- **Detection events carry only `X-ATR-Client-Id`.** The vendor-named alias that
+  was kept for existing collectors is no longer sent. A collector that still
+  reads only the old header will see events without a client id.
+- **Maintenance scripts no longer default to a vendor endpoint.**
+  `scripts/pull-from-tc.ts` and `scripts/mega-scan.mjs` read `TC_URL` and have
+  no built-in address, matching the engine.
+
+### Added
+
+- **CI fails on vendor mentions outside a disclosure.**
+  `scripts/check-vendor-mentions.mjs` runs in the `no-private-leak` check and
+  scans every tracked file, not the diff. The maintainer's company may appear
+  only in a disclosure that uses its exact legal name, and its product names
+  may not appear at all. Each exception is a line in
+  `.github/vendor-mentions-allowlist.json` with a reason and an expiry date; an
+  expired entry, or one that no longer matches anything, fails the check too.
+
 ### Fixed
 
 - **verify-adopters no longer reports an API problem as drift.**
@@ -1644,7 +1671,7 @@ carries everything listed under 4.1.3, 4.1.2, 4.1.1 and 4.1.0 below.
 
 ### Security
 
-- **`atr tc pull` checks the rules a Threat Cloud endpoint returns before
+- **`atr tc pull` checks the rules a Community Feed endpoint returns before
   writing them, and no longer goes through a shell.** The response is now
   treated as untrusted: a rule is written only if its id has the form
   `ATR-YYYY-NNNNN`, its category is one of the schema's categories and no rule
@@ -2506,7 +2533,7 @@ No rule content changed and no threshold was loosened in any of the above.
 
 - **26 new rules** (87 to 113 total, 9 categories):
   - ATR-2026-00149: Compound exfiltration (12 patterns: SSH archive, wallet, browser, DNS, IMDS)
-  - ATR-2026-00158/159/160: TC-crystallized rules (first rules generated end-to-end by Threat Cloud)
+  - ATR-2026-00158/159/160: TC-crystallized rules (first rules generated end-to-end by Community Feed)
   - ATR-2026-00161: Cross-tool shadowing via IMPORTANT tag (from Invariant Labs PoC)
   - ATR-2026-00162: Credential exfil combo
   - ATR-2026-00163: Hidden override instructions
@@ -2528,7 +2555,7 @@ No rule content changed and no threshold was loosened in any of the above.
   - **751 malware skills discovered** (hightower6eu 354, sakaen736jih 212, 52yuanchangxing 137)
   - Research report: `docs/research/openclaw-malware-campaign-2026-04.md`
   - NousResearch notified (hermes-agent#9809)
-- **Threat Cloud blacklist**: 554 entries uploaded from wild scan
+- **Community Feed blacklist**: 554 entries uploaded from wild scan
 - **4 export formats**: SARIF v2.1.0, Splunk SPL, Elasticsearch DSL, generic regex (714 portable patterns)
 - **Exponential backoff for npm registry crawl** (fixes Daily Ecosystem Scan rate limiting)
 
@@ -2621,7 +2648,7 @@ No rule content changed and no threshold was loosened in any of the above.
 
 ### Added
 
-- 9 new rules from Threat Cloud community promotion (ATR-2026-100~108):
+- 9 new rules from Community Feed community promotion (ATR-2026-100~108):
   consent bypass, trust escalation, disguised analytics exfiltration,
   hidden safety bypass, persona hijacking, silent action concealment,
   schema-description contradiction, delayed execution bypass, Sybil attack

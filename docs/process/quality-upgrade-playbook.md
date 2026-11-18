@@ -44,7 +44,7 @@ Best for: novel attack classes from threat reports, CVEs, academic papers.
 9. Commit + push
 ```
 
-### Path B: Threat Cloud v2 (automated)
+### Path B: Community Feed v2 (automated)
 
 Best for: bulk scanning of skill registries and MCP servers.
 

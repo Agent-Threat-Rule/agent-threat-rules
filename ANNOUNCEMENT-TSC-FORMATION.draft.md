@@ -85,7 +85,7 @@ adopters. Specifically:
   is unchanged.
 - The Conformance Test Suite and the ATR-Compatible mark continue
   under the published [TRADEMARK.md](TRADEMARK.md) policy.
-- The Threat Cloud pipeline, the npm and PyPI packages, the GitHub
+- The Community Feed pipeline, the npm and PyPI packages, the GitHub
   Marketplace action, and the OSCAL catalog all continue to ship on
   the existing cadence.
 

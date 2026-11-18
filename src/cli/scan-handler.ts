@@ -111,7 +111,7 @@ export async function cmdScanUnified(
     process.exit(1);
   }
 
-  // Threat Cloud reporting is OFF by default. Scanning is a local operation, and a
+  // Community Feed reporting is OFF by default. Scanning is a local operation, and a
   // scan of internal material must not leave the machine because of a default. Opt in
   // explicitly with --report-to-cloud.
   let reporter: ReturnType<typeof createTCReporter> | undefined;
@@ -130,7 +130,7 @@ export async function cmdScanUnified(
     }
   }
   if (reporter) {
-    console.error(`${DIM}Threat Cloud: anonymous reporting enabled via --report-to-cloud${RESET}`);
+    console.error(`${DIM}Community Feed: anonymous reporting enabled via --report-to-cloud${RESET}`);
   }
 
   if (options.failOn !== undefined && !SEVERITY_ORDER.includes(options.failOn as typeof SEVERITY_ORDER[number])) {
@@ -154,7 +154,7 @@ export async function cmdScanUnified(
     if (reporter) {
       await reporter.destroy();
       if (!options.json && !options.sarif) {
-        console.log(`${DIM}  Threat Cloud: detections reported to ${resolveTcUrl(options.tcUrl)}${RESET}`);
+        console.log(`${DIM}  Community Feed: detections reported to ${resolveTcUrl(options.tcUrl)}${RESET}`);
       }
     }
   }

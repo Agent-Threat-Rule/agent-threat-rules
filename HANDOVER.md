@@ -271,8 +271,9 @@ Hand-off items that cannot be automated:
 `git shortlog -sne origin/main --since="6 months ago"` shows twelve distinct author
 identities over the last six months. Two things follow from that:
 
-- **244 commits are authored as `Panguard AI <support@panguard.ai>`.** This project
-  is meant to be vendor-neutral and independent of that company, and public git
+- **244 commits are authored under the company identity of PANGUARD AI, INC.**, the
+  company ATR's lead maintainer founded and controls (see the Interests note in
+  README.md). This project is meant to be vendor-neutral and independent of that company, and public git
   history is permanent. The machine's *global* git config carries that identity, so
   it authors commits silently unless a local one is set. Before your first commit,
   run `git config user.email` in your clone and set a local identity if it returns

@@ -259,7 +259,7 @@ const EVENT_TYPE_TO_FIELD: Record<string, string> = {
 
 /**
  * Detection reporter — opt-in callback for feeding scan results back to
- * ATR Threat Cloud. Every integration endpoint that enables this becomes
+ * ATR Community Feed. Every integration endpoint that enables this becomes
  * a sensor in the global detection network. Anonymized detection events
  * are aggregated across all endpoints to crystallize new rules.
  *
@@ -311,7 +311,7 @@ export interface ATREngineConfig {
   semanticModule?: SemanticLayerConfig;
   /** Optional rule-level semantic judge for detection.method=semantic rules */
   semanticJudge?: ATRSemanticJudge;
-  /** Optional: detection reporter for feeding results to ATR Threat Cloud */
+  /** Optional: detection reporter for feeding results to ATR Community Feed */
   reporter?: ATRReporter;
   /**
    * Detection lane — controls which rule maturities are allowed to fire.
@@ -691,7 +691,7 @@ export class ATREngine {
       return b.confidence - a.confidence;
     });
 
-    // Report detections to Threat Cloud (opt-in)
+    // Report detections to Community Feed (opt-in)
     if (this.config.reporter) {
       const hash = computeContentHash(event.content ?? '');
       const scanTarget = isSkillContext ? 'skill' : (event.type ?? 'unknown');

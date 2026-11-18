@@ -31,5 +31,5 @@ cd /Users/user/Downloads/agent-threat-rules && npx tsx scripts/generate-skillsse
 
 6. Show summary of today's findings and generated posts. Ask if I want to:
    - Review posts before publishing
-   - Push results to Threat Cloud
+   - Push results to Community Feed
    - Scan more (increase limit)

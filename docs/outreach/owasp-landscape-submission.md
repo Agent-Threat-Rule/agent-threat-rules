@@ -46,7 +46,7 @@ ATR is an open-source detection rule corpus for AI agent threats -- like Sigma r
 | CI/CD | GitHub Action (planned), SARIF output for Security tab |
 | Pre-deployment | Wild scan pipeline (101,280 skills / MCP definitions scanned, as of 2026-04-13) |
 | Runtime | MCP event evaluation (tool calls, LLM I/O) |
-| Threat Intelligence | Threat Cloud community feed (anonymous, privacy-first) |
+| Threat Intelligence | Community Feed community feed (anonymous, privacy-first) |
 
 ## Differentiation
 

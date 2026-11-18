@@ -217,7 +217,7 @@ title: "LLM rule"
 id: LLM-001
 maturity: experimental
 severity: high
-author: "ATR Threat Cloud Crystallization"
+author: "ATR Community Feed Crystallization"
 detection:
   conditions:
     - field: content

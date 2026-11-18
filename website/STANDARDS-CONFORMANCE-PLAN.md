@@ -82,7 +82,7 @@ Tailwind config:
 - Pulls from `data/errata.json` (build this file with `[]` for now).
 
 **T2.3 — `/glossary` (`app/[locale]/glossary/page.tsx`)**
-- 25-30 key terms: `SKILL.md`, `MCP exchange`, `scan_target`, `agent runtime`, `conformance level`, `severity tier`, `maturity status`, `Threat Cloud`, `crystallization`, `provenance`, `auto-review`, `canary`, etc.
+- 25-30 key terms: `SKILL.md`, `MCP exchange`, `scan_target`, `agent runtime`, `conformance level`, `severity tier`, `maturity status`, `Community Feed`, `crystallization`, `provenance`, `auto-review`, `canary`, etc.
 - Alphabetical, anchored by term (`/glossary#skill-md`).
 - Each entry: 2-3 sentences + link to first appearance in `/spec`.
 
