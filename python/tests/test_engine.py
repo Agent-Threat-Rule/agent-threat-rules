@@ -403,8 +403,8 @@ class TestPreparedFieldText:
                 return self.inner.search(text)
 
         eng = _synthetic_engine({"field": "content", "operator": "regex", "value": "no-such-token"})
-        eng._compiled_by_idx["ATR-TEST-PREPARED"] = {
-            idx: CountingPattern(p) for idx, p in eng._compiled_by_idx["ATR-TEST-PREPARED"].items()
+        eng._compiled["ATR-TEST-PREPARED"] = {
+            idx: CountingPattern(p) for idx, p in eng._compiled["ATR-TEST-PREPARED"].items()
         }
         assert not eng.evaluate(AgentEvent("plain ascii text"))
         assert searches == ["plain ascii text"]  # the identical raw search is skipped
@@ -435,8 +435,7 @@ class TestPreparedFieldText:
 
     def test_rule_without_precompiled_pattern_uses_compile_on_the_fly(self) -> None:
         eng = _synthetic_engine({"field": "content", "operator": "regex", "value": "needle"})
-        eng._compiled_by_idx.clear()  # as if the rule had bypassed _add_rule
-        eng._compiled.clear()
+        eng._compiled.clear()  # as if the rule had bypassed _add_rule
         assert eng.evaluate(AgentEvent("hay needle hay"))
 
 

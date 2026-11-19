@@ -200,10 +200,8 @@ class ATREngine:
             raise ValueError(f"lane must be one of {LANES}, got {lane!r}")
         self.lane = lane
         self._rules: list[ATRRule] = []
-        # Pre-compiled regex cache: rule_id -> list of (condition_index, compiled_re)
-        self._compiled: dict[str, list[tuple[int, _SearchablePattern]]] = {}
-        # The same cache keyed by condition index, for a direct lookup per condition.
-        self._compiled_by_idx: dict[str, dict[int, _SearchablePattern]] = {}
+        # Pre-compiled regex cache: rule_id -> {condition_index: compiled_re}
+        self._compiled: dict[str, dict[int, _SearchablePattern]] = {}
         self._failed_regexes: set[tuple[str, int]] = set()
 
     @property
@@ -283,16 +281,15 @@ class ATREngine:
 
     def _add_rule(self, rule: ATRRule) -> None:
         self._rules.append(rule)
-        compiled: list[tuple[int, _SearchablePattern]] = []
+        compiled: dict[int, _SearchablePattern] = {}
         for idx, cond in enumerate(rule.conditions):
             if cond.operator == "regex":
                 try:
-                    compiled.append((idx, _compile_regex(cond.value)))
+                    compiled[idx] = _compile_regex(cond.value)
                     self._failed_regexes.discard((rule.id, idx))
                 except _RegexCompileError as exc:
                     self._record_regex_failure(rule.id, idx, exc)
         self._compiled[rule.id] = compiled
-        self._compiled_by_idx[rule.id] = dict(compiled)
 
     def _record_regex_failure(self, rule_id: str, idx: int, exc: _RegexCompileError) -> None:
         key = (rule_id, idx)
@@ -392,7 +389,7 @@ class ATREngine:
         if op == "regex":
             if (rule_id, idx) in self._failed_regexes:
                 return False
-            compiled = self._compiled_by_idx.get(rule_id, {}).get(idx)
+            compiled = self._compiled.get(rule_id, {}).get(idx)
             if compiled is None:
                 # Not pre-compiled (for example a rule added without _add_rule):
                 # keep the original compile-on-the-fly path and its error handling.
@@ -456,9 +453,9 @@ class ATREngine:
         if (rule_id, idx) in self._failed_regexes:
             return False
         # Try pre-compiled first.
-        for cidx, compiled in self._compiled.get(rule_id, []):
-            if cidx == idx:
-                return bool(compiled.search(normalized)) or bool(compiled.search(raw))
+        precompiled = self._compiled.get(rule_id, {}).get(idx)
+        if precompiled is not None:
+            return bool(precompiled.search(normalized)) or bool(precompiled.search(raw))
         # Fallback: compile on the fly.
         try:
             compiled = _compile_regex(pattern_str)
