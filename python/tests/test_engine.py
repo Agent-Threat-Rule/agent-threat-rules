@@ -363,6 +363,83 @@ class TestUnicodeNormalization:
         )
 
 
+def _synthetic_engine(*conditions: dict[str, Any], logic: str = "any") -> ATREngine:
+    eng = ATREngine()
+    eng.load_rule(_parse_rule({
+        "id": "ATR-TEST-PREPARED", "title": "Prepared field text fixture", "status": "test",
+        "severity": "high",
+        "detection": {"condition": logic, "conditions": list(conditions)},
+    }))
+    return eng
+
+
+class TestPreparedFieldText:
+    """Normalizing once per event must not change which conditions match."""
+
+    @pytest.mark.parametrize("operator,value", [
+        ("regex", "​"),        # only the raw text still holds the zero-width char
+        ("contains", "a​b"),
+        ("starts_with", "﻿hi"),
+    ])
+    def test_raw_only_match_still_fires_when_normalization_changes_text(self, operator: str, value: str) -> None:
+        eng = _synthetic_engine({"field": "content", "operator": operator, "value": value})
+        raw = "﻿hi a​b"
+        assert engine_module._normalize_unicode(raw) != raw
+        assert [m.rule_id for m in eng.evaluate(AgentEvent(raw))] == ["ATR-TEST-PREPARED"]
+
+    def test_normalized_only_match_fires(self) -> None:
+        eng = _synthetic_engine({"field": "content", "operator": "regex", "value": "ignore previous"})
+        assert eng.evaluate(AgentEvent("ign​ore previous"))
+
+    def test_unchanged_text_is_searched_once_per_pattern(self) -> None:
+        searches: list[str] = []
+
+        class CountingPattern:
+            def __init__(self, inner: Any) -> None:
+                self.inner = inner
+
+            def search(self, text: str) -> Any:
+                searches.append(text)
+                return self.inner.search(text)
+
+        eng = _synthetic_engine({"field": "content", "operator": "regex", "value": "no-such-token"})
+        eng._compiled_by_idx["ATR-TEST-PREPARED"] = {
+            idx: CountingPattern(p) for idx, p in eng._compiled_by_idx["ATR-TEST-PREPARED"].items()
+        }
+        assert not eng.evaluate(AgentEvent("plain ascii text"))
+        assert searches == ["plain ascii text"]  # the identical raw search is skipped
+        searches.clear()
+        assert not eng.evaluate(AgentEvent("zero​width"))
+        assert searches == ["zerowidth", "zero​width"]  # changed text: both are searched
+
+    def test_each_field_value_is_normalized_once_per_event(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        calls: list[str] = []
+        original = engine_module._normalize_unicode
+
+        def counting(text: str) -> str:
+            calls.append(text)
+            return original(text)
+
+        monkeypatch.setattr(engine_module, "_normalize_unicode", counting)
+        eng = _synthetic_engine(
+            {"field": "content", "operator": "regex", "value": "a"},
+            {"field": "content", "operator": "contains", "value": "b"},
+            {"field": "tool_args", "operator": "regex", "value": "c"},
+        )
+        eng.load_rule(_parse_rule({
+            "id": "ATR-TEST-PREPARED-2", "title": "Second fixture", "status": "test",
+            "detection": {"conditions": [{"field": "content", "operator": "regex", "value": "d"}]},
+        }))
+        eng.evaluate(AgentEvent("xyz", event_type="tool_call", fields={"tool_args": "{}"}))
+        assert sorted(calls) == ["xyz", "{}"]  # one per distinct value, across rules and conditions
+
+    def test_rule_without_precompiled_pattern_uses_compile_on_the_fly(self) -> None:
+        eng = _synthetic_engine({"field": "content", "operator": "regex", "value": "needle"})
+        eng._compiled_by_idx.clear()  # as if the rule had bypassed _add_rule
+        eng._compiled.clear()
+        assert eng.evaluate(AgentEvent("hay needle hay"))
+
+
 class TestFieldResolution:
     def test_explicit_fields_override(self, engine: ATREngine) -> None:
         """Explicit fields dict should be used when present."""
