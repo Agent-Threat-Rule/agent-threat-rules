@@ -277,7 +277,45 @@ def test_agent_guardrails_trip_and_pass() -> None:
 @needs_sdk
 def test_input_guardrail_runs_before_the_model() -> None:
     guardrail = ATRGuard(rules_dir=RULES_DIR).input_guardrail
-    assert getattr(guardrail, "run_in_parallel", False) is False
+    assert guardrail.run_in_parallel is False  # attribute exists from openai-agents 0.6.0
+
+
+def test_input_guardrail_refuses_sdk_without_run_in_parallel(monkeypatch) -> None:
+    import openai_agents_atr as mod
+
+    class OldInputGuardrail:  # shape of InputGuardrail before openai-agents 0.6.0
+        def __init__(self, guardrail_function, name=None):
+            self.guardrail_function, self.name = guardrail_function, name
+
+    monkeypatch.setattr(mod, "_HAS_AGENTS_SDK", True)
+    monkeypatch.setattr(mod, "InputGuardrail", OldInputGuardrail, raising=False)
+    with pytest.raises(ImportError, match=r"openai-agents>=0\.6"):
+        ATRGuard(rules_dir=RULES_DIR).input_guardrail
+
+
+@needs_sdk
+def test_end_to_end_blocked_input_never_reaches_the_model() -> None:
+    """A tripped input guardrail must stop the run before the first model call."""
+    from agents import Agent, InputGuardrailTripwireTriggered, Runner
+    from agents.models.interface import Model
+
+    g = ATRGuard(rules_dir=RULES_DIR, block_lane="hunt")
+    payload = next(p for *_, p in POSITIVES if g.check_input(p).blocked)
+    g.audit_log.clear()
+    calls: list[int] = []
+
+    class CountingModel(Model):
+        async def get_response(self, *args: Any, **kwargs: Any):
+            calls.append(1)
+            raise AssertionError("the model was called with blocked input")
+
+        def stream_response(self, *args: Any, **kwargs: Any):  # pragma: no cover - not used
+            raise NotImplementedError
+
+    agent = Agent(name="test", model=CountingModel(), input_guardrails=[g.input_guardrail])
+    with pytest.raises(InputGuardrailTripwireTriggered):
+        asyncio.run(Runner.run(agent, payload))
+    assert calls == [], "a blocked input must never reach the model"
 
 
 @needs_sdk

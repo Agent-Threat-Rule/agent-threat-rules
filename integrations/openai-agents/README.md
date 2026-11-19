@@ -10,12 +10,19 @@ but for prompt injection, tool poisoning, MCP attacks and skill compromise.
 ## Install
 
 ```bash
-pip install openai-agents "pyatr>=0.4.1"
+pip install "openai-agents>=0.6" "pyatr>=0.4.1"
 ```
 
-pyatr 0.4.1 or later is required: it carries each rule's `maturity`, which
-the guard uses to decide what may block. (Skip 0.4.0, whose bundled rules
-lost `maturity` in packaging.)
+Two minimum versions matter:
+
+- **openai-agents 0.6.0** is the first release where an input guardrail can
+  run before the model is called (`run_in_parallel=False`). Earlier releases
+  always run input guardrails concurrently with the first model call. On an
+  older SDK, `guard.input_guardrail` raises an `ImportError` rather than
+  quietly falling back to that weaker behavior.
+- **pyatr 0.4.1** carries each rule's `maturity`, which the guard uses to
+  decide what may block. (Skip 0.4.0, whose bundled rules lost `maturity` in
+  packaging.)
 
 Then copy `openai_agents_atr.py` into your project, or install this directory:
 `pip install ./integrations/openai-agents`.
@@ -136,7 +143,7 @@ You can also call `check_tool_call`, `check_tool_output`, `check_input` and
 ## Tests
 
 ```bash
-pip install "pyatr>=0.4.1" openai-agents pytest pyyaml
+pip install "pyatr>=0.4.1" "openai-agents>=0.6" pytest pyyaml
 pytest integrations/openai-agents/tests
 ```
 

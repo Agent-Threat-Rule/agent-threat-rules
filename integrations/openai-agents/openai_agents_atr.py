@@ -32,7 +32,7 @@
 # ATR's enforce lane (maturity: stable) can block. `block_lane="hunt"` blocks
 # on every rule, at the cost of false positives.
 #
-#   pip install openai-agents "pyatr>=0.4.1"
+#   pip install "openai-agents>=0.6" "pyatr>=0.4.1"
 #
 # Usage:
 #   from agents import Agent, function_tool
@@ -418,12 +418,20 @@ class ATRGuard:
         It runs before the agent starts (``run_in_parallel=False``), so a
         blocked input never reaches the model. The SDK's default runs input
         guardrails concurrently with the first model call.
+
+        Requires openai-agents 0.6.0 or later, the first release with
+        ``run_in_parallel``. On an older SDK this raises instead of falling
+        back to a concurrent guardrail, so the guarantee never weakens
+        silently.
         """
         self._require_sdk()
         try:
             return InputGuardrail(guardrail_function=self._input_fn, name="atr_input", run_in_parallel=False)
-        except TypeError:  # older SDK versions have no run_in_parallel option
-            return InputGuardrail(guardrail_function=self._input_fn, name="atr_input")
+        except TypeError as exc:
+            raise ImportError(
+                "ATRGuard.input_guardrail requires openai-agents>=0.6.0 (run_in_parallel); "
+                "upgrade with: pip install -U 'openai-agents>=0.6'"
+            ) from exc
 
     @property
     def output_guardrail(self) -> "OutputGuardrail":
