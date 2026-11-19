@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CoverageAnalyzer } from '../src/coverage-analyzer.js';
@@ -21,6 +21,17 @@ describe('CoverageAnalyzer', () => {
       .map((gap) => ({ id: gap.riskId, name: gap.riskName }));
 
     expect(actual).toEqual(expected);
-    expect(report.categoryDistribution).toHaveProperty('model-security', 0);
+  });
+
+  it('includes every live rule category', () => {
+    const expected = readdirSync(resolve(import.meta.dirname, '../rules'), {
+      withFileTypes: true,
+    })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort();
+    const actual = Object.keys(new CoverageAnalyzer([]).analyze().categoryDistribution).sort();
+
+    expect(actual).toEqual(expected);
   });
 });
