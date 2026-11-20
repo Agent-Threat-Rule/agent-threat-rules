@@ -236,17 +236,19 @@ npx agent-threat-rules test rules/prompt-injection/ATR-2026-00001-direct-prompt-
 # Or test all rules against a custom input
 npx tsx -e '
 import { ATREngine } from "./src/engine.ts";
-const engine = new ATREngine({ rulesDir: "./rules" });
-await engine.loadRules();
-const matches = engine.evaluate({
-  type: "llm_input",
-  timestamp: new Date().toISOString(),
-  content: "YOUR BYPASS PAYLOAD HERE",
-  fields: { user_input: "YOUR BYPASS PAYLOAD HERE" },
-  sessionId: "test"
-});
-console.log("Matches:", matches.length);
-// If matches.length === 0, you found a bypass!
+(async () => {
+  const engine = new ATREngine({ rulesDir: "./rules" });
+  await engine.loadRules();
+  const matches = engine.evaluate({
+    type: "llm_input",
+    timestamp: new Date().toISOString(),
+    content: "YOUR BYPASS PAYLOAD HERE",
+    fields: { user_input: "YOUR BYPASS PAYLOAD HERE" },
+    sessionId: "test"
+  });
+  console.log("Matches:", matches.length);
+  // If matches.length === 0, you found a bypass!
+})();
 '
 ```
 
@@ -560,8 +562,8 @@ npm install
 # See what rules exist
 npx agent-threat-rules stats
 
-# See coverage gaps
-npx agent-threat-rules coverage
+# See coverage gaps (documented in COVERAGE.md; there is no CLI command for this)
+cat COVERAGE.md
 
 # Validate all rules
 npx agent-threat-rules validate rules/
