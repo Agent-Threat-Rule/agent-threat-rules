@@ -26,7 +26,7 @@ describe('excludedCorpora', () => {
 
 describe('familyRecall', () => {
   it('does not count hits in a looked-at corpus or its family', () => {
-    const r = familyRecall([hits('garak-full', ['a']), hits('gandalf', ['b'])], ['in-the-wild-jailbreak'], []);
+    const r = familyRecall([hits('garak-full', ['a']), hits('gandalf', ['b'])], ['in-the-wild-jailbreak'], [], 'llm_input');
     expect(r.families.map((f) => f.family)).toEqual(['gandalf']);
   });
 
@@ -36,6 +36,7 @@ describe('familyRecall', () => {
       [hits('in-the-wild-jailbreak', [shared, 'You are DAN']), hits('jailbreak-cls', [shared]), hits('gandalf', ['x'])],
       [],
       [],
+      'llm_input',
     );
     const garak = r.families.find((f) => f.family === 'garak-full');
     expect(garak).toEqual({ family: 'garak-full', corpora: { 'in-the-wild-jailbreak': 2, 'jailbreak-cls': 1 }, distinct: 2 });
@@ -44,15 +45,31 @@ describe('familyRecall', () => {
 
   it('drops a hit whose opening a looked-at corpus also holds, whatever its case and spacing', () => {
     const seen = 'Hello   ChatGPT. You are about to immerse yourself';
-    const r = familyRecall([hits('gandalf', ['hello chatgpt. you are about to immerse yourself', 'other'])], ['mosscap'], [seen]);
+    const r = familyRecall(
+      [hits('gandalf', ['hello chatgpt. you are about to immerse yourself', 'other'])],
+      ['mosscap'],
+      [seen],
+      'llm_input',
+    );
     expect(r.droppedAsRepublished).toBe(1);
     expect(r.families).toEqual([{ family: 'gandalf', corpora: { gandalf: 1 }, distinct: 1 }]);
+  });
+
+  it('does not count a hit presented through a different event shape', () => {
+    const r = familyRecall(
+      [hits('gandalf', ['user prompt'], 'llm_input'), hits('spikee', ['fetched page'], 'tool_response')],
+      [],
+      [],
+      'tool_response',
+    );
+    expect(r.targetShape).toBe('tool_response');
+    expect(r.families.map((f) => f.family)).toEqual(['spikee']);
   });
 });
 
 describe('meetsPilotBar', () => {
-  const two = familyRecall([hits('gandalf', ['a']), hits('spikee', ['b'])], [], []);
-  const one = familyRecall([hits('gandalf', ['a', 'b'])], [], []);
+  const two = familyRecall([hits('gandalf', ['a']), hits('spikee', ['b'])], [], [], 'llm_input');
+  const one = familyRecall([hits('gandalf', ['a', 'b'])], [], [], 'llm_input');
   const clean = [{ id: 'user-input-business', shape: 'llm_input', total: 118, hits: [] }];
 
   it('needs two families and zero benign hits', () => {
@@ -76,7 +93,11 @@ describe('measure-technique-rule.ts', () => {
     });
 
   it('refuses a looked-at corpus it does not know, so a typo cannot widen the evidence', () => {
-    const r = cli('--rule', 'rules/prompt-injection/ATR-2026-02862-fake-chat-template-turn-injection.yaml', '--looked-at', 'no-such-corpus');
+    const r = cli(
+      '--rule', 'rules/prompt-injection/ATR-2026-02862-fake-chat-template-turn-injection.yaml',
+      '--looked-at', 'no-such-corpus',
+      '--target-shape', 'llm_input',
+    );
     expect(r.status).toBe(2);
     expect(r.stderr).toMatch(/unknown corpus id/);
   });
@@ -85,6 +106,7 @@ describe('measure-technique-rule.ts', () => {
     const r = cli(
       '--rule', 'rules/prompt-injection/ATR-2026-02862-fake-chat-template-turn-injection.yaml',
       '--looked-at', 'jailbreak-cls',
+      '--target-shape', 'llm_input',
       '--json',
     );
     expect(r.status, r.stderr).toBe(0);

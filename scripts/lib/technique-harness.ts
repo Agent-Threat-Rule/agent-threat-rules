@@ -40,6 +40,8 @@ export interface FamilyRecall {
 }
 
 export interface RecallReport {
+  /** Only hits presented through this production event type count as evidence. */
+  readonly targetShape: string;
   /** Corpora left out: the ones looked at and their derived families. */
   readonly excluded: readonly string[];
   /** Hits dropped because a looked-at corpus holds the same sample (sampleKey). */
@@ -62,12 +64,14 @@ export function familyRecall(
   attacks: readonly CorpusHits[],
   lookedAt: readonly string[],
   lookedAtTexts: readonly string[],
+  targetShape: string,
 ): RecallReport {
   const excluded = excludedCorpora(lookedAt);
   const seen = new Set(lookedAtTexts.map(sampleKey));
   const byFamily = new Map<string, { corpora: Record<string, number>; keys: Set<string> }>();
   let dropped = 0;
   for (const c of attacks) {
+    if (c.shape !== targetShape) continue;
     if (excluded.has(c.id)) continue;
     const family = familyOf(c.id);
     const entry = byFamily.get(family) ?? { corpora: {}, keys: new Set<string>() };
@@ -89,7 +93,7 @@ export function familyRecall(
   const families = [...byFamily]
     .map(([family, e]) => ({ family, corpora: e.corpora, distinct: e.keys.size }))
     .sort((a, b) => b.distinct - a.distinct || a.family.localeCompare(b.family));
-  return { excluded: [...excluded].sort(), droppedAsRepublished: dropped, families };
+  return { targetShape, excluded: [...excluded].sort(), droppedAsRepublished: dropped, families };
 }
 
 export interface BenignResult {
@@ -110,9 +114,10 @@ export function benignLines(results: readonly BenignResult[], examples = 2): rea
 }
 
 /**
- * The pilot's bar (#848): hits in at least two derived families other than
- * the excluded ones, and no hit on any benign corpus. fn-mine's own gate needs
- * one out-of-sample hit in total, which is weaker on purpose.
+ * The pilot's bar (#848): hits in at least two derived families, presented
+ * through the target production event type, other than the excluded ones, and
+ * no hit on any benign corpus. fn-mine's own gate needs one out-of-sample hit
+ * in total, which is weaker on purpose.
  */
 export function meetsPilotBar(recall: RecallReport, benign: readonly BenignResult[]): boolean {
   return recall.families.length >= 2 && benign.every((b) => b.hits.length === 0);
