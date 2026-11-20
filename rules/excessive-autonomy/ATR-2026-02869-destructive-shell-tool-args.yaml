@@ -1,0 +1,154 @@
+title: Destructive Shell Command in Tool Arguments
+id: ATR-2026-02869
+rule_version: 1
+status: experimental
+description: 'Detects near-never-legitimate destructive filesystem shell commands passed as tool arguments in an
+  agent tool_call event.
+
+
+  Scope decision (Agent-Threat-Rule/agent-threat-rules#658): shutdown, poweroff, and chmod are deliberately out
+  of scope -- they are legitimate administrative actions whose allow/deny belongs to deployer policy, not to a threat
+  signature. This rule covers only the classes that are close to never legitimate in an agent context:
+
+
+  - rm -rf targeting the filesystem root (/), the home directory (~), or with --no-preserve-root
+
+  - dd writing onto a raw /dev/ device
+
+  - classic fork bombs
+
+  - device wipes: shred, wipefs, mkfs, fdisk --delete
+
+
+  The pattern reuses the narrowed destructive-shell alternation introduced in ATR-2026-00010 (Layer 1) so the two
+  rules do not drift, with one addition: a bare `rm -rf ~` (the 00010 arm `~[\s/]` does not match a line-final tilde,
+  so the bare form escaped that rule -- flagged in #658).
+
+
+  Benign forms that deliberately do NOT fire (all present in test_cases): rm -rf on relative paths (./build, node_modules),
+  dd that READS a device into an image file (forensic imaging), and dd writing image-to-image between regular files.
+
+
+  maturity: test -- hunt/alert lanes only. Promotion toward enforce requires wild-corpus evidence under the standard
+  maturity process, not just a clean benign gate.'
+author: phm-audit
+date: '2026-10-23'
+schema_version: '0.1'
+detection_tier: pattern
+maturity: test
+severity: high
+references:
+  owasp_llm:
+  - LLM06:2025
+  owasp_agentic:
+  - ASI09:2026
+  - ASI10:2026
+  mitre_atlas:
+  - AML.T0053 - AI Agent Tool Invocation
+compliance:
+  eu_ai_act:
+  - article: '14'
+    context: Article 14 human oversight requires that destructive actions taken autonomously by an AI agent remain
+      interruptible and attributable; surfacing near-never-legitimate destructive shell commands in tool arguments
+      gives deployers the signal needed to keep a human in the loop for exactly these actions.
+    strength: secondary
+  - article: '15'
+    context: Article 15 (accuracy, robustness and cybersecurity) expects high-risk AI systems to resist destructive
+      and malformed inputs; detecting root-deletion and device-wipe commands in tool arguments supports that duty.
+    strength: secondary
+tags:
+  category: destructive-commands
+  subcategory: destructive-shell-tool-args
+  scan_target: tool_call
+  confidence: medium
+agent_source:
+  type: tool_call
+  framework:
+  - openai-agents
+  - langchain
+  - autogen
+  - crewai
+  - mcp
+  provider:
+  - any
+detection:
+  conditions:
+  - field: tool_args
+    operator: regex
+    value: (?i)(\brm\s+-[rRf]{1,3}\s+(--no-preserve-root\b|/[\s*]|/$|~[\s/]|~$)|\bmkfs(?:\.[a-z0-9]+)?\s|\bdd\s+if=[^\n|;]{0,80}of=\s*/dev/|\bshred\s+-[^-\s]|\bwipefs\s+|\bfdisk\s+[^|;\n]*--delete|:\(\)\s*\{\s*:\|:\s*&\s*\}\s*;\s*:)
+    description: 'Near-never-legitimate destructive shell commands in tool arguments: rm -rf narrowed to root/home/bare-tilde
+      targets (benign rm -rf on relative directories does not fire), mkfs of any filesystem type, dd writing onto
+      a raw /dev/ device (benign forensic imaging that READS a device into a file does not fire), shred, wipefs,
+      fdisk --delete, and the classic fork bomb.'
+response:
+  actions:
+  - alert
+  actions_rationale: 'maturity test: alert-only until wild-corpus evidence accumulates per the standard promotion
+    process. Destructive-command true positives are high-impact, but the enforce lane requires the benign-corpus
+    gate plus wild evidence, not just a clean benign gate (#658).'
+  auto_response_threshold: high
+  message_template: '[ATR-2026-02869] HIGH: destructive shell command detected in tool arguments (tool_call). Command
+    classes: rm -rf on / or ~, dd onto a raw device, fork bomb, or device wipe. Human review required before execution.'
+confidence: medium
+test_cases:
+  true_positives:
+  - tool_args: rm -rf / --no-preserve-root
+    expected: triggered
+    description: Root filesystem deletion with preserve-root disabled (#658 positive 1)
+  - tool_args: sudo rm -rf /*
+    expected: triggered
+    description: Privilege-escalated wildcard root deletion (#658 positive 2)
+  - tool_args: dd if=malicious.img of=/dev/sda
+    expected: triggered
+    description: Raw device write via dd (#658 positive 3)
+  - tool_args: ':(){ :|:& };:'
+    expected: triggered
+    description: Classic fork bomb (#658 positive 4)
+  - tool_args: shred -n 1 /dev/nvme0n1
+    expected: triggered
+    description: Device wipe via shred (#658 positive 5)
+  - tool_args: rm -rf ~
+    expected: triggered
+    description: 'Bare home-directory deletion -- the form ATR-2026-00010 currently misses, added per #658 review'
+  true_negatives:
+  - tool_args: ls -la
+    expected: not_triggered
+    description: Ordinary listing (#658 negative)
+  - tool_args: git status
+    expected: not_triggered
+    description: Ordinary VCS status (#658 negative)
+  - tool_args: rm -rf ./build
+    expected: not_triggered
+    description: Relative-path cleanup -- benign by design (#658 negative)
+  - tool_args: rm -rf node_modules && npm ci
+    expected: not_triggered
+    description: Benign dependency reinstall (#658 negative)
+  - tool_args: chmod 755 deploy.sh
+    expected: not_triggered
+    description: 'Ordinary executable bit -- chmod out of scope by design (#658 negative, see #735)'
+  - tool_args: dd if=disk.img of=disk-copy.img
+    expected: not_triggered
+    description: File-to-file image copy, no raw device target
+  - tool_args: dd if=/dev/sda of=./forensic-image.img
+    expected: not_triggered
+    description: 'Benign forensic imaging: READS a device into a file (of= is a regular file, not /dev/)'
+  - tool_args: shutdown -h now
+    expected: not_triggered
+    description: Legitimate admin action -- out of scope by design (#658 negative)
+  - tool_args: poweroff --force
+    expected: not_triggered
+    description: Legitimate admin action -- out of scope by design (#658 negative)
+  - tool_args: dd if=input.png of=output.png
+    expected: not_triggered
+    description: Image-to-image conversion via dd -- benign (#658 negative)
+evasion_tests:
+- input: rm -rf $(printf '/')
+  expected: not_triggered
+  bypass_technique: command_substitution_path_splintering
+  notes: 'Known limitation: the narrowed alternation matches literal targets; command-substitution splintering of
+    the target string is out of scope for a pattern-tier rule and needs a semantic layer.'
+- input: echo cm0gLXJmIC8K | base64 -d | sh
+  expected: not_triggered
+  bypass_technique: base64_obfuscation
+  notes: 'Known limitation: base64-encoded destruction is invisible to this pattern; covered by layered rules downstream
+    of the shell layer, not here.'
