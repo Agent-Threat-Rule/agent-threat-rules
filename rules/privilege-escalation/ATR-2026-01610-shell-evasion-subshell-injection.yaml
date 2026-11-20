@@ -1,6 +1,6 @@
 title: Shell Evasion Subshell and Command Substitution Injection
 id: ATR-2026-01610
-rule_version: 1
+rule_version: 2
 status: experimental
 description: |
   Detects shell command injection using subshell expansion techniques that
@@ -64,11 +64,11 @@ detection:
   conditions:
     - field: tool_args
       operator: regex
-      value: "\\$\\((?:touch|rm|ls|cat|curl|wget|nc|bash|sh|cmd|powershell|python|ruby|perl|node)\\b[^)\n]{0,80}\\)"
+      value: "\\$\\((?:touch|rm|ls|cat|curl|wget|nc|bash|sh|cmd|powershell|python|ruby|perl|node)\\b[^)\\n]{0,80}\\)"
       description: "Dollar-paren subshell in structured tool arguments (no newlines)"
     - field: tool_args
       operator: regex
-      value: "`(?:touch|rm|ls|cat|curl|wget|nc|bash|sh|python|ruby|perl)\\b[^\n`]{0,80}`"
+      value: "`(?:touch|rm|ls|cat|curl|wget|nc|bash|sh|python|ruby|perl)\\b[^\\n`]{0,80}`"
       description: "Backtick injection in structured tool arguments (no newlines = not markdown code block)"
     - field: user_input
       operator: regex

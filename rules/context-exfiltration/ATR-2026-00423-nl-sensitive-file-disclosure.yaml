@@ -1,6 +1,6 @@
 title: Natural-Language Sensitive File Disclosure Instruction
 id: ATR-2026-00423
-rule_version: 1
+rule_version: 2
 status: experimental
 description: |
   Detects natural-language imperative instructions that direct the agent to
@@ -77,7 +77,7 @@ detection:
       description: NL imperative verb + ownership/scope qualifier directly preceding sensitive file path
     - field: content
       operator: regex
-      value: (?i)\b(?:always|whenever|every\s+time|you\s+(?:must|should|will|shall))\b[\s\S]{0,60}\b(?:include|append|attach|disclose|output|return|read|cat|print)\b[\s\S]{0,60}(?:\/etc\/(?:passwd|shadow|sudoers)|~?\/\.ssh\/(?:id_[a-z0-9]+|authorized_keys)|~?\/\.aws\/credentials|kubeconfig|\.env(?:\s|$|[\.,)\b])|~?\/\.netrc|~?\/\.docker\/config\.json)
+      value: (?i)\b(?:always|whenever|every\s+time|you\s+(?:must|should|will|shall))\b[\s\S]{0,60}\b(?:include|append|attach|disclose|output|return|read|cat|print)\b[\s\S]{0,60}(?:\/etc\/(?:passwd|shadow|sudoers)|~?\/\.ssh\/(?:id_[a-z0-9]+|authorized_keys)|~?\/\.aws\/credentials|kubeconfig|\.env(?:\s|$|[\.,)])|~?\/\.netrc|~?\/\.docker\/config\.json)
       description: Imperative directive + read/include verb + literal sensitive file
     - field: content
       operator: regex

@@ -33,6 +33,18 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **Three rules no longer hand converters a regex they cannot take** (#858).
+  ATR-2026-01610 (two conditions) and ATR-2026-00296 had a literal newline
+  inside a character class, written as `\n` in a double-quoted YAML string, so
+  the parsed value spanned two lines. It is now written `\\n` in the YAML, so
+  the regex gets the escape `\n`, which JavaScript and Python read the same way.
+  ATR-2026-00423 had `\b` inside a character class, which means backspace there,
+  not a word boundary; it is removed. Matching is unchanged: old and new values
+  give identical results on 2,801,980 lines from the .json, .jsonl, .txt and .md
+  files under `data/`, and the benign false positive counts are unchanged
+  (fingerprints re-measured). All three rules are `experimental` or `test`, so
+  the enforce lane is not affected. `rule_version` goes to 2. Reported in #559.
+
 - **verify-adopters no longer reports an API problem as drift.**
   `scripts/verify-adopters.mjs` asked GitHub with no retry, no timeout and no
   error handling: a rate limit or a 5xx was recorded as drift, and a network
