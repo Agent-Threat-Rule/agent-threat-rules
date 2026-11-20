@@ -36,6 +36,7 @@ const CATEGORIES = [
   "data-poisoning",
   "excessive-autonomy",
   "model-abuse",
+  "model-security",
   "privilege-escalation",
   "prompt-injection",
   "skill-compromise",
