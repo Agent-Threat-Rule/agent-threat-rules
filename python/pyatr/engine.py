@@ -48,6 +48,37 @@ def _normalize_unicode(text: str) -> str:
     return _ZERO_WIDTH_RE.sub("", unicodedata.normalize("NFC", text))
 
 
+class _FieldText:
+    """One field value prepared for matching: raw, normalized, and lowered forms.
+
+    Every condition is tested against both the normalized and the raw value.
+    When normalization leaves the value unchanged (``same``), the second test
+    would repeat the first exactly, so callers skip it. Lowered forms are
+    computed on first use, for the case-insensitive string operators.
+    """
+
+    __slots__ = ("raw", "normalized", "same", "_raw_lower", "_normalized_lower")
+
+    def __init__(self, raw: str) -> None:
+        self.raw = raw
+        self.normalized = _normalize_unicode(raw)
+        self.same = self.normalized == raw
+        self._raw_lower: str | None = None
+        self._normalized_lower: str | None = None
+
+    def normalized_lower(self) -> str:
+        if self._normalized_lower is None:
+            self._normalized_lower = self.normalized.lower()
+        return self._normalized_lower
+
+    def raw_lower(self) -> str:
+        if self.same:
+            return self.normalized_lower()
+        if self._raw_lower is None:
+            self._raw_lower = self.raw.lower()
+        return self._raw_lower
+
+
 def _compile_regex(pattern: str) -> _SearchablePattern:
     """Compile an ATR regex, falling back for syntax unsupported by ``re``."""
     cleaned = _INLINE_FLAGS_RE.sub("", pattern)
@@ -169,8 +200,8 @@ class ATREngine:
             raise ValueError(f"lane must be one of {LANES}, got {lane!r}")
         self.lane = lane
         self._rules: list[ATRRule] = []
-        # Pre-compiled regex cache: rule_id -> list of (condition_index, compiled_re)
-        self._compiled: dict[str, list[tuple[int, _SearchablePattern]]] = {}
+        # Pre-compiled regex cache: rule_id -> {condition_index: compiled_re}
+        self._compiled: dict[str, dict[int, _SearchablePattern]] = {}
         self._failed_regexes: set[tuple[str, int]] = set()
 
     @property
@@ -250,11 +281,11 @@ class ATREngine:
 
     def _add_rule(self, rule: ATRRule) -> None:
         self._rules.append(rule)
-        compiled: list[tuple[int, _SearchablePattern]] = []
+        compiled: dict[int, _SearchablePattern] = {}
         for idx, cond in enumerate(rule.conditions):
             if cond.operator == "regex":
                 try:
-                    compiled.append((idx, _compile_regex(cond.value)))
+                    compiled[idx] = _compile_regex(cond.value)
                     self._failed_regexes.discard((rule.id, idx))
                 except _RegexCompileError as exc:
                     self._record_regex_failure(rule.id, idx, exc)
@@ -284,29 +315,42 @@ class ATREngine:
         Returns matched rules sorted by severity (critical first).
         """
         matches: list[ATRMatch] = []
+        # Each distinct field value is normalized once per event, not once per
+        # condition. Values are keyed by the string itself, whose hash Python
+        # caches, so repeat lookups of a long value stay cheap.
+        prepared: dict[str, _FieldText] = {}
         for rule in self._rules:
             # Parity with the TS engine: deprecated/draft rules never fire.
             if rule.status in ("deprecated", "draft"):
                 continue
             if not lane_allows(rule, self.lane):
                 continue
-            match = self._evaluate_rule(rule, event)
+            match = self._evaluate_rule(rule, event, prepared)
             if match is not None:
                 matches.append(match)
         matches.sort(key=lambda m: SEVERITY_ORDER.get(m.severity, 99))
         return matches
 
-    def _evaluate_rule(self, rule: ATRRule, event: AgentEvent) -> ATRMatch | None:
+    def _evaluate_rule(
+        self,
+        rule: ATRRule,
+        event: AgentEvent,
+        prepared: dict[str, _FieldText] | None = None,
+    ) -> ATRMatch | None:
         matched_patterns: list[str] = []
         condition_results: list[bool] = []
+        if prepared is None:
+            prepared = {}
 
         for idx, cond in enumerate(rule.conditions):
             raw_value = self._resolve_field(cond.field, event)
             if raw_value is None:
                 condition_results.append(False)
                 continue
-            normalized = _normalize_unicode(raw_value)
-            hit = self._test_condition(rule.id, idx, cond, normalized, raw_value)
+            text = prepared.get(raw_value)
+            if text is None:
+                text = prepared[raw_value] = _FieldText(raw_value)
+            hit = self._test_prepared(rule.id, idx, cond, text)
             condition_results.append(hit)
             if hit:
                 matched_patterns.append(cond.value)
@@ -332,6 +376,38 @@ class ATREngine:
             maturity=rule.maturity,
             confirm=rule.confirm,
         )
+
+    def _test_prepared(self, rule_id: str, idx: int, cond: Condition, text: _FieldText) -> bool:
+        """Test one condition against a prepared field value.
+
+        Gives the same result as ``_test_condition(..., text.normalized,
+        text.raw)``: each operator matches if the normalized OR the raw value
+        satisfies it. When the two are identical the raw test is skipped,
+        since it cannot change the result.
+        """
+        op = cond.operator
+        if op == "regex":
+            if (rule_id, idx) in self._failed_regexes:
+                return False
+            compiled = self._compiled.get(rule_id, {}).get(idx)
+            if compiled is None:
+                # Not pre-compiled (for example a rule added without _add_rule):
+                # keep the original compile-on-the-fly path and its error handling.
+                return self._test_regex(rule_id, idx, cond.value, text.normalized, text.raw)
+            if compiled.search(text.normalized):
+                return True
+            return not text.same and bool(compiled.search(text.raw))
+        if op == "contains":
+            target = cond.value.lower()
+            if target in text.normalized_lower():
+                return True
+            return not text.same and target in text.raw_lower()
+        if op == "starts_with":
+            target = cond.value.lower()
+            if text.normalized_lower().startswith(target):
+                return True
+            return not text.same and text.raw_lower().startswith(target)
+        return self._test_condition(rule_id, idx, cond, text.normalized, text.raw)
 
     def _test_condition(
         self,
@@ -377,9 +453,9 @@ class ATREngine:
         if (rule_id, idx) in self._failed_regexes:
             return False
         # Try pre-compiled first.
-        for cidx, compiled in self._compiled.get(rule_id, []):
-            if cidx == idx:
-                return bool(compiled.search(normalized)) or bool(compiled.search(raw))
+        precompiled = self._compiled.get(rule_id, {}).get(idx)
+        if precompiled is not None:
+            return bool(precompiled.search(normalized)) or bool(precompiled.search(raw))
         # Fallback: compile on the fly.
         try:
             compiled = _compile_regex(pattern_str)
