@@ -56,13 +56,24 @@ compliance:
     context: Article 15 (accuracy, robustness and cybersecurity) expects high-risk AI systems to resist destructive
       and malformed inputs; detecting root-deletion and device-wipe commands in tool arguments supports that duty.
     strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MS.2.6"
+      context: "MS.2.6 runtime safety evaluation is supported by detecting destructive shell commands (rm -rf on root/home, dd to raw devices, wipefs, mkfs, shred) passed as agent tool arguments before execution."
+      strength: primary
+    - subcategory: "MS.2.2"
+      context: "MS.2.2 anomaly detection is supported by flagging near-never-legitimate filesystem destruction requested through an agent's tool interface."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 operational control blocking destructive filesystem operations issued through agent tool arguments."
+      strength: primary
 tags:
-  category: destructive-commands
+  category: excessive-autonomy
   subcategory: destructive-shell-tool-args
-  scan_target: tool_call
+  scan_target: tool_args
   confidence: medium
 agent_source:
-  type: tool_call
+  type: llm_io
   framework:
   - openai-agents
   - langchain
@@ -72,6 +83,8 @@ agent_source:
   provider:
   - any
 detection:
+  condition: any
+  method: pattern
   conditions:
   - field: tool_args
     operator: regex
