@@ -110,7 +110,7 @@ deployment publicly (merged PR, public docs, conference talk, etc.).
 ### Cisco AI Defense
 - **Org**: Cisco
 - **Type**: rule-import
-- **Integration**: ATR rule pack merged into the open-source cisco-ai-defense/skill-scanner repository. This describes that repository, not any Cisco product. On 2026-11-02 a maintainer said the pack will most likely be removed because of its false-positive rate (skill-scanner PR #289, closed 2026-11-05); as of 2026-11-10 the pack is still on main
+- **Integration**: ATR rule pack merged into the open-source cisco-ai-defense/skill-scanner repository. This describes that repository, not any Cisco product. On 2026-11-02 a maintainer said the pack will most likely be removed because of its false-positive rate (skill-scanner PR #289, closed 2026-11-05); as of 2026-11-23 the pack is still on main
 - **Evidence**: <https://github.com/cisco-ai-defense/skill-scanner/pull/99> (and predecessor PoC #79)
 - **Since**: 2026-04-22
 - **Status**: shipped
@@ -176,7 +176,7 @@ Listed when the integration code has been merged or released.
 ### Microsoft PyRIT
 - **Org**: Microsoft
 - **Type**: rule-import
-- **Integration**: ATR adversarial-payload dataset loader merged into PyRIT (PR #1715, merged 2026-05-27 by maintainer Roman Lutz). The dataset loader ships in released versions (v1.1.0 is the latest). An AgentThreatRulesScorer was first merged in PR #1893 (2026-08-17) and reverted the next day by PR #2410; a version with no new dependency was merged to main in PR #2624 (2026-09-24) and is not in a release yet
+- **Integration**: ATR adversarial-payload dataset loader merged into PyRIT (PR #1715, merged 2026-05-27 by maintainer Roman Lutz). An AgentThreatRulesScorer was first merged in PR #1893 (2026-08-17) and reverted the next day by PR #2410; a version with no new dependency was merged in PR #2624 (2026-09-24). Both the dataset loader and the scorer ship in PyRIT v1.2.0 (released 2026-11-13)
 - **Evidence**: <https://github.com/microsoft/PyRIT/pull/1715>, <https://github.com/microsoft/PyRIT/pull/2624>
 - **Since**: 2026-05-27
 - **Status**: shipped
