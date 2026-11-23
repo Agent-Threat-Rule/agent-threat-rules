@@ -45,6 +45,20 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **ATR-2026-02871 no longer fires on three ordinary tool-description shapes**
+  (rule_version 2, reported in #863). Condition 1 reads "hidden from the user"
+  as concealment only when it is an instruction ("keep this hidden from the
+  user", a "Hidden from the user:" label), not a description of output ("the
+  response is hidden from the user by default"). Condition 2 needs a URL, email
+  address, phone number or wallet address after a "when X is called" trigger;
+  a named webhook counts only after an explicit override of another tool's
+  behavior. Condition 6 treats "modify/change the X parameter" as tuning unless
+  the same clause adds an injection verb, a destination or a harmful payload.
+  The trade-off: rewrites to an ordinary-looking value ("change the region
+  parameter to 'AP'") are now missed, recorded as an evasion test. On MCPTox
+  the rule loses 6 of 846 development-server instances and none of the 502
+  test-server instances. 9 benign twins are added and the benign FP evidence
+  is re-measured; no rule fires on them.
 - **Three rules no longer hand converters a regex they cannot take** (#858).
   ATR-2026-01610 (two conditions) and ATR-2026-00296 had a literal newline
   inside a character class, written as `\n` in a double-quoted YAML string, so
