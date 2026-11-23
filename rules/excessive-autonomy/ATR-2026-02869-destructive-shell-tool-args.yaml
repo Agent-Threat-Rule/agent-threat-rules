@@ -1,0 +1,233 @@
+title: Destructive Shell Command in Tool Arguments
+id: ATR-2026-02869
+rule_version: 3
+status: experimental
+description: 'Detects near-never-legitimate destructive filesystem shell commands passed as tool arguments in an
+  agent tool_call event.
+
+
+  Scope decision (Agent-Threat-Rule/agent-threat-rules#658): shutdown, poweroff, and chmod are deliberately out
+  of scope -- they are legitimate administrative actions whose allow/deny belongs to deployer policy, not to a threat
+  signature. This rule covers only the classes that are close to never legitimate in an agent context:
+
+
+  - rm -rf targeting the filesystem root (/), the bare home directory (~), or with --no-preserve-root
+    (bare-tilde target only: rm -rf ~/subpath is ordinary per-path cleanup and stays out of scope). The arm
+    accepts repeated destructive-flag tokens (rm -r -f /) and the -- end-of-options marker (rm -rf -- /);
+    flag tokens are composed of r/R/f/v only
+
+  - dd with a device-null source (if=/dev/zero, /dev/urandom, or /dev/random) writing onto a raw /dev/
+    device -- file-sourced device writes (USB imaging dd if=iso of=/dev/sdb, backup restore dd if=backup.img
+    of=/dev/sdX) are frequently legitimate per the benign corpus and stay out of scope
+
+  - classic fork bombs
+
+  - device wipes: shred, wipefs, mkfs, fdisk --delete, each required to target a raw /dev/ device
+
+  Shell-separator boundary (per #739 review): the intervening argument tokens of the mkfs/shred/wipefs/fdisk
+  arms exclude the shell separators ;, |, and &, so a /dev/ target belonging to a subsequent command in the
+  same string (shred -u notes.txt; echo /dev/sda) does not fire. fdisk on a regular image file
+  (fdisk disk.img --delete) does not fire either -- the /dev/ requirement applies to the fdisk arm too
+
+
+  Routing (per #658 review of this rule): agent_source.type is tool_call -- the rule inspects the arguments an
+  agent is about to hand to a shell tool, not LLM I/O echoes. A production-shaped tool_call carrying
+  tool_args: "rm -rf /" therefore fires.
+
+
+  Raw-device boundary (per #658 review): the device-wipe arms (shred, wipefs, mkfs) fire only when a /dev/
+  path appears as a token-positioned target after the command, so file-targeted forms are benign by design:
+  shred -u notes.txt, mkfs.ext4 ./disk.img, and wipefs ./test.img do not fire, while a bare shred /dev/sda
+  does. A relative ./dev/... path is a file path, not a raw device, and does not fire.
+
+
+  The rm -rf arm keeps the narrowed alternation shared with the Layer 1 destructive-shell rules so the two
+  do not drift, with one addition: bare-tilde forms (`rm -rf ~`, `~/*`, `~/`) are in scope. The Layer 1 arm
+  `~[\s/]` also matched `~/subpath`, which the benign corpus shows is ordinary cleanup (rm -rf ~/.cache/husky,
+  rm -rf ~/.clawdbot/memory/lancedb/), so this rule narrows the tilde arm to bare-tilde targets only.
+
+
+  Benign forms that deliberately do NOT fire (all present in test_cases): rm -rf on relative paths (./build, node_modules),
+  dd that READS a device into an image file (forensic imaging), dd writing image-to-image between regular files,
+  and file-targeted shred/wipefs/mkfs.
+
+
+  All quantified spans are bounded (<= 4 argument tokens, <= 6 flag tokens, <= 120 chars) so the pattern stays linear on long
+  inputs and inside the ReDoS gate budget.
+
+
+  maturity: test -- hunt/alert lanes only. Promotion toward enforce requires wild-corpus evidence under the standard
+  maturity process, not just a clean benign gate.'
+author: phm-audit
+date: '2026-10-23'
+schema_version: '0.1'
+detection_tier: pattern
+maturity: test
+severity: high
+references:
+  owasp_llm:
+  - LLM06:2025
+  owasp_agentic:
+  - ASI09:2026
+  - ASI10:2026
+  mitre_atlas:
+  - AML.T0053 - AI Agent Tool Invocation
+compliance:
+  eu_ai_act:
+  - article: '14'
+    context: Article 14 human oversight requires that destructive actions taken autonomously by an AI agent remain
+      interruptible and attributable; surfacing near-never-legitimate destructive shell commands in tool_call
+      arguments gives deployers the signal needed to keep a human in the loop for exactly these actions.
+    strength: secondary
+  - article: '15'
+    context: Article 15 (accuracy, robustness and cybersecurity) expects high-risk AI systems to resist destructive
+      and malformed inputs; detecting root-deletion and device-wipe commands in tool_call arguments supports that duty.
+    strength: secondary
+  nist_ai_rmf:
+    - subcategory: "MS.2.6"
+      context: "MS.2.6 runtime safety evaluation is supported by detecting destructive shell commands (rm -rf on root/home, dd to raw devices, /dev/-targeted shred/wipefs/mkfs, fdisk --delete) passed as agent tool_call arguments before execution."
+      strength: primary
+    - subcategory: "MS.2.2"
+      context: "MS.2.2 anomaly detection is supported by flagging near-never-legitimate filesystem destruction requested through an agent's tool interface."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "ISO/IEC 42001 Clause 8.1 operational control blocking destructive filesystem operations issued through agent tool_call arguments."
+      strength: primary
+tags:
+  category: excessive-autonomy
+  subcategory: destructive-shell-tool-args
+  scan_target: tool_args
+  confidence: medium
+agent_source:
+  type: tool_call
+  framework:
+  - openai-agents
+  - langchain
+  - autogen
+  - crewai
+  - mcp
+  provider:
+  - any
+detection:
+  condition: any
+  method: pattern
+  conditions:
+  - field: tool_args
+    operator: regex
+    value: (?i)(\brm\s+(?:-[rRfv]{1,4}\s+){1,6}(?:--\s+)?(--no-preserve-root\b|/[\s*]|/$|~\s|~$|~/\*|~/$|~/\s)|\bmkfs(?:\.[a-z0-9]+)?\s+(?:[^\s;|&]+\s+){0,4}/dev/[A-Za-z0-9]|\bdd\s+if=/dev/(?:zero|urandom|random)\s+[^|;&\n]{0,80}of=\s*/dev/|\bshred\s+(?:[^\s;|&]+\s+){0,4}/dev/[A-Za-z0-9]|\bwipefs\s+(?:[^\s;|&]+\s+){0,4}/dev/[A-Za-z0-9]|\bfdisk\s+(?:[^\s;|&]+\s+){0,4}/dev/[A-Za-z0-9][^|;&\n]{0,120}--delete|:\(\)\s*\{\s*:\|:\s*&\s*\}\s*;\s*:)
+    description: 'Near-never-legitimate destructive shell commands in tool_call arguments: rm -rf narrowed to root/home/bare-tilde
+      targets (benign rm -rf on relative directories does not fire), mkfs of any filesystem type only when it targets
+      a raw /dev/ device, device-trashing dd only when the SOURCE is a device-null device (if=/dev/zero|urandom|random;
+      file-sourced device writes such as USB imaging and backup restore are frequently legitimate and do not fire),
+      shred/wipefs only on raw /dev/ targets (file-targeted shred -u notes.txt and wipefs ./test.img
+      are benign by design; a bare shred /dev/sda fires), fdisk --delete, and the classic fork bomb. All spans are
+      bounded so the pattern stays inside the ReDoS budget.'
+response:
+  actions:
+  - alert
+  actions_rationale: 'maturity test: alert-only until wild-corpus evidence accumulates per the standard promotion
+    process. Destructive-command true positives are high-impact, but the enforce lane requires the benign-corpus
+    gate plus wild evidence, not just a clean benign gate (#658).'
+  auto_response_threshold: high
+  message_template: '[ATR-2026-02869] HIGH: destructive shell command detected in tool_call arguments (matched: {matched_pattern}). Command
+    classes: rm -rf on / or bare ~, device-trashing dd, fork bomb, or a /dev/-targeted device wipe. Human review required before execution.'
+confidence: medium
+test_cases:
+  true_positives:
+  - tool_args: rm -rf / --no-preserve-root
+    expected: triggered
+    description: Root filesystem deletion with preserve-root disabled (#658 positive 1)
+  - tool_args: sudo rm -rf /*
+    expected: triggered
+    description: Privilege-escalated wildcard root deletion (#658 positive 2)
+  - tool_args: dd if=/dev/zero of=/dev/sda
+    expected: triggered
+    description: Raw device write via dd (#658 positive 3)
+  - tool_args: ':(){ :|:& };:'
+    expected: triggered
+    description: Classic fork bomb (#658 positive 4)
+  - tool_args: shred -n 1 /dev/nvme0n1
+    expected: triggered
+    description: Device wipe via shred with flags (#658 positive 5)
+  - tool_args: rm -rf ~
+    expected: triggered
+    description: 'Bare home-directory deletion -- the form the Layer 1 arm misses, added per #658 review'
+  - tool_args: shred /dev/sda
+    expected: triggered
+    description: 'Bare device wipe, no flags -- the exact form the pre-review pattern missed; boundary case per #658 review'
+  - tool_args: rm -rf -- /
+    expected: triggered
+    description: 'Root deletion via -- end-of-options marker -- coverage added per #739 round-2 review'
+  - tool_args: rm -r -f /
+    expected: triggered
+    description: 'Split destructive flag tokens -- coverage added per #739 round-2 review'
+  - tool_args: fdisk /dev/sda --delete
+    expected: triggered
+    description: 'fdisk arm raw-device target -- declared TP for the /dev/-required fdisk arm'
+  true_negatives:
+  - tool_args: ls -la
+    expected: not_triggered
+    description: Ordinary listing (#658 negative)
+  - tool_args: git status
+    expected: not_triggered
+    description: Ordinary VCS status (#658 negative)
+  - tool_args: rm -rf ./build
+    expected: not_triggered
+    description: Relative-path cleanup -- benign by design (#658 negative)
+  - tool_args: rm -rf node_modules && npm ci
+    expected: not_triggered
+    description: Benign dependency reinstall (#658 negative)
+  - tool_args: chmod 755 deploy.sh
+    expected: not_triggered
+    description: 'Ordinary executable bit -- chmod out of scope by design (#658 negative, see #735)'
+  - tool_args: dd if=disk.img of=disk-copy.img
+    expected: not_triggered
+    description: File-to-file image copy, no raw device target
+  - tool_args: dd if=/dev/sda of=./forensic-image.img
+    expected: not_triggered
+    description: 'Benign forensic imaging: READS a device into a file (of= is a regular file, not /dev/)'
+  - tool_args: shutdown -h now
+    expected: not_triggered
+    description: Legitimate admin action -- out of scope by design (#658 negative)
+  - tool_args: poweroff --force
+    expected: not_triggered
+    description: Legitimate admin action -- out of scope by design (#658 negative)
+  - tool_args: dd if=input.png of=output.png
+    expected: not_triggered
+    description: Image-to-image conversion via dd -- benign (#658 negative)
+  - tool_args: shred -u notes.txt
+    expected: not_triggered
+    description: 'File-targeted shred -- raw-device boundary: no /dev/ target, benign by design (#658 review boundary)'
+  - tool_args: mkfs.ext4 ./disk.img
+    expected: not_triggered
+    description: 'mkfs on a regular-file image -- raw-device boundary, benign by design (#658 review boundary)'
+  - tool_args: wipefs ./test.img
+    expected: not_triggered
+    description: 'wipefs on a regular-file image -- raw-device boundary, benign by design (#658 review boundary)'
+  - tool_args: shred -u ./dev/backup-file
+    expected: not_triggered
+    description: 'Relative ./dev/ path is a file path, not a raw device -- the device-wipe arms require a token-positioned /dev/ target'
+  - tool_args: shred -u notes.txt; echo /dev/sda
+    expected: not_triggered
+    description: 'Shell-separator boundary: /dev/sda belongs to the next command after ; -- tokens exclude ;, |, & (#739 round-2 review)'
+  - tool_args: mkfs.ext4 --help; echo /dev/sda
+    expected: not_triggered
+    description: 'Same separator boundary on the mkfs arm (#739 round-2 review)'
+  - tool_args: fdisk disk.img --delete
+    expected: not_triggered
+    description: 'Regular image file is not a raw device -- /dev/ requirement applies to the fdisk arm (#739 round-2 review)'
+  - tool_args: rm -rf -- ./build
+    expected: not_triggered
+    description: '-- marker with a benign relative target stays benign'
+evasion_tests:
+- input: rm -rf $(printf '/')
+  expected: not_triggered
+  bypass_technique: command_substitution_path_splintering
+  notes: 'Known limitation: the narrowed alternation matches literal targets; command-substitution splintering of
+    the target string is out of scope for a pattern-tier rule and needs a semantic layer.'
+- input: echo cm0gLXJmIC8K | base64 -d | sh
+  expected: not_triggered
+  bypass_technique: base64_obfuscation
+  notes: 'Known limitation: base64-encoded destruction is invisible to this pattern; covered by layered rules downstream
+    of the shell layer, not here.'
