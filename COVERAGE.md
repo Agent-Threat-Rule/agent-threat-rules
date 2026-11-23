@@ -100,7 +100,7 @@ payloads has not been performed.
 ### MITRE ATLAS techniques (historical)
 
 AML.T0051 (LLM Prompt Injection) and its `.000` / `.001` sub-techniques,
-AML.T0054 (LLM Jailbreak), AML.T0053 (LLM Plugin Compromise), AML.T0056 (LLM
+AML.T0054 (LLM Jailbreak), AML.T0053 (AI Agent Tool Invocation), AML.T0056 (LLM
 Meta Prompt Extraction), AML.T0043 (Craft Adversarial Data), AML.T0010 (ML
 Supply Chain Compromise), AML.T0040 (AI Model Inference API Access), AML.T0046
 (Spamming ML System with Chaff Data), AML.T0049 (Exploit Public-Facing
