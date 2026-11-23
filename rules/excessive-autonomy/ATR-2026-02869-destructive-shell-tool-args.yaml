@@ -1,6 +1,6 @@
 title: Destructive Shell Command in Tool Arguments
 id: ATR-2026-02869
-rule_version: 2
+rule_version: 3
 status: experimental
 description: 'Detects near-never-legitimate destructive filesystem shell commands passed as tool arguments in an
   agent tool_call event.
@@ -12,7 +12,9 @@ description: 'Detects near-never-legitimate destructive filesystem shell command
 
 
   - rm -rf targeting the filesystem root (/), the bare home directory (~), or with --no-preserve-root
-    (bare-tilde target only: rm -rf ~/subpath is ordinary per-path cleanup and stays out of scope)
+    (bare-tilde target only: rm -rf ~/subpath is ordinary per-path cleanup and stays out of scope). The arm
+    accepts repeated destructive-flag tokens (rm -r -f /) and the -- end-of-options marker (rm -rf -- /);
+    flag tokens are composed of r/R/f/v only
 
   - dd with a device-null source (if=/dev/zero, /dev/urandom, or /dev/random) writing onto a raw /dev/
     device -- file-sourced device writes (USB imaging dd if=iso of=/dev/sdb, backup restore dd if=backup.img
@@ -21,6 +23,11 @@ description: 'Detects near-never-legitimate destructive filesystem shell command
   - classic fork bombs
 
   - device wipes: shred, wipefs, mkfs, fdisk --delete, each required to target a raw /dev/ device
+
+  Shell-separator boundary (per #739 review): the intervening argument tokens of the mkfs/shred/wipefs/fdisk
+  arms exclude the shell separators ;, |, and &, so a /dev/ target belonging to a subsequent command in the
+  same string (shred -u notes.txt; echo /dev/sda) does not fire. fdisk on a regular image file
+  (fdisk disk.img --delete) does not fire either -- the /dev/ requirement applies to the fdisk arm too
 
 
   Routing (per #658 review of this rule): agent_source.type is tool_call -- the rule inspects the arguments an
@@ -45,12 +52,7 @@ description: 'Detects near-never-legitimate destructive filesystem shell command
   and file-targeted shred/wipefs/mkfs.
 
 
-  Benign forms that deliberately do NOT fire (all present in test_cases): rm -rf on relative paths (./build, node_modules),
-  dd that READS a device into an image file (forensic imaging), dd writing image-to-image between regular files,
-  and file-targeted shred/wipefs/mkfs.
-
-
-  All quantified spans are bounded (<= 4 argument tokens, <= 120 chars) so the pattern stays linear on long
+  All quantified spans are bounded (<= 4 argument tokens, <= 6 flag tokens, <= 120 chars) so the pattern stays linear on long
   inputs and inside the ReDoS gate budget.
 
 
@@ -113,7 +115,7 @@ detection:
   conditions:
   - field: tool_args
     operator: regex
-    value: (?i)(\brm\s+-[rRf]{1,3}\s+(--no-preserve-root\b|/[\s*]|/$|~\s|~$|~/\*|~/$|~/\s)|\bmkfs(?:\.[a-z0-9]+)?\s+(?:\S+\s+){0,4}/dev/[A-Za-z0-9]|\bdd\s+if=/dev/(?:zero|urandom|random)\s+[^|;\n]{0,80}of=\s*/dev/|\bshred\s+(?:\S+\s+){0,4}/dev/[A-Za-z0-9]|\bwipefs\s+(?:\S+\s+){0,4}/dev/[A-Za-z0-9]|\bfdisk\s+[^|;\n]{0,120}--delete|:\(\)\s*\{\s*:\|:\s*&\s*\}\s*;\s*:)
+    value: (?i)(\brm\s+(?:-[rRfv]{1,4}\s+){1,6}(?:--\s+)?(--no-preserve-root\b|/[\s*]|/$|~\s|~$|~/\*|~/$|~/\s)|\bmkfs(?:\.[a-z0-9]+)?\s+(?:[^\s;|&]+\s+){0,4}/dev/[A-Za-z0-9]|\bdd\s+if=/dev/(?:zero|urandom|random)\s+[^|;&\n]{0,80}of=\s*/dev/|\bshred\s+(?:[^\s;|&]+\s+){0,4}/dev/[A-Za-z0-9]|\bwipefs\s+(?:[^\s;|&]+\s+){0,4}/dev/[A-Za-z0-9]|\bfdisk\s+(?:[^\s;|&]+\s+){0,4}/dev/[A-Za-z0-9][^|;&\n]{0,120}--delete|:\(\)\s*\{\s*:\|:\s*&\s*\}\s*;\s*:)
     description: 'Near-never-legitimate destructive shell commands in tool_call arguments: rm -rf narrowed to root/home/bare-tilde
       targets (benign rm -rf on relative directories does not fire), mkfs of any filesystem type only when it targets
       a raw /dev/ device, device-trashing dd only when the SOURCE is a device-null device (if=/dev/zero|urandom|random;
@@ -128,7 +130,7 @@ response:
     process. Destructive-command true positives are high-impact, but the enforce lane requires the benign-corpus
     gate plus wild evidence, not just a clean benign gate (#658).'
   auto_response_threshold: high
-  message_template: '[ATR-2026-02869] HIGH: destructive shell command detected in tool arguments (). Command
+  message_template: '[ATR-2026-02869] HIGH: destructive shell command detected in tool_call arguments (matched: {matched_pattern}). Command
     classes: rm -rf on / or bare ~, device-trashing dd, fork bomb, or a /dev/-targeted device wipe. Human review required before execution.'
 confidence: medium
 test_cases:
@@ -154,6 +156,15 @@ test_cases:
   - tool_args: shred /dev/sda
     expected: triggered
     description: 'Bare device wipe, no flags -- the exact form the pre-review pattern missed; boundary case per #658 review'
+  - tool_args: rm -rf -- /
+    expected: triggered
+    description: 'Root deletion via -- end-of-options marker -- coverage added per #739 round-2 review'
+  - tool_args: rm -r -f /
+    expected: triggered
+    description: 'Split destructive flag tokens -- coverage added per #739 round-2 review'
+  - tool_args: fdisk /dev/sda --delete
+    expected: triggered
+    description: 'fdisk arm raw-device target -- declared TP for the /dev/-required fdisk arm'
   true_negatives:
   - tool_args: ls -la
     expected: not_triggered
@@ -197,6 +208,18 @@ test_cases:
   - tool_args: shred -u ./dev/backup-file
     expected: not_triggered
     description: 'Relative ./dev/ path is a file path, not a raw device -- the device-wipe arms require a token-positioned /dev/ target'
+  - tool_args: shred -u notes.txt; echo /dev/sda
+    expected: not_triggered
+    description: 'Shell-separator boundary: /dev/sda belongs to the next command after ; -- tokens exclude ;, |, & (#739 round-2 review)'
+  - tool_args: mkfs.ext4 --help; echo /dev/sda
+    expected: not_triggered
+    description: 'Same separator boundary on the mkfs arm (#739 round-2 review)'
+  - tool_args: fdisk disk.img --delete
+    expected: not_triggered
+    description: 'Regular image file is not a raw device -- /dev/ requirement applies to the fdisk arm (#739 round-2 review)'
+  - tool_args: rm -rf -- ./build
+    expected: not_triggered
+    description: '-- marker with a benign relative target stays benign'
 evasion_tests:
 - input: rm -rf $(printf '/')
   expected: not_triggered
