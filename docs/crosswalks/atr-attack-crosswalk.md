@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 845
-- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 229
+- ATR rules total: 847
+- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 231
 - Distinct enterprise ATT&CK techniques referenced: 87
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 845
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 847
 - Distinct MITRE ATLAS techniques referenced: 62
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 845
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 847
 - ATR categories (distinct `tags.category` values): 10
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -85,7 +85,7 @@ against.
 | T1129 | Shared Modules | `ATR-2026-00112` | privilege-escalation |
 | T1136 | Create Account | `ATR-2026-02100` | privilege-escalation |
 | T1185 | Browser Session Hijacking | `ATR-2026-02102` | tool-poisoning |
-| T1190 | Exploit Public-Facing Application | `ATR-2026-00210`, `ATR-2026-00415`, `ATR-2026-00416`, `ATR-2026-00434`, `ATR-2026-00435`, `ATR-2026-00448`, `ATR-2026-00451`, `ATR-2026-00531`, `ATR-2026-00532`, `ATR-2026-00533`, `ATR-2026-00534`, `ATR-2026-00536`, `ATR-2026-00537`, `ATR-2026-00538`, `ATR-2026-00540`, `ATR-2026-00541`, `ATR-2026-00542`, `ATR-2026-00545`, `ATR-2026-01600`, `ATR-2026-01602`, `ATR-2026-01603`, `ATR-2026-01604`, `ATR-2026-01946`, `ATR-2026-01948`, `ATR-2026-01949`, `ATR-2026-01952`, `ATR-2026-01953`, `ATR-2026-01957`, `ATR-2026-01959`, `ATR-2026-01961`, `ATR-2026-01963`, `ATR-2026-01964`, `ATR-2026-01965`, `ATR-2026-01967`, `ATR-2026-01968`, `ATR-2026-01970`, `ATR-2026-01973`, `ATR-2026-01974`, `ATR-2026-01978`, `ATR-2026-01979`, `ATR-2026-01981`, `ATR-2026-01986`, `ATR-2026-02123`, `ATR-2026-02263` | agent-manipulation, context-exfiltration, privilege-escalation, tool-poisoning |
+| T1190 | Exploit Public-Facing Application | `ATR-2026-00210`, `ATR-2026-00415`, `ATR-2026-00416`, `ATR-2026-00434`, `ATR-2026-00435`, `ATR-2026-00448`, `ATR-2026-00451`, `ATR-2026-00531`, `ATR-2026-00532`, `ATR-2026-00533`, `ATR-2026-00534`, `ATR-2026-00536`, `ATR-2026-00537`, `ATR-2026-00538`, `ATR-2026-00540`, `ATR-2026-00541`, `ATR-2026-00542`, `ATR-2026-00545`, `ATR-2026-01600`, `ATR-2026-01602`, `ATR-2026-01603`, `ATR-2026-01604`, `ATR-2026-01946`, `ATR-2026-01948`, `ATR-2026-01949`, `ATR-2026-01952`, `ATR-2026-01953`, `ATR-2026-01957`, `ATR-2026-01959`, `ATR-2026-01961`, `ATR-2026-01963`, `ATR-2026-01964`, `ATR-2026-01965`, `ATR-2026-01967`, `ATR-2026-01968`, `ATR-2026-01970`, `ATR-2026-01973`, `ATR-2026-01974`, `ATR-2026-01978`, `ATR-2026-01979`, `ATR-2026-01981`, `ATR-2026-01986`, `ATR-2026-02123`, `ATR-2026-02263`, `ATR-2026-02877` | agent-manipulation, context-exfiltration, model-abuse, privilege-escalation, tool-poisoning |
 | T1195 | Supply Chain Compromise | `ATR-2026-00060`, `ATR-2026-00418`, `ATR-2026-01930`, `ATR-2026-02260` | agent-manipulation, skill-compromise, tool-poisoning |
 | T1195.001 | Supply Chain Compromise: Compromise Software Dependencies and Development Tools | `ATR-2026-02105`, `ATR-2026-02664`, `ATR-2026-02668` | agent-manipulation, privilege-escalation, tool-poisoning |
 | T1195.002 | Compromise Software Supply Chain | `ATR-2026-00419`, `ATR-2026-00433`, `ATR-2026-00523`, `ATR-2026-00524`, `ATR-2026-00572`, `ATR-2026-00575`, `ATR-2026-00576`, `ATR-2026-01932`, `ATR-2026-02372`, `ATR-2026-02403`, `ATR-2026-02405`, `ATR-2026-02408`, `ATR-2026-02845` | context-exfiltration, data-poisoning, model-abuse, skill-compromise, tool-poisoning |
@@ -103,7 +103,7 @@ against.
 | T1530 | Data from Cloud Storage Object | `ATR-2026-00449` | context-exfiltration |
 | T1539 | Steal Web Session Cookie | `ATR-2026-00524` | context-exfiltration |
 | T1543 | Create or Modify System Process | `ATR-2026-00204` | privilege-escalation |
-| T1546 | Event Triggered Execution | `ATR-2026-00418`, `ATR-2026-00419`, `ATR-2026-00450`, `ATR-2026-00523`, `ATR-2026-00572`, `ATR-2026-00575`, `ATR-2026-02530` | agent-manipulation, data-poisoning, privilege-escalation, skill-compromise, tool-poisoning |
+| T1546 | Event Triggered Execution | `ATR-2026-00418`, `ATR-2026-00419`, `ATR-2026-00450`, `ATR-2026-00523`, `ATR-2026-00572`, `ATR-2026-00575`, `ATR-2026-02530`, `ATR-2026-02878` | agent-manipulation, data-poisoning, privilege-escalation, skill-compromise, tool-poisoning |
 | T1546.004 | Event Triggered Execution: Unix Shell Configuration Modification | `ATR-2026-02040`, `ATR-2026-02865` | privilege-escalation, tool-poisoning |
 | T1546.016 | Boot or Logon Autostart Execution: .pth Files | `ATR-2026-00544` | tool-poisoning |
 | T1547 | Boot or Logon Autostart Execution | `ATR-2026-00441`, `ATR-2026-02142` | privilege-escalation |
@@ -258,7 +258,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### model-abuse
 
-Rules in category: 43
+Rules in category: 44
 
 ATT&CK techniques (join key):
 
@@ -267,10 +267,11 @@ ATT&CK techniques (join key):
 | T1027 | Obfuscated Files or Information | `ATR-2026-02411`, `ATR-2026-02412`, `ATR-2026-02413` |
 | T1059 | Command and Scripting Interpreter | `ATR-2026-00433` |
 | T1070 | Indicator Removal | `ATR-2026-02411` |
+| T1190 | Exploit Public-Facing Application | `ATR-2026-02877` |
 | T1195.002 | Compromise Software Supply Chain | `ATR-2026-00433` |
 | T1587.001 | Develop Capabilities: Malware | `ATR-2026-02211` |
 
-ATLAS techniques ATR adds: AML.T0010, AML.T0011.000, AML.T0024, AML.T0040, AML.T0044, AML.T0046, AML.T0048, AML.T0048.003, AML.T0051, AML.T0054, AML.T0057, AML.T0102
+ATLAS techniques ATR adds: AML.T0010, AML.T0011.000, AML.T0024, AML.T0040, AML.T0044, AML.T0046, AML.T0048, AML.T0048.003, AML.T0049, AML.T0051, AML.T0054, AML.T0057, AML.T0102
 
 OWASP Agentic categories ATR adds: ASI01:2026, ASI04:2026, ASI05:2026, ASI08:2026
 
@@ -290,7 +291,7 @@ OWASP Agentic categories ATR adds: ASI04:2026, ASI05:2026
 
 ### privilege-escalation
 
-Rules in category: 79
+Rules in category: 80
 
 ATT&CK techniques (join key):
 
@@ -317,7 +318,7 @@ ATT&CK techniques (join key):
 | T1485 | Data Destruction | `ATR-2026-01601`, `ATR-2026-02100` |
 | T1505.003 | Server Software Component: Web Shell | `ATR-2026-02644` |
 | T1543 | Create or Modify System Process | `ATR-2026-00204` |
-| T1546 | Event Triggered Execution | `ATR-2026-02530` |
+| T1546 | Event Triggered Execution | `ATR-2026-02530`, `ATR-2026-02878` |
 | T1546.004 | Event Triggered Execution: Unix Shell Configuration Modification | `ATR-2026-02040` |
 | T1547 | Boot or Logon Autostart Execution | `ATR-2026-00441`, `ATR-2026-02142` |
 | T1547.001 | Registry Run Keys / Startup Folder | `ATR-2026-00441` |
