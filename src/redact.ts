@@ -13,7 +13,7 @@
  * keeping the secret bytes themselves.
  *
  * @example
- *   import { redactMatchedValue } from "agent-threat-rules/redact";
+ *   import { redactMatchedValue } from "agent-threat-rules";
  *   for (const match of engine.evaluate(event)) {
  *     logger.warn({
  *       rule: match.rule.id,
@@ -33,8 +33,8 @@ const SECRET_PREFIXES: ReadonlyArray<readonly [RegExp, string]> = [
   [/^ghr_[A-Za-z0-9]/, "github_refresh_token"],
   [/^xox[abprs]-/, "slack_token"],
   [/^xoxe-/, "slack_external_token"],
+  [/^sk-ant-[A-Za-z0-9_-]/, "anthropic_secret"],
   [/^sk-[A-Za-z0-9_]/, "openai_or_compatible_secret"],
-  [/^sk-ant-[A-Za-z0-9_]/, "anthropic_secret"],
   [/^Bearer\s+/i, "bearer_credential"],
   [/^-----BEGIN [A-Z ]+PRIVATE KEY-----/, "pem_private_key"],
   [/^eyJ[A-Za-z0-9_-]/, "jwt_or_jose"],
