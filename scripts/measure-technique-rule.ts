@@ -5,12 +5,15 @@
  * looked at, and false positives on every benign corpus fn-mine gates on.
  *
  *   npx tsx scripts/measure-technique-rule.ts --rule path/to/rule.yaml \
- *     --looked-at mosscap,web-agent-attack [--json]
+ *     --looked-at mosscap,web-agent-attack --target-shape tool_response [--json]
  *
  * --looked-at names the corpora read while writing the rule, before anything
  * is measured (`none` if there were none). Those corpora and their derived
  * families (DERIVED_FROM) do not count, and neither does a hit whose sample a
  * looked-at corpus also holds (sampleKey). See scripts/lib/technique-harness.ts.
+ * --target-shape is the production event type the technique claims to detect.
+ * Hits from corpora assigned another event type remain visible in the report
+ * but cannot satisfy the pilot's cross-family recall bar.
  *
  * What it runs: the rule alone, through the same eval harness fn-mine uses
  * (detectionsByRule), each corpus presented as its registered event type.
@@ -127,10 +130,22 @@ async function hitsIn(dir: string, ruleId: string, c: Corpus): Promise<readonly 
 
 async function main(): Promise<void> {
   const { values } = parseArgs({
-    options: { rule: { type: 'string' }, 'looked-at': { type: 'string' }, json: { type: 'boolean', default: false } },
+    options: {
+      rule: { type: 'string' },
+      'looked-at': { type: 'string' },
+      'target-shape': { type: 'string' },
+      json: { type: 'boolean', default: false },
+    },
   });
-  if (!values.rule || values['looked-at'] === undefined) {
-    process.stderr.write('usage: measure-technique-rule.ts --rule <rule.yaml> --looked-at <corpus,...|none> [--json]\n');
+  if (!values.rule || values['looked-at'] === undefined || values['target-shape'] === undefined) {
+    process.stderr.write(
+      'usage: measure-technique-rule.ts --rule <rule.yaml> --looked-at <corpus,...|none> --target-shape <llm_input|tool_response> [--json]\n',
+    );
+    process.exit(2);
+  }
+  const targetShape = values['target-shape'];
+  if (targetShape !== 'llm_input' && targetShape !== 'tool_response') {
+    process.stderr.write(`invalid --target-shape: ${targetShape}\n`);
     process.exit(2);
   }
   const pool = readOutOfSample(ROOT);
@@ -152,7 +167,7 @@ async function main(): Promise<void> {
       attacks.push({ id: c.id, shape: corpus.shape, total: c.texts.length, hits: await hitsIn(dir, id, corpus) });
     }
     const lookedAtTexts = pool.filter((c) => lookedAt.includes(c.id)).flatMap((c) => c.texts);
-    const recall = familyRecall(attacks, lookedAt, lookedAtTexts);
+    const recall = familyRecall(attacks, lookedAt, lookedAtTexts, targetShape);
     const benign: BenignResult[] = [];
     for (const c of benignCorpora()) benign.push({ id: c.id, shape: c.shape, total: c.texts.length, hits: await hitsIn(dir, id, c) });
     const pass = meetsPilotBar(recall, benign);
@@ -160,12 +175,13 @@ async function main(): Promise<void> {
     if (values.json) {
       const corpora = attacks.map((a) => ({ id: a.id, shape: a.shape, total: a.total, hits: a.hits.length }));
       const fp = benign.map((b) => ({ id: b.id, shape: b.shape, total: b.total, hits: b.hits.length }));
-      process.stdout.write(`${JSON.stringify({ rule: id, lookedAt, recall, corpora, benign: fp, meetsPilotBar: pass }, null, 2)}\n`);
+      process.stdout.write(`${JSON.stringify({ rule: id, lookedAt, targetShape, recall, corpora, benign: fp, meetsPilotBar: pass }, null, 2)}\n`);
       return;
     }
     const lines = [
       `rule ${id}`,
       `looked at: ${lookedAt.join(', ') || 'none'}`,
+      `target shape: ${targetShape}`,
       `not counted (looked at, and their derived families): ${recall.excluded.join(', ') || 'none'}`,
       `hits dropped as republished samples of a looked-at corpus: ${recall.droppedAsRepublished}`,
       '',
