@@ -23,6 +23,18 @@ All notable changes to ATR will be documented in this file.
 
 ### Added
 
+- **ATR-2026-02871 flags MCP tool descriptions that direct the model through
+  another tool with no injection marker** (#742, #863). It fires on a
+  description that forces a call to another tool with a harmful payload or a
+  hard-coded argument, rewrites another tool's arguments, claims priority over
+  the user's request, or hides a cross-tool step from the user. Each of its 8
+  conditions needs two signals. It is `scan_target: mcp` and `maturity: test`,
+  so it runs in the hunt and alert lanes only. On the 18 held-out MCPTox
+  servers it catches 39 of 165 plain payloads alone and raises ATR hunt recall
+  from 56 to 72; it has 0 false positives on the 710 benign tool definitions
+  and on the 14,201-sample benign corpus. 29 benign near-miss descriptions are
+  added to `data/benign-corpus-extended/`, and the benign FP evidence is
+  re-measured for them.
 - **CI fails on vendor mentions outside a disclosure.**
   `scripts/check-vendor-mentions.mjs` runs in the `no-private-leak` check and
   scans every tracked file, not the diff. The maintainer's company may appear
