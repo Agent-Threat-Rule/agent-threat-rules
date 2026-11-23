@@ -1,0 +1,214 @@
+title: "PostScript / EPS Payload Inside a Raster-Labelled Image Data URL (Multimodal Decoder Smuggling)"
+id: ATR-2026-02877
+rule_version: 1
+status: experimental
+description: >
+  Detects an inline image data URL whose declared MIME type is a raster format
+  (image/png, image/jpeg, image/gif, image/webp, image/bmp, image/tiff,
+  image/avif, image/heic, image/x-icon) but whose base64 body begins with a
+  PostScript / EPS file signature: the text header "%!P" (base64 "JSFQU") or the
+  DOS EPS binary header C5 D0 D3 (base64 "xdDT").
+
+  This is the input shape of CVE-2026-115915 / GHSA-h3rc-j82p-2c3h in vLLM
+  (< 0.32.0). ImageMediaIO passed attacker-controlled image bytes to
+  Image.open(BytesIO(data)) without a Pillow format allow-list, and the MIME
+  label of the data URL did not constrain decoder selection. An EPS payload
+  labelled image/png therefore reached Pillow's EPS plugin, which shells out to
+  the host's Ghostscript; on a host with a Ghostscript build affected by
+  CVE-2024-29510 that is command execution with the inference server's
+  privileges. The request path is the ordinary OpenAI-compatible multimodal
+  chat message ({"type":"image_url","image_url":{"url":"data:image/png;base64,..."}}),
+  so the payload travels through any agent or gateway that forwards user or
+  tool-supplied images to a self-hosted vision model.
+
+  The rule is deliberately not vendor-scoped. Any multimodal server that lets
+  Pillow (or ImageMagick) pick the decoder from the bytes has the same class of
+  bug, and a genuine PNG, JPEG, GIF, WebP, BMP, TIFF, AVIF, HEIC or ICO file can
+  never begin with "%!P" or C5 D0 D3 - each has its own fixed magic number
+  (PNG iVBORw0KGgo, JPEG /9j/, GIF R0lGOD, WebP/RIFF UklGR, BMP Qk, TIFF SUkq or
+  TU0A, ICO AAAB). The mismatch between label and signature is the whole signal,
+  so the rule does not need to inspect the PostScript program itself.
+
+  Why a new rule rather than relying on existing ones (measured 2026-11-23 on
+  origin/main fe4bb1032, llm_input / llm_output / tool_response events and
+  tool_call / mcp_exchange events whose tool_args carry the chat request): an
+  image_url message with data:image/png;base64,JSFQUy1BZG9iZS0zLjAg..., the same
+  body under image/jpeg and image/webp, and a DOS-EPS binary header under
+  image/png matched no rule.
+
+  Scope and limits. Only inline base64 data URLs are read; an image fetched by
+  URL (http://host/x.png serving EPS bytes) carries no signature in the request
+  and is not detectable here. An EPS correctly labelled application/postscript
+  or image/x-eps is out of scope, and so is an image_url carrying
+  data:application/octet-stream or data:application/postscript, even though a
+  loader that ignores the media type would decode it too. Up to eight
+  whitespace characters or escaped newlines between the comma and the body, or
+  inside the first characters of the signature, are tolerated, because
+  non-validating base64 decoders drop them; a UTF-8 BOM before "%!PS" is not
+  (Pillow's EPS check needs the signature at offset 0). The engine compiles conditions case-insensitively, so the
+  base64 signature is also matched in other letter cases; a random genuine
+  image cannot start with these five characters because its magic number
+  occupies the same position. CWE-434, CWE-20.
+author: "ATR Community (CVE sync)"
+date: "2026/11/23"
+schema_version: "0.1"
+detection_tier: pattern
+maturity: test
+severity: high
+
+references:
+  cve:
+    - "CVE-2026-115915"
+  ghsa:
+    - "GHSA-h3rc-j82p-2c3h"
+  cwe:
+    - "CWE-434"
+    - "CWE-20"
+  owasp_llm:
+    - "LLM05:2025"
+  owasp_agentic:
+    - "ASI05:2026"
+  mitre_atlas:
+    - "AML.T0049 - Exploit Public-Facing Application"
+  mitre_attack:
+    - "T1190 - Exploit Public-Facing Application"
+  external:
+    - "https://github.com/vllm-project/vllm/security/advisories/GHSA-h3rc-j82p-2c3h"
+    - "https://github.com/vllm-project/vllm/pull/60022"
+    - "https://github.com/vllm-project/vllm/commit/710ac56e691d4713feca50a43e6c440f07d373fd"
+    - "https://nvd.nist.gov/vuln/detail/CVE-2026-115915"
+
+metadata_provenance:
+  cve: human-reviewed
+  cwe: human-reviewed
+  owasp_llm: human-reviewed
+  owasp_agentic: human-reviewed
+  mitre_atlas: human-reviewed
+  mitre_attack: human-reviewed
+
+compliance:
+  eu_ai_act:
+    - article: "15"
+      context: "Article 15 (accuracy, robustness and cybersecurity) requires resilience against attempts to exploit system vulnerabilities; this rule provides detection evidence supporting that requirement by flagging an image input whose bytes would steer a multimodal model server into an unintended PostScript decoder."
+      strength: primary
+    - article: "9"
+      context: "Article 9 risk management must treat identified risks; this rule provides detection evidence supporting treatment of the decoder-smuggling risk for deployments that forward untrusted images to self-hosted vision models."
+      strength: secondary
+  nist_ai_rmf:
+    - function: Measure
+      subcategory: "MS.2.7"
+      context: "MS.2.7 requires AI system security and resilience to be evaluated and documented; checking that an image's declared type matches its file signature is a measurable per-request control on the multimodal input boundary."
+      strength: primary
+    - function: Manage
+      subcategory: "MG.3.2"
+      context: "MG.3.2 requires third-party components to be monitored in operation; inference servers and their image libraries are third-party components, and this rule monitors for the input class their decoder dispatch is known to mishandle."
+      strength: secondary
+  iso_42001:
+    - clause: "8.1"
+      context: "Clause 8.1 operational planning and control is supported by this rule's runtime check on image inputs before they reach a model server."
+      strength: primary
+    - clause: "8.3"
+      context: "Clause 8.3 AI risk treatment is supported by this rule's detection of a known decoder-smuggling input before it is processed."
+      strength: secondary
+
+tags:
+  category: model-security
+  subcategory: multimodal-decoder-smuggling
+  scan_target: content
+  confidence: high
+  source: cve-disclosure
+  vendor_sources: vllm-cve-2026-115915
+
+agent_source:
+  type: llm_io
+  framework:
+    - any
+  provider:
+    - any
+
+detection:
+  condition: any
+  method: pattern
+  false_positives:
+    - "Security test fixtures and CVE reproductions (for example a regression test that sends an EPS labelled image/png to a vision endpoint) match by design."
+    - "A misconfigured client that uploads a genuine EPS illustration but labels it image/png would match. The label is wrong either way and the server would still route the bytes to Ghostscript, so the alert is accurate even when the intent is benign."
+    - "Correctly labelled PostScript (data:application/postscript;base64,JSFQ..., image/x-eps), genuine PNG/JPEG/GIF/WebP data URLs, and prose that names the signature without forming a data URL do not match."
+  conditions:
+    - field: content
+      operator: regex
+      value: 'data:image\\?/(?:x-)?(?:png|apng|jpe?g|jp2|pjpeg|gif|webp|bmp|ms-bmp|tiff?|avif|heic|heif|icon|vnd\.microsoft\.icon|svg\+xml|portable-[a-z]{6,7})(?:;[a-z0-9=._+-]{1,40}){0,3};base64,(?:\s|\\[rnt]){0,8}(?:JSFQU|xdDT|JS(?:\s|\\[rnt]){1,4}FQU)'
+      description: "A data URL that claims a raster image type but whose base64 payload starts with the PostScript text header %!P (JSFQU) or the DOS EPS binary header C5 D0 D3 (xdDT); a forward slash written JSON-escaped as \\/ is also accepted, as is whitespace or an escaped newline before or inside the signature (base64 decoders that drop whitespace still yield %!PS)"
+
+response:
+  actions:
+    - alert
+    - snapshot
+  message_template: >
+    [ATR-2026-02877] HIGH: an image data URL is labelled as a raster type but its
+    bytes start with a PostScript/EPS signature. This is the CVE-2026-115915
+    (vLLM) decoder-smuggling shape: a server that lets Pillow choose the decoder
+    from the bytes will hand it to Ghostscript. Reject the image or restrict the
+    accepted decoder formats.
+
+confidence: 82
+
+test_cases:
+  true_positives:
+    - input: '{"model":"qwen2-vl","messages":[{"role":"user","content":[{"type":"text","text":"Describe this"},{"type":"image_url","image_url":{"url":"data:image/png;base64,JSFQUy1BZG9iZS0zLjAgRVBTRi0zLjAKJSVCb3VuZGluZ0JveDogMCAwIDEwIDEwCg=="}}]}]}'
+      expected: triggered
+      description: "GHSA-h3rc-j82p-2c3h shape: EPS (%!PS-Adobe-3.0 EPSF-3.0) labelled image/png in an OpenAI-style multimodal message"
+    - input: 'data:image/jpeg;base64,JSFQUy1BZG9iZS0yLjAgRVBTRi0xLjIK'
+      expected: triggered
+      description: "Derived variant: older EPSF-1.2 header labelled image/jpeg"
+    - input: '{"image_url":{"url":"data:image\/webp;base64,JSFQUwovc2hvd3BhZ2Uge30gZGVmCg=="}}'
+      expected: triggered
+      description: "Derived variant: minimal %!PS program, JSON-escaped slash, labelled image/webp"
+    - input: '{"type":"image_url","image_url":{"url":"data:image/png;base64,xdDTxh4AAAAQAAAA"}}'
+      expected: triggered
+      description: "Derived variant: DOS EPS binary header C5 D0 D3 C6 labelled image/png"
+    - input: '<img src="data:image/gif;charset=binary;base64,JSFQUy1BZG9iZS0zLjAgRVBTRi0zLjAK">'
+      expected: triggered
+      description: "Derived variant: extra MIME parameter before ;base64 and a GIF label"
+    - input: 'Here is the chart you asked for: data:image/x-png;base64,JSFQUy1BZG9iZS0zLjAgRVBTRi0zLjAKJSVCb3VuZGluZ0JveDogMCAwIDEwIDEwCg=='
+      expected: triggered
+      description: "Derived variant: legacy image/x-png label in model output that a downstream tool will forward"
+    - input: '{"input":[{"role":"user","content":[{"type":"input_image","image_url":"data:image/tiff;base64,JSFQUy1BZG9iZS0zLjAgRVBTRi0zLjAK"}]}]}'
+      expected: triggered
+      description: "Derived variant: Responses-API style input_image with an image/tiff label"
+    - input: '{"image_url":{"url":"data:image/png;base64, JSFQUy1BZG9iZS0zLjAgRVBTRi0zLjAK"}}'
+      expected: triggered
+      description: "Adversarial-review bypass fixed: space after the comma, which a non-validating base64 decoder drops"
+    - input: '{"image_url":{"url":"data:image/png;base64,JS\nFQUy1BZG9iZS0zLjAgRVBTRi0zLjAK"}}'
+      expected: triggered
+      description: "Adversarial-review bypass fixed: JSON-escaped newline inside the signature"
+  true_negatives:
+    - input: '{"type":"image_url","image_url":{"url":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkJSFQUyAAAAoAAX2eJjQAAAAASUVORK5CYII="}}'
+      expected: not_triggered
+      description: "Benign twin: genuine 1x1 PNG whose base64 body happens to contain JSFQU later in the stream, not at the start"
+    - input: '{"file":{"filename":"logo.eps","file_data":"data:application/postscript;base64,JSFQUy1BZG9iZS0zLjAgRVBTRi0zLjAK"}}'
+      expected: not_triggered
+      description: "Benign twin: EPS correctly labelled application/postscript for a document-conversion tool"
+    - input: 'data:image/x-eps;base64,JSFQUy1BZG9iZS0zLjAgRVBTRi0zLjAK'
+      expected: not_triggered
+      description: "Benign twin: EPS correctly labelled image/x-eps"
+    - input: 'Pillow identifies EPS by its header: a file starting with %!PS-Adobe (base64 JSFQUy1BZG9iZS) or the DOS EPS magic C5D0D3C6 (base64 xdDTxg). If a client sends that under data:image/png;base64, the MIME label is ignored, so pin the accepted formats with Image.open(fp, formats=["PNG","JPEG"]).'
+      expected: not_triggered
+      description: "Benign twin: security write-up naming both signatures and the data URL prefix without forming an actual data URL"
+    - input: '{"messages":[{"role":"user","content":[{"type":"image_url","image_url":{"url":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDAJSFQU"}}]}]}'
+      expected: not_triggered
+      description: "Benign twin: genuine JPEG data URL (/9j/ magic) that contains JSFQU further into the body"
+    - input: 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='
+      expected: not_triggered
+      description: "Benign twin: the ubiquitous 1x1 transparent GIF tracking pixel"
+    - input: 'data:text/plain;base64,JSFQUy1BZG9iZS0zLjAgRVBTRi0zLjAK'
+      expected: not_triggered
+      description: "Benign twin: PostScript source shared as text/plain for review"
+    - input: 'gs -dSAFER -dBATCH -dNOPAUSE -sDEVICE=png16m -r150 -o page.png figure.eps   # convert EPS to PNG before uploading as data:image/png;base64,iVBORw0KGgo...'
+      expected: not_triggered
+      description: "Benign twin: Ghostscript conversion command and a PNG data URL prefix in a build log"
+    - input: '{"image_url":{"url":"data:image/webp;base64,UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoBAAEAAwA0JaQAA3AA/vuUAAA="}}'
+      expected: not_triggered
+      description: "Benign twin: genuine WebP (RIFF) data URL"
+    - input: 'A detector should compare the label to the signature: data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4= is SVG, and anything beginning JSFQU is PostScript.'
+      expected: not_triggered
+      description: "Benign twin: SVG data URL (not a raster label) next to the signature named in prose"
