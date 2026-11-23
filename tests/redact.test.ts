@@ -21,6 +21,13 @@ describe("redactMatchedValue", () => {
     expect(out).not.toContain("secretvalue");
   });
 
+  it("redacts an Anthropic key as anthropic_secret rather than openai_or_compatible_secret", () => {
+    const out = redactMatchedValue("sk-ant-api03-secretvalue1234567890");
+    expect(out).toContain("anthropic_secret");
+    expect(out).not.toContain("openai_or_compatible_secret");
+    expect(out).not.toContain("secretvalue");
+  });
+
   it("redacts a Slack token", () => {
     const out = redactMatchedValue("xoxb-1234-5678-secretvalue");
     expect(out).toContain("slack_token");
