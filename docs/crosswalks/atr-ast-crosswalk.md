@@ -11,7 +11,7 @@ This is a **curated thematic mapping**, not an id-equality join. ATR carries no 
 
 Regenerate with `python3 scripts/generate-ast-crosswalk.py`. CI runs `--check` so a stale copy fails the build.
 
-Rules in corpus at generation time: **844**.
+Rules in corpus at generation time: **845**.
 
 ## Coverage by AST control
 
@@ -23,7 +23,7 @@ Rule counts are split by maturity, because the lanes differ: the enforce lane (t
 | AST02 | Supply Chain Compromise | 58 | 1 | 53 | 4 | 0 | ASI04 (31), ASI05 (15), ASI01 (12) |
 | AST03 | Over-Privileged Skills | 257 | 44 | 179 | 30 | 4 | ASI03 (95), ASI01 (90), ASI02 (74) |
 | AST04 | Insecure Metadata | 123 | 12 | 84 | 17 | 10 | ASI05 (63), ASI02 (44), ASI04 (38) |
-| AST05 | Untrusted External Instructions | 362 | 38 | 304 | 13 | 7 | ASI01 (341), ASI04 (15), ASI06 (15) |
+| AST05 | Untrusted External Instructions | 363 | 38 | 305 | 13 | 7 | ASI01 (342), ASI04 (15), ASI06 (15) |
 | AST06 | Weak Isolation | 138 | 30 | 97 | 10 | 1 | ASI01 (73), ASI03 (46), ASI02 (31) |
 | AST07 | Update Drift | 0 | 0 | 0 | 0 | 0 | - |
 | AST08 | Poor Scanning | 0 | 0 | 0 | 0 | 0 | - |
@@ -34,7 +34,7 @@ Rule counts are split by maturity, because the lanes differ: the enforce lane (t
 
 | ATR category | Rules | AST control(s) | Rationale |
 |--------------|-------|----------------|-----------|
-| prompt-injection (254) | 254 | AST05 Untrusted External Instructions | Injected/untrusted instructions are exactly the AST05 external-instruction class. |
+| prompt-injection (255) | 255 | AST05 Untrusted External Instructions | Injected/untrusted instructions are exactly the AST05 external-instruction class. |
 | context-exfiltration (138) | 138 | AST03 Over-Privileged Skills | Reading/exfiltrating data beyond the skill's need is over-privilege. |
 |  |  | AST06 Weak Isolation | Cross-context data leakage indicates weak isolation between skills/sessions. |
 | tool-poisoning (123) | 123 | AST01 Malicious Skills | A poisoned tool/skill is a malicious skill at the point of use. |

@@ -28,12 +28,12 @@ columns are still extracted from ATR metadata, not authored here.
 
 ## Coverage
 
-- ATR rules total: 844
-- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 229
+- ATR rules total: 845
+- Rules carrying an enterprise ATT&CK id (`references.mitre_attack` Txxxx): 230
 - Distinct enterprise ATT&CK techniques referenced: 87
-- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 844
+- Rules carrying a MITRE ATLAS id (`references.mitre_atlas`): 845
 - Distinct MITRE ATLAS techniques referenced: 62
-- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 844
+- Rules carrying an OWASP Agentic id (`references.owasp_agentic`): 845
 - ATR categories (distinct `tags.category` values): 10
 
 Categories are keyed on each rule's `tags.category` metadata, not on its
@@ -117,7 +117,7 @@ against.
 | T1553 | Subvert Trust Controls | `ATR-2026-00539` | privilege-escalation |
 | T1556 | Modify Authentication Process | `ATR-2026-01992` | privilege-escalation |
 | T1557 | Adversary-in-the-Middle | `ATR-2026-00116` | agent-manipulation |
-| T1562 | Impair Defenses | `ATR-2026-01993`, `ATR-2026-02001`, `ATR-2026-02013`, `ATR-2026-02400`, `ATR-2026-02401` | excessive-autonomy, prompt-injection |
+| T1562 | Impair Defenses | `ATR-2026-01993`, `ATR-2026-02001`, `ATR-2026-02013`, `ATR-2026-02400`, `ATR-2026-02401`, `ATR-2026-02876` | excessive-autonomy, prompt-injection |
 | T1562.001 | Disable or Modify Tools | `ATR-2026-02400`, `ATR-2026-02402`, `ATR-2026-02410`, `ATR-2026-02642`, `ATR-2026-02667` | excessive-autonomy, privilege-escalation, skill-compromise |
 | T1565 | Data Manipulation | `ATR-2026-00070`, `ATR-2026-00450`, `ATR-2026-02003` | data-poisoning, prompt-injection |
 | T1565.001 | Data Manipulation: Stored Data Manipulation | `ATR-2026-00075`, `ATR-2026-00200`, `ATR-2026-01155`, `ATR-2026-02143`, `ATR-2026-02144`, `ATR-2026-02303`, `ATR-2026-02865` | context-exfiltration, data-poisoning, skill-compromise, tool-poisoning |
@@ -336,7 +336,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### prompt-injection
 
-Rules in category: 254
+Rules in category: 255
 
 ATT&CK techniques (join key):
 
@@ -346,7 +346,7 @@ ATT&CK techniques (join key):
 | T1059 | Command and Scripting Interpreter | `ATR-2026-00535`, `ATR-2026-02019` |
 | T1059.004 | Command and Scripting Interpreter: Unix Shell | `ATR-2026-02374` |
 | T1552 | Unsecured Credentials | `ATR-2026-02002`, `ATR-2026-02007` |
-| T1562 | Impair Defenses | `ATR-2026-02001`, `ATR-2026-02013` |
+| T1562 | Impair Defenses | `ATR-2026-02001`, `ATR-2026-02013`, `ATR-2026-02876` |
 | T1565 | Data Manipulation | `ATR-2026-02003` |
 | T1566 | Phishing | `ATR-2026-00420` |
 | T1567 | Exfiltration Over Web Service | `ATR-2026-00420` |
