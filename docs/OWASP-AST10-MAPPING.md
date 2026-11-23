@@ -4,16 +4,16 @@
 
 OWASP AST10 is a separate framework from the OWASP Top 10 for Agentic Applications (ASI01-ASI10). ASI covers agent runtime threats; AST covers the skill supply chain and lifecycle. Several AST controls are process requirements that a detection rule cannot satisfy.
 
-Rules in corpus at generation time: 844.
+Rules in corpus at generation time: 845.
 
 ## Coverage Summary
 
 | OWASP AST Category | Severity | ATR Rules | Status |
 |---|---|---|---|
-| AST01: Malicious Skills | CRITICAL | 214 rules | STRONG |
+| AST01: Malicious Skills | CRITICAL | 215 rules | STRONG |
 | AST02: Supply Chain Compromise | CRITICAL | 58 rules | PARTIAL |
 | AST03: Over-Privileged Skills | HIGH | 257 rules | STRONG |
-| AST04: Insecure Metadata | HIGH | 123 rules | MODERATE |
+| AST04: Insecure Metadata | HIGH | 124 rules | MODERATE |
 | AST05: Untrusted External Instructions | HIGH | 362 rules | STRONG |
 | AST06: Weak Isolation | HIGH | 138 rules | STRONG |
 | AST07: Update Drift | MEDIUM | 0 rules | GAP (process-level) |
@@ -27,7 +27,7 @@ Status is set by enforce-lane (`maturity: stable`) rules: STRONG at 20 or more, 
 
 ### AST01: Malicious Skills (CRITICAL)
 
-214 rules: 21 stable, 164 test, 19 experimental, 10 draft or deprecated.
+215 rules: 21 stable, 165 test, 19 experimental, 10 draft or deprecated.
 
 | ATR Rule | Title | Severity |
 |---|---|---|
@@ -114,7 +114,7 @@ Status is set by enforce-lane (`maturity: stable`) rules: STRONG at 20 or more, 
 
 ### AST04: Insecure Metadata (HIGH)
 
-123 rules: 12 stable, 84 test, 17 experimental, 10 draft or deprecated.
+124 rules: 12 stable, 85 test, 17 experimental, 10 draft or deprecated.
 
 | ATR Rule | Title | Severity |
 |---|---|---|
