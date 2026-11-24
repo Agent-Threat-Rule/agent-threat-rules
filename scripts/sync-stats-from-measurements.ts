@@ -19,7 +19,7 @@
  *     `generated_at`. The existing schema (rules.total, ecosystem.*, etc.) is
  *     preserved verbatim. This keeps compatibility with the other jobs that
  *     write stats.json (reconcile-stats.yml among them; the auto-crystallize
- *     bot did too before Threat Cloud crystallization moved out of this
+ *     bot did too before ATR Community Feed crystallization moved out of this
  *     repository).
  *   - We write atomically (tmp + fsync + rename). Concurrent updates from other
  *     workflows are safe (last writer wins on rename, no half-written file).

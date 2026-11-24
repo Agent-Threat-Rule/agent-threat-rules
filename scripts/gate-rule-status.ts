@@ -35,7 +35,7 @@
  *     - pushes straight to main by an actor on the main ruleset's bypass
  *       list. (This list once named the CVE collector and auto-crystallize;
  *       the collector now commits only proposals/ and its run report, and
- *       Threat Cloud crystallization no longer runs in this repository.)
+ *       ATR Community Feed crystallization no longer runs in this repository.)
  *   Comparing the whole working tree against a committed baseline sees every
  *   one of them, needs no git history, and works on a shallow checkout.
  *

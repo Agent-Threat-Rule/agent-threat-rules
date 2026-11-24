@@ -66,7 +66,7 @@ All notable changes to ATR will be documented in this file.
   and keeps the `PASS —` prefix `fn-mine-llm.ts` reads. The full-set gates'
   comments and docs no longer say the CVE collector and auto-crystallize
   commit rules straight to main: the collector commits only `proposals/` and
-  its run report, and Threat Cloud crystallization no longer runs in this
+  its run report, and ATR Community Feed crystallization no longer runs in this
   repository. The reasons that still hold are untracked rule files gated
   before any commit and pushes by an actor on the main ruleset's bypass list.
   Gate behaviour is unchanged.
