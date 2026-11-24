@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
+import yaml from 'js-yaml';
 import { describe, expect, it } from 'vitest';
 import { CoverageAnalyzer } from '../src/coverage-analyzer.js';
 
@@ -31,7 +32,11 @@ describe('CoverageAnalyzer', () => {
       .map((entry) => entry.name)
       .sort();
     const actual = Object.keys(new CoverageAnalyzer([]).analyze().categoryDistribution).sort();
+    const schema = yaml.load(
+      readFileSync(resolve(import.meta.dirname, '../spec/atr-schema.yaml'), 'utf8'),
+    ) as { properties: { tags: { properties: { category: { enum: string[] } } } } };
 
     expect(actual).toEqual(expected);
+    expect(schema.properties.tags.properties.category.enum.sort()).toEqual(expected);
   });
 });

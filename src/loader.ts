@@ -97,7 +97,7 @@ export function validateRule(rule: unknown): { valid: boolean; errors: string[] 
     const validCategories = [
       'prompt-injection', 'tool-poisoning', 'context-exfiltration',
       'agent-manipulation', 'privilege-escalation', 'excessive-autonomy',
-      'data-poisoning', 'model-abuse', 'skill-compromise',
+      'data-poisoning', 'model-abuse', 'model-security', 'skill-compromise',
     ];
     if (typeof tags['category'] === 'string' && !validCategories.includes(tags['category'])) {
       errors.push(`Invalid tags.category: ${tags['category']}`);

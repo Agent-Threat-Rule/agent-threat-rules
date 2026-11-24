@@ -728,7 +728,7 @@ async function cmdScaffold(): Promise<void> {
   const categories = [
     'prompt-injection', 'tool-poisoning', 'context-exfiltration',
     'agent-manipulation', 'privilege-escalation', 'excessive-autonomy',
-    'data-poisoning', 'model-abuse', 'skill-compromise',
+    'data-poisoning', 'model-abuse', 'model-security', 'skill-compromise',
   ];
   console.log(`\nCategories: ${categories.join(', ')}`);
   const category = await ask('Category: ');
@@ -813,7 +813,7 @@ async function cmdScaffoldSemantic(): Promise<void> {
   const categories = [
     'prompt-injection', 'tool-poisoning', 'context-exfiltration',
     'agent-manipulation', 'privilege-escalation', 'excessive-autonomy',
-    'data-poisoning', 'model-abuse', 'skill-compromise',
+    'data-poisoning', 'model-abuse', 'model-security', 'skill-compromise',
   ];
   console.log(`\nCategories: ${categories.join(', ')}`);
   const category = await ask('Category: ');
