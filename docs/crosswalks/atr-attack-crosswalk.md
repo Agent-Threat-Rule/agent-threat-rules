@@ -336,7 +336,7 @@ OWASP Agentic categories ATR adds: ASI01:2026, ASI02:2026, ASI03:2026, ASI04:202
 
 ### prompt-injection
 
-Rules in category: 254
+Rules in category: 255
 
 ATT&CK techniques (join key):
 
