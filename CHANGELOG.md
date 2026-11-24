@@ -6,6 +6,25 @@ All notable changes to ATR will be documented in this file.
 
 ### Fixed
 
+- **ATR-2026-00030 and ATR-2026-00702 no longer fire on the benign
+  "never …" tool-description guidance reported in #866.** Both rules are stable
+  with `block_input`, so the fix keeps their detections rather than removing the
+  response action. 00030 now skips a concealment clause that asks the user to
+  `confirm` or `verify` something; 00702 requires a host after `https?://`
+  before treating a credential + URL string as exfiltration, which fixes the
+  cause of that false positive instead of keying on the preceding word.
+  00030's narrowed lookahead is a bounded heuristic: a real concealment can
+  evade it by adding "confirm", and benign guidance without that word can still
+  fire. Both are recorded in `false_positives` and `evasion_tests` rather than
+  hidden. Added five true negatives, four true positives and the known-bypass
+  evasion case; bumped both rules to `rule_version: 2`. Measured after the
+  change: `atr test` 15/15 on 00030 and 11/11 on 00702, `pyatr test` the same,
+  and the same verdicts under V8 for all eleven review cases. A full
+  `atr test rules/` run passed 9,625 of 9,651 cases with 0 failures and 26
+  unevaluable across 845 rules, seven more passing cases than the 9,618 on main
+  — exactly the cases added here. Benign-FP evidence
+  was re-measured with `scripts/remeasure-benign-fp.ts` (837 rules over 14,201
+  samples).
 - **`pyatr test` builds a test case as the event its rule declares.** It built
   every plain `input:` case as an `llm_input` event, whatever the rule's
   `agent_source.type`, ignored `user_input:`, `agent_output:` and `tool_call:`
