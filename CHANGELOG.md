@@ -4,6 +4,21 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- **`pyatr test` builds a test case as the event its rule declares.** It built
+  every plain `input:` case as an `llm_input` event, whatever the rule's
+  `agent_source.type`, ignored `user_input:`, `agent_output:` and `tool_call:`
+  keys and `tool_description:` as content, and skipped draft and deprecated
+  rules, so it failed 1,062 true positives in 222 rules that `atr test`
+  passes (measured on main as of 2026-11-23, 9,644 cases). The builder now
+  follows `src/testcase-event.ts`, names the tool and keeps a case's
+  `agent_message` as `atr test` does, and tests each rule alone with its status
+  overridden. A rule file that cannot be loaded fails its cases with the reason
+  instead of stopping the run. 34 true positives in 8 rules still fail, and
+  no case that passed before fails. Only the test runner changes;
+  `ATREngine.evaluate()` is unchanged.
+
 ### Changed
 
 - **The community reporting pipeline is now called the ATR Community Feed.**
