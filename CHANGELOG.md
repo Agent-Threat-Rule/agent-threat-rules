@@ -4,21 +4,6 @@ All notable changes to ATR will be documented in this file.
 
 ## [Unreleased]
 
-### Fixed
-
-- **`pyatr test` builds a test case as the event its rule declares.** It built
-  every plain `input:` case as an `llm_input` event, whatever the rule's
-  `agent_source.type`, ignored `user_input:`, `agent_output:` and `tool_call:`
-  keys and `tool_description:` as content, and skipped draft and deprecated
-  rules, so it failed 1,062 true positives in 222 rules that `atr test`
-  passes (measured on main as of 2026-11-23, 9,644 cases). The builder now
-  follows `src/testcase-event.ts`, names the tool and keeps a case's
-  `agent_message` as `atr test` does, and tests each rule alone with its status
-  overridden. A rule file that cannot be loaded fails its cases with the reason
-  instead of stopping the run. 34 true positives in 8 rules still fail, and
-  no case that passed before fails. Only the test runner changes;
-  `ATREngine.evaluate()` is unchanged.
-
 ### Changed
 
 - **The community reporting pipeline is now called the ATR Community Feed.**
@@ -59,6 +44,33 @@ All notable changes to ATR will be documented in this file.
   expired entry, or one that no longer matches anything, fails the check too.
 
 ### Fixed
+
+- **`pyatr test` builds a test case as the event its rule declares.** It built
+  every plain `input:` case as an `llm_input` event, whatever the rule's
+  `agent_source.type`, ignored `user_input:`, `agent_output:` and `tool_call:`
+  keys and `tool_description:` as content, and skipped draft and deprecated
+  rules, so it failed 1,062 true positives in 222 rules that `atr test`
+  passes (measured on main as of 2026-11-23, 9,644 cases). The builder now
+  follows `src/testcase-event.ts`, names the tool and keeps a case's
+  `agent_message` as `atr test` does, and tests each rule alone with its status
+  overridden. A rule file that cannot be loaded fails its cases with the reason
+  instead of stopping the run. 34 true positives in 8 rules still fail, and
+  no case that passed before fails. Only the test runner changes;
+  `ATREngine.evaluate()` is unchanged.
+
+- **pyATR reads tool output for the `user_input` and `agent_output`
+  conditions of the rules the TypeScript engine runs on tool responses.** On
+  a `tool_response` event that does not set those fields they now resolve to
+  the event content for rules whose `agent_source.type` is `llm_io`,
+  `mcp_exchange` or `context_window`, as `src/engine.ts` does (`resolveField`
+  behind `sourceTypeAdmits`). `ATRRule` gains an `agent_source` field, which
+  the bundled rule set now carries. Measured on the rules at a750fc28c: before,
+  the TypeScript engine matched 1,240 true-positive texts of 227 rules as tool
+  responses that pyATR did not; now 0, and pyATR gains no match there that the
+  TypeScript engine does not return. Integrations that send tool output as
+  `tool_response` events get new matches: 629 of the 13,664 texts in
+  `data/benign-corpus-extended` gained one, the same 747 matches the
+  TypeScript engine returns for those events.
 
 - **The rule safety gate no longer calls a passing rule "safe to
   auto-merge".** Auto-merge was retired in 521b4b0e and is off for the

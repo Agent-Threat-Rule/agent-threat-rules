@@ -29,6 +29,7 @@ from pathlib import Path
 # irrelevant to Layer-1 matching and is intentionally excluded.
 ENGINE_FIELDS = (
     "id", "title", "severity", "description", "status", "maturity", "confirm", "detection", "tags",
+    "agent_source",
 )
 
 

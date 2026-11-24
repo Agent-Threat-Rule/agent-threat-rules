@@ -32,6 +32,10 @@ class ATRRule:
     response: dict[str, Any] = field(default_factory=dict)
     maturity: str = "experimental"
     confirm: str = ""
+    # The rule's agent_source block (type, framework, provider). Its type
+    # decides whether user_input / agent_output conditions read the content
+    # of a tool_response event (see engine._TOOL_RESPONSE_SOURCE_TYPES).
+    agent_source: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
