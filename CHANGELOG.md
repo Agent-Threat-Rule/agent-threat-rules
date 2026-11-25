@@ -23,6 +23,16 @@ All notable changes to ATR will be documented in this file.
 
 ### Added
 
+- **Two rules from agent-related CVEs published after 2026-10-22** (#869).
+  ATR-2026-02877 matches a PostScript or EPS payload inside an image data URL
+  labelled as a raster type (CVE-2026-115915, vLLM). ATR-2026-02878 matches an
+  agent writing machine-scoped Coder extension settings (command, CLI or TLS
+  overrides) into a workspace settings file (CVE-2026-69154, Coder VS Code
+  extension). Both are maturity `test`, so the enforce lane is unchanged. Of the
+  65 detection-ready CVE proposals added since the last pass, the other 63 were
+  server-side, behavioural or already covered; each is recorded with its reason
+  in `data/cve-collector/promoted.json`.
+
 - **ATR-2026-02871 flags MCP tool descriptions that direct the model through
   another tool with no injection marker** (#742, #863). It fires on a
   description that forces a call to another tool with a harmful payload or a
