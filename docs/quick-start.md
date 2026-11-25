@@ -42,7 +42,7 @@ Output:
 ATR Scan Results
 ------------------------------------------------------------
   Events scanned:  1
-  Rules loaded:    845
+  Rules loaded:    847
   Threats found:   1
 ------------------------------------------------------------
 
