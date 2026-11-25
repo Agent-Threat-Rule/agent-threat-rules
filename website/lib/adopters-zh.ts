@@ -48,8 +48,6 @@ export const ADOPTER_INTEGRATION_ZH: Readonly<Record<string, string>> = {
     "列入 Sigma 工具目錄；agent-threat-rules 被列為同類的偵測規則格式。",
   "Microsoft PyRIT":
     "ATR 對抗 payload 資料集載入器已合併進 PyRIT（PR #1715，維護者 Roman Lutz 於 2026-05-27 合併）。AgentThreatRulesScorer 先在 PR #1893（2026-08-17）合併，隔天被 PR #2410 撤回；不新增依賴的版本由 PR #2624（2026-09-24）合併。資料集載入器與 scorer 都已隨 PyRIT v1.2.0（2026-11-13 發佈）正式釋出。",
-  "Microsoft Agent Framework":
-    "範例程式：在 Microsoft Agent Framework 裡把 ATR 當成確定性的動作邊界驗證器。",
   "Microsoft Agent Governance Toolkit":
     "AGT repository 裡的兩個範例目錄：examples/acs-atr-annotator（ACS annotator adapter）與 examples/atr-import（把 ATR YAML 編譯成 ACS manifest 和 Rego bundle）。早期範例 PR 放在 examples/atr-community-rules 底下的規則包 YAML，上游已於 2026-07-30 移除，該目錄的每週同步 workflow 也固定在舊版 ATR。由 ATR 維護者貢獻、AGT 維護者合併；之後 AGT 維護者在自己的重構裡更新過這些範例（2026-07、2026-09）。",
   "Cisco AI BOM":
@@ -84,8 +82,6 @@ export const ADOPTER_INTEGRATION_ZH: Readonly<Record<string, string>> = {
     "「Deterministic Threat Rule Scanning」pattern 已被收錄，內容引用 ATR。",
   "OWASP Agentic Skills Top 10":
     "ATR 對 AST 的對照表與野外掃描資料集被收為外部參考；兩個 PR 都由專案負責人 kenhuangus 合併。",
-  "xlabs-club/awesome-x-ops":
-    "維護者 l10178 把 ATR 加進英文與簡體中文清單，不是 ATR 開的 PR。",
   "AMD GAIA":
     "GAIA 官方整合文件：用離線的 ATR 輸入／輸出防護守住 Lemonade 模型端點（提示注入偵測模式）。",
   "ProjectRecon/awesome-ai-agents-security":

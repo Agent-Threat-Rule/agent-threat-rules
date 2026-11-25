@@ -182,14 +182,6 @@ Listed when the integration code has been merged or released.
 - **Status**: shipped
 - **Still-present**: pyrit/datasets/seed_datasets/remote/agent_threat_rules_dataset.py contains "Agent Threat Rules"
 
-### Microsoft Agent Framework
-- **Org**: Microsoft
-- **Type**: adapter
-- **Integration**: Sample showing ATR as a deterministic action-boundary validator in the Microsoft Agent Framework
-- **Evidence**: <https://github.com/microsoft/agent-framework/pull/6528>
-- **Since**: 2026-06-16
-- **Status**: shipped
-
 ### Microsoft Agent Governance Toolkit
 - **Org**: Microsoft
 - **Type**: adapter
@@ -345,15 +337,6 @@ discoverability.
 - **Since**: 2026-07-09
 - **Status**: shipped
 
-### xlabs-club/awesome-x-ops
-- **Org**: xlabs-club
-- **Type**: reference
-- **Integration**: ATR added to the English and Simplified-Chinese lists by maintainer l10178 — ATR did not open this PR
-- **Evidence**: <https://github.com/xlabs-club/awesome-x-ops/commit/f80a9ee142b1f6698fb885c5d83bfb7e0afa43ff> (the commit message cites #220, which no longer resolves)
-- **Since**: 2026-08-17
-- **Still-present**: README.md contains "agent-threat-rules"
-- **Status**: shipped
-
 ### AMD GAIA
 - **Org**: AMD
 - **Type**: reference
@@ -414,3 +397,5 @@ noted here with the reason and the original "Since" date preserved.
 - **e2b-dev/awesome-ai-agents** (was Tier 3 · since 2026-05-16) — evidence PR e2b-dev/awesome-ai-agents#959 was withdrawn and closed by its ATR author on 2026-10-15 after no maintainer response. Removed 2026-10-15.
 - **e2b-dev/awesome-ai-sdks** (was Tier 3 · since 2026-05-16) — evidence PR e2b-dev/awesome-ai-sdks#194 was withdrawn and closed by its ATR author on 2026-10-15 after no maintainer response. Removed 2026-10-15.
 - **NIST AI RMF — community OSCAL catalog** (was Tier S · since 2026-05-10) — not an adoption. ATR self-published a community OSCAL catalog of the AI RMF and offered AI RMF profile examples to NIST's OSCAL content repository (usnistgov/oscal-content#338), which is open and awaiting NIST review. Listing it under standards bodies read as NIST involvement, which it is not. Removed 2026-10-16.
+- **Microsoft Agent Framework** (was Tier 2 · since 2026-06-16) — the microsoft/agent-framework repository, including evidence PR microsoft/agent-framework#6528, returns 404 as of 2026-11-24, so the integration can no longer be verified publicly. Removed 2026-11-24.
+- **xlabs-club/awesome-x-ops** (was Tier 3 · since 2026-08-17) — the xlabs-club organisation and the evidence commit return 404 as of 2026-11-24, so the listing can no longer be verified. Removed 2026-11-24.
