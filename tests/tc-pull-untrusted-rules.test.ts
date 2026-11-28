@@ -152,7 +152,6 @@ describe('planPulledRule', () => {
     ['path traversal', '../../outside'],
     ['an absolute path', '/etc'],
     ['a compliance subcategory', 'MG.2.3'],
-    ['a directory name that is not a schema category', 'model-security'],
   ])('rejects a category that is %s', (_label, category) => {
     expect(planPulledRule(ruleYaml('ATR-2026-99999', category), rulesDir).ok).toBe(false);
   });

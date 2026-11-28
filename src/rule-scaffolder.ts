@@ -66,6 +66,7 @@ const CATEGORY_TO_SOURCE_TYPE: Readonly<Record<ATRCategory, ATRSourceType>> = {
   'excessive-autonomy': 'agent_behavior',
   'data-poisoning': 'llm_io',
   'model-abuse': 'llm_io',
+  'model-security': 'mcp_exchange',
   'skill-compromise': 'skill_lifecycle',
 };
 
@@ -78,6 +79,7 @@ const CATEGORY_TO_FIELD: Readonly<Record<ATRCategory, string>> = {
   'excessive-autonomy': 'agent_action',
   'data-poisoning': 'training_input',
   'model-abuse': 'user_input',
+  'model-security': 'content',
   'skill-compromise': 'skill_manifest',
 };
 

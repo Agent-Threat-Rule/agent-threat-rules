@@ -171,7 +171,7 @@ describe('visibilityProblem', () => {
 describe('isRuleCategory', () => {
   it('accepts the schema categories and refuses anything else', () => {
     expect(isRuleCategory('prompt-injection')).toBe(true);
-    expect(isRuleCategory('model-security')).toBe(false);
+    expect(isRuleCategory('model-security')).toBe(true);
     expect(isRuleCategory('../../etc')).toBe(false);
     expect(isRuleCategory('constructor')).toBe(false);
   });

@@ -94,7 +94,7 @@ const TOOLS = [
           enum: [
             'prompt-injection', 'tool-poisoning', 'context-exfiltration',
             'agent-manipulation', 'privilege-escalation', 'excessive-autonomy',
-            'data-poisoning', 'model-abuse', 'skill-compromise',
+            'data-poisoning', 'model-abuse', 'model-security', 'skill-compromise',
           ],
           description: 'Filter rules by threat category.',
         },
@@ -141,7 +141,7 @@ const TOOLS = [
           enum: [
             'prompt-injection', 'tool-poisoning', 'context-exfiltration',
             'agent-manipulation', 'privilege-escalation', 'excessive-autonomy',
-            'data-poisoning', 'model-abuse', 'skill-compromise',
+            'data-poisoning', 'model-abuse', 'model-security', 'skill-compromise',
           ],
           description: 'Threat category for the rule.',
         },
@@ -195,7 +195,7 @@ const TOOLS = [
           enum: [
             'prompt-injection', 'tool-poisoning', 'context-exfiltration',
             'agent-manipulation', 'privilege-escalation', 'excessive-autonomy',
-            'data-poisoning', 'model-abuse', 'skill-compromise',
+            'data-poisoning', 'model-abuse', 'model-security', 'skill-compromise',
           ],
           description: 'Optional: filter statistics to a single threat category.',
         },

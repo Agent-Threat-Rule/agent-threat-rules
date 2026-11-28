@@ -120,6 +120,7 @@ export const TC_PULL_CATEGORIES: ReadonlySet<string> = new Set([
   'excessive-autonomy',
   'data-poisoning',
   'model-abuse',
+  'model-security',
   'skill-compromise',
 ]);
 
